@@ -18,10 +18,15 @@ app.use(express.json()); // Allows parsing JSON request bodies
 
 // Routes
 const authRoutes = require('./routes/authRoutes');
-const contactRoutes = require('./routes/contactRoutes'); // New Import
+const userRoutes = require('./routes/userRoutes');
+const organizationRoutes = require('./routes/organizationRoutes');
+const contactRoutes = require('./routes/contactRoutes');
+
 // Route Linking
 app.use('/api/auth', authRoutes);
-app.use('/api/contacts', contactRoutes); // Link the new routes
+app.use('/api/users', userRoutes);
+app.use('/api/organization', organizationRoutes);
+app.use('/api/contacts', contactRoutes);
 
 // 1. Database Connection
 mongoose.connect(MONGO_URI)

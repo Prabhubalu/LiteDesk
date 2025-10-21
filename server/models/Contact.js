@@ -10,6 +10,15 @@ const NoteSchema = new Schema({
 
 // Contact Schema Definition
 const ContactSchema = new Schema({
+    // 🏢 ORGANIZATION REFERENCE (Multi-tenancy)
+    // **********************************
+    organizationId: { 
+        type: Schema.Types.ObjectId, 
+        ref: 'Organization',
+        required: true,
+        index: true
+    },
+    
     // 🧩 CORE IDENTIFICATION
     // **********************************
     first_name: { type: String, trim: true, required: true },
@@ -92,6 +101,17 @@ const ContactSchema = new Schema({
 }, {
     timestamps: true // Automatically handles 'createdAt' and 'updatedAt'
 });
+
+// Compound index for organization + email (unique within organization, not globally)
+ContactSchema.index({ organizationId: 1, email: 1 }, { unique: true });
+
+// Remove the unique constraint from email alone since we need it unique per organization
+ContactSchema.path('email').index({ unique: false });
+
+// Additional indexes for common queries
+ContactSchema.index({ organizationId: 1, lifecycle_stage: 1 });
+ContactSchema.index({ organizationId: 1, owner_id: 1 });
+ContactSchema.index({ organizationId: 1, status: 1 });
 
 // Create model
 const Contact = mongoose.model("Contact", ContactSchema);

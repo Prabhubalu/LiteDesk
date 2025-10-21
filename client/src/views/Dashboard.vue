@@ -1,5 +1,6 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { useColorMode } from '@/composables/useColorMode';
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue';
 import { ChevronDownIcon, MagnifyingGlassIcon, MicrophoneIcon } from '@heroicons/vue/20/solid'; // Using '20/solid' for smaller, filled icons
@@ -10,6 +11,31 @@ import HeroDarkImage from '/src/assets/images/hero-dark.jpg';   // Image path fo
 
 const { colorMode } = useColorMode();
 const authStore = useAuthStore(); // Assuming auth store is available
+const router = useRouter();
+
+// Trial info
+const trialDaysRemaining = ref(0);
+const showTrialBanner = computed(() => {
+    return authStore.isTrialActive && trialDaysRemaining.value >= 0;
+});
+
+const getTrialDaysRemaining = () => {
+    if (authStore.organization?.subscription?.trialEndDate) {
+        const endDate = new Date(authStore.organization.subscription.trialEndDate);
+        const now = new Date();
+        const diffTime = endDate - now;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        trialDaysRemaining.value = Math.max(0, diffDays);
+    }
+};
+
+const navigateToUpgrade = () => {
+    router.push({ name: 'settings', query: { tab: 'subscription' } });
+};
+
+onMounted(() => {
+    getTrialDaysRemaining();
+});
 
 // Determine which logo to show based on colorMode
 const logoSrc = computed(() => {
@@ -53,6 +79,34 @@ const accordionSections = [
               dark:bg-[#090909]">
     
     <div class="max-w-4xl mx-auto">
+      <!-- Trial Banner -->
+      <div v-if="showTrialBanner" class="mb-6 p-4 rounded-lg shadow-md transition-colors duration-300"
+           :class="trialDaysRemaining <= 3 ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800' : 'bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800'">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <svg class="h-5 w-5 mr-2" :class="trialDaysRemaining <= 3 ? 'text-red-400' : 'text-yellow-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div>
+              <p :class="trialDaysRemaining <= 3 ? 'text-red-800 dark:text-red-200' : 'text-yellow-800 dark:text-yellow-200'" class="font-medium">
+                <span v-if="trialDaysRemaining === 0">Your trial expires today!</span>
+                <span v-else-if="trialDaysRemaining === 1">Your trial expires in 1 day</span>
+                <span v-else>Your trial expires in {{ trialDaysRemaining }} days</span>
+              </p>
+              <p :class="trialDaysRemaining <= 3 ? 'text-red-600 dark:text-red-300' : 'text-yellow-600 dark:text-yellow-300'" class="text-sm">
+                Upgrade now to continue using all features
+              </p>
+            </div>
+          </div>
+          <button 
+            @click="navigateToUpgrade"
+            class="px-4 py-2 rounded-md font-medium transition-colors"
+            :class="trialDaysRemaining <= 3 ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-yellow-600 hover:bg-yellow-700 text-white'"
+          >
+            Upgrade Now
+          </button>
+        </div>
+      </div>
       <div class="flex items-center text-xl font-semibold mb-8 transition-colors duration-300
                   text-gray-900 dark:text-gray-100">
         <!-- <img :src="logoSrc" alt="Logo" class="h-8 w-auto mr-3"/> -->

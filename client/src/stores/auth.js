@@ -3,27 +3,51 @@ import { defineStore } from 'pinia';
 export const useAuthStore = defineStore('auth', {
     state: () => ({
         user: JSON.parse(localStorage.getItem('user')) || null,
+        organization: JSON.parse(localStorage.getItem('organization')) || null,
         loading: false,
         error: null,
     }),
     getters: {
         isAuthenticated: (state) => !!state.user,
+        isOwner: (state) => state.user?.isOwner || false,
+        userRole: (state) => state.user?.role || null,
+        hasPermission: (state) => {
+            return (module, action) => {
+                if (state.user?.isOwner) return true;
+                return state.user?.permissions?.[module]?.[action] || false;
+            };
+        },
+        isTrialActive: (state) => state.organization?.subscription?.status === 'trial',
+        subscriptionTier: (state) => state.organization?.subscription?.tier || 'trial',
+        enabledModules: (state) => state.organization?.enabledModules || [],
     },
     actions: {
         setUser(userData) {
-            this.user = userData;
-            localStorage.setItem('user', JSON.stringify(userData));
+            this.user = {
+                _id: userData._id,
+                username: userData.username,
+                email: userData.email,
+                role: userData.role,
+                isOwner: userData.isOwner,
+                permissions: userData.permissions,
+                token: userData.token
+            };
+            
+            if (userData.organization) {
+                this.organization = userData.organization;
+                localStorage.setItem('organization', JSON.stringify(userData.organization));
+            }
+            
+            localStorage.setItem('user', JSON.stringify(this.user));
         },
+        
         clearUser() {
             this.user = null;
-            // CRITICAL: Must remove the user data from localStorage
+            this.organization = null;
             localStorage.removeItem('user');
-            // Also, clear the error state just in case
+            localStorage.removeItem('organization');
             this.error = null;
         },
-    logout() {
-        this.clearUser();
-    },
 
     async authenticate(endpoint, credentials) {
             this.loading = true;
@@ -66,8 +90,40 @@ export const useAuthStore = defineStore('auth', {
         async login(credentials) {
             return this.authenticate('login', credentials);
         },
+        
         logout() {
             this.clearUser();
+        },
+        
+        // Check if user has a specific permission
+        can(module, action) {
+            if (this.user?.isOwner) return true;
+            return this.user?.permissions?.[module]?.[action] || false;
+        },
+        
+        // Check if module is enabled for organization
+        hasModule(moduleName) {
+            return this.organization?.enabledModules?.includes(moduleName) || false;
+        },
+        
+        // Refresh organization data
+        async refreshOrganization() {
+            try {
+                const response = await fetch('/api/organization', {
+                    headers: {
+                        'Authorization': `Bearer ${this.user?.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    this.organization = data.data;
+                    localStorage.setItem('organization', JSON.stringify(this.organization));
+                }
+            } catch (error) {
+                console.error('Error refreshing organization:', error);
+            }
         }
     },
 });

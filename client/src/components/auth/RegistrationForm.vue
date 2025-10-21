@@ -11,6 +11,7 @@ const username = ref('');
 const email = ref('');
 const password = ref('');
 const passwordConfirm = ref('');
+const organizationName = ref('');
 const vertical = ref(''); // Required for template selection
 
 // Available Verticals (as defined in requirements)
@@ -29,8 +30,18 @@ const verticalOptions = [
 
 const handleRegistration = async () => {
     // Basic Client-side Validation
+    if (!organizationName.value || organizationName.value.trim().length < 2) {
+        authStore.error = 'Please enter a valid organization name (at least 2 characters).';
+        return;
+    }
+
     if (password.value !== passwordConfirm.value) {
         authStore.error = 'Passwords do not match.';
+        return;
+    }
+
+    if (password.value.length < 6) {
+        authStore.error = 'Password must be at least 6 characters.';
         return;
     }
 
@@ -44,6 +55,7 @@ const handleRegistration = async () => {
     username: username.value,
     email: email.value,
     password: password.value,
+    organizationName: organizationName.value,
     vertical: vertical.value
   });
 
@@ -64,19 +76,28 @@ const handleRegistration = async () => {
 
 <template>
 
-        <h2 class="mb-6 text-center text-2xl/9 font-bold tracking-tight text-gray-900 dark:text-white">Register Your Business</h2>
+        <h2 class="mb-2 text-center text-2xl/9 font-bold tracking-tight text-gray-900 dark:text-white">Register Your Business</h2>
+        <p class="mb-6 text-center text-sm text-gray-600 dark:text-gray-400">Start your 15-day free trial • No credit card required</p>
 
   <form class="space-y-6" @submit.prevent="handleRegistration">
     <div>
-          <label for="username" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Username</label>
+          <label for="organizationName" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Organization Name *</label>
           <div class="mt-2">
-            <input type="username" id="username" v-model="username" autocomplete="username" required placeholder="Username" 
+            <input type="text" id="organizationName" v-model="organizationName" required placeholder="Acme Corporation" 
             class="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-gray-900 outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 
             dark:text-white dark:bg-gray-700 dark:focus:bg-gray-800"/>
           </div>
     </div>
     <div>
-          <label for="email" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Email</label>
+          <label for="username" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Your Name *</label>
+          <div class="mt-2">
+            <input type="text" id="username" v-model="username" autocomplete="name" required placeholder="John Smith" 
+            class="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-gray-900 outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 
+            dark:text-white dark:bg-gray-700 dark:focus:bg-gray-800"/>
+          </div>
+    </div>
+    <div>
+          <label for="email" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Email *</label>
           <div class="mt-2">
             <input type="email" id="email" v-model="email" autocomplete="email" required placeholder="Email" 
             class="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-gray-900 outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 
@@ -84,7 +105,7 @@ const handleRegistration = async () => {
           </div>
     </div>
     <div>
-          <label for="password" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Password</label>
+          <label for="password" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Password * <span class="text-xs text-gray-500">(min. 6 characters)</span></label>
           <div class="mt-2">
             <input type="password" id="password" v-model="password" autocomplete="password" required placeholder="Password" 
             class="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-gray-900 outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 
@@ -92,7 +113,7 @@ const handleRegistration = async () => {
           </div>
     </div>
     <div>
-          <label for="passwordConfirm" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Confirm Password</label>
+          <label for="passwordConfirm" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Confirm Password *</label>
           <div class="mt-2">
             <input type="password" id="passwordConfirm" v-model="passwordConfirm" required placeholder="Confirm Password" 
             class="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-gray-900 outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 
@@ -100,7 +121,7 @@ const handleRegistration = async () => {
           </div>
     </div>
     <div>
-          <label for="vertical" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Business Vertical</label>
+          <label for="vertical" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Industry / Business Vertical *</label>
           <div class="mt-2">
             <select id="vertical" v-model="vertical" required 
             class="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-gray-900 outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 
@@ -128,9 +149,13 @@ const handleRegistration = async () => {
 
         <div>
           <button type="submit" :disabled="authStore.loading" class="flex w-full justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm/6 font-semibold text-white hover:bg-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
-            {{ authStore.loading ? 'Registering...' : 'Get Started' }}
+            {{ authStore.loading ? 'Creating Your Organization...' : 'Start Free Trial' }}
           </button>
-          <p v-if="authStore.error" class="error-message">{{ authStore.error }}</p>
+          <p v-if="authStore.error" class="error-message mt-2 text-center text-sm text-red-600 dark:text-red-400">{{ authStore.error }}</p>
+          
+          <div class="mt-4 text-center text-xs text-gray-500 dark:text-gray-400">
+            By registering, you'll become the Owner of your organization with full access to all trial features.
+          </div>
         </div>
 
   </form>
