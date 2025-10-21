@@ -122,6 +122,7 @@ exports.registerUser = async (req, res) => {
             organization: {
                 _id: organization._id,
                 name: organization.name,
+                industry: organization.industry,
                 subscription: organization.subscription,
                 limits: organization.limits,
                 enabledModules: organization.enabledModules
@@ -171,7 +172,7 @@ exports.loginUser = async (req, res) => {
         
         // 1. Find User by Email
         const user = await User.findOne({ email: email.toLowerCase() })
-            .populate('organizationId', 'name subscription limits enabledModules settings isActive');
+            .populate('organizationId', 'name industry subscription limits enabledModules settings isActive');
 
         if (!user) {
             console.log('❌ User not found');
@@ -236,6 +237,7 @@ exports.loginUser = async (req, res) => {
             organization: {
                 _id: user.organizationId._id,
                 name: user.organizationId.name,
+                industry: user.organizationId.industry,
                 subscription: user.organizationId.subscription,
                 limits: user.organizationId.limits,
                 enabledModules: user.organizationId.enabledModules,
