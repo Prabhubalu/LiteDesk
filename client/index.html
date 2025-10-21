@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Nurtura CRM | The mind of your business</title>
+    <script>
+      (function() {
+        // 1. Check local storage for user preference
+        const storedMode = localStorage.getItem('color-mode');
+        let mode = storedMode || 'system';
+
+        // 2. Determine if the 'dark' class should be present
+        let prefersDark;
+        if (mode === 'system') {
+          prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        } else if (mode === 'dark') {
+          prefersDark = true;
+        } else {
+          // If mode is 'light', prefersDark remains false
+          prefersDark = false;
+        }
+
+        // 3. Apply the 'dark' class instantly if needed
+        if (prefersDark) {
+          document.documentElement.classList.add('dark');
+        }
+        // If it's light mode, the 'dark' class is *not* added, ensuring light mode styles apply.
+      })();
+    </script>
+    <link rel="icon" href="/favicon.ico">
+    <link href="/output.css" rel="stylesheet">
+
+
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
