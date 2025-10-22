@@ -1,0 +1,105 @@
+name: Publish Docker Images
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag'
+        required: true
+        default: 'latest'
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  publish-images:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "release" ]; then
+            echo "VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      
+      - name: Build and push backend image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --file Dockerfile.backend \
+            --tag $ECR_REGISTRY/litedesk-backend:$VERSION \
+            --tag $ECR_REGISTRY/litedesk-backend:latest \
+            --push \
+            .
+      
+      - name: Build and push frontend image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --file Dockerfile.frontend \
+            --tag $ECR_REGISTRY/litedesk-frontend:$VERSION \
+            --tag $ECR_REGISTRY/litedesk-frontend:latest \
+            --push \
+            .
+      
+      - name: Update Helm chart version
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+          sed -i "s/^version:.*/version: $VERSION/" helm/litedesk/Chart.yaml
+          sed -i "s/^appVersion:.*/appVersion: $VERSION/" helm/litedesk/Chart.yaml
+      
+      - name: Commit and push Helm chart updates
+        if: github.event_name == 'release'
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'actions@github.com'
+          git add helm/litedesk/Chart.yaml
+          git commit -m "chore: update Helm chart to version ${{ steps.version.outputs.VERSION }}" || echo "No changes to commit"
+          git push || echo "Nothing to push"
+      
+      - name: Create release summary
+        run: |
+          cat << EOF >> $GITHUB_STEP_SUMMARY
+          ## 🚀 Docker Images Published
+          
+          **Version:** ${{ steps.version.outputs.VERSION }}
+          
+          ### Images:
+          - \`${{ steps.login-ecr.outputs.registry }}/litedesk-backend:${{ steps.version.outputs.VERSION }}\`
+          - \`${{ steps.login-ecr.outputs.registry }}/litedesk-frontend:${{ steps.version.outputs.VERSION }}\`
+          
+          ### Platforms:
+          - linux/amd64
+          - linux/arm64
+          
+          ✅ Images are ready for deployment!
+          EOF
+

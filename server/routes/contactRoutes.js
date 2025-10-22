@@ -5,7 +5,8 @@ const {
     getContacts, 
     getContactById, 
     updateContact, 
-    deleteContact 
+    deleteContact,
+    addNote
 } = require('../controllers/contactController');
 const { protect } = require('../middleware/authMiddleware');
 const { organizationIsolation, checkTrialStatus, checkFeatureAccess } = require('../middleware/organizationMiddleware');
@@ -29,5 +30,8 @@ router.route('/:id')
     .get(checkPermission('contacts', 'view'), getContactById)
     .put(checkPermission('contacts', 'edit'), updateContact)
     .delete(checkPermission('contacts', 'delete'), deleteContact);
+
+// Add note to contact
+router.post('/:id/notes', checkPermission('contacts', 'edit'), addNote);
 
 module.exports = router;

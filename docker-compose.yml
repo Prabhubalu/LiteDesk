@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # MongoDB for local development
+  mongodb:
+    image: mongo:6.0
+    container_name: litedesk-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - litedesk-network
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: litedesk-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      MONGO_URI: mongodb://admin:password123@mongodb:27017/litedesk?authSource=admin
+      JWT_SECRET: your-dev-jwt-secret-change-in-production
+      JWT_EXPIRES_IN: 1d
+    depends_on:
+      - mongodb
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    networks:
+      - litedesk-network
+    command: npm run dev
+
+  # Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: litedesk-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - litedesk-network
+
+  # Redis for queues (optional, for background jobs)
+  redis:
+    image: redis:7-alpine
+    container_name: litedesk-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - litedesk-network
+
+networks:
+  litedesk-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  redis_data:
+

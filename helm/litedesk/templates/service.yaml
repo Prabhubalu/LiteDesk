@@ -1,0 +1,39 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.instance.name }}-backend
+  namespace: {{ .Values.instance.name }}
+  labels:
+    app: litedesk-backend
+    instance: {{ .Values.instance.subdomain }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.backend.port }}
+      targetPort: {{ .Values.service.backend.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    app: litedesk-backend
+    instance: {{ .Values.instance.subdomain }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.instance.name }}-frontend
+  namespace: {{ .Values.instance.name }}
+  labels:
+    app: litedesk-frontend
+    instance: {{ .Values.instance.subdomain }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.frontend.port }}
+      targetPort: {{ .Values.service.frontend.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    app: litedesk-frontend
+    instance: {{ .Values.instance.subdomain }}
+

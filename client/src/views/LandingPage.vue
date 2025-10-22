@@ -2,9 +2,9 @@
 import { ref } from 'vue';
 import { useColorMode } from '@/composables/useColorMode'; // <-- Import the Composable
 import LoginForm from '@/components/LoginForm.vue';
-import RegistrationForm from '@/components/auth/RegistrationForm.vue';
+import DemoRequestForm from '@/components/DemoRequestForm.vue';
 
-const currentTab = ref('login'); 
+const currentTab = ref('demo'); // Default to demo request
 const { colorMode, toggleColorMode } = useColorMode(); // <-- Use it here!
 
 </script>
@@ -63,30 +63,30 @@ const { colorMode, toggleColorMode } = useColorMode(); // <-- Use it here!
         <button 
           class="flex-1 py-2 text-sm font-semibold rounded-md transition-all duration-200 ease-in-out"
           :class="[
+            currentTab === 'demo' 
+              ? 'bg-white shadow text-indigo-600 dark:bg-gray-900 dark:text-indigo-400' /* Active Tab Style */
+              : 'text-gray-600 hover:bg-white/50 dark:text-gray-400 dark:hover:bg-gray-600' /* Inactive Tab Style */
+          ]" 
+          @click="currentTab = 'demo'"
+        >
+          Request Demo
+        </button>
+
+        <button 
+          class="flex-1 py-2 text-sm font-semibold rounded-md transition-all duration-200 ease-in-out"
+          :class="[
             currentTab === 'login' 
               ? 'bg-white shadow text-indigo-600 dark:bg-gray-900 dark:text-indigo-400' /* Active Tab Style */
               : 'text-gray-600 hover:bg-white/50 dark:text-gray-400 dark:hover:bg-gray-600' /* Inactive Tab Style */
           ]" 
           @click="currentTab = 'login'"
         >
-          Sign In
-        </button>
-        
-        <button 
-          class="flex-1 py-2 text-sm font-semibold rounded-md transition-all duration-200 ease-in-out"
-          :class="[
-            currentTab === 'register' 
-              ? 'bg-white shadow text-indigo-600 dark:bg-gray-900 dark:text-indigo-400' /* Active Tab Style */
-              : 'text-gray-600 hover:bg-white/50 dark:text-gray-400 dark:hover:bg-gray-600' /* Inactive Tab Style */
-          ]" 
-          @click="currentTab = 'register'"
-        >
-          Sign Up
+          Admin Login
         </button>
       </div>
 
       <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-            <component :is="currentTab === 'login' ? LoginForm : RegistrationForm" />
+            <component :is="currentTab === 'login' ? LoginForm : DemoRequestForm" />
       </div>
     </div>
   </div>

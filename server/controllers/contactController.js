@@ -81,14 +81,48 @@ exports.getContacts = async (req, res) => {
         
         const total = await Contact.countDocuments(query);
         
+        // Get statistics
+        const stats = await Contact.aggregate([
+            { $match: { organizationId: req.user.organizationId } },
+            {
+                $group: {
+                    _id: null,
+                    totalContacts: { $sum: 1 },
+                    leadContacts: {
+                        $sum: { $cond: [{ $eq: ['$lifecycle_stage', 'Lead'] }, 1, 0] }
+                    },
+                    customerContacts: {
+                        $sum: { $cond: [{ $eq: ['$lifecycle_stage', 'Customer'] }, 1, 0] }
+                    },
+                    activeThisMonth: {
+                        $sum: { 
+                            $cond: [
+                                { 
+                                    $gte: ['$last_activity_at', new Date(new Date().setDate(1))]
+                                }, 
+                                1, 
+                                0
+                            ] 
+                        }
+                    }
+                }
+            }
+        ]);
+        
         res.status(200).json({
             success: true,
             data: contacts,
             pagination: {
-                page,
+                currentPage: page,
                 limit,
-                total,
+                totalContacts: total,
                 totalPages: Math.ceil(total / limit)
+            },
+            statistics: stats[0] || {
+                totalContacts: 0,
+                leadContacts: 0,
+                customerContacts: 0,
+                activeThisMonth: 0
             }
         });
     } catch (error) {
@@ -193,6 +227,61 @@ exports.deleteContact = async (req, res) => {
             success: false,
             message: 'Error deleting contact.', 
             error: error.message 
+        });
+    }
+};
+
+// --- 6. ADD Note to Contact ---
+exports.addNote = async (req, res) => {
+    try {
+        const { text } = req.body;
+        
+        if (!text || !text.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Note text is required'
+            });
+        }
+        
+        const contact = await Contact.findOneAndUpdate(
+            { 
+                _id: req.params.id, 
+                organizationId: req.user.organizationId 
+            },
+            {
+                $push: {
+                    notes: {
+                        text: text.trim(),
+                        created_by: req.user._id,
+                        created_at: new Date()
+                    }
+                },
+                $set: {
+                    last_activity_at: new Date()
+                }
+            },
+            { new: true, runValidators: true }
+        )
+        .populate('owner_id', 'username email firstName lastName')
+        .populate('notes.created_by', 'firstName lastName');
+        
+        if (!contact) {
+            return res.status(404).json({
+                success: false,
+                message: 'Contact not found or access denied'
+            });
+        }
+        
+        res.status(200).json({
+            success: true,
+            data: contact
+        });
+    } catch (error) {
+        console.error('Add note error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error adding note',
+            error: error.message
         });
     }
 };

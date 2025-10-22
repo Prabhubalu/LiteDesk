@@ -1,0 +1,14 @@
+apiVersion: v2
+name: litedesk
+description: A Helm chart for LiteDesk CRM instance deployment
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - crm
+  - saas
+  - multi-instance
+maintainers:
+  - name: LiteDesk Team
+    email: dev@litedesk.com
+
