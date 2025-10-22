@@ -136,7 +136,7 @@ onMounted(() => {
                         :class="[
                             'pb-4 px-1 border-b-2 font-medium text-sm',
                             activeTab === 'users'
-                                ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                                ? 'border-brand-500 text-brand-600 dark:text-brand-400'
                                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400'
                         ]"
                     >
@@ -147,7 +147,7 @@ onMounted(() => {
                         :class="[
                             'pb-4 px-1 border-b-2 font-medium text-sm',
                             activeTab === 'organization'
-                                ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                                ? 'border-brand-500 text-brand-600 dark:text-brand-400'
                                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400'
                         ]"
                     >
@@ -158,7 +158,7 @@ onMounted(() => {
                         :class="[
                             'pb-4 px-1 border-b-2 font-medium text-sm',
                             activeTab === 'subscription'
-                                ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                                ? 'border-brand-500 text-brand-600 dark:text-brand-400'
                                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400'
                         ]"
                     >
@@ -181,7 +181,7 @@ onMounted(() => {
                         <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Team Members</h2>
                         <button
                             @click="showInviteModal = true"
-                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            class="px-4 py-2 bg-brand-600 text-white rounded-md hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
                         >
                             + Invite User
                         </button>
@@ -209,7 +209,7 @@ onMounted(() => {
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="flex-shrink-0 h-10 w-10">
-                                                <div class="h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-medium">
+                                                <div class="h-10 w-10 rounded-full bg-brand-600 flex items-center justify-center text-white font-medium">
                                                     {{ user.firstName?.[0] || user.username?.[0] || 'U' }}
                                                 </div>
                                             </div>
@@ -232,7 +232,7 @@ onMounted(() => {
                                             v-else
                                             :value="user.role"
                                             @change="updateUserRole(user._id, $event.target.value)"
-                                            class="px-2 py-1 text-xs rounded border-0 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                                            class="px-2 py-1 text-xs rounded border-0 focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:text-white"
                                             :class="getRoleBadgeClass(user.role)"
                                         >
                                             <option v-for="option in roleOptions" :key="option.value" :value="option.value">
@@ -276,7 +276,7 @@ onMounted(() => {
                         <input
                             type="text"
                             :value="authStore.organization?.name"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             disabled
                         />
                     </div>
@@ -285,7 +285,7 @@ onMounted(() => {
                         <input
                             type="text"
                             :value="authStore.organization?.industry"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             disabled
                         />
                     </div>
@@ -298,7 +298,7 @@ onMounted(() => {
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Current Plan</label>
-                        <p class="mt-1 text-lg font-bold text-indigo-600 dark:text-indigo-400 capitalize">
+                        <p class="mt-1 text-lg font-bold text-brand-600 dark:text-brand-400 capitalize">
                             {{ authStore.subscriptionTier }}
                         </p>
                     </div>
@@ -331,7 +331,7 @@ onMounted(() => {
                             v-model="inviteForm.email"
                             type="email"
                             required
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         />
                     </div>
                     
@@ -341,7 +341,7 @@ onMounted(() => {
                             <input
                                 v-model="inviteForm.firstName"
                                 type="text"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             />
                         </div>
                         <div>
@@ -349,7 +349,7 @@ onMounted(() => {
                             <input
                                 v-model="inviteForm.lastName"
                                 type="text"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             />
                         </div>
                     </div>
@@ -359,7 +359,7 @@ onMounted(() => {
                         <select
                             v-model="inviteForm.role"
                             required
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         >
                             <option v-for="option in roleOptions" :key="option.value" :value="option.value">
                                 {{ option.label }} - {{ option.description }}
@@ -377,7 +377,7 @@ onMounted(() => {
                         </button>
                         <button
                             type="submit"
-                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            class="px-4 py-2 bg-brand-600 text-white rounded-md hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
                         >
                             Send Invitation
                         </button>
