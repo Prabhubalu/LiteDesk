@@ -1,26 +1,26 @@
 <template>
-  <div class="contacts-page">
+  <div class="page-container">
     <!-- Header -->
     <div class="page-header">
-      <div class="header-left">
-        <h1>Contacts</h1>
-        <p class="subtitle">Manage your customer relationships</p>
+      <div>
+        <h1 class="page-title">Contacts</h1>
+        <p class="page-subtitle">Manage your customer relationships</p>
       </div>
-      <div class="header-right">
-        <button @click="showImportModal = true" class="btn-secondary">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div class="flex gap-4">
+        <button @click="showImportModal = true" class="btn-secondary flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
           </svg>
           Import
         </button>
-        <button @click="exportContacts" class="btn-secondary">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <button @click="exportContacts" class="btn-secondary flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
           </svg>
           Export
         </button>
-        <button @click="openCreateModal" class="btn-primary">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <button @click="openCreateModal" class="btn-primary flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
           New Contact
@@ -29,134 +29,153 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="stats-grid">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       <div class="stat-card">
-        <div class="stat-icon total">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="stat-icon bg-gradient-to-br from-brand-500 to-brand-600">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
         </div>
-        <div class="stat-info">
-          <h3>{{ statistics.totalContacts || 0 }}</h3>
-          <p>Total Contacts</p>
+        <div>
+          <p class="stat-value">{{ statistics.totalContacts || 0 }}</p>
+          <p class="stat-label">Total Contacts</p>
         </div>
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon leads">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="stat-icon bg-gradient-to-br from-blue-500 to-blue-600">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
           </svg>
         </div>
-        <div class="stat-info">
-          <h3>{{ statistics.leadContacts || 0 }}</h3>
-          <p>Leads</p>
+        <div>
+          <p class="stat-value">{{ statistics.leadContacts || 0 }}</p>
+          <p class="stat-label">Leads</p>
         </div>
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon customers">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="stat-icon bg-gradient-to-br from-success-500 to-success-600">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <div class="stat-info">
-          <h3>{{ statistics.customerContacts || 0 }}</h3>
-          <p>Customers</p>
+        <div>
+          <p class="stat-value">{{ statistics.customerContacts || 0 }}</p>
+          <p class="stat-label">Customers</p>
         </div>
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon active">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="stat-icon bg-gradient-to-br from-purple-500 to-purple-600">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <div class="stat-info">
-          <h3>{{ statistics.activeThisMonth || 0 }}</h3>
-          <p>Active This Month</p>
+        <div>
+          <p class="stat-value">{{ statistics.activeThisMonth || 0 }}</p>
+          <p class="stat-label">Active This Month</p>
         </div>
       </div>
     </div>
 
     <!-- Search and Filters -->
-    <div class="controls">
-      <div class="search-box">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <input 
-          v-model="searchQuery" 
-          type="text" 
-          placeholder="Search contacts by name, email, company..."
-          @input="debouncedSearch"
-        />
-      </div>
+    <div class="card mb-6">
+      <div class="card-body">
+        <!-- Search Bar -->
+        <div class="relative mb-4">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 text-gray-400">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <input 
+            v-model="searchQuery" 
+            type="text" 
+            placeholder="Search contacts by name, email, company..."
+            @input="debouncedSearch"
+            class="input pl-10"
+          />
+        </div>
 
-      <div class="filters">
-        <select v-model="filters.lifecycle_stage" @change="fetchContacts">
-          <option value="">All Stages</option>
-          <option value="Lead">Lead</option>
-          <option value="Qualified">Qualified</option>
-          <option value="Opportunity">Opportunity</option>
-          <option value="Customer">Customer</option>
-          <option value="Lost">Lost</option>
-        </select>
+        <!-- Filters -->
+        <div class="flex flex-wrap gap-3">
+          <select v-model="filters.lifecycle_stage" @change="fetchContacts" class="input flex-1 min-w-[150px]">
+            <option value="">All Stages</option>
+            <option value="Lead">Lead</option>
+            <option value="Qualified">Qualified</option>
+            <option value="Opportunity">Opportunity</option>
+            <option value="Customer">Customer</option>
+            <option value="Lost">Lost</option>
+          </select>
 
-        <select v-model="filters.status" @change="fetchContacts">
-          <option value="">All Status</option>
-          <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
-          <option value="Archived">Archived</option>
-        </select>
+          <select v-model="filters.status" @change="fetchContacts" class="input flex-1 min-w-[150px]">
+            <option value="">All Status</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+            <option value="Archived">Archived</option>
+          </select>
 
-        <select v-model="filters.owner_id" @change="fetchContacts">
-          <option value="">All Owners</option>
-          <option value="me">My Contacts</option>
-          <!-- TODO: Load team members dynamically -->
-        </select>
+          <select v-model="filters.owner_id" @change="fetchContacts" class="input flex-1 min-w-[150px]">
+            <option value="">All Owners</option>
+            <option value="me">My Contacts</option>
+          </select>
+
+          <button @click="clearFilters" class="btn-secondary flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Clear
+          </button>
+        </div>
       </div>
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="loading">
-      <div class="spinner"></div>
-      <p>Loading contacts...</p>
+    <div v-if="loading" class="text-center py-12">
+      <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
+      <p class="text-gray-600 dark:text-gray-400 mt-4">Loading contacts...</p>
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="contacts.length === 0 && !searchQuery" class="empty-state">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-      </svg>
-      <h3>No contacts yet</h3>
-      <p>Start building your network by adding your first contact</p>
-      <button @click="openCreateModal" class="btn-primary">Add Your First Contact</button>
+    <div v-else-if="contacts.length === 0 && !searchQuery" class="card">
+      <div class="card-body text-center py-16">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No contacts yet</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">Start building your network by adding your first contact</p>
+        <button @click="openCreateModal" class="btn-primary">Add Your First Contact</button>
+      </div>
     </div>
 
     <!-- No Search Results -->
-    <div v-else-if="contacts.length === 0 && searchQuery" class="empty-state">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-      </svg>
-      <h3>No contacts found</h3>
-      <p>Try adjusting your search or filters</p>
-      <button @click="clearFilters" class="btn-secondary">Clear Filters</button>
+    <div v-else-if="contacts.length === 0 && searchQuery" class="card">
+      <div class="card-body text-center py-16">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No contacts found</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">Try adjusting your search or filters</p>
+        <button @click="clearFilters" class="btn-secondary">Clear Filters</button>
+      </div>
     </div>
 
     <!-- Contacts Table -->
     <div v-else class="table-container">
-      <table class="contacts-table">
+      <table class="table">
         <thead>
           <tr>
-            <th>
-              <input type="checkbox" @change="toggleSelectAll" :checked="allSelected" />
+            <th class="w-12">
+              <input type="checkbox" @change="toggleSelectAll" :checked="allSelected" class="w-4 h-4 text-brand-600 border-gray-300 rounded focus:ring-brand-500" />
             </th>
-            <th @click="sortBy('first_name')" class="sortable">
-              Name
-              <svg v-if="sortField === 'first_name'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="sortOrder === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'" />
-              </svg>
+            <th @click="sortBy('first_name')" class="cursor-pointer select-none hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              <div class="flex items-center gap-2">
+                <span>Name</span>
+                <svg v-if="sortField === 'first_name'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="sortOrder === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'" />
+                </svg>
+              </div>
             </th>
             <th v-if="isAdmin">Organization</th>
             <th>Email</th>
@@ -169,50 +188,70 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="contact in contacts" :key="contact._id" @click="viewContact(contact._id)" class="clickable">
+          <tr v-for="contact in contacts" :key="contact._id" @click="viewContact(contact._id)" class="cursor-pointer">
             <td @click.stop>
-              <input type="checkbox" v-model="selectedContacts" :value="contact._id" />
+              <input type="checkbox" v-model="selectedContacts" :value="contact._id" class="w-4 h-4 text-brand-600 border-gray-300 rounded focus:ring-brand-500" />
             </td>
             <td>
-              <div class="contact-name">
-                <div class="avatar">{{ getInitials(contact) }}</div>
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-500 to-brand-600 text-white flex items-center justify-center font-semibold text-sm flex-shrink-0">
+                  {{ getInitials(contact) }}
+                </div>
                 <div>
-                  <div class="name">{{ contact.first_name }} {{ contact.last_name }}</div>
-                  <div class="job-title">{{ contact.job_title || 'No title' }}</div>
+                  <div class="font-semibold text-gray-900 dark:text-white">{{ contact.first_name }} {{ contact.last_name }}</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">{{ contact.job_title || 'No title' }}</div>
                 </div>
               </div>
             </td>
             <td v-if="isAdmin">
-              <div class="org-info">
-                <strong>{{ contact.organizationId?.name || 'N/A' }}</strong>
-                <span class="org-industry">{{ contact.organizationId?.industry || '-' }}</span>
+              <div>
+                <div class="font-medium text-gray-900 dark:text-white">{{ contact.organizationId?.name || 'N/A' }}</div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">{{ contact.organizationId?.industry || '-' }}</div>
               </div>
             </td>
-            <td>{{ contact.email }}</td>
-            <td>{{ contact.phone || contact.mobile || '-' }}</td>
-            <td>{{ contact.account_id?.name || '-' }}</td>
             <td>
-              <span :class="['badge', 'stage', contact.lifecycle_stage?.toLowerCase()]">
+              <span class="text-gray-700 dark:text-gray-300">{{ contact.email }}</span>
+            </td>
+            <td>
+              <span class="text-gray-700 dark:text-gray-300">{{ contact.phone || contact.mobile || '-' }}</span>
+            </td>
+            <td>
+              <span class="text-gray-700 dark:text-gray-300">{{ contact.account_id?.name || '-' }}</span>
+            </td>
+            <td>
+              <span :class="[
+                'badge',
+                contact.lifecycle_stage?.toLowerCase() === 'lead' ? 'badge-warning' :
+                contact.lifecycle_stage?.toLowerCase() === 'qualified' ? 'badge-info' :
+                contact.lifecycle_stage?.toLowerCase() === 'opportunity' ? 'bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400' :
+                contact.lifecycle_stage?.toLowerCase() === 'customer' ? 'badge-success' :
+                contact.lifecycle_stage?.toLowerCase() === 'lost' ? 'badge-danger' :
+                'badge-warning'
+              ]">
                 {{ contact.lifecycle_stage || 'Lead' }}
               </span>
             </td>
-            <td>{{ contact.owner_id?.firstName || 'Unassigned' }}</td>
-            <td>{{ formatDate(contact.last_contacted_at) }}</td>
+            <td>
+              <span class="text-sm text-gray-700 dark:text-gray-300">{{ contact.owner_id?.firstName || 'Unassigned' }}</span>
+            </td>
+            <td>
+              <span class="text-sm text-gray-600 dark:text-gray-400">{{ formatDate(contact.last_contacted_at) }}</span>
+            </td>
             <td @click.stop>
-              <div class="action-buttons">
-                <button @click="viewContact(contact._id)" class="btn-icon" title="View">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div class="flex items-center gap-2">
+                <button @click="viewContact(contact._id)" class="p-2 text-gray-600 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all" title="View">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
                 </button>
-                <button @click="editContact(contact)" class="btn-icon" title="Edit">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <button @click="editContact(contact)" class="p-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all" title="Edit">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                 </button>
-                <button @click="deleteContact(contact._id)" class="btn-icon delete" title="Delete">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <button @click="deleteContact(contact._id)" class="p-2 text-gray-600 dark:text-gray-400 hover:text-danger-600 dark:hover:text-danger-400 hover:bg-danger-50 dark:hover:bg-danger-900/20 rounded-lg transition-all" title="Delete">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
                 </button>
@@ -224,32 +263,76 @@
     </div>
 
     <!-- Bulk Actions -->
-    <div v-if="selectedContacts.length > 0" class="bulk-actions">
-      <span>{{ selectedContacts.length }} contact(s) selected</span>
-      <button @click="bulkDelete" class="btn-danger">Delete Selected</button>
-      <button @click="bulkExport" class="btn-secondary">Export Selected</button>
-      <button @click="selectedContacts = []" class="btn-text">Clear Selection</button>
+    <div v-if="selectedContacts.length > 0" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+      <div class="card shadow-2xl border-2 border-brand-500">
+        <div class="card-body flex items-center gap-4 py-3 px-6">
+          <span class="font-medium text-gray-900 dark:text-white">{{ selectedContacts.length }} contact(s) selected</span>
+          <div class="flex gap-2">
+            <button @click="bulkDelete" class="btn-danger flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Delete
+            </button>
+            <button @click="bulkExport" class="btn-secondary flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+              </svg>
+              Export
+            </button>
+            <button @click="selectedContacts = []" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
+              Clear
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Pagination -->
-    <div v-if="!loading && contacts.length > 0" class="pagination">
-      <button 
-        @click="changePage(pagination.currentPage - 1)" 
-        :disabled="pagination.currentPage === 1"
-        class="btn-pagination"
-      >
-        Previous
-      </button>
-      <span class="page-info">
-        Page {{ pagination.currentPage }} of {{ pagination.totalPages }} ({{ pagination.totalContacts }} contacts)
-      </span>
-      <button 
-        @click="changePage(pagination.currentPage + 1)" 
-        :disabled="pagination.currentPage === pagination.totalPages"
-        class="btn-pagination"
-      >
-        Next
-      </button>
+    <div v-if="!loading && contacts.length > 0" class="flex items-center justify-between mt-6">
+      <div class="text-sm text-gray-700 dark:text-gray-300">
+        Showing <span class="font-medium">{{ (pagination.currentPage - 1) * 20 + 1 }}</span> to 
+        <span class="font-medium">{{ Math.min(pagination.currentPage * 20, pagination.totalContacts) }}</span> of 
+        <span class="font-medium">{{ pagination.totalContacts }}</span> contacts
+      </div>
+      
+      <div class="flex items-center gap-2">
+        <button 
+          @click="changePage(pagination.currentPage - 1)" 
+          :disabled="pagination.currentPage === 1"
+          class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        
+        <div class="flex gap-2">
+          <button 
+            v-for="page in Math.min(pagination.totalPages, 5)" 
+            :key="page"
+            @click="changePage(page)"
+            :class="[
+              'px-4 py-2 text-sm font-medium rounded-lg transition-colors',
+              pagination.currentPage === page
+                ? 'bg-brand-600 text-white'
+                : 'text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+            ]"
+          >
+            {{ page }}
+          </button>
+        </div>
+        
+        <button 
+          @click="changePage(pagination.currentPage + 1)" 
+          :disabled="pagination.currentPage === pagination.totalPages"
+          class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
     </div>
 
     <!-- Create/Edit Modal -->

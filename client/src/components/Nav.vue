@@ -130,14 +130,14 @@ const logoSrc = computed(() => {
                          dark:bg-[#3F3F3F] dark:text-gray-200 dark:placeholder-gray-400 dark:border dark:border-gray-600"/>
           </div>
           
-          <button type="button" class="relative rounded-full p-1 text-white hover:text-white/80 dark:text-gray-400 dark:hover:text-white focus:outline-2 focus:outline-offset-2 focus:outline-white dark:focus:outline-indigo-500 transition duration-150">
+          <button type="button" class="relative rounded-full p-1 text-white hover:text-white/80 dark:text-gray-400 dark:hover:text-white focus:outline-2 focus:outline-offset-2 focus:outline-white dark:focus:outline-brand-500 transition duration-150">
             <span class="absolute -inset-1.5" />
             <span class="sr-only">View notifications</span>
             <BellIcon class="size-6" aria-hidden="true" />
           </button>
 
           <Menu as="div" class="relative ml-3">
-            <MenuButton class="relative flex rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white dark:focus-visible:outline-indigo-500">
+            <MenuButton class="relative flex rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white dark:focus-visible:outline-brand-500">
               <span class="absolute -inset-1.5" />
               <span class="sr-only">Open user menu</span>
               <img class="size-8 rounded-full bg-gray-800 outline -outline-offset-1 outline-white/10 dark:outline-transparent" 
@@ -200,10 +200,10 @@ const logoSrc = computed(() => {
 <!-- <template>
 
   <nav class="flex items-center justify-between p-2 shadow-md sm:px-6 lg:px-8 
-      /* Light Mode: White background, gray text, indigo border */
-      bg-white text-gray-800 border-b border-indigo-200
-      /* Dark Mode: Dark background, light text, deeper indigo border */
-      dark:bg-gray-800 dark:text-gray-100 dark:border-indigo-800">
+      /* Light Mode: White background, gray text, brand border */
+      bg-white text-gray-800 border-b border-brand-200
+      /* Dark Mode: Dark background, light text, deeper brand border */
+      dark:bg-gray-800 dark:text-gray-100 dark:border-brand-800">
 
     <div class="flex items-center text-xl font-bold">
       <img
@@ -215,35 +215,35 @@ const logoSrc = computed(() => {
 
       <router-link to="/dashboard" class="pb-1 text-base transition duration-200 
           /* Active Link Styles */
-          text-indigo-600 font-bold border-b-2 border-indigo-400 
+          text-brand-600 font-bold border-b-2 border-brand-400 
           /* Hover Link Styles */
-          hover:text-indigo-500
+          hover:text-brand-500
           /* Dark Mode Overrides */
-          dark:text-indigo-400 dark:border-indigo-400 dark:hover:text-indigo-300">
+          dark:text-brand-400 dark:border-brand-400 dark:hover:text-brand-300">
         Dashboard
       </router-link>
 
       <router-link to="/contacts" class="text-base font-medium pb-1 transition duration-200 
           /* Light Mode: */
-          text-gray-600 hover:text-indigo-600
+          text-gray-600 hover:text-brand-600
           /* Dark Mode: */
-          dark:text-gray-300 dark:hover:text-indigo-400">
+          dark:text-gray-300 dark:hover:text-brand-400">
         Contacts
       </router-link>
 
       <router-link to="/items" class="text-base font-medium pb-1 transition duration-200 
-          text-gray-600 hover:text-indigo-600
-          dark:text-gray-300 dark:hover:text-indigo-400">
+          text-gray-600 hover:text-brand-600
+          dark:text-gray-300 dark:hover:text-brand-400">
         Items/Products
       </router-link>
       <router-link to="/events" class="text-base font-medium pb-1 transition duration-200 
-          text-gray-600 hover:text-indigo-600
-          dark:text-gray-300 dark:hover:text-indigo-400">
+          text-gray-600 hover:text-brand-600
+          dark:text-gray-300 dark:hover:text-brand-400">
         Events/Tasks
       </router-link>
       <router-link to="/designer" class="text-base font-medium pb-1 transition duration-200 
-          text-gray-600 hover:text-indigo-600
-          dark:text-gray-300 dark:hover:text-indigo-400">
+          text-gray-600 hover:text-brand-600
+          dark:text-gray-300 dark:hover:text-brand-400">
         Process Designer
       </router-link>
     </div>

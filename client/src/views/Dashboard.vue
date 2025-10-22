@@ -1,36 +1,53 @@
 <template>
-  <div class="dashboard">
+  <div class="page-container">
     <!-- Trial Banner -->
-    <div v-if="showTrialBanner" class="trial-banner" :class="{'urgent': trialDaysRemaining <= 3}">
-      <div class="banner-content">
-        <div class="banner-left">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
-          <div>
-            <p class="banner-title">
-              <span v-if="trialDaysRemaining === 0">Your trial expires today!</span>
-              <span v-else-if="trialDaysRemaining === 1">Your trial expires in 1 day</span>
-              <span v-else>Your trial expires in {{ trialDaysRemaining }} days</span>
-            </p>
-            <p class="banner-subtitle">Upgrade now to continue using all features</p>
-          </div>
+    <div v-if="showTrialBanner" :class="[
+      'flex items-center justify-between p-4 px-6 mb-8 rounded-xl border',
+      trialDaysRemaining <= 3 
+        ? 'bg-danger-50 dark:bg-danger-900/20 border-danger-200 dark:border-danger-800' 
+        : 'bg-warning-50 dark:bg-warning-900/20 border-warning-200 dark:border-warning-800'
+    ]">
+      <div class="flex items-center gap-4">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" :class="[
+          'w-6 h-6',
+          trialDaysRemaining <= 3 ? 'text-danger-600 dark:text-danger-400' : 'text-warning-600 dark:text-warning-400'
+        ]">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <div>
+          <p :class="[
+            'font-semibold',
+            trialDaysRemaining <= 3 ? 'text-danger-800 dark:text-danger-200' : 'text-warning-800 dark:text-warning-200'
+          ]">
+            <span v-if="trialDaysRemaining === 0">Your trial expires today!</span>
+            <span v-else-if="trialDaysRemaining === 1">Your trial expires in 1 day</span>
+            <span v-else>Your trial expires in {{ trialDaysRemaining }} days</span>
+          </p>
+          <p :class="[
+            'text-sm mt-1',
+            trialDaysRemaining <= 3 ? 'text-danger-700 dark:text-danger-300' : 'text-warning-700 dark:text-warning-300'
+          ]">Upgrade now to continue using all features</p>
         </div>
-        <button @click="navigateToUpgrade" class="banner-button">
-          Upgrade Now
-        </button>
       </div>
+      <button @click="navigateToUpgrade" :class="[
+        'px-4 py-2 rounded-lg font-medium transition-colors',
+        trialDaysRemaining <= 3 
+          ? 'bg-danger-600 hover:bg-danger-700 text-white' 
+          : 'bg-warning-600 hover:bg-warning-700 text-white'
+      ]">
+        Upgrade Now
+      </button>
     </div>
 
     <!-- Header -->
-    <div class="dashboard-header">
+    <div class="page-header">
       <div>
-        <h1>Good {{ getTimeOfDay() }}, {{ userName }}! 👋</h1>
-        <p class="subtitle">Here's what's happening with your business today.</p>
+        <h1 class="page-title">Good {{ getTimeOfDay() }}, {{ userName }}! 👋</h1>
+        <p class="page-subtitle">Here's what's happening with your business today.</p>
       </div>
-      <div class="header-actions">
-        <button @click="$router.push('/contacts?action=new')" class="btn-primary">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div class="flex gap-3">
+        <button @click="$router.push('/contacts?action=new')" class="btn-primary flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
           </svg>
           Add Contact
@@ -39,241 +56,270 @@
     </div>
 
     <!-- Key Metrics -->
-    <div class="metrics-grid">
-      <div class="metric-card">
-        <div class="metric-icon contacts">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="stat-card">
+        <div class="stat-icon bg-gradient-to-br from-blue-500 to-blue-600">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
         </div>
-        <div class="metric-info">
-          <p class="metric-label">Total Contacts</p>
-          <h3 class="metric-value">{{ contactStats.total || 0 }}</h3>
-          <p class="metric-change positive" v-if="contactStats.newThisWeek > 0">
+        <div>
+          <p class="stat-label">Total Contacts</p>
+          <p class="stat-value">{{ contactStats.total || 0 }}</p>
+          <p class="text-sm text-success-600 dark:text-success-400 font-medium" v-if="contactStats.newThisWeek > 0">
             +{{ contactStats.newThisWeek }} this week
           </p>
         </div>
       </div>
 
-      <div class="metric-card">
-        <div class="metric-icon leads">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div class="stat-card">
+        <div class="stat-icon bg-gradient-to-br from-brand-500 to-brand-600">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
           </svg>
         </div>
-        <div class="metric-info">
-          <p class="metric-label">Active Leads</p>
-          <h3 class="metric-value">{{ contactStats.leads || 0 }}</h3>
-          <p class="metric-change">{{ contactStats.conversionRate || 0 }}% conversion</p>
+        <div>
+          <p class="stat-label">Active Leads</p>
+          <p class="stat-value">{{ contactStats.leads || 0 }}</p>
+          <p class="text-sm text-gray-600 dark:text-gray-400">{{ contactStats.conversionRate || 0 }}% conversion</p>
         </div>
       </div>
 
-      <div class="metric-card">
-        <div class="metric-icon customers">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div class="stat-card">
+        <div class="stat-icon bg-gradient-to-br from-success-500 to-success-600">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <div class="metric-info">
-          <p class="metric-label">Customers</p>
-          <h3 class="metric-value">{{ contactStats.customers || 0 }}</h3>
-          <p class="metric-change positive" v-if="contactStats.newCustomers > 0">
+        <div>
+          <p class="stat-label">Customers</p>
+          <p class="stat-value">{{ contactStats.customers || 0 }}</p>
+          <p class="text-sm text-success-600 dark:text-success-400 font-medium" v-if="contactStats.newCustomers > 0">
             +{{ contactStats.newCustomers }} new
           </p>
         </div>
       </div>
 
-      <div class="metric-card">
-        <div class="metric-icon activity">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div class="stat-card">
+        <div class="stat-icon bg-gradient-to-br from-purple-500 to-purple-600">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <div class="metric-info">
-          <p class="metric-label">Activities Today</p>
-          <h3 class="metric-value">{{ activityStats.today || 0 }}</h3>
-          <p class="metric-change">{{ activityStats.pending || 0 }} pending</p>
+        <div>
+          <p class="stat-label">Activities Today</p>
+          <p class="stat-value">{{ activityStats.today || 0 }}</p>
+          <p class="text-sm text-gray-600 dark:text-gray-400">{{ activityStats.pending || 0 }} pending</p>
         </div>
       </div>
     </div>
 
     <!-- Main Content Grid -->
-    <div class="content-grid">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
       <!-- Recent Contacts -->
-      <div class="widget recent-contacts">
-        <div class="widget-header">
-          <h2>Recent Contacts</h2>
-          <router-link to="/contacts" class="widget-link">View All</router-link>
+      <div class="card lg:col-span-2">
+        <div class="card-header flex items-center justify-between">
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Recent Contacts</h2>
+          <router-link to="/contacts" class="text-sm text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium transition-colors">
+            View All
+          </router-link>
         </div>
         
-        <div v-if="loading" class="widget-loading">
-          <div class="spinner"></div>
-          <p>Loading contacts...</p>
+        <div v-if="loading" class="card-body text-center py-12">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600"></div>
+          <p class="text-gray-600 dark:text-gray-400 mt-4">Loading contacts...</p>
         </div>
 
-        <div v-else-if="recentContacts.length === 0" class="widget-empty">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div v-else-if="recentContacts.length === 0" class="card-body text-center py-12">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-600">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
-          <p>No contacts yet</p>
+          <p class="text-gray-600 dark:text-gray-400 mb-4">No contacts yet</p>
           <button @click="$router.push('/contacts')" class="btn-secondary">Add Your First Contact</button>
         </div>
 
-        <div v-else class="contact-list">
-          <div v-for="contact in recentContacts" :key="contact._id" class="contact-item" @click="$router.push(`/contacts/${contact._id}`)">
-            <div class="contact-avatar">{{ getInitials(contact) }}</div>
-            <div class="contact-info">
-              <h4>{{ contact.first_name }} {{ contact.last_name }}</h4>
-              <p>{{ contact.email }}</p>
+        <div v-else class="card-body">
+          <div class="flex flex-col gap-3">
+            <div v-for="contact in recentContacts" :key="contact._id" 
+              @click="$router.push(`/contacts/${contact._id}`)"
+              class="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors">
+              <div class="w-10 h-10 rounded-full bg-brand-500 text-white flex items-center justify-center font-semibold text-sm flex-shrink-0">
+                {{ getInitials(contact) }}
+              </div>
+              <div class="flex-1 min-w-0">
+                <h4 class="font-semibold text-gray-900 dark:text-white text-sm truncate">
+                  {{ contact.first_name }} {{ contact.last_name }}
+                </h4>
+                <p class="text-sm text-gray-600 dark:text-gray-400 truncate">{{ contact.email }}</p>
+              </div>
+              <span :class="[
+                'px-3 py-1 rounded-full text-xs font-semibold flex-shrink-0',
+                contact.lifecycle_stage?.toLowerCase() === 'lead' ? 'badge-warning' :
+                contact.lifecycle_stage?.toLowerCase() === 'customer' ? 'badge-success' :
+                'badge-info'
+              ]">
+                {{ contact.lifecycle_stage || 'Lead' }}
+              </span>
             </div>
-            <span :class="['contact-stage', contact.lifecycle_stage?.toLowerCase()]">
-              {{ contact.lifecycle_stage || 'Lead' }}
-            </span>
           </div>
         </div>
       </div>
 
       <!-- Contact Growth Chart -->
-      <div class="widget growth-chart">
-        <div class="widget-header">
-          <h2>Contact Growth</h2>
-          <select v-model="chartPeriod" @change="fetchChartData" class="period-select">
+      <div class="card">
+        <div class="card-header flex items-center justify-between">
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Contact Growth</h2>
+          <select v-model="chartPeriod" @change="fetchChartData" class="input text-sm py-1 px-2">
             <option value="7">Last 7 Days</option>
             <option value="30">Last 30 Days</option>
             <option value="90">Last 90 Days</option>
           </select>
         </div>
 
-        <div class="chart-container">
-          <svg class="growth-chart-svg" viewBox="0 0 400 200">
-            <!-- Grid lines -->
-            <line x1="40" y1="20" x2="40" y2="180" stroke="#e5e7eb" stroke-width="1"/>
-            <line x1="40" y1="180" x2="380" y2="180" stroke="#e5e7eb" stroke-width="1"/>
-            
-            <!-- Y-axis labels -->
-            <text x="30" y="25" text-anchor="end" font-size="10" fill="#9ca3af">{{ maxChartValue }}</text>
-            <text x="30" y="105" text-anchor="end" font-size="10" fill="#9ca3af">{{ Math.floor(maxChartValue / 2) }}</text>
-            <text x="30" y="185" text-anchor="end" font-size="10" fill="#9ca3af">0</text>
-            
-            <!-- Line chart -->
-            <polyline
-              :points="chartPoints"
-              fill="none"
-              stroke="#3b82f6"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-            
-            <!-- Area fill -->
-            <polygon
-              :points="chartAreaPoints"
-              fill="url(#gradient)"
-              opacity="0.3"
-            />
-            
-            <!-- Gradient definition -->
-            <defs>
-              <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0" />
-              </linearGradient>
-            </defs>
-            
-            <!-- Data points -->
-            <circle
-              v-for="(point, index) in chartData"
-              :key="index"
-              :cx="40 + (index * (340 / (chartData.length - 1)))"
-              :cy="180 - ((point.count / maxChartValue) * 160)"
-              r="4"
-              fill="#3b82f6"
-            />
-          </svg>
-        </div>
+        <div class="card-body">
+          <div class="mb-4">
+            <svg class="w-full h-[200px]" viewBox="0 0 400 200">
+              <!-- Grid lines -->
+              <line x1="40" y1="20" x2="40" y2="180" stroke="#e5e7eb" stroke-width="1"/>
+              <line x1="40" y1="180" x2="380" y2="180" stroke="#e5e7eb" stroke-width="1"/>
+              
+              <!-- Y-axis labels -->
+              <text x="30" y="25" text-anchor="end" font-size="10" fill="#9ca3af">{{ maxChartValue }}</text>
+              <text x="30" y="105" text-anchor="end" font-size="10" fill="#9ca3af">{{ Math.floor(maxChartValue / 2) }}</text>
+              <text x="30" y="185" text-anchor="end" font-size="10" fill="#9ca3af">0</text>
+              
+              <!-- Line chart -->
+              <polyline
+                :points="chartPoints"
+                fill="none"
+                stroke="#6049E7"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              
+              <!-- Area fill -->
+              <polygon
+                :points="chartAreaPoints"
+                fill="url(#gradient)"
+                opacity="0.3"
+              />
+              
+              <!-- Gradient definition -->
+              <defs>
+                <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style="stop-color:#6049E7;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#6049E7;stop-opacity:0" />
+                </linearGradient>
+              </defs>
+              
+              <!-- Data points -->
+              <circle
+                v-for="(point, index) in chartData"
+                :key="index"
+                :cx="40 + (index * (340 / (chartData.length - 1)))"
+                :cy="180 - ((point.count / maxChartValue) * 160)"
+                r="4"
+                fill="#6049E7"
+              />
+            </svg>
+          </div>
 
-        <div class="chart-legend">
-          <div class="legend-item">
-            <span class="legend-color" style="background: #3b82f6;"></span>
-            <span>Total Contacts</span>
+          <div class="flex items-center justify-center gap-6">
+            <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+              <span class="w-3 h-3 rounded-sm bg-brand-500"></span>
+              <span>Total Contacts</span>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Quick Actions -->
-      <div class="widget quick-actions">
-        <div class="widget-header">
-          <h2>Quick Actions</h2>
+      <div class="card">
+        <div class="card-header">
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Quick Actions</h2>
         </div>
         
-        <div class="actions-grid">
-          <button @click="$router.push('/contacts?action=new')" class="action-button">
-            <div class="action-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-              </svg>
-            </div>
-            <span>Add Contact</span>
-          </button>
+        <div class="card-body">
+          <div class="grid grid-cols-2 gap-4">
+            <button @click="$router.push('/contacts?action=new')" class="flex flex-col items-center gap-3 p-6 bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-white dark:hover:bg-gray-700 hover:shadow-md transition-all cursor-pointer">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+              </div>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Add Contact</span>
+            </button>
 
-          <button @click="$router.push('/contacts?action=import')" class="action-button">
-            <div class="action-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
-            </div>
-            <span>Import Contacts</span>
-          </button>
+            <button @click="$router.push('/contacts?action=import')" class="flex flex-col items-center gap-3 p-6 bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-white dark:hover:bg-gray-700 hover:shadow-md transition-all cursor-pointer">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+              </div>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Import Contacts</span>
+            </button>
 
-          <button @click="$router.push('/contacts')" class="action-button">
-            <div class="action-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-            <span>Search Contacts</span>
-          </button>
+            <button @click="$router.push('/contacts')" class="flex flex-col items-center gap-3 p-6 bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-white dark:hover:bg-gray-700 hover:shadow-md transition-all cursor-pointer">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Search Contacts</span>
+            </button>
 
-          <button @click="exportContacts" class="action-button">
-            <div class="action-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
-              </svg>
-            </div>
-            <span>Export Data</span>
-          </button>
+            <button @click="exportContacts" class="flex flex-col items-center gap-3 p-6 bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-white dark:hover:bg-gray-700 hover:shadow-md transition-all cursor-pointer">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                </svg>
+              </div>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Export Data</span>
+            </button>
+          </div>
         </div>
       </div>
 
       <!-- Activity Feed -->
-      <div class="widget activity-feed">
-        <div class="widget-header">
-          <h2>Recent Activity</h2>
+      <div class="card">
+        <div class="card-header">
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Recent Activity</h2>
         </div>
 
-        <div v-if="recentActivity.length === 0" class="widget-empty">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div v-if="recentActivity.length === 0" class="card-body text-center py-12">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-600">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <p>No recent activity</p>
+          <p class="text-gray-600 dark:text-gray-400">No recent activity</p>
         </div>
 
-        <div v-else class="activity-list">
-          <div v-for="activity in recentActivity" :key="activity.id" class="activity-item">
-            <div :class="['activity-icon', activity.type]">
-              <svg v-if="activity.type === 'contact'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-              </svg>
-              <svg v-else-if="activity.type === 'note'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-              </svg>
-              <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <div class="activity-content">
-              <p class="activity-text">{{ activity.text }}</p>
-              <p class="activity-time">{{ formatTime(activity.time) }}</p>
+        <div v-else class="card-body">
+          <div class="flex flex-col gap-4">
+            <div v-for="activity in recentActivity" :key="activity.id" class="flex gap-4 pb-4 border-b border-gray-100 dark:border-gray-700 last:border-0">
+              <div :class="[
+                'w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0',
+                activity.type === 'contact' ? 'bg-blue-50 dark:bg-blue-900/20' :
+                activity.type === 'note' ? 'bg-warning-50 dark:bg-warning-900/20' :
+                'bg-purple-50 dark:bg-purple-900/20'
+              ]">
+                <svg v-if="activity.type === 'contact'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" :class="[
+                  'w-5 h-5',
+                  activity.type === 'contact' ? 'text-blue-600 dark:text-blue-400' : ''
+                ]">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+                <svg v-else-if="activity.type === 'note'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 text-warning-600 dark:text-warning-400">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                </svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 text-purple-600 dark:text-purple-400">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm text-gray-900 dark:text-white mb-1">{{ activity.text }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">{{ formatTime(activity.time) }}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -485,497 +531,3 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
-.dashboard {
-  padding: 2rem;
-  max-width: 1800px;
-  margin: 0 auto;
-  background: #f9fafb;
-  min-height: 100vh;
-}
-
-/* Trial Banner */
-.trial-banner {
-  background: #fef3c7;
-  border: 1px solid #fde68a;
-  border-radius: 12px;
-  padding: 1rem 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.trial-banner.urgent {
-  background: #fee2e2;
-  border-color: #fecaca;
-}
-
-.banner-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.banner-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.banner-left svg {
-  width: 24px;
-  height: 24px;
-  color: #f59e0b;
-}
-
-.trial-banner.urgent svg {
-  color: #dc2626;
-}
-
-.banner-title {
-  font-weight: 600;
-  color: #92400e;
-  margin-bottom: 0.25rem;
-}
-
-.trial-banner.urgent .banner-title {
-  color: #991b1b;
-}
-
-.banner-subtitle {
-  font-size: 0.875rem;
-  color: #b45309;
-}
-
-.trial-banner.urgent .banner-subtitle {
-  color: #b91c1c;
-}
-
-.banner-button {
-  padding: 0.75rem 1.5rem;
-  background: #f59e0b;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.trial-banner.urgent .banner-button {
-  background: #dc2626;
-}
-
-.banner-button:hover {
-  background: #d97706;
-}
-
-.trial-banner.urgent .banner-button:hover {
-  background: #b91c1c;
-}
-
-/* Header */
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
-.dashboard-header h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 0.5rem;
-}
-
-.subtitle {
-  color: #6b7280;
-  font-size: 0.95rem;
-}
-
-.header-actions .btn-primary {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.header-actions .btn-primary:hover {
-  background: #2563eb;
-}
-
-.header-actions .btn-primary svg {
-  width: 20px;
-  height: 20px;
-}
-
-/* Metrics Grid */
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.metric-card {
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  display: flex;
-  gap: 1rem;
-  transition: all 0.2s;
-}
-
-.metric-card:hover {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-.metric-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.metric-icon svg {
-  width: 28px;
-  height: 28px;
-  color: white;
-}
-
-.metric-icon.contacts { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-.metric-icon.leads { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-.metric-icon.customers { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-.metric-icon.activity { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
-
-.metric-info {
-  flex: 1;
-}
-
-.metric-label {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin-bottom: 0.5rem;
-}
-
-.metric-value {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 0.25rem;
-}
-
-.metric-change {
-  font-size: 0.875rem;
-  color: #6b7280;
-}
-
-.metric-change.positive {
-  color: #059669;
-}
-
-/* Content Grid */
-.content-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 2rem;
-}
-
-/* Widget Styles */
-.widget {
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.widget-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.widget-header h2 {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #1f2937;
-}
-
-.widget-link {
-  font-size: 0.875rem;
-  color: #3b82f6;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.widget-link:hover {
-  color: #2563eb;
-}
-
-.period-select {
-  padding: 0.5rem 1rem;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  cursor: pointer;
-}
-
-/* Loading & Empty States */
-.widget-loading, .widget-empty {
-  text-align: center;
-  padding: 3rem 1rem;
-  color: #9ca3af;
-}
-
-.spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid #e5e7eb;
-  border-top-color: #3b82f6;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.widget-empty svg {
-  width: 48px;
-  height: 48px;
-  margin: 0 auto 1rem;
-  color: #d1d5db;
-}
-
-.btn-secondary {
-  padding: 0.5rem 1rem;
-  background: white;
-  color: #374151;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-weight: 500;
-  cursor: pointer;
-  margin-top: 1rem;
-}
-
-/* Contact List */
-.contact-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.contact-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.75rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.contact-item:hover {
-  background: #f9fafb;
-}
-
-.contact-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #3b82f6;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 0.875rem;
-  flex-shrink: 0;
-}
-
-.contact-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.contact-info h4 {
-  font-weight: 600;
-  color: #1f2937;
-  font-size: 0.9rem;
-  margin-bottom: 0.25rem;
-}
-
-.contact-info p {
-  font-size: 0.8rem;
-  color: #6b7280;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.contact-stage {
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  flex-shrink: 0;
-}
-
-.contact-stage.lead { background: #fef3c7; color: #92400e; }
-.contact-stage.qualified { background: #dbeafe; color: #1e40af; }
-.contact-stage.customer { background: #d1fae5; color: #065f46; }
-
-/* Chart */
-.chart-container {
-  margin-bottom: 1rem;
-}
-
-.growth-chart-svg {
-  width: 100%;
-  height: 200px;
-}
-
-.chart-legend {
-  display: flex;
-  gap: 1.5rem;
-  justify-content: center;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  color: #6b7280;
-}
-
-.legend-color {
-  width: 12px;
-  height: 12px;
-  border-radius: 2px;
-}
-
-/* Quick Actions */
-.actions-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-}
-
-.action-button {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1.5rem 1rem;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.action-button:hover {
-  background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-.action-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.action-icon svg {
-  width: 24px;
-  height: 24px;
-  color: white;
-}
-
-.action-button span {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #374151;
-}
-
-/* Activity Feed */
-.activity-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.activity-item {
-  display: flex;
-  gap: 1rem;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.activity-item:last-child {
-  border-bottom: none;
-}
-
-.activity-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.activity-icon.contact { background: #eff6ff; }
-.activity-icon.note { background: #fef3c7; }
-
-.activity-icon svg {
-  width: 18px;
-  height: 18px;
-}
-
-.activity-icon.contact svg { color: #3b82f6; }
-.activity-icon.note svg { color: #f59e0b; }
-
-.activity-content {
-  flex: 1;
-}
-
-.activity-text {
-  font-size: 0.9rem;
-  color: #1f2937;
-  margin-bottom: 0.25rem;
-}
-
-.activity-time {
-  font-size: 0.8rem;
-  color: #9ca3af;
-}
-
-@media (max-width: 768px) {
-  .content-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .actions-grid {
-    grid-template-columns: 1fr;
-  }
-}
-</style>
