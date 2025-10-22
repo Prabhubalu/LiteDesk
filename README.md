@@ -86,59 +86,62 @@ LiteDesk is a modern CRM platform built on a unique multi-instance architecture 
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- Node.js 18+
-- MongoDB 7.0+
-- Docker & Docker Compose (for local development)
-- AWS Account (for production deployment)
-- kubectl & Helm 3+ (for Kubernetes deployment)
+**New Developer?** → See **[QUICK_START.md](QUICK_START.md)** for 5-minute setup!
 
-### Local Development
+**Detailed Setup?** → See **[DEVELOPER_SETUP.md](DEVELOPER_SETUP.md)** for complete guide!
+
+### Prerequisites
+- Node.js 20.19+ or 22.12+
+- MongoDB 6.0+
+- npm (comes with Node.js)
+
+### TL;DR - Get Running in 5 Minutes
 
 ```bash
-# Clone the repository
+# 1. Clone
 git clone https://github.com/yourusername/litedesk.git
 cd litedesk
 
-# Start with Docker Compose
-docker-compose up -d
+# 2. Install
+cd server && npm install
+cd ../client && npm install
 
-# Access the application
-# Frontend: http://localhost:5173
-# Backend: http://localhost:3000
-# MongoDB: localhost:27017
+# 3. Setup MongoDB & .env
+brew services start mongodb-community  # Mac
+cd server && cp .env.example .env
+# Edit .env: Set JWT_SECRET, REFRESH_TOKEN_SECRET, MASTER_API_KEY
+
+# 4. Create Admin Account
+node scripts/createDefaultAdmin.js
+
+# 5. Start (2 terminals)
+# Terminal 1: cd server && npm start
+# Terminal 2: cd client && npm run dev
+
+# 6. Login at http://localhost:5173
+# Email: admin@litedesk.com
+# Password: Admin@123
 ```
 
-### Manual Setup
+**That's it!** 🎉 You're ready to start developing.
 
-```bash
-# Install backend dependencies
-cd server
-npm install
+### For Production Deployment
 
-# Configure environment variables
-cp .env.example .env
-# Edit .env with your configuration
-
-# Start backend
-npm start
-
-# In a new terminal, install frontend dependencies
-cd ../client
-npm install
-
-# Start frontend
-npm run dev
-```
+See **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** for AWS/Kubernetes deployment.
 
 ---
 
 ## 📚 Documentation
 
+### Getting Started
+- **[Quick Start Guide](QUICK_START.md)** - Get running in 5 minutes ⚡
+- **[Developer Setup Guide](DEVELOPER_SETUP.md)** - Complete developer onboarding 📖
+
+### Technical Documentation  
 - **[Technical Specification](TECHNICAL_SPEC.md)** - Complete technical details
-- **[Multi-Instance Implementation Guide](MULTI_INSTANCE_IMPLEMENTATION.md)** - Implementation steps
-- **[Deployment Guide](DEPLOYMENT_GUIDE.md)** - Production deployment
-- **[Build Summary](BUILD_SUMMARY.md)** - Development progress
+- **[Multi-Instance Implementation](MULTI_INSTANCE_IMPLEMENTATION.md)** - Multi-instance architecture
+- **[Deployment Guide](DEPLOYMENT_GUIDE.md)** - Production AWS/Kubernetes deployment
+- **[Build Summary](BUILD_SUMMARY.md)** - Development progress and changelog
 
 ---
 
