@@ -1,0 +1,157 @@
+# Default values for LiteDesk instance deployment
+# This file will be customized per instance
+
+# Instance specific values (will be overridden during provisioning)
+instance:
+  name: "default"
+  subdomain: "default"
+  ownerEmail: "owner@example.com"
+
+# Image configuration
+image:
+  repository: litedesk/crm
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+frontend:
+  image:
+    repository: litedesk/crm-frontend
+    tag: "latest"
+  replicaCount: 2
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+backend:
+  image:
+    repository: litedesk/crm-backend
+    tag: "latest"
+  replicaCount: 2
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  
+  # Environment variables
+  env:
+    nodeEnv: production
+    port: 3000
+    jwtExpiresIn: "1d"
+
+# MongoDB configuration
+mongodb:
+  enabled: true
+  auth:
+    username: litedesk
+    password: "" # Will be generated
+    database: litedesk
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: "gp3"
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+
+# Service configuration
+service:
+  type: ClusterIP
+  frontend:
+    port: 80
+    targetPort: 80
+  backend:
+    port: 3000
+    targetPort: 3000
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  hosts:
+    - host: "" # Will be set dynamically (subdomain.litedesk.com)
+      paths:
+        - path: /
+          pathType: Prefix
+          service: frontend
+        - path: /api
+          pathType: Prefix
+          service: backend
+  tls:
+    - secretName: "" # Will be set dynamically
+      hosts:
+        - "" # Will be set dynamically
+
+# Resource limits (can be adjusted per tier)
+resources:
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+  requests:
+    cpu: 500m
+    memory: 1Gi
+
+# Autoscaling
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+# Health checks
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 15
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+# Node selector (optional)
+nodeSelector: {}
+
+# Tolerations (optional)
+tolerations: []
+
+# Affinity (optional)
+affinity: {}
+
+# Pod security context
+podSecurityContext:
+  fsGroup: 1001
+  runAsNonRoot: true
+  runAsUser: 1001
+
+# Security context
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+

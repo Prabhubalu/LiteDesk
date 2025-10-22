@@ -1,0 +1,106 @@
+name: Production Monitoring
+
+on:
+  schedule:
+    # Run health checks every 15 minutes
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+  EKS_CLUSTER_NAME: litedesk-production
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check Master Control Plane Health
+        run: |
+          MASTER_URL="https://${{ secrets.MASTER_DOMAIN }}"
+          
+          echo "🏥 Checking Master Control Plane..."
+          HEALTH=$(curl -s $MASTER_URL/health)
+          STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" $MASTER_URL/health)
+          
+          if [ $STATUS_CODE -eq 200 ]; then
+            echo "✅ Master Control Plane is healthy"
+            echo "$HEALTH" | jq '.'
+          else
+            echo "❌ Master Control Plane health check failed"
+            echo "Status Code: $STATUS_CODE"
+            exit 1
+          fi
+      
+      - name: Check Instance Registry
+        run: |
+          MASTER_URL="https://${{ secrets.MASTER_DOMAIN }}"
+          
+          echo "📊 Fetching instance statistics..."
+          STATS=$(curl -s $MASTER_URL/health/status)
+          
+          echo "$STATS" | jq '.instances'
+          
+          # Extract key metrics
+          TOTAL=$(echo "$STATS" | jq -r '.instances.totalInstances // 0')
+          ACTIVE=$(echo "$STATS" | jq -r '.instances.activeInstances // 0')
+          UNHEALTHY=$(echo "$STATS" | jq -r '.instances.unhealthyInstances // 0')
+          
+          echo "Total Instances: $TOTAL"
+          echo "Active Instances: $ACTIVE"
+          echo "Unhealthy Instances: $UNHEALTHY"
+          
+          # Alert if there are unhealthy instances
+          if [ $UNHEALTHY -gt 0 ]; then
+            echo "⚠️  Warning: $UNHEALTHY unhealthy instance(s) detected"
+          fi
+      
+      - name: Alert on failure
+        if: failure()
+        run: |
+          echo "🚨 ALERT: Production monitoring detected an issue!"
+          echo "Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          echo "Check the logs and investigate immediately."
+          # In production, this would send alerts via email, Slack, PagerDuty, etc.
+  
+  resource-usage:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --region ${{ env.AWS_REGION }} \
+            --name ${{ env.EKS_CLUSTER_NAME }}
+      
+      - name: Check cluster resources
+        run: |
+          echo "📊 Cluster Resource Usage:"
+          kubectl top nodes || echo "Metrics server not available"
+          
+          echo ""
+          echo "📦 Pod Resource Usage (Top 10):"
+          kubectl top pods --all-namespaces --sort-by=memory | head -n 11 || echo "Metrics server not available"
+      
+      - name: Check pod status
+        run: |
+          echo "🔍 Checking for unhealthy pods..."
+          
+          # Find pods that are not Running or Completed
+          UNHEALTHY_PODS=$(kubectl get pods --all-namespaces --field-selector=status.phase!=Running,status.phase!=Succeeded -o json)
+          UNHEALTHY_COUNT=$(echo "$UNHEALTHY_PODS" | jq '.items | length')
+          
+          if [ $UNHEALTHY_COUNT -gt 0 ]; then
+            echo "⚠️  Warning: $UNHEALTHY_COUNT unhealthy pod(s) found"
+            echo "$UNHEALTHY_PODS" | jq -r '.items[] | "\(.metadata.namespace)/\(.metadata.name): \(.status.phase)"'
+          else
+            echo "✅ All pods are healthy"
+          fi
+

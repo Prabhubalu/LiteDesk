@@ -7,12 +7,24 @@ import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuIt
 import { Bars3Icon, BellIcon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline' // Added MagnifyingGlassIcon
 
 // --- Data for the Navigation Array ---
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', current: true },
-  { name: 'Contacts', href: '/contacts', current: false }, 
-  { name: 'Projects', href: '/items', current: false },
-  { name: 'Calendar', href: '/events', current: false },
-]
+const navigation = computed(() => {
+  const baseNav = [
+    { name: 'Dashboard', href: '/dashboard', current: true },
+    { name: 'Contacts', href: '/contacts', current: false },
+    { name: 'Deals', href: '/deals', current: false },
+    { name: 'Projects', href: '/items', current: false },
+    { name: 'Calendar', href: '/events', current: false },
+  ];
+  
+  // Add Admin-only links for Owners/Admins
+  if (authStore.isOwner || authStore.userRole === 'admin') {
+    baseNav.push({ name: 'Organizations', href: '/organizations', current: false });
+    baseNav.push({ name: 'Demo Requests', href: '/demo-requests', current: false });
+    baseNav.push({ name: 'Instances', href: '/instances', current: false });
+  }
+  
+  return baseNav;
+});
 // ---
 
 const { colorMode, toggleColorMode } = useColorMode();

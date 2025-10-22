@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 // Schema for tracking individual notes/interactions
 const NoteSchema = new Schema({
     text: { type: String, required: true },
-    created_by: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    created_by: { type: Schema.Types.ObjectId, ref: "User", required: false }, // Optional for system notes
     created_at: { type: Date, default: Date.now }
 }, { _id: false }); // Using _id: false since we'll embed this
 
@@ -22,7 +22,7 @@ const ContactSchema = new Schema({
     // 🧩 CORE IDENTIFICATION
     // **********************************
     first_name: { type: String, trim: true, required: true },
-    last_name: { type: String, trim: true, required: true }, // RECOMMENDED CHANGE: Made mandatory
+    last_name: { type: String, trim: true, required: false, default: '' }, // Optional for single-name contacts
     salutation: { 
         type: String, 
         enum: ["Mr.", "Ms.", "Mrs.", "Dr.", null], // RECOMMENDED ADDITION
@@ -41,6 +41,7 @@ const ContactSchema = new Schema({
     // 🏢 COMPANY / RELATIONSHIP
     // **********************************
     account_id: { type: Schema.Types.ObjectId, ref: "Account" }, // Foreign Key to the Company/Account
+    company: { type: String, trim: true }, // Company name (text field)
     job_title: { type: String, trim: true },
     department: { type: String, trim: true },
     reports_to: { type: Schema.Types.ObjectId, ref: "Contact" }, // Self-referencing Foreign Key

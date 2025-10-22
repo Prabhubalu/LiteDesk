@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.instance.name }}
+  labels:
+    app: litedesk
+    instance: {{ .Values.instance.subdomain }}
+    owner-email: {{ .Values.instance.ownerEmail }}
+

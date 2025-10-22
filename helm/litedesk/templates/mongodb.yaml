@@ -1,0 +1,76 @@
+{{- if .Values.mongodb.enabled }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.instance.name }}-mongodb
+  namespace: {{ .Values.instance.name }}
+  labels:
+    app: mongodb
+    instance: {{ .Values.instance.subdomain }}
+spec:
+  serviceName: {{ .Values.instance.name }}-mongodb
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb
+      instance: {{ .Values.instance.subdomain }}
+  template:
+    metadata:
+      labels:
+        app: mongodb
+        instance: {{ .Values.instance.subdomain }}
+    spec:
+      containers:
+      - name: mongodb
+        image: mongo:6.0
+        ports:
+        - containerPort: 27017
+          name: mongodb
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          value: "root"
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.instance.name }}-mongodb-secret
+              key: mongodb-root-password
+        - name: MONGO_INITDB_DATABASE
+          value: {{ .Values.mongodb.auth.database }}
+        volumeMounts:
+        - name: data
+          mountPath: /data/db
+        resources:
+          {{- toYaml .Values.mongodb.resources | nindent 10 }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      {{- if .Values.mongodb.persistence.storageClass }}
+      storageClassName: {{ .Values.mongodb.persistence.storageClass }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.mongodb.persistence.size }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.instance.name }}-mongodb
+  namespace: {{ .Values.instance.name }}
+  labels:
+    app: mongodb
+    instance: {{ .Values.instance.subdomain }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+  - port: 27017
+    targetPort: 27017
+    name: mongodb
+  selector:
+    app: mongodb
+    instance: {{ .Values.instance.subdomain }}
+{{- end }}
+
