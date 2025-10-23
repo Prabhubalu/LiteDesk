@@ -1,33 +1,38 @@
 <template>
-  <div class="modal-overlay" @click="$emit('close')">
-    <div class="modal-content" @click.stop>
-      <div class="modal-header">
-        <h2>{{ isEditing ? 'Edit Deal' : 'New Deal' }}</h2>
-        <button @click="$emit('close')" class="btn-close">×</button>
+  <div class="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-[1000] p-8" @click="$emit('close')">
+    <div class="bg-white dark:bg-gray-900 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl" @click.stop>
+      <div class="sticky top-0 px-8 py-6 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between z-10">
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">{{ isEditing ? 'Edit Deal' : 'New Deal' }}</h2>
+        <button @click="$emit('close')" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-2xl">×</button>
       </div>
 
-      <form @submit.prevent="handleSubmit" class="modal-body">
+      <form @submit.prevent="handleSubmit" class="p-8">
         <!-- Basic Information -->
-        <div class="form-section">
-          <h3>Deal Information</h3>
+        <div class="mb-8 pb-8 border-b border-gray-200 dark:border-gray-700 last:border-0">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Deal Information</h3>
           
-          <div class="form-row">
-            <div class="form-group full-width required">
-              <label>Deal Name</label>
+          <div class="grid grid-cols-1 gap-6 mb-6">
+            <div class="flex flex-col">
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Deal Name <span class="text-red-600">*</span>
+              </label>
               <input 
                 v-model="form.name" 
                 type="text" 
                 placeholder="e.g., Acme Corp - CRM Implementation"
                 required
+                class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all"
               />
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group required">
-              <label>Amount</label>
-              <div class="input-group">
-                <span class="input-prefix">$</span>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="flex flex-col">
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Amount <span class="text-red-600">*</span>
+              </label>
+              <div class="relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 dark:text-gray-400 font-medium pointer-events-none">$</span>
                 <input 
                   v-model.number="form.amount" 
                   type="number" 
@@ -35,24 +40,34 @@
                   step="0.01"
                   placeholder="50000"
                   required
+                  class="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all"
                 />
               </div>
             </div>
 
-            <div class="form-group required">
-              <label>Expected Close Date</label>
+            <div class="flex flex-col">
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Expected Close Date <span class="text-red-600">*</span>
+              </label>
               <input 
                 v-model="form.expectedCloseDate" 
                 type="date" 
                 required
+                class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all"
               />
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group required">
-              <label>Stage</label>
-              <select v-model="form.stage" required>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="flex flex-col">
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Stage <span class="text-red-600">*</span>
+              </label>
+              <select 
+                v-model="form.stage" 
+                required
+                class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all cursor-pointer"
+              >
                 <option value="Lead">Lead</option>
                 <option value="Qualified">Qualified</option>
                 <option value="Proposal">Proposal</option>
@@ -62,8 +77,10 @@
               </select>
             </div>
 
-            <div class="form-group required">
-              <label>Probability (%)</label>
+            <div class="flex flex-col">
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Probability (%) <span class="text-red-600">*</span>
+              </label>
               <input 
                 v-model.number="form.probability" 
                 type="number" 
@@ -71,19 +88,23 @@
                 max="100"
                 placeholder="50"
                 required
+                class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all"
               />
             </div>
           </div>
         </div>
 
         <!-- Classification -->
-        <div class="form-section">
-          <h3>Classification</h3>
+        <div class="mb-8 pb-8 border-b border-gray-200 dark:border-gray-700 last:border-0">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Classification</h3>
           
-          <div class="form-row">
-            <div class="form-group">
-              <label>Deal Type</label>
-              <select v-model="form.type">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="flex flex-col">
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Deal Type</label>
+              <select 
+                v-model="form.type"
+                class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all cursor-pointer"
+              >
                 <option value="">Select Type</option>
                 <option value="New Business">New Business</option>
                 <option value="Existing Business">Existing Business</option>
@@ -92,9 +113,12 @@
               </select>
             </div>
 
-            <div class="form-group">
-              <label>Priority</label>
-              <select v-model="form.priority">
+            <div class="flex flex-col">
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Priority</label>
+              <select 
+                v-model="form.priority"
+                class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all cursor-pointer"
+              >
                 <option value="Low">Low</option>
                 <option value="Medium">Medium</option>
                 <option value="High">High</option>
@@ -103,46 +127,54 @@
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label>Source</label>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="flex flex-col">
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Source</label>
               <input 
                 v-model="form.source" 
                 type="text" 
                 placeholder="e.g., Website, Referral, Cold Call"
+                class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all"
               />
             </div>
 
-            <div class="form-group">
-              <label>Tags (comma separated)</label>
+            <div class="flex flex-col">
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tags (comma separated)</label>
               <input 
                 v-model="tagsString" 
                 type="text" 
                 placeholder="enterprise, priority, demo"
+                class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all"
               />
             </div>
           </div>
         </div>
 
         <!-- Relationships -->
-        <div class="form-section">
-          <h3>Relationships</h3>
+        <div class="mb-8 pb-8 border-b border-gray-200 dark:border-gray-700 last:border-0">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Relationships</h3>
           
-          <div class="form-row">
-            <div class="form-group">
-              <label>Contact</label>
-              <select v-model="form.contactId">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="flex flex-col">
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Contact</label>
+              <select 
+                v-model="form.contactId"
+                class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all cursor-pointer"
+              >
                 <option value="">Select Contact</option>
                 <option v-for="contact in contacts" :key="contact._id" :value="contact._id">
                   {{ contact.first_name }} {{ contact.last_name }} ({{ contact.email }})
                 </option>
               </select>
-              <p class="field-hint">Link this deal to a contact</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mt-2">Link this deal to a contact</p>
             </div>
 
-            <div class="form-group">
-              <label>Owner</label>
-              <select v-model="form.ownerId">
+            <div class="flex flex-col">
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Owner</label>
+              <select 
+                v-model="form.ownerId"
+                class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all cursor-pointer"
+              >
                 <option v-for="user in users" :key="user._id" :value="user._id">
                   {{ user.firstName }} {{ user.lastName }}
                 </option>
@@ -152,37 +184,47 @@
         </div>
 
         <!-- Additional Details -->
-        <div class="form-section">
-          <h3>Additional Details</h3>
+        <div class="mb-8 pb-8 border-b border-gray-200 dark:border-gray-700 last:border-0">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Additional Details</h3>
           
-          <div class="form-row">
-            <div class="form-group full-width">
-              <label>Description</label>
+          <div class="grid grid-cols-1 gap-6 mb-6">
+            <div class="flex flex-col">
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
               <textarea 
                 v-model="form.description" 
                 rows="4"
                 placeholder="Add details about this deal, requirements, notes, etc."
+                class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all resize-none"
               ></textarea>
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label>Next Follow-up Date</label>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="flex flex-col">
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Next Follow-up Date</label>
               <input 
                 v-model="form.nextFollowUpDate" 
                 type="date"
+                class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all"
               />
             </div>
           </div>
         </div>
 
         <!-- Form Actions -->
-        <div class="form-actions">
-          <button type="button" @click="$emit('close')" class="btn-secondary">
+        <div class="sticky bottom-0 bg-white dark:bg-gray-900 flex justify-end gap-4 pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
+          <button 
+            type="button" 
+            @click="$emit('close')" 
+            class="px-6 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
             Cancel
           </button>
-          <button type="submit" :disabled="saving" class="btn-primary">
+          <button 
+            type="submit" 
+            :disabled="saving" 
+            class="px-6 py-3 bg-brand-600 hover:bg-brand-700 dark:bg-brand-600 dark:hover:bg-brand-500 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             {{ saving ? 'Saving...' : (isEditing ? 'Update Deal' : 'Create Deal') }}
           </button>
         </div>
@@ -332,225 +374,5 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 2rem;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 800px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-.modal-header {
-  padding: 1.5rem 2rem;
-  border-bottom: 1px solid #e5e7eb;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: sticky;
-  top: 0;
-  background: white;
-  z-index: 10;
-}
-
-.modal-header h2 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1f2937;
-}
-
-.btn-close {
-  background: none;
-  border: none;
-  font-size: 2rem;
-  color: #9ca3af;
-  cursor: pointer;
-  padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  transition: background 0.2s;
-}
-
-.btn-close:hover {
-  background: #f3f4f6;
-}
-
-.modal-body {
-  padding: 2rem;
-}
-
-.form-section {
-  margin-bottom: 2rem;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.form-section:last-of-type {
-  border-bottom: none;
-}
-
-.form-section h3 {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 1.5rem;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.form-row:last-child {
-  margin-bottom: 0;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group.full-width {
-  grid-column: 1 / -1;
-}
-
-.form-group label {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 0.5rem;
-}
-
-.form-group.required label::after {
-  content: '*';
-  color: #dc2626;
-  margin-left: 0.25rem;
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-  padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  transition: border-color 0.2s;
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.input-group {
-  position: relative;
-}
-
-.input-prefix {
-  position: absolute;
-  left: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #6b7280;
-  font-weight: 500;
-  pointer-events: none;
-}
-
-.input-group input {
-  padding-left: 2rem;
-}
-
-.field-hint {
-  font-size: 0.8rem;
-  color: #6b7280;
-  margin-top: 0.25rem;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  padding-top: 1.5rem;
-  margin-top: 1.5rem;
-  border-top: 1px solid #e5e7eb;
-  position: sticky;
-  bottom: 0;
-  background: white;
-}
-
-.btn-primary,
-.btn-secondary {
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-  font-size: 0.95rem;
-}
-
-.btn-primary {
-  background: #3b82f6;
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: #2563eb;
-}
-
-.btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-secondary {
-  background: white;
-  color: #374151;
-  border: 1px solid #d1d5db;
-}
-
-.btn-secondary:hover {
-  background: #f9fafb;
-}
-
-@media (max-width: 768px) {
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-  
-  .modal-overlay {
-    padding: 0;
-  }
-  
-  .modal-content {
-    border-radius: 0;
-    max-height: 100vh;
-  }
-}
-</style>
+<!-- All styling now uses pure Tailwind (no scoped CSS needed) -->
 

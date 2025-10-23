@@ -2,8 +2,8 @@
   <div class="w-full relative">
     <!-- Bulk Actions Floating Bar -->
     <Transition name="slide-up">
-      <div v-if="selectable && selectedRows.length > 0" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
-        <div class="bg-gradient-to-r from-brand-600 to-brand-700 dark:from-brand-700 dark:to-brand-800 text-white px-6 py-4 rounded-xl shadow-2xl border-2 border-brand-500 dark:border-brand-600 backdrop-blur-sm">
+      <div v-if="selectable && selectedRows.length > 0" class="bulk-actions-bar">
+        <div class="bg-brand-600 dark:bg-brand-700 text-white px-6 py-4 rounded-xl shadow-2xl border-2 border-brand-700 dark:border-brand-800">
           <div class="flex items-center gap-6">
             <!-- Selection Count -->
             <div class="flex items-center gap-2">
@@ -629,6 +629,16 @@ watch(() => props.data, () => {
 tr:hover .action-overlay {
   opacity: 1;
   pointer-events: auto;
+}
+
+/* Bulk Actions Floating Bar - Fixed at bottom-center */
+.bulk-actions-bar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  max-width: 90vw;
 }
 
 /* Slide up transition for bulk actions bar */

@@ -1,17 +1,17 @@
 <template>
   <Teleport to="body">
-    <div class="modal-overlay" @click.self="$emit('close')">
-      <div class="modal-container max-w-4xl">
-      <div class="modal-header">
-        <h2 class="modal-title">Import Details</h2>
-        <button @click="$emit('close')" class="modal-close">
+    <div class="fixed inset-0 bg-black/50 dark:bg-black/75 backdrop-blur-sm z-[9999] flex items-center justify-center p-4" @click.self="$emit('close')">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Import Details</h2>
+        <button @click="$emit('close')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
 
-      <div class="modal-body space-y-6">
+      <div class="p-6 overflow-y-auto flex-1 space-y-6">
         <!-- Import Overview -->
         <div class="bg-gradient-to-r from-brand-50 to-blue-50 dark:from-brand-900/20 dark:to-blue-900/20 border border-brand-200 dark:border-brand-800 rounded-lg p-6">
           <div class="flex items-start justify-between">
@@ -27,7 +27,7 @@
                   Imported {{ formatDate(importRecord.createdAt) }} at {{ formatTime(importRecord.createdAt) }}
                 </p>
                 <div class="flex items-center gap-3 mt-2">
-                  <span class="badge badge-secondary">{{ formatModule(importRecord.module) }}</span>
+                  <span class="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">{{ formatModule(importRecord.module) }}</span>
                   <span :class="getStatusClass(importRecord.status)">{{ formatStatus(importRecord.status) }}</span>
                 </div>
               </div>
@@ -43,21 +43,21 @@
 
         <!-- Statistics Grid -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="stat-mini">
-            <div class="stat-mini-value text-gray-900 dark:text-white">{{ importRecord.stats?.total || 0 }}</div>
-            <div class="stat-mini-label">Total Records</div>
+          <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ importRecord.stats?.total || 0 }}</div>
+            <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">Total Records</div>
           </div>
-          <div class="stat-mini">
-            <div class="stat-mini-value text-success-600 dark:text-success-400">{{ importRecord.stats?.created || 0 }}</div>
-            <div class="stat-mini-label">Created</div>
+          <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold text-success-600 dark:text-success-400">{{ importRecord.stats?.created || 0 }}</div>
+            <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">Created</div>
           </div>
-          <div class="stat-mini">
-            <div class="stat-mini-value text-blue-600 dark:text-blue-400">{{ importRecord.stats?.updated || 0 }}</div>
-            <div class="stat-mini-label">Updated</div>
+          <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ importRecord.stats?.updated || 0 }}</div>
+            <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">Updated</div>
           </div>
-          <div class="stat-mini">
-            <div class="stat-mini-value text-danger-600 dark:text-danger-400">{{ importRecord.stats?.failed || 0 }}</div>
-            <div class="stat-mini-label">Failed</div>
+          <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold text-danger-600 dark:text-danger-400">{{ importRecord.stats?.failed || 0 }}</div>
+            <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">Failed</div>
           </div>
         </div>
 
@@ -87,31 +87,31 @@
         <div class="tab-content">
           <!-- Overview Tab -->
           <div v-if="activeTab === 'overview'" class="space-y-4">
-            <div class="detail-row">
-              <span class="detail-label">Imported By</span>
+            <div class="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-0">
+              <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Imported By</span>
               <div class="flex items-center gap-2">
                 <div class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-sm font-medium">
                   {{ (importRecord.importedBy?.firstName?.[0] || '') + (importRecord.importedBy?.lastName?.[0] || '') }}
                 </div>
-                <span class="detail-value">
+                <span class="text-sm font-medium text-gray-900 dark:text-white">
                   {{ importRecord.importedBy?.firstName }} {{ importRecord.importedBy?.lastName }}
                 </span>
               </div>
             </div>
 
-            <div class="detail-row">
-              <span class="detail-label">Processing Time</span>
-              <span class="detail-value">{{ formatProcessingTime(importRecord.processingTime) }}</span>
+            <div class="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-0">
+              <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Processing Time</span>
+              <span class="text-sm font-medium text-gray-900 dark:text-white">{{ formatProcessingTime(importRecord.processingTime) }}</span>
             </div>
 
-            <div class="detail-row">
-              <span class="detail-label">Total Rows in CSV</span>
-              <span class="detail-value">{{ importRecord.metadata?.totalRows || importRecord.stats.total }}</span>
+            <div class="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-0">
+              <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Rows in CSV</span>
+              <span class="text-sm font-medium text-gray-900 dark:text-white">{{ importRecord.metadata?.totalRows || importRecord.stats.total }}</span>
             </div>
 
-            <div class="detail-row">
-              <span class="detail-label">Duplicate Check</span>
-              <span class="detail-value">
+            <div class="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-0">
+              <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Duplicate Check</span>
+              <span class="text-sm font-medium text-gray-900 dark:text-white">
                 {{ importRecord.duplicateCheckEnabled ? 'Enabled' : 'Disabled' }}
                 <span v-if="importRecord.duplicateCheckEnabled" class="text-sm text-gray-500">
                   ({{ importRecord.duplicateAction }})
@@ -119,8 +119,8 @@
               </span>
             </div>
 
-            <div v-if="importRecord.duplicateCheckFields?.length" class="detail-row">
-              <span class="detail-label">Checked Fields</span>
+            <div v-if="importRecord.duplicateCheckFields?.length" class="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-0">
+              <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Checked Fields</span>
               <div class="flex flex-wrap gap-2">
                 <span 
                   v-for="field in importRecord.duplicateCheckFields" 
@@ -257,107 +257,14 @@ const formatProcessingTime = (ms) => {
 
 const getStatusClass = (status) => {
   const classes = {
-    completed: 'badge badge-success',
-    partial: 'badge badge-warning',
-    failed: 'badge badge-danger',
-    processing: 'badge badge-info'
+    completed: 'px-3 py-1 rounded-full text-xs font-medium bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-300',
+    partial: 'px-3 py-1 rounded-full text-xs font-medium bg-warning-100 dark:bg-warning-900/30 text-warning-700 dark:text-warning-300',
+    failed: 'px-3 py-1 rounded-full text-xs font-medium bg-danger-100 dark:bg-danger-900/30 text-danger-700 dark:text-danger-300',
+    processing: 'px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
   };
-  return classes[status] || 'badge';
+  return classes[status] || 'px-3 py-1 rounded-full text-xs font-medium';
 };
 </script>
 
-<style scoped>
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-}
-
-@media (prefers-color-scheme: dark) {
-  .modal-overlay {
-    background: rgba(0, 0, 0, 0.75);
-  }
-}
-
-.modal-container {
-  @apply bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full overflow-hidden;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.modal-header {
-  @apply flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700;
-}
-
-.modal-title {
-  @apply text-2xl font-bold text-gray-900 dark:text-white;
-}
-
-.modal-close {
-  @apply text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors;
-}
-
-.modal-body {
-  @apply p-6 overflow-y-auto flex-1;
-}
-
-.modal-footer {
-  @apply flex items-center justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700;
-}
-
-.badge {
-  @apply px-3 py-1 rounded-full text-xs font-medium;
-}
-
-.badge-success {
-  @apply bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-300;
-}
-
-.badge-warning {
-  @apply bg-warning-100 dark:bg-warning-900/30 text-warning-700 dark:text-warning-300;
-}
-
-.badge-danger {
-  @apply bg-danger-100 dark:bg-danger-900/30 text-danger-700 dark:text-danger-300;
-}
-
-.badge-info {
-  @apply bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300;
-}
-
-.badge-secondary {
-  @apply bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300;
-}
-
-.stat-mini {
-  @apply bg-gray-50 dark:bg-gray-800 rounded-lg p-4 text-center;
-}
-
-.stat-mini-value {
-  @apply text-2xl font-bold;
-}
-
-.stat-mini-label {
-  @apply text-xs text-gray-600 dark:text-gray-400 mt-1;
-}
-
-.detail-row {
-  @apply flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-0;
-}
-
-.detail-label {
-  @apply text-sm font-medium text-gray-600 dark:text-gray-400;
-}
-
-.detail-value {
-  @apply text-sm font-medium text-gray-900 dark:text-white;
-}
-</style>
+<!-- All styling now uses pure Tailwind (no scoped CSS needed) -->
 

@@ -1,38 +1,54 @@
 <template>
-  <div class="deals-page">
+  <div class="p-8 max-w-[1800px] mx-auto bg-gray-50 dark:bg-gray-900 min-h-screen">
     <!-- Header -->
-    <div class="page-header">
-      <div class="header-left">
-        <h1>Deals Pipeline</h1>
-        <p class="subtitle">Track and manage your sales opportunities</p>
+    <div class="flex justify-between items-center mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Deals Pipeline</h1>
+        <p class="text-gray-600 dark:text-gray-400">Track and manage your sales opportunities</p>
       </div>
-      <div class="header-right">
-        <button @click="viewMode = 'table'" :class="['view-toggle', {active: viewMode === 'table'}]">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div class="flex gap-3 items-center">
+        <button 
+          @click="viewMode = 'table'" 
+          :class="[
+            'flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all',
+            viewMode === 'table' 
+              ? 'bg-brand-600 text-white border-2 border-brand-600' 
+              : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-2 border-gray-300 dark:border-gray-600 hover:border-brand-500'
+          ]"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
           </svg>
           Table
         </button>
-        <button @click="viewMode = 'kanban'" :class="['view-toggle', {active: viewMode === 'kanban'}]">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <button 
+          @click="viewMode = 'kanban'" 
+          :class="[
+            'flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all',
+            viewMode === 'kanban' 
+              ? 'bg-brand-600 text-white border-2 border-brand-600' 
+              : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-2 border-gray-300 dark:border-gray-600 hover:border-brand-500'
+          ]"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
           </svg>
           Pipeline
         </button>
         <button @click="showImportModal = true" class="btn-secondary">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
           </svg>
           Import
         </button>
         <button @click="exportDeals" class="btn-secondary">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
           </svg>
           Export
         </button>
         <button @click="openCreateModal" class="btn-primary">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
           New Deal
@@ -41,114 +57,122 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon total">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow flex gap-4">
+        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
           </svg>
         </div>
-        <div class="stat-info">
-          <h3>{{ formatCurrency(statistics.pipelineValue || 0) }}</h3>
-          <p>Pipeline Value</p>
+        <div class="flex-1">
+          <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-1">{{ formatCurrency(statistics.pipelineValue || 0) }}</h3>
+          <p class="text-gray-600 dark:text-gray-400 text-sm">Pipeline Value</p>
         </div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-icon active">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow flex gap-4">
+        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-pink-500 to-red-600 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
           </svg>
         </div>
-        <div class="stat-info">
-          <h3>{{ statistics.activeDeals || 0 }}</h3>
-          <p>Active Deals</p>
+        <div class="flex-1">
+          <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-1">{{ statistics.activeDeals || 0 }}</h3>
+          <p class="text-gray-600 dark:text-gray-400 text-sm">Active Deals</p>
         </div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-icon won">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow flex gap-4">
+        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <div class="stat-info">
-          <h3>{{ formatCurrency(statistics.wonValue || 0) }}</h3>
-          <p>Won This Month</p>
+        <div class="flex-1">
+          <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-1">{{ formatCurrency(statistics.wonValue || 0) }}</h3>
+          <p class="text-gray-600 dark:text-gray-400 text-sm">Won This Month</p>
         </div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-icon rate">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow flex gap-4">
+        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
           </svg>
         </div>
-        <div class="stat-info">
-          <h3>{{ winRate }}%</h3>
-          <p>Win Rate</p>
+        <div class="flex-1">
+          <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-1">{{ winRate }}%</h3>
+          <p class="text-gray-600 dark:text-gray-400 text-sm">Win Rate</p>
         </div>
       </div>
     </div>
 
     <!-- Kanban View -->
-    <div v-if="viewMode === 'kanban'" class="kanban-view">
-      <div class="kanban-board">
-        <div v-for="stage in stages" :key="stage" class="kanban-column">
-          <div class="column-header">
-            <h3>{{ stage }}</h3>
-            <span class="deal-count">{{ getDealsInStage(stage).length }}</span>
-            <span class="stage-value">{{ formatCurrency(getStageValue(stage)) }}</span>
+    <div v-if="viewMode === 'kanban'" class="overflow-x-auto pb-4">
+      <div class="flex gap-6">
+        <div v-for="stage in stages" :key="stage" class="kanban-column bg-gray-100 dark:bg-gray-800 rounded-xl flex flex-col max-h-[calc(100vh-400px)]">
+          <div class="p-5 bg-white dark:bg-gray-700 rounded-t-xl border-b-2 border-gray-200 dark:border-gray-600">
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-2">{{ stage }}</h3>
+            <span class="inline-block bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 px-3 py-1 rounded-xl text-xs font-semibold ml-2">{{ getDealsInStage(stage).length }}</span>
+            <span class="block text-sm text-gray-600 dark:text-gray-400 mt-2 font-semibold">{{ formatCurrency(getStageValue(stage)) }}</span>
           </div>
           
-          <div class="column-content" @drop="onDrop($event, stage)" @dragover.prevent>
+          <div class="flex-1 p-4 overflow-y-auto flex flex-col gap-4" @drop="onDrop($event, stage)" @dragover.prevent>
             <div
               v-for="deal in getDealsInStage(stage)"
               :key="deal._id"
-              class="deal-card"
+              class="kanban-card bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700 cursor-grab hover:shadow-md hover:-translate-y-0.5 transition-all active:cursor-grabbing"
               draggable="true"
               @dragstart="onDragStart($event, deal)"
               @click="viewDeal(deal._id)"
             >
-              <div class="deal-header">
-                <h4>{{ deal.name }}</h4>
-                <span :class="['priority-badge', deal.priority?.toLowerCase()]">
+              <div class="flex justify-between items-start mb-3">
+                <h4 class="text-base font-semibold text-gray-900 dark:text-white flex-1">{{ deal.name }}</h4>
+                <span 
+                  :class="[
+                    'px-2 py-1 rounded-md text-xs font-semibold flex-shrink-0',
+                    deal.priority?.toLowerCase() === 'low' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300' :
+                    deal.priority?.toLowerCase() === 'medium' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
+                    deal.priority?.toLowerCase() === 'high' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300' :
+                    'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
+                  ]"
+                >
                   {{ deal.priority || 'Medium' }}
                 </span>
               </div>
               
-              <div class="deal-amount">{{ formatCurrency(deal.amount) }}</div>
+              <div class="text-xl font-bold text-green-600 dark:text-green-400 mb-3">{{ formatCurrency(deal.amount) }}</div>
               
-              <div class="deal-meta">
-                <div class="deal-contact" v-if="deal.contactId">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div class="flex flex-col gap-2 mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400" v-if="deal.contactId">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-3.5 h-3.5">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                   {{ deal.contactId.first_name }} {{ deal.contactId.last_name }}
                 </div>
-                <div class="deal-date">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-3.5 h-3.5">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                   {{ formatDate(deal.expectedCloseDate) }}
                 </div>
               </div>
               
-              <div class="deal-footer">
-                <div class="deal-owner">
-                  <div class="owner-avatar">{{ getInitials(deal.ownerId) }}</div>
+              <div class="flex justify-between items-center">
+                <div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                  <div class="w-6 h-6 rounded-full bg-brand-600 text-white flex items-center justify-center text-xs font-semibold">{{ getInitials(deal.ownerId) }}</div>
                   <span>{{ deal.ownerId?.firstName }}</span>
                 </div>
-                <div class="deal-probability">{{ deal.probability }}%</div>
+                <div class="text-xs font-semibold text-brand-600 dark:text-brand-400">{{ deal.probability }}%</div>
               </div>
             </div>
             
-            <div v-if="getDealsInStage(stage).length === 0" class="empty-column">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div v-if="getDealsInStage(stage).length === 0" class="text-center py-8 text-gray-400 dark:text-gray-500">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-10 h-10 mx-auto mb-2 text-gray-300 dark:text-gray-600">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
               </svg>
-              <p>No deals</p>
+              <p class="text-sm">No deals</p>
             </div>
           </div>
         </div>
@@ -156,11 +180,11 @@
     </div>
 
     <!-- Table View -->
-    <div v-else class="table-view">
+    <div v-else>
       <!-- Search and Filters -->
-      <div class="controls">
-        <div class="search-box">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div class="flex gap-4 mb-6">
+        <div class="flex-1 relative">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input 
@@ -168,23 +192,36 @@
             type="text" 
             placeholder="Search deals..."
             @input="debouncedSearch"
+            class="w-full pl-12 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
           />
         </div>
 
-        <div class="filters">
-          <select v-model="filters.stage" @change="fetchDeals">
+        <div class="flex gap-3">
+          <select 
+            v-model="filters.stage" 
+            @change="fetchDeals"
+            class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 cursor-pointer"
+          >
             <option value="">All Stages</option>
             <option v-for="stage in stages" :key="stage" :value="stage">{{ stage }}</option>
           </select>
 
-          <select v-model="filters.status" @change="fetchDeals">
+          <select 
+            v-model="filters.status" 
+            @change="fetchDeals"
+            class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 cursor-pointer"
+          >
             <option value="">All Status</option>
             <option value="Active">Active</option>
             <option value="Won">Won</option>
             <option value="Lost">Lost</option>
           </select>
 
-          <select v-model="filters.priority" @change="fetchDeals">
+          <select 
+            v-model="filters.priority" 
+            @change="fetchDeals"
+            class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 cursor-pointer"
+          >
             <option value="">All Priority</option>
             <option value="Low">Low</option>
             <option value="Medium">Medium</option>
@@ -787,627 +824,16 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.deals-page {
-  padding: 2rem;
-  max-width: 1800px;
-  margin: 0 auto;
-  background: #f9fafb;
-  min-height: 100vh;
-}
-
-/* Header */
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
-.header-left h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 0.5rem;
-}
-
-.subtitle {
-  color: #6b7280;
-  font-size: 0.95rem;
-}
-
-.header-right {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-}
-
-.view-toggle {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background: white;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: #6b7280;
-}
-
-.view-toggle.active {
-  background: #3b82f6;
-  color: white;
-  border-color: #3b82f6;
-}
-
-.view-toggle svg {
-  width: 18px;
-  height: 18px;
-}
-
-.btn-primary {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-primary:hover {
-  background: #2563eb;
-}
-
-.btn-primary svg {
-  width: 20px;
-  height: 20px;
-}
-
-/* Stats Grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.stat-card {
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  display: flex;
-  gap: 1rem;
-}
-
-.stat-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.stat-icon svg {
-  width: 28px;
-  height: 28px;
-  color: white;
-}
-
-.stat-icon.total { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-.stat-icon.active { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-.stat-icon.won { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
-.stat-icon.rate { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-
-.stat-info {
-  flex: 1;
-}
-
-.stat-info h3 {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 0.25rem;
-}
-
-.stat-info p {
-  color: #6b7280;
-  font-size: 0.9rem;
-}
-
-/* Kanban View */
-.kanban-board {
-  display: flex;
-  gap: 1.5rem;
-  overflow-x: auto;
-  padding-bottom: 1rem;
-}
-
+/* Kanban Column Width */
 .kanban-column {
-  flex: 0 0 300px;
-  background: #f3f4f6;
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  max-height: calc(100vh - 400px);
+  flex: 0 0 400px;
+  min-width: 400px;
+  max-width: 400px;
 }
 
-.column-header {
-  padding: 1.25rem;
-  background: white;
-  border-radius: 12px 12px 0 0;
-  border-bottom: 2px solid #e5e7eb;
-}
-
-.column-header h3 {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 0.5rem;
-}
-
-.deal-count {
-  display: inline-block;
-  background: #e0e7ff;
-  color: #3730a3;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  margin-left: 0.5rem;
-}
-
-.stage-value {
-  display: block;
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin-top: 0.5rem;
-  font-weight: 600;
-}
-
-.column-content {
-  flex: 1;
-  padding: 1rem;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.deal-card {
-  background: white;
-  border-radius: 10px;
-  padding: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  cursor: grab;
-  transition: all 0.2s;
-}
-
-.deal-card:hover {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-.deal-card:active {
-  cursor: grabbing;
-}
-
-.deal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 0.75rem;
-}
-
-.deal-header h4 {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #1f2937;
-  flex: 1;
-}
-
-.priority-badge {
-  padding: 0.25rem 0.5rem;
-  border-radius: 6px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  flex-shrink: 0;
-}
-
-.priority-badge.low { background: #dbeafe; color: #1e40af; }
-.priority-badge.medium { background: #fef3c7; color: #92400e; }
-.priority-badge.high { background: #fed7aa; color: #9a3412; }
-.priority-badge.urgent { background: #fee2e2; color: #991b1b; }
-
-.deal-amount {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #059669;
-  margin-bottom: 0.75rem;
-}
-
-.deal-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.deal-contact, .deal-date {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.8rem;
-  color: #6b7280;
-}
-
-.deal-contact svg, .deal-date svg {
-  width: 14px;
-  height: 14px;
-}
-
-.deal-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.deal-owner {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.8rem;
-  color: #6b7280;
-}
-
-.owner-avatar {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: #3b82f6;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  font-weight: 600;
-}
-
-.deal-probability {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #3b82f6;
-}
-
-.empty-column {
-  text-align: center;
-  padding: 2rem 1rem;
-  color: #9ca3af;
-}
-
-.empty-column svg {
-  width: 40px;
-  height: 40px;
-  margin: 0 auto 0.5rem;
-  color: #d1d5db;
-}
-
-/* Table View */
-.controls {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.search-box {
-  flex: 1;
-  position: relative;
-}
-
-.search-box svg {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 20px;
-  height: 20px;
-  color: #9ca3af;
-}
-
-.search-box input {
-  width: 100%;
-  padding: 0.75rem 1rem 0.75rem 3rem;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 0.95rem;
-}
-
-.filters {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.filters select {
-  padding: 0.75rem 1rem;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  background: white;
-  cursor: pointer;
-}
-
-.table-container {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  margin-bottom: 1.5rem;
-}
-
-.deals-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.deals-table thead {
-  background: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.deals-table th {
-  padding: 1rem;
-  text-align: left;
-  font-weight: 600;
-  color: #374151;
-  font-size: 0.875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.deals-table th.sortable {
-  cursor: pointer;
-  user-select: none;
-}
-
-.deals-table th.sortable:hover {
-  background: #f3f4f6;
-}
-
-.deals-table th svg {
-  width: 16px;
-  height: 16px;
-  display: inline-block;
-  vertical-align: middle;
-  margin-left: 0.25rem;
-}
-
-.deals-table tbody tr {
-  border-bottom: 1px solid #f3f4f6;
-  transition: background 0.2s;
-}
-
-.deals-table tbody tr.clickable {
-  cursor: pointer;
-}
-
-.deals-table tbody tr:hover {
-  background: #f9fafb;
-}
-
-.deals-table td {
-  padding: 1rem;
-  color: #374151;
-  font-size: 0.9rem;
-}
-
-.deal-name-cell strong {
-  display: block;
-  color: #1f2937;
-  margin-bottom: 0.25rem;
-}
-
-.deal-type {
-  font-size: 0.8rem;
-  color: #6b7280;
-}
-
-.stage-badge {
-  padding: 0.35rem 0.85rem;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.stage-badge.lead { background: #fef3c7; color: #92400e; }
-.stage-badge.qualified { background: #dbeafe; color: #1e40af; }
-.stage-badge.proposal { background: #e0e7ff; color: #3730a3; }
-.stage-badge.negotiation { background: #fce7f3; color: #831843; }
-.stage-badge.won { background: #d1fae5; color: #065f46; }
-.stage-badge.lost { background: #fee2e2; color: #991b1b; }
-
-.owner-cell {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.owner-avatar-small {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: #3b82f6;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.probability-bar {
-  position: relative;
-  width: 100px;
-  height: 24px;
-  background: #f3f4f6;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.bar-fill {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  background: linear-gradient(90deg, #3b82f6, #60a5fa);
-  transition: width 0.3s;
-}
-
-.probability-bar span {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #1f2937;
-  z-index: 1;
-}
-
-.overdue {
-  color: #dc2626 !important;
-  font-weight: 600;
-}
-
-.text-muted {
-  color: #9ca3af;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.btn-icon {
-  padding: 0.5rem;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  border-radius: 6px;
-  transition: all 0.2s;
-}
-
-.btn-icon svg {
-  width: 18px;
-  height: 18px;
-  color: #6b7280;
-}
-
-.btn-icon:hover {
-  background: #f3f4f6;
-}
-
-.btn-icon.delete:hover {
-  background: #fee2e2;
-}
-
-.btn-icon.delete:hover svg {
-  color: #dc2626;
-}
-
-/* Loading & Empty States */
-.loading, .empty-state {
-  text-align: center;
-  padding: 4rem 2rem;
-  background: white;
-  border-radius: 12px;
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid #e5e7eb;
-  border-top-color: #3b82f6;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.empty-state svg {
-  width: 64px;
-  height: 64px;
-  color: #d1d5db;
-  margin: 0 auto 1rem;
-}
-
-.empty-state h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 0.5rem;
-}
-
-.empty-state p {
-  color: #6b7280;
-  margin-bottom: 1.5rem;
-}
-
-/* Pagination */
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 2rem;
-}
-
-.btn-pagination {
-  padding: 0.5rem 1rem;
-  background: white;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-.btn-pagination:hover:not(:disabled) {
-  background: #f9fafb;
-}
-
-.btn-pagination:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.page-info {
-  color: #6b7280;
-  font-size: 0.9rem;
-}
-
-@media (max-width: 1024px) {
-  .kanban-board {
-    flex-direction: column;
-  }
-  
-  .kanban-column {
-    flex: 1 1 auto;
-    max-height: none;
-  }
+/* Kanban Card Width */
+.kanban-card {
+  min-width: 360px;
 }
 </style>
 

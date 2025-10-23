@@ -30,9 +30,9 @@
 
     <!-- Statistics Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <div class="stat-card">
-        <div class="stat-icon bg-gradient-to-br from-brand-500 to-brand-600">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 flex items-center gap-4 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
         </div>
@@ -42,9 +42,9 @@
         </div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-icon bg-gradient-to-br from-blue-500 to-blue-600">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 flex items-center gap-4 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
           </svg>
         </div>
@@ -54,9 +54,9 @@
         </div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-icon bg-gradient-to-br from-success-500 to-success-600">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 flex items-center gap-4 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
@@ -66,9 +66,9 @@
         </div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-icon bg-gradient-to-br from-purple-500 to-purple-600">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 flex items-center gap-4 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
@@ -663,55 +663,7 @@ onMounted(() => {
   height: 20px;
 }
 
-/* Stats Grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.stat-card {
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.stat-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.stat-icon svg {
-  width: 24px;
-  height: 24px;
-  color: white;
-}
-
-.stat-icon.total { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-.stat-icon.leads { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-.stat-icon.customers { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-.stat-icon.active { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
-
-.stat-info h3 {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 0.25rem;
-}
-
-.stat-info p {
-  color: #6b7280;
-  font-size: 0.9rem;
-}
+/* Stats - Now using pure Tailwind (no scoped CSS needed) */
 
 /* Controls */
 .controls {
