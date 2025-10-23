@@ -19,11 +19,11 @@ const MONGO_URI = process.env.MONGO_URI;
 
 // Default Admin Credentials
 const DEFAULT_ADMIN = {
-    email: 'admin@litedesk.com',
+    email: 'prabhu@litedesk.com',
     password: 'Admin@123',  // CHANGE THIS IN PRODUCTION!
-    username: 'Platform Admin',
-    firstName: 'Platform',
-    lastName: 'Admin',
+    username: 'Prabhu Balu',
+    firstName: 'Prabhu',
+    lastName: 'Balu',
     organizationName: 'LiteDesk Master',
     industry: 'Technology'
 };

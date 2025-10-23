@@ -1,101 +1,181 @@
 <template>
-  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" @click="$emit('close')">
-    <div class="card max-w-4xl w-full max-h-[90vh] overflow-y-auto animate-slide-up" @click.stop>
-      <div class="card-header flex items-center justify-between sticky top-0 bg-white dark:bg-gray-800 z-10">
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-          Import {{ entityType }}
-        </h2>
-        <button @click="$emit('close')" class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+  <div class="fixed inset-0 bg-gradient-to-br from-black/60 via-black/50 to-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" @click="$emit('close')">
+    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-5xl w-full max-h-[92vh] overflow-hidden flex flex-col animate-slide-up border border-gray-200 dark:border-gray-700" @click.stop>
+      <!-- Header with Gradient -->
+      <div class="relative bg-gradient-to-r from-brand-600 to-brand-700 dark:from-brand-700 dark:to-brand-800 px-8 py-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-2xl font-bold text-white">
+                Import {{ entityType }}
+              </h2>
+              <p class="text-brand-100 text-sm mt-0.5">Upload and map your CSV data</p>
+            </div>
+          </div>
+          <button @click="$emit('close')" class="p-2.5 text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition-all duration-200">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Modern Step Indicator -->
+        <div class="mt-6 relative">
+          <div class="flex items-center justify-between">
+            <div v-for="(stepItem, index) in steps" :key="index" class="flex-1 flex items-center">
+              <div class="relative flex flex-col items-center flex-1">
+                <div :class="[
+                  'relative z-10 flex items-center justify-center w-11 h-11 rounded-full font-semibold transition-all duration-300 shadow-lg',
+                  step > index ? 'bg-white text-brand-600 scale-100' :
+                  step === index ? 'bg-white text-brand-600 scale-110 ring-4 ring-white/30' :
+                  'bg-white/20 text-white/60 scale-90'
+                ]">
+                  <svg v-if="step > index" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span v-else class="text-base font-bold">{{ index + 1 }}</span>
+                </div>
+                <div class="mt-2 text-xs font-medium text-white/90">{{ stepItem.shortTitle || stepItem.title }}</div>
+              </div>
+              <div v-if="index < steps.length - 1" :class="[
+                'flex-1 h-1 -mx-3 rounded-full transition-all duration-300',
+                step > index ? 'bg-white' : 'bg-white/20'
+              ]"></div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="card-body space-y-6">
-        <!-- Step Indicator -->
-        <div class="flex items-center justify-between mb-8">
-          <div v-for="(stepItem, index) in steps" :key="index" class="flex-1 flex items-center">
-            <div :class="[
-              'flex items-center justify-center w-10 h-10 rounded-full font-semibold',
-              step > index ? 'bg-success-500 text-white' :
-              step === index ? 'bg-brand-500 text-white' :
-              'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
-            ]">
-              <svg v-if="step > index" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
-              <span v-else>{{ index + 1 }}</span>
-            </div>
-            <div v-if="index < steps.length - 1" :class="[
-              'flex-1 h-1 mx-2',
-              step > index ? 'bg-success-500' : 'bg-gray-200 dark:bg-gray-700'
-            ]"></div>
-          </div>
-        </div>
-
-        <div class="text-center mb-4">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ steps[step].title }}</h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ steps[step].description }}</p>
-        </div>
-
-        <!-- Step 1: Upload File -->
-        <div v-if="step === 0">
-          <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-12 text-center hover:border-brand-500 transition-colors">
-            <input 
-              ref="fileInput"
-              type="file" 
-              accept=".csv"
-              @change="handleFileSelect"
-              class="hidden"
-            />
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-16 h-16 mx-auto mb-4 text-gray-400">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
-            <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Upload CSV File</h4>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Drag and drop your CSV file here, or click to browse</p>
-            <button @click="$refs.fileInput.click()" class="btn-primary">
-              Choose File
-            </button>
-            <p v-if="fileName" class="text-sm text-gray-600 dark:text-gray-400 mt-4">
-              Selected: <span class="font-medium">{{ fileName }}</span>
-            </p>
-          </div>
-        </div>
-
-        <!-- Step 2: Map Fields -->
-        <div v-if="step === 1 && csvHeaders.length > 0">
-          <div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-            <p class="text-sm text-blue-800 dark:text-blue-200">
-              <strong>{{ totalRows }} rows</strong> detected. Map your CSV columns to {{ entityType }} fields below:
-            </p>
+      <!-- Content Area -->
+      <div class="flex-1 overflow-y-auto px-8 py-6 bg-gray-50 dark:bg-gray-800/50">
+        <div class="max-w-3xl mx-auto">
+          <!-- Step Title & Description -->
+          <div class="text-center mb-8">
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ steps[step].title }}</h3>
+            <p class="text-gray-600 dark:text-gray-400">{{ steps[step].description }}</p>
           </div>
 
-          <div class="space-y-3 max-h-96 overflow-y-auto">
-            <div v-for="header in csvHeaders" :key="header" class="flex items-center gap-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <div class="flex-1">
-                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ header }}</label>
-                <p v-if="preview[0] && preview[0][header]" class="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
-                  Example: {{ preview[0][header] }}
-                </p>
-              </div>
-              <div class="flex-1">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 text-gray-400 mx-auto">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </div>
-              <div class="flex-1">
-                <select v-model="fieldMapping[header]" class="input w-full">
-                  <option value="">Skip this field</option>
-                  <option v-for="field in availableFields" :key="field.value" :value="field.value">
-                    {{ field.label }}
-                  </option>
-                </select>
+          <!-- Step 1: Upload File -->
+          <div v-if="step === 0">
+            <div class="relative group">
+              <div class="border-3 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-16 text-center bg-white dark:bg-gray-900 hover:border-brand-500 dark:hover:border-brand-400 hover:bg-brand-50/50 dark:hover:bg-brand-900/10 transition-all duration-300 cursor-pointer shadow-sm" 
+                   @click="$refs.fileInput.click()"
+                   @dragover.prevent
+                   @drop.prevent="handleFileDrop">
+                <input 
+                  ref="fileInput"
+                  type="file" 
+                  accept=".csv"
+                  @change="handleFileSelect"
+                  class="hidden"
+                />
+                
+                <div v-if="!fileName" class="space-y-4">
+                  <div class="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-brand-100 to-brand-200 dark:from-brand-900/30 dark:to-brand-800/30 rounded-2xl mb-2 group-hover:scale-110 transition-transform duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-12 h-12 text-brand-600 dark:text-brand-400">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Upload Your CSV File</h4>
+                    <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                      Drag and drop your file here, or click to browse from your computer
+                    </p>
+                    <button type="button" class="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-700 dark:bg-brand-600 dark:hover:bg-brand-500 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-brand-500/20">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                      </svg>
+                      Choose File
+                    </button>
+                  </div>
+                  <p class="text-xs text-gray-500 dark:text-gray-500 pt-4">
+                    Supported format: CSV files only
+                  </p>
+                </div>
+
+                <div v-else class="space-y-4">
+                  <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/30 rounded-2xl mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-10 h-10 text-green-600 dark:text-green-400">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-1">File Selected</h4>
+                    <p class="text-brand-600 dark:text-brand-400 font-medium text-lg">{{ fileName }}</p>
+                    <button type="button" @click.stop="clearFile" class="mt-4 text-sm text-gray-600 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 underline transition-colors">
+                      Choose a different file
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-        </div>
+          <!-- Step 2: Map Fields -->
+          <div v-if="step === 1 && csvHeaders.length > 0">
+            <!-- Info Banner -->
+            <div class="mb-6 relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 p-6 shadow-lg">
+              <div class="relative z-10 flex items-start gap-4">
+                <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center flex-shrink-0">
+                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <p class="text-white text-sm font-medium">
+                    <span class="font-bold text-lg">{{ totalRows }} rows</span> detected in your CSV file
+                  </p>
+                  <p class="text-blue-100 text-sm mt-1">
+                    Map your CSV columns to {{ entityType }} fields below. You can skip fields you don't need.
+                  </p>
+                </div>
+              </div>
+              <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32"></div>
+            </div>
+
+            <!-- Field Mapping Cards -->
+            <div class="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+              <div v-for="header in csvHeaders" :key="header" class="group bg-white dark:bg-gray-900 rounded-xl p-5 border-2 border-gray-200 dark:border-gray-700 hover:border-brand-400 dark:hover:border-brand-600 transition-all duration-200 shadow-sm hover:shadow-md">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                  <!-- CSV Column -->
+                  <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                      <div class="w-2 h-2 bg-brand-500 rounded-full"></div>
+                      <label class="text-sm font-bold text-gray-900 dark:text-white">{{ header }}</label>
+                    </div>
+                    <p v-if="preview[0] && preview[0][header]" class="text-xs text-gray-500 dark:text-gray-400 pl-4 truncate">
+                      📄 <span class="italic">{{ preview[0][header] }}</span>
+                    </p>
+                  </div>
+
+                  <!-- Arrow -->
+                  <div class="flex justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-brand-500 dark:text-brand-400 transition-transform group-hover:translate-x-1">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                  </div>
+
+                  <!-- Target Field -->
+                  <div>
+                    <select 
+                      v-model="fieldMapping[header]" 
+                      class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-900 dark:text-white focus:border-brand-500 dark:focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 transition-all outline-none"
+                    >
+                      <option value="" class="text-gray-500">⊘ Skip this field</option>
+                      <option v-for="field in availableFields" :key="field.value" :value="field.value" class="text-gray-900 dark:text-white">
+                        {{ field.label }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
         <!-- Step 3: Check Duplicates -->
         <div v-if="step === 2">
@@ -423,60 +503,81 @@
           </div>
         </div>
 
-        <!-- Actions -->
-        <div class="flex justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-700">
-          <button v-if="step > 0 && !importing && !importResults && !checkingDuplicates" @click="step--" class="btn-secondary">
-            Back
-          </button>
-          <div v-else></div>
+          <!-- Actions -->
+          <div class="flex justify-between items-center pt-8 mt-8 border-t-2 border-gray-200 dark:border-gray-700">
+            <button 
+              v-if="step > 0 && !importing && !importResults && !checkingDuplicates" 
+              @click="step--" 
+              class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold rounded-xl transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+              Back
+            </button>
+            <div v-else></div>
 
-          <div class="flex gap-3">
-            <button @click="$emit('close')" class="btn-secondary">
-              {{ importResults ? 'Close' : 'Cancel' }}
-            </button>
-            
-            <!-- Check Duplicates button (Step 2, when checking is selected, before checking) -->
-            <button 
-              v-if="step === 2 && shouldCheckDuplicates && !duplicateData && !importing && !importResults"
-              @click="checkDuplicates" 
-              :disabled="duplicateCheckFields.length === 0 || checkingDuplicates"
-              class="btn-primary"
-            >
-              <svg v-if="!checkingDuplicates" class="w-5 h-5 mr-2 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-              </svg>
-              {{ checkingDuplicates ? 'Checking...' : 'Check Duplicates' }}
-            </button>
-            
-            <!-- Import Now button (Step 2, when NOT checking duplicates) -->
-            <button 
-              v-if="step === 2 && !shouldCheckDuplicates && !duplicateData && !importing && !importResults"
-              @click="performImport" 
-              class="btn-primary"
-            >
-              <svg class="w-5 h-5 mr-2 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-              </svg>
-              Import Now (Skip Duplicate Check)
-            </button>
-            
-            <!-- Next/Import button (all other steps) -->
-            <button 
-              v-if="(step < 2 || (step === 2 && duplicateData)) && !importing && !importResults"
-              @click="nextStep" 
-              :disabled="!canProceed"
-              class="btn-primary"
-            >
-              {{ step === 0 ? 'Next' : step === 1 ? 'Next' : 'Import Now' }}
-            </button>
-            
-            <button 
-              v-if="importResults"
-              @click="$emit('import-complete'); $emit('close')"
-              class="btn-primary"
-            >
-              Done
-            </button>
+            <div class="flex gap-3">
+              <button 
+                @click="$emit('close')" 
+                class="inline-flex items-center gap-2 px-6 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold rounded-xl transition-colors"
+              >
+                {{ importResults ? 'Close' : 'Cancel' }}
+              </button>
+              
+              <!-- Check Duplicates button (Step 2, when checking is selected, before checking) -->
+              <button 
+                v-if="step === 2 && shouldCheckDuplicates && !duplicateData && !importing && !importResults"
+                @click="checkDuplicates" 
+                :disabled="duplicateCheckFields.length === 0 || checkingDuplicates"
+                class="inline-flex items-center gap-2 px-6 py-2.5 bg-brand-600 hover:bg-brand-700 dark:bg-brand-600 dark:hover:bg-brand-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-brand-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg v-if="!checkingDuplicates" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+                <div v-else class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                {{ checkingDuplicates ? 'Checking...' : 'Check Duplicates' }}
+              </button>
+              
+              <!-- Import Now button (Step 2, when NOT checking duplicates) -->
+              <button 
+                v-if="step === 2 && !shouldCheckDuplicates && !duplicateData && !importing && !importResults"
+                @click="performImport" 
+                class="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 text-white font-semibold rounded-xl transition-all shadow-lg shadow-brand-500/30"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                Import Now (Skip Duplicate Check)
+              </button>
+              
+              <!-- Next/Import button (all other steps) -->
+              <button 
+                v-if="(step < 2 || (step === 2 && duplicateData)) && !importing && !importResults"
+                @click="nextStep" 
+                :disabled="!canProceed"
+                class="inline-flex items-center gap-2 px-6 py-2.5 bg-brand-600 hover:bg-brand-700 dark:bg-brand-600 dark:hover:bg-brand-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-brand-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {{ step === 0 ? 'Next' : step === 1 ? 'Next' : 'Import Now' }}
+                <svg v-if="step < 2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+                <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+              </button>
+              
+              <button 
+                v-if="importResults"
+                @click="$emit('import-complete'); $emit('close')"
+                class="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold rounded-xl transition-all shadow-lg shadow-green-500/30"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                Done
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -520,10 +621,10 @@ const showFieldDropdown = ref(false); // Control dropdown visibility
 const shouldCheckDuplicates = ref(true); // Whether to check duplicates or not
 
 const steps = [
-  { title: 'Upload CSV File', description: 'Select your CSV file to import' },
-  { title: 'Map Fields', description: 'Match CSV columns to fields' },
-  { title: 'Check Duplicates', description: 'Review potential duplicates' },
-  { title: 'Import Results', description: 'Review import results' }
+  { title: 'Upload CSV File', shortTitle: 'Upload', description: 'Select your CSV file to import' },
+  { title: 'Map Fields', shortTitle: 'Map Fields', description: 'Match CSV columns to fields' },
+  { title: 'Check Duplicates', shortTitle: 'Duplicates', description: 'Review potential duplicates' },
+  { title: 'Import Results', shortTitle: 'Results', description: 'Review import results' }
 ];
 
 const availableFields = computed(() => {
@@ -655,6 +756,34 @@ const handleFileSelect = (event) => {
   };
   
   reader.readAsText(file);
+};
+
+const handleFileDrop = (event) => {
+  const file = event.dataTransfer.files[0];
+  if (!file || !file.name.endsWith('.csv')) {
+    alert('Please upload a CSV file');
+    return;
+  }
+
+  fileName.value = file.name;
+  const reader = new FileReader();
+  
+  reader.onload = (e) => {
+    csvData.value = e.target.result;
+    parseCSV();
+    step.value = 1;
+  };
+  
+  reader.readAsText(file);
+};
+
+const clearFile = () => {
+  fileName.value = '';
+  csvData.value = '';
+  csvHeaders.value = [];
+  preview.value = [];
+  totalRows.value = 0;
+  fieldMapping.value = {};
 };
 
 const parseCSVLine = (line) => {
@@ -816,3 +945,38 @@ watch(duplicateCheckableFields, (newFields) => {
 }, { immediate: true });
 </script>
 
+<style scoped>
+/* Custom Scrollbar Styling */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-gray-100 dark:bg-gray-800 rounded-full;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-brand-400 dark:bg-brand-600 rounded-full hover:bg-brand-500 dark:hover:bg-brand-500;
+}
+
+/* Slide Up Animation */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+/* Border Dash */
+.border-3 {
+  border-width: 3px;
+}
+</style>
