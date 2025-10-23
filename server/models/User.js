@@ -70,6 +70,11 @@ const UserSchema = new mongoose.Schema({
             delete: { type: Boolean, default: true },
             viewAll: { type: Boolean, default: true }
         },
+        imports: {
+            view: { type: Boolean, default: true },
+            create: { type: Boolean, default: false },
+            delete: { type: Boolean, default: false }
+        },
         settings: {
             manageUsers: { type: Boolean, default: false },
             manageBilling: { type: Boolean, default: false },
@@ -117,6 +122,7 @@ UserSchema.methods.setPermissionsByRole = function(role) {
             deals: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
             projects: { view: true, create: true, edit: true, delete: true, viewAll: true },
             tasks: { view: true, create: true, edit: true, delete: true, viewAll: true },
+            imports: { view: true, create: true, delete: true },
             settings: { manageUsers: true, manageBilling: true, manageIntegrations: true, customizeFields: true },
             reports: { viewStandard: true, viewCustom: true, createCustom: true, exportReports: true }
         },
@@ -125,6 +131,7 @@ UserSchema.methods.setPermissionsByRole = function(role) {
             deals: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
             projects: { view: true, create: true, edit: true, delete: true, viewAll: true },
             tasks: { view: true, create: true, edit: true, delete: true, viewAll: true },
+            imports: { view: true, create: true, delete: true },
             settings: { manageUsers: true, manageBilling: false, manageIntegrations: true, customizeFields: true },
             reports: { viewStandard: true, viewCustom: true, createCustom: true, exportReports: true }
         },
@@ -133,6 +140,7 @@ UserSchema.methods.setPermissionsByRole = function(role) {
             deals: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: false },
             projects: { view: true, create: true, edit: true, delete: false, viewAll: true },
             tasks: { view: true, create: true, edit: true, delete: true, viewAll: true },
+            imports: { view: true, create: true, delete: false },
             settings: { manageUsers: false, manageBilling: false, manageIntegrations: false, customizeFields: false },
             reports: { viewStandard: true, viewCustom: true, createCustom: false, exportReports: false }
         },
@@ -141,6 +149,7 @@ UserSchema.methods.setPermissionsByRole = function(role) {
             deals: { view: true, create: true, edit: true, delete: false, viewAll: false, exportData: false },
             projects: { view: true, create: true, edit: true, delete: false, viewAll: false },
             tasks: { view: true, create: true, edit: true, delete: true, viewAll: false },
+            imports: { view: true, create: false, delete: false },
             settings: { manageUsers: false, manageBilling: false, manageIntegrations: false, customizeFields: false },
             reports: { viewStandard: true, viewCustom: false, createCustom: false, exportReports: false }
         },
@@ -149,6 +158,7 @@ UserSchema.methods.setPermissionsByRole = function(role) {
             deals: { view: true, create: false, edit: false, delete: false, viewAll: false, exportData: false },
             projects: { view: true, create: false, edit: false, delete: false, viewAll: false },
             tasks: { view: true, create: false, edit: false, delete: false, viewAll: false },
+            imports: { view: true, create: false, delete: false },
             settings: { manageUsers: false, manageBilling: false, manageIntegrations: false, customizeFields: false },
             reports: { viewStandard: false, viewCustom: false, createCustom: false, exportReports: false }
         }

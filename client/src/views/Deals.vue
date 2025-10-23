@@ -19,6 +19,18 @@
           </svg>
           Pipeline
         </button>
+        <button @click="showImportModal = true" class="btn-secondary">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+          Import
+        </button>
+        <button @click="exportDeals" class="btn-secondary">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+          </svg>
+          Export
+        </button>
         <button @click="openCreateModal" class="btn-primary">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -182,24 +194,131 @@
         </div>
       </div>
 
-      <!-- Loading State -->
-      <div v-if="loading" class="loading">
-        <div class="spinner"></div>
-        <p>Loading deals...</p>
-      </div>
+      <!-- Deals Table with DataTable Component -->
+      <DataTable
+        :data="deals"
+        :columns="tableColumns"
+        :loading="loading"
+        :paginated="true"
+        :per-page="20"
+        :total-records="pagination.totalDeals"
+        :show-controls="false"
+        :selectable="true"
+        :mass-actions="massActions"
+        row-key="_id"
+        empty-title="No deals yet"
+        empty-message="Start tracking your sales opportunities"
+        @select="handleSelect"
+        @bulk-action="handleBulkAction"
+        @row-click="handleRowClick"
+        @edit="editDeal"
+        @delete="handleDeleteDeal"
+        @page-change="handlePageChange"
+        @sort="handleSort"
+      >
+        <!-- Custom Deal Name Cell -->
+        <template #cell-name="{ row }">
+          <span class="font-semibold text-gray-900 dark:text-white">{{ row.name }}</span>
+        </template>
 
-      <!-- Empty State -->
-      <div v-else-if="deals.length === 0 && !searchQuery" class="empty-state">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-        </svg>
-        <h3>No deals yet</h3>
-        <p>Start tracking your sales opportunities</p>
-        <button @click="openCreateModal" class="btn-primary">Create Your First Deal</button>
-      </div>
+        <!-- Custom Amount Cell -->
+        <template #cell-amount="{ value }">
+          <strong>{{ formatCurrency(value) }}</strong>
+        </template>
 
-      <!-- Deals Table -->
-      <div v-else-if="deals.length > 0" class="table-container">
+        <!-- Custom Stage Cell with Badge -->
+        <template #cell-stage="{ value }">
+          <BadgeCell 
+            :value="value" 
+            :variant-map="{
+              'Lead': 'warning',
+              'Qualified': 'info',
+              'Proposal': 'primary',
+              'Negotiation': 'warning',
+              'Closed Won': 'success',
+              'Closed Lost': 'danger'
+            }"
+          />
+        </template>
+
+        <!-- Custom Contact Cell -->
+        <template #cell-contactId="{ row }">
+          <span v-if="row.contactId">
+            {{ row.contactId.first_name }} {{ row.contactId.last_name }}
+          </span>
+          <span v-else class="text-gray-500 dark:text-gray-400">-</span>
+        </template>
+
+        <!-- Custom Owner Cell -->
+        <template #cell-ownerId="{ row }">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-sm font-medium">
+              {{ getInitials(row.ownerId) }}
+            </div>
+            <span>{{ row.ownerId?.firstName }}</span>
+          </div>
+        </template>
+
+        <!-- Custom Close Date Cell with overdue highlight -->
+        <template #cell-expectedCloseDate="{ row }">
+          <span :class="{'text-danger-600 dark:text-danger-400 font-medium': isOverdue(row.expectedCloseDate)}">
+            {{ formatDate(row.expectedCloseDate) }}
+          </span>
+        </template>
+
+        <!-- Custom Probability Cell -->
+        <template #cell-probability="{ value }">
+          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ value }}%</span>
+        </template>
+
+        <!-- Custom Priority Cell with Badge -->
+        <template #cell-priority="{ value }">
+          <BadgeCell 
+            :value="value || 'Medium'" 
+            :variant-map="{
+              'Low': 'default',
+              'Medium': 'info',
+              'High': 'warning',
+              'Urgent': 'danger'
+            }"
+          />
+        </template>
+
+        <!-- Custom Actions -->
+        <template #actions="{ row }">
+          <button 
+            @click.stop="viewDeal(row._id)" 
+            class="p-2 text-gray-600 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all hover:scale-110" 
+            title="View"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+          </button>
+          <button 
+            @click.stop="editDeal(row)" 
+            class="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all hover:scale-110" 
+            title="Edit"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </button>
+          <button 
+            @click.stop="deleteDeal(row._id)" 
+            class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all hover:scale-110" 
+            title="Delete"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        </template>
+      </DataTable>
+
+      <!-- Old table code below (commented out for reference)
+      <div v-if="false && deals.length > 0" class="table-container">
         <table class="deals-table">
           <thead>
             <tr>
@@ -284,26 +403,8 @@
         </table>
       </div>
 
-      <!-- Pagination -->
-      <div v-if="!loading && deals.length > 0" class="pagination">
-        <button 
-          @click="changePage(pagination.currentPage - 1)" 
-          :disabled="pagination.currentPage === 1"
-          class="btn-pagination"
-        >
-          Previous
-        </button>
-        <span class="page-info">
-          Page {{ pagination.currentPage }} of {{ pagination.totalPages }} ({{ pagination.totalDeals }} deals)
-        </span>
-        <button 
-          @click="changePage(pagination.currentPage + 1)" 
-          :disabled="pagination.currentPage === pagination.totalPages"
-          class="btn-pagination"
-        >
-          Next
-        </button>
-      </div>
+      <!-- Pagination (commented out - handled by DataTable) -->
+      -->
     </div>
 
     <!-- Create/Edit Modal -->
@@ -313,6 +414,14 @@
       @close="closeFormModal"
       @saved="handleDealSaved"
     />
+
+    <!-- CSV Import Modal -->
+    <CSVImportModal
+      v-if="showImportModal"
+      entity-type="Deals"
+      @close="showImportModal = false"
+      @import-complete="handleImportComplete"
+    />
   </div>
 </template>
 
@@ -320,7 +429,10 @@
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import apiClient from '@/utils/apiClient';
+import DataTable from '@/components/common/DataTable.vue';
+import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import DealFormModal from '@/components/deals/DealFormModal.vue';
+import CSVImportModal from '@/components/import/CSVImportModal.vue';
 
 const router = useRouter();
 
@@ -330,9 +442,17 @@ const loading = ref(false);
 const viewMode = ref('kanban'); // 'kanban' or 'table'
 const searchQuery = ref('');
 const showFormModal = ref(false);
+const showImportModal = ref(false);
 const editingDeal = ref(null);
 
 const stages = ['Lead', 'Qualified', 'Proposal', 'Negotiation', 'Closed Won', 'Closed Lost'];
+
+// Mass Actions
+const massActions = [
+  { label: 'Move to Stage', icon: 'edit', action: 'bulk-move-stage' },
+  { label: 'Delete', icon: 'trash', action: 'bulk-delete', variant: 'danger' },
+  { label: 'Export', icon: 'export', action: 'bulk-export' }
+];
 
 const filters = reactive({
   stage: '',
@@ -359,6 +479,43 @@ const statistics = ref({
 
 const sortField = ref('createdAt');
 const sortOrder = ref('desc');
+
+// Column definitions for table view
+const tableColumns = [
+  { key: 'name', label: 'Deal Name', sortable: true },
+  { key: 'amount', label: 'Amount', sortable: true },
+  { key: 'stage', label: 'Stage', sortable: true },
+  { key: 'contactId', label: 'Contact', sortable: false },
+  { key: 'ownerId', label: 'Owner', sortable: false },
+  { key: 'expectedCloseDate', label: 'Close Date', sortable: true },
+  { key: 'probability', label: 'Probability', sortable: true },
+  { key: 'priority', label: 'Priority', sortable: true }
+];
+
+// Event handlers for DataTable
+const handleRowClick = (row) => {
+  viewDeal(row._id);
+};
+
+const handleDeleteDeal = (row) => {
+  deleteDeal(row._id);
+};
+
+const handlePageChange = (page) => {
+  pagination.value.currentPage = page;
+  fetchDeals();
+};
+
+const handleSort = ({ key, order }) => {
+  sortField.value = key;
+  sortOrder.value = order;
+  fetchDeals();
+};
+
+const isOverdue = (date) => {
+  if (!date) return false;
+  return new Date(date) < new Date();
+};
 
 // Computed
 const winRate = computed(() => {
@@ -455,6 +612,39 @@ const handleDealSaved = () => {
   fetchDeals();
 };
 
+// Export deals to CSV
+const exportDeals = async () => {
+  try {
+    const response = await fetch('/api/csv/export/deals', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).token : ''}`
+      }
+    });
+    
+    if (!response.ok) throw new Error('Export failed');
+    
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `deals_${Date.now()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  } catch (error) {
+    console.error('Error exporting deals:', error);
+    alert('Failed to export deals');
+  }
+};
+
+// Handle import complete
+const handleImportComplete = () => {
+  showImportModal.value = false;
+  fetchDeals();
+};
+
 const deleteDeal = async (dealId) => {
   if (!confirm('Are you sure you want to delete this deal?')) return;
   
@@ -467,6 +657,63 @@ const deleteDeal = async (dealId) => {
     console.error('Error deleting deal:', error);
     alert('Failed to delete deal');
   }
+};
+
+// Bulk Actions Handlers
+const handleSelect = (selectedRows) => {
+  console.log(`${selectedRows.length} deals selected`);
+};
+
+const handleBulkAction = async ({ action, selectedRows }) => {
+  const dealIds = selectedRows.map(deal => deal._id);
+  
+  try {
+    if (action === 'bulk-delete') {
+      if (!confirm(`Delete ${selectedRows.length} deals?`)) return;
+      
+      await Promise.all(dealIds.map(id => 
+        apiClient(`/deals/${id}`, { method: 'DELETE' })
+      ));
+      fetchDeals();
+      
+    } else if (action === 'bulk-move-stage') {
+      const stage = prompt(`Move ${selectedRows.length} deals to stage:\n\nOptions: ${stages.join(', ')}`);
+      if (!stage || !stages.includes(stage)) return;
+      
+      await Promise.all(dealIds.map(id => 
+        apiClient.patch(`/deals/${id}`, { stage })
+      ));
+      fetchDeals();
+      
+    } else if (action === 'bulk-export') {
+      exportDealsToCSV(selectedRows);
+    }
+  } catch (error) {
+    console.error('Error performing bulk action:', error);
+    alert('Error performing bulk action. Please try again.');
+  }
+};
+
+const exportDealsToCSV = (dealsToExport) => {
+  const csv = [
+    ['Deal Name', 'Amount', 'Stage', 'Priority', 'Probability', 'Close Date'].join(','),
+    ...dealsToExport.map(deal => [
+      deal.name,
+      deal.amount || 0,
+      deal.stage,
+      deal.priority || '',
+      deal.probability || '',
+      deal.expectedCloseDate || ''
+    ].join(','))
+  ].join('\n');
+  
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `deals-export-${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  window.URL.revokeObjectURL(url);
 };
 
 const formatCurrency = (amount) => {
@@ -485,10 +732,6 @@ const formatDate = (date) => {
     month: 'short',
     day: 'numeric'
   });
-};
-
-const isOverdue = (date) => {
-  return new Date(date) < new Date();
 };
 
 const getInitials = (user) => {

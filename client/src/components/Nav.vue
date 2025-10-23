@@ -12,6 +12,8 @@ const navigation = computed(() => {
     { name: 'Dashboard', href: '/dashboard', current: true },
     { name: 'Contacts', href: '/contacts', current: false },
     { name: 'Deals', href: '/deals', current: false },
+    { name: 'Tasks', href: '/tasks', current: false },
+    { name: 'Imports', href: '/imports', current: false },
     { name: 'Projects', href: '/items', current: false },
     { name: 'Calendar', href: '/events', current: false },
   ];
