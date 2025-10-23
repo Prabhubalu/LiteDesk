@@ -131,136 +131,114 @@
       </div>
     </div>
 
-    <!-- Loading State -->
-    <div v-if="loading" class="text-center py-12">
-      <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
-      <p class="text-gray-600 dark:text-gray-400 mt-4">Loading contacts...</p>
-    </div>
-
-    <!-- Empty State -->
-    <div v-else-if="contacts.length === 0 && !searchQuery" class="card">
-      <div class="card-body text-center py-16">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No contacts yet</h3>
-        <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">Start building your network by adding your first contact</p>
-        <button @click="openCreateModal" class="btn-primary">Add Your First Contact</button>
-      </div>
-    </div>
-
-    <!-- No Search Results -->
-    <div v-else-if="contacts.length === 0 && searchQuery" class="card">
-      <div class="card-body text-center py-16">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No contacts found</h3>
-        <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">Try adjusting your search or filters</p>
-        <button @click="clearFilters" class="btn-secondary">Clear Filters</button>
-      </div>
-    </div>
-
     <!-- Contacts Table -->
-    <div v-else class="table-container">
-      <table class="table">
-        <thead>
-          <tr>
-            <th class="w-12">
-              <input type="checkbox" @change="toggleSelectAll" :checked="allSelected" class="w-4 h-4 text-brand-600 border-gray-300 rounded focus:ring-brand-500" />
-            </th>
-            <th @click="sortBy('first_name')" class="cursor-pointer select-none hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-              <div class="flex items-center gap-2">
-                <span>Name</span>
-                <svg v-if="sortField === 'first_name'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="sortOrder === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'" />
-                </svg>
-              </div>
-            </th>
-            <th v-if="isAdmin">Organization</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Company</th>
-            <th>Stage</th>
-            <th>Owner</th>
-            <th>Last Contact</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="contact in contacts" :key="contact._id" @click="viewContact(contact._id)" class="cursor-pointer">
-            <td @click.stop>
-              <input type="checkbox" v-model="selectedContacts" :value="contact._id" class="w-4 h-4 text-brand-600 border-gray-300 rounded focus:ring-brand-500" />
-            </td>
-            <td>
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-500 to-brand-600 text-white flex items-center justify-center font-semibold text-sm flex-shrink-0">
-                  {{ getInitials(contact) }}
-                </div>
-                <div>
-                  <div class="font-semibold text-gray-900 dark:text-white">{{ contact.first_name }} {{ contact.last_name }}</div>
-                  <div class="text-sm text-gray-500 dark:text-gray-400">{{ contact.job_title || 'No title' }}</div>
-                </div>
-              </div>
-            </td>
-            <td v-if="isAdmin">
-              <div>
-                <div class="font-medium text-gray-900 dark:text-white">{{ contact.organizationId?.name || 'N/A' }}</div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">{{ contact.organizationId?.industry || '-' }}</div>
-              </div>
-            </td>
-            <td>
-              <span class="text-gray-700 dark:text-gray-300">{{ contact.email }}</span>
-            </td>
-            <td>
-              <span class="text-gray-700 dark:text-gray-300">{{ contact.phone || contact.mobile || '-' }}</span>
-            </td>
-            <td>
-              <span class="text-gray-700 dark:text-gray-300">{{ contact.account_id?.name || '-' }}</span>
-            </td>
-            <td>
-              <span :class="[
-                'badge',
-                contact.lifecycle_stage?.toLowerCase() === 'lead' ? 'badge-warning' :
-                contact.lifecycle_stage?.toLowerCase() === 'qualified' ? 'badge-info' :
-                contact.lifecycle_stage?.toLowerCase() === 'opportunity' ? 'bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400' :
-                contact.lifecycle_stage?.toLowerCase() === 'customer' ? 'badge-success' :
-                contact.lifecycle_stage?.toLowerCase() === 'lost' ? 'badge-danger' :
-                'badge-warning'
-              ]">
-                {{ contact.lifecycle_stage || 'Lead' }}
-              </span>
-            </td>
-            <td>
-              <span class="text-sm text-gray-700 dark:text-gray-300">{{ contact.owner_id?.firstName || 'Unassigned' }}</span>
-            </td>
-            <td>
-              <span class="text-sm text-gray-600 dark:text-gray-400">{{ formatDate(contact.last_contacted_at) }}</span>
-            </td>
-            <td @click.stop>
-              <div class="flex items-center gap-2">
-                <button @click="viewContact(contact._id)" class="p-2 text-gray-600 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all" title="View">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                </button>
-                <button @click="editContact(contact)" class="p-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all" title="Edit">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </button>
-                <button @click="deleteContact(contact._id)" class="p-2 text-gray-600 dark:text-gray-400 hover:text-danger-600 dark:hover:text-danger-400 hover:bg-danger-50 dark:hover:bg-danger-900/20 rounded-lg transition-all" title="Delete">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <DataTable
+      :data="contacts"
+      :columns="tableColumns"
+      :loading="loading"
+      :paginated="true"
+      :per-page="20"
+      :total-records="pagination.totalContacts"
+      :selectable="true"
+      :show-controls="false"
+      row-key="_id"
+      empty-title="No contacts yet"
+      empty-message="Start building your network by adding your first contact"
+      @row-click="handleRowClick"
+      @edit="editContact"
+      @delete="handleDelete"
+      @page-change="handlePageChange"
+      @sort="handleSort"
+      @select="handleSelect"
+    >
+      <!-- Custom Name Cell -->
+      <template #cell-name="{ row }">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-500 to-brand-600 text-white flex items-center justify-center font-semibold text-sm flex-shrink-0">
+            {{ getInitials(row) }}
+          </div>
+          <span class="font-semibold text-gray-900 dark:text-white">{{ row.first_name }} {{ row.last_name }}</span>
+        </div>
+      </template>
+
+      <!-- Custom Organization Cell (only for admins) -->
+      <template #cell-organizationId="{ row }" v-if="isAdmin">
+        <span class="font-medium text-gray-900 dark:text-white">{{ row.organizationId?.name || 'N/A' }}</span>
+      </template>
+
+      <!-- Custom Email Cell -->
+      <template #cell-email="{ value }">
+        <a :href="`mailto:${value}`" class="text-brand-600 dark:text-brand-400 hover:underline" @click.stop>
+          {{ value }}
+        </a>
+      </template>
+
+      <!-- Custom Phone Cell -->
+      <template #cell-phone="{ row }">
+        <span class="text-gray-700 dark:text-gray-300">{{ row.phone || row.mobile || '-' }}</span>
+      </template>
+
+      <!-- Custom Company Cell -->
+      <template #cell-account_id="{ row }">
+        <span class="text-gray-700 dark:text-gray-300">{{ row.account_id?.name || '-' }}</span>
+      </template>
+
+      <!-- Custom Stage Cell with Badge -->
+      <template #cell-lifecycle_stage="{ value }">
+        <BadgeCell 
+          :value="value || 'Lead'" 
+          :variant-map="{
+            'Lead': 'warning',
+            'Qualified': 'info',
+            'Opportunity': 'primary',
+            'Customer': 'success',
+            'Lost': 'danger'
+          }"
+        />
+      </template>
+
+      <!-- Custom Owner Cell -->
+      <template #cell-owner_id="{ row }">
+        <span class="text-sm text-gray-700 dark:text-gray-300">{{ row.owner_id?.firstName || 'Unassigned' }}</span>
+      </template>
+
+      <!-- Custom Last Contact Cell -->
+      <template #cell-last_contacted_at="{ value }">
+        <DateCell :value="value" format="short" />
+      </template>
+
+      <!-- Custom Actions -->
+      <template #actions="{ row }">
+        <button 
+          @click.stop="viewContact(row._id)" 
+          class="p-2 text-gray-600 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all hover:scale-110" 
+          title="View"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+        </button>
+        <button 
+          @click.stop="editContact(row)" 
+          class="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all hover:scale-110" 
+          title="Edit"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
+        </button>
+        <button 
+          @click.stop="deleteContact(row._id)" 
+          class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all hover:scale-110" 
+          title="Delete"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
+      </template>
+    </DataTable>
 
     <!-- Bulk Actions -->
     <div v-if="selectedContacts.length > 0" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
@@ -288,52 +266,6 @@
       </div>
     </div>
 
-    <!-- Pagination -->
-    <div v-if="!loading && contacts.length > 0" class="flex items-center justify-between mt-6">
-      <div class="text-sm text-gray-700 dark:text-gray-300">
-        Showing <span class="font-medium">{{ (pagination.currentPage - 1) * 20 + 1 }}</span> to 
-        <span class="font-medium">{{ Math.min(pagination.currentPage * 20, pagination.totalContacts) }}</span> of 
-        <span class="font-medium">{{ pagination.totalContacts }}</span> contacts
-      </div>
-      
-      <div class="flex items-center gap-2">
-        <button 
-          @click="changePage(pagination.currentPage - 1)" 
-          :disabled="pagination.currentPage === 1"
-          class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        
-        <div class="flex gap-2">
-          <button 
-            v-for="page in Math.min(pagination.totalPages, 5)" 
-            :key="page"
-            @click="changePage(page)"
-            :class="[
-              'px-4 py-2 text-sm font-medium rounded-lg transition-colors',
-              pagination.currentPage === page
-                ? 'bg-brand-600 text-white'
-                : 'text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-            ]"
-          >
-            {{ page }}
-          </button>
-        </div>
-        
-        <button 
-          @click="changePage(pagination.currentPage + 1)" 
-          :disabled="pagination.currentPage === pagination.totalPages"
-          class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-      </div>
-    </div>
 
     <!-- Create/Edit Modal -->
     <ContactFormModal 
@@ -343,20 +275,13 @@
       @saved="handleContactSaved"
     />
 
-    <!-- Import Modal -->
-    <div v-if="showImportModal" class="modal-overlay" @click="showImportModal = false">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h2>Import Contacts</h2>
-          <button @click="showImportModal = false" class="btn-close">×</button>
-        </div>
-        <div class="modal-body">
-          <p>Upload a CSV file with your contacts. The first row should contain headers.</p>
-          <p class="text-sm">Required fields: first_name, last_name, email</p>
-          <input type="file" accept=".csv" @change="handleFileUpload" />
-        </div>
-      </div>
-    </div>
+    <!-- CSV Import Modal -->
+    <CSVImportModal 
+      v-if="showImportModal"
+      entity-type="Contacts"
+      @close="showImportModal = false"
+      @import-complete="handleImportComplete"
+    />
   </div>
 </template>
 
@@ -365,7 +290,11 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import apiClient from '@/utils/apiClient';
+import DataTable from '@/components/common/DataTable.vue';
+import BadgeCell from '@/components/common/table/BadgeCell.vue';
+import DateCell from '@/components/common/table/DateCell.vue';
 import ContactFormModal from '@/components/contacts/ContactFormModal.vue';
+import CSVImportModal from '@/components/import/CSVImportModal.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -392,6 +321,55 @@ const pagination = ref({
   limit: 20
 });
 
+// Computed admin check
+const isAdmin = computed(() => authStore.user?.role === 'admin' || authStore.user?.role === 'owner');
+
+// Column definitions (dynamically include Organization column for admins)
+const tableColumns = computed(() => {
+  const baseColumns = [
+    { key: 'name', label: 'Name', sortable: true },
+  ];
+  
+  if (isAdmin.value) {
+    baseColumns.push({ key: 'organizationId', label: 'Organization', sortable: false });
+  }
+  
+  baseColumns.push(
+    { key: 'email', label: 'Email', sortable: true },
+    { key: 'phone', label: 'Phone', sortable: false },
+    { key: 'account_id', label: 'Company', sortable: false },
+    { key: 'lifecycle_stage', label: 'Stage', sortable: true },
+    { key: 'owner_id', label: 'Owner', sortable: false },
+    { key: 'last_contacted_at', label: 'Last Contact', sortable: true }
+  );
+  
+  return baseColumns;
+});
+
+// Event handlers
+const handleRowClick = (row) => {
+  viewContact(row._id);
+};
+
+const handleDelete = (row) => {
+  deleteContact(row._id);
+};
+
+const handlePageChange = (page) => {
+  pagination.value.currentPage = page;
+  fetchContacts();
+};
+
+const handleSort = ({ key, order }) => {
+  sortField.value = key;
+  sortOrder.value = order;
+  fetchContacts();
+};
+
+const handleSelect = (selected) => {
+  selectedContacts.value = selected.map(row => row._id);
+};
+
 const statistics = ref({
   totalContacts: 0,
   leadContacts: 0,
@@ -403,12 +381,6 @@ const sortField = ref('createdAt');
 const sortOrder = ref('desc');
 
 // Computed
-const allSelected = computed(() => {
-  return contacts.value.length > 0 && selectedContacts.value.length === contacts.value.length;
-});
-
-// Computed
-const isAdmin = computed(() => authStore.isOwner || authStore.userRole === 'admin');
 
 // Methods
 const fetchContacts = async () => {
@@ -463,21 +435,6 @@ const debouncedSearch = () => {
   }, 500);
 };
 
-const sortBy = (field) => {
-  if (sortField.value === field) {
-    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
-  } else {
-    sortField.value = field;
-    sortOrder.value = 'asc';
-  }
-  fetchContacts();
-};
-
-const changePage = (page) => {
-  pagination.value.currentPage = page;
-  fetchContacts();
-};
-
 const viewContact = (contactId) => {
   router.push(`/contacts/${contactId}`);
 };
@@ -502,6 +459,11 @@ const handleContactSaved = () => {
   fetchContacts();
 };
 
+const handleImportComplete = () => {
+  showImportModal.value = false;
+  fetchContacts();
+};
+
 const deleteContact = async (contactId) => {
   if (!confirm('Are you sure you want to delete this contact?')) return;
   
@@ -516,13 +478,6 @@ const deleteContact = async (contactId) => {
   }
 };
 
-const toggleSelectAll = () => {
-  if (allSelected.value) {
-    selectedContacts.value = [];
-  } else {
-    selectedContacts.value = contacts.value.map(c => c._id);
-  }
-};
 
 const bulkDelete = async () => {
   if (!confirm(`Are you sure you want to delete ${selectedContacts.value.length} contact(s)?`)) return;
@@ -547,13 +502,27 @@ const bulkExport = () => {
 
 const exportContacts = async () => {
   try {
-    // Fetch all contacts (or current filtered set)
-    const data = await apiClient('/contacts?limit=10000', {
-      method: 'GET'
+    // Use backend CSV export endpoint
+    const response = await fetch('/api/csv/export/contacts', {
+      headers: {
+        'Authorization': `Bearer ${authStore.user?.token}`
+      }
     });
-    exportToCSV(data.data);
+    
+    if (!response.ok) throw new Error('Export failed');
+    
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `contacts_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Error exporting contacts:', error);
+    alert('Error exporting contacts. Please try again.');
   }
 };
 

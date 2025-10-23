@@ -14,9 +14,17 @@ const apiClient = async (url, options = {}) => {
         headers['Authorization'] = `Bearer ${token}`; 
     }
 
-    const response = await fetch(`/api${url}`, {
+    // Handle URL params for GET requests
+    let fullUrl = `/api${url}`;
+    if (options.params) {
+        const queryString = new URLSearchParams(options.params).toString();
+        fullUrl += `?${queryString}`;
+    }
+
+    const response = await fetch(fullUrl, {
         ...options,
         headers,
+        body: options.body ? JSON.stringify(options.body) : options.body,
     });
 
     if (response.status === 401) {
@@ -32,6 +40,27 @@ const apiClient = async (url, options = {}) => {
     }
 
     return response.json();
+};
+
+// Add convenient methods
+apiClient.get = (url, options = {}) => {
+    return apiClient(url, { ...options, method: 'GET' });
+};
+
+apiClient.post = (url, data, options = {}) => {
+    return apiClient(url, { ...options, method: 'POST', body: data });
+};
+
+apiClient.put = (url, data, options = {}) => {
+    return apiClient(url, { ...options, method: 'PUT', body: data });
+};
+
+apiClient.patch = (url, data, options = {}) => {
+    return apiClient(url, { ...options, method: 'PATCH', body: data });
+};
+
+apiClient.delete = (url, options = {}) => {
+    return apiClient(url, { ...options, method: 'DELETE' });
 };
 
 export default apiClient;
