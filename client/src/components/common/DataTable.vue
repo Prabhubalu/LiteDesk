@@ -1,5 +1,35 @@
 <template>
   <div class="w-full relative">
+    <!-- Select All Across Pages Banner -->
+    <Transition name="slide-down">
+      <div v-if="selectable && showSelectAllBanner" class="mb-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-xl px-6 py-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p class="text-sm font-medium text-blue-900 dark:text-blue-100">
+              All {{ displayData.length }} items on this page are selected.
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button
+              @click="selectAllAcrossPages"
+              class="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline transition-colors"
+            >
+              Select all {{ totalRecords || data.length }} items
+            </button>
+            <button
+              @click="clearSelection"
+              class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+            >
+              Clear selection
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Bulk Actions Floating Bar -->
     <Transition name="slide-up">
       <div v-if="selectable && selectedRows.length > 0" class="bulk-actions-bar">
@@ -8,7 +38,12 @@
             <!-- Selection Count -->
             <div class="flex items-center gap-2">
               <div class="bg-white/20 px-3 py-1.5 rounded-lg font-semibold">
-                {{ selectedRows.length }} selected
+                <span v-if="selectAllPages">
+                  All {{ totalRecords || data.length }} selected
+                </span>
+                <span v-else>
+                  {{ selectedRows.length }} selected
+                </span>
               </div>
               <button
                 @click="clearSelection"
@@ -93,6 +128,151 @@
       </div>
     </div>
 
+    <!-- Column Settings Button (Always visible when enabled) -->
+    <div v-if="columnSettings" class="flex justify-end mb-4">
+      <button
+        @click="showColumnSettings = !showColumnSettings"
+        class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition-all shadow-sm"
+        title="Column Settings"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+        </svg>
+        <span>Columns</span>
+      </button>
+    </div>
+
+    <!-- Column Settings Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div
+          v-if="showColumnSettings"
+          class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          @click.self="showColumnSettings = false"
+        >
+          <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Column Settings</h3>
+              <button
+                @click="showColumnSettings = false"
+                class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="flex-1 overflow-y-auto p-6">
+              <div>
+                <div class="flex items-center justify-between mb-4">
+                  <div>
+                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Manage Columns</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Toggle visibility and drag to reorder</p>
+                  </div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ visibleColumns.length }} of {{ columns.length }} visible
+                  </div>
+                </div>
+                
+                <div class="space-y-2">
+                  <div
+                    v-for="(column, index) in orderedColumns"
+                    :key="column.key"
+                    :draggable="true"
+                    @dragstart="handleDragStart(index)"
+                    @dragover.prevent
+                    @drop="handleDrop(index)"
+                    class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+                    :class="{ 'opacity-50': draggedIndex === index }"
+                  >
+                    <!-- Drag Handle -->
+                    <svg class="w-5 h-5 text-gray-400 dark:text-gray-500 cursor-move flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+                    </svg>
+                    
+                    <!-- Visibility Checkbox -->
+                    <input
+                      type="checkbox"
+                      :checked="isColumnVisible(column.key)"
+                      @change="toggleColumnVisibility(column.key)"
+                      @click.stop
+                      class="w-4 h-4 text-brand-600 dark:text-brand-500 border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 cursor-pointer flex-shrink-0"
+                    />
+                    
+                    <!-- Column Label -->
+                    <span class="text-sm font-medium text-gray-900 dark:text-white flex-1">
+                      {{ column.label }}
+                    </span>
+                    
+                    <!-- Freeze Button -->
+                    <button
+                      @click.stop="toggleColumnFreeze(column.key)"
+                      :disabled="!isColumnFrozen(column.key) && frozenColumns.length >= 2"
+                      :class="[
+                        'p-1.5 rounded-lg transition-all flex-shrink-0',
+                        isColumnFrozen(column.key)
+                          ? 'text-brand-600 dark:text-brand-400 bg-brand-100 dark:bg-brand-900/30'
+                          : 'text-gray-400 dark:text-gray-500 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-900/20',
+                        !isColumnFrozen(column.key) && frozenColumns.length >= 2 ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
+                      ]"
+                      :title="isColumnFrozen(column.key) ? 'Unfreeze column' : frozenColumns.length >= 2 ? 'Maximum 2 columns can be frozen' : 'Freeze column'"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                      </svg>
+                    </button>
+                    
+                    <!-- Hidden Badge -->
+                    <span
+                      v-if="!isColumnVisible(column.key)"
+                      class="text-xs px-2 py-1 bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-full flex-shrink-0"
+                    >
+                      Hidden
+                    </span>
+                    
+                    <!-- Frozen Badge -->
+                    <span
+                      v-if="isColumnFrozen(column.key)"
+                      class="text-xs px-2 py-1 bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 rounded-full flex-shrink-0"
+                    >
+                      Frozen
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+              <button
+                @click="resetColumnSettings"
+                class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+              >
+                Reset to Default
+              </button>
+              <div class="flex items-center gap-3">
+                <button
+                  @click="showColumnSettings = false"
+                  class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  @click="applyColumnSettings"
+                  class="px-4 py-2 text-sm font-medium text-white bg-brand-600 dark:bg-brand-700 hover:bg-brand-700 dark:hover:bg-brand-800 rounded-lg transition-colors"
+                >
+                  Apply
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
     <!-- Table Wrapper -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden">
       <!-- Table Container with Horizontal Scroll -->
@@ -115,11 +295,14 @@
       </div>
 
       <!-- Data Table -->
-      <table v-else class="w-full min-w-full">
+      <table v-else class="w-full min-w-full" :class="{ 'table-fixed': resizable }">
         <thead class="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 border-b-2 border-gray-200 dark:border-gray-600">
           <tr>
-            <!-- Selection Column -->
-            <th v-if="selectable" class="w-14 px-4 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+            <!-- Selection Column (Always Frozen) -->
+            <th 
+              v-if="selectable" 
+              class="sticky-selection-header w-14 px-4 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800"
+            >
               <input
                 type="checkbox"
                 :checked="allSelected"
@@ -130,24 +313,59 @@
 
             <!-- Data Columns -->
             <th
-              v-for="column in columns"
+              v-for="column in visibleColumns"
               :key="column.key"
-              :class="['px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap', column.headerClass]"
+              :class="[
+                'px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap relative',
+                column.headerClass,
+                isColumnFrozen(column.key) ? 'frozen-column-header bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800' : ''
+              ]"
               @click="column.sortable !== false ? handleSort(column.key) : null"
-              :style="{ cursor: column.sortable !== false ? 'pointer' : 'default', minWidth: column.minWidth || 'auto', maxWidth: column.maxWidth || 'none' }"
+              :title="column.sortable !== false ? getSortTitle(column.key) : ''"
+              :style="{ 
+                cursor: column.sortable !== false ? 'pointer' : 'default', 
+                width: columnWidths[column.key] || column.width || 'auto',
+                minWidth: column.minWidth || 'auto', 
+                maxWidth: column.maxWidth || 'none',
+                ...(isColumnFrozen(column.key) ? { left: getFrozenColumnOffset(column.key) } : {})
+              }"
             >
-              <div class="flex items-center gap-2 select-none">
+              <div class="flex items-center gap-2 select-none group">
                 <span>{{ column.label }}</span>
-                <span v-if="column.sortable !== false && sortBy === column.key" class="flex items-center text-brand-600 dark:text-brand-500">
-                  <svg v-if="sortOrder === 'asc'" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" />
-                  </svg>
-                  <svg v-else class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                  </svg>
+                
+                <!-- Sort Icon -->
+                <span v-if="column.sortable !== false" class="flex items-center ml-auto">
+                  <!-- Active sort -->
+                  <span v-if="sortBy === column.key" class="text-brand-600 dark:text-brand-500">
+                    <svg v-if="sortOrder === 'asc'" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" />
+                    </svg>
+                    <svg v-else class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                    </svg>
+                  </span>
+                  
+                  <!-- Sortable indicator (inactive) -->
+                  <span v-else class="text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                    </svg>
+                  </span>
                 </span>
               </div>
+              
+              <!-- Resize Handle -->
+              <div
+                v-if="resizable && column.resizable !== false"
+                @mousedown.prevent="startResize($event, column.key)"
+                class="resize-handle"
+              >
+                <div class="resize-line"></div>
+              </div>
             </th>
+            
+            <!-- Actions Column Header (Hidden) -->
+            <th v-if="hasActions" class="actions-cell-header"></th>
           </tr>
         </thead>
 
@@ -162,8 +380,15 @@
             ]"
             @click="handleRowClick(row)"
           >
-            <!-- Selection Column -->
-            <td v-if="selectable" class="px-4 py-4 text-sm text-gray-900 dark:text-white">
+            <!-- Selection Column (Always Frozen) -->
+            <td 
+              v-if="selectable" 
+              class="sticky-selection-cell px-4 py-4 text-sm text-gray-900 dark:text-white bg-inherit"
+              :class="{
+                'bg-white dark:bg-gray-800': !isSelected(row),
+                'bg-brand-50 dark:bg-brand-900/30': isSelected(row)
+              }"
+            >
               <input
                 type="checkbox"
                 :checked="isSelected(row)"
@@ -175,10 +400,22 @@
 
             <!-- Data Columns -->
             <td
-              v-for="(column, colIndex) in columns"
+              v-for="(column, colIndex) in visibleColumns"
               :key="column.key"
-              :class="['px-6 py-4 text-sm text-gray-900 dark:text-white', column.cellClass, colIndex === columns.length - 1 && hasActions ? 'relative pr-48' : '']"
-              :style="{ minWidth: column.minWidth || 'auto', maxWidth: column.maxWidth || 'none' }"
+              :class="[
+                'px-6 py-4 text-sm text-gray-900 dark:text-white table-cell-truncate',
+                column.cellClass,
+                isColumnFrozen(column.key) ? 'frozen-column-cell' : '',
+                isColumnFrozen(column.key) && !isSelected(row) ? 'bg-white dark:bg-gray-800' : '',
+                isColumnFrozen(column.key) && isSelected(row) ? 'bg-brand-50 dark:bg-brand-900/30' : ''
+              ]"
+              :style="{ 
+                width: columnWidths[column.key] || column.width || 'auto',
+                minWidth: column.minWidth || 'auto', 
+                maxWidth: column.maxWidth || 'none',
+                ...(isColumnFrozen(column.key) ? { left: getFrozenColumnOffset(column.key) } : {})
+              }"
+              :title="getCellDisplayValue(row, column)"
             >
               <slot :name="`cell-${column.key}`" :row="row" :value="getCellValue(row, column.key)">
                 <component
@@ -187,19 +424,22 @@
                   :value="getCellValue(row, column.key)"
                   :row="row"
                 />
-                <span v-else-if="column.format">
+                <span v-else-if="column.format" class="block truncate">
                   {{ column.format(getCellValue(row, column.key), row) }}
                 </span>
-                <span v-else>
+                <span v-else class="block truncate">
                   {{ getCellValue(row, column.key) }}
                 </span>
               </slot>
-              
-              <!-- Actions Overlay (in last column) -->
-              <div 
-                v-if="hasActions && colIndex === columns.length - 1" 
-                class="action-overlay"
-              >
+            </td>
+
+            <!-- Sticky Actions Cell -->
+            <td 
+              v-if="hasActions" 
+              class="actions-cell"
+              @click.stop
+            >
+              <div class="actions-container">
                 <slot name="actions" :row="row">
                   <button
                     v-if="!hideEdit"
@@ -218,7 +458,7 @@
                     title="Delete"
                   >
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
                 </slot>
@@ -282,7 +522,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
   // Data
@@ -308,6 +548,10 @@ const props = defineProps({
     type: Boolean,
     default: true
   },
+  serverSide: {
+    type: Boolean,
+    default: false
+  },
   paginated: {
     type: Boolean,
     default: true
@@ -315,6 +559,18 @@ const props = defineProps({
   selectable: {
     type: Boolean,
     default: false
+  },
+  resizable: {
+    type: Boolean,
+    default: false
+  },
+  persistWidths: {
+    type: Boolean,
+    default: true
+  },
+  tableId: {
+    type: String,
+    default: 'datatable'
   },
   
   // Pagination
@@ -378,6 +634,10 @@ const props = defineProps({
   showControls: {
     type: Boolean,
     default: true
+  },
+  columnSettings: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -389,8 +649,194 @@ const sortBy = ref('');
 const sortOrder = ref('asc');
 const currentPage = ref(1);
 const selectedRows = ref([]);
+const selectAllPages = ref(false);
+
+// Column resizing state
+const columnWidths = ref({});
+const resizing = ref(null);
+
+// Column settings state
+const showColumnSettings = ref(false);
+const hiddenColumns = ref([]);
+const columnOrder = ref([]);
+const frozenColumns = ref([]);
+const draggedIndex = ref(null);
+
+// Load saved settings from localStorage
+onMounted(() => {
+  if (props.persistWidths && props.resizable) {
+    const saved = localStorage.getItem(`datatable-${props.tableId}-widths`);
+    if (saved) {
+      try {
+        columnWidths.value = JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to parse saved column widths:', e);
+      }
+    }
+  }
+  
+  if (props.columnSettings) {
+    const savedHidden = localStorage.getItem(`datatable-${props.tableId}-hidden`);
+    const savedOrder = localStorage.getItem(`datatable-${props.tableId}-order`);
+    const savedFrozen = localStorage.getItem(`datatable-${props.tableId}-frozen`);
+    
+    if (savedHidden) {
+      try {
+        hiddenColumns.value = JSON.parse(savedHidden);
+      } catch (e) {
+        console.error('Failed to parse saved hidden columns:', e);
+      }
+    }
+    
+    if (savedOrder) {
+      try {
+        columnOrder.value = JSON.parse(savedOrder);
+      } catch (e) {
+        console.error('Failed to parse saved column order:', e);
+        columnOrder.value = props.columns.map(col => col.key);
+      }
+    } else {
+      columnOrder.value = props.columns.map(col => col.key);
+    }
+    
+    if (savedFrozen) {
+      try {
+        frozenColumns.value = JSON.parse(savedFrozen);
+        console.log('Loaded frozen columns:', frozenColumns.value);
+      } catch (e) {
+        console.error('Failed to parse saved frozen columns:', e);
+      }
+    } else {
+      console.log('No saved frozen columns found');
+    }
+  }
+  
+  // Load saved sort state
+  if (props.sortable && props.tableId) {
+    const savedSort = localStorage.getItem(`datatable-${props.tableId}-sort`);
+    if (savedSort) {
+      try {
+        const { by, order } = JSON.parse(savedSort);
+        sortBy.value = by;
+        sortOrder.value = order;
+        console.log('Loaded sort state in DataTable:', { by, order });
+      } catch (e) {
+        console.error('Failed to parse saved sort state:', e);
+      }
+    }
+  }
+});
+
+// Save column widths to localStorage
+const saveColumnWidths = () => {
+  if (props.persistWidths && props.resizable) {
+    localStorage.setItem(`datatable-${props.tableId}-widths`, JSON.stringify(columnWidths.value));
+  }
+};
+
+// Column resize handlers
+const startResize = (event, columnKey) => {
+  event.preventDefault();
+  event.stopPropagation();
+  
+  // Find the th element
+  const th = event.target.closest('th');
+  if (!th) {
+    console.error('Could not find th element');
+    return;
+  }
+  
+  const startX = event.clientX;
+  const startWidth = th.offsetWidth;
+  
+  console.log(`Starting resize for ${columnKey}:`, { startX, startWidth });
+  
+  resizing.value = { columnKey, startX, startWidth };
+  
+  // Add event listeners
+  document.addEventListener('mousemove', handleResize, { passive: false });
+  document.addEventListener('mouseup', stopResize);
+  
+  // Change cursor and disable selection
+  document.body.style.cursor = 'col-resize';
+  document.body.style.userSelect = 'none';
+};
+
+const handleResize = (event) => {
+  if (!resizing.value) return;
+  
+  event.preventDefault();
+  
+  const { columnKey, startX, startWidth } = resizing.value;
+  const diff = event.clientX - startX;
+  const newWidth = Math.max(100, startWidth + diff); // Minimum width of 100px
+  
+  console.log(`Resizing ${columnKey}:`, { diff, newWidth });
+  
+  // Update the column width
+  columnWidths.value = {
+    ...columnWidths.value,
+    [columnKey]: `${newWidth}px`
+  };
+};
+
+const stopResize = () => {
+  if (resizing.value) {
+    console.log('Stopping resize, saving widths:', columnWidths.value);
+    saveColumnWidths();
+    resizing.value = null;
+  }
+  
+  // Remove event listeners
+  document.removeEventListener('mousemove', handleResize);
+  document.removeEventListener('mouseup', stopResize);
+  
+  // Restore cursor and selection
+  document.body.style.cursor = '';
+  document.body.style.userSelect = '';
+};
+
+// Cleanup on unmount
+onUnmounted(() => {
+  document.removeEventListener('mousemove', handleResize);
+  document.removeEventListener('mouseup', stopResize);
+});
 
 // Computed
+const orderedColumns = computed(() => {
+  if (!props.columnSettings || columnOrder.value.length === 0) {
+    return props.columns;
+  }
+  
+  // Create a map for quick lookup
+  const columnMap = {};
+  props.columns.forEach(col => {
+    columnMap[col.key] = col;
+  });
+  
+  // Order columns based on columnOrder, filter out any that don't exist
+  const ordered = columnOrder.value
+    .map(key => columnMap[key])
+    .filter(col => col !== undefined);
+  
+  // Add any new columns that aren't in the order array
+  props.columns.forEach(col => {
+    if (!columnOrder.value.includes(col.key)) {
+      ordered.push(col);
+    }
+  });
+  
+  return ordered;
+});
+
+const visibleColumns = computed(() => {
+  if (!props.columnSettings) {
+    return orderedColumns.value;
+  }
+  
+  return orderedColumns.value.filter(col => !hiddenColumns.value.includes(col.key));
+});
+
 const displayData = computed(() => {
   let result = props.data || [];
   
@@ -398,27 +844,62 @@ const displayData = computed(() => {
   if (props.searchable && searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
     result = result.filter(row => {
-      return props.columns.some(column => {
+      return visibleColumns.value.some(column => {
         const value = getCellValue(row, column.key);
         return String(value).toLowerCase().includes(query);
       });
     });
   }
   
-  // Client-side sort
-  if (props.sortable && sortBy.value) {
+  // Client-side sort (only if not using server-side sorting)
+  if (props.sortable && !props.serverSide && sortBy.value) {
+    console.log('Client-side sorting by:', sortBy.value, 'order:', sortOrder.value);
+    console.log('Number of records before sort:', result.length);
+    
     result = [...result].sort((a, b) => {
-      const aVal = getCellValue(a, sortBy.value);
-      const bVal = getCellValue(b, sortBy.value);
+      // Find the column definition to check for custom sortValue
+      const column = visibleColumns.value.find(col => col.key === sortBy.value);
+      
+      let aVal, bVal;
+      if (column?.sortValue) {
+        // Use custom sort value (can be a function or field name)
+        if (typeof column.sortValue === 'function') {
+          aVal = column.sortValue(a);
+          bVal = column.sortValue(b);
+        } else {
+          aVal = getCellValue(a, column.sortValue);
+          bVal = getCellValue(b, column.sortValue);
+        }
+      } else {
+        // Default: use the column key
+        aVal = getCellValue(a, sortBy.value);
+        bVal = getCellValue(b, sortBy.value);
+      }
+      
+      // Handle null/undefined values
+      if (aVal == null) aVal = '';
+      if (bVal == null) bVal = '';
+      
+      // Convert to lowercase for case-insensitive string comparison
+      if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+      if (typeof bVal === 'string') bVal = bVal.toLowerCase();
       
       if (aVal < bVal) return sortOrder.value === 'asc' ? -1 : 1;
       if (aVal > bVal) return sortOrder.value === 'asc' ? 1 : -1;
       return 0;
     });
+    
+    console.log('Number of records after sort:', result.length);
+    if (result.length > 0) {
+      console.log('First record:', result[0]);
+      console.log('Last record:', result[result.length - 1]);
+    }
+  } else if (props.serverSide && sortBy.value) {
+    console.log('Server-side sorting - skipping client-side sort');
   }
   
-  // Client-side pagination
-  if (props.paginated) {
+  // Client-side pagination (only if not using server-side pagination)
+  if (props.paginated && !props.serverSide) {
     const start = (currentPage.value - 1) * props.perPage;
     const end = start + props.perPage;
     result = result.slice(start, end);
@@ -464,12 +945,27 @@ const allSelected = computed(() => {
          displayData.value.every(row => isSelected(row));
 });
 
+const showSelectAllBanner = computed(() => {
+  return allSelected.value && 
+         !selectAllPages.value && 
+         props.paginated && 
+         (props.totalRecords || props.data?.length || 0) > displayData.value.length;
+});
+
 // Methods
 const getCellValue = (row, key) => {
   if (key.includes('.')) {
     return key.split('.').reduce((obj, k) => obj?.[k], row);
   }
   return row[key];
+};
+
+const getCellDisplayValue = (row, column) => {
+  const value = getCellValue(row, column.key);
+  if (column.format) {
+    return column.format(value, row);
+  }
+  return value || '';
 };
 
 const getRowKey = (row, index) => {
@@ -479,14 +975,33 @@ const getRowKey = (row, index) => {
   return row[props.rowKey] || index;
 };
 
+const getSortTitle = (key) => {
+  if (sortBy.value === key) {
+    if (sortOrder.value === 'asc') {
+      return 'Click to sort descending';
+    } else {
+      return 'Click to clear sort';
+    }
+  }
+  return 'Click to sort ascending';
+};
+
 const handleSort = (key) => {
   if (sortBy.value === key) {
-    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+    // Cycle through: asc → desc → no sort
+    if (sortOrder.value === 'asc') {
+      sortOrder.value = 'desc';
+    } else if (sortOrder.value === 'desc') {
+      // Clear sort
+      sortBy.value = '';
+      sortOrder.value = 'asc';
+    }
   } else {
+    // New column - start with ascending
     sortBy.value = key;
     sortOrder.value = 'asc';
   }
-  emit('sort', { key, order: sortOrder.value });
+  emit('sort', { key: sortBy.value, order: sortOrder.value });
 };
 
 const handleSearch = () => {
@@ -540,29 +1055,388 @@ const toggleSelect = (row) => {
 const toggleSelectAll = () => {
   if (allSelected.value) {
     selectedRows.value = [];
+    selectAllPages.value = false;
   } else {
     selectedRows.value = [...displayData.value];
+    selectAllPages.value = false;
   }
   emit('select', selectedRows.value);
+};
+
+const selectAllAcrossPages = () => {
+  selectAllPages.value = true;
+  selectedRows.value = [...displayData.value]; // Keep current page selected for UI
+  emit('select', selectedRows.value, true); // Pass flag indicating all pages selected
 };
 
 const handleBulkAction = (action) => {
   emit('bulk-action', {
     action: action,
-    selectedRows: selectedRows.value
+    selectedRows: selectedRows.value,
+    selectAllPages: selectAllPages.value,
+    totalRecords: props.totalRecords || props.data?.length || 0
   });
 };
 
 const clearSelection = () => {
   selectedRows.value = [];
+  selectAllPages.value = false;
   emit('select', []);
+};
+
+// Column settings methods
+const isColumnVisible = (columnKey) => {
+  return !hiddenColumns.value.includes(columnKey);
+};
+
+const toggleColumnVisibility = (columnKey) => {
+  const index = hiddenColumns.value.indexOf(columnKey);
+  if (index > -1) {
+    hiddenColumns.value.splice(index, 1);
+  } else {
+    hiddenColumns.value.push(columnKey);
+  }
+};
+
+const handleDragStart = (index) => {
+  draggedIndex.value = index;
+};
+
+const handleDrop = (dropIndex) => {
+  if (draggedIndex.value === null) return;
+  
+  const draggedColumn = columnOrder.value[draggedIndex.value];
+  columnOrder.value.splice(draggedIndex.value, 1);
+  columnOrder.value.splice(dropIndex, 0, draggedColumn);
+  
+  draggedIndex.value = null;
+};
+
+const isColumnFrozen = (columnKey) => {
+  return frozenColumns.value.includes(columnKey);
+};
+
+const toggleColumnFreeze = (columnKey) => {
+  const index = frozenColumns.value.indexOf(columnKey);
+  if (index > -1) {
+    frozenColumns.value.splice(index, 1);
+  } else {
+    if (frozenColumns.value.length < 2) {
+      frozenColumns.value.push(columnKey);
+    }
+  }
+  
+  // Save immediately to localStorage
+  if (props.tableId) {
+    localStorage.setItem(`datatable-${props.tableId}-frozen`, JSON.stringify(frozenColumns.value));
+    console.log('Saved frozen columns:', frozenColumns.value);
+  }
+};
+
+// Calculate left offset for frozen columns
+const getFrozenColumnOffset = (columnKey) => {
+  let offset = 0;
+  
+  // Add selection column width (56px = w-14)
+  if (props.selectable) {
+    offset += 56;
+  }
+  
+  // Add widths of previous frozen columns
+  for (const col of visibleColumns.value) {
+    if (col.key === columnKey) break;
+    if (frozenColumns.value.includes(col.key)) {
+      // Use saved width or default to 200px
+      const width = columnWidths.value[col.key] || col.width || '200px';
+      offset += parseInt(width) || 200;
+    }
+  }
+  
+  return `${offset}px`;
+};
+
+const applyColumnSettings = () => {
+  // Save to localStorage
+  if (props.columnSettings) {
+    localStorage.setItem(`datatable-${props.tableId}-hidden`, JSON.stringify(hiddenColumns.value));
+    localStorage.setItem(`datatable-${props.tableId}-order`, JSON.stringify(columnOrder.value));
+    localStorage.setItem(`datatable-${props.tableId}-frozen`, JSON.stringify(frozenColumns.value));
+  }
+  showColumnSettings.value = false;
+};
+
+const resetColumnSettings = () => {
+  hiddenColumns.value = [];
+  columnOrder.value = props.columns.map(col => col.key);
+  frozenColumns.value = [];
+  sortBy.value = '';
+  sortOrder.value = 'asc';
+  
+  // Clear from localStorage
+  localStorage.removeItem(`datatable-${props.tableId}-hidden`);
+  localStorage.removeItem(`datatable-${props.tableId}-order`);
+  localStorage.removeItem(`datatable-${props.tableId}-frozen`);
+  localStorage.removeItem(`datatable-${props.tableId}-sort`);
 };
 
 // Watch for data changes
 watch(() => props.data, () => {
   currentPage.value = 1;
+  selectAllPages.value = false;
+});
+
+// Watch for page changes - reset select all pages when navigating
+watch(currentPage, () => {
+  if (selectAllPages.value) {
+    // Keep the flag but don't auto-select rows on new page
+    // User can still perform bulk actions on all pages
+  }
+});
+
+// Watch for sort changes and save to localStorage
+watch([sortBy, sortOrder], ([newSortBy, newSortOrder]) => {
+  if (props.sortable && props.tableId) {
+    localStorage.setItem(
+      `datatable-${props.tableId}-sort`, 
+      JSON.stringify({ by: newSortBy, order: newSortOrder })
+    );
+    console.log('Saved sort state:', { by: newSortBy, order: newSortOrder });
+  }
 });
 </script>
+
+<style scoped>
+/* Table Fixed Layout for Resizable Columns */
+.table-fixed {
+  table-layout: fixed !important;
+}
+
+/* Cell Text Truncation */
+.table-cell-truncate {
+  max-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.table-cell-truncate > * {
+  max-width: 100%;
+}
+
+/* Frozen Selection Column */
+.sticky-selection-header {
+  position: sticky !important;
+  left: 0;
+  z-index: 30;
+  box-shadow: 2px 0 4px -1px rgba(0, 0, 0, 0.1);
+}
+
+:global(.dark) .sticky-selection-header {
+  box-shadow: 2px 0 4px -1px rgba(0, 0, 0, 0.3);
+}
+
+.sticky-selection-cell {
+  position: sticky !important;
+  left: 0;
+  z-index: 30;
+  box-shadow: 2px 0 4px -1px rgba(0, 0, 0, 0.1);
+}
+
+:global(.dark) .sticky-selection-cell {
+  box-shadow: 2px 0 4px -1px rgba(0, 0, 0, 0.3);
+}
+
+/* Frozen Column Header */
+.frozen-column-header {
+  position: sticky !important;
+  z-index: 25;
+  box-shadow: 2px 0 4px -1px rgba(0, 0, 0, 0.1);
+}
+
+:global(.dark) .frozen-column-header {
+  box-shadow: 2px 0 4px -1px rgba(0, 0, 0, 0.3);
+}
+
+/* Frozen Column Cell */
+.frozen-column-cell {
+  position: sticky !important;
+  z-index: 20;
+  box-shadow: 2px 0 4px -1px rgba(0, 0, 0, 0.1);
+}
+
+:global(.dark) .frozen-column-cell {
+  box-shadow: 2px 0 4px -1px rgba(0, 0, 0, 0.3);
+}
+
+/* Sticky Actions Cell Header */
+.actions-cell-header {
+  position: sticky !important;
+  right: 0;
+  z-index: 21;
+  width: 160px;
+  min-width: 160px;
+  padding: 1rem !important;
+  border: none;
+}
+
+:global(.dark) .actions-cell-header {
+  background: rgb(55, 65, 81);
+  background: linear-gradient(to right, rgba(55, 65, 81, 0) 0%, rgb(55, 65, 81) 10%);
+}
+
+/* Sticky Actions Cell - Stays at viewport edge */
+.actions-cell {
+  position: sticky !important;
+  right: 16px;
+  z-index: 20;
+  width: 160px;
+  min-width: 160px;
+  padding: 1rem !important;
+  text-align: right;
+  vertical-align: middle;
+  background: transparent;
+  transition: background 0.15s ease;
+}
+
+/* Show background on row hover
+tr:hover .actions-cell {
+} */
+
+:global(.dark) tr:hover .actions-cell {
+  background: rgb(31, 41, 55);
+  background: linear-gradient(to right, rgba(31, 41, 55, 0) 0%, rgb(31, 41, 55) 10%);
+}
+
+/* Actions Container */
+.actions-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: end;
+  gap: 8px;
+  background: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgb(229, 231, 235);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+}
+
+:global(.dark) .actions-container {
+  background: rgb(31, 41, 55);
+  border-color: rgb(55, 65, 81);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}
+
+/* Show actions on row hover */
+tr:hover .actions-container {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Column Resize Handle */
+.resize-handle {
+  position: absolute;
+  right: -8px;
+  top: 0;
+  bottom: 0;
+  width: 16px;
+  cursor: col-resize;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.resize-handle:hover {
+  background-color: rgba(96, 73, 231, 0.1);
+}
+
+.resize-line {
+  width: 2px;
+  height: 100%;
+  background-color: transparent;
+  transition: background-color 0.2s;
+}
+
+.resize-handle:hover .resize-line {
+  background-color: rgb(96, 73, 231);
+}
+
+:global(.dark) .resize-handle:hover {
+  background-color: rgba(96, 73, 231, 0.2);
+}
+
+:global(.dark) .resize-handle:hover .resize-line {
+  background-color: rgb(112, 93, 255);
+}
+
+/* Bulk Actions Bar */
+.bulk-actions-bar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  max-width: 90vw;
+}
+
+/* Animations */
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateX(-50%) translateY(20px);
+}
+
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(20px);
+}
+
+/* Slide down animation for banner */
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-down-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* Modal animation */
+.modal-enter-active,
+.modal-leave-active {
+  transition: all 0.3s ease;
+}
+
+.modal-enter-active > div,
+.modal-leave-active > div {
+  transition: all 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-from > div,
+.modal-leave-to > div {
+  transform: scale(0.95) translateY(-20px);
+}
+</style>
 
 <style scoped>
 /* Smooth scrolling for horizontal overflow */
@@ -599,36 +1473,6 @@ watch(() => props.data, () => {
 
 .dark .overflow-x-auto::-webkit-scrollbar-thumb:hover {
   background-color: rgba(75, 85, 99, 0.7);
-}
-
-/* Action overlay styling */
-.action-overlay {
-  position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  gap: 4px;
-  align-items: center;
-  background: white;
-  padding: 8px 12px;
-  border-radius: 8px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e5e7eb;
-  opacity: 0;
-  transition: opacity 200ms;
-  pointer-events: none;
-  z-index: 50;
-}
-
-.dark .action-overlay {
-  background: #1f2937;
-  border-color: #374151;
-}
-
-tr:hover .action-overlay {
-  opacity: 1;
-  pointer-events: auto;
 }
 
 /* Bulk Actions Floating Bar - Fixed at bottom-center */
