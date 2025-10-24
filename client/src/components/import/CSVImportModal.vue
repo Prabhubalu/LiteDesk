@@ -952,11 +952,29 @@ watch(duplicateCheckableFields, (newFields) => {
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  @apply bg-gray-100 dark:bg-gray-800 rounded-full;
+  background-color: #f3f4f6;
+  border-radius: 9999px;
+}
+
+:global(.dark) .custom-scrollbar::-webkit-scrollbar-track {
+  background-color: #1f2937;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  @apply bg-brand-400 dark:bg-brand-600 rounded-full hover:bg-brand-500 dark:hover:bg-brand-500;
+  background-color: #a78bfa;
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #6049E7;
+}
+
+:global(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #5037d9;
+}
+
+:global(.dark) .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #6049E7;
 }
 
 /* Slide Up Animation */

@@ -92,11 +92,20 @@ const getRelativeTime = (date) => {
 
 <style scoped>
 .date-cell {
-  @apply text-gray-700 dark:text-gray-300;
+  color: #374151;
+}
+
+:global(.dark) .date-cell {
+  color: #d1d5db;
 }
 
 .date-relative {
-  @apply text-gray-500 dark:text-gray-400 text-xs;
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
+:global(.dark) .date-relative {
+  color: #9ca3af;
 }
 </style>
 
