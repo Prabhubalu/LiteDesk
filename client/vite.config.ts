@@ -4,26 +4,19 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 import vueDevTools from 'vite-plugin-vue-devtools'
+import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
     vueDevTools(),
+    tailwindcss(),
   ],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
-  },
-
-  // =========================================================
-  // CRITICAL FIX: Add the CSS block to enable PostCSS processing
-  // =========================================================
-  css: {
-    postcss: {},
-    // TEMPORARILY ADDED: This can sometimes force path resolution in Vite
-        devSourcemap: true,
   },
   // Add this proxy configuration:
   server: {

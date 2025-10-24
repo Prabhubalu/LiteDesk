@@ -35,31 +35,72 @@ const variantClass = computed(() => {
 
 <style scoped>
 .badge {
-  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
 }
 
 .badge-default {
-  @apply bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300;
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+:global(.dark) .badge-default {
+  background-color: #374151;
+  color: #d1d5db;
 }
 
 .badge-primary {
-  @apply bg-brand-100 text-brand-800 dark:bg-brand-900/30 dark:text-brand-300;
+  background-color: #ede9fe;
+  color: #3a1f8a;
+}
+
+:global(.dark) .badge-primary {
+  background-color: rgba(46, 24, 114, 0.3);
+  color: #c4b5fd;
 }
 
 .badge-success {
-  @apply bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300;
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+:global(.dark) .badge-success {
+  background-color: rgba(22, 101, 52, 0.3);
+  color: #86efac;
 }
 
 .badge-warning {
-  @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300;
+  background-color: #fef3c7;
+  color: #854d0e;
+}
+
+:global(.dark) .badge-warning {
+  background-color: rgba(133, 77, 14, 0.3);
+  color: #fde047;
 }
 
 .badge-danger {
-  @apply bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300;
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+:global(.dark) .badge-danger {
+  background-color: rgba(153, 27, 27, 0.3);
+  color: #fca5a5;
 }
 
 .badge-info {
-  @apply bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300;
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+:global(.dark) .badge-info {
+  background-color: rgba(30, 64, 175, 0.3);
+  color: #93c5fd;
 }
 </style>
 
