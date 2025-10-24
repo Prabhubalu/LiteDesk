@@ -500,9 +500,8 @@ const bulkDelete = async () => {
   if (!confirm(`Are you sure you want to delete ${selectedContacts.value.length} contact(s)?`)) return;
   
   try {
-    await apiClient('/contacts/bulk-delete', {
-      method: 'POST',
-      body: JSON.stringify({ ids: selectedContacts.value })
+    await apiClient.post('/contacts/bulk-delete', {
+      ids: selectedContacts.value
     });
     selectedContacts.value = [];
     fetchContacts();

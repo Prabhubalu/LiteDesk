@@ -341,9 +341,6 @@ const handleSubmit = async () => {
   saving.value = true;
   
   try {
-    const url = isEditing.value ? `/deals/${props.deal._id}` : '/deals';
-    const method = isEditing.value ? 'PUT' : 'POST';
-    
     // Clean up empty values
     const payload = { ...form.value };
     if (!payload.contactId) delete payload.contactId;
@@ -352,10 +349,10 @@ const handleSubmit = async () => {
     if (!payload.description) delete payload.description;
     if (!payload.nextFollowUpDate) delete payload.nextFollowUpDate;
     
-    const data = await apiClient(url, {
-      method,
-      body: JSON.stringify(payload)
-    });
+    // Use convenience methods that handle JSON.stringify automatically
+    const data = isEditing.value 
+      ? await apiClient.put(`/deals/${props.deal._id}`, payload)
+      : await apiClient.post('/deals', payload);
     
     if (data.success) {
       emit('saved', data.data);

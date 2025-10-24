@@ -35,8 +35,17 @@ const apiClient = async (url, options = {}) => {
 
     // Check for other errors
     if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        const error = new Error(errorData.message || `HTTP error! Status: ${response.status}`);
+        error.response = errorData; // Attach full error response
+        error.status = response.status;
+        error.validationErrors = errorData.validationErrors;
+        console.error('API Error:', {
+            url: fullUrl,
+            status: response.status,
+            errorData
+        });
+        throw error;
     }
 
     return response.json();

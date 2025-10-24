@@ -810,10 +810,8 @@ const onDrop = async (event, newStage) => {
   
   if (deal && deal.stage !== newStage) {
     try {
-      await apiClient(`/deals/${dealId}/stage`, {
-        method: 'PATCH',
-        body: JSON.stringify({ stage: newStage })
-      });
+      // Use convenience method that handles JSON.stringify automatically
+      await apiClient.patch(`/deals/${dealId}/stage`, { stage: newStage });
       
       // Update local state
       deal.stage = newStage;
@@ -857,6 +855,39 @@ onMounted(() => {
 /* Kanban Card Width */
 .kanban-card {
   min-width: 360px;
+}
+
+/* Custom Scrollbar Styling */
+.overflow-y-auto::-webkit-scrollbar,
+.overflow-x-auto::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track,
+.overflow-x-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb,
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: rgb(203 213 225 / 0.5);
+  border-radius: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover,
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+  background: rgb(148 163 184 / 0.7);
+}
+
+:global(.dark) .overflow-y-auto::-webkit-scrollbar-thumb,
+:global(.dark) .overflow-x-auto::-webkit-scrollbar-thumb {
+  background: rgb(71 85 105 / 0.5);
+}
+
+:global(.dark) .overflow-y-auto::-webkit-scrollbar-thumb:hover,
+:global(.dark) .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+  background: rgb(100 116 139 / 0.7);
 }
 </style>
 
