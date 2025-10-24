@@ -1,288 +1,337 @@
 <template>
-  <div class="modal-overlay" @click="$emit('close')">
-    <div class="modal-content" @click.stop>
-      <div class="modal-header">
-        <h2>{{ isEditing ? 'Edit Contact' : 'New Contact' }}</h2>
-        <button @click="$emit('close')" class="btn-close">×</button>
-      </div>
-
-      <form @submit.prevent="handleSubmit" class="modal-body">
-        <!-- Basic Information -->
-        <div class="form-section">
-          <h3>Basic Information</h3>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label>Salutation</label>
-              <select v-model="form.salutation">
-                <option value="">None</option>
-                <option value="Mr.">Mr.</option>
-                <option value="Ms.">Ms.</option>
-                <option value="Mrs.">Mrs.</option>
-                <option value="Dr.">Dr.</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group required">
-              <label>First Name</label>
-              <input 
-                v-model="form.first_name" 
-                type="text" 
-                placeholder="John"
-                required
-              />
-            </div>
-
-            <div class="form-group required">
-              <label>Last Name</label>
-              <input 
-                v-model="form.last_name" 
-                type="text" 
-                placeholder="Doe"
-                required
-              />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group required">
-              <label>Email</label>
-              <input 
-                v-model="form.email" 
-                type="email" 
-                placeholder="john.doe@example.com"
-                required
-              />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Phone</label>
-              <input 
-                v-model="form.phone" 
-                type="tel" 
-                placeholder="+1 (555) 123-4567"
-              />
-            </div>
-
-            <div class="form-group">
-              <label>Mobile</label>
-              <input 
-                v-model="form.mobile" 
-                type="tel" 
-                placeholder="+1 (555) 987-6543"
-              />
-            </div>
-          </div>
+  <Teleport to="body">
+    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000] p-4 sm:p-8" @click="$emit('close')">
+      <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl" @click.stop>
+        <!-- Header -->
+        <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between z-10">
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+            {{ isEditing ? 'Edit Contact' : 'New Contact' }}
+          </h2>
+          <button @click="$emit('close')" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
-        <!-- Company Information -->
-        <div class="form-section">
-          <h3>Company Information</h3>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label>Job Title</label>
-              <input 
-                v-model="form.job_title" 
-                type="text" 
-                placeholder="Sales Manager"
-              />
-            </div>
+        <!-- Form -->
+        <form @submit.prevent="handleSubmit" class="p-6 space-y-8">
+          <!-- Basic Information -->
+          <div class="space-y-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+              Basic Information
+            </h3>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Salutation</label>
+                <select v-model="form.salutation" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 focus:border-transparent transition-all">
+                  <option value="">None</option>
+                  <option value="Mr.">Mr.</option>
+                  <option value="Ms.">Ms.</option>
+                  <option value="Mrs.">Mrs.</option>
+                  <option value="Dr.">Dr.</option>
+                </select>
+              </div>
 
-            <div class="form-group">
-              <label>Department</label>
-              <input 
-                v-model="form.department" 
-                type="text" 
-                placeholder="Sales"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Address -->
-        <div class="form-section">
-          <h3>Address</h3>
-          
-          <div class="form-row">
-            <div class="form-group full-width">
-              <label>Street</label>
-              <input 
-                v-model="form.address.street" 
-                type="text" 
-                placeholder="123 Main Street"
-              />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>City</label>
-              <input 
-                v-model="form.address.city" 
-                type="text" 
-                placeholder="New York"
-              />
-            </div>
-
-            <div class="form-group">
-              <label>State</label>
-              <input 
-                v-model="form.address.state" 
-                type="text" 
-                placeholder="NY"
-              />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Postal Code</label>
-              <input 
-                v-model="form.address.postal_code" 
-                type="text" 
-                placeholder="10001"
-              />
-            </div>
-
-            <div class="form-group">
-              <label>Country</label>
-              <input 
-                v-model="form.address.country" 
-                type="text" 
-                placeholder="United States"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Social & Communication -->
-        <div class="form-section">
-          <h3>Social & Communication</h3>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label>Website</label>
-              <input 
-                v-model="form.website" 
-                type="url" 
-                placeholder="https://example.com"
-              />
-            </div>
-
-            <div class="form-group">
-              <label>LinkedIn URL</label>
-              <input 
-                v-model="form.linkedin_url" 
-                type="url" 
-                placeholder="https://linkedin.com/in/johndoe"
-              />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Twitter Handle</label>
-              <input 
-                v-model="form.twitter_handle" 
-                type="text" 
-                placeholder="@johndoe"
-              />
-            </div>
-
-            <div class="form-group">
-              <label>Preferred Channel</label>
-              <select v-model="form.preferred_channel">
-                <option value="email">Email</option>
-                <option value="phone">Phone</option>
-                <option value="whatsapp">WhatsApp</option>
-                <option value="sms">SMS</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- CRM Metadata -->
-        <div class="form-section">
-          <h3>CRM Information</h3>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label>Lead Source</label>
-              <input 
-                v-model="form.lead_source" 
-                type="text" 
-                placeholder="Website, Referral, LinkedIn, etc."
-              />
-            </div>
-
-            <div class="form-group">
-              <label>Lifecycle Stage</label>
-              <select v-model="form.lifecycle_stage">
-                <option value="Lead">Lead</option>
-                <option value="Qualified">Qualified</option>
-                <option value="Opportunity">Opportunity</option>
-                <option value="Customer">Customer</option>
-                <option value="Lost">Lost</option>
-                <option value="Subscriber">Subscriber</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Status</label>
-              <select v-model="form.status">
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-                <option value="Archived">Archived</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label>Tags (comma separated)</label>
-              <input 
-                v-model="tagsString" 
-                type="text" 
-                placeholder="vip, partner, demo"
-              />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  First Name <span class="text-red-500">*</span>
+                </label>
                 <input 
-                  v-model="form.do_not_contact" 
-                  type="checkbox"
-                  style="width: auto; margin-right: 0.5rem;"
+                  v-model="form.first_name" 
+                  type="text" 
+                  placeholder="John"
+                  required
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 focus:border-transparent transition-all"
                 />
-                Do Not Contact
-              </label>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Last Name <span class="text-red-500">*</span>
+                </label>
+                <input 
+                  v-model="form.last_name" 
+                  type="text" 
+                  placeholder="Doe"
+                  required
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 focus:border-transparent transition-all"
+                />
+              </div>
+
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Email <span class="text-red-500">*</span>
+                </label>
+                <input 
+                  v-model="form.email" 
+                  type="email" 
+                  placeholder="john.doe@example.com"
+                  required
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 focus:border-transparent transition-all"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone</label>
+                <input 
+                  v-model="form.phone" 
+                  type="tel" 
+                  placeholder="+1 (555) 123-4567"
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 focus:border-transparent transition-all"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Mobile</label>
+                <input 
+                  v-model="form.mobile" 
+                  type="tel" 
+                  placeholder="+1 (555) 987-6543"
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 focus:border-transparent transition-all"
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Form Actions -->
-        <div class="form-actions">
-          <button type="button" @click="$emit('close')" class="btn-secondary">
-            Cancel
-          </button>
-          <button type="submit" :disabled="saving" class="btn-primary">
-            {{ saving ? 'Saving...' : (isEditing ? 'Update Contact' : 'Create Contact') }}
-          </button>
-        </div>
-      </form>
+          <!-- Company Information -->
+          <div class="space-y-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+              Company Information
+            </h3>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Organization</label>
+                <select v-model="form.organization" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 focus:border-transparent transition-all">
+                  <option value="">-- Select Organization --</option>
+                  <option 
+                    v-for="org in organizations" 
+                    :key="org._id" 
+                    :value="org._id"
+                  >
+                    {{ org.name }}
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Job Title</label>
+                <input 
+                  v-model="form.job_title" 
+                  type="text" 
+                  placeholder="Sales Manager"
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 focus:border-transparent transition-all"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Department</label>
+                <input 
+                  v-model="form.department" 
+                  type="text" 
+                  placeholder="Sales"
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 focus:border-transparent transition-all"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Address -->
+          <div class="space-y-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+              Address
+            </h3>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Street</label>
+                <input 
+                  v-model="form.address.street" 
+                  type="text" 
+                  placeholder="123 Main Street"
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 focus:border-transparent transition-all"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">City</label>
+                <input 
+                  v-model="form.address.city" 
+                  type="text" 
+                  placeholder="New York"
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 focus:border-transparent transition-all"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">State</label>
+                <input 
+                  v-model="form.address.state" 
+                  type="text" 
+                  placeholder="NY"
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 focus:border-transparent transition-all"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Postal Code</label>
+                <input 
+                  v-model="form.address.postal_code" 
+                  type="text" 
+                  placeholder="10001"
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 focus:border-transparent transition-all"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Country</label>
+                <input 
+                  v-model="form.address.country" 
+                  type="text" 
+                  placeholder="United States"
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 focus:border-transparent transition-all"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Social & Communication -->
+          <div class="space-y-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+              Social & Communication
+            </h3>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Website</label>
+                <input 
+                  v-model="form.website" 
+                  type="url" 
+                  placeholder="https://example.com"
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 focus:border-transparent transition-all"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">LinkedIn URL</label>
+                <input 
+                  v-model="form.linkedin_url" 
+                  type="url" 
+                  placeholder="https://linkedin.com/in/johndoe"
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 focus:border-transparent transition-all"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Twitter Handle</label>
+                <input 
+                  v-model="form.twitter_handle" 
+                  type="text" 
+                  placeholder="@johndoe"
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 focus:border-transparent transition-all"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preferred Channel</label>
+                <select v-model="form.preferred_channel" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 focus:border-transparent transition-all">
+                  <option value="email">Email</option>
+                  <option value="phone">Phone</option>
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="sms">SMS</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- CRM Metadata -->
+          <div class="space-y-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+              CRM Information
+            </h3>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lead Source</label>
+                <input 
+                  v-model="form.lead_source" 
+                  type="text" 
+                  placeholder="Website, Referral, etc."
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 focus:border-transparent transition-all"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lifecycle Stage</label>
+                <select v-model="form.lifecycle_stage" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 focus:border-transparent transition-all">
+                  <option value="Lead">Lead</option>
+                  <option value="Qualified">Qualified</option>
+                  <option value="Customer">Customer</option>
+                  <option value="Lost">Lost</option>
+                  <option value="Subscriber">Subscriber</option>
+                  <option value="Opportunity">Opportunity</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                <select v-model="form.status" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 focus:border-transparent transition-all">
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                  <option value="Archived">Archived</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tags (comma separated)</label>
+                <input 
+                  v-model="tagsString" 
+                  type="text" 
+                  placeholder="vip, partner, demo"
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 focus:border-transparent transition-all"
+                />
+              </div>
+
+              <div class="sm:col-span-2">
+                <label class="flex items-center space-x-3 cursor-pointer">
+                  <input 
+                    v-model="form.do_not_contact" 
+                    type="checkbox"
+                    class="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-brand-600 dark:text-brand-500 focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 cursor-pointer"
+                  />
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Do Not Contact</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="sticky bottom-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pt-6 -mx-6 -mb-6 px-6 pb-6 flex items-center justify-end gap-3">
+            <button 
+              type="button" 
+              @click="$emit('close')" 
+              class="px-6 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              :disabled="saving" 
+              class="px-6 py-2.5 rounded-lg bg-brand-600 dark:bg-brand-700 text-white font-medium hover:bg-brand-700 dark:hover:bg-brand-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {{ saving ? 'Saving...' : (isEditing ? 'Update Contact' : 'Create Contact') }}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import apiClient from '@/utils/apiClient';
 
 const props = defineProps({
@@ -296,6 +345,7 @@ const emit = defineEmits(['close', 'saved']);
 
 const isEditing = computed(() => !!props.contact);
 const saving = ref(false);
+const organizations = ref([]);
 
 const form = ref({
   salutation: '',
@@ -304,6 +354,7 @@ const form = ref({
   email: '',
   phone: '',
   mobile: '',
+  organization: '',
   job_title: '',
   department: '',
   address: {
@@ -331,11 +382,24 @@ watch(tagsString, (newValue) => {
   form.value.tags = newValue.split(',').map(tag => tag.trim()).filter(tag => tag);
 });
 
+// Fetch organizations for dropdown
+const fetchOrganizations = async () => {
+  try {
+    const response = await apiClient.get('/admin/organizations/all');
+    if (response.success) {
+      organizations.value = response.data;
+    }
+  } catch (error) {
+    console.error('Error fetching organizations:', error);
+  }
+};
+
 // Load contact data if editing
 if (props.contact) {
   form.value = {
     ...form.value,
     ...props.contact,
+    organization: props.contact.organization?._id || props.contact.organization || '',
     address: {
       ...form.value.address,
       ...(props.contact.address || {})
@@ -347,17 +411,50 @@ if (props.contact) {
   }
 }
 
+// Fetch organizations on mount
+onMounted(() => {
+  fetchOrganizations();
+});
+
 const handleSubmit = async () => {
   saving.value = true;
   
   try {
-    const url = isEditing.value ? `/contacts/${props.contact._id}` : '/contacts';
-    const method = isEditing.value ? 'PUT' : 'POST';
+    // Prepare form data - only send the fields we want to update
+    // Extract ObjectIds from populated fields
+    const formData = {
+      salutation: form.value.salutation,
+      first_name: form.value.first_name,
+      last_name: form.value.last_name,
+      email: form.value.email,
+      phone: form.value.phone || '',
+      mobile: form.value.mobile || '',
+      organization: form.value.organization || null,
+      job_title: form.value.job_title || '',
+      department: form.value.department || '',
+      address: form.value.address,
+      website: form.value.website || '',
+      linkedin_url: form.value.linkedin_url || '',
+      twitter_handle: form.value.twitter_handle || '',
+      preferred_channel: form.value.preferred_channel,
+      lead_source: form.value.lead_source || '',
+      lifecycle_stage: form.value.lifecycle_stage,
+      status: form.value.status,
+      tags: form.value.tags || [],
+      do_not_contact: form.value.do_not_contact || false
+    };
     
-    const data = await apiClient(url, {
-      method,
-      body: JSON.stringify(form.value)
-    });
+    console.log('Submitting contact form:', formData);
+    console.log('Organization field:', formData.organization);
+    
+    let data;
+    if (isEditing.value) {
+      data = await apiClient.put(`/contacts/${props.contact._id}`, formData);
+    } else {
+      data = await apiClient.post('/contacts', formData);
+    }
+    
+    console.log('Contact saved successfully:', data);
     
     if (data.success) {
       emit('saved', data.data);
@@ -370,200 +467,3 @@ const handleSubmit = async () => {
   }
 };
 </script>
-
-<style scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 2rem;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 800px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-.modal-header {
-  padding: 1.5rem 2rem;
-  border-bottom: 1px solid #e5e7eb;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: sticky;
-  top: 0;
-  background: white;
-  z-index: 10;
-}
-
-.modal-header h2 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1f2937;
-}
-
-.btn-close {
-  background: none;
-  border: none;
-  font-size: 2rem;
-  color: #9ca3af;
-  cursor: pointer;
-  padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  transition: background 0.2s;
-}
-
-.btn-close:hover {
-  background: #f3f4f6;
-}
-
-.modal-body {
-  padding: 2rem;
-}
-
-.form-section {
-  margin-bottom: 2rem;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.form-section:last-of-type {
-  border-bottom: none;
-}
-
-.form-section h3 {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 1.5rem;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.form-row:last-child {
-  margin-bottom: 0;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group.full-width {
-  grid-column: 1 / -1;
-}
-
-.form-group label {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 0.5rem;
-}
-
-.form-group.required label::after {
-  content: '*';
-  color: #dc2626;
-  margin-left: 0.25rem;
-}
-
-.form-group input,
-.form-group select {
-  padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  transition: border-color 0.2s;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  padding-top: 1.5rem;
-  margin-top: 1.5rem;
-  border-top: 1px solid #e5e7eb;
-  position: sticky;
-  bottom: 0;
-  background: white;
-}
-
-.btn-primary,
-.btn-secondary {
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-  font-size: 0.95rem;
-}
-
-.btn-primary {
-  background: #3b82f6;
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: #2563eb;
-}
-
-.btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-secondary {
-  background: white;
-  color: #374151;
-  border: 1px solid #d1d5db;
-}
-
-.btn-secondary:hover {
-  background: #f9fafb;
-}
-
-@media (max-width: 768px) {
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-  
-  .modal-overlay {
-    padding: 0;
-  }
-  
-  .modal-content {
-    border-radius: 0;
-    max-height: 100vh;
-  }
-}
-</style>
-

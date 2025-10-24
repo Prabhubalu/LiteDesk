@@ -41,6 +41,7 @@ const ContactSchema = new Schema({
     // 🏢 COMPANY / RELATIONSHIP
     // **********************************
     account_id: { type: Schema.Types.ObjectId, ref: "Account" }, // Foreign Key to the Company/Account
+    organization: { type: Schema.Types.ObjectId, ref: "Organization", required: false }, // Customer Organization (optional)
     company: { type: String, trim: true }, // Company name (text field)
     job_title: { type: String, trim: true },
     department: { type: String, trim: true },

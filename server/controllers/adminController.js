@@ -209,7 +209,9 @@ const getContactById = async (req, res) => {
     try {
         const contact = await Contact.findById(req.params.id)
             .populate('organizationId', 'name industry')
+            .populate('organization', 'name industry status')
             .populate('owner_id', 'firstName lastName email')
+            .populate('account_id', 'name industry')
             .populate('notes.created_by', 'firstName lastName');
         
         if (!contact) {
@@ -218,10 +220,33 @@ const getContactById = async (req, res) => {
                 message: 'Contact not found'
             });
         }
+
+        // Fetch related deals
+        const Deal = require('../models/Deal');
+        const deals = await Deal.find({ 
+            contactId: req.params.id
+        })
+        .select('name amount stage expectedCloseDate probability priority')
+        .sort({ createdAt: -1 })
+        .limit(10);
+
+        // Fetch related tasks
+        const Task = require('../models/Task');
+        const tasks = await Task.find({
+            'relatedTo.type': 'Contact',
+            'relatedTo.id': req.params.id
+        })
+        .select('title status priority dueDate')
+        .sort({ createdAt: -1 })
+        .limit(10);
         
         res.status(200).json({
             success: true,
-            data: contact
+            data: {
+                ...contact.toObject(),
+                relatedDeals: deals,
+                relatedTasks: tasks
+            }
         });
     } catch (error) {
         console.error('Get contact by ID error:', error);
