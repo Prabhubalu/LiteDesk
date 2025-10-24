@@ -142,6 +142,10 @@
       :total-records="pagination.totalTasks"
       :show-controls="false"
       :selectable="true"
+      :resizable="true"
+      :column-settings="true"
+      :server-side="true"
+      table-id="tasks-table"
       :mass-actions="massActions"
       row-key="_id"
       empty-title="No tasks yet"
@@ -336,6 +340,9 @@ const pagination = reactive({
   tasksPerPage: 20
 });
 
+const sortField = ref('createdAt');
+const sortOrder = ref('desc');
+
 const statistics = reactive({
   total: 0,
   overdue: 0,
@@ -356,7 +363,15 @@ const columns = [
   { key: 'title', label: 'Task', sortable: true },
   { key: 'priority', label: 'Priority', sortable: true },
   { key: 'status', label: 'Status', sortable: true },
-  { key: 'assignedTo', label: 'Assigned To', sortable: false },
+  { 
+    key: 'assignedTo', 
+    label: 'Assigned To', 
+    sortable: false,  // Server doesn't support sorting by populated field
+    sortValue: (row) => {
+      if (!row.assignedTo) return '';
+      return `${row.assignedTo.firstName || ''} ${row.assignedTo.lastName || ''}`.trim();
+    }
+  },
   { key: 'dueDate', label: 'Due Date', sortable: true },
   { key: 'tags', label: 'Tags', sortable: false }
 ];
@@ -386,10 +401,16 @@ const handleSort = ({ key, order }) => {
     'dueDate': 'dueDate'
   };
   
-  fetchTasks({
-    sortBy: sortMap[key] || '-createdAt',
-    sortOrder: order
-  });
+  // If key is empty, reset to default sort
+  if (!key) {
+    sortField.value = 'createdAt';
+    sortOrder.value = 'desc';
+  } else {
+    sortField.value = sortMap[key] || 'createdAt';
+    sortOrder.value = order;
+  }
+  
+  fetchTasks();
 };
 
 // Fetch tasks
@@ -399,7 +420,8 @@ const fetchTasks = async () => {
     const params = {
       page: pagination.currentPage,
       limit: 20,
-      sortBy: '-createdAt', // Show newest tasks first
+      sortBy: sortField.value,
+      sortOrder: sortOrder.value,
       ...filters
     };
 
@@ -407,16 +429,24 @@ const fetchTasks = async () => {
       params.search = searchQuery.value;
     }
 
+    console.log('Fetching tasks with params:', params);
     const response = await apiClient.get('/tasks', { params });
+    console.log('Tasks response:', response);
 
     if (response.success) {
       tasks.value = response.data;
       pagination.currentPage = response.pagination.currentPage;
       pagination.totalPages = response.pagination.totalPages;
       pagination.totalTasks = response.pagination.totalTasks;
+      console.log('Tasks loaded:', tasks.value.length);
+    } else {
+      console.error('Response not successful:', response);
+      tasks.value = [];
     }
   } catch (error) {
     console.error('Error fetching tasks:', error);
+    console.error('Error details:', error.message, error.stack);
+    tasks.value = [];
   } finally {
     loading.value = false;
   }
@@ -647,6 +677,39 @@ const formatStatus = (status) => {
 
 // Initialize
 onMounted(() => {
+  // Load saved sort state from localStorage before fetching
+  const savedSort = localStorage.getItem('datatable-tasks-table-sort');
+  if (savedSort) {
+    try {
+      const { by, order } = JSON.parse(savedSort);
+      
+      // Map frontend column keys to backend sort fields
+      const sortMap = {
+        'title': 'title',
+        'priority': 'priority',
+        'status': 'status',
+        'dueDate': 'dueDate'
+      };
+      
+      // If the saved sort key is valid, use it; otherwise default to createdAt
+      if (by && sortMap[by]) {
+        sortField.value = sortMap[by];
+        sortOrder.value = order;
+        console.log('Loaded saved sort in Tasks:', { by, order, mapped: sortField.value });
+      } else {
+        sortField.value = 'createdAt';
+        sortOrder.value = 'desc';
+        console.log('Saved sort invalid or empty, using default:', { by, order });
+        // Clear invalid saved sort
+        localStorage.removeItem('datatable-tasks-table-sort');
+      }
+    } catch (e) {
+      console.error('Failed to parse saved sort:', e);
+      sortField.value = 'createdAt';
+      sortOrder.value = 'desc';
+    }
+  }
+  
   fetchTasks();
   fetchStatistics();
 });

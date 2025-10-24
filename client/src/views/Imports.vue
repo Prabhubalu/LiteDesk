@@ -113,6 +113,10 @@
       :per-page="pagination.limit"
       :total-records="pagination.total"
       :show-controls="false"
+      :selectable="true"
+      :resizable="true"
+      :column-settings="true"
+      table-id="imports-table"
       row-key="_id"
       empty-title="No imports yet"
       empty-message="Start importing data to see history here"
@@ -240,7 +244,7 @@ const filters = reactive({
 const columns = [
   { key: 'fileName', label: 'File Name', sortable: true },
   { key: 'module', label: 'Module', sortable: true },
-  { key: 'importedBy', label: 'Imported By', sortable: false },
+  { key: 'importedBy', label: 'Imported By', sortable: true },
   { key: 'createdAt', label: 'Date', sortable: true },
   { key: 'status', label: 'Status', sortable: true },
   { key: 'stats', label: 'Records', sortable: false }

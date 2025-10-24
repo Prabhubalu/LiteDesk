@@ -241,6 +241,10 @@
         :total-records="pagination.totalDeals"
         :show-controls="false"
         :selectable="true"
+        :resizable="true"
+        :column-settings="true"
+        :server-side="true"
+        table-id="deals-table"
         :mass-actions="massActions"
         row-key="_id"
         empty-title="No deals yet"
@@ -522,8 +526,8 @@ const tableColumns = [
   { key: 'name', label: 'Deal Name', sortable: true },
   { key: 'amount', label: 'Amount', sortable: true },
   { key: 'stage', label: 'Stage', sortable: true },
-  { key: 'contactId', label: 'Contact', sortable: false },
-  { key: 'ownerId', label: 'Owner', sortable: false },
+  { key: 'contactId', label: 'Contact', sortable: true },
+  { key: 'ownerId', label: 'Owner', sortable: true },
   { key: 'expectedCloseDate', label: 'Close Date', sortable: true },
   { key: 'probability', label: 'Probability', sortable: true },
   { key: 'priority', label: 'Priority', sortable: true }
@@ -544,8 +548,14 @@ const handlePageChange = (page) => {
 };
 
 const handleSort = ({ key, order }) => {
-  sortField.value = key;
-  sortOrder.value = order;
+  // If key is empty, reset to default sort
+  if (!key) {
+    sortField.value = 'createdAt';
+    sortOrder.value = 'desc';
+  } else {
+    sortField.value = key;
+    sortOrder.value = order;
+  }
   fetchDeals();
 };
 
@@ -819,6 +829,19 @@ const onDrop = async (event, newStage) => {
 
 // Lifecycle
 onMounted(() => {
+  // Load saved sort state from localStorage before fetching
+  const savedSort = localStorage.getItem('datatable-deals-table-sort');
+  if (savedSort) {
+    try {
+      const { by, order } = JSON.parse(savedSort);
+      sortField.value = by || 'createdAt';
+      sortOrder.value = order || 'desc';
+      console.log('Loaded saved sort in Deals:', { by, order });
+    } catch (e) {
+      console.error('Failed to parse saved sort:', e);
+    }
+  }
+  
   fetchDeals();
 });
 </script>

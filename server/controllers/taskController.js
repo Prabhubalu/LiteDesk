@@ -90,7 +90,8 @@ const getTasks = async (req, res) => {
       search,
       page = 1,
       limit = 20,
-      sortBy = '-dueDate'
+      sortBy = 'createdAt',
+      sortOrder = 'desc'
     } = req.query;
 
     // Build query
@@ -127,12 +128,16 @@ const getTasks = async (req, res) => {
     // Pagination
     const skip = (page - 1) * limit;
 
+    // Build sort object
+    const sortObject = {};
+    sortObject[sortBy] = sortOrder === 'asc' ? 1 : -1;
+
     // Execute query
     const tasks = await Task.find(query)
       .populate('assignedTo', 'firstName lastName email avatar')
       .populate('assignedBy', 'firstName lastName')
       .populate('createdBy', 'firstName lastName')
-      .sort(sortBy)
+      .sort(sortObject)
       .limit(parseInt(limit))
       .skip(skip);
 

@@ -139,6 +139,10 @@
       :total-records="pagination.totalOrganizations"
       :show-controls="false"
       :selectable="true"
+      :resizable="true"
+      :column-settings="true"
+      :server-side="true"
+      table-id="organizations-table"
       :mass-actions="massActions"
       row-key="_id"
       empty-title="No organizations found"
@@ -310,7 +314,7 @@ const sortOrder = ref('desc');
 const columns = [
   { key: 'name', label: 'Organization', sortable: true },
   { key: 'industry', label: 'Industry', sortable: true },
-  { key: 'subscription', label: 'Subscription', sortable: false },
+  { key: 'subscription', label: 'Subscription', sortable: true },
   { key: 'isActive', label: 'Status', sortable: true },
   { key: 'contactCount', label: 'Contacts', sortable: true },
   { key: 'createdAt', label: 'Created', sortable: true }
@@ -326,8 +330,9 @@ const handleDelete = (row) => {
 };
 
 const handleSort = ({ key, order }) => {
-  sortField.value = key;
-  sortOrder.value = order;
+  // If key is empty, reset to default sort
+  sortField.value = key || 'createdAt';
+  sortOrder.value = order || 'desc';
   fetchOrganizations();
 };
 
@@ -515,6 +520,19 @@ const formatDate = (date) => {
 
 // Lifecycle
 onMounted(() => {
+  // Load saved sort state from localStorage before fetching
+  const savedSort = localStorage.getItem('datatable-organizations-table-sort');
+  if (savedSort) {
+    try {
+      const { by, order } = JSON.parse(savedSort);
+      sortField.value = by;
+      sortOrder.value = order;
+      console.log('Loaded saved sort in Organizations:', { by, order });
+    } catch (e) {
+      console.error('Failed to parse saved sort:', e);
+    }
+  }
+  
   fetchOrganizations();
 });
 </script>

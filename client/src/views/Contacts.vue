@@ -140,6 +140,11 @@
       :per-page="20"
       :total-records="pagination.totalContacts"
       :selectable="true"
+      :resizable="true"
+      :column-settings="true"
+      :server-side="true"
+      table-id="contacts-table"
+      :mass-actions="massActions"
       :show-controls="false"
       row-key="_id"
       empty-title="No contacts yet"
@@ -150,6 +155,7 @@
       @page-change="handlePageChange"
       @sort="handleSort"
       @select="handleSelect"
+      @bulk-action="handleBulkAction"
     >
       <!-- Custom Name Cell -->
       <template #cell-name="{ row }">
@@ -240,32 +246,6 @@
       </template>
     </DataTable>
 
-    <!-- Bulk Actions -->
-    <div v-if="selectedContacts.length > 0" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
-      <div class="card shadow-2xl border-2 border-brand-500">
-        <div class="card-body flex items-center gap-4 py-3 px-6">
-          <span class="font-medium text-gray-900 dark:text-white">{{ selectedContacts.length }} contact(s) selected</span>
-          <div class="flex gap-2">
-            <button @click="bulkDelete" class="btn-danger flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              Delete
-            </button>
-            <button @click="bulkExport" class="btn-secondary flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
-              </svg>
-              Export
-            </button>
-            <button @click="selectedContacts = []" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
-              Clear
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
 
     <!-- Create/Edit Modal -->
     <ContactFormModal 
@@ -308,6 +288,12 @@ const showFormModal = ref(false);
 const showImportModal = ref(false);
 const editingContact = ref(null);
 
+// Mass actions configuration
+const massActions = [
+  { label: 'Delete', icon: 'trash', action: 'delete', variant: 'danger' },
+  { label: 'Export', icon: 'export', action: 'export', variant: 'secondary' }
+];
+
 const filters = reactive({
   lifecycle_stage: '',
   status: '',
@@ -327,7 +313,12 @@ const isAdmin = computed(() => authStore.user?.role === 'admin' || authStore.use
 // Column definitions (dynamically include Organization column for admins)
 const tableColumns = computed(() => {
   const baseColumns = [
-    { key: 'name', label: 'Name', sortable: true },
+    { 
+      key: 'name', 
+      label: 'Name', 
+      sortable: true,
+      sortValue: (row) => `${row.first_name || ''} ${row.last_name || ''}`.trim()
+    },
   ];
   
   if (isAdmin.value) {
@@ -336,10 +327,10 @@ const tableColumns = computed(() => {
   
   baseColumns.push(
     { key: 'email', label: 'Email', sortable: true },
-    { key: 'phone', label: 'Phone', sortable: false },
-    { key: 'account_id', label: 'Company', sortable: false },
+    { key: 'phone', label: 'Phone', sortable: true },
+    { key: 'account_id', label: 'Company', sortable: true },
     { key: 'lifecycle_stage', label: 'Stage', sortable: true },
-    { key: 'owner_id', label: 'Owner', sortable: false },
+    { key: 'owner_id', label: 'Owner', sortable: true },
     { key: 'last_contacted_at', label: 'Last Contact', sortable: true }
   );
   
@@ -361,13 +352,39 @@ const handlePageChange = (page) => {
 };
 
 const handleSort = ({ key, order }) => {
-  sortField.value = key;
-  sortOrder.value = order;
+  // Map frontend column keys to backend sort fields
+  const sortMap = {
+    'name': 'first_name', // Sort by first name when name column is clicked
+    'email': 'email',
+    'phone': 'phone',
+    'account_id': 'account_id',
+    'lifecycle_stage': 'lifecycle_stage',
+    'owner_id': 'owner_id',
+    'last_contacted_at': 'last_contacted_at'
+  };
+  
+  // If key is empty, reset to default sort
+  if (!key) {
+    sortField.value = 'createdAt';
+    sortOrder.value = 'desc';
+  } else {
+    sortField.value = sortMap[key] || key;
+    sortOrder.value = order;
+  }
+  
   fetchContacts();
 };
 
 const handleSelect = (selected) => {
   selectedContacts.value = selected.map(row => row._id);
+};
+
+const handleBulkAction = (actionId, selectedRows) => {
+  if (actionId === 'delete') {
+    bulkDelete();
+  } else if (actionId === 'export') {
+    bulkExport();
+  }
 };
 
 const statistics = ref({
@@ -591,6 +608,31 @@ const formatDate = (date) => {
 
 // Lifecycle
 onMounted(() => {
+  // Load saved sort state from localStorage before fetching
+  const savedSort = localStorage.getItem('datatable-contacts-table-sort');
+  if (savedSort) {
+    try {
+      const { by, order } = JSON.parse(savedSort);
+      
+      // Map frontend column keys to backend sort fields
+      const sortMap = {
+        'name': 'first_name',
+        'email': 'email',
+        'phone': 'phone',
+        'account_id': 'account_id',
+        'lifecycle_stage': 'lifecycle_stage',
+        'owner_id': 'owner_id',
+        'last_contacted_at': 'last_contacted_at'
+      };
+      
+      sortField.value = sortMap[by] || by;
+      sortOrder.value = order;
+      console.log('Loaded saved sort in Contacts:', { by, order, mapped: sortField.value });
+    } catch (e) {
+      console.error('Failed to parse saved sort:', e);
+    }
+  }
+  
   fetchContacts();
 });
 </script>
@@ -846,46 +888,6 @@ onMounted(() => {
 
 .btn-icon.delete:hover svg {
   color: #dc2626;
-}
-
-/* Bulk Actions */
-.bulk-actions {
-  background: white;
-  padding: 1rem 1.5rem;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  margin-bottom: 1.5rem;
-}
-
-.bulk-actions span {
-  font-weight: 600;
-  color: #374151;
-}
-
-.btn-danger {
-  padding: 0.5rem 1rem;
-  background: #dc2626;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.btn-danger:hover {
-  background: #b91c1c;
-}
-
-.btn-text {
-  padding: 0.5rem 1rem;
-  background: transparent;
-  color: #6b7280;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
 }
 
 /* Pagination */
