@@ -75,6 +75,7 @@ exports.getContacts = async (req, res) => {
         // Execute query
         const contacts = await Contact.find(query)
             .populate('owner_id', 'username email firstName lastName')
+            .populate('organization', 'name industry')
             .sort({ createdAt: -1 })
             .limit(limit)
             .skip(skip);
@@ -143,7 +144,8 @@ exports.getContactById = async (req, res) => {
             organizationId: req.user.organizationId // Organization isolation
         })
         .populate('owner_id', 'username email firstName lastName')
-        .populate('account_id', 'name industry');
+        .populate('account_id', 'name industry')
+        .populate('organization', 'name industry status');
         
         if (!contact) {
             return res.status(404).json({ 
@@ -151,10 +153,35 @@ exports.getContactById = async (req, res) => {
                 message: 'Contact not found or access denied.' 
             });
         }
+
+        // Fetch related deals
+        const Deal = require('../models/Deal');
+        const deals = await Deal.find({ 
+            contactId: req.params.id,
+            organizationId: req.user.organizationId
+        })
+        .select('name amount stage expectedCloseDate probability priority')
+        .sort({ createdAt: -1 })
+        .limit(10);
+
+        // Fetch related tasks
+        const Task = require('../models/Task');
+        const tasks = await Task.find({
+            'relatedTo.type': 'Contact',
+            'relatedTo.id': req.params.id,
+            organizationId: req.user.organizationId
+        })
+        .select('title status priority dueDate')
+        .sort({ createdAt: -1 })
+        .limit(10);
         
         res.status(200).json({
             success: true,
-            data: contact
+            data: {
+                ...contact.toObject(),
+                relatedDeals: deals,
+                relatedTasks: tasks
+            }
         });
     } catch (error) {
         console.error('Get contact error:', error);
@@ -169,8 +196,41 @@ exports.getContactById = async (req, res) => {
 // --- 4. UPDATE Contact (U) ---
 exports.updateContact = async (req, res) => {
     try {
-        // Prevent changing organizationId
+        // Prevent changing organizationId and system fields
         delete req.body.organizationId;
+        delete req.body.createdAt;
+        delete req.body.updatedAt;
+        delete req.body._id;
+        delete req.body.__v;
+        
+        // Remove populated fields that should only be ObjectIds
+        if (req.body.owner_id && typeof req.body.owner_id === 'object') {
+            req.body.owner_id = req.body.owner_id._id;
+        }
+        if (req.body.account_id && typeof req.body.account_id === 'object') {
+            req.body.account_id = req.body.account_id._id;
+        }
+        if (req.body.organization && typeof req.body.organization === 'object') {
+            req.body.organization = req.body.organization._id;
+        }
+        if (req.body.reports_to && typeof req.body.reports_to === 'object') {
+            req.body.reports_to = req.body.reports_to._id;
+        }
+        
+        // Clean notes array - remove populated created_by
+        if (req.body.notes && Array.isArray(req.body.notes)) {
+            req.body.notes = req.body.notes.map(note => {
+                if (note.created_by && typeof note.created_by === 'object') {
+                    return {
+                        ...note,
+                        created_by: note.created_by._id
+                    };
+                }
+                return note;
+            });
+        }
+        
+        console.log('Updating contact with data:', JSON.stringify(req.body, null, 2));
         
         const updatedContact = await Contact.findOneAndUpdate(
             { 
@@ -179,7 +239,10 @@ exports.updateContact = async (req, res) => {
             },
             req.body,
             { new: true, runValidators: true }
-        );
+        )
+        .populate('owner_id', 'username email firstName lastName')
+        .populate('organization', 'name industry status')
+        .populate('account_id', 'name industry');
 
         if (!updatedContact) {
             return res.status(404).json({ 
@@ -194,6 +257,12 @@ exports.updateContact = async (req, res) => {
         });
     } catch (error) {
         console.error('Update contact error:', error);
+        console.error('Error details:', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+        });
+        
         res.status(400).json({ 
             success: false,
             message: 'Error updating contact.', 
@@ -263,6 +332,7 @@ exports.addNote = async (req, res) => {
             { new: true, runValidators: true }
         )
         .populate('owner_id', 'username email firstName lastName')
+        .populate('organization', 'name industry')
         .populate('notes.created_by', 'firstName lastName');
         
         if (!contact) {
