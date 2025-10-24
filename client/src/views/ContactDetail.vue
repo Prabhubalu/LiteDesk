@@ -220,7 +220,7 @@
             <h3 class="text-base font-bold text-gray-900 dark:text-white mb-3">Relations</h3>
 
             <!-- Grid of Relation Tiles -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="grid grid-cols-3 sm:grid-cols-3 gap-3">
               <!-- Organization Tile -->
               <div class="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-3 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors">
                 <div class="flex items-center justify-between mb-2">
@@ -298,30 +298,19 @@
                 </div>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Tasks</p>
               </div>
-
-              <!-- Attachments Tile -->
-              <div class="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors cursor-pointer">
-                <div class="flex items-center justify-between mb-2">
-                  <div class="w-6 h-6 bg-orange-100 dark:bg-orange-900/50 rounded flex items-center justify-center">
-                    <svg class="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
-                    </svg>
-                  </div>
-                  <button class="p-0.5 hover:bg-orange-200 dark:hover:bg-orange-800 rounded transition-colors">
-                    <svg class="w-3 h-3 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                  </button>
-                </div>
-                
-                <div>
-                  <p class="text-xl font-bold text-gray-400 dark:text-gray-500">0</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">No files</p>
-                </div>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Files</p>
-              </div>
             </div>
           </div>
+
+          <!-- Related Events Widget -->
+          <RelatedEventsWidget
+            v-if="contact._id"
+            related-type="Contact"
+            :related-id="contact._id"
+            :limit="10"
+            @create-event="openCreateEvent"
+            @view-event="viewEvent"
+            ref="eventsWidgetRef"
+          />
 
           <!-- Activity Timeline -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
@@ -393,6 +382,14 @@
       @close="showEditModal = false"
       @saved="handleContactUpdated"
     />
+
+    <!-- Event Form Modal -->
+    <EventFormModal
+      :is-open="showEventModal"
+      :event="eventToEdit"
+      @close="showEventModal = false"
+      @saved="handleEventSaved"
+    />
   </div>
 </template>
 
@@ -401,6 +398,8 @@ import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import apiClient from '@/utils/apiClient';
 import ContactFormModal from '@/components/contacts/ContactFormModal.vue';
+import RelatedEventsWidget from '@/components/events/RelatedEventsWidget.vue';
+import EventFormModal from '@/components/events/EventFormModal.vue';
 import { useAuthStore } from '@/stores/auth';
 
 const route = useRoute();
@@ -413,6 +412,9 @@ const error = ref(null);
 const showEditModal = ref(false);
 const showNoteForm = ref(false);
 const newNote = ref('');
+const showEventModal = ref(false);
+const eventsWidgetRef = ref(null);
+const eventToEdit = ref(null);
 
 const fetchContact = async () => {
   loading.value = true;
@@ -493,9 +495,8 @@ const addNote = async () => {
   if (!newNote.value.trim()) return;
   
   try {
-    const data = await apiClient(`/contacts/${route.params.id}/notes`, {
-      method: 'POST',
-      body: JSON.stringify({ text: newNote.value.trim() })
+    const data = await apiClient.post(`/contacts/${route.params.id}/notes`, {
+      text: newNote.value.trim()
     });
     
     if (data.success) {
@@ -506,6 +507,28 @@ const addNote = async () => {
   } catch (err) {
     console.error('Error adding note:', err);
     alert('Failed to add note');
+  }
+};
+
+const openCreateEvent = () => {
+  eventToEdit.value = {
+    relatedTo: {
+      type: 'Contact',
+      id: contact.value._id
+    }
+  };
+  showEventModal.value = true;
+};
+
+const viewEvent = (eventId) => {
+  router.push(`/events/${eventId}`);
+};
+
+const handleEventSaved = () => {
+  showEventModal.value = false;
+  eventToEdit.value = null;
+  if (eventsWidgetRef.value) {
+    eventsWidgetRef.value.refresh();
   }
 };
 

@@ -13,9 +13,9 @@ const navigation = computed(() => {
     { name: 'Contacts', href: '/contacts', current: false },
     { name: 'Deals', href: '/deals', current: false },
     { name: 'Tasks', href: '/tasks', current: false },
+    { name: 'Calendar', href: '/calendar', current: false },
     { name: 'Imports', href: '/imports', current: false },
     { name: 'Projects', href: '/items', current: false },
-    { name: 'Calendar', href: '/events', current: false },
   ];
   
   // Add Admin-only links for Owners/Admins

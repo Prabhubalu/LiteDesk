@@ -1,5 +1,11 @@
 @import 'tailwindcss';
 
+/* FullCalendar Styles */
+@import '@fullcalendar/core/main.css';
+@import '@fullcalendar/daygrid/main.css';
+@import '@fullcalendar/timegrid/main.css';
+@import '@fullcalendar/list/main.css';
+
 @theme {
   /* Brand Colors */
   --color-brand-50: #f5f3ff;

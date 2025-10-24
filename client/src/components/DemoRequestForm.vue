@@ -187,10 +187,7 @@ const handleSubmit = async () => {
   success.value = '';
 
   try {
-    const data = await apiClient('/demo/request', {
-      method: 'POST',
-      body: JSON.stringify(formData.value)
-    });
+    const data = await apiClient.post('/demo/request', formData.value);
     
     if (data.success) {
       success.value = data.message;
