@@ -156,7 +156,7 @@
 
       <p class="text-sm text-gray-500 dark:text-gray-400 text-center mt-4">
         Already have an account? 
-        <router-link to="/login" class="text-blue-600 hover:underline">Sign in</router-link>
+        <router-link to="/login" class="text-brand-600 dark:text-brand-400 hover:text-brand-500 dark:hover:text-brand-300 font-semibold hover:underline">Sign in</router-link>
       </p>
     </form>
   </div>
@@ -206,6 +206,11 @@ const handleSubmit = async () => {
     }
   } catch (err) {
     console.error('Demo request error:', err);
+    console.error('Error details:', {
+      message: err.message,
+      stack: err.stack,
+      name: err.name
+    });
     error.value = err.message || 'Failed to submit demo request. Please try again.';
   } finally {
     loading.value = false;

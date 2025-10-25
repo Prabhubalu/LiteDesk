@@ -26,7 +26,7 @@ const handleLogin = async () => {
         <h1 class="welcome-heading">Welcome back!</h1>
         <p class="welcome-subtext">Sign in to your account</p>
     </div> -->
-    <h2 class="mb-6 text-center text-2xl/9 font-bold tracking-tight text-gray-900 dark:text-white">Sign in to your account</h2>
+    <!-- <h2 class="mb-6 text-center text-2xl/9 font-bold tracking-tight text-gray-900 dark:text-white">Sign in to your account</h2> -->
     <form class="space-y-6" @submit.prevent="handleLogin">
         <div>
           <label for="email" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Email address</label>
