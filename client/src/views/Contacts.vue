@@ -160,7 +160,7 @@
       <!-- Custom Name Cell -->
       <template #cell-name="{ row }">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-500 to-brand-600 text-white flex items-center justify-center font-semibold text-sm flex-shrink-0">
+          <div class="w-10 h-10 rounded-lg bg-indigo-700 text-white flex items-center justify-center font-semibold flex-shrink-0 mt-0">
             {{ getInitials(row) }}
           </div>
           <span class="font-semibold text-gray-900 dark:text-white">{{ row.first_name }} {{ row.last_name }}</span>

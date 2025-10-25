@@ -215,8 +215,36 @@
             </div>
           </div>
 
-          <!-- Relations Widget - Grid Layout -->
-          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+          <!-- Related Organization Widget -->
+          <RelatedOrganizationWidget
+            :organization="contact.organization"
+            @view-organization="viewOrganization"
+            @link-organization="editContact"
+            @unlink-organization="unlinkOrganization"
+          />
+
+          <!-- Related Deals Widget -->
+          <RelatedDealsWidget
+            v-if="contact._id"
+            :contact-id="contact._id"
+            :limit="5"
+            @create-deal="openCreateDeal"
+            @view-deal="viewDeal"
+            ref="dealsWidgetRef"
+          />
+
+          <!-- Related Tasks Widget -->
+          <RelatedTasksWidget
+            v-if="contact._id"
+            :contact-id="contact._id"
+            :limit="5"
+            @create-task="openCreateTask"
+            @view-task="viewTask"
+            ref="tasksWidgetRef"
+          />
+
+          <!-- Old Relations Widget - Grid Layout (HIDDEN, keeping for reference) -->
+          <div v-if="false" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
             <h3 class="text-base font-bold text-gray-900 dark:text-white mb-3">Relations</h3>
 
             <!-- Grid of Relation Tiles -->
@@ -400,6 +428,9 @@ import apiClient from '@/utils/apiClient';
 import ContactFormModal from '@/components/contacts/ContactFormModal.vue';
 import RelatedEventsWidget from '@/components/events/RelatedEventsWidget.vue';
 import EventFormModal from '@/components/events/EventFormModal.vue';
+import RelatedDealsWidget from '@/components/deals/RelatedDealsWidget.vue';
+import RelatedTasksWidget from '@/components/tasks/RelatedTasksWidget.vue';
+import RelatedOrganizationWidget from '@/components/organizations/RelatedOrganizationWidget.vue';
 import { useAuthStore } from '@/stores/auth';
 
 const route = useRoute();
@@ -415,6 +446,8 @@ const newNote = ref('');
 const showEventModal = ref(false);
 const eventsWidgetRef = ref(null);
 const eventToEdit = ref(null);
+const dealsWidgetRef = ref(null);
+const tasksWidgetRef = ref(null);
 
 const fetchContact = async () => {
   loading.value = true;
@@ -530,6 +563,54 @@ const handleEventSaved = () => {
   if (eventsWidgetRef.value) {
     eventsWidgetRef.value.refresh();
   }
+};
+
+// Organization methods
+const viewOrganization = (organizationId) => {
+  router.push(`/organizations/${organizationId}`);
+};
+
+const unlinkOrganization = async () => {
+  if (!confirm('Are you sure you want to unlink this organization?')) return;
+  
+  try {
+    const response = await apiClient.put(`/contacts/${contact.value._id}`, {
+      organization: null
+    });
+    
+    if (response.success) {
+      contact.value.organization = null;
+    }
+  } catch (error) {
+    console.error('Error unlinking organization:', error);
+    alert('Failed to unlink organization');
+  }
+};
+
+// Deal methods
+const openCreateDeal = () => {
+  // Navigate to deals page with contact pre-selected
+  router.push({
+    path: '/deals',
+    query: { createNew: 'true', contactId: contact.value._id }
+  });
+};
+
+const viewDeal = (dealId) => {
+  router.push(`/deals/${dealId}`);
+};
+
+// Task methods
+const openCreateTask = () => {
+  // Navigate to tasks page with contact pre-selected
+  router.push({
+    path: '/tasks',
+    query: { createNew: 'true', contactId: contact.value._id }
+  });
+};
+
+const viewTask = (taskId) => {
+  router.push(`/tasks/${taskId}`);
 };
 
 onMounted(() => {
