@@ -5,15 +5,46 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-const MONGO_URI = process.env.MONGO_URI;
+
+// Environment-aware configuration
+const isProduction = process.env.NODE_ENV === 'production';
+const PORT = process.env.PORT || 5000;
+
+// Smart MongoDB URI selection (handles both MONGO_URI and MONGODB_URI)
+const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI || 
+                  (isProduction ? process.env.MONGO_URI_PRODUCTION : process.env.MONGO_URI_LOCAL);
+
+// Smart CORS configuration
+const allowedOrigins = process.env.CORS_ORIGINS 
+  ? process.env.CORS_ORIGINS.split(',')
+  : (isProduction 
+      ? ['http://13.203.208.47', 'https://13.203.208.47']
+      : ['http://localhost:5173', 'http://localhost:3000']);
+
+console.log(`🚀 Starting LiteDesk CRM in ${isProduction ? 'PRODUCTION' : 'DEVELOPMENT'} mode`);
+console.log(`📊 Port: ${PORT}`);
+console.log(`🗄️  Database: ${MONGO_URI ? MONGO_URI.substring(0, 30) + '...' : 'NOT SET'}`);
+console.log(`🌐 Allowed Origins: ${allowedOrigins.join(', ')}`);
 
 // 🚨 CRUCIAL: Configure Express to serve static files (like your CSS)
 // Assuming your final CSS is in a folder named 'public'
 // app.use(express.static(path.join(__dirname, 'public')));
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
+      callback(null, true);
+    } else {
+      console.log(`❌ CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 app.use(express.json()); // Allows parsing JSON request bodies
 
 // Routes
@@ -50,27 +81,60 @@ app.use('/api/admin', adminRoutes); // Admin-only cross-organization endpoints
 app.use('/health', healthRoutes); // Public health check endpoint
 
 // 1. Database Connection
+console.log('🔄 Connecting to MongoDB...');
+
+if (!MONGO_URI) {
+  console.error('❌ FATAL ERROR: MONGO_URI is not defined in environment variables!');
+  console.error('📝 Please check your .env file and ensure MONGO_URI or MONGODB_URI is set.');
+  console.error(`   Expected for ${isProduction ? 'PRODUCTION' : 'DEVELOPMENT'} mode`);
+  process.exit(1);
+}
+
 mongoose.connect(MONGO_URI)
   .then(() => {
-    console.log('MongoDB connected successfully.');
+    console.log('✅ MongoDB connected successfully.');
+    console.log(`📊 Database: ${MONGO_URI.includes('localhost') ? 'Local MongoDB' : 'MongoDB Atlas'}`);
     
     // 2. Start Monitoring Services (if enabled)
     if (process.env.ENABLE_HEALTH_CHECKER !== 'false') {
       const healthChecker = require('./services/monitoring/healthChecker');
       healthChecker.start();
+      console.log('✅ Health checker started');
     }
     
     if (process.env.ENABLE_METRICS_COLLECTOR !== 'false') {
       const metricsCollector = require('./services/monitoring/metricsCollector');
       metricsCollector.start();
+      console.log('✅ Metrics collector started');
     }
     
     // 3. Start Server after successful DB connection
     app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
+      console.log('');
+      console.log('╔════════════════════════════════════════════════════════╗');
+      console.log(`║  ✅ LiteDesk CRM Server Running Successfully!        ║`);
+      console.log('╚════════════════════════════════════════════════════════╝');
+      console.log(`🌐 Server: http://localhost:${PORT}`);
+      console.log(`🔧 Mode: ${isProduction ? 'PRODUCTION' : 'DEVELOPMENT'}`);
+      console.log(`💚 Health: http://localhost:${PORT}/health`);
+      console.log('');
     });
   })
-  .catch(err => console.error('DB connection error:', err));
+  .catch(err => {
+    console.error('');
+    console.error('╔════════════════════════════════════════════════════════╗');
+    console.error('║  ❌ DATABASE CONNECTION FAILED!                       ║');
+    console.error('╚════════════════════════════════════════════════════════╝');
+    console.error('🔍 Error Details:', err.message);
+    console.error('');
+    console.error('💡 Troubleshooting:');
+    console.error('   1. Check if MongoDB is running (local) or accessible (Atlas)');
+    console.error('   2. Verify MONGO_URI in .env file');
+    console.error('   3. Check network connectivity for MongoDB Atlas');
+    console.error('   4. Verify database credentials');
+    console.error('');
+    process.exit(1);
+  });
 
 // 3. Basic Test Route
 app.get('/', (req, res) => {

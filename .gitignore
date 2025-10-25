@@ -10,12 +10,21 @@ node_modules/
 /build
 /dist
 
-# Environment Variables
+# Environment Variables (CRITICAL - Never commit these!)
 .env
+.env.*
+*.env
+**/.env
+**/.env.*
+server/.env
+server/.env.*
+client/.env
+client/.env.*
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env.backup*
 
 # IDE
 .vscode/

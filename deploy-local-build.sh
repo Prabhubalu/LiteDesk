@@ -118,39 +118,13 @@ echo -e "${BLUE}║${NC} ${PURPLE}PART 2: Preparing Backend${NC} ${BLUE}║${NC}
 echo -e "${BLUE}╚════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
-# Generate secure secrets
-echo -e "${BLUE}🔐 Generating secure secrets...${NC}"
+# Generate secure secrets (will be created directly on EC2)
+echo -e "${BLUE}🔐 Generating secure secrets for production...${NC}"
 JWT_SECRET=$(openssl rand -hex 64)
 REFRESH_TOKEN_SECRET=$(openssl rand -hex 64)
 MASTER_API_KEY=$(openssl rand -hex 32)
 echo -e "${GREEN}✓ Secrets generated${NC}"
-
-# Create .env file locally
-cat > server/.env << EOF
-# Server Configuration
-NODE_ENV=production
-PORT=5000
-
-# MongoDB
-MONGODB_URI=$MONGODB_URI
-
-# JWT Secrets
-JWT_SECRET=$JWT_SECRET
-REFRESH_TOKEN_SECRET=$REFRESH_TOKEN_SECRET
-
-# Master API Key
-MASTER_API_KEY=$MASTER_API_KEY
-
-# Frontend URL
-CLIENT_URL=http://$EC2_IP
-CORS_ORIGINS=http://$EC2_IP,https://$EC2_IP,http://localhost:5173
-
-# Admin Defaults
-DEFAULT_ADMIN_EMAIL=$ADMIN_EMAIL
-DEFAULT_ADMIN_PASSWORD=$ADMIN_PASSWORD
-EOF
-
-echo -e "${GREEN}✓ Backend environment configured${NC}"
+echo -e "${YELLOW}ℹ️  Local .env will NOT be modified or uploaded${NC}"
 echo ""
 
 ###############################################################################
@@ -212,10 +186,13 @@ echo ""
 ssh -i "$KEY_FILE" -o StrictHostKeyChecking=no "$EC2_USER@$EC2_IP" "mkdir -p /home/ubuntu/LiteDesk"
 
 echo -e "${YELLOW}📤 Uploading backend files...${NC}"
-# Upload backend (excluding node_modules)
+echo -e "${BLUE}ℹ️  Excluding .env (will be created on EC2 with production settings)${NC}"
+# Upload backend (excluding node_modules and .env)
 rsync -avz --progress -e "ssh -i $KEY_FILE -o StrictHostKeyChecking=no" \
     --exclude 'node_modules' \
     --exclude '.git' \
+    --exclude '.env' \
+    --exclude '.env.*' \
     ./server/ "$EC2_USER@$EC2_IP:/home/ubuntu/LiteDesk/server/"
 
 echo -e "${YELLOW}📤 Uploading frontend build...${NC}"
@@ -237,6 +214,90 @@ echo ""
 echo -e "${YELLOW}📦 Installing backend dependencies on EC2...${NC}"
 echo -e "${YELLOW}(This is lightweight - only backend packages)${NC}"
 
+# Create production .env on EC2
+echo -e "${BLUE}📝 Creating production .env on EC2...${NC}"
+ssh -i "$KEY_FILE" -o StrictHostKeyChecking=no "$EC2_USER@$EC2_IP" << ENVSETUP
+cd /home/ubuntu/LiteDesk/server
+
+# Backup existing .env if it exists
+if [ -f .env ]; then
+    echo "Backing up existing .env..."
+    cp .env .env.backup.\$(date +%Y%m%d_%H%M%S)
+fi
+
+# Create production .env
+cat > .env << 'PRODENV'
+# =============================================================================
+# LiteDesk CRM - Production Configuration (AWS EC2)
+# =============================================================================
+
+NODE_ENV=production
+PORT=5000
+
+# -----------------------------------------------------------------------------
+# DATABASE - MongoDB Atlas (Cloud)
+# -----------------------------------------------------------------------------
+MONGO_URI=$MONGODB_URI
+MONGODB_URI=$MONGODB_URI
+
+# -----------------------------------------------------------------------------
+# SECURITY
+# -----------------------------------------------------------------------------
+JWT_SECRET=$JWT_SECRET
+JWT_EXPIRE=7d
+REFRESH_TOKEN_SECRET=$REFRESH_TOKEN_SECRET
+REFRESH_TOKEN_EXPIRE=30d
+MASTER_API_KEY=$MASTER_API_KEY
+
+# -----------------------------------------------------------------------------
+# APPLICATION URLS (Production)
+# -----------------------------------------------------------------------------
+CLIENT_URL=http://$EC2_IP
+CORS_ORIGINS=http://$EC2_IP,https://$EC2_IP
+
+# -----------------------------------------------------------------------------
+# ADMIN DEFAULTS
+# -----------------------------------------------------------------------------
+DEFAULT_ADMIN_EMAIL=$ADMIN_EMAIL
+DEFAULT_ADMIN_PASSWORD=$ADMIN_PASSWORD
+
+# -----------------------------------------------------------------------------
+# MONITORING
+# -----------------------------------------------------------------------------
+ENABLE_HEALTH_CHECKER=true
+ENABLE_METRICS_COLLECTOR=true
+
+# -----------------------------------------------------------------------------
+# FEATURES
+# -----------------------------------------------------------------------------
+ENABLE_DEMO_CONVERSION=true
+ENABLE_INSTANCE_PROVISIONING=false
+ENABLE_EMAIL_NOTIFICATIONS=false
+ENABLE_STRIPE_INTEGRATION=false
+
+# -----------------------------------------------------------------------------
+# LOGGING
+# -----------------------------------------------------------------------------
+LOG_LEVEL=info
+DEBUG_PROVISIONING=false
+DEBUG_KUBERNETES=false
+DEBUG_DATABASE=false
+DEBUG_DNS=false
+
+# -----------------------------------------------------------------------------
+# OTHER
+# -----------------------------------------------------------------------------
+BASE_DOMAIN=$EC2_IP
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+PRODENV
+
+echo "✅ Production .env created!"
+ENVSETUP
+
+echo -e "${GREEN}✓ Production environment configured on EC2${NC}"
+
+# Install dependencies and start backend
 ssh -i "$KEY_FILE" -o StrictHostKeyChecking=no "$EC2_USER@$EC2_IP" << 'REMOTE'
 cd /home/ubuntu/LiteDesk/server
 npm install --production --no-audit

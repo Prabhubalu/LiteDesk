@@ -66,45 +66,61 @@ if [ -f "$PROJECT_ROOT/.backend.pid" ]; then
     rm "$PROJECT_ROOT/.backend.pid"
 fi
 
-# Also kill anything on port 3000
+# Also kill anything on port 3000 (default local port - avoids Apple AirPlay on 5000)
 if lsof -Pi :3000 -sTCP:LISTEN -t >/dev/null 2>&1; then
     echo "   Stopping any remaining process on port 3000..."
     lsof -ti :3000 | xargs kill -9 2>/dev/null || true
 fi
 
-echo ""
-
-# =============================================================================
-# Stop MongoDB
-# =============================================================================
-echo -e "${BLUE}🗄️  Stopping MongoDB...${NC}"
-
-if docker ps --format '{{.Names}}' | grep -q "^litedesk-mongo$"; then
-    docker stop litedesk-mongo > /dev/null 2>&1
-    echo -e "${GREEN}✅ MongoDB stopped${NC}"
-else
-    echo -e "${YELLOW}⚠️  MongoDB container not running${NC}"
+# Also check port 5000 (in case using production settings locally)
+if lsof -Pi :5000 -sTCP:LISTEN -t >/dev/null 2>&1; then
+    echo "   Stopping any process on port 5000..."
+    lsof -ti :5000 | xargs kill -9 2>/dev/null || true
 fi
 
 echo ""
 
 # =============================================================================
-# Ask about cleanup
+# Stop Local MongoDB (if running)
 # =============================================================================
-echo -e "${YELLOW}❓ Do you want to remove the MongoDB container?${NC}"
-echo "   (This will delete all data - databases, users, etc.)"
-read -p "   Remove container? (y/N): " -n 1 -r
-echo
+echo -e "${BLUE}🗄️  Checking MongoDB...${NC}"
 
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    if docker ps -a --format '{{.Names}}' | grep -q "^litedesk-mongo$"; then
-        docker rm litedesk-mongo > /dev/null 2>&1
-        echo -e "${GREEN}✅ MongoDB container removed${NC}"
-        echo -e "${YELLOW}⚠️  All data has been deleted${NC}"
+# Check if using local MongoDB
+if [ -f "$PROJECT_ROOT/server/.env" ]; then
+    source "$PROJECT_ROOT/server/.env" 2>/dev/null || true
+    
+    if [[ "$MONGO_URI" == *"localhost"* ]] || [[ "$MONGO_URI_LOCAL" == *"localhost"* ]]; then
+        echo -e "${YELLOW}📊 Local MongoDB detected${NC}"
+        
+        # Check if MongoDB is running
+        if pgrep -x "mongod" > /dev/null; then
+            echo -e "${YELLOW}❓ Do you want to stop local MongoDB?${NC}"
+            echo "   (This will stop the MongoDB service)"
+            read -p "   Stop MongoDB? (y/N): " -n 1 -r
+            echo
+            
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                if command -v brew &> /dev/null && brew services list | grep mongodb-community | grep started > /dev/null; then
+                    brew services stop mongodb-community
+                    echo -e "${GREEN}✅ MongoDB stopped via Homebrew${NC}"
+                elif command -v systemctl &> /dev/null; then
+                    sudo systemctl stop mongod
+                    echo -e "${GREEN}✅ MongoDB stopped via systemctl${NC}"
+                else
+                    pkill mongod 2>/dev/null || true
+                    echo -e "${GREEN}✅ MongoDB process stopped${NC}"
+                fi
+            else
+                echo -e "${BLUE}ℹ️  MongoDB kept running${NC}"
+            fi
+        else
+            echo -e "${BLUE}ℹ️  Local MongoDB not running${NC}"
+        fi
+    else
+        echo -e "${BLUE}ℹ️  Using MongoDB Atlas (cloud) - nothing to stop locally${NC}"
     fi
 else
-    echo -e "${BLUE}ℹ️  MongoDB container kept (data preserved)${NC}"
-    echo "   To start it again, just run: ./start.sh"
+    echo -e "${YELLOW}⚠️  .env file not found, skipping MongoDB check${NC}"
 fi
 
 echo ""
@@ -114,6 +130,8 @@ echo ""
 # =============================================================================
 if [ -f "$PROJECT_ROOT/backend.log" ] || [ -f "$PROJECT_ROOT/frontend.log" ]; then
     echo -e "${YELLOW}❓ Do you want to delete log files?${NC}"
+    echo "   • backend.log: $(wc -l < "$PROJECT_ROOT/backend.log" 2>/dev/null || echo 0) lines"
+    echo "   • frontend.log: $(wc -l < "$PROJECT_ROOT/frontend.log" 2>/dev/null || echo 0) lines"
     read -p "   Delete logs? (y/N): " -n 1 -r
     echo
     
@@ -122,6 +140,8 @@ if [ -f "$PROJECT_ROOT/backend.log" ] || [ -f "$PROJECT_ROOT/frontend.log" ]; th
         echo -e "${GREEN}✅ Log files deleted${NC}"
     else
         echo -e "${BLUE}ℹ️  Log files kept${NC}"
+        echo "   • View backend logs: tail -f backend.log"
+        echo "   • View frontend logs: tail -f frontend.log"
     fi
 fi
 
@@ -132,6 +152,16 @@ echo "╚═══════════════════════�
 echo ""
 echo -e "${GREEN}✨ LiteDesk stopped successfully!${NC}"
 echo ""
-echo -e "${BLUE}To start again, run:${NC} ./start.sh"
+echo -e "${BLUE}📝 What was stopped:${NC}"
+echo "   • Frontend server (port 5173)"
+echo "   • Backend server (port 3000)"
+if [[ $REPLY =~ ^[Yy]$ ]] 2>/dev/null; then
+    echo "   • Local MongoDB"
+fi
 echo ""
-
+echo -e "${BLUE}🔄 To start again, run:${NC} ./start.sh"
+echo ""
+echo -e "${YELLOW}💡 Tip:${NC}"
+echo "   • Data is preserved in MongoDB"
+echo "   • Just run ./start.sh to continue working"
+echo ""
