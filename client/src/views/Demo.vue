@@ -6,10 +6,54 @@ const { colorMode, toggleColorMode } = useColorMode();
 </script>
 
 <template>
-  <!-- Main Container with Gradient Background -->
-  <div class="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-brand-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-brand-900/20">
+    <div class="min-h-screen bg-white dark:bg-gray-900">
+    <div class="relative isolate px-6 lg:px-8 pt-14 flex items-center justify-center">
+      <div class="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
+        aria-hidden="true">
+        <div
+          class="relative left-[calc(50%-11rem)] aspect-1155/678 w-144.5 -translate-x-1/2 rotate-30 bg-linear-to-tr from-[#ff80b5] to-[#9089fc] dark:from-[#ff80b5] dark:to-[#9089fc] opacity-30 sm:left-[calc(50%-30rem)] sm:w-288.75"
+          style="clip-path: polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)" />
+      </div>
+      <div class="mx-auto max-w-2xl sm:w-full sm:max-w-sm md:min-w-lg py-4 sm:py-4 lg:py-4 md:py-4 transition-all duration-300">
+        <div class="flex min-h-full flex-1 flex-col justify-center py-12 sm:px-6 lg:px-8">
+          <div class="sm:mx-auto sm:w-full sm:max-w-sm">
+            <img
+              :src="colorMode === 'dark' || colorMode === 'system' ? './src/assets/nurtura_logo_white.svg' : './src/assets/nurtura_logo_plain.svg'"
+              alt="Nurtura Logo" class="mx-auto h-10 w-auto brightness-0 dark:brightness-100" />
+
+            <h2 class="mt-6 text-center text-2xl/9 font-bold tracking-tight text-gray-900 dark:text-white">Get a demo</h2>
+            <p class="text-center text-gray-600 dark:text-gray-400 mt-1 text-center">We’re here to answer all your questions!</p>
+            <!-- See how Nurtura can transform your business. Schedule a personalized demo with our team. -->
+          </div>
+
+          <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm md:max-w-md">
+            <DemoRequestForm />
+
+            <p class="mt-10 text-center text-md/6 text-gray-500">
+              Already have an account?
+              {{ ' ' }}
+              <router-link to="/login" class="font-semibold text-indigo-600 hover:text-indigo-500">Log in</router-link>
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <div
+        class="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]"
+        aria-hidden="true">
+        <div
+          class="relative left-[calc(50%+3rem)] aspect-1155/678 w-144.5 -translate-x-1/2 bg-linear-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%+36rem)] sm:w-288.75"
+          style="clip-path: polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)" />
+      </div>
+    </div>
+  </div>
+
+
+
+
+  <!-- <div class="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-brand-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-brand-900/20">
     
-    <!-- Color Mode Switcher -->
+
     <div class="absolute top-4 right-4 flex gap-2 animate-fade-in">
       <button 
         @click="toggleColorMode('light')" 
@@ -37,11 +81,11 @@ const { colorMode, toggleColorMode } = useColorMode();
       </button>
     </div>
 
-    <!-- Main Card -->
+
     <div class="w-full max-w-2xl animate-slide-up">
       <div class="card p-8 shadow-2xl">
         
-        <!-- Logo Section -->
+
         <div class="flex flex-col items-center mb-8">
           <div class="bg-gradient-to-br from-brand-500 to-brand-600 p-3 rounded-2xl shadow-lg mb-4">
             <img 
@@ -54,12 +98,12 @@ const { colorMode, toggleColorMode } = useColorMode();
           <p class="text-gray-600 dark:text-gray-400 mt-1 text-center">See how LiteDesk can transform your business</p>
         </div>
 
-        <!-- Demo Request Form -->
+
         <div class="transition-all duration-300">
           <DemoRequestForm />
         </div>
 
-        <!-- Cross-navigation -->
+
         <div class="mt-6 text-center">
           <p class="text-sm text-gray-600 dark:text-gray-400">
             Already have an account? 
@@ -70,10 +114,10 @@ const { colorMode, toggleColorMode } = useColorMode();
         </div>
       </div>
 
-      <!-- Footer -->
+
       <div class="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
         <p>© 2025 LiteDesk. All rights reserved.</p>
       </div>
     </div>
-  </div>
+  </div> -->
 </template>
