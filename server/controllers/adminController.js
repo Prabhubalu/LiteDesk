@@ -40,7 +40,7 @@ const getAllContactsAcrossOrgs = async (req, res) => {
         
         // Execute query with organization populated
         const contacts = await Contact.find(query)
-            .populate('organizationId', 'name industry')
+            .populate('organization', 'name industry email website')
             .populate('owner_id', 'firstName lastName email')
             .sort(sort)
             .limit(limit)
@@ -208,8 +208,7 @@ const getAllOrganizations = async (req, res) => {
 const getContactById = async (req, res) => {
     try {
         const contact = await Contact.findById(req.params.id)
-            .populate('organizationId', 'name industry')
-            .populate('organization', 'name industry status')
+            .populate('organization', 'name industry status email phone website')
             .populate('owner_id', 'firstName lastName email')
             .populate('account_id', 'name industry')
             .populate('notes.created_by', 'firstName lastName');

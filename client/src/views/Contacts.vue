@@ -168,8 +168,8 @@
       </template>
 
       <!-- Custom Organization Cell (only for admins) -->
-      <template #cell-organizationId="{ row }" v-if="isAdmin">
-        <span class="font-medium text-gray-900 dark:text-white">{{ row.organizationId?.name || 'N/A' }}</span>
+      <template #cell-organization="{ row }" v-if="isAdmin">
+        <span class="font-medium text-gray-900 dark:text-white">{{ row.organization?.name || '-' }}</span>
       </template>
 
       <!-- Custom Email Cell -->
@@ -322,7 +322,7 @@ const tableColumns = computed(() => {
   ];
   
   if (isAdmin.value) {
-    baseColumns.push({ key: 'organizationId', label: 'Organization', sortable: false });
+    baseColumns.push({ key: 'organization', label: 'Organization', sortable: false });
   }
   
   baseColumns.push(
