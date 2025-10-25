@@ -14,6 +14,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
 const Organization = require('../models/Organization');
+const Role = require('../models/Role');
 
 const MONGO_URI = process.env.MONGO_URI;
 
@@ -81,6 +82,18 @@ async function createDefaultAdmin() {
         console.log('✅ Master Organization created');
         console.log(`   Name: ${organization.name}`);
         console.log(`   ID: ${organization._id}`);
+
+        // Create Default Roles
+        console.log('\n🔐 Creating default roles...');
+        try {
+            const roles = await Role.createDefaultRoles(organization._id);
+            console.log('✅ Default roles created:', roles.length, 'roles');
+            roles.forEach(role => {
+                console.log(`   - ${role.name} (Level ${role.level})`);
+            });
+        } catch (roleError) {
+            console.warn('⚠️  Failed to create default roles:', roleError.message);
+        }
 
         // Hash password
         console.log('\n🔐 Hashing password...');

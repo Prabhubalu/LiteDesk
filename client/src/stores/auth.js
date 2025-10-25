@@ -124,6 +124,48 @@ export const useAuthStore = defineStore('auth', {
             } catch (error) {
                 console.error('Error refreshing organization:', error);
             }
+        },
+        
+        // Refresh user profile and permissions
+        async refreshUser() {
+            if (!this.user?.token) {
+                console.warn('No user token available for refresh');
+                return false;
+            }
+            
+            try {
+                console.log('Refreshing user permissions...');
+                const response = await fetch('/api/users/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${this.user.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.data) {
+                        // Update user data while preserving token
+                        const token = this.user.token;
+                        this.user = {
+                            ...data.data,
+                            token: token
+                        };
+                        localStorage.setItem('user', JSON.stringify(this.user));
+                        console.log('User permissions refreshed successfully');
+                        return true;
+                    }
+                } else if (response.status === 401) {
+                    // Token expired, logout
+                    console.warn('Session expired, logging out');
+                    this.logout();
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error refreshing user:', error);
+                return false;
+            }
+            return false;
         }
     },
 });

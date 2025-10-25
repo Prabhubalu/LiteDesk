@@ -11,7 +11,8 @@ const {
     deleteUser,
     getProfile,
     updateProfile,
-    changePassword
+    changePassword,
+    resetUserPassword
 } = require('../controllers/userController');
 
 // Apply auth and organization middleware to all routes
@@ -29,6 +30,7 @@ router.get('/', canManageUsers(), getUsers);
 router.post('/', canManageUsers(), inviteUser);
 router.get('/:id', canManageUsers(), getUser);
 router.put('/:id', canManageUsers(), updateUser);
+router.post('/:id/reset-password', canManageUsers(), resetUserPassword);
 router.delete('/:id', canManageUsers(), deleteUser);
 
 module.exports = router;

@@ -112,6 +112,14 @@ const canManageBilling = () => {
 };
 
 /**
+ * Check if user can manage roles and permissions
+ * For now, requires admin or owner role
+ */
+const canManageRoles = () => {
+    return requireRole('admin');
+};
+
+/**
  * Middleware to filter data based on viewAll permission
  * If user doesn't have viewAll, they can only see their own data
  */
@@ -149,6 +157,7 @@ module.exports = {
     requireOwner,
     canManageUsers,
     canManageBilling,
+    canManageRoles,
     filterByOwnership
 };
 

@@ -5,16 +5,55 @@ const crypto = require('crypto');
 // --- Get all users in the organization ---
 exports.getUsers = async (req, res) => {
     try {
-        const users = await User.find({ 
-            organizationId: req.user.organizationId 
-        })
-        .select('-password')  // Exclude password
-        .sort({ createdAt: -1 });
+        const {
+            page = 1,
+            limit = 20,
+            search = '',
+            sortBy = 'createdAt',
+            sortOrder = 'desc',
+            roleId = ''
+        } = req.query;
+
+        // Build query
+        const query = { organizationId: req.user.organizationId };
+
+        // Add roleId filter if provided
+        if (roleId) {
+            query.roleId = roleId;
+        }
+
+        // Add search filter
+        if (search) {
+            query.$or = [
+                { firstName: { $regex: search, $options: 'i' } },
+                { lastName: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } },
+                { username: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        // Build sort object
+        const sortOptions = {};
+        sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
+
+        // Execute query with pagination
+        const users = await User.find(query)
+            .select('-password')  // Exclude password
+            .populate('roleId', 'name description color icon level')  // Populate role details
+            .sort(sortOptions)
+            .limit(limit * 1)
+            .skip((page - 1) * limit)
+            .lean();
+
+        // Get total count
+        const total = await User.countDocuments(query);
 
         res.json({
             success: true,
-            count: users.length,
-            data: users
+            data: users,
+            total,
+            totalPages: Math.ceil(total / limit),
+            currentPage: parseInt(page)
         });
     } catch (error) {
         console.error('Get users error:', error);
@@ -31,7 +70,9 @@ exports.getUser = async (req, res) => {
         const user = await User.findOne({ 
             _id: req.params.id,
             organizationId: req.user.organizationId 
-        }).select('-password');
+        })
+        .select('-password')
+        .populate('roleId', 'name description color icon level permissions');
 
         if (!user) {
             return res.status(404).json({ 
@@ -55,11 +96,11 @@ exports.getUser = async (req, res) => {
 
 // --- Invite/Create new user ---
 exports.inviteUser = async (req, res) => {
-    const { email, firstName, lastName, role, phoneNumber } = req.body;
+    const { email, firstName, lastName, roleId, role, phoneNumber, password, sendEmail } = req.body;
 
     try {
         // Validate required fields
-        if (!email || !role) {
+        if (!email || !roleId) {
             return res.status(400).json({ 
                 success: false,
                 message: 'Email and role are required' 
@@ -94,12 +135,26 @@ exports.inviteUser = async (req, res) => {
             });
         }
 
-        // Generate temporary password
-        const tempPassword = crypto.randomBytes(8).toString('hex');
+        // Fetch the Role document to get role details
+        const Role = require('../models/Role');
+        const roleDoc = await Role.findById(roleId);
+        
+        if (!roleDoc) {
+            return res.status(404).json({
+                success: false,
+                message: 'Role not found'
+            });
+        }
+
+        // Use provided password or generate temporary password
+        const tempPassword = password || crypto.randomBytes(8).toString('hex');
         const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
         // Create username from email
         const username = email.split('@')[0];
+
+        // Map role name to legacy role enum for backward compatibility
+        const legacyRole = roleDoc.name.toLowerCase();
 
         // Create new user
         const newUser = await User.create({
@@ -110,17 +165,74 @@ exports.inviteUser = async (req, res) => {
             firstName: firstName || '',
             lastName: lastName || '',
             phoneNumber,
-            role: role || 'user',
-            isOwner: false,
+            roleId: roleId,
+            role: legacyRole, // Store legacy role for backward compatibility
+            isOwner: roleDoc.name === 'Owner',
             status: 'active'
         });
 
-        // Set permissions based on role
-        newUser.setPermissionsByRole(role);
+        // Set permissions based on the dynamic role's permissions
+        // Map the Role permissions to User permissions structure
+        newUser.permissions = {
+            contacts: {
+                view: roleDoc.permissions.contacts.read,
+                create: roleDoc.permissions.contacts.create,
+                edit: roleDoc.permissions.contacts.update,
+                delete: roleDoc.permissions.contacts.delete,
+                viewAll: roleDoc.permissions.contacts.viewAll || false,
+                exportData: roleDoc.permissions.contacts.export || false
+            },
+            deals: {
+                view: roleDoc.permissions.deals.read,
+                create: roleDoc.permissions.deals.create,
+                edit: roleDoc.permissions.deals.update,
+                delete: roleDoc.permissions.deals.delete,
+                viewAll: roleDoc.permissions.deals.viewAll || false,
+                exportData: roleDoc.permissions.deals.export || false
+            },
+            projects: {
+                view: true,
+                create: true,
+                edit: true,
+                delete: false,
+                viewAll: false
+            },
+            tasks: {
+                view: roleDoc.permissions.tasks.read,
+                create: roleDoc.permissions.tasks.create,
+                edit: roleDoc.permissions.tasks.update,
+                delete: roleDoc.permissions.tasks.delete,
+                viewAll: roleDoc.permissions.tasks.viewAll || false
+            },
+            imports: {
+                view: true,
+                create: roleDoc.permissions.contacts.import || roleDoc.permissions.deals.import,
+                delete: false
+            },
+            settings: {
+                manageUsers: roleDoc.permissions.settings.manageUsers || false,
+                manageBilling: roleDoc.permissions.settings.manageBilling || false,
+                manageIntegrations: false,
+                customizeFields: false
+            },
+            reports: {
+                viewStandard: roleDoc.permissions.reports.read,
+                viewCustom: roleDoc.permissions.reports.read,
+                createCustom: roleDoc.permissions.reports.create,
+                exportReports: roleDoc.permissions.reports.export || false
+            }
+        };
+        
         await newUser.save();
+        
+        // Increment the role's user count
+        await Role.findByIdAndUpdate(roleId, { $inc: { userCount: 1 } });
 
-        // TODO: Send invitation email with temporary password
+        // TODO: Send invitation email with temporary password if sendEmail is true
         // For now, we'll return it in the response (ONLY FOR DEVELOPMENT)
+
+        // Populate the role details
+        await newUser.populate('roleId');
 
         res.status(201).json({
             success: true,
@@ -131,8 +243,9 @@ exports.inviteUser = async (req, res) => {
                 firstName: newUser.firstName,
                 lastName: newUser.lastName,
                 role: newUser.role,
+                roleId: newUser.roleId,
                 status: newUser.status,
-                tempPassword: process.env.NODE_ENV === 'development' ? tempPassword : undefined
+                tempPassword: tempPassword // Always return for now since email not implemented
             },
             message: 'User invited successfully'
         });
@@ -149,7 +262,7 @@ exports.inviteUser = async (req, res) => {
 
 // --- Update user role and permissions ---
 exports.updateUser = async (req, res) => {
-    const { role, status, permissions, firstName, lastName, phoneNumber } = req.body;
+    const { role, roleId, status, permissions, firstName, lastName, phoneNumber } = req.body;
 
     try {
         const user = await User.findOne({ 
@@ -179,8 +292,84 @@ exports.updateUser = async (req, res) => {
         if (phoneNumber !== undefined) user.phoneNumber = phoneNumber;
         if (status !== undefined) user.status = status;
         
-        // Update role and reset permissions
-        if (role !== undefined && role !== user.role) {
+        // Update role if roleId is provided (new dynamic role system)
+        if (roleId !== undefined && roleId !== user.roleId?.toString()) {
+            const Role = require('../models/Role');
+            const roleDoc = await Role.findById(roleId);
+            
+            if (!roleDoc) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Role not found'
+                });
+            }
+
+            // Decrement old role's user count
+            if (user.roleId) {
+                await Role.findByIdAndUpdate(user.roleId, { $inc: { userCount: -1 } });
+            }
+
+            // Update user's role
+            user.roleId = roleId;
+            user.role = roleDoc.name.toLowerCase(); // Update legacy role field
+            user.isOwner = roleDoc.name === 'Owner';
+
+            // Update permissions from role
+            user.permissions = {
+                contacts: {
+                    view: roleDoc.permissions.contacts.read,
+                    create: roleDoc.permissions.contacts.create,
+                    edit: roleDoc.permissions.contacts.update,
+                    delete: roleDoc.permissions.contacts.delete,
+                    viewAll: roleDoc.permissions.contacts.viewAll || false,
+                    exportData: roleDoc.permissions.contacts.export || false
+                },
+                deals: {
+                    view: roleDoc.permissions.deals.read,
+                    create: roleDoc.permissions.deals.create,
+                    edit: roleDoc.permissions.deals.update,
+                    delete: roleDoc.permissions.deals.delete,
+                    viewAll: roleDoc.permissions.deals.viewAll || false,
+                    exportData: roleDoc.permissions.deals.export || false
+                },
+                projects: {
+                    view: true,
+                    create: true,
+                    edit: true,
+                    delete: false,
+                    viewAll: false
+                },
+                tasks: {
+                    view: roleDoc.permissions.tasks.read,
+                    create: roleDoc.permissions.tasks.create,
+                    edit: roleDoc.permissions.tasks.update,
+                    delete: roleDoc.permissions.tasks.delete,
+                    viewAll: roleDoc.permissions.tasks.viewAll || false
+                },
+                imports: {
+                    view: true,
+                    create: roleDoc.permissions.contacts.import || roleDoc.permissions.deals.import,
+                    delete: false
+                },
+                settings: {
+                    manageUsers: roleDoc.permissions.settings.manageUsers || false,
+                    manageBilling: roleDoc.permissions.settings.manageBilling || false,
+                    manageIntegrations: false,
+                    customizeFields: false
+                },
+                reports: {
+                    viewStandard: roleDoc.permissions.reports.read,
+                    viewCustom: roleDoc.permissions.reports.read,
+                    createCustom: roleDoc.permissions.reports.create,
+                    exportReports: roleDoc.permissions.reports.export || false
+                }
+            };
+
+            // Increment new role's user count
+            await Role.findByIdAndUpdate(roleId, { $inc: { userCount: 1 } });
+        }
+        // Fallback to legacy role update (for backward compatibility)
+        else if (role !== undefined && role !== user.role) {
             user.role = role;
             user.setPermissionsByRole(role);
         }
@@ -192,6 +381,9 @@ exports.updateUser = async (req, res) => {
 
         await user.save();
 
+        // Populate role details
+        await user.populate('roleId', 'name description color icon level');
+
         res.json({
             success: true,
             data: {
@@ -201,6 +393,7 @@ exports.updateUser = async (req, res) => {
                 firstName: user.firstName,
                 lastName: user.lastName,
                 role: user.role,
+                roleId: user.roleId,
                 status: user.status,
                 permissions: user.permissions
             },
@@ -240,6 +433,12 @@ exports.deleteUser = async (req, res) => {
             });
         }
 
+        // Decrement role's user count if roleId exists
+        if (user.roleId) {
+            const Role = require('../models/Role');
+            await Role.findByIdAndUpdate(user.roleId, { $inc: { userCount: -1 } });
+        }
+
         // Soft delete: just deactivate the user
         user.status = 'inactive';
         await user.save();
@@ -265,7 +464,77 @@ exports.getProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user._id)
             .select('-password')
-            .populate('organizationId', 'name subscription limits enabledModules settings');
+            .populate('organizationId', 'name subscription limits enabledModules settings')
+            .populate('roleId', 'name description color icon level permissions');
+
+        // If user has roleId, ensure permissions are synced from role
+        if (user.roleId && user.roleId.permissions) {
+            // Map role permissions to user permissions structure
+            user.permissions = {
+                contacts: {
+                    view: user.roleId.permissions.contacts?.read || false,
+                    create: user.roleId.permissions.contacts?.create || false,
+                    edit: user.roleId.permissions.contacts?.update || false,
+                    delete: user.roleId.permissions.contacts?.delete || false,
+                    viewAll: user.roleId.permissions.contacts?.viewAll || false,
+                    exportData: user.roleId.permissions.contacts?.export || false
+                },
+                organizations: {
+                    view: user.roleId.permissions.organizations?.read || false,
+                    create: user.roleId.permissions.organizations?.create || false,
+                    edit: user.roleId.permissions.organizations?.update || false,
+                    delete: user.roleId.permissions.organizations?.delete || false,
+                    viewAll: user.roleId.permissions.organizations?.viewAll || false,
+                    exportData: user.roleId.permissions.organizations?.export || false
+                },
+                deals: {
+                    view: user.roleId.permissions.deals?.read || false,
+                    create: user.roleId.permissions.deals?.create || false,
+                    edit: user.roleId.permissions.deals?.update || false,
+                    delete: user.roleId.permissions.deals?.delete || false,
+                    viewAll: user.roleId.permissions.deals?.viewAll || false,
+                    exportData: user.roleId.permissions.deals?.export || false
+                },
+                projects: {
+                    view: user.roleId.permissions.deals?.read || false,
+                    create: user.roleId.permissions.deals?.create || false,
+                    edit: user.roleId.permissions.deals?.update || false,
+                    delete: user.roleId.permissions.deals?.delete || false,
+                    viewAll: user.roleId.permissions.deals?.viewAll || false
+                },
+                tasks: {
+                    view: user.roleId.permissions.tasks?.read || false,
+                    create: user.roleId.permissions.tasks?.create || false,
+                    edit: user.roleId.permissions.tasks?.update || false,
+                    delete: user.roleId.permissions.tasks?.delete || false,
+                    viewAll: user.roleId.permissions.tasks?.viewAll || false
+                },
+                events: {
+                    view: user.roleId.permissions.events?.read || false,
+                    create: user.roleId.permissions.events?.create || false,
+                    edit: user.roleId.permissions.events?.update || false,
+                    delete: user.roleId.permissions.events?.delete || false,
+                    viewAll: user.roleId.permissions.events?.viewAll || false
+                },
+                imports: {
+                    view: user.roleId.permissions.contacts?.import || user.roleId.permissions.deals?.import || false,
+                    create: user.roleId.permissions.contacts?.import || user.roleId.permissions.deals?.import || false,
+                    delete: false
+                },
+                settings: {
+                    manageUsers: user.roleId.permissions.settings?.manageUsers || false,
+                    manageBilling: user.roleId.permissions.settings?.manageBilling || false,
+                    manageIntegrations: false,
+                    customizeFields: false
+                },
+                reports: {
+                    viewStandard: user.roleId.permissions.reports?.read || false,
+                    viewCustom: user.roleId.permissions.reports?.read || false,
+                    createCustom: user.roleId.permissions.reports?.create || false,
+                    exportReports: user.roleId.permissions.reports?.export || false
+                }
+            };
+        }
 
         res.json({
             success: true,
@@ -355,6 +624,57 @@ exports.changePassword = async (req, res) => {
         res.status(500).json({ 
             success: false,
             message: 'Server error changing password' 
+        });
+    }
+};
+
+// --- Reset user password (Admin only) ---
+exports.resetUserPassword = async (req, res) => {
+    try {
+        const user = await User.findOne({ 
+            _id: req.params.id,
+            organizationId: req.user.organizationId 
+        });
+
+        if (!user) {
+            return res.status(404).json({ 
+                success: false,
+                message: 'User not found' 
+            });
+        }
+
+        // Prevent resetting owner password
+        if (user.isOwner) {
+            return res.status(403).json({ 
+                success: false,
+                message: 'Cannot reset the organization owner password',
+                code: 'CANNOT_RESET_OWNER_PASSWORD'
+            });
+        }
+
+        // Generate temporary password
+        const tempPassword = crypto.randomBytes(8).toString('hex');
+        const hashedPassword = await bcrypt.hash(tempPassword, 10);
+
+        user.password = hashedPassword;
+        await user.save();
+
+        // TODO: Send password reset email
+        // For now, we'll return it in the response (ONLY FOR DEVELOPMENT)
+
+        res.json({
+            success: true,
+            message: 'Password reset successfully',
+            data: {
+                tempPassword: process.env.NODE_ENV === 'development' ? tempPassword : undefined
+            }
+        });
+
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Server error resetting password' 
         });
     }
 };

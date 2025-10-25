@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const Organization = require('../models/Organization');
+const Role = require('../models/Role');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -76,6 +77,20 @@ exports.registerUser = async (req, res) => {
         console.log('   Name:', organization.name);
         console.log('   Subscription Status:', organization.subscription.status);
         console.log('   Trial End Date:', organization.subscription.trialEndDate);
+        console.log('\n');
+
+        // 1.5. Create Default Roles for Organization
+        console.log('🔍 Step 3.5: Creating default roles...');
+        try {
+            const roles = await Role.createDefaultRoles(organization._id);
+            console.log('✅ Default roles created:', roles.length, 'roles');
+            roles.forEach(role => {
+                console.log(`   - ${role.name} (Level ${role.level})`);
+            });
+        } catch (roleError) {
+            console.warn('⚠️  Failed to create default roles:', roleError.message);
+            // Continue even if role creation fails - roles can be initialized manually
+        }
         console.log('\n');
 
         // 2. Hash Password
@@ -172,7 +187,8 @@ exports.loginUser = async (req, res) => {
         
         // 1. Find User by Email
         const user = await User.findOne({ email: email.toLowerCase() })
-            .populate('organizationId', 'name industry subscription limits enabledModules settings isActive');
+            .populate('organizationId', 'name industry subscription limits enabledModules settings isActive')
+            .populate('roleId', 'name description color icon level permissions');
 
         if (!user) {
             console.log('❌ User not found');
@@ -182,6 +198,8 @@ exports.loginUser = async (req, res) => {
         console.log('✅ User found:', user.email);
         console.log('   Organization populated?', !!user.organizationId);
         console.log('   Organization ID:', user.organizationId?._id || 'NOT POPULATED');
+        console.log('   Role populated?', !!user.roleId);
+        console.log('   Role:', user.roleId?.name || user.role);
 
         // 2. Check password
         const isPasswordMatch = await bcrypt.compare(password, user.password);
@@ -226,7 +244,77 @@ exports.loginUser = async (req, res) => {
 
         console.log('✅ Login successful for:', email);
 
-        // 7. Respond with Token and Organization Info
+        // 7. Sync permissions from roleId if available
+        if (user.roleId && user.roleId.permissions) {
+            console.log('🔄 Syncing permissions from role:', user.roleId.name);
+            user.permissions = {
+                contacts: {
+                    view: user.roleId.permissions.contacts?.read || false,
+                    create: user.roleId.permissions.contacts?.create || false,
+                    edit: user.roleId.permissions.contacts?.update || false,
+                    delete: user.roleId.permissions.contacts?.delete || false,
+                    viewAll: user.roleId.permissions.contacts?.viewAll || false,
+                    exportData: user.roleId.permissions.contacts?.export || false
+                },
+                organizations: {
+                    view: user.roleId.permissions.organizations?.read || false,
+                    create: user.roleId.permissions.organizations?.create || false,
+                    edit: user.roleId.permissions.organizations?.update || false,
+                    delete: user.roleId.permissions.organizations?.delete || false,
+                    viewAll: user.roleId.permissions.organizations?.viewAll || false,
+                    exportData: user.roleId.permissions.organizations?.export || false
+                },
+                deals: {
+                    view: user.roleId.permissions.deals?.read || false,
+                    create: user.roleId.permissions.deals?.create || false,
+                    edit: user.roleId.permissions.deals?.update || false,
+                    delete: user.roleId.permissions.deals?.delete || false,
+                    viewAll: user.roleId.permissions.deals?.viewAll || false,
+                    exportData: user.roleId.permissions.deals?.export || false
+                },
+                projects: {
+                    view: user.roleId.permissions.deals?.read || false,
+                    create: user.roleId.permissions.deals?.create || false,
+                    edit: user.roleId.permissions.deals?.update || false,
+                    delete: user.roleId.permissions.deals?.delete || false,
+                    viewAll: user.roleId.permissions.deals?.viewAll || false
+                },
+                tasks: {
+                    view: user.roleId.permissions.tasks?.read || false,
+                    create: user.roleId.permissions.tasks?.create || false,
+                    edit: user.roleId.permissions.tasks?.update || false,
+                    delete: user.roleId.permissions.tasks?.delete || false,
+                    viewAll: user.roleId.permissions.tasks?.viewAll || false
+                },
+                events: {
+                    view: user.roleId.permissions.events?.read || false,
+                    create: user.roleId.permissions.events?.create || false,
+                    edit: user.roleId.permissions.events?.update || false,
+                    delete: user.roleId.permissions.events?.delete || false,
+                    viewAll: user.roleId.permissions.events?.viewAll || false
+                },
+                imports: {
+                    view: user.roleId.permissions.contacts?.import || user.roleId.permissions.deals?.import || false,
+                    create: user.roleId.permissions.contacts?.import || user.roleId.permissions.deals?.import || false,
+                    delete: false
+                },
+                settings: {
+                    manageUsers: user.roleId.permissions.settings?.manageUsers || false,
+                    manageBilling: user.roleId.permissions.settings?.manageBilling || false,
+                    manageIntegrations: false,
+                    customizeFields: false
+                },
+                reports: {
+                    viewStandard: user.roleId.permissions.reports?.read || false,
+                    viewCustom: user.roleId.permissions.reports?.read || false,
+                    createCustom: user.roleId.permissions.reports?.create || false,
+                    exportReports: user.roleId.permissions.reports?.export || false
+                }
+            };
+            console.log('✅ Permissions synced from role');
+        }
+
+        // 8. Respond with Token and Organization Info
         res.json({
             _id: user._id,
             username: user.username,

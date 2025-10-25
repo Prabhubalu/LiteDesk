@@ -2,6 +2,7 @@ const DemoRequest = require('../models/DemoRequest');
 const Organization = require('../models/Organization');
 const Contact = require('../models/Contact');
 const User = require('../models/User');
+const Role = require('../models/Role');
 const bcrypt = require('bcrypt');
 
 // --- Submit Demo Request (Public) ---
@@ -55,6 +56,16 @@ exports.submitDemoRequest = async (req, res) => {
         });
         
         console.log('✅ Organization created:', organization._id, organization.name);
+        
+        // Step 1.5: Create Default Roles for the organization
+        console.log('🔐 Creating default roles...');
+        try {
+            const roles = await Role.createDefaultRoles(organization._id);
+            console.log('✅ Default roles created:', roles.length, 'roles');
+        } catch (roleError) {
+            console.warn('⚠️  Failed to create default roles:', roleError.message);
+            // Continue even if role creation fails
+        }
         
         // Step 2: Create Contact for the requester
         console.log('👤 Creating contact for:', contactName);

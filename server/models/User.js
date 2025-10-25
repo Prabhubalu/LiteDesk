@@ -32,6 +32,13 @@ const UserSchema = new mongoose.Schema({
     avatar: String,
     
     // Role & Permissions (RBAC)
+    // NEW: Dynamic Role System
+    roleId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Role',
+        default: null
+    },
+    // OLD: Legacy string-based role (keeping for backward compatibility)
     role: { 
         type: String, 
         enum: ['owner', 'admin', 'manager', 'user', 'viewer'],

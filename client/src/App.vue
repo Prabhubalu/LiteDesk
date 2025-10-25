@@ -1,13 +1,25 @@
 <script setup>
 import { useAuthStore } from '@/stores/auth';
+import { usePermissionSync } from '@/composables/usePermissionSync';
 import LandingPage from '@/views/LandingPage.vue'
 import Dashboard from '@/views/Dashboard.vue'
 import Nav from '@/components/Nav.vue';
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 
 const authStore = useAuthStore();
 // Check authentication status to conditionally show the navigation bar
 const isAuthenticated = computed(() => authStore.isAuthenticated);
+
+// Refresh permissions on app mount (page refresh)
+onMounted(async () => {
+  if (authStore.isAuthenticated) {
+    console.log('Auto-refreshing permissions on page load...');
+    await authStore.refreshUser();
+  }
+});
+
+// Enable automatic permission sync every 2 minutes for real-time updates
+usePermissionSync(2);
 </script>
 
 <template>
