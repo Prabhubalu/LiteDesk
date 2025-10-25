@@ -1,13 +1,26 @@
 @import 'tailwindcss';
 
-/* FullCalendar Styles */
-@import '@fullcalendar/core/main.css';
-@import '@fullcalendar/daygrid/main.css';
-@import '@fullcalendar/timegrid/main.css';
-@import '@fullcalendar/list/main.css';
+/* FullCalendar Styles - v6+ handles styles through JavaScript */
 
-@theme {
-  /* Brand Colors */
+/* Safelist classes to ensure they're generated */
+@layer utilities {
+  .text-10xl { font-size: 8rem; line-height: 1; }
+  .text-7xl { font-size: 4.5rem; line-height: 1; }
+  .text-pretty { text-wrap: pretty; }
+  .text-xl-8 { font-size: 1.25rem; line-height: 0.5; }
+  .text-sm-6 { font-size: 0.875rem; line-height: 0.375; }
+}
+
+/* Custom utilities */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+
+/* Brand Colors */
+:root {
   --color-brand-50: #f5f3ff;
   --color-brand-100: #ede9fe;
   --color-brand-200: #ddd6fe;
@@ -36,116 +49,44 @@
   --color-danger-500: #ef4444;
   --color-danger-600: #dc2626;
   --color-danger-700: #b91c1c;
-  
-  /* Font Family */
-  --font-family-sans: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif';
-  
-  /* Custom Shadows */
-  --shadow-soft: 0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04);
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
-@import './base.css';
-
-/* Animation Keyframes */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from { transform: translateY(10px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-@keyframes slideDown {
-  from { transform: translateY(-10px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-/* Reusable Component Classes - Tailwind v4 Compatible */
-
-/* Buttons */
-.btn {
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-.btn:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(96, 73, 231, 0.5);
-}
-
-.btn-primary {
-  background: linear-gradient(to right, var(--color-brand-500), var(--color-brand-600));
-  color: white;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.btn-primary:hover {
-  background: linear-gradient(to right, var(--color-brand-600), var(--color-brand-700));
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
-}
-
-/* Stats Cards */
-.stat-value {
-  font-size: 1.875rem;
-  font-weight: 700;
-  color: var(--color-gray-900);
-}
-
-.dark .stat-value {
-  color: white;
-}
-
-.stat-label {
-  font-size: 0.875rem;
-  color: var(--color-gray-600);
-}
-
-.dark .stat-label {
-  color: var(--color-gray-400);
-}
-
-#app {
-  /* max-width: 1280px; */
-  width: 100%;
-  margin: 0 auto;
-  font-family: InterVariable, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;;
-  font-weight: normal;
-}
-
-a,
-.green {
-  text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
-  padding: 3px;
-}
-
-
-.modal-container{
-  max-height: 90vh !important;
-  overflow-y: auto !important;
-}
-
-@media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
+/* Custom animations */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
+.animate-slide-up {
+  animation: slide-up 0.6s ease-out;
+}
+
+/* Card styles */
+.card {
+  background: white;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+}
+
+.dark .card {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+body{
+  font-family: InterVariable, system-ui, sans-serif;
+}
+
+/* Responsive layout */
 @media (min-width: 1024px) {
-  body {
-    display: flex;
-  }
-
   #app {
     display: flex;
-    /* grid-template-columns: 1fr 1fr; */
     flex-direction: column;
-    /* padding: 0 2rem; */
   }
 }

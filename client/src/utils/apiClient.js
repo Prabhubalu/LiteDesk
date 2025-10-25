@@ -24,7 +24,7 @@ const apiClient = async (url, options = {}) => {
     const response = await fetch(fullUrl, {
         ...options,
         headers,
-        body: options.body ? JSON.stringify(options.body) : options.body,
+        body: options.body,
     });
 
     if (response.status === 401) {
@@ -35,17 +35,17 @@ const apiClient = async (url, options = {}) => {
 
     // Check for other errors
     if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const error = new Error(errorData.message || `HTTP error! Status: ${response.status}`);
-        error.response = errorData; // Attach full error response
-        error.status = response.status;
-        error.validationErrors = errorData.validationErrors;
-        console.error('API Error:', {
-            url: fullUrl,
-            status: response.status,
-            errorData
-        });
-        throw error;
+        let errorMessage = `HTTP error! Status: ${response.status}`;
+        try {
+            const errorData = await response.json();
+            errorMessage = errorData.message || errorMessage;
+        } catch (parseError) {
+            // If response is not JSON (e.g., HTML error page), get text content
+            const textContent = await response.text();
+            console.error('Non-JSON response received:', textContent.substring(0, 200));
+            errorMessage = `Server returned non-JSON response (${response.status}): ${textContent.substring(0, 100)}...`;
+        }
+        throw new Error(errorMessage);
     }
 
     return response.json();
@@ -57,15 +57,15 @@ apiClient.get = (url, options = {}) => {
 };
 
 apiClient.post = (url, data, options = {}) => {
-    return apiClient(url, { ...options, method: 'POST', body: data });
+    return apiClient(url, { ...options, method: 'POST', body: JSON.stringify(data) });
 };
 
 apiClient.put = (url, data, options = {}) => {
-    return apiClient(url, { ...options, method: 'PUT', body: data });
+    return apiClient(url, { ...options, method: 'PUT', body: JSON.stringify(data) });
 };
 
 apiClient.patch = (url, data, options = {}) => {
-    return apiClient(url, { ...options, method: 'PATCH', body: data });
+    return apiClient(url, { ...options, method: 'PATCH', body: JSON.stringify(data) });
 };
 
 apiClient.delete = (url, options = {}) => {
