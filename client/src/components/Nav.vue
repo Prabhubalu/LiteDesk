@@ -238,7 +238,7 @@ const logoSrc = computed(() => {
 
     <div class="flex items-center text-xl font-bold">
       <img
-        :src="colorMode === 'dark' || colorMode === 'system' ? './src/assets/nurtura_logo_dark.svg' : './src/assets/nurtura_logo_light.svg'"
+        :src="colorMode === 'dark' || colorMode === 'system' ? '/assets/nurtura_logo_dark.svg' : '/assets/nurtura_logo_light.svg'"
         alt="Nurtura Logo" class="h-10 w-auto" />
     </div>
 

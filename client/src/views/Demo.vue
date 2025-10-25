@@ -18,7 +18,7 @@ const { colorMode, toggleColorMode } = useColorMode();
         <div class="flex min-h-full flex-1 flex-col justify-center py-12 sm:px-6 lg:px-8">
           <div class="sm:mx-auto sm:w-full sm:max-w-sm">
             <img
-              :src="colorMode === 'dark' || colorMode === 'system' ? './src/assets/nurtura_logo_white.svg' : './src/assets/nurtura_logo_plain.svg'"
+              :src="colorMode === 'dark' || colorMode === 'system' ? '/assets/nurtura_logo_white.svg' : '/assets/nurtura_logo_plain.svg'"
               alt="Nurtura Logo" class="mx-auto h-10 w-auto brightness-0 dark:brightness-100" />
 
             <h2 class="mt-6 text-center text-2xl/9 font-bold tracking-tight text-gray-900 dark:text-white">Get a demo</h2>
@@ -89,7 +89,7 @@ const { colorMode, toggleColorMode } = useColorMode();
         <div class="flex flex-col items-center mb-8">
           <div class="bg-gradient-to-br from-brand-500 to-brand-600 p-3 rounded-2xl shadow-lg mb-4">
             <img 
-              :src="colorMode === 'dark' || colorMode === 'system' ? './src/assets/nurtura_logo_dark.svg' : './src/assets/nurtura_logo_light.svg'" 
+              :src="colorMode === 'dark' || colorMode === 'system' ? '/assets/nurtura_logo_dark.svg' : '/assets/nurtura_logo_light.svg'" 
               alt="LiteDesk Logo" 
               class="h-10 w-auto brightness-0 invert" 
             />  

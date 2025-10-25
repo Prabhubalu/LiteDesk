@@ -23,7 +23,7 @@ const { colorMode, toggleColorMode } = useColorMode();
           <a href="#" class="-m-1.5 p-1.5">
             <span class="sr-only">Nurtura</span>
             <img 
-              :src="colorMode === 'dark' || colorMode === 'system' ? './src/assets/nurtura_logo_dark.svg' : './src/assets/nurtura_logo_light.svg'" 
+              :src="colorMode === 'dark' || colorMode === 'system' ? '/assets/nurtura_logo_dark.svg' : '/assets/nurtura_logo_light.svg'" 
               alt="LiteDesk Logo" 
               class="h-8 w-auto brightness-0 dark:brightness-100" 
             />  
@@ -49,7 +49,7 @@ const { colorMode, toggleColorMode } = useColorMode();
             <a href="#" class="-m-1.5 p-1.5">
               <span class="sr-only">Nurtura</span>
               <img 
-              :src="colorMode === 'dark' || colorMode === 'system' ? './src/assets/nurtura_logo_dark.svg' : './src/assets/nurtura_logo_light.svg'" 
+              :src="colorMode === 'dark' || colorMode === 'system' ? '/assets/nurtura_logo_dark.svg' : '/assets/nurtura_logo_light.svg'" 
               alt="LiteDesk Logo" 
               class="h-8 w-auto brightness-0 dark:brightness-100" 
             />  
