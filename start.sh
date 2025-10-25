@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # =============================================================================
-# LiteDesk - Start All Services
+# LiteDesk - Start All Services (Development Mode)
 # =============================================================================
-# This script starts MongoDB, Backend, and Frontend in one command
+# This script starts MongoDB, Backend, and Frontend for local development
 # Usage: ./start.sh
 # =============================================================================
 
@@ -14,6 +14,7 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
 NC='\033[0m' # No Color
 
 # Project root directory
@@ -22,7 +23,7 @@ PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo ""
 echo "╔════════════════════════════════════════════════════════════╗"
 echo "║                    🚀 LiteDesk CRM                        ║"
-echo "║              Starting All Services...                     ║"
+echo "║           Starting Development Environment...              ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 echo ""
 
@@ -31,20 +32,6 @@ echo ""
 # =============================================================================
 echo -e "${BLUE}📋 Checking prerequisites...${NC}"
 
-# Check Docker
-if ! command -v docker &> /dev/null; then
-    echo -e "${RED}❌ Docker is not installed${NC}"
-    echo "Please install Docker Desktop from: https://www.docker.com/products/docker-desktop"
-    exit 1
-fi
-
-# Check if Docker daemon is running
-if ! docker info &> /dev/null; then
-    echo -e "${RED}❌ Docker daemon is not running${NC}"
-    echo "Please start Docker Desktop and try again"
-    exit 1
-fi
-
 # Check Node.js
 if ! command -v node &> /dev/null; then
     echo -e "${RED}❌ Node.js is not installed${NC}"
@@ -52,51 +39,102 @@ if ! command -v node &> /dev/null; then
     exit 1
 fi
 
-echo -e "${GREEN}✅ All prerequisites met!${NC}"
+NODE_VERSION=$(node -v)
+echo -e "${GREEN}✅ Node.js installed: $NODE_VERSION${NC}"
+
+# Check if .env exists
+if [ ! -f "$PROJECT_ROOT/server/.env" ]; then
+    echo -e "${RED}❌ .env file not found in server directory${NC}"
+    echo "Please create server/.env file (see server/.env.example)"
+    exit 1
+fi
+
+echo -e "${GREEN}✅ .env file found${NC}"
 echo ""
 
 # =============================================================================
-# Start MongoDB
+# Check MongoDB Setup
 # =============================================================================
-echo -e "${BLUE}🗄️  Starting MongoDB...${NC}"
+echo -e "${BLUE}🗄️  Checking MongoDB setup...${NC}"
 
-# Check if container already exists
-if docker ps -a --format '{{.Names}}' | grep -q "^litedesk-mongo$"; then
-    echo -e "${YELLOW}⚠️  MongoDB container already exists${NC}"
-    
-    # Check if it's running
-    if docker ps --format '{{.Names}}' | grep -q "^litedesk-mongo$"; then
-        echo -e "${GREEN}✅ MongoDB is already running${NC}"
-    else
-        echo "   Starting existing container..."
-        docker start litedesk-mongo
-        echo -e "${GREEN}✅ MongoDB started${NC}"
-    fi
+# Read MONGO_URI from .env
+source "$PROJECT_ROOT/server/.env" 2>/dev/null || true
+
+# Determine MongoDB type
+if [[ "$MONGO_URI" == *"localhost"* ]] || [[ "$MONGO_URI_LOCAL" == *"localhost"* ]]; then
+    echo -e "${YELLOW}📊 MongoDB Mode: Local MongoDB${NC}"
+    USING_LOCAL_MONGO=true
+    MONGO_HOST="localhost:27017"
 else
-    echo "   Creating new MongoDB container..."
-    docker run -d \
-        --name litedesk-mongo \
-        -p 27017:27017 \
-        -e MONGO_INITDB_ROOT_USERNAME=admin \
-        -e MONGO_INITDB_ROOT_PASSWORD=password123 \
-        mongo:6.0 > /dev/null 2>&1
-    
-    echo -e "${GREEN}✅ MongoDB started successfully${NC}"
+    echo -e "${PURPLE}📊 MongoDB Mode: MongoDB Atlas (Cloud)${NC}"
+    USING_LOCAL_MONGO=false
 fi
 
-# Wait for MongoDB to be ready
-echo "   Waiting for MongoDB to be ready..."
-MAX_ATTEMPTS=30
-ATTEMPT=0
-while ! docker exec litedesk-mongo mongosh --quiet --eval "db.adminCommand('ping')" -u admin -p password123 --authenticationDatabase admin &> /dev/null; do
-    ATTEMPT=$((ATTEMPT + 1))
-    if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
-        echo -e "${RED}❌ MongoDB failed to start${NC}"
-        exit 1
+# =============================================================================
+# Start Local MongoDB (if needed)
+# =============================================================================
+if [ "$USING_LOCAL_MONGO" = true ]; then
+    echo -e "${BLUE}🗄️  Starting Local MongoDB...${NC}"
+    
+    # Check if MongoDB is installed
+    if command -v mongod &> /dev/null; then
+        # Check if MongoDB is already running
+        if pgrep -x "mongod" > /dev/null; then
+            echo -e "${GREEN}✅ MongoDB is already running${NC}"
+        else
+            echo "   Starting MongoDB service..."
+            # Try different methods to start MongoDB
+            if command -v brew &> /dev/null && brew services list | grep mongodb-community > /dev/null; then
+                brew services start mongodb-community
+                echo -e "${GREEN}✅ MongoDB started via Homebrew${NC}"
+            elif command -v systemctl &> /dev/null; then
+                sudo systemctl start mongod
+                echo -e "${GREEN}✅ MongoDB started via systemctl${NC}"
+            else
+                # Start mongod manually in background
+                mongod --dbpath ~/data/db --fork --logpath ~/data/mongodb.log 2>/dev/null || {
+                    echo -e "${YELLOW}⚠️  Could not auto-start MongoDB${NC}"
+                    echo "   Please start MongoDB manually: mongod"
+                }
+            fi
+        fi
+    else
+        echo -e "${YELLOW}⚠️  MongoDB not found locally${NC}"
+        echo -e "${BLUE}ℹ️  Options:${NC}"
+        echo "   1. Install MongoDB: brew install mongodb-community"
+        echo "   2. Use MongoDB Atlas (update MONGO_URI in .env to use Atlas)"
+        echo ""
+        read -p "Continue anyway? (y/N): " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 1
+        fi
     fi
-    sleep 1
-done
-echo -e "${GREEN}✅ MongoDB is ready!${NC}"
+    
+    # Wait for MongoDB to be ready
+    if command -v mongosh &> /dev/null || command -v mongo &> /dev/null; then
+        echo "   Waiting for MongoDB to be ready..."
+        MAX_ATTEMPTS=10
+        ATTEMPT=0
+        MONGO_CMD=$(command -v mongosh || command -v mongo)
+        until $MONGO_CMD --quiet --eval "db.adminCommand('ping')" "mongodb://localhost:27017/test" &> /dev/null; do
+            ATTEMPT=$((ATTEMPT + 1))
+            if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+                echo -e "${YELLOW}⚠️  MongoDB connection timeout${NC}"
+                echo "   Continuing anyway..."
+                break
+            fi
+            sleep 1
+        done
+        if [ $ATTEMPT -lt $MAX_ATTEMPTS ]; then
+            echo -e "${GREEN}✅ MongoDB is ready!${NC}"
+        fi
+    fi
+else
+    echo -e "${GREEN}✅ Using MongoDB Atlas (cloud)${NC}"
+    echo "   Connection will be verified when backend starts"
+fi
+
 echo ""
 
 # =============================================================================
@@ -112,15 +150,22 @@ if [ ! -d "node_modules" ]; then
     npm install
 fi
 
-# Kill any existing process on port 3000
-if lsof -Pi :3000 -sTCP:LISTEN -t >/dev/null 2>&1; then
-    echo "   Stopping existing backend server..."
-    lsof -ti :3000 | xargs kill -9 2>/dev/null || true
+# Backend port (from .env or default to 3000 to avoid Apple AirPlay conflict)
+BACKEND_PORT=${PORT:-3000}
+
+# Kill any existing process on backend port
+if lsof -Pi :$BACKEND_PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
+    echo "   Stopping existing backend server on port $BACKEND_PORT..."
+    lsof -ti :$BACKEND_PORT | xargs kill -9 2>/dev/null || true
     sleep 2
 fi
 
+# Ensure we're in development mode
+export NODE_ENV=development
+
 # Start backend in background
-echo "   Starting backend on port 3000..."
+echo "   Starting backend on port $BACKEND_PORT..."
+echo "   Mode: DEVELOPMENT"
 nohup node server.js > ../backend.log 2>&1 &
 BACKEND_PID=$!
 
@@ -128,11 +173,13 @@ BACKEND_PID=$!
 echo "   Waiting for backend to be ready..."
 MAX_ATTEMPTS=30
 ATTEMPT=0
-until curl -s http://localhost:3000/ > /dev/null 2>&1; do
+until curl -s http://localhost:$BACKEND_PORT/health > /dev/null 2>&1 || curl -s http://localhost:$BACKEND_PORT/ > /dev/null 2>&1; do
     ATTEMPT=$((ATTEMPT + 1))
     if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
         echo -e "${RED}❌ Backend failed to start${NC}"
-        echo "Check backend.log for errors"
+        echo "Check backend.log for errors:"
+        echo ""
+        tail -20 ../backend.log
         exit 1
     fi
     sleep 1
@@ -154,24 +201,18 @@ if [ ! -d "node_modules" ]; then
     npm install
 fi
 
+# Frontend port
+FRONTEND_PORT=5173
+
 # Kill any existing process on port 5173
-if lsof -Pi :5173 -sTCP:LISTEN -t >/dev/null 2>&1; then
+if lsof -Pi :$FRONTEND_PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
     echo "   Stopping existing frontend server..."
-    lsof -ti :5173 | xargs kill -9 2>/dev/null || true
+    lsof -ti :$FRONTEND_PORT | xargs kill -9 2>/dev/null || true
     sleep 2
 fi
 
-# Fix permissions if needed
-if [ -d "node_modules" ]; then
-    echo "   Checking permissions..."
-    if [ "$(stat -f '%u' node_modules)" != "$(id -u)" ]; then
-        echo "   Fixing node_modules permissions (may require password)..."
-        sudo chown -R $(whoami) node_modules 2>/dev/null || true
-    fi
-fi
-
 # Start frontend in background
-echo "   Starting frontend on port 5173..."
+echo "   Starting frontend on port $FRONTEND_PORT..."
 nohup npm run dev > ../frontend.log 2>&1 &
 FRONTEND_PID=$!
 
@@ -179,11 +220,13 @@ FRONTEND_PID=$!
 echo "   Waiting for frontend to be ready..."
 MAX_ATTEMPTS=30
 ATTEMPT=0
-until curl -s http://localhost:5173/ > /dev/null 2>&1; do
+until curl -s http://localhost:$FRONTEND_PORT/ > /dev/null 2>&1; do
     ATTEMPT=$((ATTEMPT + 1))
     if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
         echo -e "${RED}❌ Frontend failed to start${NC}"
-        echo "Check frontend.log for errors"
+        echo "Check frontend.log for errors:"
+        echo ""
+        tail -20 ../frontend.log
         exit 1
     fi
     sleep 1
@@ -197,25 +240,38 @@ echo ""
 # =============================================================================
 echo ""
 echo "╔════════════════════════════════════════════════════════════╗"
-echo "║              ✅ All Services Running!                     ║"
+echo "║           ✅ Development Environment Running!             ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 echo ""
-echo -e "${GREEN}🌐 Frontend:${NC}  http://localhost:5173"
-echo -e "${GREEN}🚀 Backend:${NC}   http://localhost:3000"
-echo -e "${GREEN}🗄️  MongoDB:${NC}  mongodb://admin:password123@localhost:27017"
+echo -e "${GREEN}🌐 Frontend:${NC}  http://localhost:$FRONTEND_PORT"
+echo -e "${GREEN}🚀 Backend:${NC}   http://localhost:$BACKEND_PORT"
+echo -e "${GREEN}💚 Health:${NC}    http://localhost:$BACKEND_PORT/health"
+
+if [ "$USING_LOCAL_MONGO" = true ]; then
+    echo -e "${GREEN}🗄️  MongoDB:${NC}  mongodb://localhost:27017/litedesk"
+else
+    echo -e "${PURPLE}🗄️  MongoDB:${NC}  MongoDB Atlas (Cloud)"
+fi
+
 echo ""
 echo -e "${BLUE}📊 Service Status:${NC}"
-echo "   • MongoDB:  Running (Docker container: litedesk-mongo)"
-echo "   • Backend:  Running (PID: $BACKEND_PID)"
+if [ "$USING_LOCAL_MONGO" = true ]; then
+    echo "   • MongoDB:  Running (Local)"
+fi
+echo "   • Backend:  Running (PID: $BACKEND_PID) - DEVELOPMENT mode"
 echo "   • Frontend: Running (PID: $FRONTEND_PID)"
 echo ""
 echo -e "${YELLOW}📝 Logs:${NC}"
 echo "   • Backend:  tail -f backend.log"
 echo "   • Frontend: tail -f frontend.log"
-echo "   • MongoDB:  docker logs -f litedesk-mongo"
 echo ""
 echo -e "${YELLOW}🛑 To stop all services:${NC}"
 echo "   ./stop.sh"
+echo ""
+echo -e "${BLUE}📚 Credentials:${NC}"
+echo "   • Email:    admin@litedesk.com"
+echo "   • Password: Admin@123456"
+echo "   • (Change password after first login)"
 echo ""
 
 # Save PIDs to file for stop script
@@ -226,12 +282,16 @@ echo "$FRONTEND_PID" > "$PROJECT_ROOT/.frontend.pid"
 sleep 2
 echo -e "${BLUE}🌍 Opening browser...${NC}"
 if command -v open &> /dev/null; then
-    open http://localhost:5173
+    open http://localhost:$FRONTEND_PORT
 elif command -v xdg-open &> /dev/null; then
-    xdg-open http://localhost:5173
+    xdg-open http://localhost:$FRONTEND_PORT
 fi
 
 echo ""
 echo -e "${GREEN}✨ LiteDesk is ready! Happy coding! 🚀${NC}"
 echo ""
-
+echo -e "${YELLOW}💡 Tips:${NC}"
+echo "   • Backend logs show detailed environment info"
+echo "   • Using local MongoDB for development"
+echo "   • Deploy to production: ./deploy-local-build.sh"
+echo ""
