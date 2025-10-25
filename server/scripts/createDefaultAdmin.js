@@ -9,22 +9,24 @@
  * Usage: node scripts/createDefaultAdmin.js
  */
 
-require('dotenv').config();
+// Load environment variables from parent directory
+require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
 const Organization = require('../models/Organization');
 const Role = require('../models/Role');
 
-const MONGO_URI = process.env.MONGO_URI;
+// Support both MONGODB_URI and MONGO_URI
+const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI;
 
-// Default Admin Credentials
+// Default Admin Credentials (use environment variables or defaults)
 const DEFAULT_ADMIN = {
-    email: 'prabhu@litedesk.com',
-    password: 'Admin@123',  // CHANGE THIS IN PRODUCTION!
-    username: 'Prabhu Balu',
-    firstName: 'Prabhu',
-    lastName: 'Balu',
+    email: process.env.DEFAULT_ADMIN_EMAIL || 'admin@litedesk.com',
+    password: process.env.DEFAULT_ADMIN_PASSWORD || 'Admin@123456',
+    username: 'Admin User',
+    firstName: 'Admin',
+    lastName: 'User',
     organizationName: 'LiteDesk Master',
     industry: 'Technology'
 };
@@ -33,6 +35,18 @@ async function createDefaultAdmin() {
     try {
         console.log('🚀 Creating Default Admin Account...\n');
 
+        // Validate MongoDB URI
+        if (!MONGO_URI) {
+            console.error('❌ Error: MONGODB_URI is not set in .env file!');
+            console.error('\n📝 Steps to fix:');
+            console.error('   1. Create /home/ubuntu/LiteDesk/server/.env file');
+            console.error('   2. Add: MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/litedesk');
+            console.error('   3. Replace with your actual MongoDB Atlas connection string\n');
+            process.exit(1);
+        }
+
+        console.log('🔗 Connecting to MongoDB...');
+        
         // Connect to MongoDB
         await mongoose.connect(MONGO_URI);
         console.log('✅ Connected to MongoDB');
