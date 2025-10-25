@@ -22,14 +22,14 @@ const { colorMode, toggleColorMode } = useColorMode();
               :src="colorMode === 'dark' || colorMode === 'system' ? './src/assets/nurtura_logo_white.svg' : './src/assets/nurtura_logo_plain.svg'"
               alt="Nurtura Logo" class="mx-auto h-10 w-auto brightness-0 dark:brightness-100" />
 
-            <h2 class="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900 dark:text-white">Sign in to
+            <h2 class="mt-6 text-center text-2xl/9 font-bold tracking-tight text-gray-900 dark:text-white">Sign in to
               your account</h2>
           </div>
 
           <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm md:max-w-md">
             <LoginForm />
 
-            <p class="mt-10 text-center text-sm/6 text-gray-500">
+            <p class="mt-10 text-center text-smd/6 text-gray-500">
               Don't have an account?
               {{ ' ' }}
               <router-link to="/demo" class="font-semibold text-indigo-600 hover:text-indigo-500">Request a

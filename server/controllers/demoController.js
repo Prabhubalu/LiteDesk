@@ -31,8 +31,24 @@ exports.submitDemoRequest = async (req, res) => {
         
         // Step 1: Create Organization for the prospect company
         console.log('📋 Creating organization for:', companyName);
+        
+        // Generate unique slug to avoid conflicts
+        let baseSlug = companyName
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        
+        // Check if slug exists and make it unique if needed
+        let slug = baseSlug;
+        let counter = 1;
+        while (await Organization.findOne({ slug })) {
+            slug = `${baseSlug}-${counter}`;
+            counter++;
+        }
+        
         const organization = await Organization.create({
             name: companyName,
+            slug: slug,
             industry: industry,
             isActive: true, // Active for tracking
             subscription: {
@@ -48,14 +64,13 @@ exports.submitDemoRequest = async (req, res) => {
                 maxApiRequests: 1000
             },
             settings: {
-                timezone: 'UTC',
-                currency: 'USD',
-                language: 'en'
+                timeZone: 'UTC',
+                currency: 'USD'
             },
             enabledModules: ['contacts', 'deals'] // Limited modules for prospects
         });
         
-        console.log('✅ Organization created:', organization._id, organization.name);
+        console.log('✅ Organization created:', organization._id, organization.name, 'slug:', slug);
         
         // Step 1.5: Create Default Roles for the organization
         console.log('🔐 Creating default roles...');
@@ -124,10 +139,13 @@ exports.submitDemoRequest = async (req, res) => {
         });
         
     } catch (error) {
-        console.error('Demo request error:', error);
+        console.error('❌ Demo request error:', error.message);
+        console.error('❌ Error stack:', error.stack);
+        console.error('❌ Error name:', error.name);
         res.status(500).json({ 
             success: false,
-            message: 'Error submitting demo request. Please try again.' 
+            message: 'Error submitting demo request. Please try again.',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 };
