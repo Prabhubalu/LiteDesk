@@ -6,20 +6,13 @@
         <h1 class="page-title">Organizations</h1>
         <p class="page-subtitle">Manage all customer organizations</p>
       </div>
-      <div class="flex gap-4">
-        <button @click="exportOrganizations" class="btn-secondary flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
-          </svg>
-          Export
-        </button>
-        <button @click="openCreateModal" class="btn-primary flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          New Organization
-        </button>
-      </div>
+      <ModuleActions 
+        module="organizations"
+        create-label="New Organization"
+        :show-import="false"
+        @create="openCreateModal"
+        @export="exportOrganizations"
+      />
     </div>
 
     <!-- Statistics Cards -->
@@ -206,34 +199,13 @@
 
       <!-- Custom Actions -->
       <template #actions="{ row }">
-        <button 
-          @click.stop="viewOrganization(row._id)" 
-          class="p-2 text-gray-600 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all hover:scale-110" 
-          title="View"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-          </svg>
-        </button>
-        <button 
-          @click.stop="editOrganization(row)" 
-          class="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all hover:scale-110" 
-          title="Edit"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-          </svg>
-        </button>
-        <button 
-          @click.stop="deleteOrganization(row._id)" 
-          class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all hover:scale-110" 
-          title="Delete"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-        </button>
+        <RowActions 
+          :row="row"
+          module="organizations"
+          @view="viewOrganization(row._id)"
+          @edit="editOrganization(row)"
+          @delete="deleteOrganization(row._id)"
+        />
       </template>
     </DataTable>
 
@@ -267,12 +239,18 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useBulkActions } from '@/composables/useBulkActions';
 import apiClient from '@/utils/apiClient';
 import DataTable from '@/components/common/DataTable.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import DateCell from '@/components/common/table/DateCell.vue';
+import ModuleActions from '@/components/common/ModuleActions.vue';
+import RowActions from '@/components/common/RowActions.vue';
 
 const router = useRouter();
+
+// Use bulk actions composable with permissions
+const { bulkActions: massActions } = useBulkActions('organizations');
 
 // State
 const organizations = ref([]);
@@ -282,11 +260,6 @@ const showFormModal = ref(false);
 const editingOrganization = ref(null);
 
 // Mass Actions
-const massActions = [
-  { label: 'Delete', icon: 'trash', action: 'bulk-delete', variant: 'danger' },
-  { label: 'Export', icon: 'export', action: 'bulk-export' }
-];
-
 const filters = reactive({
   industry: '',
   tier: '',

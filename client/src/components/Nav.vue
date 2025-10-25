@@ -8,24 +8,53 @@ import { Bars3Icon, BellIcon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/
 
 // --- Data for the Navigation Array ---
 const navigation = computed(() => {
-  const baseNav = [
-    { name: 'Dashboard', href: '/dashboard', current: true },
-    { name: 'Contacts', href: '/contacts', current: false },
-    { name: 'Deals', href: '/deals', current: false },
-    { name: 'Tasks', href: '/tasks', current: false },
-    { name: 'Calendar', href: '/calendar', current: false },
-    { name: 'Imports', href: '/imports', current: false },
-    { name: 'Projects', href: '/items', current: false },
-  ];
+  const nav = [];
   
-  // Add Admin-only links for Owners/Admins
-  if (authStore.isOwner || authStore.userRole === 'admin') {
-    baseNav.push({ name: 'Organizations', href: '/organizations', current: false });
-    baseNav.push({ name: 'Demo Requests', href: '/demo-requests', current: false });
-    baseNav.push({ name: 'Instances', href: '/instances', current: false });
+  // Dashboard - always visible
+  nav.push({ name: 'Dashboard', href: '/dashboard', current: true });
+  
+  // Contacts - check permission
+  if (authStore.can('contacts', 'view')) {
+    nav.push({ name: 'Contacts', href: '/contacts', current: false });
   }
   
-  return baseNav;
+  // Organizations - check permission
+  if (authStore.can('organizations', 'view')) {
+    nav.push({ name: 'Organizations', href: '/organizations', current: false });
+  }
+  
+  // Deals - check permission
+  if (authStore.can('deals', 'view')) {
+    nav.push({ name: 'Deals', href: '/deals', current: false });
+  }
+  
+  // Tasks - check permission
+  if (authStore.can('tasks', 'view')) {
+    nav.push({ name: 'Tasks', href: '/tasks', current: false });
+  }
+  
+  // Calendar/Events - check permission
+  if (authStore.can('events', 'view')) {
+    nav.push({ name: 'Calendar', href: '/calendar', current: false });
+  }
+  
+  // Imports - check permission
+  if (authStore.can('imports', 'view')) {
+    nav.push({ name: 'Imports', href: '/imports', current: false });
+  }
+  
+  // Projects - check permission
+  if (authStore.can('projects', 'view')) {
+    nav.push({ name: 'Projects', href: '/items', current: false });
+  }
+  
+  // Admin-only links for Owners/Admins
+  if (authStore.isOwner || authStore.userRole === 'admin') {
+    nav.push({ name: 'Demo Requests', href: '/demo-requests', current: false });
+    nav.push({ name: 'Instances', href: '/instances', current: false });
+  }
+  
+  return nav;
 });
 // ---
 

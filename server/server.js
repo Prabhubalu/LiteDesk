@@ -19,6 +19,7 @@ app.use(express.json()); // Allows parsing JSON request bodies
 // Routes
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
+const roleRoutes = require('./routes/roleRoutes');
 const organizationRoutes = require('./routes/organizationRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const dealRoutes = require('./routes/dealRoutes');
@@ -34,6 +35,7 @@ const adminRoutes = require('./routes/adminRoutes');
 // Route Linking
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/roles', roleRoutes);
 app.use('/api/organization', organizationRoutes);
 app.use('/api/contacts', contactRoutes);
 app.use('/api/deals', dealRoutes);
