@@ -136,6 +136,14 @@ See **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** for AWS/Kubernetes deployment
 ### Getting Started
 - **[Quick Start Guide](QUICK_START.md)** - Get running in 5 minutes ⚡
 - **[Developer Setup Guide](DEVELOPER_SETUP.md)** - Complete developer onboarding 📖
+- **[MongoDB Setup Guide](MONGODB_SETUP_GUIDE.md)** - MongoDB installation and configuration 🗄️
+
+### Email Integration 📧 NEW!
+- **[START HERE - Email Integration](START_HERE_EMAIL.md)** - Should you use AWS SES? ⚡
+- **[AWS SES Setup Guide](docs/AWS_SES_SETUP_GUIDE.md)** - Complete SES implementation walkthrough
+- **[Email Service Comparison](docs/EMAIL_SERVICE_COMPARISON.md)** - SES vs SendGrid vs Mailgun
+- **[Email Implementation Checklist](docs/EMAIL_IMPLEMENTATION_CHECKLIST.md)** - 8-phase task breakdown
+- **[Email Quick Reference](docs/EMAIL_QUICK_REFERENCE.md)** - Commands, costs, troubleshooting
 
 ### Technical Documentation  
 - **[Technical Specification](TECHNICAL_SPEC.md)** - Complete technical details
