@@ -424,6 +424,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
 import ContactFormModal from '@/components/contacts/ContactFormModal.vue';
 import RelatedEventsWidget from '@/components/events/RelatedEventsWidget.vue';
@@ -436,6 +437,9 @@ import { useAuthStore } from '@/stores/auth';
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+
+// Use tabs composable
+const { openTab } = useTabs();
 
 const contact = ref(null);
 const loading = ref(true);
@@ -554,7 +558,10 @@ const openCreateEvent = () => {
 };
 
 const viewEvent = (eventId) => {
-  router.push(`/events/${eventId}`);
+  openTab(`/events/${eventId}`, {
+    title: 'Event Detail',
+    icon: '📅'
+  });
 };
 
 const handleEventSaved = () => {
@@ -567,7 +574,14 @@ const handleEventSaved = () => {
 
 // Organization methods
 const viewOrganization = (organizationId) => {
-  router.push(`/organizations/${organizationId}`);
+  // Get organization name if available
+  const orgName = contact.value?.organization?.name || 'Organization Detail';
+  
+  openTab(`/organizations/${organizationId}`, {
+    title: orgName,
+    icon: '🏢',
+    params: { name: orgName }
+  });
 };
 
 const unlinkOrganization = async () => {
@@ -597,7 +611,10 @@ const openCreateDeal = () => {
 };
 
 const viewDeal = (dealId) => {
-  router.push(`/deals/${dealId}`);
+  openTab(`/deals/${dealId}`, {
+    title: 'Deal Detail',
+    icon: '💼'
+  });
 };
 
 // Task methods
@@ -610,7 +627,10 @@ const openCreateTask = () => {
 };
 
 const viewTask = (taskId) => {
-  router.push(`/tasks/${taskId}`);
+  openTab(`/tasks/${taskId}`, {
+    title: 'Task Detail',
+    icon: '✅'
+  });
 };
 
 onMounted(() => {

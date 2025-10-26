@@ -236,6 +236,7 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useBulkActions } from '@/composables/useBulkActions';
+import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
 import DataTable from '@/components/common/DataTable.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
@@ -247,6 +248,9 @@ import RowActions from '@/components/common/RowActions.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
+
+// Use tabs composable
+const { openTab } = useTabs();
 
 // Use bulk actions composable with permissions
 const { bulkActions: massActions } = useBulkActions('contacts');
@@ -419,7 +423,17 @@ const debouncedSearch = () => {
 };
 
 const viewContact = (contactId) => {
-  router.push(`/contacts/${contactId}`);
+  // Get contact details for tab title
+  const contact = contacts.value.find(c => c._id === contactId);
+  const title = contact 
+    ? `${contact.first_name} ${contact.last_name}` 
+    : 'Contact Detail';
+  
+  openTab(`/contacts/${contactId}`, {
+    title,
+    icon: '👤',
+    params: { name: title }
+  });
 };
 
 const openCreateModal = () => {

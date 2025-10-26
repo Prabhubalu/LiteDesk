@@ -19,6 +19,7 @@ LiteDesk is a modern CRM platform built on a unique multi-instance architecture 
 - **Contact Management:** Organize and manage customer contacts
 - **Deal Pipeline:** Visual sales pipeline with drag-and-drop
 - **Task Management:** Track activities and follow-ups
+- **Internal Tabs Navigation:** Multi-tasking with browser-like tabs for records and modules
 - **Role-Based Access Control:** 5-tier permission system (Owner, Admin, Manager, User, Viewer)
 - **Multi-Tenancy:** Organization-based data isolation
 - **Subscription Management:** Built-in trial and subscription system
@@ -138,12 +139,18 @@ See **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** for AWS/Kubernetes deployment
 - **[Developer Setup Guide](DEVELOPER_SETUP.md)** - Complete developer onboarding 📖
 - **[MongoDB Setup Guide](MONGODB_SETUP_GUIDE.md)** - MongoDB installation and configuration 🗄️
 
-### Email Integration 📧 NEW!
+### Email Integration 📧
 - **[START HERE - Email Integration](START_HERE_EMAIL.md)** - Should you use AWS SES? ⚡
 - **[AWS SES Setup Guide](docs/AWS_SES_SETUP_GUIDE.md)** - Complete SES implementation walkthrough
 - **[Email Service Comparison](docs/EMAIL_SERVICE_COMPARISON.md)** - SES vs SendGrid vs Mailgun
 - **[Email Implementation Checklist](docs/EMAIL_IMPLEMENTATION_CHECKLIST.md)** - 8-phase task breakdown
 - **[Email Quick Reference](docs/EMAIL_QUICK_REFERENCE.md)** - Commands, costs, troubleshooting
+
+### User Interface & Navigation 🎯 NEW!
+- **[START HERE - Internal Tabs](START_HERE_TABS.md)** - Quick overview and benefits ⚡
+- **[Tabs Integration Complete](TABS_INTEGRATION_COMPLETE.md)** - Full integration summary ✅
+- **[Internal Tabs Implementation](INTERNAL_TABS_IMPLEMENTATION.md)** - Complete tabs navigation system 📑
+- **[Tabs Quick Reference](docs/TABS_QUICK_REFERENCE.md)** - Developer guide for tabs integration 🚀
 
 ### Technical Documentation  
 - **[Technical Specification](TECHNICAL_SPEC.md)** - Complete technical details

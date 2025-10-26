@@ -345,6 +345,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
 import DealFormModal from '@/components/deals/DealFormModal.vue';
 import RelatedEventsWidget from '@/components/events/RelatedEventsWidget.vue';
@@ -352,6 +353,9 @@ import EventFormModal from '@/components/events/EventFormModal.vue';
 
 const route = useRoute();
 const router = useRouter();
+
+// Use tabs composable
+const { openTab } = useTabs();
 
 const deal = ref(null);
 const loading = ref(true);
@@ -489,7 +493,10 @@ const openCreateEvent = () => {
 };
 
 const viewEvent = (eventId) => {
-  router.push(`/events/${eventId}`);
+  openTab(`/events/${eventId}`, {
+    title: 'Event Detail',
+    icon: '📅'
+  });
 };
 
 const handleEventSaved = () => {

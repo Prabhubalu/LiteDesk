@@ -445,6 +445,7 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useBulkActions } from '@/composables/useBulkActions';
+import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
 import DataTable from '@/components/common/DataTable.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
@@ -455,6 +456,9 @@ import RowActions from '@/components/common/RowActions.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
+
+// Use tabs composable
+const { openTab } = useTabs();
 
 // State
 const deals = ref([]);
@@ -624,7 +628,15 @@ const getStageValue = (stage) => {
 };
 
 const viewDeal = (dealId) => {
-  router.push(`/deals/${dealId}`);
+  // Get deal details for tab title
+  const deal = deals.value.find(d => d._id === dealId);
+  const title = deal ? deal.name : 'Deal Detail';
+  
+  openTab(`/deals/${dealId}`, {
+    title,
+    icon: '💼',
+    params: { name: title }
+  });
 };
 
 const openCreateModal = () => {
