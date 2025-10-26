@@ -126,6 +126,12 @@ export function useTabs() {
 
   // Initialize tabs
   const initTabs = () => {
+    // Don't initialize tabs on mobile
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    if (isMobile) {
+      console.log('📱 Mobile detected, skipping tab initialization');
+      return;
+    }
     loadTabsFromStorage();
   };
 
@@ -148,6 +154,16 @@ export function useTabs() {
   const openTab = (path, options = {}) => {
     const isBackground = options.background || false;
     console.log('🔵 openTab called:', path, 'background:', isBackground);
+    
+    // On mobile (< md breakpoint), just navigate without creating tabs
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    if (isMobile) {
+      console.log('📱 Mobile detected, navigating without tab creation');
+      router.push(path).catch((err) => {
+        console.log('⚠️ Navigation error (ignored):', err.message);
+      });
+      return null;
+    }
     
     // Check if tab already exists
     const existingTab = findTabByPath(path);

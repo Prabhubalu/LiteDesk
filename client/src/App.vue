@@ -63,11 +63,11 @@ usePermissionSync(2);
         sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'
       ]"
     >
-      <!-- Tab Bar -->
-      <TabBar />
+      <!-- Tab Bar - Hidden on mobile, visible on tablet and up -->
+      <TabBar class="hidden md:block" />
       
       <!-- Content wrapper with padding -->
-      <div class="flex-1 p-4 lg:p-6 overflow-y-auto overflow-x-hidden mt-12 lg:mt-12">
+      <div class="flex-1 p-4 lg:p-6 overflow-y-auto overflow-x-hidden md:mt-0">
         <!-- Keep-alive caches component instances to prevent remounting on tab switch -->
         <RouterView v-slot="{ Component }">
           <keep-alive :max="10">
