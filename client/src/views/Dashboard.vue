@@ -1,5 +1,5 @@
 <template>
-  <div class="page-container">
+  <div class="p-6 lg:p-8">
     <!-- Trial Banner -->
     <div v-if="showTrialBanner" :class="[
       'flex items-center justify-between p-4 px-6 mb-8 rounded-xl border',
@@ -40,13 +40,13 @@
     </div>
 
     <!-- Header -->
-    <div class="page-header">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
       <div>
-        <h1 class="page-title">Good {{ getTimeOfDay() }}, {{ userName }}! 👋</h1>
-        <p class="page-subtitle">Here's what's happening with your business today.</p>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Good {{ getTimeOfDay() }}, {{ userName }}! 👋</h1>
+        <p class="text-lg text-gray-600 dark:text-gray-400 mt-2">Here's what's happening with your business today.</p>
       </div>
-      <div class="flex gap-3">
-        <button @click="$router.push('/contacts?action=new')" class="btn-primary flex items-center gap-2">
+      <div class="flex gap-3 mt-4 sm:mt-0">
+        <button @click="$router.push('/contacts?action=new')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
           </svg>
@@ -57,58 +57,58 @@
 
     <!-- Key Metrics -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <div class="stat-card">
-        <div class="stat-icon bg-gradient-to-br from-blue-500 to-blue-600">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-4">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
         </div>
         <div>
-          <p class="stat-label">Total Contacts</p>
-          <p class="stat-value">{{ contactStats.total || 0 }}</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Contacts</p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ contactStats.total || 0 }}</p>
           <p class="text-sm text-success-600 dark:text-success-400 font-medium" v-if="contactStats.newThisWeek > 0">
             +{{ contactStats.newThisWeek }} this week
           </p>
         </div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-icon bg-gradient-to-br from-brand-500 to-brand-600">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center mb-4">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
           </svg>
         </div>
         <div>
-          <p class="stat-label">Active Leads</p>
-          <p class="stat-value">{{ contactStats.leads || 0 }}</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Active Leads</p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ contactStats.leads || 0 }}</p>
           <p class="text-sm text-gray-600 dark:text-gray-400">{{ contactStats.conversionRate || 0 }}% conversion</p>
         </div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-icon bg-gradient-to-br from-success-500 to-success-600">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center mb-4">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
         <div>
-          <p class="stat-label">Customers</p>
-          <p class="stat-value">{{ contactStats.customers || 0 }}</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Customers</p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ contactStats.customers || 0 }}</p>
           <p class="text-sm text-success-600 dark:text-success-400 font-medium" v-if="contactStats.newCustomers > 0">
             +{{ contactStats.newCustomers }} new
           </p>
         </div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-icon bg-gradient-to-br from-purple-500 to-purple-600">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-4">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
         <div>
-          <p class="stat-label">Activities Today</p>
-          <p class="stat-value">{{ activityStats.today || 0 }}</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Activities Today</p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ activityStats.today || 0 }}</p>
           <p class="text-sm text-gray-600 dark:text-gray-400">{{ activityStats.pending || 0 }} pending</p>
         </div>
       </div>
@@ -117,28 +117,28 @@
     <!-- Main Content Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
       <!-- Recent Contacts -->
-      <div class="card lg:col-span-2">
-        <div class="card-header flex items-center justify-between">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 lg:col-span-2">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Recent Contacts</h2>
           <router-link to="/contacts" class="text-sm text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium transition-colors">
             View All
           </router-link>
         </div>
         
-        <div v-if="loading" class="card-body text-center py-12">
+        <div v-if="loading" class="px-6 py-12 text-center">
           <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600"></div>
           <p class="text-gray-600 dark:text-gray-400 mt-4">Loading contacts...</p>
         </div>
 
-        <div v-else-if="recentContacts.length === 0" class="card-body text-center py-12">
+        <div v-else-if="recentContacts.length === 0" class="px-6 py-12 text-center">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-600">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
           <p class="text-gray-600 dark:text-gray-400 mb-4">No contacts yet</p>
-          <button @click="$router.push('/contacts')" class="btn-secondary">Add Your First Contact</button>
+          <button @click="$router.push('/contacts')" class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg font-medium transition-colors">Add Your First Contact</button>
         </div>
 
-        <div v-else class="card-body">
+        <div v-else class="px-6 py-4">
           <div class="flex flex-col gap-3">
             <div v-for="contact in recentContacts" :key="contact._id" 
               @click="$router.push(`/contacts/${contact._id}`)"
@@ -154,9 +154,9 @@
               </div>
               <span :class="[
                 'px-3 py-1 rounded-full text-xs font-semibold flex-shrink-0',
-                contact.lifecycle_stage?.toLowerCase() === 'lead' ? 'badge-warning' :
-                contact.lifecycle_stage?.toLowerCase() === 'customer' ? 'badge-success' :
-                'badge-info'
+                contact.lifecycle_stage?.toLowerCase() === 'lead' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' :
+                contact.lifecycle_stage?.toLowerCase() === 'customer' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' :
+                'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
               ]">
                 {{ contact.lifecycle_stage || 'Lead' }}
               </span>
@@ -166,17 +166,17 @@
       </div>
 
       <!-- Contact Growth Chart -->
-      <div class="card">
-        <div class="card-header flex items-center justify-between">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Contact Growth</h2>
-          <select v-model="chartPeriod" @change="fetchChartData" class="input text-sm py-1 px-2">
+          <select v-model="chartPeriod" @change="fetchChartData" class="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm py-1 px-2 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
             <option value="7">Last 7 Days</option>
             <option value="30">Last 30 Days</option>
             <option value="90">Last 90 Days</option>
           </select>
         </div>
 
-        <div class="card-body">
+        <div class="px-6 py-4">
           <div class="mb-4">
             <svg class="w-full h-[200px]" viewBox="0 0 400 200">
               <!-- Grid lines -->
@@ -235,12 +235,12 @@
       </div>
 
       <!-- Quick Actions -->
-      <div class="card">
-        <div class="card-header">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Quick Actions</h2>
         </div>
         
-        <div class="card-body">
+        <div class="px-6 py-4">
           <div class="grid grid-cols-2 gap-4">
             <button @click="$router.push('/contacts?action=new')" class="flex flex-col items-center gap-3 p-6 bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-white dark:hover:bg-gray-700 hover:shadow-md transition-all cursor-pointer">
               <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
@@ -282,19 +282,19 @@
       </div>
 
       <!-- Activity Feed -->
-      <div class="card">
-        <div class="card-header">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Recent Activity</h2>
         </div>
 
-        <div v-if="recentActivity.length === 0" class="card-body text-center py-12">
+        <div v-if="recentActivity.length === 0" class="px-6 py-12 text-center">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-600">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <p class="text-gray-600 dark:text-gray-400">No recent activity</p>
         </div>
 
-        <div v-else class="card-body">
+        <div v-else class="px-6 py-4">
           <div class="flex flex-col gap-4">
             <div v-for="activity in recentActivity" :key="activity.id" class="flex gap-4 pb-4 border-b border-gray-100 dark:border-gray-700 last:border-0">
               <div :class="[

@@ -2,6 +2,7 @@
 import { useAuthStore } from '@/stores/auth';
 import { usePermissionSync } from '@/composables/usePermissionSync';
 import { useTabs } from '@/composables/useTabs';
+import { useColorMode } from '@/composables/useColorMode';
 import LandingPage from '@/views/LandingPage.vue'
 import Dashboard from '@/views/Dashboard.vue'
 import Nav from '@/components/Nav.vue';
@@ -12,6 +13,9 @@ import { useRouter } from 'vue-router';
 const authStore = useAuthStore();
 const router = useRouter();
 const { initTabs } = useTabs();
+
+// Initialize color mode
+const { colorMode } = useColorMode();
 
 // Check authentication status to conditionally show the navigation bar
 const isAuthenticated = computed(() => authStore.isAuthenticated);
@@ -59,14 +63,11 @@ usePermissionSync(2);
         sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'
       ]"
     >
-      <!-- Mobile top spacing -->
-      <div class="lg:hidden h-16"></div>
-      
       <!-- Tab Bar -->
       <TabBar />
       
       <!-- Content wrapper with padding -->
-      <div class="flex-1 p-4 lg:p-6 overflow-y-auto overflow-x-hidden">
+      <div class="flex-1 p-4 lg:p-6 overflow-y-auto overflow-x-hidden mt-12 lg:mt-12">
         <!-- Keep-alive caches component instances to prevent remounting on tab switch -->
         <RouterView v-slot="{ Component }">
           <keep-alive :max="10">

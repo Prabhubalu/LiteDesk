@@ -1,5 +1,17 @@
 @import 'tailwindcss';
 
+@variant dark (.dark &);
+
+/* Force light mode as default */
+:root {
+  color-scheme: light;
+}
+
+/* Ensure dark mode only applies when dark class is present */
+.dark {
+  color-scheme: dark;
+}
+
 /* FullCalendar Styles - v6+ handles styles through JavaScript */
 
 /* Safelist classes to ensure they're generated */
@@ -67,17 +79,6 @@
   animation: slide-up 0.6s ease-out;
 }
 
-/* Card styles */
-.card {
-  background: white;
-  border-radius: 0.75rem;
-  border: 1px solid #e5e7eb;
-}
-
-.dark .card {
-  background: #1f2937;
-  border-color: #374151;
-}
 
 body{
   font-family: InterVariable, system-ui, sans-serif;
@@ -89,4 +90,29 @@ body{
     display: flex;
     flex-direction: column;
   }
+}
+
+/* Force mobile header dark mode to work with class-based toggle */
+.dark .mobile-header {
+  background-color: #111827 !important; /* gray-900 */
+}
+
+.dark .mobile-header .mobile-text {
+  color: #ffffff !important; /* white */
+}
+
+.dark .mobile-header .mobile-icon {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+.dark .mobile-header .mobile-button {
+  color: #ffffff !important; /* white */
+}
+
+.dark .mobile-header .mobile-button:hover {
+  color: #ffffff !important; /* white */
+}
+
+.dark .mobile-header .mobile-bell {
+  color: #ffffff !important; /* white */
 }
