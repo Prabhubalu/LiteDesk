@@ -321,13 +321,21 @@ const fetchStats = async () => {
 };
 
 // View import details
-const viewImport = (importRecord) => {
+const viewImport = (importRecord, event = null) => {
   const title = `Import: ${importRecord.fileName || 'Unknown'}`;
+  
+  // Check if user wants to open in background
+  const openInBackground = event && (
+    event.button === 1 || // Middle mouse button
+    event.metaKey ||      // Cmd on Mac
+    event.ctrlKey         // Ctrl on Windows/Linux
+  );
   
   openTab(`/imports/${importRecord._id}`, {
     title,
     icon: '⬇️',
-    params: { fileName: importRecord.fileName }
+    params: { fileName: importRecord.fileName },
+    background: openInBackground
   });
 };
 

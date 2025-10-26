@@ -48,14 +48,14 @@ usePermissionSync(2);
 
 <template>
   <!-- Layout with Sidebar -->
-  <div v-if="isAuthenticated" class="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
+  <div v-if="isAuthenticated" class="min-h-screen bg-gray-50 dark:bg-gray-900 flex overflow-x-hidden">
     <!-- Sidebar Navigation - v-model binds collapsed state -->
     <Nav v-model="sidebarCollapsed" />
     
     <!-- Main Content Area - Dynamic margin based on sidebar state -->
     <main 
       :class="[
-        'flex-1 flex flex-col transition-all duration-300 min-h-screen',
+        'flex-1 flex flex-col transition-all duration-300 min-h-screen overflow-x-hidden',
         sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'
       ]"
     >
@@ -66,7 +66,7 @@ usePermissionSync(2);
       <TabBar />
       
       <!-- Content wrapper with padding -->
-      <div class="flex-1 p-4 lg:p-6 overflow-auto">
+      <div class="flex-1 p-4 lg:p-6 overflow-y-auto overflow-x-hidden">
         <!-- Keep-alive caches component instances to prevent remounting on tab switch -->
         <RouterView v-slot="{ Component }">
           <keep-alive :max="10">
@@ -82,6 +82,20 @@ usePermissionSync(2);
     <RouterView />
   </div>
 </template>
+
+<style>
+/* Global styles - prevent horizontal scroll */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+</style>
 
 <style scoped>
 header {

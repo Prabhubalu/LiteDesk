@@ -526,8 +526,8 @@ const tableColumns = [
 ];
 
 // Event handlers for DataTable
-const handleRowClick = (row) => {
-  viewDeal(row._id);
+const handleRowClick = (row, event) => {
+  viewDeal(row._id, event);
 };
 
 const handleDeleteDeal = (row) => {
@@ -627,15 +627,23 @@ const getStageValue = (stage) => {
   return getDealsInStage(stage).reduce((sum, deal) => sum + deal.amount, 0);
 };
 
-const viewDeal = (dealId) => {
+const viewDeal = (dealId, event = null) => {
   // Get deal details for tab title
   const deal = deals.value.find(d => d._id === dealId);
   const title = deal ? deal.name : 'Deal Detail';
   
+  // Check if user wants to open in background
+  const openInBackground = event && (
+    event.button === 1 || // Middle mouse button
+    event.metaKey ||      // Cmd on Mac
+    event.ctrlKey         // Ctrl on Windows/Linux
+  );
+  
   openTab(`/deals/${dealId}`, {
     title,
     icon: '💼',
-    params: { name: title }
+    params: { name: title },
+    background: openInBackground
   });
 };
 

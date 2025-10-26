@@ -146,19 +146,25 @@ export function useTabs() {
 
   // Create or focus tab
   const openTab = (path, options = {}) => {
-    console.log('🔵 openTab called:', path, 'current route:', router.currentRoute.value.path);
+    const isBackground = options.background || false;
+    console.log('🔵 openTab called:', path, 'background:', isBackground);
     
     // Check if tab already exists
     const existingTab = findTabByPath(path);
     
     if (existingTab) {
-      console.log('📍 Tab already exists, focusing:', existingTab.id);
-      // Focus existing tab
-      activeTabId.value = existingTab.id;
-      // Always navigate to ensure the route is loaded
-      router.push(path).catch((err) => {
-        console.log('⚠️ Navigation error (ignored):', err.message);
-      });
+      console.log('📍 Tab already exists:', existingTab.id);
+      
+      // If not background mode, focus the tab
+      if (!isBackground) {
+        activeTabId.value = existingTab.id;
+        // Always navigate to ensure the route is loaded
+        router.push(path).catch((err) => {
+          console.log('⚠️ Navigation error (ignored):', err.message);
+        });
+      } else {
+        console.log('🔕 Background mode: tab exists but not switching to it');
+      }
       return existingTab;
     }
     
@@ -174,14 +180,19 @@ export function useTabs() {
     
     console.log('✨ Creating new tab:', newTab.id, newTab.title);
     tabs.value.push(newTab);
-    activeTabId.value = newTab.id;
     
-    // Always navigate to show the new tab content
-    router.push(path).catch((err) => {
-      console.log('⚠️ Navigation error (ignored):', err.message);
-    });
+    // Only switch to tab and navigate if NOT background mode
+    if (!isBackground) {
+      activeTabId.value = newTab.id;
+      // Always navigate to show the new tab content
+      router.push(path).catch((err) => {
+        console.log('⚠️ Navigation error (ignored):', err.message);
+      });
+      console.log('✅ openTab complete (foreground), activeTabId:', activeTabId.value);
+    } else {
+      console.log('✅ openTab complete (background), tab created but not active');
+    }
     
-    console.log('✅ openTab complete, activeTabId:', activeTabId.value);
     return newTab;
   };
 

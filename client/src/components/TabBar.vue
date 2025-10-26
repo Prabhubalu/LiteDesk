@@ -1,9 +1,37 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, inject } from 'vue';
 import { useTabs } from '@/composables/useTabs';
-import { XMarkIcon, ChevronDownIcon } from '@heroicons/vue/20/solid';
+import { XMarkIcon } from '@heroicons/vue/20/solid';
 
 const { tabs, activeTabId, switchToTab, closeTab, closeOtherTabs, closeAllTabs } = useTabs();
+
+// Get sidebar state from parent (App.vue passes it via provide/inject or we calculate it)
+const viewportWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1920);
+
+// Calculate the actual available width for TabBar
+// Account for sidebar width (either 256px expanded or 80px collapsed)
+const tabBarWidth = computed(() => {
+  // On mobile, full width
+  if (viewportWidth.value < 1024) {
+    return viewportWidth.value;
+  }
+  
+  // On desktop, we need to check sidebar state
+  // Read from localStorage since sidebar state is stored there
+  const sidebarCollapsed = localStorage.getItem('litedesk-sidebar-collapsed') === 'true';
+  const sidebarWidth = sidebarCollapsed ? 80 : 256;
+  const calculatedWidth = viewportWidth.value - sidebarWidth;
+  
+  console.log('📊 TabBar Width:', {
+    viewport: viewportWidth.value,
+    sidebarCollapsed,
+    sidebarWidth,
+    tabBarWidth: calculatedWidth,
+    totalTabs: tabs.value.length
+  });
+  
+  return calculatedWidth;
+});
 
 // Drag and drop state
 const draggedTabId = ref(null);
@@ -117,25 +145,57 @@ const closeTabsToRight = (tabId) => {
 };
 
 // Close context menu on click outside
-const handleClickOutside = (event) => {
+const handleClickOutside = () => {
   if (showContextMenu.value) {
     handleCloseContextMenu();
   }
 };
 
+// Update viewport width on resize
+const handleResize = () => {
+  viewportWidth.value = window.innerWidth;
+};
+
+// Listen for sidebar toggle custom event
+const handleSidebarToggle = (e) => {
+  console.log('🔔 Sidebar toggled:', e.detail);
+  // Force recompute by triggering a viewport "change"
+  // This will cause tabBarWidth computed to recalculate
+  const currentWidth = viewportWidth.value;
+  viewportWidth.value = currentWidth + 1;
+  setTimeout(() => {
+    viewportWidth.value = currentWidth;
+  }, 0);
+};
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
+  window.addEventListener('resize', handleResize);
+  window.addEventListener('sidebar-toggle', handleSidebarToggle);
+  
+  // Set initial viewport width
+  viewportWidth.value = window.innerWidth;
+  console.log('📐 TabBar mounted');
 });
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
+  window.removeEventListener('resize', handleResize);
+  window.removeEventListener('sidebar-toggle', handleSidebarToggle);
 });
 </script>
 
 <template>
-  <div class="w-full bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30">
-    <div class="flex items-center h-12 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-600">
-      <!-- Tabs -->
+  <div 
+    class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30 overflow-x-hidden"
+    :style="{ 
+      width: tabBarWidth + 'px',
+      maxWidth: tabBarWidth + 'px',
+      minWidth: 0
+    }"
+  >
+    <div class="flex items-center h-12 overflow-x-hidden" :style="{ width: '100%', maxWidth: '100%' }">
+      <!-- Tabs - Chrome style shrinking with aggressive overflow prevention -->
       <div
         v-for="tab in tabs"
         :key="tab.id"
@@ -148,22 +208,29 @@ onUnmounted(() => {
         @click="handleTabClick(tab.id)"
         @contextmenu="handleContextMenu($event, tab)"
         :class="[
-          'group relative flex items-center h-full px-4 border-r border-gray-200 dark:border-gray-700',
-          'cursor-pointer select-none transition-colors duration-150',
+          'group relative flex items-center h-full px-3 border-r border-gray-200 dark:border-gray-700',
+          'cursor-pointer select-none transition-all duration-150',
           'hover:bg-gray-50 dark:hover:bg-gray-700',
+          'overflow-hidden',
           activeTabId === tab.id
             ? 'bg-gray-50 dark:bg-gray-900 border-b-2 border-b-blue-500'
             : 'bg-white dark:bg-gray-800',
           dragOverTabId === tab.id ? 'border-l-2 border-l-blue-500' : ''
         ]"
+        :style="{ 
+          flex: '1 1 0',
+          minWidth: '0',
+          maxWidth: '200px',
+          flexBasis: '0'
+        }"
       >
         <!-- Icon -->
-        <span class="text-lg mr-2 flex-shrink-0">{{ tab.icon }}</span>
+        <span class="text-base flex-shrink-0 mr-2">{{ tab.icon }}</span>
         
         <!-- Title -->
         <span
           :class="[
-            'text-sm font-medium whitespace-nowrap',
+            'text-sm font-medium overflow-hidden text-ellipsis whitespace-nowrap flex-1 min-w-0',
             activeTabId === tab.id
               ? 'text-gray-900 dark:text-white'
               : 'text-gray-600 dark:text-gray-400'
@@ -172,18 +239,18 @@ onUnmounted(() => {
           {{ tab.title }}
         </span>
         
-        <!-- Close button: Always visible on active tab, visible on hover for others -->
+        <!-- Close button - collapses to 0 width when hidden -->
         <button
           v-if="tab.closable"
           @click="handleCloseTab($event, tab.id)"
           :class="[
-            'ml-2 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-150 flex-shrink-0',
+            'p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-150 overflow-hidden',
             activeTabId === tab.id
-              ? 'opacity-100 visible'
-              : 'opacity-0 invisible group-hover:opacity-100 group-hover:visible'
+              ? 'opacity-100 w-6 ml-2'
+              : 'opacity-0 w-0 ml-0 group-hover:opacity-100 group-hover:w-6 group-hover:ml-2'
           ]"
         >
-          <XMarkIcon class="w-4 h-4 text-gray-500 dark:text-gray-400" />
+          <XMarkIcon class="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
         </button>
       </div>
     </div>

@@ -378,7 +378,8 @@
               isSelected(row) ? 'bg-brand-50 dark:bg-brand-900/30 hover:bg-brand-100 dark:hover:bg-brand-900/40' : '',
               rowClass
             ]"
-            @click="handleRowClick(row)"
+            @click="handleRowClick(row, $event)"
+            @auxclick="handleRowAuxClick(row, $event)"
           >
             <!-- Selection Column (Always Frozen) -->
             <td 
@@ -1009,8 +1010,17 @@ const handleSearch = () => {
   emit('search', searchQuery.value);
 };
 
-const handleRowClick = (row) => {
-  emit('row-click', row);
+const handleRowClick = (row, event) => {
+  emit('row-click', row, event);
+};
+
+// Handle auxiliary button click (middle mouse button)
+const handleRowAuxClick = (row, event) => {
+  // Middle mouse button (button 1)
+  if (event.button === 1) {
+    event.preventDefault();
+    emit('row-click', row, event);
+  }
 };
 
 const previousPage = () => {
