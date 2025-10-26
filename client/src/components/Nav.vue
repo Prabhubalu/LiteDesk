@@ -50,6 +50,11 @@ const shouldShowExpanded = computed(() => {
 
 const toggleSidebar = () => {
   isCollapsed.value = !isCollapsed.value;
+  
+  // Dispatch custom event so TabBar can react to sidebar state change
+  window.dispatchEvent(new CustomEvent('sidebar-toggle', { 
+    detail: { collapsed: isCollapsed.value } 
+  }));
 };
 
 const toggleMobileMenu = () => {
@@ -179,9 +184,17 @@ const router = useRouter();
 const { openTab } = useTabs();
 
 // Handle navigation click - open in tab instead of direct navigation
-const handleNavClick = (item) => {
+const handleNavClick = (item, event) => {
+  // Check if user wants to open in background
+  const openInBackground = event && (
+    event.button === 1 || // Middle mouse button
+    event.metaKey ||      // Cmd on Mac
+    event.ctrlKey         // Ctrl on Windows/Linux
+  );
+  
   openTab(item.href, {
-    title: item.name
+    title: item.name,
+    background: openInBackground
     // Note: Don't pass item.icon (it's a Vue component)
     // Let useTabs.js auto-detect the emoji icon from the path
   });
@@ -282,7 +295,8 @@ const logoSrc = computed(() => {
           v-for="item in navigation"
           :key="item.name"
           :href="item.href"
-          @click.prevent="handleNavClick(item)"
+          @click.prevent="handleNavClick(item, $event)"
+          @auxclick.prevent="handleNavClick(item, $event)"
           :class="[
             'flex items-center rounded-lg transition-colors duration-200',
             'hover:bg-white/10 dark:hover:bg-gray-800',

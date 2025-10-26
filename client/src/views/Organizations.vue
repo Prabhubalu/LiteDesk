@@ -298,8 +298,8 @@ const columns = [
 ];
 
 // Event handlers
-const handleRowClick = (row) => {
-  viewOrganization(row._id);
+const handleRowClick = (row, event) => {
+  viewOrganization(row._id, event);
 };
 
 const handleDelete = (row) => {
@@ -371,15 +371,23 @@ const changePage = (page) => {
   fetchOrganizations();
 };
 
-const viewOrganization = (orgId) => {
+const viewOrganization = (orgId, event = null) => {
   // Get organization details for tab title
   const org = organizations.value.find(o => o._id === orgId);
   const title = org ? org.name : 'Organization Detail';
   
+  // Check if user wants to open in background
+  const openInBackground = event && (
+    event.button === 1 || // Middle mouse button
+    event.metaKey ||      // Cmd on Mac
+    event.ctrlKey         // Ctrl on Windows/Linux
+  );
+  
   openTab(`/organizations/${orgId}`, {
     title,
     icon: '🏢',
-    params: { name: title }
+    params: { name: title },
+    background: openInBackground
   });
 };
 

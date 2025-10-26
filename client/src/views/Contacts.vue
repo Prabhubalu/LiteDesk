@@ -308,8 +308,8 @@ const tableColumns = computed(() => {
 });
 
 // Event handlers
-const handleRowClick = (row) => {
-  viewContact(row._id);
+const handleRowClick = (row, event) => {
+  viewContact(row._id, event);
 };
 
 const handleDelete = (row) => {
@@ -422,17 +422,26 @@ const debouncedSearch = () => {
   }, 500);
 };
 
-const viewContact = (contactId) => {
+const viewContact = (contactId, event = null) => {
   // Get contact details for tab title
   const contact = contacts.value.find(c => c._id === contactId);
   const title = contact 
     ? `${contact.first_name} ${contact.last_name}` 
     : 'Contact Detail';
   
+  // Check if user wants to open in background
+  // Middle click (button 1) OR Cmd/Ctrl + click
+  const openInBackground = event && (
+    event.button === 1 || // Middle mouse button
+    event.metaKey ||      // Cmd on Mac
+    event.ctrlKey         // Ctrl on Windows/Linux
+  );
+  
   openTab(`/contacts/${contactId}`, {
     title,
     icon: '👤',
-    params: { name: title }
+    params: { name: title },
+    background: openInBackground
   });
 };
 
