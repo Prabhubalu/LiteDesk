@@ -33,6 +33,18 @@ const tabBarWidth = computed(() => {
   return calculatedWidth;
 });
 
+// Calculate the left position for the TabBar
+const tabBarLeft = computed(() => {
+  // On mobile, always at left: 0
+  if (viewportWidth.value < 1024) {
+    return '0px';
+  }
+  
+  // On desktop, position based on sidebar state
+  const sidebarCollapsed = localStorage.getItem('litedesk-sidebar-collapsed') === 'true';
+  return sidebarCollapsed ? '80px' : '256px';
+});
+
 // Drag and drop state
 const draggedTabId = ref(null);
 const dragOverTabId = ref(null);
@@ -187,11 +199,12 @@ onUnmounted(() => {
 
 <template>
   <div 
-    class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30 overflow-x-hidden"
+    class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 fixed top-16 left-0 right-0 lg:top-0 lg:left-auto lg:right-auto z-30 overflow-x-hidden"
     :style="{ 
       width: tabBarWidth + 'px',
       maxWidth: tabBarWidth + 'px',
-      minWidth: 0
+      minWidth: 0,
+      left: tabBarLeft
     }"
   >
     <div class="flex items-center h-12 overflow-x-hidden" :style="{ width: '100%', maxWidth: '100%' }">
