@@ -1,12 +1,18 @@
 <script setup>
 import { useAuthStore } from '@/stores/auth';
 import { usePermissionSync } from '@/composables/usePermissionSync';
+import { useTabs } from '@/composables/useTabs';
 import LandingPage from '@/views/LandingPage.vue'
 import Dashboard from '@/views/Dashboard.vue'
 import Nav from '@/components/Nav.vue';
+import TabBar from '@/components/TabBar.vue';
 import { computed, onMounted, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 
 const authStore = useAuthStore();
+const router = useRouter();
+const { initTabs } = useTabs();
+
 // Check authentication status to conditionally show the navigation bar
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 
@@ -25,6 +31,14 @@ onMounted(async () => {
   if (authStore.isAuthenticated) {
     console.log('Auto-refreshing permissions on page load...');
     await authStore.refreshUser();
+    
+    // Initialize tabs system
+    initTabs();
+    
+    // Note: We don't need a router.beforeEach guard here because:
+    // 1. Tab creation is handled by click handlers (Nav.vue, DataTables, etc.)
+    // 2. Page refresh will restore tabs from localStorage
+    // 3. Adding a guard here creates circular loops with openTab() calling router.replace()
   }
 });
 
@@ -34,23 +48,31 @@ usePermissionSync(2);
 
 <template>
   <!-- Layout with Sidebar -->
-  <div v-if="isAuthenticated" class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <div v-if="isAuthenticated" class="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
     <!-- Sidebar Navigation - v-model binds collapsed state -->
     <Nav v-model="sidebarCollapsed" />
     
     <!-- Main Content Area - Dynamic margin based on sidebar state -->
     <main 
       :class="[
-        'transition-all duration-300 min-h-screen',
+        'flex-1 flex flex-col transition-all duration-300 min-h-screen',
         sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'
       ]"
     >
       <!-- Mobile top spacing -->
       <div class="lg:hidden h-16"></div>
       
+      <!-- Tab Bar -->
+      <TabBar />
+      
       <!-- Content wrapper with padding -->
-      <div class="p-4 lg:p-6">
-        <RouterView />
+      <div class="flex-1 p-4 lg:p-6 overflow-auto">
+        <!-- Keep-alive caches component instances to prevent remounting on tab switch -->
+        <RouterView v-slot="{ Component }">
+          <keep-alive :max="10">
+            <component :is="Component" :key="$route.fullPath" />
+          </keep-alive>
+        </RouterView>
       </div>
     </main>
   </div>

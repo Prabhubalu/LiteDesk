@@ -1,6 +1,7 @@
 <script setup>
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import { useTabs } from '@/composables/useTabs';
 import { computed, ref, watch } from 'vue';
 import { useColorMode } from '@/composables/useColorMode';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
@@ -175,6 +176,16 @@ const navigation = computed(() => {
 const { colorMode, toggleColorMode } = useColorMode();
 const authStore = useAuthStore();
 const router = useRouter();
+const { openTab } = useTabs();
+
+// Handle navigation click - open in tab instead of direct navigation
+const handleNavClick = (item) => {
+  openTab(item.href, {
+    title: item.name
+    // Note: Don't pass item.icon (it's a Vue component)
+    // Let useTabs.js auto-detect the emoji icon from the path
+  });
+};
 
 const userName = computed(() => authStore.user?.username || 'User');
 const userVertical = computed(() => authStore.user?.vertical || 'N/A');
@@ -267,10 +278,11 @@ const logoSrc = computed(() => {
     <!-- Navigation Links -->
     <nav class="flex-1 overflow-y-auto py-4 px-2">
       <div class="space-y-1">
-        <router-link
+        <a
           v-for="item in navigation"
           :key="item.name"
-          :to="item.href"
+          :href="item.href"
+          @click.prevent="handleNavClick(item)"
           :class="[
             'flex items-center rounded-lg transition-colors duration-200',
             'hover:bg-white/10 dark:hover:bg-gray-800',
@@ -305,7 +317,7 @@ const logoSrc = computed(() => {
               {{ item.name }}
             </span>
           </transition>
-        </router-link>
+        </a>
       </div>
     </nav>
 

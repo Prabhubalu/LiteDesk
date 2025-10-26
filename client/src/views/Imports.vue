@@ -216,6 +216,7 @@
 import { ref, reactive, onMounted, watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
+import { useTabs } from '@/composables/useTabs';
 import apiClient from '../utils/apiClient';
 import DataTable from '../components/common/DataTable.vue';
 import BadgeCell from '../components/common/table/BadgeCell.vue';
@@ -224,6 +225,9 @@ import UniversalImportModal from '../components/import/UniversalImportModal.vue'
 // Router and auth
 const router = useRouter();
 const authStore = useAuthStore();
+
+// Use tabs composable
+const { openTab } = useTabs();
 
 // Permission checks
 const canCreateImport = computed(() => authStore.hasPermission('imports', 'create'));
@@ -318,7 +322,13 @@ const fetchStats = async () => {
 
 // View import details
 const viewImport = (importRecord) => {
-  router.push(`/imports/${importRecord._id}`);
+  const title = `Import: ${importRecord.fileName || 'Unknown'}`;
+  
+  openTab(`/imports/${importRecord._id}`, {
+    title,
+    icon: '⬇️',
+    params: { fileName: importRecord.fileName }
+  });
 };
 
 // Handle import complete

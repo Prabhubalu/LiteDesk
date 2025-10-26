@@ -240,6 +240,7 @@
 import { ref, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useBulkActions } from '@/composables/useBulkActions';
+import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
 import DataTable from '@/components/common/DataTable.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
@@ -248,6 +249,9 @@ import ModuleActions from '@/components/common/ModuleActions.vue';
 import RowActions from '@/components/common/RowActions.vue';
 
 const router = useRouter();
+
+// Use tabs composable
+const { openTab } = useTabs();
 
 // Use bulk actions composable with permissions
 const { bulkActions: massActions } = useBulkActions('organizations');
@@ -368,7 +372,15 @@ const changePage = (page) => {
 };
 
 const viewOrganization = (orgId) => {
-  router.push(`/organizations/${orgId}`);
+  // Get organization details for tab title
+  const org = organizations.value.find(o => o._id === orgId);
+  const title = org ? org.name : 'Organization Detail';
+  
+  openTab(`/organizations/${orgId}`, {
+    title,
+    icon: '🏢',
+    params: { name: title }
+  });
 };
 
 const openCreateModal = () => {
