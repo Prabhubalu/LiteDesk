@@ -1,10 +1,10 @@
 <template>
-  <div class="page-container">
+  <div class="mx-auto">
     <!-- Header -->
-    <div class="page-header">
+    <div class="flex justify-between items-center mb-8">
       <div>
-        <h1 class="page-title">Tasks</h1>
-        <p class="page-subtitle">Manage your tasks and to-dos</p>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Tasks</h1>
+        <p class="text-lg text-gray-600 dark:text-gray-400 mt-2">Manage your tasks and to-dos</p>
       </div>
       <ModuleActions 
         module="tasks"
@@ -16,106 +16,120 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <div class="stat-card">
-        <div class="stat-icon bg-gradient-to-br from-brand-500 to-brand-600">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 flex items-center gap-3 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
           </svg>
         </div>
         <div>
-          <p class="stat-value">{{ statistics.total || 0 }}</p>
-          <p class="stat-label">Total Tasks</p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.total || 0 }}</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Tasks</p>
         </div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-icon bg-gradient-to-br from-warning-500 to-warning-600">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 flex items-center gap-3 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
         <div>
-          <p class="stat-value">{{ statistics.overdue || 0 }}</p>
-          <p class="stat-label">Overdue</p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.overdue || 0 }}</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Overdue</p>
         </div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-icon bg-gradient-to-br from-blue-500 to-blue-600">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 flex items-center gap-3 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
         </div>
         <div>
-          <p class="stat-value">{{ statistics.dueToday || 0 }}</p>
-          <p class="stat-label">Due Today</p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.dueToday || 0 }}</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Due Today</p>
         </div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-icon bg-gradient-to-br from-success-500 to-success-600">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 flex items-center gap-3 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
         <div>
-          <p class="stat-value">{{ statistics.byStatus?.completed || 0 }}</p>
-          <p class="stat-label">Completed</p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.byStatus?.completed || 0 }}</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Completed</p>
         </div>
       </div>
     </div>
 
-    <!-- Filters -->
-    <div class="card mb-6">
-      <div class="card-body">
-        <!-- Search Bar -->
-        <div class="relative mb-4">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 text-gray-400">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
+    <!-- Search and Filters -->
+    <div class="flex flex-col lg:flex-row gap-4 mb-6">
+      <div class="w-full lg:w-80">
+        <div class="relative">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
           <input 
             v-model="searchQuery" 
             type="text" 
             placeholder="Search tasks..."
             @input="debouncedSearch"
-            class="input pl-10"
+            class="w-full pl-9 pr-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
           />
         </div>
+      </div>
 
-        <!-- Filter Row -->
-        <div class="flex flex-wrap gap-3">
-          <select v-model="filters.status" @change="fetchTasks" class="input flex-1 min-w-[150px]">
-            <option value="">All Status</option>
-            <option value="todo">To Do</option>
-            <option value="in_progress">In Progress</option>
-            <option value="waiting">Waiting</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
+      <div class="flex flex-wrap gap-3 flex-1">
+        <select v-model="filters.status" @change="fetchTasks" class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer text-sm">
+          <option value="">All Status</option>
+          <option value="todo">To Do</option>
+          <option value="in_progress">In Progress</option>
+          <option value="waiting">Waiting</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
 
-          <select v-model="filters.priority" @change="fetchTasks" class="input flex-1 min-w-[150px]">
-            <option value="">All Priorities</option>
-            <option value="urgent">Urgent</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
-          </select>
+        <select v-model="filters.priority" @change="fetchTasks" class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer text-sm">
+          <option value="">All Priorities</option>
+          <option value="urgent">Urgent</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
 
-          <select v-model="filters.assignedTo" @change="fetchTasks" class="input flex-1 min-w-[150px]">
-            <option value="">All Assignees</option>
-            <option value="me">My Tasks</option>
-          </select>
+        <select v-model="filters.assignedTo" @change="fetchTasks" class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer text-sm">
+          <option value="">All Assignees</option>
+          <option value="me">My Tasks</option>
+        </select>
 
-          <button v-if="filters.status || filters.priority || filters.assignedTo" @click="clearFilters" class="btn-secondary flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-            Clear
-          </button>
-        </div>
+        <button 
+          @click="clearFilters" 
+          :disabled="!hasActiveFilters"
+          class="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors flex items-center gap-2 text-sm"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          Clear
+        </button>
+      </div>
+
+      <!-- Columns Button -->
+      <div class="flex items-center">
+        <button
+          @click="showColumnSettings = !showColumnSettings"
+          class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition-all"
+          title="Column Settings"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+          </svg>
+          <span>Columns</span>
+        </button>
       </div>
     </div>
 
@@ -130,7 +144,7 @@
       :show-controls="false"
       :selectable="true"
       :resizable="true"
-      :column-settings="true"
+      :column-settings="false"
       :server-side="true"
       table-id="tasks-table"
       :mass-actions="massActions"
@@ -152,7 +166,7 @@
             type="checkbox" 
             :checked="row.status === 'completed'"
             @click.stop="toggleTaskStatus(row)"
-            class="w-5 h-5 text-brand-600 border-gray-300 rounded focus:ring-brand-500"
+            class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
           />
           <span :class="['font-semibold', row.status === 'completed' ? 'line-through text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-white']">
             {{ row.title }}
@@ -190,7 +204,7 @@
       <!-- Custom Assigned To Cell -->
       <template #cell-assignedTo="{ row }">
         <div v-if="row.assignedTo" class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-sm font-medium">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center text-white text-sm font-medium">
             {{ row.assignedTo.firstName?.[0] || '?' }}{{ row.assignedTo.lastName?.[0] || '' }}
           </div>
           <span class="text-sm text-gray-900 dark:text-white">{{ row.assignedTo.firstName }} {{ row.assignedTo.lastName }}</span>
@@ -202,8 +216,8 @@
       <template #cell-dueDate="{ row }">
         <span v-if="row.dueDate" :class="[
           'text-sm font-medium',
-          isOverdue(row.dueDate) && row.status !== 'completed' ? 'text-danger-600 dark:text-danger-400' :
-          isDueToday(row.dueDate) && row.status !== 'completed' ? 'text-warning-600 dark:text-warning-400' :
+          isOverdue(row.dueDate) && row.status !== 'completed' ? 'text-red-600 dark:text-red-400' :
+          isDueToday(row.dueDate) && row.status !== 'completed' ? 'text-yellow-600 dark:text-yellow-400' :
           'text-gray-700 dark:text-gray-300'
         ]">
           <DateCell :value="row.dueDate" format="short" />
@@ -265,6 +279,103 @@
       @close="showImportModal = false"
       @import-complete="handleImportComplete"
     />
+
+    <!-- Column Settings Modal -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition ease-out duration-200"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition ease-in duration-150"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
+        <div
+          v-if="showColumnSettings"
+          class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          @click.self="showColumnSettings = false"
+        >
+          <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Column Settings</h3>
+              <button
+                @click="showColumnSettings = false"
+                class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="flex-1 overflow-y-auto p-6">
+              <div class="space-y-4">
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  Choose which columns to display in the table. You can drag to reorder them.
+                </p>
+                
+                <div class="space-y-3">
+                  <div 
+                    v-for="(column, index) in visibleColumns" 
+                    :key="column.key"
+                    :draggable="true"
+                    @dragstart="handleDragStart($event, index)"
+                    @dragover="handleDragOver"
+                    @dragenter="handleDragEnter"
+                    @dragleave="handleDragLeave"
+                    @drop="handleDrop($event, index)"
+                    @dragend="handleDragEnd"
+                    class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-move hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors drag-over:bg-blue-50 dark:drag-over:bg-blue-900/20"
+                  >
+                    <div class="flex items-center gap-3">
+                      <svg class="w-5 h-5 text-gray-400 cursor-move" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+                      </svg>
+                      <span class="text-sm font-medium text-gray-900 dark:text-white">{{ column.label }}</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        :checked="column.visible"
+                        @change="toggleColumnVisibility(column.key)"
+                        class="sr-only peer"
+                      >
+                      <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+              <button
+                @click="resetColumnSettings"
+                class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+              >
+                Reset to Default
+              </button>
+              <div class="flex items-center gap-3">
+                <button
+                  @click="showColumnSettings = false"
+                  class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  @click="applyColumnSettings"
+                  class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-800 rounded-lg transition-colors"
+                >
+                  Apply
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -295,12 +406,23 @@ const showDetailModal = ref(false);
 const showImportModal = ref(false);
 const editingTask = ref(null);
 const selectedTask = ref(null);
+const showColumnSettings = ref(false);
 
 const filters = reactive({
   status: '',
   priority: '',
   assignedTo: ''
 });
+
+// Column settings state
+const visibleColumns = ref([
+  { key: 'title', label: 'Task', visible: true },
+  { key: 'priority', label: 'Priority', visible: true },
+  { key: 'status', label: 'Status', visible: true },
+  { key: 'assignedTo', label: 'Assigned To', visible: true },
+  { key: 'dueDate', label: 'Due Date', visible: true },
+  { key: 'tags', label: 'Tags', visible: true }
+]);
 
 const pagination = reactive({
   currentPage: 1,
@@ -324,6 +446,14 @@ const statistics = reactive({
 // Use bulk actions composable with permissions
 const { bulkActions: baseMassActions } = useBulkActions('tasks');
 
+// Check if any filters are active
+const hasActiveFilters = computed(() => {
+  return searchQuery.value.trim() !== '' || 
+         (filters?.status || '') !== '' || 
+         (filters?.priority || '') !== '' || 
+         (filters?.assignedTo || '') !== '';
+});
+
 // Add custom "Mark Complete" action for tasks
 const massActions = computed(() => {
   const actions = [];
@@ -340,22 +470,39 @@ const massActions = computed(() => {
 });
 
 // Column definitions
-const columns = [
-  { key: 'title', label: 'Task', sortable: true },
-  { key: 'priority', label: 'Priority', sortable: true },
-  { key: 'status', label: 'Status', sortable: true },
-  { 
-    key: 'assignedTo', 
-    label: 'Assigned To', 
-    sortable: false,  // Server doesn't support sorting by populated field
-    sortValue: (row) => {
-      if (!row.assignedTo) return '';
-      return `${row.assignedTo.firstName || ''} ${row.assignedTo.lastName || ''}`.trim();
+const columns = computed(() => {
+  const allColumns = [
+    { key: 'title', label: 'Task', sortable: true },
+    { key: 'priority', label: 'Priority', sortable: true },
+    { key: 'status', label: 'Status', sortable: true },
+    { 
+      key: 'assignedTo', 
+      label: 'Assigned To', 
+      sortable: false,  // Server doesn't support sorting by populated field
+      sortValue: (row) => {
+        if (!row.assignedTo) return '';
+        return `${row.assignedTo.firstName || ''} ${row.assignedTo.lastName || ''}`.trim();
+      }
+    },
+    { key: 'dueDate', label: 'Due Date', sortable: true },
+    { key: 'tags', label: 'Tags', sortable: false }
+  ];
+  
+  // Filter and order columns based on visibleColumns settings
+  const orderedColumns = [];
+  
+  // Add columns in the order specified by visibleColumns
+  visibleColumns.value.forEach(visibleCol => {
+    if (visibleCol.visible) {
+      const column = allColumns.find(col => col.key === visibleCol.key);
+      if (column) {
+        orderedColumns.push(column);
+      }
     }
-  },
-  { key: 'dueDate', label: 'Due Date', sortable: true },
-  { key: 'tags', label: 'Tags', sortable: false }
-];
+  });
+  
+  return orderedColumns;
+});
 
 // Helper functions for dates
 const isOverdue = (dueDate) => {
@@ -634,6 +781,68 @@ const exportTasks = async () => {
     console.error('Error exporting tasks:', error);
     alert('Error exporting tasks. Please try again.');
   }
+};
+
+// Column settings functions
+const resetColumnSettings = () => {
+  // Reset to default column configuration
+  visibleColumns.value = visibleColumns.value.map(col => ({ ...col, visible: true }));
+};
+
+const applyColumnSettings = () => {
+  // Apply column settings
+  showColumnSettings.value = false;
+  console.log('Applied column settings:', visibleColumns.value);
+};
+
+const toggleColumnVisibility = (columnKey) => {
+  const column = visibleColumns.value.find(col => col.key === columnKey);
+  if (column) {
+    column.visible = !column.visible;
+  }
+};
+
+// Drag and drop functionality
+const dragStartIndex = ref(null);
+
+const handleDragStart = (event, index) => {
+  dragStartIndex.value = index;
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/html', event.target.outerHTML);
+  event.target.style.opacity = '0.5';
+};
+
+const handleDragOver = (event) => {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+};
+
+const handleDragEnter = (event) => {
+  event.preventDefault();
+  event.target.classList.add('drag-over');
+};
+
+const handleDragLeave = (event) => {
+  event.target.classList.remove('drag-over');
+};
+
+const handleDrop = (event, dropIndex) => {
+  event.preventDefault();
+  event.target.classList.remove('drag-over');
+  
+  if (dragStartIndex.value !== null && dragStartIndex.value !== dropIndex) {
+    // Reorder the columns
+    const draggedColumn = visibleColumns.value[dragStartIndex.value];
+    visibleColumns.value.splice(dragStartIndex.value, 1);
+    visibleColumns.value.splice(dropIndex, 0, draggedColumn);
+  }
+  
+  dragStartIndex.value = null;
+};
+
+const handleDragEnd = (event) => {
+  event.target.style.opacity = '1';
+  dragStartIndex.value = null;
 };
 
 const handleImportComplete = () => {

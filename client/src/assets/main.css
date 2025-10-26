@@ -12,7 +12,138 @@
   color-scheme: dark;
 }
 
-/* FullCalendar Styles - v6+ handles styles through JavaScript */
+/* FullCalendar Styles - Reset and Mac-style tabs */
+.fc-toolbar {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+.fc-toolbar-chunk {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+  flex-shrink: 0 !important;
+}
+
+/* Mac-style tabs for view toggle buttons (right side) */
+.fc-toolbar-chunk:last-child .fc-button-group {
+  display: flex !important;
+  background: #f3f4f6 !important; /* gray-100 */
+  border-radius: 0.5rem !important; /* rounded-lg */
+  padding: 0.25rem !important; /* p-1 */
+  gap: 0 !important;
+}
+
+.dark .fc-toolbar-chunk:last-child .fc-button-group {
+  background: #374151 !important; /* gray-700 */
+}
+
+.fc-toolbar-chunk:last-child .fc-button-group .fc-button {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0.375rem !important; /* rounded-md */
+  padding: 0.5rem 1rem !important; /* px-4 py-2 */
+  font-weight: 500 !important; /* font-medium */
+  transition: all 0.15s ease !important;
+  color: #6b7280 !important; /* gray-500 */
+  margin: 0 !important;
+  position: relative !important;
+}
+
+.dark .fc-toolbar-chunk:last-child .fc-button-group .fc-button {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+.fc-toolbar-chunk:last-child .fc-button-group .fc-button:hover {
+  color: #111827 !important; /* gray-900 */
+  background: transparent !important;
+}
+
+.dark .fc-toolbar-chunk:last-child .fc-button-group .fc-button:hover {
+  color: #ffffff !important; /* white */
+}
+
+.fc-toolbar-chunk:last-child .fc-button-group .fc-button.fc-button-active {
+  background: #ffffff !important; /* white */
+  color: #111827 !important; /* gray-900 */
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important; /* shadow-sm */
+}
+
+.dark .fc-toolbar-chunk:last-child .fc-button-group .fc-button.fc-button-active {
+  background: #1f2937 !important; /* gray-800 */
+  color: #ffffff !important; /* white */
+}
+
+.fc-toolbar-chunk:last-child .fc-button-group .fc-button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Individual buttons (left side - prev, next, today) */
+.fc-toolbar-chunk:first-child .fc-button {
+  background: #f3f4f6 !important; /* gray-100 */
+  border: 1px solid #d1d5db !important; /* gray-300 */
+  border-radius: 0.375rem !important; /* rounded-md */
+  padding: 0.5rem 1rem !important; /* px-4 py-2 */
+  font-weight: 500 !important; /* font-medium */
+  transition: all 0.15s ease !important;
+  color: #6b7280 !important; /* gray-500 */
+  margin: 0 !important;
+  white-space: nowrap !important;
+}
+
+.dark .fc-toolbar-chunk:first-child .fc-button {
+  background: #374151 !important; /* gray-700 */
+  border-color: #4b5563 !important; /* gray-600 */
+  color: #9ca3af !important; /* gray-400 */
+}
+
+.fc-toolbar-chunk:first-child .fc-button:hover {
+  background: #e5e7eb !important; /* gray-200 */
+  border-color: #9ca3af !important; /* gray-400 */
+  color: #111827 !important; /* gray-900 */
+}
+
+.dark .fc-toolbar-chunk:first-child .fc-button:hover {
+  background: #4b5563 !important; /* gray-600 */
+  border-color: #6b7280 !important; /* gray-500 */
+  color: #ffffff !important; /* white */
+}
+
+.fc-toolbar-chunk:first-child .fc-button:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5) !important;
+}
+
+/* Title styling */
+.fc-toolbar-title {
+  font-size: 1.5rem !important;
+  font-weight: 600 !important;
+  color: #111827 !important;
+  margin: 0 !important;
+}
+
+.dark .fc-toolbar-title {
+  color: #ffffff !important;
+}
+
+/* Custom Select Dropdown Styling */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+}
+
+.dark select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%9ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+}
 
 /* Safelist classes to ensure they're generated */
 @layer utilities {

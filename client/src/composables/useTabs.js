@@ -1,9 +1,62 @@
 import { ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { 
+  HomeIcon,
+  UsersIcon,
+  BuildingOfficeIcon,
+  BriefcaseIcon,
+  CheckCircleIcon,
+  CalendarIcon,
+  ArrowDownTrayIcon,
+  FolderIcon,
+  BookOpenIcon,
+  ComputerDesktopIcon,
+  DocumentTextIcon
+} from '@heroicons/vue/24/outline';
 
 // Tab state management
 const tabs = ref([]);
 const activeTabId = ref(null);
+
+// Icon mapping for serialization/deserialization
+const iconMap = {
+  'home': HomeIcon,
+  'users': UsersIcon,
+  'building': BuildingOfficeIcon,
+  'briefcase': BriefcaseIcon,
+  'check': CheckCircleIcon,
+  'calendar': CalendarIcon,
+  'download': ArrowDownTrayIcon,
+  'folder': FolderIcon,
+  'book': BookOpenIcon,
+  'computer': ComputerDesktopIcon,
+  'document': DocumentTextIcon
+};
+
+// Map emoji icons to icon identifiers
+const migrateEmojiToIconId = (emojiIcon) => {
+  const emojiToIconIdMap = {
+    '🏠': 'home',
+    '👥': 'users',
+    '👤': 'users', // Contact detail icon
+    '🏢': 'building',
+    '💼': 'briefcase',
+    '✅': 'check',
+    '📅': 'calendar',
+    '⬇️': 'download',
+    '📁': 'folder',
+    '📚': 'book',
+    '🖥️': 'computer',
+    '📄': 'document'
+  };
+  
+  return emojiToIconIdMap[emojiIcon] || 'document';
+};
+
+// Convert icon identifier to component
+const getIconComponent = (iconId) => {
+  return iconMap[iconId] || DocumentTextIcon;
+};
 
 // Load tabs from localStorage on initialization
 const loadTabsFromStorage = () => {
@@ -13,6 +66,19 @@ const loadTabsFromStorage = () => {
       const parsed = JSON.parse(stored);
       tabs.value = parsed.tabs || [];
       activeTabId.value = parsed.activeTabId || null;
+      
+      // Convert icon identifiers back to components
+      tabs.value.forEach(tab => {
+        if (typeof tab.icon === 'string') {
+          // Check if it's an emoji (for migration)
+          if (tab.icon.match(/[\u{1F300}-\u{1F9FF}]/u)) {
+            console.log('🔄 Migrating emoji icon to icon ID:', tab.icon, 'for tab:', tab.title);
+            tab.icon = migrateEmojiToIconId(tab.icon);
+          }
+          // Convert icon ID to component
+          tab.icon = getIconComponent(tab.icon);
+        }
+      });
       
       // If no tabs, create dashboard tab
       if (tabs.value.length === 0) {
@@ -27,11 +93,27 @@ const loadTabsFromStorage = () => {
   }
 };
 
+// Convert icon component to identifier
+const getIconId = (iconComponent) => {
+  for (const [id, component] of Object.entries(iconMap)) {
+    if (component === iconComponent) {
+      return id;
+    }
+  }
+  return 'document'; // fallback
+};
+
 // Save tabs to localStorage
 const saveTabsToStorage = () => {
   try {
+    // Convert icon components to identifiers for serialization
+    const tabsToSave = tabs.value.map(tab => ({
+      ...tab,
+      icon: typeof tab.icon === 'function' ? getIconId(tab.icon) : tab.icon
+    }));
+    
     localStorage.setItem('litedesk-tabs', JSON.stringify({
-      tabs: tabs.value,
+      tabs: tabsToSave,
       activeTabId: activeTabId.value
     }));
   } catch (e) {
@@ -50,7 +132,7 @@ const createDefaultTab = () => {
     id: 'dashboard',
     title: 'Dashboard',
     path: '/dashboard',
-    icon: '🏠',
+    icon: getIconComponent('home'), // Convert to component immediately
     closable: false // Dashboard tab cannot be closed
   };
   tabs.value = [dashboardTab];
@@ -65,22 +147,22 @@ const generateTabId = () => {
 // Get icon for route
 const getIconForPath = (path) => {
   const icons = {
-    '/dashboard': '🏠',
-    '/contacts': '👥',
-    '/organizations': '🏢',
-    '/deals': '💼',
-    '/tasks': '✅',
-    '/calendar': '📅',
-    '/events': '📅',
-    '/imports': '⬇️',
-    '/items': '📁',
-    '/demo-requests': '📚',
-    '/instances': '🖥️'
+    '/dashboard': 'home',
+    '/contacts': 'users',
+    '/organizations': 'building',
+    '/deals': 'briefcase',
+    '/tasks': 'check',
+    '/calendar': 'calendar',
+    '/events': 'calendar',
+    '/imports': 'download',
+    '/items': 'folder',
+    '/demo-requests': 'book',
+    '/instances': 'computer'
   };
   
   // Check for base path
   const basePath = '/' + path.split('/')[1];
-  return icons[basePath] || icons[path] || '📄';
+  return icons[basePath] || icons[path] || 'document';
 };
 
 // Get title for route
@@ -189,7 +271,7 @@ export function useTabs() {
       id: options.id || generateTabId(),
       title: options.title || getTitleForPath(path, options.params),
       path: path,
-      icon: options.icon || getIconForPath(path),
+      icon: options.icon ? getIconComponent(options.icon) : getIconComponent(getIconForPath(path)),
       closable: options.closable !== false, // Default to closable
       params: options.params || {}
     };

@@ -75,21 +75,21 @@ const hasPermission = computed(() => {
 
 // Button classes based on variant
 const buttonClasses = computed(() => {
-  const base = 'inline-flex items-center gap-2 transition-all';
+  const base = 'inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
   
   switch (props.variant) {
     case 'primary':
-      return `${base} btn-primary`;
+      return `${base} bg-indigo-600 hover:bg-indigo-700 text-white`;
     case 'secondary':
-      return `${base} btn-secondary`;
+      return `${base} bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300`;
     case 'danger':
-      return `${base} px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium`;
+      return `${base} bg-red-600 hover:bg-red-700 text-white`;
     case 'success':
-      return `${base} px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium`;
+      return `${base} bg-green-600 hover:bg-green-700 text-white`;
     case 'icon':
       return `${base} p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed`;
     default:
-      return `${base} btn-primary`;
+      return `${base} bg-indigo-600 hover:bg-indigo-700 text-white`;
   }
 });
 </script>

@@ -1,41 +1,43 @@
 <template>
-  <div class="p-8 max-w-[1800px] mx-auto bg-gray-50 dark:bg-gray-900 min-h-screen">
+  <div class="mx-auto">
     <!-- Header -->
     <div class="flex justify-between items-center mb-8">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Deals Pipeline</h1>
-        <p class="text-gray-600 dark:text-gray-400">Track and manage your sales opportunities</p>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Deals Pipeline</h1>
+        <p class="text-lg text-gray-600 dark:text-gray-400 mt-2">Track and manage your sales opportunities</p>
       </div>
       <div class="flex gap-3 items-center">
-        <!-- View Toggle Buttons -->
-        <button 
-          @click="viewMode = 'table'" 
-          :class="[
-            'flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all',
-            viewMode === 'table' 
-              ? 'bg-brand-600 text-white border-2 border-brand-600' 
-              : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-2 border-gray-300 dark:border-gray-600 hover:border-brand-500'
-          ]"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-          </svg>
-          Table
-        </button>
-        <button 
-          @click="viewMode = 'kanban'" 
-          :class="[
-            'flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all',
-            viewMode === 'kanban' 
-              ? 'bg-brand-600 text-white border-2 border-brand-600' 
-              : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-2 border-gray-300 dark:border-gray-600 hover:border-brand-500'
-          ]"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
-          </svg>
-          Pipeline
-        </button>
+        <!-- View Toggle Buttons - Mac Style Tabs -->
+        <div class="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+          <button 
+            @click="viewMode = 'table'" 
+            :class="[
+              'flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all relative',
+              viewMode === 'table' 
+                ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' 
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+            ]"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+            Table
+          </button>
+          <button 
+            @click="viewMode = 'kanban'" 
+            :class="[
+              'flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all relative',
+              viewMode === 'kanban' 
+                ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' 
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+            ]"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+            </svg>
+            Pipeline
+          </button>
+        </div>
         
         <!-- Divider -->
         <div class="w-px h-10 bg-gray-300 dark:bg-gray-600"></div>
@@ -52,53 +54,53 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow flex gap-4">
-        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center flex-shrink-0">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 flex items-center gap-3 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
           </svg>
         </div>
-        <div class="flex-1">
-          <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-1">{{ formatCurrency(statistics.pipelineValue || 0) }}</h3>
-          <p class="text-gray-600 dark:text-gray-400 text-sm">Pipeline Value</p>
+        <div>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ formatCurrency(statistics.pipelineValue || 0) }}</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Pipeline Value</p>
         </div>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow flex gap-4">
-        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-pink-500 to-red-600 flex items-center justify-center flex-shrink-0">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 flex items-center gap-3 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-red-600 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
           </svg>
         </div>
-        <div class="flex-1">
-          <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-1">{{ statistics.activeDeals || 0 }}</h3>
-          <p class="text-gray-600 dark:text-gray-400 text-sm">Active Deals</p>
+        <div>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.activeDeals || 0 }}</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active Deals</p>
         </div>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow flex gap-4">
-        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center flex-shrink-0">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 flex items-center gap-3 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <div class="flex-1">
-          <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-1">{{ formatCurrency(statistics.wonValue || 0) }}</h3>
-          <p class="text-gray-600 dark:text-gray-400 text-sm">Won This Month</p>
+        <div>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ formatCurrency(statistics.wonValue || 0) }}</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Won This Month</p>
         </div>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow flex gap-4">
-        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center flex-shrink-0">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 flex items-center gap-3 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
           </svg>
         </div>
-        <div class="flex-1">
-          <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-1">{{ winRate }}%</h3>
-          <p class="text-gray-600 dark:text-gray-400 text-sm">Win Rate</p>
+        <div>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ winRate }}%</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Win Rate</p>
         </div>
       </div>
     </div>
@@ -106,7 +108,7 @@
     <!-- Kanban View -->
     <div v-if="viewMode === 'kanban'" class="overflow-x-auto pb-4">
       <div class="flex gap-6">
-        <div v-for="stage in stages" :key="stage" class="kanban-column bg-gray-100 dark:bg-gray-800 rounded-xl flex flex-col max-h-[calc(100vh-400px)]">
+        <div v-for="stage in stages" :key="stage" class="flex-none w-96 min-w-96 max-w-96 bg-gray-100 dark:bg-gray-800 rounded-xl flex flex-col max-h-[calc(100vh-400px)]">
           <div class="p-5 bg-white dark:bg-gray-700 rounded-t-xl border-b-2 border-gray-200 dark:border-gray-600">
             <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-2">{{ stage }}</h3>
             <span class="inline-block bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 px-3 py-1 rounded-xl text-xs font-semibold ml-2">{{ getDealsInStage(stage).length }}</span>
@@ -117,7 +119,7 @@
             <div
               v-for="deal in getDealsInStage(stage)"
               :key="deal._id"
-              class="kanban-card bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700 cursor-grab hover:shadow-md hover:-translate-y-0.5 transition-all active:cursor-grabbing"
+              class="min-w-80 bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700 cursor-grab hover:shadow-md hover:-translate-y-0.5 transition-all active:cursor-grabbing"
               draggable="true"
               @dragstart="onDragStart($event, deal)"
               @click="viewDeal(deal._id)"
@@ -156,10 +158,10 @@
               
               <div class="flex justify-between items-center">
                 <div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-                  <div class="w-6 h-6 rounded-full bg-brand-600 text-white flex items-center justify-center text-xs font-semibold">{{ getInitials(deal.ownerId) }}</div>
+                  <div class="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-semibold">{{ getInitials(deal.ownerId) }}</div>
                   <span>{{ deal.ownerId?.firstName }}</span>
                 </div>
-                <div class="text-xs font-semibold text-brand-600 dark:text-brand-400">{{ deal.probability }}%</div>
+                <div class="text-xs font-semibold text-indigo-600 dark:text-indigo-400">{{ deal.probability }}%</div>
               </div>
             </div>
             
@@ -177,25 +179,27 @@
     <!-- Table View -->
     <div v-else>
       <!-- Search and Filters -->
-      <div class="flex gap-4 mb-6">
-        <div class="flex-1 relative">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input 
-            v-model="searchQuery" 
-            type="text" 
-            placeholder="Search deals..."
-            @input="debouncedSearch"
-            class="w-full pl-12 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
-          />
+      <div class="flex flex-col lg:flex-row gap-4 mb-6">
+        <div class="w-full lg:w-80">
+          <div class="relative">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input 
+              v-model="searchQuery" 
+              type="text" 
+              placeholder="Search deals..."
+              @input="debouncedSearch"
+              class="w-full pl-9 pr-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+            />
+          </div>
         </div>
 
-        <div class="flex gap-3">
+        <div class="flex flex-wrap gap-3 flex-1">
           <select 
             v-model="filters.stage" 
             @change="fetchDeals"
-            class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 cursor-pointer"
+            class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer text-sm"
           >
             <option value="">All Stages</option>
             <option v-for="stage in stages" :key="stage" :value="stage">{{ stage }}</option>
@@ -204,7 +208,7 @@
           <select 
             v-model="filters.status" 
             @change="fetchDeals"
-            class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 cursor-pointer"
+            class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer text-sm"
           >
             <option value="">All Status</option>
             <option value="Active">Active</option>
@@ -215,7 +219,7 @@
           <select 
             v-model="filters.priority" 
             @change="fetchDeals"
-            class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 cursor-pointer"
+            class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer text-sm"
           >
             <option value="">All Priority</option>
             <option value="Low">Low</option>
@@ -223,6 +227,31 @@
             <option value="High">High</option>
             <option value="Urgent">Urgent</option>
           </select>
+
+          <button 
+            @click="clearFilters" 
+            :disabled="!hasActiveFilters"
+            class="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors flex items-center gap-2 text-sm"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Clear
+          </button>
+        </div>
+
+        <!-- Columns Button -->
+        <div class="flex items-center">
+          <button
+            @click="showColumnSettings = !showColumnSettings"
+            class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition-all"
+            title="Column Settings"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+            </svg>
+            <span>Columns</span>
+          </button>
         </div>
       </div>
 
@@ -237,7 +266,7 @@
         :show-controls="false"
         :selectable="true"
         :resizable="true"
-        :column-settings="true"
+        :column-settings="false"
         :server-side="true"
         table-id="deals-table"
         :mass-actions="massActions"
@@ -288,7 +317,7 @@
         <!-- Custom Owner Cell -->
         <template #cell-ownerId="{ row }">
           <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-sm font-medium">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center text-white text-sm font-medium">
               {{ getInitials(row.ownerId) }}
             </div>
             <span>{{ row.ownerId?.firstName }}</span>
@@ -297,7 +326,7 @@
 
         <!-- Custom Close Date Cell with overdue highlight -->
         <template #cell-expectedCloseDate="{ row }">
-          <span :class="{'text-danger-600 dark:text-danger-400 font-medium': isOverdue(row.expectedCloseDate)}">
+          <span :class="{'text-red-600 dark:text-red-400 font-medium': isOverdue(row.expectedCloseDate)}">
             {{ formatDate(row.expectedCloseDate) }}
           </span>
         </template>
@@ -331,6 +360,103 @@
           />
         </template>
       </DataTable>
+
+      <!-- Column Settings Modal -->
+      <Teleport to="body">
+        <Transition
+          enter-active-class="transition ease-out duration-200"
+          enter-from-class="opacity-0"
+          enter-to-class="opacity-100"
+          leave-active-class="transition ease-in duration-150"
+          leave-from-class="opacity-100"
+          leave-to-class="opacity-0"
+        >
+          <div
+            v-if="showColumnSettings"
+            class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+            @click.self="showColumnSettings = false"
+          >
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col">
+              <!-- Modal Header -->
+              <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Column Settings</h3>
+                <button
+                  @click="showColumnSettings = false"
+                  class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Modal Body -->
+              <div class="flex-1 overflow-y-auto p-6">
+                <div class="space-y-4">
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Choose which columns to display in the table. You can drag to reorder them.
+                  </p>
+                  
+                  <div class="space-y-3">
+                    <div 
+                      v-for="(column, index) in visibleColumns" 
+                      :key="column.key"
+                      :draggable="true"
+                      @dragstart="handleDragStart($event, index)"
+                      @dragover="handleDragOver"
+                      @dragenter="handleDragEnter"
+                      @dragleave="handleDragLeave"
+                      @drop="handleDrop($event, index)"
+                      @dragend="handleDragEnd"
+                      class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-move hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors drag-over:bg-blue-50 dark:drag-over:bg-blue-900/20"
+                    >
+                      <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-gray-400 cursor-move" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+                        </svg>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">{{ column.label }}</span>
+                      </div>
+                      <label class="relative inline-flex items-center cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          :checked="column.visible"
+                          @change="toggleColumnVisibility(column.key)"
+                          class="sr-only peer"
+                        >
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Modal Footer -->
+              <div class="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+                <button
+                  @click="resetColumnSettings"
+                  class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+                >
+                  Reset to Default
+                </button>
+                <div class="flex items-center gap-3">
+                  <button
+                    @click="showColumnSettings = false"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    @click="applyColumnSettings"
+                    class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-800 rounded-lg transition-colors"
+                  >
+                    Apply
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Transition>
+      </Teleport>
 
       <!-- Old table code below (commented out for reference)
       <div v-if="false && deals.length > 0" class="table-container">
@@ -419,7 +545,6 @@
       </div>
 
       <!-- Pagination (commented out - handled by DataTable) -->
-      -->
     </div>
 
     <!-- Create/Edit Modal -->
@@ -468,6 +593,19 @@ const searchQuery = ref('');
 const showFormModal = ref(false);
 const showImportModal = ref(false);
 const editingDeal = ref(null);
+const showColumnSettings = ref(false);
+
+// Column settings state
+const visibleColumns = ref([
+  { key: 'name', label: 'Deal Name', visible: true },
+  { key: 'amount', label: 'Amount', visible: true },
+  { key: 'stage', label: 'Stage', visible: true },
+  { key: 'contactId', label: 'Contact', visible: true },
+  { key: 'ownerId', label: 'Owner', visible: true },
+  { key: 'expectedCloseDate', label: 'Close Date', visible: true },
+  { key: 'probability', label: 'Probability', visible: true },
+  { key: 'priority', label: 'Priority', visible: true }
+]);
 
 const stages = ['Lead', 'Qualified', 'Proposal', 'Negotiation', 'Closed Won', 'Closed Lost'];
 
@@ -514,16 +652,33 @@ const sortField = ref('createdAt');
 const sortOrder = ref('desc');
 
 // Column definitions for table view
-const tableColumns = [
-  { key: 'name', label: 'Deal Name', sortable: true },
-  { key: 'amount', label: 'Amount', sortable: true },
-  { key: 'stage', label: 'Stage', sortable: true },
-  { key: 'contactId', label: 'Contact', sortable: true },
-  { key: 'ownerId', label: 'Owner', sortable: true },
-  { key: 'expectedCloseDate', label: 'Close Date', sortable: true },
-  { key: 'probability', label: 'Probability', sortable: true },
-  { key: 'priority', label: 'Priority', sortable: true }
-];
+const tableColumns = computed(() => {
+  const allColumns = [
+    { key: 'name', label: 'Deal Name', sortable: true },
+    { key: 'amount', label: 'Amount', sortable: true },
+    { key: 'stage', label: 'Stage', sortable: true },
+    { key: 'contactId', label: 'Contact', sortable: true },
+    { key: 'ownerId', label: 'Owner', sortable: true },
+    { key: 'expectedCloseDate', label: 'Close Date', sortable: true },
+    { key: 'probability', label: 'Probability', sortable: true },
+    { key: 'priority', label: 'Priority', sortable: true }
+  ];
+  
+  // Filter and order columns based on visibleColumns settings
+  const orderedColumns = [];
+  
+  // Add columns in the order specified by visibleColumns
+  visibleColumns.value.forEach(visibleCol => {
+    if (visibleCol.visible) {
+      const column = allColumns.find(col => col.key === visibleCol.key);
+      if (column) {
+        orderedColumns.push(column);
+      }
+    }
+  });
+  
+  return orderedColumns;
+});
 
 // Event handlers for DataTable
 const handleRowClick = (row, event) => {
@@ -561,6 +716,14 @@ const winRate = computed(() => {
   const total = statistics.value.wonDeals + statistics.value.lostDeals;
   if (total === 0) return 0;
   return Math.round((statistics.value.wonDeals / total) * 100);
+});
+
+// Check if any filters are active
+const hasActiveFilters = computed(() => {
+  return searchQuery.value.trim() !== '' || 
+         (filters?.stage || '') !== '' || 
+         (filters?.status || '') !== '' || 
+         (filters?.priority || '') !== '';
 });
 
 // Methods
@@ -641,7 +804,7 @@ const viewDeal = (dealId, event = null) => {
   
   openTab(`/deals/${dealId}`, {
     title,
-    icon: '💼',
+    icon: 'briefcase',
     params: { name: title },
     background: openInBackground
   });
@@ -833,6 +996,77 @@ const onDrop = async (event, newStage) => {
   }
 };
 
+// Filter functions
+const clearFilters = () => {
+  searchQuery.value = '';
+  filters.stage = '';
+  filters.status = '';
+  filters.priority = '';
+  fetchDeals();
+};
+
+// Column settings functions
+const resetColumnSettings = () => {
+  // Reset to default column configuration
+  visibleColumns.value = visibleColumns.value.map(col => ({ ...col, visible: true }));
+};
+
+const applyColumnSettings = () => {
+  // Apply column settings
+  showColumnSettings.value = false;
+  console.log('Applied column settings:', visibleColumns.value);
+};
+
+const toggleColumnVisibility = (columnKey) => {
+  const column = visibleColumns.value.find(col => col.key === columnKey);
+  if (column) {
+    column.visible = !column.visible;
+  }
+};
+
+// Drag and drop functionality
+const dragStartIndex = ref(null);
+
+const handleDragStart = (event, index) => {
+  dragStartIndex.value = index;
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/html', event.target.outerHTML);
+  event.target.style.opacity = '0.5';
+};
+
+const handleDragOver = (event) => {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+};
+
+const handleDragEnter = (event) => {
+  event.preventDefault();
+  event.target.classList.add('drag-over');
+};
+
+const handleDragLeave = (event) => {
+  event.target.classList.remove('drag-over');
+};
+
+const handleDrop = (event, dropIndex) => {
+  event.preventDefault();
+  event.target.classList.remove('drag-over');
+  
+  if (dragStartIndex.value !== null && dragStartIndex.value !== dropIndex) {
+    // Reorder the columns
+    const draggedColumn = visibleColumns.value[dragStartIndex.value];
+    visibleColumns.value.splice(dragStartIndex.value, 1);
+    visibleColumns.value.splice(dropIndex, 0, draggedColumn);
+  }
+  
+  dragStartIndex.value = null;
+};
+
+const handleDragEnd = (event) => {
+  event.target.style.opacity = '1';
+  dragStartIndex.value = null;
+};
+
 // Lifecycle
 onMounted(() => {
   // Load saved sort state from localStorage before fetching
@@ -852,50 +1086,4 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
-/* Kanban Column Width */
-.kanban-column {
-  flex: 0 0 400px;
-  min-width: 400px;
-  max-width: 400px;
-}
-
-/* Kanban Card Width */
-.kanban-card {
-  min-width: 360px;
-}
-
-/* Custom Scrollbar Styling */
-.overflow-y-auto::-webkit-scrollbar,
-.overflow-x-auto::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.overflow-y-auto::-webkit-scrollbar-track,
-.overflow-x-auto::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.overflow-y-auto::-webkit-scrollbar-thumb,
-.overflow-x-auto::-webkit-scrollbar-thumb {
-  background: rgb(203 213 225 / 0.5);
-  border-radius: 4px;
-}
-
-.overflow-y-auto::-webkit-scrollbar-thumb:hover,
-.overflow-x-auto::-webkit-scrollbar-thumb:hover {
-  background: rgb(148 163 184 / 0.7);
-}
-
-:global(.dark) .overflow-y-auto::-webkit-scrollbar-thumb,
-:global(.dark) .overflow-x-auto::-webkit-scrollbar-thumb {
-  background: rgb(71 85 105 / 0.5);
-}
-
-:global(.dark) .overflow-y-auto::-webkit-scrollbar-thumb:hover,
-:global(.dark) .overflow-x-auto::-webkit-scrollbar-thumb:hover {
-  background: rgb(100 116 139 / 0.7);
-}
-</style>
 

@@ -238,7 +238,15 @@ onUnmounted(() => {
         }"
       >
         <!-- Icon -->
-        <span class="text-base flex-shrink-0 mr-2">{{ tab.icon }}</span>
+        <component 
+          :is="tab.icon" 
+          class="w-4 h-4 flex-shrink-0 mr-2"
+          :class="[
+            activeTabId === tab.id
+              ? 'text-gray-900 dark:text-white'
+              : 'text-gray-600 dark:text-gray-400'
+          ]"
+        />
         
         <!-- Title -->
         <span
