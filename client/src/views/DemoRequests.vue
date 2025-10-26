@@ -1,49 +1,107 @@
 <template>
-  <div class="demo-requests-container p-6">
-    <div class="header-section mb-6">
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-        Demo Requests
-      </h1>
-      <p class="text-gray-600 dark:text-gray-400">
-        Manage and track all demo requests from potential customers
-      </p>
+  <div class="mx-auto">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Demo Requests</h1>
+        <p class="text-lg text-gray-600 dark:text-gray-400 mt-2">Manage and track all demo requests from potential customers</p>
+      </div>
     </div>
 
     <!-- Stats Cards -->
-    <div v-if="stats" class="stats-grid grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      <div class="stat-card">
-        <div class="stat-label">Total Requests</div>
-        <div class="stat-value">{{ stats.total || 0 }}</div>
+    <div v-if="stats" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 flex items-center gap-3 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.total || 0 }}</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Requests</p>
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">This Month</div>
-        <div class="stat-value">{{ stats.thisMonth || 0 }}</div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 flex items-center gap-3 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.thisMonth || 0 }}</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">This Month</p>
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">Pending</div>
-        <div class="stat-value">{{ stats.byStatus?.pending || 0 }}</div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 flex items-center gap-3 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.byStatus?.pending || 0 }}</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Pending</p>
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">Converted</div>
-        <div class="stat-value">{{ stats.byStatus?.converted || 0 }}</div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 flex items-center gap-3 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.byStatus?.converted || 0 }}</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Converted</p>
+        </div>
       </div>
     </div>
 
-    <!-- Filters -->
-    <div class="filters-section mb-6 flex gap-4">
-      <select 
-        v-model="filterStatus" 
-        @change="fetchDemoRequests"
-        class="filter-select"
-      >
-        <option value="">All Status</option>
-        <option value="pending">Pending</option>
-        <option value="contacted">Contacted</option>
-        <option value="demo_scheduled">Demo Scheduled</option>
-        <option value="demo_completed">Demo Completed</option>
-        <option value="converted">Converted</option>
-        <option value="rejected">Rejected</option>
-      </select>
+    <!-- Search and Filters -->
+    <div class="flex flex-col lg:flex-row gap-4 mb-6">
+      <div class="w-full lg:w-80">
+        <div class="relative">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input 
+            v-model="searchQuery" 
+            type="text" 
+            placeholder="Search demo requests..."
+            @input="debouncedSearch"
+            class="w-full pl-9 pr-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+          />
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-3">
+        <select 
+          v-model="filterStatus" 
+          @change="fetchDemoRequests"
+          class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer text-sm"
+        >
+          <option value="">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="contacted">Contacted</option>
+          <option value="demo_scheduled">Demo Scheduled</option>
+          <option value="demo_completed">Demo Completed</option>
+          <option value="converted">Converted</option>
+          <option value="rejected">Rejected</option>
+        </select>
+
+        <button 
+          @click="clearFilters" 
+          :disabled="!hasActiveFilters"
+          class="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors flex items-center gap-2 text-sm"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          Clear
+        </button>
+      </div>
     </div>
 
     <!-- Loading State -->
@@ -52,54 +110,54 @@
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="error-card">
-      {{ error }}
+    <div v-else-if="error" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+      <p class="text-red-800 dark:text-red-200">{{ error }}</p>
     </div>
 
     <!-- Demo Requests Table -->
-    <div v-else-if="demoRequests.length > 0" class="requests-table-container">
-      <table class="requests-table">
-        <thead>
+    <div v-else-if="demoRequests.length > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <table class="w-full border-collapse">
+        <thead class="bg-gray-50 dark:bg-gray-900">
           <tr>
-            <th>Company</th>
-            <th>Contact</th>
-            <th>Email</th>
-            <th>Industry</th>
-            <th>Size</th>
-            <th>Status</th>
-            <th>Date</th>
-            <th>Actions</th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">Company</th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">Contact</th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">Email</th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">Industry</th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">Size</th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">Status</th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">Date</th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="request in demoRequests" :key="request._id">
-            <td class="font-semibold">{{ request.companyName }}</td>
-            <td>{{ request.contactName }}</td>
-            <td>{{ request.email }}</td>
-            <td>{{ request.industry }}</td>
-            <td>{{ request.companySize }}</td>
-            <td>
+          <tr v-for="request in demoRequests" :key="request._id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+            <td class="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">{{ request.companyName }}</td>
+            <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">{{ request.contactName }}</td>
+            <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">{{ request.email }}</td>
+            <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">{{ request.industry }}</td>
+            <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">{{ request.companySize }}</td>
+            <td class="px-6 py-4 text-sm border-b border-gray-200 dark:border-gray-700">
               <span :class="getStatusClass(request.status)">
                 {{ formatStatus(request.status) }}
               </span>
             </td>
-            <td>{{ formatDate(request.createdAt) }}</td>
-            <td>
-              <div class="action-buttons">
+            <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">{{ formatDate(request.createdAt) }}</td>
+            <td class="px-6 py-4 text-sm border-b border-gray-200 dark:border-gray-700">
+              <div class="flex gap-2">
                 <button 
                   @click="viewDetails(request)"
-                  class="btn-view"
+                  class="px-3 py-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-all hover:scale-105"
                   title="View Details"
                 >
-                  👁️
+                  View
                 </button>
                 <button 
                   v-if="request.status !== 'converted'"
                   @click="openConvertModal(request)"
-                  class="btn-convert"
+                  class="px-3 py-1.5 text-sm font-medium text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all hover:scale-105"
                   title="Convert to Organization"
                 >
-                  ✅
+                  Convert
                 </button>
               </div>
             </td>
@@ -116,149 +174,153 @@
     </div>
 
     <!-- Details Modal -->
-    <div v-if="selectedRequest" class="modal-overlay" @click="closeModal">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h2 class="text-2xl font-bold">Demo Request Details</h2>
-          <button @click="closeModal" class="close-button">×</button>
+    <div v-if="selectedRequest" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="closeModal">
+      <div class="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" @click.stop>
+        <div class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Demo Request Details</h2>
+          <button @click="closeModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-3xl font-bold">×</button>
         </div>
         
-        <div class="modal-body">
-          <div class="detail-section">
-            <h3 class="detail-section-title">Company Information</h3>
-            <div class="detail-grid">
-              <div class="detail-item">
-                <span class="detail-label">Company Name:</span>
-                <span class="detail-value">{{ selectedRequest.companyName }}</span>
+        <div class="p-6">
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Company Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <span class="text-sm text-gray-600 dark:text-gray-400">Company Name:</span>
+                <p class="font-medium text-gray-900 dark:text-white">{{ selectedRequest.companyName }}</p>
               </div>
-              <div class="detail-item">
-                <span class="detail-label">Industry:</span>
-                <span class="detail-value">{{ selectedRequest.industry }}</span>
+              <div>
+                <span class="text-sm text-gray-600 dark:text-gray-400">Industry:</span>
+                <p class="font-medium text-gray-900 dark:text-white">{{ selectedRequest.industry }}</p>
               </div>
-              <div class="detail-item">
-                <span class="detail-label">Company Size:</span>
-                <span class="detail-value">{{ selectedRequest.companySize }}</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="detail-section">
-            <h3 class="detail-section-title">Contact Information</h3>
-            <div class="detail-grid">
-              <div class="detail-item">
-                <span class="detail-label">Contact Name:</span>
-                <span class="detail-value">{{ selectedRequest.contactName }}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Email:</span>
-                <span class="detail-value">{{ selectedRequest.email }}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Phone:</span>
-                <span class="detail-value">{{ selectedRequest.phone || 'N/A' }}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Job Title:</span>
-                <span class="detail-value">{{ selectedRequest.jobTitle || 'N/A' }}</span>
+              <div>
+                <span class="text-sm text-gray-600 dark:text-gray-400">Company Size:</span>
+                <p class="font-medium text-gray-900 dark:text-white">{{ selectedRequest.companySize }}</p>
               </div>
             </div>
           </div>
 
-          <div v-if="selectedRequest.message" class="detail-section">
-            <h3 class="detail-section-title">Message</h3>
-            <p class="detail-message">{{ selectedRequest.message }}</p>
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Contact Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <span class="text-sm text-gray-600 dark:text-gray-400">Contact Name:</span>
+                <p class="font-medium text-gray-900 dark:text-white">{{ selectedRequest.contactName }}</p>
+              </div>
+              <div>
+                <span class="text-sm text-gray-600 dark:text-gray-400">Email:</span>
+                <p class="font-medium text-gray-900 dark:text-white">{{ selectedRequest.email }}</p>
+              </div>
+              <div>
+                <span class="text-sm text-gray-600 dark:text-gray-400">Phone:</span>
+                <p class="font-medium text-gray-900 dark:text-white">{{ selectedRequest.phone || 'N/A' }}</p>
+              </div>
+              <div>
+                <span class="text-sm text-gray-600 dark:text-gray-400">Job Title:</span>
+                <p class="font-medium text-gray-900 dark:text-white">{{ selectedRequest.jobTitle || 'N/A' }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="selectedRequest.message" class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Message</h3>
+            <p class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 text-gray-700 dark:text-gray-300">{{ selectedRequest.message }}</p>
           </div>
 
           <!-- CRM Integration Section -->
-          <div v-if="selectedRequest.organizationId || selectedRequest.contactId" class="detail-section crm-section">
-            <h3 class="detail-section-title">✅ CRM Integration</h3>
-            <div class="crm-alert">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div v-if="selectedRequest.organizationId || selectedRequest.contactId" class="mb-6 bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800 rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-green-800 dark:text-green-200 mb-3">✅ CRM Integration</h3>
+            <div class="flex items-center gap-3 bg-green-100 dark:bg-green-800/30 p-4 rounded-lg mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-green-600 dark:text-green-400">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span>This prospect is already in your CRM!</span>
+              <span class="font-medium text-green-800 dark:text-green-200">This prospect is already in your CRM!</span>
             </div>
             
-            <div class="detail-grid">
-              <div v-if="selectedRequest.organizationId" class="detail-item">
-                <span class="detail-label">Organization:</span>
-                <span class="detail-value">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div v-if="selectedRequest.organizationId">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Organization:</span>
+                <p class="font-medium text-gray-900 dark:text-white">
                   {{ selectedRequest.organizationId.name }} 
-                  <span class="text-gray-500">({{ selectedRequest.organizationId.industry }})</span>
-                </span>
+                  <span class="text-gray-500 dark:text-gray-400">({{ selectedRequest.organizationId.industry }})</span>
+                </p>
               </div>
-              <div v-if="selectedRequest.contactId" class="detail-item">
-                <span class="detail-label">Contact:</span>
-                <span class="detail-value">
+              <div v-if="selectedRequest.contactId">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Contact:</span>
+                <p class="font-medium text-gray-900 dark:text-white">
                   {{ selectedRequest.contactId.first_name }} {{ selectedRequest.contactId.last_name }}
-                  <span class="badge badge-lead">{{ selectedRequest.contactId.lifecycle_stage }}</span>
-                </span>
+                  <span class="inline-block px-2 py-1 text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 rounded-full ml-2">{{ selectedRequest.contactId.lifecycle_stage }}</span>
+                </p>
               </div>
-              <div v-if="selectedRequest.contactId" class="detail-item">
-                <span class="detail-label">Contact Email:</span>
-                <span class="detail-value">{{ selectedRequest.contactId.email }}</span>
+              <div v-if="selectedRequest.contactId">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Contact Email:</span>
+                <p class="font-medium text-gray-900 dark:text-white">{{ selectedRequest.contactId.email }}</p>
               </div>
-              <div v-if="selectedRequest.contactId && selectedRequest.contactId.phone" class="detail-item">
-                <span class="detail-label">Contact Phone:</span>
-                <span class="detail-value">{{ selectedRequest.contactId.phone }}</span>
+              <div v-if="selectedRequest.contactId && selectedRequest.contactId.phone">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Contact Phone:</span>
+                <p class="font-medium text-gray-900 dark:text-white">{{ selectedRequest.contactId.phone }}</p>
               </div>
             </div>
             
-            <div class="crm-note">
-              <strong>Note:</strong> This contact exists in a separate organization. They will see their own CRM data when they log in.
+            <div class="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 dark:border-yellow-600 rounded">
+              <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                <strong>Note:</strong> This contact exists in a separate organization. They will see their own CRM data when they log in.
+              </p>
             </div>
           </div>
 
-          <div class="detail-section">
-            <h3 class="detail-section-title">Update Status</h3>
-            <select 
-              v-model="updateStatusValue" 
-              class="status-select"
-            >
-              <option value="pending">Pending</option>
-              <option value="contacted">Contacted</option>
-              <option value="demo_scheduled">Demo Scheduled</option>
-              <option value="demo_completed">Demo Completed</option>
-              <option value="converted">Converted</option>
-              <option value="rejected">Rejected</option>
-            </select>
-            <button 
-              @click="updateStatus" 
-              class="btn-update-status"
-              :disabled="updatingStatus"
-            >
-              {{ updatingStatus ? 'Updating...' : 'Update Status' }}
-            </button>
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Update Status</h3>
+            <div class="flex gap-3">
+              <select 
+                v-model="updateStatusValue" 
+                class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="pending">Pending</option>
+                <option value="contacted">Contacted</option>
+                <option value="demo_scheduled">Demo Scheduled</option>
+                <option value="demo_completed">Demo Completed</option>
+                <option value="converted">Converted</option>
+                <option value="rejected">Rejected</option>
+              </select>
+              <button 
+                @click="updateStatus" 
+                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                :disabled="updatingStatus"
+              >
+                {{ updatingStatus ? 'Updating...' : 'Update Status' }}
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Convert Modal -->
-    <div v-if="convertModalRequest" class="modal-overlay" @click="closeConvertModal">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h2 class="text-2xl font-bold">Convert to Organization</h2>
-          <button @click="closeConvertModal" class="close-button">×</button>
+    <div v-if="convertModalRequest" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="closeConvertModal">
+      <div class="bg-white dark:bg-gray-800 rounded-xl max-w-lg w-full mx-4" @click.stop>
+        <div class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Convert to Organization</h2>
+          <button @click="closeConvertModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-3xl font-bold">×</button>
         </div>
         
-        <div class="modal-body">
-          <p class="mb-4">Convert <strong>{{ convertModalRequest.companyName }}</strong> to an active organization?</p>
+        <div class="p-6">
+          <p class="mb-6 text-gray-700 dark:text-gray-300">Convert <strong class="text-gray-900 dark:text-white">{{ convertModalRequest.companyName }}</strong> to an active organization?</p>
           
-          <div class="form-group">
-            <label class="form-label">Temporary Password *</label>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Temporary Password *</label>
             <input 
               v-model="convertPassword" 
               type="password" 
-              class="form-input"
+              class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               placeholder="Enter temporary password for owner"
               required
             />
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Subscription Tier</label>
-            <select v-model="convertTier" class="form-input">
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subscription Tier</label>
+            <select v-model="convertTier" class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
               <option value="trial">Trial (15 days)</option>
               <option value="starter">Starter</option>
               <option value="professional">Professional</option>
@@ -266,15 +328,15 @@
             </select>
           </div>
 
-          <div class="flex gap-3 mt-6">
+          <div class="flex gap-3">
             <button 
               @click="convertRequest" 
-              class="btn-convert-confirm"
+              class="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               :disabled="converting || !convertPassword"
             >
               {{ converting ? 'Converting...' : 'Convert' }}
             </button>
-            <button @click="closeConvertModal" class="btn-cancel">
+            <button @click="closeConvertModal" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors">
               Cancel
             </button>
           </div>
@@ -285,7 +347,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import apiClient from '../utils/apiClient';
 
 const demoRequests = ref([]);
@@ -293,6 +355,12 @@ const stats = ref(null);
 const loading = ref(true);
 const error = ref('');
 const filterStatus = ref('');
+const searchQuery = ref('');
+
+// Check if any filters are active
+const hasActiveFilters = computed(() => {
+  return searchQuery.value.trim() !== '' || filterStatus.value !== '';
+});
 
 const selectedRequest = ref(null);
 const updateStatusValue = ref('');
@@ -421,14 +489,14 @@ const convertRequest = async () => {
 
 const getStatusClass = (status) => {
   const classes = {
-    pending: 'status-badge status-pending',
-    contacted: 'status-badge status-contacted',
-    demo_scheduled: 'status-badge status-scheduled',
-    demo_completed: 'status-badge status-completed',
-    converted: 'status-badge status-converted',
-    rejected: 'status-badge status-rejected'
+    pending: 'inline-block px-3 py-1 text-sm font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 rounded-full',
+    contacted: 'inline-block px-3 py-1 text-sm font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded-full',
+    demo_scheduled: 'inline-block px-3 py-1 text-sm font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200 rounded-full',
+    demo_completed: 'inline-block px-3 py-1 text-sm font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded-full',
+    converted: 'inline-block px-3 py-1 text-sm font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded-full',
+    rejected: 'inline-block px-3 py-1 text-sm font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 rounded-full'
   };
-  return classes[status] || 'status-badge';
+  return classes[status] || 'inline-block px-3 py-1 text-sm font-medium bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-200 rounded-full';
 };
 
 const formatStatus = (status) => {
@@ -443,374 +511,25 @@ const formatDate = (dateString) => {
   });
 };
 
+// Search and filter methods
+let searchTimeout;
+const debouncedSearch = () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchDemoRequests();
+  }, 300);
+};
+
+const clearFilters = () => {
+  searchQuery.value = '';
+  filterStatus.value = '';
+  fetchDemoRequests();
+};
+
 onMounted(() => {
   fetchDemoRequests();
   fetchStats();
 });
 </script>
 
-<style scoped>
-.stat-card {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.dark .stat-card {
-  background: #1f2937;
-}
-
-.stat-label {
-  color: #6b7280;
-  font-size: 0.875rem;
-  margin-bottom: 0.5rem;
-}
-
-.dark .stat-label {
-  color: #9ca3af;
-}
-
-.stat-value {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #111827;
-}
-
-.dark .stat-value {
-  color: #f9fafb;
-}
-
-.filter-select {
-  padding: 0.5rem 1rem;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  background: white;
-}
-
-.dark .filter-select {
-  background: #374151;
-  border-color: #4b5563;
-  color: white;
-}
-
-.requests-table-container {
-  background: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.dark .requests-table-container {
-  background: #1f2937;
-}
-
-.requests-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.requests-table th {
-  background: #f9fafb;
-  padding: 1rem;
-  text-align: left;
-  font-weight: 600;
-  color: #374151;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.dark .requests-table th {
-  background: #111827;
-  color: #d1d5db;
-  border-bottom-color: #374151;
-}
-
-.requests-table td {
-  padding: 1rem;
-  border-bottom: 1px solid #e5e7eb;
-  color: #111827;
-}
-
-.dark .requests-table td {
-  border-bottom-color: #374151;
-  color: #f9fafb;
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.status-pending { background: #fef3c7; color: #92400e; }
-.status-contacted { background: #dbeafe; color: #1e40af; }
-.status-scheduled { background: #e0e7ff; color: #3730a3; }
-.status-completed { background: #d1fae5; color: #065f46; }
-.status-converted { background: #d1fae5; color: #065f46; }
-.status-rejected { background: #fee2e2; color: #991b1b; }
-
-.action-buttons {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.btn-view, .btn-convert {
-  padding: 0.25rem 0.5rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  background: #f3f4f6;
-}
-
-.btn-view:hover, .btn-convert:hover {
-  background: #e5e7eb;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 12px;
-  max-width: 600px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.dark .modal-content {
-  background: #1f2937;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.dark .modal-header {
-  border-bottom-color: #374151;
-}
-
-.close-button {
-  font-size: 2rem;
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: #6b7280;
-}
-
-.modal-body {
-  padding: 1.5rem;
-}
-
-.detail-section {
-  margin-bottom: 1.5rem;
-}
-
-.detail-section-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin-bottom: 0.75rem;
-  color: #111827;
-}
-
-.dark .detail-section-title {
-  color: #f9fafb;
-}
-
-.detail-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-}
-
-.detail-item {
-  display: flex;
-  flex-direction: column;
-}
-
-.detail-label {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin-bottom: 0.25rem;
-}
-
-.detail-value {
-  font-weight: 500;
-  color: #111827;
-}
-
-.dark .detail-value {
-  color: #f9fafb;
-}
-
-.detail-message {
-  padding: 1rem;
-  background: #f9fafb;
-  border-radius: 6px;
-  color: #374151;
-}
-
-.dark .detail-message {
-  background: #111827;
-  color: #d1d5db;
-}
-
-.status-select, .form-input {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  margin-bottom: 0.5rem;
-}
-
-.dark .status-select, .dark .form-input {
-  background: #374151;
-  border-color: #4b5563;
-  color: white;
-}
-
-.btn-update-status, .btn-convert-confirm {
-  padding: 0.5rem 1rem;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.btn-update-status:hover, .btn-convert-confirm:hover {
-  background: #2563eb;
-}
-
-.btn-update-status:disabled, .btn-convert-confirm:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-cancel {
-  padding: 0.5rem 1rem;
-  background: #6b7280;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.btn-cancel:hover {
-  background: #4b5563;
-}
-
-.form-group {
-  margin-bottom: 1rem;
-}
-
-.form-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #374151;
-}
-
-.dark .form-label {
-  color: #d1d5db;
-}
-
-.error-card {
-  padding: 1rem;
-  background: #fee2e2;
-  border: 1px solid #fca5a5;
-  border-radius: 6px;
-  color: #991b1b;
-}
-
-.dark .error-card {
-  background: #7f1d1d;
-  border-color: #991b1b;
-  color: #fca5a5;
-}
-
-/* CRM Integration Section */
-.crm-section {
-  background: #f0fdf4;
-  border: 2px solid #86efac;
-  border-radius: 8px;
-  padding: 1.5rem;
-}
-
-.crm-alert {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background: #dcfce7;
-  padding: 1rem;
-  border-radius: 6px;
-  margin-bottom: 1rem;
-  font-weight: 500;
-  color: #166534;
-}
-
-.crm-alert svg {
-  width: 24px;
-  height: 24px;
-  color: #22c55e;
-  flex-shrink: 0;
-}
-
-.badge {
-  display: inline-block;
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  margin-left: 0.5rem;
-}
-
-.badge-lead {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.crm-note {
-  margin-top: 1rem;
-  padding: 0.75rem;
-  background: #fefce8;
-  border-left: 4px solid #facc15;
-  border-radius: 4px;
-  font-size: 0.875rem;
-  color: #713f12;
-}
-
-.dark .crm-section {
-  background: #064e3b;
-  border-color: #059669;
-}
-
-.dark .crm-alert {
-  background: #065f46;
-  color: #d1fae5;
-}
-
-.dark .crm-note {
-  background: #422006;
-  border-color: #fbbf24;
-  color: #fef3c7;
-}
-</style>
 

@@ -67,7 +67,7 @@ usePermissionSync(2);
       <TabBar class="hidden md:block" />
       
       <!-- Content wrapper with padding -->
-      <div class="flex-1 p-4 lg:p-6 overflow-y-auto overflow-x-hidden md:mt-0">
+      <div class="flex-1 p-8 lg:p-12 overflow-y-auto overflow-x-hidden mt-16 md:mt-28 lg:mt-12">
         <!-- Keep-alive caches component instances to prevent remounting on tab switch -->
         <RouterView v-slot="{ Component }">
           <keep-alive :max="10">

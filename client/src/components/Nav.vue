@@ -148,15 +148,6 @@ const navigation = computed(() => {
     });
   }
   
-  // Projects - check permission
-  if (authStore.can('projects', 'view')) {
-    nav.push({ 
-      name: 'Projects', 
-      href: '/items', 
-      icon: FolderIcon,
-      current: route.path.startsWith('/items')
-    });
-  }
   
   // Admin-only links for Owners/Admins
   if (authStore.isOwner || authStore.userRole === 'admin') {
@@ -308,14 +299,47 @@ const logoSrc = computed(() => {
                 
                 <!-- User section at bottom -->
                 <div class="-mx-6 mt-auto">
-                  <div class="flex items-center gap-x-4 px-6 py-3">
-                    <img 
-                      class="size-8 rounded-full bg-gray-200 dark:bg-gray-800 outline -outline-offset-1 outline-gray-300 dark:outline-white/10" 
-                      :src="authStore.user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'" 
-                      alt="" 
-                    />
-                    <span class="text-sm/6 font-semibold text-gray-900 dark:text-white">{{ userName }}</span>
-                  </div>
+                  <Menu as="div" class="relative">
+                    <MenuButton class="flex items-center gap-x-4 px-6 py-3 w-full hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">
+                      <img 
+                        class="size-8 rounded-full bg-gray-200 dark:bg-gray-800 outline -outline-offset-1 outline-gray-300 dark:outline-white/10" 
+                        :src="authStore.user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'" 
+                        alt="" 
+                      />
+                      <span class="text-sm/6 font-semibold text-gray-900 dark:text-white">{{ userName }}</span>
+                    </MenuButton>
+                    
+                    <transition
+                      enter-active-class="transition ease-out duration-100"
+                      enter-from-class="transform opacity-0 scale-95"
+                      enter-to-class="transform opacity-100 scale-100"
+                      leave-active-class="transition ease-in duration-75"
+                      leave-from-class="transform opacity-100 scale-100"
+                      leave-to-class="transform opacity-0 scale-95"
+                    >
+                      <MenuItems
+                        class="absolute bottom-full mb-2 w-48 rounded-lg shadow-xl py-1 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 left-6"
+                      >
+                        <template v-for="(item, index) in userMenuItems" :key="index">
+                          <hr v-if="item.divider" class="my-1 border-gray-200 dark:border-gray-700" />
+                          <MenuItem v-slot="{ active }">
+                            <button
+                              @click="item.action()"
+                              :class="[
+                                'w-full text-left px-4 py-2 text-sm transition-colors duration-150',
+                                active ? 'bg-gray-100 dark:bg-gray-700' : '',
+                                item.isLogout
+                                  ? 'text-red-600 dark:text-red-400'
+                                  : 'text-gray-700 dark:text-gray-200'
+                              ]"
+                            >
+                              {{ item.name }}
+                            </button>
+                          </MenuItem>
+                        </template>
+                      </MenuItems>
+                    </transition>
+                  </Menu>
                 </div>
               </div>
             </DialogPanel>
@@ -557,7 +581,7 @@ const logoSrc = computed(() => {
     </div>
 
     <!-- Mobile top bar -->
-    <div class="fixed top-0 left-0 right-0 z-40 flex items-center gap-x-6 bg-white dark:bg-gray-900 px-4 py-4 after:pointer-events-none after:absolute after:inset-0 after:border-b after:border-gray-200 dark:after:border-white/10 after:bg-gray-50 dark:after:bg-black/10 sm:px-6 lg:hidden">
+    <div class="fixed top-0 left-0 right-0 z-40 flex items-center gap-x-6 bg-white dark:bg-gray-900 px-4 py-3 h-16 after:pointer-events-none after:absolute after:inset-0 after:border-b after:border-gray-200 dark:after:border-white/10 dark:after:bg-black/10 sm:px-6 lg:hidden">
       <button type="button" class="-m-2.5 p-2.5 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white lg:hidden" @click="sidebarOpen = true">
         <span class="sr-only">Open sidebar</span>
         <Bars3Icon class="size-6 text-gray-900 dark:text-gray-400" aria-hidden="true" />
@@ -567,11 +591,48 @@ const logoSrc = computed(() => {
         <button class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 dark:text-white">
           <BellIcon class="w-6 h-6" />
         </button>
-        <img 
-          class="size-8 rounded-full bg-gray-200 dark:bg-gray-800 outline -outline-offset-1 outline-gray-300 dark:outline-white/10" 
-          :src="authStore.user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'" 
-          alt="" 
-        />
+        
+        <!-- User Profile Dropdown -->
+        <Menu as="div" class="relative">
+          <MenuButton class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+            <img 
+              class="size-8 rounded-full bg-gray-200 dark:bg-gray-800 outline -outline-offset-1 outline-gray-300 dark:outline-white/10" 
+              :src="authStore.user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'" 
+              alt="" 
+            />
+          </MenuButton>
+          
+          <transition
+            enter-active-class="transition ease-out duration-100"
+            enter-from-class="transform opacity-0 scale-95"
+            enter-to-class="transform opacity-100 scale-100"
+            leave-active-class="transition ease-in duration-75"
+            leave-from-class="transform opacity-100 scale-100"
+            leave-to-class="transform opacity-0 scale-95"
+          >
+            <MenuItems
+              class="absolute right-0 top-full mt-2 w-48 rounded-lg shadow-xl py-1 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10"
+            >
+              <template v-for="(item, index) in userMenuItems" :key="index">
+                <hr v-if="item.divider" class="my-1 border-gray-200 dark:border-gray-700" />
+                <MenuItem v-slot="{ active }">
+                  <button
+                    @click="item.action()"
+                    :class="[
+                      'w-full text-left px-4 py-2 text-sm transition-colors duration-150',
+                      active ? 'bg-gray-100 dark:bg-gray-700' : '',
+                      item.isLogout
+                        ? 'text-red-600 dark:text-red-400'
+                        : 'text-gray-700 dark:text-gray-200'
+                    ]"
+                  >
+                    {{ item.name }}
+                  </button>
+                </MenuItem>
+              </template>
+            </MenuItems>
+          </transition>
+        </Menu>
       </div>
     </div>
   </div>

@@ -1,10 +1,10 @@
 <template>
-  <div class="page-container">
+  <div class="mx-auto">
     <!-- Header -->
-    <div class="page-header">
+    <div class="flex justify-between items-center mb-8">
       <div>
-        <h1 class="page-title">Organizations</h1>
-        <p class="page-subtitle">Manage all customer organizations</p>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Organizations</h1>
+        <p class="text-lg text-gray-600 dark:text-gray-400 mt-2">Manage all customer organizations</p>
       </div>
       <ModuleActions 
         module="organizations"
@@ -16,109 +16,123 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <div class="stat-card">
-        <div class="stat-icon bg-gradient-to-br from-brand-500 to-brand-600">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 flex items-center gap-3 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
           </svg>
         </div>
         <div>
-          <p class="stat-value">{{ statistics.totalOrganizations || 0 }}</p>
-          <p class="stat-label">Total Organizations</p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.totalOrganizations || 0 }}</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Organizations</p>
         </div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-icon bg-gradient-to-br from-success-500 to-success-600">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 flex items-center gap-3 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
         <div>
-          <p class="stat-value">{{ statistics.activeOrganizations || 0 }}</p>
-          <p class="stat-label">Active</p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.activeOrganizations || 0 }}</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active</p>
         </div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-icon bg-gradient-to-br from-warning-500 to-warning-600">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 flex items-center gap-3 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
         <div>
-          <p class="stat-value">{{ statistics.trialOrganizations || 0 }}</p>
-          <p class="stat-label">On Trial</p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.trialOrganizations || 0 }}</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">On Trial</p>
         </div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-icon bg-gradient-to-br from-purple-500 to-purple-600">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 flex items-center gap-3 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
         <div>
-          <p class="stat-value">{{ statistics.paidOrganizations || 0 }}</p>
-          <p class="stat-label">Paying Customers</p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.paidOrganizations || 0 }}</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Paying Customers</p>
         </div>
       </div>
     </div>
 
     <!-- Search and Filters -->
-    <div class="card mb-6">
-      <div class="card-body">
-        <!-- Search Bar -->
-        <div class="relative mb-4">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 text-gray-400">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
+    <div class="flex flex-col lg:flex-row gap-4 mb-6">
+      <div class="w-full lg:w-80">
+        <div class="relative">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
           <input 
             v-model="searchQuery" 
             type="text" 
-            placeholder="Search organizations by name or industry..."
+            placeholder="Search organizations..."
             @input="debouncedSearch"
-            class="input pl-10"
+            class="w-full pl-9 pr-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
           />
         </div>
+      </div>
 
-        <!-- Filters -->
-        <div class="flex flex-wrap gap-3">
-          <select v-model="filters.industry" @change="fetchOrganizations" class="input flex-1 min-w-[150px]">
-            <option value="">All Industries</option>
-            <option value="Technology">Technology</option>
-            <option value="Finance">Finance</option>
-            <option value="Healthcare">Healthcare</option>
-            <option value="Education">Education</option>
-            <option value="Retail">Retail</option>
-            <option value="Manufacturing">Manufacturing</option>
-            <option value="Other">Other</option>
-          </select>
+      <div class="flex flex-wrap gap-3 flex-1">
+        <select v-model="filters.industry" @change="fetchOrganizations" class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer text-sm">
+          <option value="">All Industries</option>
+          <option value="Technology">Technology</option>
+          <option value="Finance">Finance</option>
+          <option value="Healthcare">Healthcare</option>
+          <option value="Education">Education</option>
+          <option value="Retail">Retail</option>
+          <option value="Manufacturing">Manufacturing</option>
+          <option value="Other">Other</option>
+        </select>
 
-          <select v-model="filters.tier" @change="fetchOrganizations" class="input flex-1 min-w-[150px]">
-            <option value="">All Tiers</option>
-            <option value="trial">Trial</option>
-            <option value="starter">Starter</option>
-            <option value="professional">Professional</option>
-            <option value="enterprise">Enterprise</option>
-          </select>
+        <select v-model="filters.tier" @change="fetchOrganizations" class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer text-sm">
+          <option value="">All Tiers</option>
+          <option value="trial">Trial</option>
+          <option value="starter">Starter</option>
+          <option value="professional">Professional</option>
+          <option value="enterprise">Enterprise</option>
+        </select>
 
-          <select v-model="filters.status" @change="fetchOrganizations" class="input flex-1 min-w-[150px]">
-            <option value="">All Statuses</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
+        <select v-model="filters.status" @change="fetchOrganizations" class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer text-sm">
+          <option value="">All Statuses</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
 
-          <button @click="clearFilters" class="btn-secondary">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 mr-1">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-            Clear
-          </button>
-        </div>
+        <button 
+          @click="clearFilters" 
+          :disabled="!hasActiveFilters"
+          class="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors flex items-center gap-2 text-sm"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          Clear
+        </button>
+      </div>
+
+      <!-- Columns Button -->
+      <div class="flex items-center">
+        <button
+          @click="showColumnSettings = !showColumnSettings"
+          class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition-all"
+          title="Column Settings"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+          </svg>
+          <span>Columns</span>
+        </button>
       </div>
     </div>
 
@@ -133,7 +147,7 @@
       :show-controls="false"
       :selectable="true"
       :resizable="true"
-      :column-settings="true"
+      :column-settings="false"
       :server-side="true"
       table-id="organizations-table"
       :mass-actions="massActions"
@@ -151,7 +165,7 @@
       <!-- Custom Organization Cell -->
       <template #cell-name="{ row }">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-500 to-brand-600 text-white flex items-center justify-center font-semibold text-sm flex-shrink-0">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-cyan-600 text-white flex items-center justify-center font-semibold text-sm flex-shrink-0">
             {{ getInitials(row.name) }}
           </div>
           <span class="font-semibold text-gray-900 dark:text-white">{{ row.name }}</span>
@@ -209,10 +223,107 @@
       </template>
     </DataTable>
 
+    <!-- Column Settings Modal -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition ease-out duration-200"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition ease-in duration-150"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
+        <div
+          v-if="showColumnSettings"
+          class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          @click.self="showColumnSettings = false"
+        >
+          <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Column Settings</h3>
+              <button
+                @click="showColumnSettings = false"
+                class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="flex-1 overflow-y-auto p-6">
+              <div class="space-y-4">
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  Choose which columns to display in the table. You can drag to reorder them.
+                </p>
+                
+                <div class="space-y-3">
+                  <div 
+                    v-for="(column, index) in visibleColumns" 
+                    :key="column.key"
+                    :draggable="true"
+                    @dragstart="handleDragStart($event, index)"
+                    @dragover="handleDragOver"
+                    @dragenter="handleDragEnter"
+                    @dragleave="handleDragLeave"
+                    @drop="handleDrop($event, index)"
+                    @dragend="handleDragEnd"
+                    class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-move hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors drag-over:bg-blue-50 dark:drag-over:bg-blue-900/20"
+                  >
+                    <div class="flex items-center gap-3">
+                      <svg class="w-5 h-5 text-gray-400 cursor-move" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+                      </svg>
+                      <span class="text-sm font-medium text-gray-900 dark:text-white">{{ column.label }}</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        :checked="column.visible"
+                        @change="toggleColumnVisibility(column.key)"
+                        class="sr-only peer"
+                      >
+                      <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+              <button
+                @click="resetColumnSettings"
+                class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+              >
+                Reset to Default
+              </button>
+              <div class="flex items-center gap-3">
+                <button
+                  @click="showColumnSettings = false"
+                  class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  @click="applyColumnSettings"
+                  class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-800 rounded-lg transition-colors"
+                >
+                  Apply
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
     <!-- Organization Form Modal -->
     <div v-if="showFormModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" @click="closeFormModal">
-      <div class="card max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-slide-up" @click.stop>
-        <div class="card-header flex items-center justify-between sticky top-0 bg-white dark:bg-gray-800 z-10">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" @click.stop>
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
           <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
             {{ editingOrganization ? 'Edit Organization' : 'New Organization' }}
           </h2>
@@ -222,9 +333,9 @@
             </svg>
           </button>
         </div>
-        <div class="card-body">
+        <div class="p-6">
           <div class="text-center py-12">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-16 h-16 mx-auto mb-4 text-brand-500">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-16 h-16 mx-auto mb-4 text-cyan-500">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
             <p class="text-lg font-medium text-gray-900 dark:text-white mb-2">Organization Form</p>
@@ -237,7 +348,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useBulkActions } from '@/composables/useBulkActions';
 import { useTabs } from '@/composables/useTabs';
@@ -262,6 +373,17 @@ const loading = ref(false);
 const searchQuery = ref('');
 const showFormModal = ref(false);
 const editingOrganization = ref(null);
+const showColumnSettings = ref(false);
+
+// Column settings state
+const visibleColumns = ref([
+  { key: 'name', label: 'Organization', visible: true },
+  { key: 'industry', label: 'Industry', visible: true },
+  { key: 'subscription', label: 'Subscription', visible: true },
+  { key: 'isActive', label: 'Status', visible: true },
+  { key: 'contactCount', label: 'Contacts', visible: true },
+  { key: 'createdAt', label: 'Created', visible: true }
+]);
 
 // Mass Actions
 const filters = reactive({
@@ -287,15 +409,40 @@ const statistics = ref({
 const sortField = ref('createdAt');
 const sortOrder = ref('desc');
 
+// Check if any filters are active
+const hasActiveFilters = computed(() => {
+  return searchQuery.value.trim() !== '' || 
+         (filters?.industry || '') !== '' || 
+         (filters?.tier || '') !== '' || 
+         (filters?.status || '') !== '';
+});
+
 // Column definitions
-const columns = [
-  { key: 'name', label: 'Organization', sortable: true },
-  { key: 'industry', label: 'Industry', sortable: true },
-  { key: 'subscription', label: 'Subscription', sortable: true },
-  { key: 'isActive', label: 'Status', sortable: true },
-  { key: 'contactCount', label: 'Contacts', sortable: true },
-  { key: 'createdAt', label: 'Created', sortable: true }
-];
+const columns = computed(() => {
+  const allColumns = [
+    { key: 'name', label: 'Organization', sortable: true },
+    { key: 'industry', label: 'Industry', sortable: true },
+    { key: 'subscription', label: 'Subscription', sortable: true },
+    { key: 'isActive', label: 'Status', sortable: true },
+    { key: 'contactCount', label: 'Contacts', sortable: true },
+    { key: 'createdAt', label: 'Created', sortable: true }
+  ];
+  
+  // Filter and order columns based on visibleColumns settings
+  const orderedColumns = [];
+  
+  // Add columns in the order specified by visibleColumns
+  visibleColumns.value.forEach(visibleCol => {
+    if (visibleCol.visible) {
+      const column = allColumns.find(col => col.key === visibleCol.key);
+      if (column) {
+        orderedColumns.push(column);
+      }
+    }
+  });
+  
+  return orderedColumns;
+});
 
 // Event handlers
 const handleRowClick = (row, event) => {
@@ -385,7 +532,7 @@ const viewOrganization = (orgId, event = null) => {
   
   openTab(`/organizations/${orgId}`, {
     title,
-    icon: '🏢',
+    icon: 'building',
     params: { name: title },
     background: openInBackground
   });
@@ -496,6 +643,68 @@ const clearFilters = () => {
   filters.tier = '';
   filters.status = '';
   fetchOrganizations();
+};
+
+// Column settings functions
+const resetColumnSettings = () => {
+  // Reset to default column configuration
+  visibleColumns.value = visibleColumns.value.map(col => ({ ...col, visible: true }));
+};
+
+const applyColumnSettings = () => {
+  // Apply column settings
+  showColumnSettings.value = false;
+  console.log('Applied column settings:', visibleColumns.value);
+};
+
+const toggleColumnVisibility = (columnKey) => {
+  const column = visibleColumns.value.find(col => col.key === columnKey);
+  if (column) {
+    column.visible = !column.visible;
+  }
+};
+
+// Drag and drop functionality
+const dragStartIndex = ref(null);
+
+const handleDragStart = (event, index) => {
+  dragStartIndex.value = index;
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/html', event.target.outerHTML);
+  event.target.style.opacity = '0.5';
+};
+
+const handleDragOver = (event) => {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+};
+
+const handleDragEnter = (event) => {
+  event.preventDefault();
+  event.target.classList.add('drag-over');
+};
+
+const handleDragLeave = (event) => {
+  event.target.classList.remove('drag-over');
+};
+
+const handleDrop = (event, dropIndex) => {
+  event.preventDefault();
+  event.target.classList.remove('drag-over');
+  
+  if (dragStartIndex.value !== null && dragStartIndex.value !== dropIndex) {
+    // Reorder the columns
+    const draggedColumn = visibleColumns.value[dragStartIndex.value];
+    visibleColumns.value.splice(dragStartIndex.value, 1);
+    visibleColumns.value.splice(dropIndex, 0, draggedColumn);
+  }
+  
+  dragStartIndex.value = null;
+};
+
+const handleDragEnd = (event) => {
+  event.target.style.opacity = '1';
+  dragStartIndex.value = null;
 };
 
 const getInitials = (name) => {

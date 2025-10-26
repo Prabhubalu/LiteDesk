@@ -7,14 +7,14 @@ import { useTabs } from '@/composables/useTabs';
  * @param {string} path - The route path to navigate to
  * @param {Object} options - Tab options
  * @param {string} options.title - Tab title (required)
- * @param {string} options.icon - Tab icon emoji (optional, defaults based on path)
+ * @param {string} options.icon - Tab icon identifier (optional, defaults based on path)
  * @param {Object} options.params - Additional parameters (optional)
  * 
  * @example
  * // Open a contact detail
  * openRecordInTab(`/contacts/${contact._id}`, {
  *   title: contact.name,
- *   icon: '👤',
+ *   icon: 'users',
  *   params: { name: contact.name }
  * });
  * 
@@ -22,7 +22,7 @@ import { useTabs } from '@/composables/useTabs';
  * // Open an organization
  * openRecordInTab(`/organizations/${org._id}`, {
  *   title: org.name,
- *   icon: '🏢',
+ *   icon: 'building',
  *   params: { name: org.name }
  * });
  */
@@ -79,22 +79,22 @@ export const vTabLink = {
  * Get the appropriate icon for a module/path
  * 
  * @param {string} path - Route path
- * @returns {string} Emoji icon
+ * @returns {string} Icon identifier
  */
 export function getModuleIcon(path) {
   const icons = {
-    'contacts': '👥',
-    'organizations': '🏢',
-    'deals': '💼',
-    'tasks': '✅',
-    'calendar': '📅',
-    'imports': '⬇️',
-    'items': '📁',
-    'demo-requests': '📚',
-    'instances': '🖥️'
+    'contacts': 'users',
+    'organizations': 'building',
+    'deals': 'briefcase',
+    'tasks': 'check',
+    'calendar': 'calendar',
+    'imports': 'download',
+    'items': 'folder',
+    'demo-requests': 'book',
+    'instances': 'computer'
   };
   
   const module = path.split('/')[1];
-  return icons[module] || '📄';
+  return icons[module] || 'document';
 }
 

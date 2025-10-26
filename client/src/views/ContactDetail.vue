@@ -579,7 +579,7 @@ const viewOrganization = (organizationId) => {
   
   openTab(`/organizations/${organizationId}`, {
     title: orgName,
-    icon: '🏢',
+    icon: 'building',
     params: { name: orgName }
   });
 };
@@ -613,7 +613,7 @@ const openCreateDeal = () => {
 const viewDeal = (dealId) => {
   openTab(`/deals/${dealId}`, {
     title: 'Deal Detail',
-    icon: '💼'
+    icon: 'briefcase'
   });
 };
 
@@ -629,7 +629,7 @@ const openCreateTask = () => {
 const viewTask = (taskId) => {
   openTab(`/tasks/${taskId}`, {
     title: 'Task Detail',
-    icon: '✅'
+    icon: 'check'
   });
 };
 

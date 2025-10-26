@@ -159,6 +159,15 @@ router.beforeEach((to, from, next) => {
     }
   }
   
+  // Ensure dashboard tab exists when navigating to dashboard
+  if (to.name === 'dashboard' && authStore.isAuthenticated) {
+    // Import useTabs dynamically to avoid circular dependency
+    import('@/composables/useTabs.js').then(({ useTabs }) => {
+      const { initTabs } = useTabs()
+      initTabs()
+    })
+  }
+  
   console.log('Allowed: Normal navigation')
   next()
 })

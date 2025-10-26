@@ -1,5 +1,5 @@
 <template>
-  <div class="p-6 lg:p-8">
+  <div>
     <!-- Trial Banner -->
     <div v-if="showTrialBanner" :class="[
       'flex items-center justify-between p-4 px-6 mb-8 rounded-xl border',
@@ -46,19 +46,19 @@
         <p class="text-lg text-gray-600 dark:text-gray-400 mt-2">Here's what's happening with your business today.</p>
       </div>
       <div class="flex gap-3 mt-4 sm:mt-0">
-        <button @click="$router.push('/contacts?action=new')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2">
+        <!-- <button @click="$router.push('/contacts?action=new')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
           </svg>
           Add Contact
-        </button>
+        </button> -->
       </div>
     </div>
 
     <!-- Key Metrics -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-3">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
@@ -66,14 +66,14 @@
         <div>
           <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Contacts</p>
           <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ contactStats.total || 0 }}</p>
-          <p class="text-sm text-success-600 dark:text-success-400 font-medium" v-if="contactStats.newThisWeek > 0">
+          <p class="text-sm text-green-600 dark:text-green-400 font-medium" v-if="contactStats.newThisWeek > 0">
             +{{ contactStats.newThisWeek }} this week
           </p>
         </div>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center mb-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center mb-3">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
           </svg>
@@ -85,8 +85,8 @@
         </div>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center mb-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center mb-3">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
@@ -94,14 +94,14 @@
         <div>
           <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Customers</p>
           <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ contactStats.customers || 0 }}</p>
-          <p class="text-sm text-success-600 dark:text-success-400 font-medium" v-if="contactStats.newCustomers > 0">
+          <p class="text-sm text-green-600 dark:text-green-400 font-medium" v-if="contactStats.newCustomers > 0">
             +{{ contactStats.newCustomers }} new
           </p>
         </div>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-3">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
@@ -141,9 +141,9 @@
         <div v-else class="px-6 py-4">
           <div class="flex flex-col gap-3">
             <div v-for="contact in recentContacts" :key="contact._id" 
-              @click="$router.push(`/contacts/${contact._id}`)"
+              @click="viewContact(contact._id)"
               class="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors">
-              <div class="w-10 h-10 rounded-full bg-brand-500 text-white flex items-center justify-center font-semibold text-sm flex-shrink-0">
+              <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 text-white flex items-center justify-center font-semibold text-sm flex-shrink-0">
                 {{ getInitials(contact) }}
               </div>
               <div class="flex-1 min-w-0">
@@ -332,10 +332,12 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
 
 const router = useRouter();
 const authStore = useAuthStore();
+const { openTab } = useTabs();
 
 // State
 const loading = ref(true);
@@ -522,6 +524,20 @@ const exportContacts = async () => {
   } catch (error) {
     console.error('Error exporting contacts:', error);
   }
+};
+
+// Contact click handler to open in new tab
+const viewContact = (contactId) => {
+  const contact = recentContacts.value.find(c => c._id === contactId);
+  const title = contact 
+    ? `${contact.first_name} ${contact.last_name}` 
+    : 'Contact Detail';
+  
+  openTab(`/contacts/${contactId}`, {
+    title,
+    icon: 'users',
+    params: { name: title }
+  });
 };
 
 // Lifecycle
