@@ -58,11 +58,17 @@ echo ""
 echo -e "${BLUE}🗄️  Checking MongoDB setup...${NC}"
 
 # Read MONGO_URI from .env
+set +e  # Temporarily disable exit on error for sourcing .env
 source "$PROJECT_ROOT/server/.env" 2>/dev/null || true
+set -e  # Re-enable exit on error
 
 # Determine MongoDB type
-if [[ "$MONGO_URI" == *"localhost"* ]] || [[ "$MONGO_URI_LOCAL" == *"localhost"* ]]; then
+if [[ "$MONGO_URI" == *"localhost"* ]] || [[ "$MONGO_URI" == *"127.0.0.1"* ]] || [[ "$MONGO_URI_LOCAL" == *"localhost"* ]] || [[ "$MONGO_URI_LOCAL" == *"127.0.0.1"* ]]; then
     echo -e "${YELLOW}📊 MongoDB Mode: Local MongoDB${NC}"
+    USING_LOCAL_MONGO=true
+    MONGO_HOST="localhost:27017"
+elif [[ -z "$MONGO_URI" ]]; then
+    echo -e "${YELLOW}⚠️  MONGO_URI not set in .env, assuming local MongoDB${NC}"
     USING_LOCAL_MONGO=true
     MONGO_HOST="localhost:27017"
 else
@@ -101,12 +107,21 @@ if [ "$USING_LOCAL_MONGO" = true ]; then
     else
         echo -e "${YELLOW}⚠️  MongoDB not found locally${NC}"
         echo -e "${BLUE}ℹ️  Options:${NC}"
-        echo "   1. Install MongoDB: brew install mongodb-community"
-        echo "   2. Use MongoDB Atlas (update MONGO_URI in .env to use Atlas)"
+        echo "   1. Install MongoDB: brew install mongodb-community (macOS)"
+        echo "   2. Install MongoDB: sudo apt install mongodb (Ubuntu/Debian)"
+        echo "   3. Use MongoDB Atlas (update MONGO_URI in .env to use cloud version)"
         echo ""
-        read -p "Continue anyway? (y/N): " -n 1 -r
+        echo -e "${YELLOW}⚠️  Without MongoDB, the backend will fail to start${NC}"
+        echo ""
+        read -t 30 -p "Do you want to continue anyway? (y/N): " -n 1 -r || true
         echo
         if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            echo -e "${RED}❌ Exiting: MongoDB is required${NC}"
+            echo ""
+            echo "To fix this:"
+            echo "  • Install MongoDB locally, OR"
+            echo "  • Update server/.env to use MongoDB Atlas"
+            echo "  • See MONGO_URI_ATLAS in server/.env.example for Atlas setup"
             exit 1
         fi
     fi
