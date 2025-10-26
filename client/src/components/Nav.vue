@@ -1,57 +1,171 @@
 <script setup>
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useColorMode } from '@/composables/useColorMode';
-import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
-import { Bars3Icon, BellIcon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline' // Added MagnifyingGlassIcon
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
+import { 
+  Bars3Icon, 
+  BellIcon, 
+  XMarkIcon, 
+  MagnifyingGlassIcon,
+  HomeIcon,
+  UsersIcon,
+  BuildingOfficeIcon,
+  BriefcaseIcon,
+  CheckCircleIcon,
+  CalendarIcon,
+  ArrowDownTrayIcon,
+  FolderIcon,
+  RectangleStackIcon,
+  ServerIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon
+} from '@heroicons/vue/24/outline'
 
-// --- Data for the Navigation Array ---
+// Define props and emits
+const props = defineProps({
+  modelValue: {
+    type: Boolean,
+    default: false
+  }
+});
+
+const emit = defineEmits(['update:modelValue']);
+
+const route = useRoute();
+const isCollapsed = computed({
+  get: () => props.modelValue,
+  set: (value) => emit('update:modelValue', value)
+});
+
+const isMobileMenuOpen = ref(false);
+const isHovering = ref(false);
+
+// Computed to determine if sidebar should show expanded
+const shouldShowExpanded = computed(() => {
+  return !isCollapsed.value || isHovering.value;
+});
+
+const toggleSidebar = () => {
+  isCollapsed.value = !isCollapsed.value;
+};
+
+const toggleMobileMenu = () => {
+  isMobileMenuOpen.value = !isMobileMenuOpen.value;
+};
+
+const handleMouseEnter = () => {
+  if (isCollapsed.value) {
+    isHovering.value = true;
+  }
+};
+
+const handleMouseLeave = () => {
+  isHovering.value = false;
+};
+
+// Close mobile menu when route changes
+watch(() => route.path, () => {
+  isMobileMenuOpen.value = false;
+});
+
+// --- Data for the Navigation Array with Icons ---
 const navigation = computed(() => {
   const nav = [];
   
   // Dashboard - always visible
-  nav.push({ name: 'Dashboard', href: '/dashboard', current: true });
+  nav.push({ 
+    name: 'Dashboard', 
+    href: '/dashboard', 
+    icon: HomeIcon,
+    current: route.path === '/dashboard'
+  });
   
   // Contacts - check permission
   if (authStore.can('contacts', 'view')) {
-    nav.push({ name: 'Contacts', href: '/contacts', current: false });
+    nav.push({ 
+      name: 'Contacts', 
+      href: '/contacts', 
+      icon: UsersIcon,
+      current: route.path.startsWith('/contacts')
+    });
   }
   
   // Organizations - check permission
   if (authStore.can('organizations', 'view')) {
-    nav.push({ name: 'Organizations', href: '/organizations', current: false });
+    nav.push({ 
+      name: 'Organizations', 
+      href: '/organizations', 
+      icon: BuildingOfficeIcon,
+      current: route.path.startsWith('/organizations')
+    });
   }
   
   // Deals - check permission
   if (authStore.can('deals', 'view')) {
-    nav.push({ name: 'Deals', href: '/deals', current: false });
+    nav.push({ 
+      name: 'Deals', 
+      href: '/deals', 
+      icon: BriefcaseIcon,
+      current: route.path.startsWith('/deals')
+    });
   }
   
   // Tasks - check permission
   if (authStore.can('tasks', 'view')) {
-    nav.push({ name: 'Tasks', href: '/tasks', current: false });
+    nav.push({ 
+      name: 'Tasks', 
+      href: '/tasks', 
+      icon: CheckCircleIcon,
+      current: route.path.startsWith('/tasks')
+    });
   }
   
   // Calendar/Events - check permission
   if (authStore.can('events', 'view')) {
-    nav.push({ name: 'Calendar', href: '/calendar', current: false });
+    nav.push({ 
+      name: 'Calendar', 
+      href: '/calendar', 
+      icon: CalendarIcon,
+      current: route.path.startsWith('/calendar')
+    });
   }
   
   // Imports - check permission
   if (authStore.can('imports', 'view')) {
-    nav.push({ name: 'Imports', href: '/imports', current: false });
+    nav.push({ 
+      name: 'Imports', 
+      href: '/imports', 
+      icon: ArrowDownTrayIcon,
+      current: route.path.startsWith('/imports')
+    });
   }
   
   // Projects - check permission
   if (authStore.can('projects', 'view')) {
-    nav.push({ name: 'Projects', href: '/items', current: false });
+    nav.push({ 
+      name: 'Projects', 
+      href: '/items', 
+      icon: FolderIcon,
+      current: route.path.startsWith('/items')
+    });
   }
   
   // Admin-only links for Owners/Admins
   if (authStore.isOwner || authStore.userRole === 'admin') {
-    nav.push({ name: 'Demo Requests', href: '/demo-requests', current: false });
-    nav.push({ name: 'Instances', href: '/instances', current: false });
+    nav.push({ 
+      name: 'Demo Requests', 
+      href: '/demo-requests', 
+      icon: RectangleStackIcon,
+      current: route.path.startsWith('/demo-requests')
+    });
+    nav.push({ 
+      name: 'Instances', 
+      href: '/instances', 
+      icon: ServerIcon,
+      current: route.path.startsWith('/instances')
+    });
   }
   
   return nav;
@@ -102,128 +216,277 @@ const logoSrc = computed(() => {
 </script>
 
 <template>
-  <Disclosure as="nav" class="relative shadow-2xl transition-colors duration-300
-                             bg-[#6049E7] dark:bg-[#222222]" 
-               v-slot="{ open }">
-
-    <div class="mx-auto px-2 sm:px-6 lg:px-8">
-      <div class="relative flex h-12 items-center justify-between">
-        
-        <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
-          <DisclosureButton class="relative inline-flex items-center justify-center rounded-md p-2 text-white/80 hover:bg-white/10 focus:outline-2 focus:outline-offset-1 focus:outline-white">
-            <span class="absolute -inset-0.5" />
-            <span class="sr-only">Open main menu</span>
-            <Bars3Icon v-if="!open" class="block size-6" aria-hidden="true" />
-            <XMarkIcon v-else class="block size-6" aria-hidden="true" />
-          </DisclosureButton>
+  <!-- Sidebar Container -->
+  <div 
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
+    :class="[
+      'fixed left-0 top-0 h-screen transition-all duration-300 ease-in-out',
+      'bg-[#6049E7] dark:bg-[#1a1a1a]',
+      'flex flex-col',
+      // Desktop
+      'hidden lg:flex',
+      // Width based on expanded state (click or hover)
+      shouldShowExpanded ? 'lg:w-64' : 'lg:w-20',
+      // Z-index and shadow - higher when hovering for overlay effect
+      isHovering ? 'z-50 shadow-2xl' : 'z-40 shadow-lg',
+      // Mobile - show when menu is open
+      isMobileMenuOpen ? 'flex w-64' : ''
+    ]"
+  >
+    <!-- Logo Section -->
+    <div class="flex items-center justify-between p-4 border-b border-white/10 dark:border-gray-800 min-h-[4rem]">
+      <transition
+        enter-active-class="transition-all duration-300"
+        enter-from-class="opacity-0 w-0"
+        enter-to-class="opacity-100 w-auto"
+        leave-active-class="transition-all duration-300"
+        leave-from-class="opacity-100 w-auto"
+        leave-to-class="opacity-0 w-0"
+      >
+        <div v-if="shouldShowExpanded" class="flex items-center space-x-2 overflow-hidden">
+          <img 
+            class="h-8 w-auto transition-all duration-300" 
+            :src="logoSrc" 
+            alt="LiteDesk Logo" 
+          />
         </div>
-        
-        <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-          
-          <div class="flex shrink-0 items-center">
-            <img class="h-6 w-auto" 
-                  :src="logoSrc" 
-                  alt="Nurtura Logo" 
-             />
-             <!-- <svg class="h-8 w-auto text-white dark:text-[#5E50F8]" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79l4.59 4.59c.35.35.84.55 1.35.55s1.01-.2 1.36-.55l4.59-4.59c.13.58.21 1.17.21 1.79 0 4.08-3.05 7.44-7 7.93zM8.5 12c.83 0 1.5-.67 1.5-1.5S9.33 9 8.5 9 7 9.67 7 10.5s.67 1.5 1.5 1.5zm7 0c.83 0 1.5-.67 1.5-1.5S16.33 9 15.5 9 14 9.67 14 10.5s.67 1.5 1.5 1.5zm4.04-3.13l-1.95 1.95c-.35.35-.84.55-1.35.55s-1.01-.2-1.36-.55L12 8.5l-2.88 2.87c-.35.35-.84.55-1.36.55s-1.01-.2-1.36-.55L4.46 8.87C5.58 5.75 8.52 3.4 12 3.05v.02c3.48.35 6.42 2.7 7.54 5.82z"/>
-          </svg> -->
-
-          </div>
-          
-          <div class="hidden sm:ml-6 sm:block">
-            <div class="flex space-x-2 h-full">
-              <router-link 
-                  v-for="item in navigation" 
-                  :key="item.name" 
-                  :to="item.href" 
-                  :class="[
-                    item.current
-                      ? 'bg-[#523ED4] text-white dark:bg-[#353941] dark:text-white' // Active Tab
-                      : 'text-white/80 hover:bg-[#523ED4] hover:text-white dark:text-gray-300 dark:hover:bg-[#353941] dark:hover:text-white', // Inactive Tab
-                    'rounded-md px-3 py-2 text-sm font-medium flex items-center transition-colors duration-150'
-                  ]" 
-                  :aria-current="item.current ? 'page' : undefined"
-              >
-                {{ item.name }}
-              </router-link>
-            </div>
-          </div>
-        </div>
-        
-        <div class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-          
-          <div class="relative hidden lg:block mr-4">
-              <MagnifyingGlassIcon class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white dark:text-gray-400" aria-hidden="true" />
-              <input type="text" placeholder="Search"
-                  class="w-64 h-8 p-2 pl-10 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white transition 
-                         bg-[#7663F0] text-white placeholder-white border-none
-                         dark:bg-[#3F3F3F] dark:text-gray-200 dark:placeholder-gray-400 dark:border dark:border-gray-600"/>
-          </div>
-          
-          <button type="button" class="relative rounded-full p-1 text-white hover:text-white/80 dark:text-gray-400 dark:hover:text-white focus:outline-2 focus:outline-offset-2 focus:outline-white dark:focus:outline-brand-500 transition duration-150">
-            <span class="absolute -inset-1.5" />
-            <span class="sr-only">View notifications</span>
-            <BellIcon class="size-6" aria-hidden="true" />
-          </button>
-
-          <Menu as="div" class="relative ml-3">
-            <MenuButton class="relative flex rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white dark:focus-visible:outline-brand-500">
-              <span class="absolute -inset-1.5" />
-              <span class="sr-only">Open user menu</span>
-              <img class="size-8 rounded-full bg-gray-800 outline -outline-offset-1 outline-white/10 dark:outline-transparent" 
-                   :src="authStore.user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'" 
-                   alt="" />
-            </MenuButton>
-
-            <transition enter-active-class="transition ease-out duration-100" enter-from-class="transform opacity-0 scale-95" enter-to-class="transform opacity-100 scale-100" leave-active-class="transition ease-in duration-75" leave-from-class="transform opacity-100 scale-100" leave-to-class="transform opacity-0 scale-95">
-              <MenuItems 
-                  class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md shadow-lg outline outline-black/5 py-1 transition-colors duration-300
-                         bg-white dark:bg-[#191919] dark:outline-white/10">
-                
-                <template v-for="(item, index) in userMenuItems" :key="index">
-                    <hr v-if="item.divider" class="my-1 border-gray-200 dark:border-gray-950">
-                    
-                    <MenuItem v-slot="{ active }">
-                        <button @click="item.action()"
-                            :class="[
-                                active ? 'bg-gray-100 dark:bg-gray-600' : '',
-                                item.isLogout 
-                                  ? 'text-red-600 dark:text-red-400' 
-                                  : 'text-gray-700 dark:text-gray-200',
-                                'block w-full text-left px-4 py-2 text-sm transition duration-100'
-                            ]">
-                            {{ item.name }}
-                        </button>
-                    </MenuItem>
-                </template>
-              </MenuItems>
-            </transition>
-          </Menu>
-        </div>
-      </div>
+      </transition>
+      
+      <!-- Collapse/Expand Button -->
+      <button
+        @click="toggleSidebar"
+        class="p-2 rounded-lg hover:bg-white/10 dark:hover:bg-gray-800 text-white transition-all duration-300 flex-shrink-0"
+        :class="{ 'mx-auto': !shouldShowExpanded }"
+      >
+        <ChevronLeftIcon v-if="shouldShowExpanded" class="w-5 h-5 transition-transform duration-300" />
+        <ChevronRightIcon v-else class="w-5 h-5 transition-transform duration-300" />
+      </button>
     </div>
 
-    <DisclosurePanel class="sm:hidden transition-colors duration-300 bg-[#523ED4] dark:bg-[#353941]">
-      <div class="space-y-1 px-2 pt-2 pb-3">
-        <router-link 
-            v-for="item in navigation" 
-            :key="item.name" 
-            :to="item.href" 
-            as="a" 
-            :class="[
-                item.current 
-                    ? 'bg-[#523ED4] text-white dark:bg-[#20232A]' // Active
-                    : 'text-white/80 hover:bg-white/10 dark:text-gray-300 dark:hover:bg-gray-700', // Inactive
-                'block rounded-md px-3 py-2 text-base font-medium transition-colors duration-150'
-            ]" 
-            :aria-current="item.current ? 'page' : undefined"
+    <!-- Navigation Links -->
+    <nav class="flex-1 overflow-y-auto py-4 px-2">
+      <div class="space-y-1">
+        <router-link
+          v-for="item in navigation"
+          :key="item.name"
+          :to="item.href"
+          :class="[
+            'flex items-center rounded-lg transition-colors duration-200',
+            'hover:bg-white/10 dark:hover:bg-gray-800',
+            item.current
+              ? 'bg-white/20 dark:bg-gray-800 text-white font-semibold'
+              : 'text-white/80 dark:text-gray-300',
+            shouldShowExpanded ? 'px-3 py-2.5' : 'px-3 py-2.5'
+          ]"
+          :title="!shouldShowExpanded ? item.name : ''"
         >
-          {{ item.name }}
+          <!-- Icon container with fixed width to prevent shifting -->
+          <div :class="['flex items-center justify-center flex-shrink-0', shouldShowExpanded ? 'w-6' : 'w-full']">
+            <component 
+              :is="item.icon" 
+              class="w-6 h-6"
+            />
+          </div>
+          
+          <!-- Label with smooth transition -->
+          <transition
+            enter-active-class="transition-all duration-300 ease-out"
+            enter-from-class="opacity-0 max-w-0"
+            enter-to-class="opacity-100 max-w-xs"
+            leave-active-class="transition-all duration-300 ease-in"
+            leave-from-class="opacity-100 max-w-xs"
+            leave-to-class="opacity-0 max-w-0"
+          >
+            <span 
+              v-if="shouldShowExpanded" 
+              class="ml-3 text-sm font-medium whitespace-nowrap overflow-hidden"
+            >
+              {{ item.name }}
+            </span>
+          </transition>
         </router-link>
       </div>
-    </DisclosurePanel>
-  </Disclosure>
+    </nav>
+
+    <!-- User Section at Bottom -->
+    <div class="border-t border-white/10 dark:border-gray-800 p-4 space-y-3">
+      <!-- Search - Only show when expanded -->
+      <transition
+        enter-active-class="transition-all duration-300 ease-out"
+        enter-from-class="opacity-0 max-h-0"
+        enter-to-class="opacity-100 max-h-20"
+        leave-active-class="transition-all duration-300 ease-in"
+        leave-from-class="opacity-100 max-h-20"
+        leave-to-class="opacity-0 max-h-0"
+      >
+        <div v-if="shouldShowExpanded" class="overflow-hidden">
+          <div class="relative">
+            <MagnifyingGlassIcon class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/60" />
+            <input
+              type="text"
+              placeholder="Search..."
+              class="w-full pl-9 pr-3 py-2 text-sm rounded-lg 
+                     bg-white/10 dark:bg-gray-800
+                     text-white placeholder-white/60
+                     border border-white/20 dark:border-gray-700
+                     focus:outline-none focus:ring-2 focus:ring-white/40
+                     transition-all duration-200"
+            />
+          </div>
+        </div>
+      </transition>
+
+      <!-- Notifications - Always in same position, just changes appearance -->
+      <button
+        :class="[
+          'w-full rounded-lg hover:bg-white/10 dark:hover:bg-gray-800 text-white/80 transition-colors duration-200',
+          'flex items-center py-2.5 px-3'
+        ]"
+        :title="!shouldShowExpanded ? 'Notifications' : ''"
+      >
+        <!-- Icon container with fixed width -->
+        <div :class="['flex items-center justify-center flex-shrink-0', shouldShowExpanded ? 'w-6' : 'w-full']">
+          <BellIcon class="w-6 h-6" />
+        </div>
+        
+        <!-- Label -->
+        <transition
+          enter-active-class="transition-all duration-300 ease-out"
+          enter-from-class="opacity-0 max-w-0"
+          enter-to-class="opacity-100 max-w-xs"
+          leave-active-class="transition-all duration-300 ease-in"
+          leave-from-class="opacity-100 max-w-xs"
+          leave-to-class="opacity-0 max-w-0"
+        >
+          <span v-if="shouldShowExpanded" class="ml-3 text-sm whitespace-nowrap overflow-hidden">Notifications</span>
+        </transition>
+      </button>
+
+      <!-- User Menu - Always in same position -->
+      <Menu as="div" class="relative">
+        <MenuButton
+          :class="[
+            'w-full flex items-center rounded-lg py-2.5 px-3',
+            'hover:bg-white/10 dark:hover:bg-gray-800',
+            'text-white transition-colors duration-200'
+          ]"
+        >
+          <!-- Avatar container with fixed width -->
+          <div :class="['flex items-center justify-center flex-shrink-0', shouldShowExpanded ? 'w-8' : 'w-full']">
+            <img
+              class="w-8 h-8 rounded-full ring-2 ring-white/20"
+              :src="authStore.user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'"
+              alt="User avatar"
+            />
+          </div>
+          
+          <!-- User info -->
+          <transition
+            enter-active-class="transition-all duration-300 ease-out"
+            enter-from-class="opacity-0 max-w-0"
+            enter-to-class="opacity-100 max-w-xs"
+            leave-active-class="transition-all duration-300 ease-in"
+            leave-from-class="opacity-100 max-w-xs"
+            leave-to-class="opacity-0 max-w-0"
+          >
+            <div v-if="shouldShowExpanded" class="flex-1 ml-3 text-left overflow-hidden">
+              <p class="text-sm font-medium text-white truncate">{{ userName }}</p>
+              <p class="text-xs text-white/60 truncate">{{ authStore.userRole }}</p>
+            </div>
+          </transition>
+          
+          <!-- Menu icon -->
+          <transition
+            enter-active-class="transition-all duration-300 ease-out"
+            enter-from-class="opacity-0 max-w-0"
+            enter-to-class="opacity-100 max-w-xs"
+            leave-active-class="transition-all duration-300 ease-in"
+            leave-from-class="opacity-100 max-w-xs"
+            leave-to-class="opacity-0 max-w-0"
+          >
+            <Bars3Icon v-if="shouldShowExpanded" class="w-5 h-5 text-white/60 flex-shrink-0 ml-2" />
+          </transition>
+        </MenuButton>
+
+        <transition
+          enter-active-class="transition ease-out duration-100"
+          enter-from-class="transform opacity-0 scale-95"
+          enter-to-class="transform opacity-100 scale-100"
+          leave-active-class="transition ease-in duration-75"
+          leave-from-class="transform opacity-100 scale-100"
+          leave-to-class="transform opacity-0 scale-95"
+        >
+          <MenuItems
+            :class="[
+              'absolute bottom-full mb-2 w-48 rounded-lg shadow-xl py-1',
+              'bg-white dark:bg-[#191919]',
+              'ring-1 ring-black/5 dark:ring-white/10',
+              'left-0'
+            ]"
+          >
+            <template v-for="(item, index) in userMenuItems" :key="index">
+              <hr v-if="item.divider" class="my-1 border-gray-200 dark:border-gray-800" />
+              <MenuItem v-slot="{ active }">
+                <button
+                  @click="item.action()"
+                  :class="[
+                    'w-full text-left px-4 py-2 text-sm transition-colors duration-150',
+                    active ? 'bg-gray-100 dark:bg-gray-800' : '',
+                    item.isLogout
+                      ? 'text-red-600 dark:text-red-400'
+                      : 'text-gray-700 dark:text-gray-200'
+                  ]"
+                >
+                  {{ item.name }}
+                </button>
+              </MenuItem>
+            </template>
+          </MenuItems>
+        </transition>
+      </Menu>
+    </div>
+  </div>
+
+  <!-- Top Bar (for mobile) -->
+  <div class="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#6049E7] dark:bg-[#1a1a1a] shadow-lg z-30 flex items-center justify-between px-4">
+    <button
+      @click="toggleMobileMenu"
+      class="p-2 rounded-lg hover:bg-white/10 text-white"
+    >
+      <Bars3Icon v-if="!isMobileMenuOpen" class="w-6 h-6" />
+      <XMarkIcon v-else class="w-6 h-6" />
+    </button>
+    
+    <img class="h-8 w-auto" :src="logoSrc" alt="LiteDesk Logo" />
+    
+    <div class="flex items-center space-x-2">
+      <button class="p-2 rounded-full hover:bg-white/10 text-white">
+        <BellIcon class="w-6 h-6" />
+      </button>
+      <img
+        class="w-8 h-8 rounded-full ring-2 ring-white/20"
+        :src="authStore.user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'"
+        alt="User avatar"
+      />
+    </div>
+  </div>
+
+  <!-- Mobile Overlay -->
+  <transition
+    enter-active-class="transition-opacity duration-300"
+    enter-from-class="opacity-0"
+    enter-to-class="opacity-100"
+    leave-active-class="transition-opacity duration-300"
+    leave-from-class="opacity-100"
+    leave-to-class="opacity-0"
+  >
+    <div
+      v-if="isMobileMenuOpen"
+      @click="toggleMobileMenu"
+      class="lg:hidden fixed inset-0 bg-black/50 z-30"
+    ></div>
+  </transition>
 </template>
 
 

@@ -4,11 +4,21 @@ import { usePermissionSync } from '@/composables/usePermissionSync';
 import LandingPage from '@/views/LandingPage.vue'
 import Dashboard from '@/views/Dashboard.vue'
 import Nav from '@/components/Nav.vue';
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 const authStore = useAuthStore();
 // Check authentication status to conditionally show the navigation bar
 const isAuthenticated = computed(() => authStore.isAuthenticated);
+
+// Sidebar collapsed state - Load from localStorage, default to false
+const sidebarCollapsed = ref(
+  localStorage.getItem('litedesk-sidebar-collapsed') === 'true'
+);
+
+// Save sidebar state to localStorage whenever it changes
+watch(sidebarCollapsed, (newValue) => {
+  localStorage.setItem('litedesk-sidebar-collapsed', newValue.toString());
+});
 
 // Refresh permissions on app mount (page refresh)
 onMounted(async () => {
@@ -23,11 +33,32 @@ usePermissionSync(2);
 </script>
 
 <template>
-<Nav v-if="isAuthenticated" />
+  <!-- Layout with Sidebar -->
+  <div v-if="isAuthenticated" class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <!-- Sidebar Navigation - v-model binds collapsed state -->
+    <Nav v-model="sidebarCollapsed" />
+    
+    <!-- Main Content Area - Dynamic margin based on sidebar state -->
+    <main 
+      :class="[
+        'transition-all duration-300 min-h-screen',
+        sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'
+      ]"
+    >
+      <!-- Mobile top spacing -->
+      <div class="lg:hidden h-16"></div>
+      
+      <!-- Content wrapper with padding -->
+      <div class="p-4 lg:p-6">
+        <RouterView />
+      </div>
+    </main>
+  </div>
 
-  <main>
+  <!-- Landing Page (no sidebar) -->
+  <div v-else>
     <RouterView />
-  </main>
+  </div>
 </template>
 
 <style scoped>
