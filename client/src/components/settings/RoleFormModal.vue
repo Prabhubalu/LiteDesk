@@ -437,6 +437,18 @@ watch(() => props.isOpen, (newVal) => {
     fetchParentRoles();
     if (props.role) {
       // Edit mode
+      // Start from full module template, then overlay existing perms
+      const basePerms = initializePermissions();
+      const existingPerms = JSON.parse(JSON.stringify(props.role.permissions || {}));
+      // UI alias: if contacts exists but people missing, mirror it for display
+      if (existingPerms.contacts && !existingPerms.people) {
+        existingPerms.people = existingPerms.contacts;
+      }
+      // Merge per module and action
+      Object.keys(basePerms).forEach(m => {
+        basePerms[m] = { ...basePerms[m], ...(existingPerms[m] || {}) };
+      });
+
       form.value = {
         name: props.role.name || '',
         description: props.role.description || '',
@@ -446,7 +458,7 @@ watch(() => props.isOpen, (newVal) => {
         canViewAllData: props.role.canViewAllData || false,
         canManageTeam: props.role.canManageTeam || false,
         canExportData: props.role.canExportData || false,
-        permissions: JSON.parse(JSON.stringify(props.role.permissions || {}))
+        permissions: basePerms
       };
     } else {
       // Create mode

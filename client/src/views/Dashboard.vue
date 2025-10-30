@@ -120,7 +120,7 @@
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 lg:col-span-2">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Recent Contacts</h2>
-          <router-link to="/contacts" class="text-sm text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium transition-colors">
+          <router-link to="/people" class="text-sm text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium transition-colors">
             View All
           </router-link>
         </div>
@@ -135,7 +135,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
           <p class="text-gray-600 dark:text-gray-400 mb-4">No contacts yet</p>
-          <button @click="$router.push('/contacts')" class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg font-medium transition-colors">Add Your First Contact</button>
+          <button @click="$router.push('/people')" class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg font-medium transition-colors">Add Your First Person</button>
         </div>
 
         <div v-else class="px-6 py-4">
@@ -242,31 +242,31 @@
         
         <div class="px-6 py-4">
           <div class="grid grid-cols-2 gap-4">
-            <button @click="$router.push('/contacts?action=new')" class="flex flex-col items-center gap-3 p-6 bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-white dark:hover:bg-gray-700 hover:shadow-md transition-all cursor-pointer">
+          <button @click="$router.push('/people?action=new')" class="flex flex-col items-center gap-3 p-6 bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-white dark:hover:bg-gray-700 hover:shadow-md transition-all cursor-pointer">
               <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                 </svg>
               </div>
-              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Add Contact</span>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Add Person</span>
             </button>
 
-            <button @click="$router.push('/contacts?action=import')" class="flex flex-col items-center gap-3 p-6 bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-white dark:hover:bg-gray-700 hover:shadow-md transition-all cursor-pointer">
+            <button @click="$router.push('/people?action=import')" class="flex flex-col items-center gap-3 p-6 bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-white dark:hover:bg-gray-700 hover:shadow-md transition-all cursor-pointer">
               <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
               </div>
-              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Import Contacts</span>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Import People</span>
             </button>
 
-            <button @click="$router.push('/contacts')" class="flex flex-col items-center gap-3 p-6 bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-white dark:hover:bg-gray-700 hover:shadow-md transition-all cursor-pointer">
+            <button @click="$router.push('/people')" class="flex flex-col items-center gap-3 p-6 bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-white dark:hover:bg-gray-700 hover:shadow-md transition-all cursor-pointer">
               <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
-              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Search Contacts</span>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Search People</span>
             </button>
 
             <button @click="exportContacts" class="flex flex-col items-center gap-3 p-6 bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-white dark:hover:bg-gray-700 hover:shadow-md transition-all cursor-pointer">
@@ -437,7 +437,7 @@ const fetchDashboardData = async () => {
   
   try {
     // Fetch recent contacts
-    const contactsData = await apiClient('/contacts?limit=5&sortBy=createdAt&sortOrder=desc', {
+    const contactsData = await apiClient('/people?limit=5&sortBy=createdAt&sortOrder=desc', {
       method: 'GET'
     });
     
@@ -495,7 +495,7 @@ const fetchChartData = async () => {
 
 const exportContacts = async () => {
   try {
-    const data = await apiClient('/contacts?limit=10000', {
+    const data = await apiClient('/people?limit=10000', {
       method: 'GET'
     });
     
@@ -533,7 +533,7 @@ const viewContact = (contactId) => {
     ? `${contact.first_name} ${contact.last_name}` 
     : 'Contact Detail';
   
-  openTab(`/contacts/${contactId}`, {
+  openTab(`/people/${contactId}`, {
     title,
     icon: 'users',
     params: { name: title }

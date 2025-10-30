@@ -257,7 +257,7 @@ tags: [] → ["VIP", "Partner"]
 - **Full Documentation:** `CONTACT_UPDATE_FLOW.md`
 - **Frontend Form:** `client/src/components/contacts/ContactFormModal.vue`
 - **Backend Controller:** `server/controllers/contactController.js`
-- **Contact Model:** `server/models/Contact.js`
+- **People Model:** `server/models/People.js`
 
 ---
 

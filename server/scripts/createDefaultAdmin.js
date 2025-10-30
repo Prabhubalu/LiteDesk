@@ -16,14 +16,16 @@ const bcrypt = require('bcrypt');
 const User = require('../models/User');
 const Organization = require('../models/Organization');
 const Role = require('../models/Role');
+const OrganizationV2 = require('../models/OrganizationV2');
+const { orgV1ToV2Doc } = require('../utils/mappers/organizationMapper');
 
 // Support both MONGODB_URI and MONGO_URI
-const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI;
+const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI || process.env.MONGO_URI_LOCAL;
 
 // Default Admin Credentials (use environment variables or defaults)
 const DEFAULT_ADMIN = {
     email: process.env.DEFAULT_ADMIN_EMAIL || 'admin@litedesk.com',
-    password: process.env.DEFAULT_ADMIN_PASSWORD || 'Admin@123456',
+    password: process.env.DEFAULT_ADMIN_PASSWORD || 'Admin@123',
     username: 'Admin User',
     firstName: 'Admin',
     lastName: 'User',
@@ -97,6 +99,8 @@ async function createDefaultAdmin() {
         console.log(`   Name: ${organization.name}`);
         console.log(`   ID: ${organization._id}`);
 
+        // Defer OrganizationV2 creation until after admin user is created (to set assignedTo/accountManager)
+
         // Create Default Roles
         console.log('\n🔐 Creating default roles...');
         try {
@@ -135,6 +139,40 @@ async function createDefaultAdmin() {
         console.log(`   Name: ${adminUser.firstName} ${adminUser.lastName}`);
         console.log(`   Email: ${adminUser.email}`);
         console.log(`   Role: ${adminUser.role}`);
+
+        // Create/Update OrganizationV2 with new field definitions
+        try {
+            const v2Doc = {
+                legacyOrganizationId: organization._id,
+                name: organization.name,
+                types: ['Customer'],
+                industry: organization.industry,
+                website: process.env.DEFAULT_ORG_WEBSITE || '',
+                phone: process.env.DEFAULT_ORG_PHONE || '',
+                address: process.env.DEFAULT_ORG_ADDRESS || '',
+                // Customer-specific defaults for master org
+                customerStatus: 'Active',
+                customerTier: 'Gold',
+                slaLevel: process.env.DEFAULT_ORG_SLA || '',
+                paymentTerms: process.env.DEFAULT_ORG_PAYMENT_TERMS || '',
+                creditLimit: Number(process.env.DEFAULT_ORG_CREDIT_LIMIT || 0),
+                accountManager: adminUser._id,
+                annualRevenue: Number(process.env.DEFAULT_ORG_ANNUAL_REVENUE || 0),
+                numberOfEmployees: Number(process.env.DEFAULT_ORG_EMPLOYEES || 0),
+                // Ownership/links
+                assignedTo: adminUser._id,
+                primaryContact: null
+            };
+
+            await OrganizationV2.updateOne(
+                { legacyOrganizationId: organization._id },
+                { $set: v2Doc },
+                { upsert: true }
+            );
+            console.log('✅ OrganizationV2 created/updated for the organization (new field definitions)');
+        } catch (v2err) {
+            console.warn('⚠️  Failed to create OrganizationV2:', v2err.message);
+        }
 
         // Success summary
         console.log('\n' + '='.repeat(60));

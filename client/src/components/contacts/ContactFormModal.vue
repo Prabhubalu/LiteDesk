@@ -449,9 +449,9 @@ const handleSubmit = async () => {
     
     let data;
     if (isEditing.value) {
-      data = await apiClient.put(`/contacts/${props.contact._id}`, formData);
+      data = await apiClient.put(`/people/${props.contact._id}`, formData);
     } else {
-      data = await apiClient.post('/contacts', formData);
+      data = await apiClient.post('/people', formData);
     }
     
     console.log('Contact saved successfully:', data);

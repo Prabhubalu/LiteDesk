@@ -61,7 +61,7 @@ Owner > Admin > Manager > User > Viewer
 - Settings (manageUsers, manageBilling, manageIntegrations, customizeFields)
 - Reports (viewStandard, viewCustom, createCustom, exportReports)
 
-#### **Updated Contact Model** (`/server/models/Contact.js`)
+#### **Updated People Model** (`/server/models/People.js`)
 - Added `organizationId` for multi-tenancy
 - Compound indexes for organization + email (unique within org)
 - Additional indexes for common queries
@@ -371,7 +371,7 @@ All endpoints now use consistent format:
 
 ### Backend
 1. `/server/models/User.js` - Enhanced with RBAC
-2. `/server/models/Contact.js` - Added organizationId
+2. `/server/models/People.js` - Added organizationId
 3. `/server/controllers/authController.js` - Multi-tenant registration/login
 4. `/server/controllers/contactController.js` - Organization isolation
 5. `/server/routes/contactRoutes.js` - Added middleware

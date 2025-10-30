@@ -475,7 +475,7 @@ console.log('Contact saved successfully:', data);
 - **Frontend Detail:** `client/src/views/ContactDetail.vue`
 - **Backend Controller:** `server/controllers/contactController.js`
 - **Backend Routes:** `server/routes/contactRoutes.js`
-- **Database Model:** `server/models/Contact.js`
+- **Database Model:** `server/models/People.js`
 - **API Client:** `client/src/utils/apiClient.js`
 
 ---

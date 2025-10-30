@@ -1,4 +1,4 @@
-const Contact = require('../models/Contact');
+const People = require('../models/People');
 const Organization = require('../models/Organization');
 
 // @desc    Get all contacts across all organizations (Admin only)
@@ -27,10 +27,10 @@ const getAllContactsAcrossOrgs = async (req, res) => {
         
         // Filters
         if (req.query.lifecycle_stage) {
-            query.lifecycle_stage = req.query.lifecycle_stage;
+            query.type = req.query.lifecycle_stage === 'Lead' ? 'Lead' : 'Contact';
         }
         if (req.query.status) {
-            query.status = req.query.status;
+            query.contact_status = req.query.status;
         }
         
         // Sorting
@@ -39,36 +39,29 @@ const getAllContactsAcrossOrgs = async (req, res) => {
         const sort = { [sortBy]: sortOrder };
         
         // Execute query with organization populated
-        const contacts = await Contact.find(query)
+        const contacts = await People.find(query)
             .populate('organization', 'name industry email website')
-            .populate('owner_id', 'firstName lastName email')
+            .populate('assignedTo', 'firstName lastName email')
             .sort(sort)
             .limit(limit)
             .skip(skip);
         
-        const total = await Contact.countDocuments(query);
+        const total = await People.countDocuments(query);
         
         // Get statistics across all organizations
-        const stats = await Contact.aggregate([
+        const stats = await People.aggregate([
             {
                 $group: {
                     _id: null,
                     totalContacts: { $sum: 1 },
-                    leadContacts: {
-                        $sum: { $cond: [{ $eq: ['$lifecycle_stage', 'Lead'] }, 1, 0] }
-                    },
-                    customerContacts: {
-                        $sum: { $cond: [{ $eq: ['$lifecycle_stage', 'Customer'] }, 1, 0] }
-                    },
-                    qualifiedContacts: {
-                        $sum: { $cond: [{ $eq: ['$lifecycle_stage', 'Qualified'] }, 1, 0] }
-                    }
+                    leadContacts: { $sum: { $cond: [{ $eq: ['$type', 'Lead'] }, 1, 0] } },
+                    customerContacts: { $sum: { $cond: [{ $eq: ['$type', 'Contact'] }, 1, 0] } }
                 }
             }
         ]);
         
         // Get count by organization
-        const orgStats = await Contact.aggregate([
+        const orgStats = await People.aggregate([
             {
                 $group: {
                     _id: '$organizationId',
@@ -174,7 +167,7 @@ const getAllOrganizations = async (req, res) => {
         // Get contact counts for each organization
         const orgsWithCounts = await Promise.all(
             organizations.map(async (org) => {
-                const contactCount = await Contact.countDocuments({ organizationId: org._id });
+                const contactCount = await People.countDocuments({ organizationId: org._id });
                 return {
                     ...org,
                     contactCount
@@ -207,11 +200,9 @@ const getAllOrganizations = async (req, res) => {
 // @access  Private (Admin/Owner only)
 const getContactById = async (req, res) => {
     try {
-        const contact = await Contact.findById(req.params.id)
+        const contact = await People.findById(req.params.id)
             .populate('organization', 'name industry status email phone website')
-            .populate('owner_id', 'firstName lastName email')
-            .populate('account_id', 'name industry')
-            .populate('notes.created_by', 'firstName lastName');
+            .populate('assignedTo', 'firstName lastName email');
         
         if (!contact) {
             return res.status(404).json({
@@ -232,7 +223,7 @@ const getContactById = async (req, res) => {
         // Fetch related tasks
         const Task = require('../models/Task');
         const tasks = await Task.find({
-            'relatedTo.type': 'Contact',
+            'relatedTo.type': 'contact',
             'relatedTo.id': req.params.id
         })
         .select('title status priority dueDate')

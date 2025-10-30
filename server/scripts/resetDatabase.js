@@ -3,7 +3,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const Organization = require('../models/Organization');
-const Contact = require('../models/Contact');
+const People = require('../models/People');
 
 const MONGO_URI = process.env.MONGO_URI;
 
@@ -17,12 +17,12 @@ async function reset() {
         // Delete all
         const users = await User.deleteMany({});
         const orgs = await Organization.deleteMany({});
-        const contacts = await Contact.deleteMany({});
+        const contacts = await People.deleteMany({});
         
         console.log(`✅ Deleted:`);
         console.log(`   - ${users.deletedCount} users`);
         console.log(`   - ${orgs.deletedCount} organizations`);
-        console.log(`   - ${contacts.deletedCount} contacts`);
+        console.log(`   - ${contacts.deletedCount} people`);
         
         console.log('\n🎉 Database reset complete!');
         console.log('Ready for fresh registration.\n');

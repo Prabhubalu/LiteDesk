@@ -1,0 +1,77 @@
+const People = require('../models/People');
+
+// Create People
+exports.create = async (req, res) => {
+  try {
+    const body = {
+      ...req.body,
+      organizationId: req.user.organizationId,
+      createdBy: req.user._id
+    };
+    const record = await People.create(body);
+    res.status(201).json({ success: true, data: record });
+  } catch (error) {
+    res.status(400).json({ success: false, message: 'Error creating record', error: error.message });
+  }
+};
+
+// List People with org isolation and basic filters
+exports.list = async (req, res) => {
+  try {
+    const query = { organizationId: req.user.organizationId };
+    if (req.query.type) query.type = req.query.type;
+    if (req.query.email) query.email = req.query.email;
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const data = await People.find(query)
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .skip(skip);
+    const total = await People.countDocuments(query);
+    res.json({ success: true, data, meta: { page, limit, total } });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error fetching records', error: error.message });
+  }
+};
+
+// Get by ID
+exports.getById = async (req, res) => {
+  try {
+    const record = await People.findOne({ _id: req.params.id, organizationId: req.user.organizationId });
+    if (!record) return res.status(404).json({ success: false, message: 'Not found' });
+    res.json({ success: true, data: record });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error fetching record', error: error.message });
+  }
+};
+
+// Update
+exports.update = async (req, res) => {
+  try {
+    const updated = await People.findOneAndUpdate(
+      { _id: req.params.id, organizationId: req.user.organizationId },
+      req.body,
+      { new: true }
+    );
+    if (!updated) return res.status(404).json({ success: false, message: 'Not found' });
+    res.json({ success: true, data: updated });
+  } catch (error) {
+    res.status(400).json({ success: false, message: 'Error updating record', error: error.message });
+  }
+};
+
+// Delete
+exports.remove = async (req, res) => {
+  try {
+    const deleted = await People.findOneAndDelete({ _id: req.params.id, organizationId: req.user.organizationId });
+    if (!deleted) return res.status(404).json({ success: false, message: 'Not found' });
+    res.json({ success: true, data: deleted._id });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error deleting record', error: error.message });
+  }
+};
+
+

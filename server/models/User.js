@@ -63,6 +63,14 @@ const UserSchema = new mongoose.Schema({
             viewAll: { type: Boolean, default: true },
             exportData: { type: Boolean, default: false }
         },
+        organizations: {
+            view: { type: Boolean, default: true },
+            create: { type: Boolean, default: false },
+            edit: { type: Boolean, default: false },
+            delete: { type: Boolean, default: false },
+            viewAll: { type: Boolean, default: false },
+            exportData: { type: Boolean, default: false }
+        },
         projects: {
             view: { type: Boolean, default: true },
             create: { type: Boolean, default: true },
@@ -127,6 +135,7 @@ UserSchema.methods.setPermissionsByRole = function(role) {
         owner: {
             contacts: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
             deals: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
+            organizations: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
             projects: { view: true, create: true, edit: true, delete: true, viewAll: true },
             tasks: { view: true, create: true, edit: true, delete: true, viewAll: true },
             imports: { view: true, create: true, delete: true },
@@ -136,6 +145,7 @@ UserSchema.methods.setPermissionsByRole = function(role) {
         admin: {
             contacts: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
             deals: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
+            organizations: { view: true, create: true, edit: true, delete: false, viewAll: true, exportData: true },
             projects: { view: true, create: true, edit: true, delete: true, viewAll: true },
             tasks: { view: true, create: true, edit: true, delete: true, viewAll: true },
             imports: { view: true, create: true, delete: true },
@@ -145,6 +155,7 @@ UserSchema.methods.setPermissionsByRole = function(role) {
         manager: {
             contacts: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: false },
             deals: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: false },
+            organizations: { view: true, create: true, edit: true, delete: false, viewAll: false, exportData: false },
             projects: { view: true, create: true, edit: true, delete: false, viewAll: true },
             tasks: { view: true, create: true, edit: true, delete: true, viewAll: true },
             imports: { view: true, create: true, delete: false },
@@ -154,6 +165,7 @@ UserSchema.methods.setPermissionsByRole = function(role) {
         user: {
             contacts: { view: true, create: true, edit: true, delete: false, viewAll: false, exportData: false },
             deals: { view: true, create: true, edit: true, delete: false, viewAll: false, exportData: false },
+            organizations: { view: true, create: false, edit: false, delete: false, viewAll: false, exportData: false },
             projects: { view: true, create: true, edit: true, delete: false, viewAll: false },
             tasks: { view: true, create: true, edit: true, delete: true, viewAll: false },
             imports: { view: true, create: false, delete: false },
@@ -163,6 +175,7 @@ UserSchema.methods.setPermissionsByRole = function(role) {
         viewer: {
             contacts: { view: true, create: false, edit: false, delete: false, viewAll: false, exportData: false },
             deals: { view: true, create: false, edit: false, delete: false, viewAll: false, exportData: false },
+            organizations: { view: true, create: false, edit: false, delete: false, viewAll: false, exportData: false },
             projects: { view: true, create: false, edit: false, delete: false, viewAll: false },
             tasks: { view: true, create: false, edit: false, delete: false, viewAll: false },
             imports: { view: true, create: false, delete: false },

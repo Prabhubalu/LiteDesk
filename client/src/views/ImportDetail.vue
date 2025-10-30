@@ -524,7 +524,7 @@ const closeRecordsView = () => {
 
 const navigateToModule = () => {
   const moduleRoutes = {
-    contacts: '/contacts',
+    contacts: '/people',
     deals: '/deals',
     tasks: '/tasks',
     organizations: '/organizations'

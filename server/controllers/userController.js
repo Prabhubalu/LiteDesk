@@ -182,6 +182,14 @@ exports.inviteUser = async (req, res) => {
                 viewAll: roleDoc.permissions.contacts.viewAll || false,
                 exportData: roleDoc.permissions.contacts.export || false
             },
+            organizations: {
+                view: roleDoc.permissions.organizations?.read || false,
+                create: roleDoc.permissions.organizations?.create || false,
+                edit: roleDoc.permissions.organizations?.update || false,
+                delete: roleDoc.permissions.organizations?.delete || false,
+                viewAll: roleDoc.permissions.organizations?.viewAll || false,
+                exportData: roleDoc.permissions.organizations?.export || false
+            },
             deals: {
                 view: roleDoc.permissions.deals.read,
                 create: roleDoc.permissions.deals.create,
@@ -324,6 +332,14 @@ exports.updateUser = async (req, res) => {
                     viewAll: roleDoc.permissions.contacts.viewAll || false,
                     exportData: roleDoc.permissions.contacts.export || false
                 },
+                organizations: {
+                    view: roleDoc.permissions.organizations?.read || false,
+                    create: roleDoc.permissions.organizations?.create || false,
+                    edit: roleDoc.permissions.organizations?.update || false,
+                    delete: roleDoc.permissions.organizations?.delete || false,
+                    viewAll: roleDoc.permissions.organizations?.viewAll || false,
+                    exportData: roleDoc.permissions.organizations?.export || false
+                },
                 deals: {
                     view: roleDoc.permissions.deals.read,
                     create: roleDoc.permissions.deals.create,
@@ -376,7 +392,12 @@ exports.updateUser = async (req, res) => {
 
         // Allow custom permissions override (if provided)
         if (permissions !== undefined) {
-            user.permissions = { ...user.permissions, ...permissions };
+            const normalized = { ...permissions };
+            if (normalized.people) {
+                normalized.contacts = normalized.people;
+                delete normalized.people;
+            }
+            user.permissions = { ...user.permissions, ...normalized };
         }
 
         await user.save();
@@ -467,10 +488,9 @@ exports.getProfile = async (req, res) => {
             .populate('organizationId', 'name subscription limits enabledModules settings')
             .populate('roleId', 'name description color icon level permissions');
 
-        // If user has roleId, ensure permissions are synced from role
+        // If user has roleId, merge role permissions as baseline, overlay user's stored permissions (preserve overrides)
         if (user.roleId && user.roleId.permissions) {
-            // Map role permissions to user permissions structure
-            user.permissions = {
+            const rolePerms = {
                 contacts: {
                     view: user.roleId.permissions.contacts?.read || false,
                     create: user.roleId.permissions.contacts?.create || false,
@@ -534,6 +554,23 @@ exports.getProfile = async (req, res) => {
                     exportReports: user.roleId.permissions.reports?.export || false
                 }
             };
+            // Merge stored user.permissions over rolePerms
+            const merged = { ...rolePerms, ...(user.permissions || {}) };
+            // Ensure UI aliases and missing modules are present with safe defaults
+            if (merged.contacts && !merged.people) merged.people = merged.contacts;
+            const ensureModule = (key, template) => {
+                if (!merged[key]) merged[key] = { ...template };
+            };
+            ensureModule('contacts', { view: false, create: false, edit: false, delete: false, viewAll: false, exportData: false });
+            ensureModule('people', { view: false, create: false, edit: false, delete: false, viewAll: false, exportData: false });
+            ensureModule('organizations', { view: false, create: false, edit: false, delete: false, viewAll: false, exportData: false });
+            ensureModule('deals', { view: false, create: false, edit: false, delete: false, viewAll: false, exportData: false });
+            ensureModule('tasks', { view: false, create: false, edit: false, delete: false, viewAll: false });
+            ensureModule('events', { view: false, create: false, edit: false, delete: false, viewAll: false });
+            ensureModule('imports', { view: false, create: false, delete: false });
+            ensureModule('settings', { manageUsers: false, manageBilling: false, manageIntegrations: false, customizeFields: false });
+            ensureModule('reports', { viewStandard: false, viewCustom: false, createCustom: false, exportReports: false });
+            user.permissions = merged;
         }
 
         res.json({

@@ -14,7 +14,8 @@ export const useAuthStore = defineStore('auth', {
         hasPermission: (state) => {
             return (module, action) => {
                 if (state.user?.isOwner) return true;
-                return state.user?.permissions?.[module]?.[action] || false;
+                const normalized = module === 'people' ? 'contacts' : module;
+                return state.user?.permissions?.[normalized]?.[action] || false;
             };
         },
         isTrialActive: (state) => state.organization?.subscription?.status === 'trial',
@@ -98,7 +99,8 @@ export const useAuthStore = defineStore('auth', {
         // Check if user has a specific permission
         can(module, action) {
             if (this.user?.isOwner) return true;
-            return this.user?.permissions?.[module]?.[action] || false;
+            const normalized = module === 'people' ? 'contacts' : module;
+            return this.user?.permissions?.[normalized]?.[action] || false;
         },
         
         // Check if module is enabled for organization
@@ -109,7 +111,7 @@ export const useAuthStore = defineStore('auth', {
         // Refresh organization data
         async refreshOrganization() {
             try {
-                const response = await fetch('/api/organization', {
+                const response = await fetch('/api/v2/organization', {
                     headers: {
                         'Authorization': `Bearer ${this.user?.token}`,
                         'Content-Type': 'application/json'
@@ -145,10 +147,79 @@ export const useAuthStore = defineStore('auth', {
                 if (response.ok) {
                     const data = await response.json();
                     if (data.success && data.data) {
+                        // Normalize/derive permissions if missing from server
+                        const deriveFromRole = (rolePerms) => {
+                            if (!rolePerms) return null;
+                            const contacts = {
+                                view: !!rolePerms.contacts?.read,
+                                create: !!rolePerms.contacts?.create,
+                                edit: !!rolePerms.contacts?.update,
+                                delete: !!rolePerms.contacts?.delete,
+                                viewAll: !!rolePerms.contacts?.viewAll,
+                                exportData: !!rolePerms.contacts?.export,
+                            };
+                            const organizations = {
+                                view: !!rolePerms.organizations?.read,
+                                create: !!rolePerms.organizations?.create,
+                                edit: !!rolePerms.organizations?.update,
+                                delete: !!rolePerms.organizations?.delete,
+                                viewAll: !!rolePerms.organizations?.viewAll,
+                                exportData: !!rolePerms.organizations?.export,
+                            };
+                            const deals = {
+                                view: !!rolePerms.deals?.read,
+                                create: !!rolePerms.deals?.create,
+                                edit: !!rolePerms.deals?.update,
+                                delete: !!rolePerms.deals?.delete,
+                                viewAll: !!rolePerms.deals?.viewAll,
+                                exportData: !!rolePerms.deals?.export,
+                            };
+                            const tasks = {
+                                view: !!rolePerms.tasks?.read,
+                                create: !!rolePerms.tasks?.create,
+                                edit: !!rolePerms.tasks?.update,
+                                delete: !!rolePerms.tasks?.delete,
+                                viewAll: !!rolePerms.tasks?.viewAll,
+                            };
+                            const events = {
+                                view: !!rolePerms.events?.read,
+                                create: !!rolePerms.events?.create,
+                                edit: !!rolePerms.events?.update,
+                                delete: !!rolePerms.events?.delete,
+                                viewAll: !!rolePerms.events?.viewAll,
+                            };
+                            const imports = {
+                                view: !!(rolePerms.contacts?.import || rolePerms.deals?.import),
+                                create: !!(rolePerms.contacts?.import || rolePerms.deals?.import),
+                                delete: false,
+                            };
+                            const settings = {
+                                manageUsers: !!rolePerms.settings?.manageUsers,
+                                manageBilling: !!rolePerms.settings?.manageBilling,
+                                manageIntegrations: false,
+                                customizeFields: false,
+                            };
+                            const reports = {
+                                viewStandard: !!rolePerms.reports?.read,
+                                viewCustom: !!rolePerms.reports?.read,
+                                createCustom: !!rolePerms.reports?.create,
+                                exportReports: !!rolePerms.reports?.export,
+                            };
+                            const built = { contacts, organizations, deals, tasks, events, imports, settings, reports };
+                            built.people = built.contacts;
+                            return built;
+                        };
+
+                        const incoming = data.data;
+                        const ensuredPermissions = incoming.permissions || deriveFromRole(incoming.roleId?.permissions) || {};
+                        if (ensuredPermissions.contacts && !ensuredPermissions.people) {
+                            ensuredPermissions.people = ensuredPermissions.contacts;
+                        }
                         // Update user data while preserving token
                         const token = this.user.token;
                         this.user = {
-                            ...data.data,
+                            ...incoming,
+                            permissions: ensuredPermissions,
                             token: token
                         };
                         localStorage.setItem('user', JSON.stringify(this.user));
