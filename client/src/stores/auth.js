@@ -11,9 +11,14 @@ export const useAuthStore = defineStore('auth', {
         isAuthenticated: (state) => !!state.user,
         isOwner: (state) => state.user?.isOwner || false,
         userRole: (state) => state.user?.role || null,
+        isAdminLike: (state) => {
+            const role = state.user?.role || '';
+            return state.user?.isOwner || role.toLowerCase() === 'admin';
+        },
         hasPermission: (state) => {
             return (module, action) => {
-                if (state.user?.isOwner) return true;
+                const role = state.user?.role || '';
+                if (state.user?.isOwner || role.toLowerCase() === 'admin') return true;
                 const normalized = module === 'people' ? 'contacts' : module;
                 return state.user?.permissions?.[normalized]?.[action] || false;
             };
@@ -98,7 +103,8 @@ export const useAuthStore = defineStore('auth', {
         
         // Check if user has a specific permission
         can(module, action) {
-            if (this.user?.isOwner) return true;
+            const role = this.user?.role || '';
+            if (this.user?.isOwner || role.toLowerCase() === 'admin') return true;
             const normalized = module === 'people' ? 'contacts' : module;
             return this.user?.permissions?.[normalized]?.[action] || false;
         },

@@ -23,6 +23,11 @@ const checkPermission = (module, action) => {
 
             // Normalize module aliases (people -> contacts)
             const normalizedModule = module === 'people' ? 'contacts' : module;
+            
+            // Admins have full access to settings area (UI configuration, modules & fields, etc.)
+            if (normalizedModule === 'settings' && String(user.role || '').toLowerCase() === 'admin') {
+                return next();
+            }
             // Check if user has the specific permission
             const hasPermission = user.permissions?.[normalizedModule]?.[action];
             

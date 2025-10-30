@@ -2,9 +2,50 @@
     <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div class="mx-auto sm:px-6 lg:px-4 py-6 h-screen box-border flex flex-col overflow-hidden">
       <!-- Header -->
-      <div class="mb-6">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Manage your account and organization settings</p>
+      <div class="mb-6 flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
+          <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Manage your account and organization settings</p>
+        </div>
+        <!-- User Menu (mode + sign out) -->
+        <Menu as="div" class="relative">
+          <MenuButton class="flex items-center gap-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">
+            <img 
+              class="w-8 h-8 rounded-full ring-2 ring-white/10 dark:ring-white/10"
+              :src="authStore.user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'"
+              alt="User avatar"
+            />
+            <span class="hidden sm:block text-sm font-medium text-gray-900 dark:text-white">{{ authStore.user?.username || 'User' }}</span>
+          </MenuButton>
+          <transition
+            enter-active-class="transition ease-out duration-100"
+            enter-from-class="transform opacity-0 scale-95"
+            enter-to-class="transform opacity-100 scale-100"
+            leave-active-class="transition ease-in duration-75"
+            leave-from-class="transform opacity-100 scale-100"
+            leave-to-class="transform opacity-0 scale-95"
+          >
+            <MenuItems
+              class="absolute right-0 top-full mt-2 w-56 rounded-lg shadow-xl py-1 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10"
+            >
+              <template v-for="(item, index) in userMenuItems" :key="index">
+                <hr v-if="item.divider" class="my-1 border-gray-200 dark:border-gray-700" />
+                <MenuItem v-slot="{ active }">
+                  <button
+                    @click="item.action()"
+                    :class="[
+                      'w-full text-left px-4 py-2 text-sm transition-colors duration-150',
+                      active ? 'bg-gray-100 dark:bg-gray-700' : '',
+                      item.isLogout ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-200'
+                    ]"
+                  >
+                    {{ item.name }}
+                  </button>
+                </MenuItem>
+              </template>
+            </MenuItems>
+          </transition>
+        </Menu>
       </div>
 
       <!-- Vertical Tabs Layout with collapsible left rail -->
@@ -64,11 +105,14 @@
 import { ref, computed, h, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import { useColorMode } from '@/composables/useColorMode';
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import UserManagement from '@/components/settings/UserManagement.vue';
 import RolesPermissions from '@/components/settings/RolesPermissions.vue';
 import ModulesAndFields from '@/components/settings/ModulesAndFields.vue';
 
 const authStore = useAuthStore();
+const { colorMode, toggleColorMode } = useColorMode();
 
 const SETTINGS_TAB_KEY = 'litedesk-settings-active-tab';
 const route = useRoute();
@@ -167,6 +211,22 @@ const tabs = computed(() => {
 
   return allTabs;
 });
+// User dropdown actions
+const toggleColorModeFromMenu = () => {
+  const newMode = colorMode.value === 'light' ? 'dark' : 'light';
+  toggleColorMode(newMode);
+};
+
+const handleLogout = () => {
+  authStore.logout();
+  router.push('/');
+  authStore.error = null;
+};
+
+const userMenuItems = computed(() => [
+  { name: `Mode: ${colorMode.value === 'light' ? '🌙 Light' : '☀️ Dark'}`, action: toggleColorModeFromMenu, isModeToggle: true },
+  { name: 'Sign out', action: handleLogout, divider: true, isLogout: true },
+]);
 
 const currentTabComponent = computed(() => {
   const tab = tabs.value.find(t => t.id === activeTab.value);
