@@ -1,0 +1,66 @@
+{
+  "info": {
+    "name": "LiteDesk API v2",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth / Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": { "raw": "http://localhost:5000/api/auth/login", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "auth", "login"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@litedesk.com\",\n  \"password\": \"Admin@123\"\n}"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "People / List (direct)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": { "raw": "http://localhost:5000/api/people?page=1&limit=10", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "people"], "query": [ {"key":"page","value":"1"},{"key":"limit","value":"10"} ] }
+      },
+      "response": []
+    },
+    {
+      "name": "Organization / Get (v1 with v2 overlay)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": { "raw": "http://localhost:5000/api/organization", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "organization"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Organization / Update (writes V2)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": { "raw": "http://localhost:5000/api/organization", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "organization"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Acme Inc.\",\n  \"industry\": \"Technology\",\n  \"website\": \"https://acme.example\",\n  \"phone\": \"+1-555-0100\",\n  \"address\": \"1 Infinite Loop\"\n}"
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    { "key": "token", "value": "" }
+  ]
+}
+
+

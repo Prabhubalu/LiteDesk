@@ -1,5 +1,7 @@
 const Organization = require('../models/Organization');
+const OrganizationV2 = require('../models/OrganizationV2');
 const User = require('../models/User');
+const { orgV1ToV2Doc, orgV2ToV1View, orgUpdateReqToV2 } = require('../utils/mappers/organizationMapper');
 
 // --- Get organization details ---
 exports.getOrganization = async (req, res) => {
@@ -14,7 +16,19 @@ exports.getOrganization = async (req, res) => {
         }
 
         // Add trial info if on trial
-        const responseData = organization.toObject();
+        let responseData = organization.toObject();
+        // READ-THROUGH: Attach V2 details if available
+        if (process.env.FEATURE_READ_THROUGH_ORG === 'true') {
+            try {
+                const v2 = await OrganizationV2.findOne({ legacyOrganizationId: organization._id });
+                if (v2) {
+                    const { orgV2ToV1View } = require('../utils/mappers/organizationMapper');
+                    responseData = orgV2ToV1View(v2, responseData);
+                }
+            } catch (e) {
+                // noop
+            }
+        }
         if (organization.subscription.status === 'trial') {
             responseData.trialDaysRemaining = organization.getTrialDaysRemaining();
             responseData.isTrialExpired = organization.isTrialExpired();
@@ -35,8 +49,6 @@ exports.getOrganization = async (req, res) => {
 
 // --- Update organization settings ---
 exports.updateOrganization = async (req, res) => {
-    const { name, settings } = req.body;
-
     try {
         const organization = await Organization.findById(req.user.organizationId);
 
@@ -47,23 +59,29 @@ exports.updateOrganization = async (req, res) => {
             });
         }
 
-        // Update fields
-        if (name) organization.name = name;
-        
-        if (settings) {
-            organization.settings = {
-                ...organization.settings,
-                ...settings
-            };
+        if (process.env.FEATURE_ORG_USE_V2 === 'true') {
+            const v2Update = orgUpdateReqToV2(req.body);
+            const updatedV2 = await OrganizationV2.findOneAndUpdate(
+                { legacyOrganizationId: organization._id },
+                { $set: v2Update, $setOnInsert: { legacyOrganizationId: organization._id, name: organization.name } },
+                { upsert: true, new: true }
+            );
+            // Mirror minimal fields back to v1
+            if (req.body.name) organization.name = req.body.name;
+            if (req.body.industry) organization.industry = req.body.industry;
+            if (req.body.settings) organization.settings = { ...organization.settings, ...req.body.settings };
+            await organization.save();
+
+            return res.json({ success: true, data: orgV2ToV1View(updatedV2, organization.toObject()), message: 'Organization updated successfully' });
         }
 
+        // Default path: update v1
+        const { name, settings } = req.body;
+        if (name) organization.name = name;
+        if (settings) organization.settings = { ...organization.settings, ...settings };
         await organization.save();
 
-        res.json({
-            success: true,
-            data: organization,
-            message: 'Organization updated successfully'
-        });
+        res.json({ success: true, data: organization, message: 'Organization updated successfully' });
 
     } catch (error) {
         console.error('Update organization error:', error);

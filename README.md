@@ -139,6 +139,37 @@ See **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** for AWS/Kubernetes deployment
 - **[Developer Setup Guide](DEVELOPER_SETUP.md)** - Complete developer onboarding 📖
 - **[MongoDB Setup Guide](MONGODB_SETUP_GUIDE.md)** - MongoDB installation and configuration 🗄️
 
+### People and OrganizationV2 (New Models)
+
+The app uses People (replaces legacy Contact) and OrganizationV2 by default.
+
+- Server endpoints
+  - People: `/api/people`
+  - Organization v2: `/api/v2/organization`
+  - CSV aliases: people endpoints available under `/api/csv/*` alongside contacts (compat)
+
+- Feature flags (defaults in `server/server.js`; override via env):
+  - `FEATURE_CONTACTS_USE_PEOPLE=true`
+  - `FEATURE_READ_THROUGH_PEOPLE=true`
+  - `FEATURE_ORG_USE_V2=true`
+  - `FEATURE_READ_THROUGH_ORG=true`
+
+- Client
+  - Navigate People at `/people` (old `/contacts` redirects)
+  - Org refresh uses `/api/v2/organization`
+
+- Notes
+  - Permissions still use module key `contacts`; middleware aliases `people → contacts`.
+  - CSV import/export retains `contacts` naming; `/people` aliases added.
+
+Quick verify
+1) node server/scripts/createDefaultAdmin.js
+2) node server/scripts/seedPeopleAndOrgV2.js
+3) GET /api/people, POST /api/people
+4) GET /api/v2/organization, PUT /api/organization
+5) Frontend: open /people
+6) CSV: GET /api/csv/export/people
+
 ### Email Integration 📧
 - **[START HERE - Email Integration](START_HERE_EMAIL.md)** - Should you use AWS SES? ⚡
 - **[AWS SES Setup Guide](docs/AWS_SES_SETUP_GUIDE.md)** - Complete SES implementation walkthrough
@@ -250,7 +281,7 @@ litedesk/
 │   ├── models/                      # Mongoose models
 │   │   ├── User.js
 │   │   ├── Organization.js
-│   │   ├── Contact.js
+│   │   ├── People.js
 │   │   ├── DemoRequest.js
 │   │   └── InstanceRegistry.js      # Multi-instance registry
 │   ├── controllers/                 # Request handlers

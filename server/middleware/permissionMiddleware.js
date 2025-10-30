@@ -21,14 +21,16 @@ const checkPermission = (module, action) => {
                 return next();
             }
 
+            // Normalize module aliases (people -> contacts)
+            const normalizedModule = module === 'people' ? 'contacts' : module;
             // Check if user has the specific permission
-            const hasPermission = user.permissions?.[module]?.[action];
+            const hasPermission = user.permissions?.[normalizedModule]?.[action];
             
             if (!hasPermission) {
                 return res.status(403).json({ 
                     message: `You don't have permission to ${action} ${module}`,
                     code: 'INSUFFICIENT_PERMISSIONS',
-                    requiredPermission: { module, action }
+                    requiredPermission: { module: normalizedModule, action }
                 });
             }
 
@@ -116,7 +118,7 @@ const canManageBilling = () => {
  * For now, requires admin or owner role
  */
 const canManageRoles = () => {
-    return requireRole('admin');
+    return checkPermission('settings', 'manageRoles');
 };
 
 /**
@@ -132,8 +134,9 @@ const filterByOwnership = (module) => {
                 return res.status(401).json({ message: 'Authentication required' });
             }
 
+            const normalizedModule = module === 'people' ? 'contacts' : module;
             // Owner and users with viewAll can see everything
-            if (user.isOwner || user.permissions?.[module]?.viewAll) {
+            if (user.isOwner || user.permissions?.[normalizedModule]?.viewAll) {
                 req.viewAll = true;
                 return next();
             }

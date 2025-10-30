@@ -1,5 +1,5 @@
 const Deal = require('../models/Deal');
-const Contact = require('../models/Contact');
+const People = require('../models/People');
 
 // @desc    Create new deal
 // @route   POST /api/deals

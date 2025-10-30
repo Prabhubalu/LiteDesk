@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
+const deprecate = require('../middleware/deprecationMiddleware');
 const { organizationIsolation } = require('../middleware/organizationMiddleware');
 const { canManageBilling, requireOwner } = require('../middleware/permissionMiddleware');
 const {
@@ -15,6 +16,7 @@ const {
 // Apply auth and organization middleware to all routes
 router.use(protect);
 router.use(organizationIsolation);
+router.use(deprecate('/api/organization', '/api/v2/organization'));
 
 // --- Organization Routes ---
 router.get('/', getOrganization);

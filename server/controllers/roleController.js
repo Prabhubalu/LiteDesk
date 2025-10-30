@@ -1,14 +1,72 @@
 const Role = require('../models/Role');
 
+// Normalize incoming UI permissions into Role schema shape
+function normalizeRolePermissions(input) {
+    const src = { ...(input || {}) };
+    // Unify people -> contacts for storage; keep people for response later
+    if (src.people && !src.contacts) {
+        src.contacts = src.people;
+    }
+
+    const modules = ['contacts','organizations','deals','tasks','events','reports','users','settings'];
+    const out = {};
+    for (const mod of modules) {
+        const m = src[mod] || {};
+        // Map UI verbs to schema verbs
+        const read = m.read !== undefined ? m.read : (m.view || false);
+        const update = m.update !== undefined ? m.update : (m.edit || false);
+        const exp = m.export !== undefined ? m.export : (m.exportData || false);
+        const imp = m.import || false;
+        const create = !!m.create;
+        const del = m.delete || false;
+        const scope = m.scope; // trust UI value; schema validates enum
+
+        // Per-module custom fields
+        if (mod === 'reports') {
+            out[mod] = { create, read, update, delete: del, export: exp };
+            continue;
+        }
+        if (mod === 'users') {
+            out[mod] = { create, read, update, delete: del, manageRoles: !!m.manageRoles };
+            continue;
+        }
+        if (mod === 'settings') {
+            out[mod] = { view: !!m.view || !!m.read, edit: !!m.edit || !!m.update, manageRoles: !!m.manageRoles, manageBilling: !!m.manageBilling };
+            continue;
+        }
+
+        // Default module shape with import/export/scope where applicable
+        const base = { create, read, update, delete: del };
+        if (['contacts','organizations','deals','tasks'].includes(mod)) {
+            base.export = exp;
+            base.import = imp;
+            if (scope) base.scope = scope;
+        }
+        if (mod === 'events') {
+            if (scope) base.scope = scope;
+        }
+        out[mod] = base;
+    }
+
+    return out;
+}
+
 // Get all roles for organization
 exports.getRoles = async (req, res) => {
     try {
-        const roles = await Role.find({ 
+        let roles = await Role.find({ 
             organizationId: req.user.organizationId 
         })
         .populate('parentRole', 'name')
         .sort({ level: 1, name: 1 });
-
+        // Add UI alias: people -> contacts
+        roles = roles.map(r => {
+            const obj = r.toObject();
+            if (obj.permissions && obj.permissions.contacts && !obj.permissions.people) {
+                obj.permissions.people = obj.permissions.contacts;
+            }
+            return obj;
+        });
         res.json({
             success: true,
             data: roles,
@@ -46,7 +104,7 @@ exports.getRoleHierarchy = async (req, res) => {
 // Get single role
 exports.getRole = async (req, res) => {
     try {
-        const role = await Role.findOne({ 
+        let role = await Role.findOne({ 
             _id: req.params.id,
             organizationId: req.user.organizationId 
         }).populate('parentRole', 'name');
@@ -58,9 +116,13 @@ exports.getRole = async (req, res) => {
             });
         }
 
+        const roleObj = role.toObject();
+        if (roleObj.permissions && roleObj.permissions.contacts && !roleObj.permissions.people) {
+            roleObj.permissions.people = roleObj.permissions.contacts;
+        }
         res.json({
             success: true,
-            data: role
+            data: roleObj
         });
     } catch (error) {
         console.error('Get role error:', error);
@@ -108,13 +170,16 @@ exports.createRole = async (req, res) => {
             });
         }
 
+        // Normalize UI permissions to schema shape
+        const normalizedPermissions = normalizeRolePermissions(permissions);
+
         // Create new role
         const newRole = await Role.create({
             organizationId: req.user.organizationId,
             name: name.trim(),
             description,
             parentRole: parentRole || null,
-            permissions: permissions || {},
+            permissions: normalizedPermissions,
             color: color || '#6366f1',
             icon: icon || 'user',
             canViewAllData: canViewAllData || false,
@@ -156,13 +221,19 @@ exports.updateRole = async (req, res) => {
             });
         }
 
-        // Prevent modifying system roles' core properties
-        if (role.isSystemRole && (req.body.name || req.body.isSystemRole !== undefined)) {
-            return res.status(403).json({ 
-                success: false,
-                message: 'Cannot modify system role name or status',
-                code: 'CANNOT_MODIFY_SYSTEM_ROLE'
-            });
+        // For system roles: block ONLY if attempting to change the name; ignore isSystemRole field from payload
+        if (role.isSystemRole) {
+            const incomingName = typeof req.body.name === 'string' ? req.body.name.trim() : undefined;
+            if (incomingName && incomingName !== role.name) {
+                return res.status(403).json({ 
+                    success: false,
+                    message: 'Cannot modify system role name or status',
+                    code: 'CANNOT_MODIFY_SYSTEM_ROLE'
+                });
+            }
+            if (Object.prototype.hasOwnProperty.call(req.body, 'isSystemRole')) {
+                delete req.body.isSystemRole;
+            }
         }
 
         // Update fields
@@ -179,6 +250,11 @@ exports.updateRole = async (req, res) => {
 
         if (!role.isSystemRole) {
             allowedUpdates.push('name');
+        }
+
+        // Normalize incoming permissions to schema
+        if (req.body.permissions) {
+            req.body.permissions = normalizeRolePermissions(req.body.permissions);
         }
 
         allowedUpdates.forEach(field => {
@@ -283,9 +359,9 @@ exports.getPermissionModules = async (req, res) => {
     try {
         const modules = [
             {
-                key: 'contacts',
-                label: 'Contacts',
-                description: 'Manage customer contacts and leads',
+                key: 'people',
+                label: 'People',
+                description: 'Manage people (leads and contacts)',
                 actions: ['create', 'read', 'update', 'delete', 'export', 'import'],
                 hasScope: true
             },

@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="flex justify-between items-center mb-8">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Contacts</h1>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">People</h1>
         <p class="text-lg text-gray-600 dark:text-gray-400 mt-2">Manage your customer relationships</p>
       </div>
       <ModuleActions 
@@ -25,7 +25,7 @@
         </div>
         <div>
           <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.totalContacts || 0 }}</p>
-          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Contacts</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total People</p>
         </div>
       </div>
 
@@ -148,8 +148,8 @@
       :mass-actions="massActions"
       :show-controls="false"
       row-key="_id"
-      empty-title="No contacts yet"
-      empty-message="Start building your network by adding your first contact"
+      empty-title="No people yet"
+      empty-message="Start building your network by adding your first person"
       @row-click="handleRowClick"
       @edit="editContact"
       @delete="handleDelete"
@@ -363,7 +363,7 @@ const authStore = useAuthStore();
 const { openTab } = useTabs();
 
 // Use bulk actions composable with permissions
-const { bulkActions: massActions } = useBulkActions('contacts');
+const { bulkActions: massActions } = useBulkActions('people');
 
 // State
 const contacts = ref([]);
@@ -519,7 +519,7 @@ const sortOrder = ref('desc');
 // Methods
 const fetchContacts = async () => {
   loading.value = true;
-  console.log('🔍 Fetching contacts...');
+  console.log('🔍 Fetching people...');
   console.log('👤 Is Admin:', isAdmin.value);
   
   try {
@@ -537,7 +537,7 @@ const fetchContacts = async () => {
     // Admins/Owners see ALL contacts across organizations
     const endpoint = isAdmin.value
       ? `/admin/contacts/all?${params.toString()}`
-      : `/contacts?${params.toString()}`;
+      : `/people?${params.toString()}`;
 
     console.log('🌐 API Endpoint:', endpoint);
 
@@ -545,7 +545,7 @@ const fetchContacts = async () => {
       method: 'GET'
     });
 
-    console.log('📦 Contacts data:', data);
+    console.log('📦 People data:', data);
     
     if (data.success) {
       contacts.value = data.data;
@@ -574,7 +574,7 @@ const viewContact = (contactId, event = null) => {
   const contact = contacts.value.find(c => c._id === contactId);
   const title = contact 
     ? `${contact.first_name} ${contact.last_name}` 
-    : 'Contact Detail';
+    : 'Person Detail';
   
   // Check if user wants to open in background
   // Middle click (button 1) OR Cmd/Ctrl + click
@@ -584,7 +584,7 @@ const viewContact = (contactId, event = null) => {
     event.ctrlKey         // Ctrl on Windows/Linux
   );
   
-  openTab(`/contacts/${contactId}`, {
+  openTab(`/people/${contactId}`, {
     title,
     icon: 'users',
     params: { name: title },
@@ -621,7 +621,7 @@ const deleteContact = async (contactId) => {
   if (!confirm('Are you sure you want to delete this contact?')) return;
   
   try {
-    await apiClient(`/contacts/${contactId}`, {
+    await apiClient(`/people/${contactId}`, {
       method: 'DELETE'
     });
     fetchContacts();
@@ -636,9 +636,9 @@ const bulkDelete = async () => {
   if (!confirm(`Are you sure you want to delete ${selectedContacts.value.length} contact(s)?`)) return;
   
   try {
-    await apiClient.post('/contacts/bulk-delete', {
-      ids: selectedContacts.value
-    });
+    for (const id of selectedContacts.value) {
+      await apiClient(`/people/${id}`, { method: 'DELETE' });
+    }
     selectedContacts.value = [];
     fetchContacts();
   } catch (error) {

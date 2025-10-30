@@ -213,14 +213,14 @@ const getImportedRecords = async (req, res) => {
     
     // Fetch actual records based on module type
     let records = [];
-    const Contact = require('../models/Contact');
+    const People = require('../models/People');
     const Deal = require('../models/Deal');
     const Task = require('../models/Task');
     const Organization = require('../models/Organization');
     
     switch (importRecord.module) {
       case 'contacts':
-        records = await Contact.find({ _id: { $in: recordIds }, organizationId }).lean();
+        records = await People.find({ _id: { $in: recordIds }, organizationId }).lean();
         break;
       case 'deals':
         records = await Deal.find({ _id: { $in: recordIds}, organizationId }).lean();
