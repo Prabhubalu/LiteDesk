@@ -63,6 +63,7 @@ const metricsRoutes = require('./routes/metricsRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const peopleRoutes = require('./routes/peopleRoutes');
 const organizationV2Routes = require('./routes/organizationV2Routes');
+const moduleRoutes = require('./routes/moduleRoutes');
 
 // Route Linking
 app.use('/api/auth', authRoutes);
@@ -82,6 +83,7 @@ app.use('/health', healthRoutes); // Public health check endpoint
 // New versioned endpoints (non-breaking)
 app.use('/api/people', peopleRoutes);
 app.use('/api/v2/organization', organizationV2Routes);
+app.use('/api/modules', moduleRoutes);
 
 // 1. Database Connection
 console.log('🔄 Connecting to MongoDB...');

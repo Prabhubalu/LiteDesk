@@ -28,7 +28,7 @@ const routes = [
     path: '/settings',
     name: 'settings',
     component: () => import('@/views/Settings.vue'),
-    meta: { requiresAuth: true } // Settings accessible to all, tabs filtered by permission
+    meta: { requiresAuth: true, hideShell: true } // render without main nav/topbar
   },
   {
     path: '/demo-requests',
