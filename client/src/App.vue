@@ -8,10 +8,11 @@ import Dashboard from '@/views/Dashboard.vue'
 import Nav from '@/components/Nav.vue';
 import TabBar from '@/components/TabBar.vue';
 import { computed, onMounted, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 const authStore = useAuthStore();
 const router = useRouter();
+const route = useRoute();
 const { initTabs } = useTabs();
 
 // Initialize color mode
@@ -19,6 +20,7 @@ const { colorMode } = useColorMode();
 
 // Check authentication status to conditionally show the navigation bar
 const isAuthenticated = computed(() => authStore.isAuthenticated);
+const hideShell = computed(() => !!route.meta.hideShell);
 
 // Sidebar collapsed state - Load from localStorage, default to false
 const sidebarCollapsed = ref(
@@ -51,8 +53,17 @@ usePermissionSync(2);
 </script>
 
 <template>
-  <!-- Layout with Sidebar -->
-  <div v-if="isAuthenticated" class="min-h-screen bg-gray-50 dark:bg-gray-900 flex overflow-x-hidden">
+  <!-- Authenticated layout -->
+  <div v-if="isAuthenticated">
+    <!-- Shell-less pages (e.g., Settings) -->
+    <div v-if="hideShell" class="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div class="flex-1 overflow-y-hidden overflow-x-hidden">
+        <RouterView />
+      </div>
+    </div>
+
+    <!-- Default shell with Sidebar/Tabbar -->
+    <div v-else class="min-h-screen bg-gray-50 dark:bg-gray-900 flex overflow-x-hidden">
     <!-- Sidebar Navigation - v-model binds collapsed state -->
     <Nav v-model="sidebarCollapsed" />
     
@@ -76,6 +87,7 @@ usePermissionSync(2);
         </RouterView>
       </div>
     </main>
+    </div>
   </div>
 
   <!-- Landing Page (no sidebar) -->

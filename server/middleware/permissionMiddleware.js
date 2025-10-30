@@ -103,7 +103,20 @@ const requireOwner = () => {
  * Check if user can manage other users
  */
 const canManageUsers = () => {
-    return checkPermission('settings', 'manageUsers');
+    return async (req, res, next) => {
+        try {
+            const user = req.user;
+            if (!user) return res.status(401).json({ message: 'Authentication required' });
+            if (user.isOwner || String(user.role || '').toLowerCase() === 'admin') {
+                return next();
+            }
+            const mw = checkPermission('settings', 'manageUsers');
+            return mw(req, res, next);
+        } catch (e) {
+            console.error('canManageUsers error:', e);
+            return res.status(500).json({ message: 'Server error during permission verification' });
+        }
+    };
 };
 
 /**
