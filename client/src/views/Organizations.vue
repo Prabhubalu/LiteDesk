@@ -321,29 +321,12 @@
     </Teleport>
 
     <!-- Organization Form Modal -->
-    <div v-if="showFormModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" @click="closeFormModal">
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" @click.stop>
-        <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-            {{ editingOrganization ? 'Edit Organization' : 'New Organization' }}
-          </h2>
-          <button @click="closeFormModal" class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        <div class="p-6">
-          <div class="text-center py-12">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-16 h-16 mx-auto mb-4 text-cyan-500">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
-            <p class="text-lg font-medium text-gray-900 dark:text-white mb-2">Organization Form</p>
-            <p class="text-sm text-gray-600 dark:text-gray-400">Form functionality coming soon...</p>
-          </div>
-        </div>
-      </div>
-    </div>
+    <OrganizationFormModal
+      v-if="showFormModal"
+      :organization="editingOrganization"
+      @close="closeFormModal"
+      @saved="handleOrganizationSaved"
+    />
   </div>
 </template>
 
@@ -358,6 +341,7 @@ import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import DateCell from '@/components/common/table/DateCell.vue';
 import ModuleActions from '@/components/common/ModuleActions.vue';
 import RowActions from '@/components/common/RowActions.vue';
+import OrganizationFormModal from '@/components/organizations/OrganizationFormModal.vue';
 
 const router = useRouter();
 
@@ -374,16 +358,10 @@ const searchQuery = ref('');
 const showFormModal = ref(false);
 const editingOrganization = ref(null);
 const showColumnSettings = ref(false);
+const moduleDefinition = ref(null);
 
-// Column settings state
-const visibleColumns = ref([
-  { key: 'name', label: 'Organization', visible: true },
-  { key: 'industry', label: 'Industry', visible: true },
-  { key: 'subscription', label: 'Subscription', visible: true },
-  { key: 'isActive', label: 'Status', visible: true },
-  { key: 'contactCount', label: 'Contacts', visible: true },
-  { key: 'createdAt', label: 'Created', visible: true }
-]);
+// Column settings state - will be populated from module definition
+const visibleColumns = ref([]);
 
 // Mass Actions
 const filters = reactive({
@@ -417,26 +395,99 @@ const hasActiveFilters = computed(() => {
          (filters?.status || '') !== '';
 });
 
-// Column definitions
-const columns = computed(() => {
-  const allColumns = [
-    { key: 'name', label: 'Organization', sortable: true },
-    { key: 'industry', label: 'Industry', sortable: true },
-    { key: 'subscription', label: 'Subscription', sortable: true },
-    { key: 'isActive', label: 'Status', sortable: true },
-    { key: 'contactCount', label: 'Contacts', sortable: true },
-    { key: 'createdAt', label: 'Created', sortable: true }
+// Fetch module definition to build columns dynamically
+const fetchModuleDefinition = async () => {
+  try {
+    const response = await apiClient.get('/modules');
+    const modules = response.data || [];
+    const orgsModule = modules.find(m => m.key === 'organizations');
+    if (orgsModule) {
+      moduleDefinition.value = orgsModule;
+      initializeColumnsFromModule(orgsModule);
+    }
+  } catch (error) {
+    console.error('Error fetching module definition:', error);
+  }
+};
+
+// Initialize columns from module definition
+const initializeColumnsFromModule = (module) => {
+  if (!module || !module.fields) return;
+  
+  const fields = module.fields || [];
+  const systemFieldKeys = ['createdby', 'organizationid', 'createdat', 'updatedat', '_id', '__v'];
+  
+  // Special columns that should always be included
+  const specialColumns = [
+    { key: 'name', label: 'Organization', visible: true, sortable: true },
+    { key: 'contactCount', label: 'Contacts', visible: true, sortable: true },
+    { key: 'createdAt', label: 'Created', visible: true, sortable: true }
   ];
   
-  // Filter and order columns based on visibleColumns settings
-  const orderedColumns = [];
+  // Filter out system fields and build visible columns from module
+  const moduleColumns = fields
+    .filter(field => {
+      const key = field.key?.toLowerCase();
+      return key && !systemFieldKeys.includes(key) && field.visibility?.list !== false;
+    })
+    .map(field => ({
+      key: field.key,
+      label: field.label || field.key,
+      visible: true,
+      dataType: field.dataType,
+      sortable: !['Multi-Picklist', 'Text-Area', 'Rich Text', 'Formula', 'Rollup Summary'].includes(field.dataType)
+    }));
   
-  // Add columns in the order specified by visibleColumns
+  // Merge special columns with module columns
+  const initialColumns = [...specialColumns];
+  const existingKeys = new Set(specialColumns.map(c => c.key.toLowerCase()));
+  
+  moduleColumns.forEach(col => {
+    if (!existingKeys.has(col.key.toLowerCase())) {
+      initialColumns.push(col);
+      existingKeys.add(col.key.toLowerCase());
+    }
+  });
+  
+  visibleColumns.value = initialColumns;
+};
+
+// Column definitions (dynamically generated from module fields)
+const columns = computed(() => {
+  if (!moduleDefinition.value) {
+    // Fallback to basic columns while loading
+    return [
+      { key: 'name', label: 'Organization', sortable: true },
+      { key: 'contactCount', label: 'Contacts', sortable: true },
+      { key: 'createdAt', label: 'Created', sortable: true }
+    ];
+  }
+  
+  // Build columns from visibleColumns, respecting order
+  const orderedColumns = [];
   visibleColumns.value.forEach(visibleCol => {
     if (visibleCol.visible) {
-      const column = allColumns.find(col => col.key === visibleCol.key);
-      if (column) {
-        orderedColumns.push(column);
+      // Handle special columns
+      if (visibleCol.key === 'name' || visibleCol.key === 'contactCount' || visibleCol.key === 'createdAt') {
+        orderedColumns.push({
+          key: visibleCol.key,
+          label: visibleCol.label,
+          sortable: visibleCol.sortable !== false
+        });
+      } else {
+        // Regular module fields
+        const field = moduleDefinition.value.fields?.find(f => 
+          f.key?.toLowerCase() === visibleCol.key?.toLowerCase()
+        );
+        
+        if (field) {
+          orderedColumns.push({
+            key: field.key,
+            label: field.label || field.key,
+            sortable: visibleCol.sortable !== false && !['Multi-Picklist', 'Text-Area', 'Rich Text', 'Formula', 'Rollup Summary'].includes(field.dataType),
+            dataType: field.dataType
+          });
+        }
       }
     }
   });
@@ -551,6 +602,11 @@ const editOrganization = (org) => {
 const closeFormModal = () => {
   showFormModal.value = false;
   editingOrganization.value = null;
+};
+
+const handleOrganizationSaved = (savedOrganization) => {
+  closeFormModal();
+  fetchOrganizations(); // Refresh the list
 };
 
 const deleteOrganization = async (orgId) => {
@@ -721,7 +777,10 @@ const formatDate = (date) => {
 };
 
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
+  // Fetch module definition first to build columns dynamically
+  await fetchModuleDefinition();
+  
   // Load saved sort state from localStorage before fetching
   const savedSort = localStorage.getItem('datatable-organizations-table-sort');
   if (savedSort) {

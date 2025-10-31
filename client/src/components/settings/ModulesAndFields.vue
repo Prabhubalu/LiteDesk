@@ -199,8 +199,32 @@
                   No options defined. Click "Add Option" to add values.
                 </div>
                 <div v-else class="space-y-2">
-                  <div v-for="(option, optIdx) in currentField.options" :key="optIdx" class="flex items-center gap-2 p-2 bg-gray-50 dark:bg-white/5 rounded border border-gray-200 dark:border-white/10">
-                    <span class="flex-1 text-sm text-gray-900 dark:text-white">{{ option }}</span>
+                  <div v-for="(option, optIdx) in normalizedOptions" :key="optIdx" class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-white/5 rounded border border-gray-200 dark:border-white/10">
+                    <!-- Color Picker -->
+                    <div class="flex items-center gap-2">
+                      <input 
+                        v-if="!isSystemField(currentField)"
+                        type="color" 
+                        :value="getOptionColor(option)" 
+                        @input="updateOptionColor(optIdx, $event.target.value)"
+                        class="w-10 h-10 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
+                        title="Pick color"
+                      />
+                      <div 
+                        v-else
+                        class="w-10 h-10 rounded border border-gray-300 dark:border-gray-600 flex items-center justify-center"
+                        :style="{ backgroundColor: getOptionColor(option) }"
+                      ></div>
+                    </div>
+                    <!-- Option Value -->
+                    <span class="flex-1 text-sm text-gray-900 dark:text-white font-medium">{{ getOptionValue(option) }}</span>
+                    <!-- Color Preview Badge -->
+                    <div 
+                      class="px-3 py-1 rounded-full text-xs font-medium text-white"
+                      :style="{ backgroundColor: getOptionColor(option) }"
+                    >
+                      {{ getOptionValue(option) }}
+                    </div>
                     <button v-if="!isSystemField(currentField)" @click="removeOption(optIdx)" class="px-2 py-1 text-red-600 dark:text-red-400 text-xs hover:bg-red-50 dark:hover:bg-red-900/20 rounded">Remove</button>
                   </div>
                 </div>
@@ -211,9 +235,35 @@
                     <div class="p-4 border-b border-gray-200 dark:border-gray-700">
                       <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Add Option</h3>
                     </div>
-                    <div class="p-4">
-                      <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Option Value</label>
-                      <input v-model="newOptionValue" @keyup.enter="addOption" placeholder="Enter option value" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 mb-4" />
+                    <div class="p-4 space-y-4">
+                      <div>
+                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Option Value</label>
+                        <input v-model="newOptionValue" @keyup.enter="addOption" placeholder="Enter option value" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+                      </div>
+                      <div>
+                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Color</label>
+                        <div class="flex items-center gap-3">
+                          <input 
+                            type="color" 
+                            v-model="newOptionColor" 
+                            class="w-16 h-10 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
+                          />
+                          <input 
+                            type="text" 
+                            v-model="newOptionColor" 
+                            placeholder="#3B82F6" 
+                            class="flex-1 px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm font-mono"
+                            pattern="^#[0-9A-Fa-f]{6}$"
+                          />
+                          <!-- Preview -->
+                          <div 
+                            class="px-3 py-1 rounded-full text-xs font-medium text-white"
+                            :style="{ backgroundColor: newOptionColor }"
+                          >
+                            Preview
+                          </div>
+                        </div>
+                      </div>
                       <div class="flex justify-end gap-2">
                         <button @click="showAddOption = false" class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 rounded">Cancel</button>
                         <button @click="addOption" class="px-4 py-2 bg-brand-600 text-white rounded text-sm hover:bg-brand-700">Add</button>
@@ -855,6 +905,7 @@ const filteredFields = computed(() => {
 // Field type-specific settings
 const showAddOption = ref(false);
 const newOptionValue = ref('');
+const newOptionColor = ref('#3B82F6'); // Default blue color
 const numberSettings = ref({ min: null, max: null, decimalPlaces: 2, currencySymbol: '$' });
 const textSettings = ref({ maxLength: null, rows: 4 });
 const dateSettings = ref({ format: 'YYYY-MM-DD', timeFormat: '24h' });
@@ -956,16 +1007,72 @@ function loadFieldSettings() {
 }
 
 // Add picklist option
+// Normalize options - convert strings to objects for backward compatibility
+const normalizedOptions = computed(() => {
+  if (!currentField.value?.options || !Array.isArray(currentField.value.options)) return [];
+  return currentField.value.options.map(opt => {
+    if (typeof opt === 'string') {
+      return { value: opt, color: '#3B82F6' }; // Default blue for old string options
+    }
+    return opt; // Already an object
+  });
+});
+
+// Get option value (handles both string and object formats)
+function getOptionValue(option) {
+  if (typeof option === 'string') return option;
+  return option?.value || '';
+}
+
+// Get option color (with default)
+function getOptionColor(option) {
+  if (typeof option === 'string') return '#3B82F6'; // Default blue for old string options
+  return option?.color || '#3B82F6';
+}
+
+// Update option color
+function updateOptionColor(index, color) {
+  if (!currentField.value.options || !Array.isArray(currentField.value.options)) return;
+  
+  const option = currentField.value.options[index];
+  
+  // If it's a string, convert to object
+  if (typeof option === 'string') {
+    currentField.value.options[index] = { value: option, color: color };
+  } else {
+    // Update existing object
+    if (!currentField.value.options[index]) {
+      currentField.value.options[index] = { value: '', color: color };
+    } else {
+      currentField.value.options[index].color = color;
+    }
+  }
+}
+
 function addOption() {
   if (!newOptionValue.value.trim()) return;
   if (!currentField.value.options) {
     currentField.value.options = [];
   }
-  // Avoid duplicates
-  if (!currentField.value.options.includes(newOptionValue.value.trim())) {
-    currentField.value.options.push(newOptionValue.value.trim());
+  
+  const optionValue = newOptionValue.value.trim();
+  const optionColor = newOptionColor.value || '#3B82F6';
+  
+  // Check for duplicates (compare values, not colors)
+  const existingValues = currentField.value.options.map(opt => 
+    typeof opt === 'string' ? opt : opt.value
+  );
+  
+  if (!existingValues.includes(optionValue)) {
+    // Add as object with value and color
+    currentField.value.options.push({ 
+      value: optionValue, 
+      color: optionColor 
+    });
   }
+  
   newOptionValue.value = '';
+  newOptionColor.value = '#3B82F6'; // Reset to default
   showAddOption.value = false;
 }
 
@@ -1348,12 +1455,38 @@ const advancedOptionsBuffers = ref({});
 
 function syncOptionsBuffer() {
   const f = currentField.value;
-  optionsBuffer.value = Array.isArray(f?.options) ? f.options.join(', ') : '';
+  if (!f?.options || !Array.isArray(f.options)) {
+    optionsBuffer.value = '';
+    return;
+  }
+  // Convert options to comma-separated string (extract values if objects)
+  const values = f.options.map(opt => typeof opt === 'string' ? opt : opt.value || '');
+  optionsBuffer.value = values.join(', ');
 }
 
 watch(optionsBuffer, (v) => {
+  if (!currentField.value) return;
+  
   const arr = v.split(',').map(s => s.trim()).filter(Boolean);
-  if (currentField.value) currentField.value.options = arr;
+  
+  // If we have existing options as objects, preserve their colors when converting from buffer
+  if (Array.isArray(currentField.value.options) && currentField.value.options.length > 0) {
+    const existingOptions = currentField.value.options;
+    // Map to preserve colors if option exists
+    currentField.value.options = arr.map(value => {
+      const existing = existingOptions.find(opt => {
+        const existingValue = typeof opt === 'string' ? opt : opt.value;
+        return existingValue === value;
+      });
+      if (existing && typeof existing === 'object') {
+        return existing; // Keep existing object with color
+      }
+      return { value: value, color: '#3B82F6' }; // New option, default color
+    });
+  } else {
+    // New options, create as objects with default color
+    currentField.value.options = arr.map(value => ({ value: value, color: '#3B82F6' }));
+  }
 });
 
 const clearSelection = () => {

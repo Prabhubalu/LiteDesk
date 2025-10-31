@@ -13,7 +13,19 @@ const ModuleDefinitionSchema = new mongoose.Schema({
                 label: { type: String, required: true, trim: true },
                 dataType: { type: String, enum: ['Text','Text-Area','Rich Text','Integer','Decimal','Currency','Date','Date-Time','Picklist','Multi-Picklist','Checkbox','Radio Button','Email','Phone','URL','Auto-Number','Lookup (Relationship)','Formula','Rollup Summary'], required: true },
                 required: { type: Boolean, default: false },
-                options: { type: [String], default: [] },
+                // Options can be strings (backward compatibility) or objects with value and color
+                options: {
+                    type: [
+                        {
+                            type: new mongoose.Schema({
+                                value: { type: String, required: true, trim: true },
+                                color: { type: String, default: '#3B82F6', trim: true } // Default blue color
+                            }, { _id: false })
+                        },
+                        String // Support old format for backward compatibility
+                    ],
+                    default: []
+                },
                 defaultValue: { type: mongoose.Schema.Types.Mixed, default: null },
                 placeholder: { type: String, default: '' },
                 index: { type: Boolean, default: false },

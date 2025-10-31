@@ -5,7 +5,7 @@
         <!-- Header -->
         <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between z-10">
           <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-            {{ isEditing ? 'Edit Contact' : 'New Contact' }}
+            {{ isEditing ? 'Edit Organization' : 'New Organization' }}
           </h2>
           <button @click="$emit('close')" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -15,9 +15,9 @@
         </div>
 
         <!-- Dynamic Form -->
-        <form @submit.prevent="handleSubmit" class="p-6 space-y-6">
+        <form @submit.prevent="handleSubmit(form)" class="p-6 space-y-6">
           <DynamicForm
-            module-key="people"
+            module-key="organizations"
             :form-data="form"
             :errors="formErrors"
             @update:form-data="form = $event"
@@ -38,7 +38,7 @@
               :disabled="saving || !moduleDefinition" 
               class="px-6 py-2.5 rounded-lg bg-brand-600 dark:bg-brand-700 text-white font-medium hover:bg-brand-700 dark:hover:bg-brand-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {{ saving ? 'Saving...' : (isEditing ? 'Update Contact' : 'Create Contact') }}
+              {{ saving ? 'Saving...' : (isEditing ? 'Update Organization' : 'Create Organization') }}
             </button>
           </div>
         </form>
@@ -48,13 +48,12 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import apiClient from '@/utils/apiClient';
 import DynamicForm from '@/components/common/DynamicForm.vue';
-import { useAuthStore } from '@/stores/auth';
 
 const props = defineProps({
-  contact: {
+  organization: {
     type: Object,
     default: null
   }
@@ -62,8 +61,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'saved']);
 
-const authStore = useAuthStore();
-const isEditing = computed(() => !!props.contact);
+const isEditing = computed(() => !!props.organization);
 const saving = ref(false);
 const moduleDefinition = ref(null);
 const form = ref({});
@@ -74,15 +72,13 @@ const initializeForm = (module) => {
   const initialForm = {};
   const fields = module.fields || [];
   
-  console.log('🔵 Initializing form with', fields.length, 'fields');
-  
   // Set defaults from field definitions
   for (const field of fields) {
     if (field.defaultValue !== null && field.defaultValue !== undefined) {
       initialForm[field.key] = field.defaultValue;
     } else {
       // Set empty defaults based on type
-      if (field.dataType === 'Multi-Picklist' || field.key === 'tags') {
+      if (field.dataType === 'Multi-Picklist') {
         initialForm[field.key] = [];
       } else if (field.dataType === 'Checkbox') {
         initialForm[field.key] = false;
@@ -92,55 +88,45 @@ const initializeForm = (module) => {
     }
   }
   
-  console.log('📋 Initial form object:', {
-    keys: Object.keys(initialForm),
-    sample: Object.fromEntries(Object.entries(initialForm).slice(0, 5))
-  });
-  
-  // If editing, merge with existing contact data
-  if (props.contact) {
-    const contactData = { ...props.contact };
+  // If editing, merge with existing organization data
+  if (props.organization) {
+    const orgData = { ...props.organization };
     // Handle populated relationships
-    if (contactData.organization && typeof contactData.organization === 'object') {
-      contactData.organization = contactData.organization._id || contactData.organization;
+    if (orgData.assignedTo && typeof orgData.assignedTo === 'object') {
+      orgData.assignedTo = orgData.assignedTo._id || orgData.assignedTo;
     }
-    if (contactData.assignedTo && typeof contactData.assignedTo === 'object') {
-      contactData.assignedTo = contactData.assignedTo._id || contactData.assignedTo;
+    if (orgData.accountManager && typeof orgData.accountManager === 'object') {
+      orgData.accountManager = orgData.accountManager._id || orgData.accountManager;
     }
-    if (contactData.createdBy && typeof contactData.createdBy === 'object') {
-      contactData.createdBy = contactData.createdBy._id || contactData.createdBy;
+    if (orgData.primaryContact && typeof orgData.primaryContact === 'object') {
+      orgData.primaryContact = orgData.primaryContact._id || orgData.primaryContact;
+    }
+    if (orgData.logisticsPartner && typeof orgData.logisticsPartner === 'object') {
+      orgData.logisticsPartner = orgData.logisticsPartner._id || orgData.logisticsPartner;
+    }
+    if (orgData.createdBy && typeof orgData.createdBy === 'object') {
+      orgData.createdBy = orgData.createdBy._id || orgData.createdBy;
     }
     
     // Ensure Multi-Picklist fields are arrays
+    const fields = module.fields || [];
     for (const field of fields) {
       if (field.dataType === 'Multi-Picklist') {
-        const value = contactData[field.key];
+        const value = orgData[field.key];
         if (value !== null && value !== undefined && !Array.isArray(value)) {
-          contactData[field.key] = [value].filter(Boolean);
+          // Convert to array if it's not already
+          orgData[field.key] = [value].filter(Boolean);
         } else if (!value) {
-          contactData[field.key] = [];
+          // Set empty array if missing
+          orgData[field.key] = [];
         }
       }
     }
     
-    // Merge contact data with form defaults
-    form.value = { ...initialForm, ...contactData };
-    console.log('📝 Form initialized (editing):', {
-      keys: Object.keys(form.value),
-      contactKeys: Object.keys(contactData)
-    });
+    // Merge organization data with form defaults
+    form.value = { ...initialForm, ...orgData };
   } else {
-    // For new contacts, set createdBy to current user
-    const newFormData = { ...initialForm };
-    if (authStore.user?._id) {
-      newFormData.createdBy = authStore.user._id;
-      console.log('👤 Set createdBy to current user:', authStore.user._id);
-    }
-    form.value = newFormData;
-    console.log('📝 Form initialized (new):', {
-      keys: Object.keys(form.value),
-      createdBy: form.value.createdBy
-    });
+    form.value = initialForm;
   }
 };
 
@@ -151,58 +137,34 @@ const onModuleReady = (module) => {
   }
 };
 
-const handleSubmit = async (event) => {
-  event?.preventDefault?.();
+const handleSubmit = async (formData) => {
   saving.value = true;
   formErrors.value = {};
   
-  console.log('🔵 ContactFormModal handleSubmit called:', {
-    formValue: form.value,
-    formKeys: Object.keys(form.value || {}),
-    moduleDefinition: !!moduleDefinition.value
-  });
-  
   try {
-    // Use current form value, not passed parameter
-    const currentFormData = { ...form.value };
-    
-    console.log('📝 Current form data:', {
-      keys: Object.keys(currentFormData),
-      data: currentFormData
-    });
-    
-    // Validate required fields (exclude system fields that are auto-set by backend)
-    const systemFieldKeys = ['organizationid', 'createdby', 'createdat', 'updatedat', '_id', '__v'];
-    const requiredFields = (moduleDefinition.value?.fields || [])
-      .filter(f => f.required && !systemFieldKeys.includes(f.key?.toLowerCase()));
-    
-    console.log('✅ Required fields (excluding system fields):', requiredFields.map(f => ({ key: f.key, label: f.label })));
-    
+    // Validate required fields
+    const requiredFields = (moduleDefinition.value?.fields || []).filter(f => f.required);
     for (const field of requiredFields) {
-      const value = currentFormData[field.key];
+      const value = formData[field.key];
       if (value === null || value === undefined || value === '' || 
           (Array.isArray(value) && value.length === 0)) {
         formErrors.value[field.key] = `${field.label || field.key} is required`;
-        console.warn(`❌ Missing required field: ${field.key}`);
       }
     }
     
     if (Object.keys(formErrors.value).length > 0) {
-      console.error('❌ Validation failed:', formErrors.value);
       saving.value = false;
       return;
     }
     
     // Clean up form data - remove system fields that shouldn't be sent
-    // These are automatically set by the backend
-    const submitData = { ...currentFormData };
+    const submitData = { ...formData };
     delete submitData.createdBy; // System field, set by backend
-    delete submitData.organizationId; // System field, set by backend
-    delete submitData.organizationid; // Also check lowercase
     delete submitData.createdAt;
     delete submitData.updatedAt;
     delete submitData._id;
     delete submitData.__v;
+    delete submitData.organizationId; // System field
     
     // Convert empty strings to null for optional fields
     for (const key in submitData) {
@@ -211,41 +173,21 @@ const handleSubmit = async (event) => {
       }
     }
     
-    console.log('📤 Submitting data:', {
-      isEditing: isEditing.value,
-      submitDataKeys: Object.keys(submitData),
-      submitDataSample: Object.fromEntries(Object.entries(submitData).slice(0, 5))
-    });
-    
     let data;
     if (isEditing.value) {
-      console.log(`📝 Updating contact ${props.contact._id}...`);
-      data = await apiClient.put(`/people/${props.contact._id}`, submitData);
+      // Update organization - use v2 API route
+      data = await apiClient.put(`/v2/organization/${props.organization._id}`, submitData);
     } else {
-      console.log('➕ Creating new contact...');
-      data = await apiClient.post('/people', submitData);
+      // Create organization - use v2 API route
+      data = await apiClient.post('/v2/organization', submitData);
     }
-    
-    console.log('✅ API Response:', {
-      success: data.success,
-      hasData: !!data.data,
-      dataKeys: data.data ? Object.keys(data.data).slice(0, 10) : []
-    });
     
     if (data.success) {
       emit('saved', data.data);
-      emit('close'); // Close modal after successful save
-    } else {
-      throw new Error(data.message || 'Failed to save contact');
     }
   } catch (error) {
-    console.error('❌ Error saving contact:', error);
-    console.error('Error details:', {
-      message: error.message,
-      response: error.response,
-      stack: error.stack
-    });
-    alert(error.message || 'Failed to save contact. Please check the console for details.');
+    console.error('Error saving organization:', error);
+    alert(error.message || 'Failed to save organization');
   } finally {
     saving.value = false;
   }
@@ -253,3 +195,4 @@ const handleSubmit = async (event) => {
 
 // Form will be initialized when DynamicForm emits ready event
 </script>
+
