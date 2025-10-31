@@ -3,6 +3,8 @@ const OrganizationV2 = require('../models/OrganizationV2');
 // Create
 exports.create = async (req, res) => {
   try {
+    // OrganizationV2 doesn't have organizationId - it's a tenant-level model
+    // Just create with the provided data
     const org = await OrganizationV2.create(req.body);
     res.status(201).json({ success: true, data: org });
   } catch (error) {

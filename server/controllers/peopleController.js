@@ -26,7 +26,10 @@ exports.list = async (req, res) => {
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
 
+    const User = require('../models/User');
     const data = await People.find(query)
+      .populate('assignedTo', 'firstName lastName email avatar')
+      .populate('organization', 'name')
       .sort({ createdAt: -1 })
       .limit(limit)
       .skip(skip);

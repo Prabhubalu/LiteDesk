@@ -1,5 +1,6 @@
 const People = require('../models/People');
 const Organization = require('../models/Organization');
+const OrganizationV2 = require('../models/OrganizationV2');
 
 // @desc    Get all contacts across all organizations (Admin only)
 // @route   GET /api/admin/contacts/all
@@ -41,7 +42,7 @@ const getAllContactsAcrossOrgs = async (req, res) => {
         // Execute query with organization populated
         const contacts = await People.find(query)
             .populate('organization', 'name industry email website')
-            .populate('assignedTo', 'firstName lastName email')
+            .populate('assignedTo', 'firstName lastName email avatar')
             .sort(sort)
             .limit(limit)
             .skip(skip);
@@ -156,18 +157,23 @@ const getAllOrganizations = async (req, res) => {
         const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1;
         const sort = { [sortBy]: sortOrder };
         
-        const organizations = await Organization.find(query)
+        // Fetch from OrganizationV2 (where new organizations are created)
+        // Note: Search might not work perfectly for V2 fields, but basic queries should work
+        const organizations = await OrganizationV2.find(query)
             .sort(sort)
             .limit(limit)
             .skip(skip)
             .lean();
         
-        const total = await Organization.countDocuments(query);
+        const total = await OrganizationV2.countDocuments(query);
         
         // Get contact counts for each organization
         const orgsWithCounts = await Promise.all(
             organizations.map(async (org) => {
-                const contactCount = await People.countDocuments({ organizationId: org._id });
+                // For V2 records, use legacyOrganizationId to count contacts if available
+                // Otherwise use the _id directly
+                const orgIdForContacts = org.legacyOrganizationId || org._id;
+                const contactCount = await People.countDocuments({ organizationId: orgIdForContacts });
                 return {
                     ...org,
                     contactCount
@@ -253,7 +259,13 @@ const getContactById = async (req, res) => {
 // @access  Private (Admin/Owner only)
 const getOrganizationById = async (req, res) => {
     try {
-        const organization = await Organization.findById(req.params.id).lean();
+        // Try OrganizationV2 first (where new organizations are created)
+        let organization = await OrganizationV2.findById(req.params.id).lean();
+        
+        // If not found in V2, try legacy Organization
+        if (!organization) {
+            organization = await Organization.findById(req.params.id).lean();
+        }
         
         if (!organization) {
             return res.status(404).json({
@@ -262,18 +274,22 @@ const getOrganizationById = async (req, res) => {
             });
         }
         
-        // Get contact count
-        const contactCount = await Contact.countDocuments({ organizationId: organization._id });
+        // For V2 records, use legacyOrganizationId to count contacts if available
+        // Otherwise use the _id directly
+        const orgIdForContacts = organization.legacyOrganizationId || organization._id;
+        
+        // Get contact count (using People model, not Contact)
+        const contactCount = await People.countDocuments({ organizationId: orgIdForContacts });
         
         // Get user count
         const User = require('../models/User');
-        const userCount = await User.countDocuments({ organizationId: organization._id });
+        const userCount = await User.countDocuments({ organizationId: orgIdForContacts });
         
         // Get deals count (if deals module exists)
         let dealCount = 0;
         try {
             const Deal = require('../models/Deal');
-            dealCount = await Deal.countDocuments({ organizationId: organization._id });
+            dealCount = await Deal.countDocuments({ organizationId: orgIdForContacts });
         } catch (err) {
             // Deal model might not exist yet
         }

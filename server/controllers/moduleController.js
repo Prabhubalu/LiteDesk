@@ -48,9 +48,52 @@ function getFieldDataType(key, fieldName, path) {
         'preferred_contact_method': 'Radio Button'
     };
     
+    const organizationFieldMappings = {
+        'name': 'Text',
+        'types': 'Multi-Picklist',
+        'website': 'URL',
+        'phone': 'Phone',
+        'address': 'Text-Area',
+        'industry': 'Picklist',
+        'assignedTo': 'Lookup (Relationship)',
+        'primaryContact': 'Lookup (Relationship)',
+        'customerStatus': 'Picklist',
+        'customerTier': 'Picklist',
+        'slaLevel': 'Picklist',
+        'paymentTerms': 'Text',
+        'creditLimit': 'Currency',
+        'accountManager': 'Lookup (Relationship)',
+        'annualRevenue': 'Currency',
+        'numberOfEmployees': 'Integer',
+        'partnerStatus': 'Picklist',
+        'partnerTier': 'Picklist',
+        'partnerType': 'Picklist',
+        'partnerSince': 'Date',
+        'partnerOnboardingSteps': 'Multi-Picklist',
+        'territory': 'Picklist',
+        'discountRate': 'Decimal',
+        'vendorStatus': 'Picklist',
+        'vendorRating': 'Integer',
+        'vendorContract': 'URL',
+        'preferredPaymentMethod': 'Picklist',
+        'taxId': 'Text',
+        'channelRegion': 'Picklist',
+        'distributionTerritory': 'Multi-Picklist',
+        'distributionCapacityMonthly': 'Integer',
+        'dealerLevel': 'Picklist',
+        'terms': 'Rich Text',
+        'shippingAddress': 'Text-Area',
+        'logisticsPartner': 'Lookup (Relationship)'
+    };
+    
     // Check if this is a People module field with specific mapping
     if (key === 'people' && peopleFieldMappings[fieldName]) {
         return peopleFieldMappings[fieldName];
+    }
+    
+    // Check if this is an Organizations module field with specific mapping
+    if (key === 'organizations' && organizationFieldMappings[fieldName]) {
+        return organizationFieldMappings[fieldName];
     }
     
     // Fall back to inference based on schema type

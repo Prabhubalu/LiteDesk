@@ -1,5 +1,8 @@
 <template>
-  <span :class="['badge', variantClass]">
+  <span 
+    :class="['badge', variantClass]" 
+    :style="customColorStyle"
+  >
     {{ value }}
   </span>
 </template>
@@ -21,10 +24,74 @@ const props = defineProps({
   variantMap: {
     type: Object,
     default: () => ({})
+  },
+  // Custom color from field options (for picklist/multi-picklist)
+  color: {
+    type: String,
+    default: null
+  },
+  // Options array from field definition (to lookup color by value)
+  options: {
+    type: Array,
+    default: () => []
   }
 });
 
+// Look up color from options array if provided
+const resolvedColor = computed(() => {
+  // If color prop is directly provided, use it
+  if (props.color) return props.color;
+  
+  // If options array is provided, look up the color for this value
+  if (props.options && props.options.length > 0 && props.value) {
+    const option = props.options.find(opt => {
+      const optValue = typeof opt === 'string' ? opt : opt.value;
+      return String(optValue) === String(props.value);
+    });
+    
+    if (option && typeof option === 'object' && option.color) {
+      return option.color;
+    }
+  }
+  
+  return null;
+});
+
+const customColorStyle = computed(() => {
+  if (resolvedColor.value) {
+    return {
+      backgroundColor: resolvedColor.value,
+      color: getContrastColor(resolvedColor.value)
+    };
+  }
+  return {};
+});
+
+// Get contrast color (black or white) based on background brightness
+function getContrastColor(hexColor) {
+  if (!hexColor) return '#1f2937';
+  
+  // Remove # if present
+  const hex = hexColor.replace('#', '');
+  
+  // Convert to RGB
+  const r = parseInt(hex.substr(0, 2), 16);
+  const g = parseInt(hex.substr(2, 2), 16);
+  const b = parseInt(hex.substr(4, 2), 16);
+  
+  // Calculate brightness using relative luminance formula
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+  
+  // Return black for light colors, white for dark colors
+  return brightness > 155 ? '#1f2937' : '#ffffff';
+}
+
 const variantClass = computed(() => {
+  // Only use variant class if no custom color is set
+  if (resolvedColor.value) {
+    return ''; // No variant class needed when using custom color
+  }
+  
   // Check if there's a variant mapping
   if (props.variantMap[props.value]) {
     return `badge-${props.variantMap[props.value]}`;
