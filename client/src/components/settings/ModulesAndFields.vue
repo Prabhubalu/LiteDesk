@@ -88,7 +88,7 @@
               v-for="(f, idx) in filteredFields"
               :key="f.key || idx"
               class="group"
-              draggable="true"
+              :draggable="!isSystemField(f)"
               @dragstart="onDragStart(idx)"
               @dragover.prevent="onDragOver(idx)"
               @drop.prevent="onDrop(idx)"
@@ -96,9 +96,11 @@
               <div :class="[
                     'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2',
                     selectedFieldIdx === idx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5',
-                    dragOverIdx === idx ? 'ring-2 ring-brand-500 dark:ring-brand-400' : ''
+                    dragOverIdx === idx ? 'ring-2 ring-brand-500 dark:ring-brand-400' : '',
+                    isSystemField(f) ? 'opacity-75' : ''
                   ]">
-                <div class="cursor-grab select-none mr-2 text-gray-400 dark:text-gray-500">⋮⋮</div>
+                <div v-if="!isSystemField(f)" class="cursor-grab select-none mr-2 text-gray-400 dark:text-gray-500">⋮⋮</div>
+                <div v-else class="mr-2 text-xs text-purple-600 dark:text-purple-400" title="System field">🔒</div>
                 <button class="flex-1 text-left truncate" @click="selectField(idx)">{{ f.label || f.key || 'Untitled field' }}</button>
                 <span class="text-xs text-gray-500 dark:text-gray-400">{{ f.dataType }}</span>
               </div>
@@ -111,12 +113,18 @@
       <section class="flex-1 min-w-0 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
         <div class="p-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between">
           <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ currentFieldTitle }}</h3>
+            <div class="flex items-center gap-2">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ currentFieldTitle }}</h3>
+              <span v-if="isSystemField(currentField)" class="px-2 py-0.5 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">System</span>
+              <span v-else-if="isCoreField(currentField, selectedModule?.key)" class="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">Core</span>
+            </div>
             <p class="text-xs text-gray-500 dark:text-gray-400">Module: {{ selectedModule?.name }} • Key: {{ selectedModule?.key }}</p>
+            <p v-if="isSystemField(currentField)" class="mt-1 text-xs text-amber-600 dark:text-amber-400">This is a system field and cannot be modified</p>
+            <p v-else-if="isCoreField(currentField, selectedModule?.key)" class="mt-1 text-xs text-amber-600 dark:text-amber-400">This is a core field and cannot be deleted</p>
           </div>
           <div class="flex items-center gap-2">
             <button v-if="selectedModule && isDirty" @click="saveModule" class="px-3 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium">Save changes</button>
-            <button v-if="currentField" @click="removeField(selectedFieldIdx)" class="px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-lg text-sm font-medium">Delete Field</button>
+            <button v-if="currentField && canDeleteField" @click="removeField(selectedFieldIdx)" class="px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-lg text-sm font-medium">Delete Field</button>
           </div>
         </div>
 
@@ -128,44 +136,192 @@
                   v-for="tab in subTabs"
                   :key="tab.id"
                   @click="activeSubTab = tab.id"
+                  :disabled="isSystemField(currentField) && tab.id !== 'general'"
                   :class="[
                     activeSubTab === tab.id
                       ? 'border-brand-600 text-brand-600 dark:text-brand-400'
                       : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600',
-                    'whitespace-nowrap py-3 px-1 border-b-2 text-sm font-medium'
+                    'whitespace-nowrap py-3 px-1 border-b-2 text-sm font-medium',
+                    isSystemField(currentField) && tab.id !== 'general' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                   ]"
                 >
                   {{ tab.name }}
                 </button>
               </nav>
             </div>
-            <div v-if="activeSubTab === 'general'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Label</label>
-                <input v-model="currentField.label" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+            <div v-if="activeSubTab === 'general'" class="space-y-4">
+              <!-- Basic Field Information -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Label</label>
+                  <input v-model="currentField.label" :disabled="isSystemField(currentField)" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Key</label>
+                  <input v-model="currentField.key" :disabled="isSystemField(currentField) || isCoreField(currentField, selectedModule?.key) || currentField.dataType === 'Auto-Number'" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+                  <p v-if="currentField.dataType === 'Auto-Number'" class="mt-1 text-xs text-gray-500 dark:text-gray-400">Auto-Number fields cannot have custom keys</p>
+                  <p v-if="isSystemField(currentField)" class="mt-1 text-xs text-gray-500 dark:text-gray-400">System fields cannot have their keys modified</p>
+                  <p v-if="isCoreField(currentField, selectedModule?.key) && !isSystemField(currentField)" class="mt-1 text-xs text-gray-500 dark:text-gray-400">Core fields cannot have their keys modified</p>
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Type</label>
+                  <select v-model="currentField.dataType" :disabled="isSystemField(currentField) || isCoreField(currentField, selectedModule?.key)" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+                    <option v-for="t in fieldTypes" :key="t" :value="t">{{ t }}</option>
+                  </select>
+                  <p v-if="isCoreField(currentField, selectedModule?.key)" class="mt-1 text-xs text-gray-500 dark:text-gray-400">Core fields cannot have their type changed</p>
+                </div>
+                <div class="flex items-center gap-6 mt-6">
+                  <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" v-model="currentField.required" :disabled="isSystemField(currentField) || currentField.dataType === 'Auto-Number' || currentField.dataType === 'Formula' || currentField.dataType === 'Rollup Summary'" /> Required</label>
+                  <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" v-model="currentField.visibility.list" :disabled="isSystemField(currentField)" /> Show in List</label>
+                  <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" v-model="currentField.visibility.detail" :disabled="isSystemField(currentField)" /> Show in Detail</label>
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Default Value</label>
+                  <input v-model="currentField.defaultValue" :disabled="isSystemField(currentField) || currentField.dataType === 'Auto-Number' || currentField.dataType === 'Formula' || currentField.dataType === 'Rollup Summary'" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+                  <p v-if="currentField.dataType === 'Auto-Number' || currentField.dataType === 'Formula' || currentField.dataType === 'Rollup Summary'" class="mt-1 text-xs text-gray-500 dark:text-gray-400">This field type cannot have a default value</p>
+                  <p v-if="isSystemField(currentField)" class="mt-1 text-xs text-gray-500 dark:text-gray-400">System fields cannot have default values</p>
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Placeholder</label>
+                  <input v-model="currentField.placeholder" placeholder="e.g., Enter full name" :disabled="isSystemField(currentField) || currentField.dataType === 'Auto-Number' || currentField.dataType === 'Checkbox' || currentField.dataType === 'Formula' || currentField.dataType === 'Rollup Summary'" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+                </div>
               </div>
-              <div>
-                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Key</label>
-                <input v-model="currentField.key" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+
+              <!-- Picklist Options (for Picklist, Multi-Picklist, Radio Button) -->
+              <div v-if="['Picklist', 'Multi-Picklist', 'Radio Button'].includes(currentField.dataType)" class="border-t border-gray-200 dark:border-gray-700 pt-4">
+                <div class="flex items-center justify-between mb-2">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {{ currentField.dataType === 'Multi-Picklist' ? 'Picklist Options (Multi-Select)' : currentField.dataType === 'Radio Button' ? 'Radio Button Options' : 'Picklist Options' }}
+                  </label>
+                  <button v-if="!isSystemField(currentField)" @click="showAddOption = true" class="px-3 py-1.5 bg-brand-600 text-white rounded text-xs hover:bg-brand-700">Add Option</button>
+                </div>
+                <div v-if="!currentField.options || currentField.options.length === 0" class="text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-white/5 border border-dashed border-gray-200 dark:border-white/10 rounded-lg p-4 text-center">
+                  No options defined. Click "Add Option" to add values.
+                </div>
+                <div v-else class="space-y-2">
+                  <div v-for="(option, optIdx) in currentField.options" :key="optIdx" class="flex items-center gap-2 p-2 bg-gray-50 dark:bg-white/5 rounded border border-gray-200 dark:border-white/10">
+                    <span class="flex-1 text-sm text-gray-900 dark:text-white">{{ option }}</span>
+                    <button v-if="!isSystemField(currentField)" @click="removeOption(optIdx)" class="px-2 py-1 text-red-600 dark:text-red-400 text-xs hover:bg-red-50 dark:hover:bg-red-900/20 rounded">Remove</button>
+                  </div>
+                </div>
+                <!-- Add Option Modal -->
+                <div v-if="showAddOption" class="fixed inset-0 z-50 flex items-center justify-center">
+                  <div class="absolute inset-0 bg-black/50" @click="showAddOption = false"></div>
+                  <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 w-full max-w-md mx-4">
+                    <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Add Option</h3>
+                    </div>
+                    <div class="p-4">
+                      <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Option Value</label>
+                      <input v-model="newOptionValue" @keyup.enter="addOption" placeholder="Enter option value" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 mb-4" />
+                      <div class="flex justify-end gap-2">
+                        <button @click="showAddOption = false" class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 rounded">Cancel</button>
+                        <button @click="addOption" class="px-4 py-2 bg-brand-600 text-white rounded text-sm hover:bg-brand-700">Add</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div>
-                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Type</label>
-                <select v-model="currentField.dataType" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-                  <option v-for="t in fieldTypes" :key="t" :value="t">{{ t }}</option>
-                </select>
+
+              <!-- Number Options (for Integer, Decimal, Currency) -->
+              <div v-if="['Integer', 'Decimal', 'Currency'].includes(currentField.dataType) && !isSystemField(currentField)" class="border-t border-gray-200 dark:border-gray-700 pt-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Number Settings</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Minimum Value</label>
+                    <input type="number" v-model.number="numberSettings.min" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Maximum Value</label>
+                    <input type="number" v-model.number="numberSettings.max" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+                  </div>
+                  <div v-if="currentField.dataType === 'Decimal' || currentField.dataType === 'Currency'">
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Decimal Places</label>
+                    <input type="number" min="0" max="10" v-model.number="numberSettings.decimalPlaces" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+                  </div>
+                  <div v-if="currentField.dataType === 'Currency'">
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Currency Symbol</label>
+                    <input v-model="numberSettings.currencySymbol" placeholder="$" maxlength="3" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+                  </div>
+                </div>
               </div>
-              <div class="flex items-center gap-6 mt-6">
-                <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" v-model="currentField.required" /> Required</label>
-                <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" v-model="currentField.visibility.list" /> Show in List</label>
-                <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" v-model="currentField.visibility.detail" /> Show in Detail</label>
+
+              <!-- Text Options (for Text, Text-Area) -->
+              <div v-if="['Text', 'Text-Area'].includes(currentField.dataType) && !isSystemField(currentField)" class="border-t border-gray-200 dark:border-gray-700 pt-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Text Settings</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Maximum Length</label>
+                    <input type="number" min="1" v-model.number="textSettings.maxLength" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+                  </div>
+                  <div v-if="currentField.dataType === 'Text-Area'">
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Rows</label>
+                    <input type="number" min="1" max="20" v-model.number="textSettings.rows" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+                  </div>
+                </div>
               </div>
-              <div>
-                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Default Value</label>
-                <input v-model="currentField.defaultValue" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+
+              <!-- Date Options -->
+              <div v-if="['Date', 'Date-Time'].includes(currentField.dataType) && !isSystemField(currentField)" class="border-t border-gray-200 dark:border-gray-700 pt-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Date Settings</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Date Format</label>
+                    <select v-model="dateSettings.format" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+                      <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                      <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                      <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                      <option value="MMM DD, YYYY">MMM DD, YYYY</option>
+                    </select>
+                  </div>
+                  <div v-if="currentField.dataType === 'Date-Time'">
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Time Format</label>
+                    <select v-model="dateSettings.timeFormat" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+                      <option value="12h">12 Hour (AM/PM)</option>
+                      <option value="24h">24 Hour</option>
+                    </select>
+                  </div>
+                </div>
               </div>
-              <div>
-                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Placeholder</label>
-                <input v-model="currentField.placeholder" placeholder="e.g., Enter full name" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+
+              <!-- Formula Options -->
+              <div v-if="currentField.dataType === 'Formula' && !isSystemField(currentField)" class="border-t border-gray-200 dark:border-gray-700 pt-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Formula Configuration</label>
+                <div>
+                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Formula Expression</label>
+                  <textarea v-model="formulaSettings.expression" rows="4" placeholder="e.g., {field1} + {field2}" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 font-mono text-sm"></textarea>
+                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Use {fieldKey} to reference other fields. This field is read-only.</p>
+                </div>
+                <div class="mt-3">
+                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Return Type</label>
+                  <select v-model="formulaSettings.returnType" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+                    <option value="Text">Text</option>
+                    <option value="Number">Number</option>
+                    <option value="Date">Date</option>
+                    <option value="Checkbox">Checkbox</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Lookup Options -->
+              <div v-if="currentField.dataType === 'Lookup (Relationship)' && !isSystemField(currentField)" class="border-t border-gray-200 dark:border-gray-700 pt-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Lookup Configuration</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Target Module</label>
+                    <select v-model="lookupSettings.targetModule" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+                      <option value="">Select module...</option>
+                      <option v-for="m in modules" :key="m.key" :value="m.key">{{ m.name }}</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Display Field</label>
+                    <select v-model="lookupSettings.displayField" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+                      <option value="">Auto (Name/Title)</option>
+                      <option v-for="f in lookupTargetFields" :key="f.key" :value="f.key">{{ f.label || f.key }}</option>
+                    </select>
+                  </div>
+                </div>
               </div>
             </div>
             <div v-if="activeSubTab === 'validations'" class="space-y-3">
@@ -273,7 +429,7 @@
                 </div>
               </div>
               <!-- Picklist dependencies (filter options) -->
-              <div v-if="['enum','multienum'].includes(currentField.dataType)" class="mt-6">
+              <div v-if="['Picklist','Multi-Picklist'].includes(currentField.dataType)" class="mt-6">
                 <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Picklist Dependencies</label>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Filter this field's options based on another field's value.</p>
                 <div class="space-y-3">
@@ -367,7 +523,6 @@
           </div>
           <div class="flex items-center gap-2">
             <button v-if="(activeTopTab === 'details' || activeTopTab === 'relationships') && isDirty" @click="saveModule" class="px-3 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium">Save changes</button>
-            <button v-if="activeTopTab === 'quick' && quickDirty" @click="saveQuickCreate" class="px-3 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium">Save Quick Create</button>
           </div>
         </div>
 
@@ -619,7 +774,27 @@ const editFields = ref([]);
 const selectedFieldIdx = ref(0);
 const optionsBuffer = ref('');
 const allowedValuesBuffers = ref({});
-const fieldTypes = ['string','text','number','boolean','date','datetime','enum','multienum','email','phone','currency','url','file','user','organization','people','reference'];
+const fieldTypes = [
+  'Text',
+  'Text-Area',
+  'Rich Text',
+  'Integer',
+  'Decimal',
+  'Currency',
+  'Date',
+  'Date-Time',
+  'Picklist',
+  'Multi-Picklist',
+  'Checkbox',
+  'Radio Button',
+  'Email',
+  'Phone',
+  'URL',
+  'Auto-Number',
+  'Lookup (Relationship)',
+  'Formula',
+  'Rollup Summary'
+];
 const selectedModule = computed(() => modules.value.find(m => m._id === selectedModuleId.value));
 const dragStartIdx = ref(null);
 const dragOverIdx = ref(null);
@@ -629,7 +804,18 @@ const topTabs = [
   { id: 'relationships', name: 'Relationships' },
   { id: 'quick', name: 'Quick Create' }
 ];
-const activeTopTab = ref('fields');
+// Initialize activeTopTab from URL or localStorage, default to 'fields'
+const getInitialTab = () => {
+  // First check URL query
+  const route = useRoute();
+  const modeKey = typeof route.query.mode === 'string' ? route.query.mode : null;
+  if (modeKey && ['details', 'fields', 'relationships', 'quick'].includes(modeKey)) {
+    return modeKey;
+  }
+  // If no URL param, we'll check localStorage after module loads
+  return 'fields';
+};
+const activeTopTab = ref(getInitialTab());
 const moduleNameEdit = ref('');
 const moduleEnabled = ref(true);
 const relationships = ref([]);
@@ -639,6 +825,7 @@ const quickMode = ref('advanced');
 const showPreview = ref(false);
 const originalSnapshot = ref('');
 const quickOriginalSnapshot = ref('');
+const isInitializingQuickCreate = ref(false);
 const dragColSrc = ref({ ri: null, ci: null });
 const dragColOver = ref({ ri: null, ci: null });
 const dragRowSrc = ref(null);
@@ -664,6 +851,130 @@ const filteredFields = computed(() => {
   if (!q) return editFields.value;
   return editFields.value.filter(f => (f.label || '').toLowerCase().includes(q) || (f.key || '').toLowerCase().includes(q));
 });
+
+// Field type-specific settings
+const showAddOption = ref(false);
+const newOptionValue = ref('');
+const numberSettings = ref({ min: null, max: null, decimalPlaces: 2, currencySymbol: '$' });
+const textSettings = ref({ maxLength: null, rows: 4 });
+const dateSettings = ref({ format: 'YYYY-MM-DD', timeFormat: '24h' });
+const formulaSettings = ref({ expression: '', returnType: 'Text' });
+const lookupSettings = ref({ targetModule: '', displayField: '' });
+
+// Computed property to get lookup target module fields
+const lookupTargetFields = computed(() => {
+  if (!lookupSettings.value.targetModule) return [];
+  const targetMod = modules.value.find(m => m.key === lookupSettings.value.targetModule);
+  return targetMod?.fields || [];
+});
+
+// Check if a field is a system field that cannot be modified
+function isSystemField(field) {
+  if (!field || !field.key) return false;
+  const systemFieldKeys = ['createdby', 'organizationid', 'createdat', 'updatedat'];
+  return systemFieldKeys.includes((field.key || '').toLowerCase());
+}
+
+// Check if a field is a core field that cannot be deleted
+function isCoreField(field, moduleKey) {
+  if (!field || !field.key || !moduleKey) return false;
+  
+  // Core fields per module that cannot be deleted
+  const coreFieldsByModule = {
+    'people': [
+      // System fields (already protected, but listed for completeness)
+      'createdby', 'assignedto', 'organizationid',
+      // Core business fields
+      'type', 'source', 'first_name', 'last_name', 'email', 'phone', 'mobile', 'organization',
+      // Lead-specific core
+      'lead_status', 'lead_owner', 'lead_score',
+      // Contact-specific core
+      'contact_status', 'role'
+    ],
+    // Add other modules here if needed
+    'organizations': ['name', 'organizationid', 'createdby'],
+    'deals': ['name', 'organizationid', 'createdby', 'assignedto'],
+    'tasks': ['title', 'organizationid', 'createdby', 'assignedto']
+  };
+  
+  const coreFields = coreFieldsByModule[moduleKey.toLowerCase()] || [];
+  return coreFields.includes((field.key || '').toLowerCase());
+}
+
+// Check if a field can be deleted
+const canDeleteField = computed(() => {
+  if (!currentField.value || !selectedModule.value) return false;
+  return !isSystemField(currentField.value) && !isCoreField(currentField.value, selectedModule.value.key);
+});
+
+// Load settings from currentField
+function loadFieldSettings() {
+  if (!currentField.value) return;
+  const field = currentField.value;
+  
+  // Load number settings
+  if (['Integer', 'Decimal', 'Currency'].includes(field.dataType)) {
+    numberSettings.value = {
+      min: field.numberSettings?.min ?? null,
+      max: field.numberSettings?.max ?? null,
+      decimalPlaces: field.numberSettings?.decimalPlaces ?? (field.dataType === 'Currency' ? 2 : 0),
+      currencySymbol: field.numberSettings?.currencySymbol ?? '$'
+    };
+  }
+  
+  // Load text settings
+  if (['Text', 'Text-Area'].includes(field.dataType)) {
+    textSettings.value = {
+      maxLength: field.textSettings?.maxLength ?? null,
+      rows: field.textSettings?.rows ?? 4
+    };
+  }
+  
+  // Load date settings
+  if (['Date', 'Date-Time'].includes(field.dataType)) {
+    dateSettings.value = {
+      format: field.dateSettings?.format ?? 'YYYY-MM-DD',
+      timeFormat: field.dateSettings?.timeFormat ?? '24h'
+    };
+  }
+  
+  // Load formula settings
+  if (field.dataType === 'Formula') {
+    formulaSettings.value = {
+      expression: field.formulaSettings?.expression ?? '',
+      returnType: field.formulaSettings?.returnType ?? 'Text'
+    };
+  }
+  
+  // Load lookup settings
+  if (field.dataType === 'Lookup (Relationship)') {
+    lookupSettings.value = {
+      targetModule: field.lookupSettings?.targetModule ?? '',
+      displayField: field.lookupSettings?.displayField ?? ''
+    };
+  }
+}
+
+// Add picklist option
+function addOption() {
+  if (!newOptionValue.value.trim()) return;
+  if (!currentField.value.options) {
+    currentField.value.options = [];
+  }
+  // Avoid duplicates
+  if (!currentField.value.options.includes(newOptionValue.value.trim())) {
+    currentField.value.options.push(newOptionValue.value.trim());
+  }
+  newOptionValue.value = '';
+  showAddOption.value = false;
+}
+
+// Remove picklist option
+function removeOption(index) {
+  if (currentField.value.options && Array.isArray(currentField.value.options)) {
+    currentField.value.options.splice(index, 1);
+  }
+}
 
 const fetchModules = async () => {
   loading.value = true;
@@ -691,14 +1002,28 @@ const fetchModules = async () => {
         selectedFieldIdx.value = Math.max(0, idx);
         fieldSearch.value = '';
         syncOptionsBuffer();
+        // Always prioritize URL mode, then localStorage, then default to 'fields'
+        let tabToSet = 'fields'; // default
         if (modeKey && ['details','fields','relationships','quick'].includes(modeKey)) {
-          activeTopTab.value = modeKey;
+          tabToSet = modeKey;
+          console.log('Restoring tab from URL:', tabToSet);
+        } else {
+          // If no mode in URL, check localStorage for this module
+          const storedMode = localStorage.getItem(`litedesk-modfields-tab-${initialMod.key}`);
+          if (storedMode && ['details','fields','relationships','quick'].includes(storedMode)) {
+            tabToSet = storedMode;
+            console.log('Restoring tab from localStorage:', tabToSet, 'for module:', initialMod.key);
+          } else {
+            console.log('Using default tab: fields for module:', initialMod.key);
+          }
         }
+        // Set directly without triggering watcher during initialization
+        activeTopTab.value = tabToSet;
         if (subKey && ['general','validations','dependencies'].includes(subKey)) {
           activeSubTab.value = subKey;
         }
-        // Ensure URL reflects selection
-        router.replace({ query: { ...route.query, module: initialMod.key, field: editFields.value[selectedFieldIdx.value]?.key || '', mode: activeTopTab.value, subtab: activeSubTab.value } });
+        // Ensure URL reflects selection (use the tab we just set)
+        router.replace({ query: { ...route.query, module: initialMod.key, field: editFields.value[selectedFieldIdx.value]?.key || '', mode: tabToSet, subtab: activeSubTab.value } });
         moduleNameEdit.value = initialMod.name || '';
         moduleEnabled.value = initialMod.enabled !== false;
         relationships.value = JSON.parse(JSON.stringify(initialMod.relationships || []));
@@ -739,12 +1064,18 @@ const fetchModules = async () => {
           if (storedMod) {
             selectedModuleId.value = storedMod._id;
             const initial = JSON.parse(JSON.stringify(storedMod.fields || []));
-            editFields.value = initial.sort((a,b) => (a.order ?? 0) - (b.order ?? 0));
+            const sorted = initial.sort((a,b) => (a.order ?? 0) - (b.order ?? 0));
+            editFields.value = uniqueFieldsByKey(sorted);
             // try stored field
             const storedFieldKey = localStorage.getItem('litedesk-modfields-field') || '';
             const sidx = storedFieldKey ? editFields.value.findIndex(f => f.key === storedFieldKey) : 0;
             selectedFieldIdx.value = Math.max(0, sidx);
             syncOptionsBuffer();
+            // Restore tab from localStorage for this module
+            const storedTab = localStorage.getItem(`litedesk-modfields-tab-${storedMod.key}`);
+            if (storedTab && ['details', 'fields', 'relationships', 'quick'].includes(storedTab)) {
+              activeTopTab.value = storedTab;
+            }
             router.replace({ query: { ...route.query, module: storedMod.key, field: editFields.value[selectedFieldIdx.value]?.key || '', mode: activeTopTab.value, subtab: activeSubTab.value } });
             moduleNameEdit.value = storedMod.name || '';
             moduleEnabled.value = storedMod.enabled !== false;
@@ -778,6 +1109,9 @@ const fetchModules = async () => {
 };
 
 const selectModule = (mod, preferFieldKey = null) => {
+  // Prevent auto-save during initialization
+  isInitializingQuickCreate.value = true;
+  
   selectedModuleId.value = mod._id;
   const initial = JSON.parse(JSON.stringify(mod.fields || []));
   const sorted = initial.sort((a,b) => (a.order ?? 0) - (b.order ?? 0));
@@ -790,6 +1124,14 @@ const selectModule = (mod, preferFieldKey = null) => {
   }
   fieldSearch.value = '';
   syncOptionsBuffer();
+  // Restore tab from localStorage when selecting module (before updating URL)
+  const storedTab = localStorage.getItem(`litedesk-modfields-tab-${mod.key}`);
+  if (storedTab && ['details', 'fields', 'relationships', 'quick'].includes(storedTab)) {
+    console.log('Restoring tab from localStorage when selecting module:', storedTab, 'for module:', mod.key);
+    activeTopTab.value = storedTab;
+  } else {
+    console.log('No stored tab found for module:', mod.key, 'using current:', activeTopTab.value);
+  }
   const selKey = editFields.value[selectedFieldIdx.value]?.key || '';
   router.replace({ query: { ...route.query, module: mod.key, field: selKey, mode: activeTopTab.value, subtab: activeSubTab.value } });
   // persist selection
@@ -824,6 +1166,12 @@ const selectModule = (mod, preferFieldKey = null) => {
   // capture snapshot for selected module
   originalSnapshot.value = getSnapshot();
   quickOriginalSnapshot.value = getQuickSnapshot();
+  
+  // Re-enable auto-save after initialization completes
+  setTimeout(() => {
+    isInitializingQuickCreate.value = false;
+    console.log('Quick Create initialization complete, auto-save enabled');
+  }, 1000);
 };
 
 const createModule = async () => {
@@ -860,7 +1208,7 @@ const deleteModule = async (mod) => {
 };
 
 const openAddField = () => {
-  editFields.value.push({ key: '', label: '', dataType: 'string', required: false, options: [], defaultValue: null, index: false, visibility: { list: true, detail: true }, order: editFields.value.length });
+  editFields.value.push({ key: '', label: '', dataType: 'Text', required: false, options: [], defaultValue: null, index: false, visibility: { list: true, detail: true }, order: editFields.value.length });
   selectedFieldIdx.value = editFields.value.length - 1;
   syncOptionsBuffer();
 };
@@ -876,6 +1224,21 @@ const moveField = (idx, delta) => {
 };
 
 const removeField = (idx) => {
+  const field = editFields.value[idx];
+  const mod = selectedModule.value;
+  
+  // Prevent deletion of system fields
+  if (isSystemField(field)) {
+    alert('System fields cannot be deleted.');
+    return;
+  }
+  
+  // Prevent deletion of core fields
+  if (isCoreField(field, mod?.key)) {
+    alert('Core fields cannot be deleted. These fields are essential for the module functionality.');
+    return;
+  }
+  
   editFields.value.splice(idx, 1);
   editFields.value.forEach((f, i) => f.order = i);
   if (selectedFieldIdx.value >= editFields.value.length) selectedFieldIdx.value = Math.max(0, editFields.value.length - 1);
@@ -886,12 +1249,16 @@ const saveModule = async () => {
   const mod = selectedModule.value;
   if (!mod) return;
   try {
-    // Normalize order before saving
-    editFields.value.forEach((f, i) => { f.order = i; });
+    // Deduplicate fields before saving
+    const deduplicatedFields = uniqueFieldsByKey(editFields.value);
+    // Update order after deduplication
+    deduplicatedFields.forEach((f, i) => { f.order = i; });
+    // Update editFields to reflect deduplicated version
+    editFields.value = deduplicatedFields;
     const url = mod.type === 'system' ? `/api/modules/system/${mod.key}` : `/api/modules/${mod._id}`;
     const orderedKeys = orderedQuickCreate.value.map(f => f.key);
     const payload = {
-      fields: editFields.value,
+      fields: deduplicatedFields,
       relationships: relationships.value,
       quickCreate: quickMode.value === 'simple' ? orderedKeys : Array.from(quickCreateSelected.value),
       quickCreateLayout: quickLayout.value,
@@ -922,6 +1289,7 @@ const saveModule = async () => {
 const selectField = (idx) => {
   selectedFieldIdx.value = idx;
   syncOptionsBuffer();
+  loadFieldSettings(); // Load field-specific settings
   const mod = selectedModule.value;
   if (mod) {
     router.replace({ query: { ...route.query, module: mod.key, field: editFields.value[selectedFieldIdx.value]?.key || '', mode: activeTopTab.value, subtab: activeSubTab.value } });
@@ -932,6 +1300,47 @@ const selectField = (idx) => {
 const currentField = computed(() => editFields.value[selectedFieldIdx.value]);
 const currentFieldTitle = computed(() => currentField.value?.label || currentField.value?.key || 'Field');
 const otherFields = computed(() => editFields.value.filter((_, i) => i !== selectedFieldIdx.value));
+
+// Initialize options array if it doesn't exist and load settings when field changes
+watch(() => currentField.value?.dataType, (newType) => {
+  if (!currentField.value) return;
+  if (['Picklist', 'Multi-Picklist', 'Radio Button'].includes(newType)) {
+    if (!Array.isArray(currentField.value.options)) {
+      currentField.value.options = [];
+    }
+  }
+  // Load settings from currentField
+  loadFieldSettings();
+}, { immediate: true });
+
+// Also watch for field selection changes
+watch(() => selectedFieldIdx.value, () => {
+  if (currentField.value) {
+    loadFieldSettings();
+  }
+});
+
+// Save settings to currentField
+watch([numberSettings, textSettings, dateSettings, formulaSettings, lookupSettings], () => {
+  if (!currentField.value) return;
+  const field = currentField.value;
+  
+  if (['Integer', 'Decimal', 'Currency'].includes(field.dataType)) {
+    field.numberSettings = { ...numberSettings.value };
+  }
+  if (['Text', 'Text-Area'].includes(field.dataType)) {
+    field.textSettings = { ...textSettings.value };
+  }
+  if (['Date', 'Date-Time'].includes(field.dataType)) {
+    field.dateSettings = { ...dateSettings.value };
+  }
+  if (field.dataType === 'Formula') {
+    field.formulaSettings = { ...formulaSettings.value };
+  }
+  if (field.dataType === 'Lookup (Relationship)') {
+    field.lookupSettings = { ...lookupSettings.value };
+  }
+}, { deep: true });
 const dependencyValuesBuffer = ref({});
 const picklistOptionsBuffers = ref({});
 const advancedValueBuffers = ref({});
@@ -963,6 +1372,131 @@ function removeRelationship(idx) {
   relationships.value.splice(idx, 1);
 }
 
+const autoSaveTimeout = ref(null);
+
+// Auto-save Quick Create with debounce
+async function autoSaveQuickCreate() {
+  // Don't auto-save during initialization
+  if (isInitializingQuickCreate.value) {
+    console.log('Auto-save skipped: Still initializing');
+    return;
+  }
+  
+  // Clear existing timeout
+  if (autoSaveTimeout.value) {
+    clearTimeout(autoSaveTimeout.value);
+  }
+  
+  // Set new timeout to save after 500ms of inactivity
+  autoSaveTimeout.value = setTimeout(async () => {
+    const mod = selectedModule.value;
+    if (!mod) {
+      console.warn('Auto-save: No module selected');
+      return;
+    }
+    
+    try {
+      const url = mod.type === 'system' ? `/api/modules/system/${mod.key}` : `/api/modules/${mod._id}`;
+      const orderedKeys = orderedQuickCreate.value.map(f => f.key);
+      const quickCreateArray = quickMode.value === 'simple' ? orderedKeys : Array.from(quickCreateSelected.value);
+      
+      console.log('🔍 Auto-save payload generation:', {
+        mode: quickMode.value,
+        orderedQuickCreateLength: orderedQuickCreate.value.length,
+        orderedKeys: orderedKeys,
+        quickCreateSelectedSize: quickCreateSelected.value.size,
+        quickCreateSelectedArray: Array.from(quickCreateSelected.value),
+        quickCreateArray: quickCreateArray,
+        quickLayoutRows: quickLayout.value?.rows?.length || 0
+      });
+      
+      const payload = {
+        quickCreate: quickCreateArray,
+        quickCreateLayout: quickMode.value === 'advanced' ? quickLayout.value : { version: 1, rows: [] }
+      };
+      
+      console.log('Auto-saving Quick Create:', {
+        module: mod.key,
+        mode: quickMode.value,
+        url: url,
+        payload: payload,
+        payloadQuickCreate: payload.quickCreate,
+        payloadQuickCreateLength: payload.quickCreate?.length || 0,
+        payloadQuickCreateLayout: payload.quickCreateLayout,
+        quickCreateLayoutRows: payload.quickCreateLayout?.rows?.length || 0,
+        payloadString: JSON.stringify(payload)
+      });
+      
+      const res = await fetch(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authStore.user?.token}` },
+        body: JSON.stringify(payload)
+      });
+      
+      // Log the raw response text to see what the server actually returned
+      const responseText = await res.clone().text();
+      console.log('📥 Raw server response:', responseText);
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Auto-save Quick Create HTTP error:', res.status, errorText);
+        alert(`Failed to save Quick Create: ${errorText.substring(0, 100)}`);
+        return;
+      }
+      
+      const data = await res.json();
+      if (!data.success) {
+        console.error('Auto-save Quick Create failed:', data);
+        alert(`Failed to save Quick Create: ${data.message || 'Unknown error'}`);
+        return;
+      }
+      
+      console.log('✅ Auto-save Quick Create successful:', {
+        dataKeys: Object.keys(data.data || {}),
+        quickCreate: data.data?.quickCreate,
+        quickCreateLength: data.data?.quickCreate?.length || 0,
+        quickCreateType: typeof data.data?.quickCreate,
+        quickCreateIsArray: Array.isArray(data.data?.quickCreate),
+        quickCreateLayout: data.data?.quickCreateLayout,
+        quickCreateLayoutRows: data.data?.quickCreateLayout?.rows?.length || 0,
+        fullData: data.data
+      });
+      
+      // cache selection locally for resilience
+      try {
+        localStorage.setItem(`litedesk-modfields-quick-${mod.key}`, JSON.stringify(payload.quickCreate));
+      } catch (e) {}
+      
+      // Update snapshot after successful save
+      quickOriginalSnapshot.value = getQuickSnapshot();
+    } catch (e) {
+      console.error('Auto-save quick create failed:', e);
+    }
+  }, 500);
+}
+
+// Watch for layout changes in advanced mode (span, widget, props changes)
+watch(() => quickLayout.value, () => {
+  if (quickMode.value === 'advanced' && selectedModule.value) {
+    console.log('Layout changed, triggering auto-save');
+    autoSaveQuickCreate();
+  }
+}, { deep: true });
+
+// Watch for quickCreateSelected changes in simple mode
+// Use a computed to convert Set to Array for reactivity
+const quickCreateSelectedArray = computed(() => Array.from(quickCreateSelected.value).sort());
+watch(quickCreateSelectedArray, (newVal, oldVal) => {
+  if (quickMode.value === 'simple' && selectedModule.value) {
+    console.log('Quick Create selection changed:', { 
+      from: oldVal, 
+      to: newVal,
+      length: newVal.length 
+    });
+    autoSaveQuickCreate();
+  }
+});
+
 function toggleQuickCreate(key, checked) {
   const s = quickCreateSelected.value;
   // prevent deselecting required fields
@@ -972,6 +1506,7 @@ function toggleQuickCreate(key, checked) {
     return;
   }
   if (checked) s.add(key); else s.delete(key);
+  // Watcher will handle auto-save for simple mode
 }
 
 function toggleQuickRow(field) {
@@ -979,9 +1514,11 @@ function toggleQuickRow(field) {
   if (field.required) return; // cannot toggle required
   const has = quickCreateSelected.value.has(field.key);
   toggleQuickCreate(field.key, !has);
+  // toggleQuickCreate already calls autoSaveQuickCreate
 }
 function selectAllQuickCreate() {
   quickCreateSelected.value = new Set(editFields.value.map(f => f.key));
+  autoSaveQuickCreate();
 }
 const orderedQuickCreate = computed(() => {
   const seen = new Set();
@@ -999,15 +1536,21 @@ const orderedQuickCreate = computed(() => {
 
 function addRow() {
   quickLayout.value.rows.push({ cols: [] });
+  autoSaveQuickCreate();
 }
 function removeRow(ri) {
   quickLayout.value.rows.splice(ri, 1);
+  rebuildQuickCreateFromLayout();
+  // rebuildQuickCreateFromLayout already calls autoSaveQuickCreate
 }
 function addCol(ri) {
   quickLayout.value.rows[ri].cols.push({ span: 12, fieldKey: '', widget: 'input', props: {} });
+  autoSaveQuickCreate();
 }
 function removeCol(ri, ci) {
   quickLayout.value.rows[ri].cols.splice(ci, 1);
+  rebuildQuickCreateFromLayout();
+  // rebuildQuickCreateFromLayout already calls autoSaveQuickCreate
 }
 
 function displayFieldLabel(key) {
@@ -1040,6 +1583,7 @@ function onColumnDrop(ri, ci, event) {
 function clearColumnField(ri, ci) {
   quickLayout.value.rows[ri].cols[ci].fieldKey = '';
   rebuildQuickCreateFromLayout();
+  // rebuildQuickCreateFromLayout already calls autoSaveQuickCreate
 }
 function isFieldUsedInLayout(key) {
   for (const row of quickLayout.value.rows) {
@@ -1057,6 +1601,7 @@ function rebuildQuickCreateFromLayout() {
     }
   }
   quickCreateSelected.value = new Set(keys);
+  // Watcher will handle auto-save
 }
 
 function extractLayoutKeys(layout) {
@@ -1157,22 +1702,25 @@ function advancedValuePlaceholder(fieldKey) {
   const f = editFields.value.find(x => x.key === fieldKey);
   if (!f) return 'Value';
   switch (f.dataType) {
-    case 'number': return 'Number';
-    case 'date': return 'YYYY-MM-DD';
-    case 'datetime': return 'YYYY-MM-DDTHH:mm';
-    case 'boolean': return 'true/false';
-    case 'enum': return 'One of options';
+    case 'Integer': return 'Number';
+    case 'Decimal': return 'Number';
+    case 'Currency': return 'Number';
+    case 'Date': return 'YYYY-MM-DD';
+    case 'Date-Time': return 'YYYY-MM-DDTHH:mm';
+    case 'Checkbox': return 'true/false';
+    case 'Picklist': return 'One of options';
+    case 'Multi-Picklist': return 'One of options';
     default: return 'Value';
   }
 }
 function coerceValueForField(fieldKey, val) {
   const f = editFields.value.find(x => x.key === fieldKey);
   if (!f) return val;
-  if (f.dataType === 'number') {
+  if (f.dataType === 'Integer' || f.dataType === 'Decimal' || f.dataType === 'Currency') {
     const n = Number(val);
     return isNaN(n) ? val : n;
   }
-  if (f.dataType === 'boolean') {
+  if (f.dataType === 'Checkbox') {
     if (val === true || val === false) return val;
     if (typeof val === 'string') return val.toLowerCase() === 'true';
   }
@@ -1180,13 +1728,28 @@ function coerceValueForField(fieldKey, val) {
 }
 
 function uniqueFieldsByKey(arr) {
+  if (!Array.isArray(arr)) return [];
   const map = new Map();
+  // Process in order, keeping the last occurrence of each duplicate
+  // This preserves the most recent/complete version of the field
   for (const f of arr) {
-    const k = (f.key || '').toLowerCase();
-    if (!k) continue;
-    if (!map.has(k)) map.set(k, f);
+    const k = (f.key || '').toLowerCase().trim();
+    if (!k) continue; // Skip fields without keys
+    // Always update to keep the last occurrence (which may have more complete data)
+    map.set(k, f);
   }
-  return Array.from(map.values());
+  // Return deduplicated array, preserving relative order
+  const result = Array.from(map.values());
+  // Ensure order is maintained based on original order
+  return result.sort((a, b) => {
+    const orderA = a.order ?? Number.MAX_SAFE_INTEGER;
+    const orderB = b.order ?? Number.MAX_SAFE_INTEGER;
+    if (orderA !== orderB) return orderA - orderB;
+    // If order is same, maintain array position
+    const idxA = arr.findIndex(x => (x.key || '').toLowerCase() === (a.key || '').toLowerCase());
+    const idxB = arr.findIndex(x => (x.key || '').toLowerCase() === (b.key || '').toLowerCase());
+    return idxA - idxB;
+  });
 }
 
 function addPicklistDependency() {
@@ -1253,12 +1816,15 @@ function onRowDrop(ri) {
   if (from === ri) return;
   const [moved] = quickLayout.value.rows.splice(from, 1);
   quickLayout.value.rows.splice(ri, 0, moved);
+  autoSaveQuickCreate();
 }
 
 // Snapshot helpers to detect unsaved changes
 function getSnapshot() {
   // ensure deterministic order
-  const normalizedFields = editFields.value.map((f, i) => ({ ...f, order: i }));
+  // Deduplicate fields before saving
+  const deduplicatedFields = uniqueFieldsByKey(editFields.value);
+  const normalizedFields = deduplicatedFields.map((f, i) => ({ ...f, order: i }));
   const payload = {
     fields: normalizedFields,
     relationships: relationships.value,
@@ -1290,13 +1856,30 @@ async function saveQuickCreate() {
       quickCreate: quickMode.value === 'simple' ? orderedKeys : Array.from(quickCreateSelected.value),
       quickCreateLayout: quickMode.value === 'advanced' ? quickLayout.value : { version: 1, rows: [] }
     };
+    
+    console.log('Saving Quick Create:', {
+      module: mod.key,
+      mode: quickMode.value,
+      quickCreate: payload.quickCreate,
+      quickCreateLayout: payload.quickCreateLayout,
+      payload
+    });
+    
     const res = await fetch(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authStore.user?.token}` },
       body: JSON.stringify(payload)
     });
     const data = await res.json();
-    if (!res.ok || !data.success) return alert(data.message || 'Failed to save quick create');
+    if (!res.ok || !data.success) {
+      console.error('Save Quick Create failed:', data);
+      return alert(data.message || 'Failed to save quick create');
+    }
+    
+    console.log('Quick Create saved successfully:', {
+      quickCreate: data.data?.quickCreate,
+      quickCreateLayout: data.data?.quickCreateLayout
+    });
     // cache selection locally for resilience
     try {
       localStorage.setItem(`litedesk-modfields-quick-${mod.key}`, JSON.stringify(payload.quickCreate));
@@ -1313,11 +1896,17 @@ async function saveQuickCreate() {
 onMounted(fetchModules);
 
 // Persist top/sub tab selection to URL
-watch(activeTopTab, (v) => {
+watch(activeTopTab, (v, oldValue) => {
   const mod = selectedModule.value;
   if (!mod) return;
-  router.replace({ query: { ...route.query, mode: v } });
-});
+  // Only update if value actually changed (avoid infinite loops during initialization)
+  if (v !== oldValue && oldValue !== undefined) {
+    console.log('Tab changed:', { from: oldValue, to: v, module: mod.key });
+    router.replace({ query: { ...route.query, mode: v } });
+    // Also store in localStorage for persistence across refreshes
+    localStorage.setItem(`litedesk-modfields-tab-${mod.key}`, v);
+  }
+}, { immediate: false });
 
 watch(activeSubTab, (v) => {
   const mod = selectedModule.value;

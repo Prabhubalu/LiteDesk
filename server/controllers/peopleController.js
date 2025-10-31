@@ -51,9 +51,17 @@ exports.getById = async (req, res) => {
 // Update
 exports.update = async (req, res) => {
   try {
+    // Remove createdBy from body to prevent it from being changed
+    const { createdBy, ...updateData } = req.body;
+    
+    // If someone tried to change createdBy, log a warning (but don't fail the request)
+    if (createdBy !== undefined) {
+      console.warn(`Attempt to modify createdBy field blocked for People record ${req.params.id}`);
+    }
+    
     const updated = await People.findOneAndUpdate(
       { _id: req.params.id, organizationId: req.user.organizationId },
-      req.body,
+      updateData,
       { new: true }
     );
     if (!updated) return res.status(404).json({ success: false, message: 'Not found' });

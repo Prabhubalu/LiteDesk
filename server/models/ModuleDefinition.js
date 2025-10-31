@@ -11,7 +11,7 @@ const ModuleDefinitionSchema = new mongoose.Schema({
             new mongoose.Schema({
                 key: { type: String, required: true, trim: true, lowercase: true },
                 label: { type: String, required: true, trim: true },
-                dataType: { type: String, enum: ['string','text','number','boolean','date','datetime','enum','multienum','email','phone','currency','url','file','user','organization','people','reference'], required: true },
+                dataType: { type: String, enum: ['Text','Text-Area','Rich Text','Integer','Decimal','Currency','Date','Date-Time','Picklist','Multi-Picklist','Checkbox','Radio Button','Email','Phone','URL','Auto-Number','Lookup (Relationship)','Formula','Rollup Summary'], required: true },
                 required: { type: Boolean, default: false },
                 options: { type: [String], default: [] },
                 defaultValue: { type: mongoose.Schema.Types.Mixed, default: null },
@@ -22,6 +22,44 @@ const ModuleDefinitionSchema = new mongoose.Schema({
                     detail: { type: Boolean, default: true }
                 },
                 order: { type: Number, default: 0 },
+                // Field type-specific settings
+                numberSettings: {
+                    type: new mongoose.Schema({
+                        min: { type: Number, default: null },
+                        max: { type: Number, default: null },
+                        decimalPlaces: { type: Number, min: 0, max: 10, default: 2 },
+                        currencySymbol: { type: String, default: '$' }
+                    }, { _id: false }),
+                    default: null
+                },
+                textSettings: {
+                    type: new mongoose.Schema({
+                        maxLength: { type: Number, min: 1, default: null },
+                        rows: { type: Number, min: 1, max: 20, default: 4 }
+                    }, { _id: false }),
+                    default: null
+                },
+                dateSettings: {
+                    type: new mongoose.Schema({
+                        format: { type: String, default: 'YYYY-MM-DD' },
+                        timeFormat: { type: String, enum: ['12h', '24h'], default: '24h' }
+                    }, { _id: false }),
+                    default: null
+                },
+                formulaSettings: {
+                    type: new mongoose.Schema({
+                        expression: { type: String, default: '' },
+                        returnType: { type: String, enum: ['Text', 'Number', 'Date', 'Checkbox'], default: 'Text' }
+                    }, { _id: false }),
+                    default: null
+                },
+                lookupSettings: {
+                    type: new mongoose.Schema({
+                        targetModule: { type: String, default: '' },
+                        displayField: { type: String, default: '' }
+                    }, { _id: false }),
+                    default: null
+                },
                 validations: {
                     type: [new mongoose.Schema({
                         name: { type: String, trim: true, default: '' },
