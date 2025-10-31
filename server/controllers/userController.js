@@ -64,6 +64,40 @@ exports.getUsers = async (req, res) => {
     }
 };
 
+// --- Get users list for assignment (no permission required, any authenticated user can see org users) ---
+exports.getUsersForAssignment = async (req, res) => {
+    try {
+        // Ensure organizationId is available
+        if (!req.user || !req.user.organizationId) {
+            return res.status(401).json({
+                success: false,
+                message: 'Unauthorized - organization context missing'
+            });
+        }
+
+        // Simple query - just get users in the organization with basic info
+        const users = await User.find({ 
+            organizationId: req.user.organizationId,
+            status: 'active' // Only active users
+        })
+        .select('_id firstName lastName email username avatar') // Include avatar for display
+        .sort({ firstName: 1, lastName: 1 })
+        .lean();
+
+        res.json({
+            success: true,
+            data: users
+        });
+    } catch (error) {
+        console.error('Get users for assignment error:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Server error fetching users',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+};
+
 // --- Get single user ---
 exports.getUser = async (req, res) => {
     try {

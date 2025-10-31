@@ -72,6 +72,41 @@ PeopleSchema.index({ organizationId: 1, lead_status: 1 });
 PeopleSchema.index({ organizationId: 1, contact_status: 1 });
 PeopleSchema.index({ organizationId: 1, legacyContactId: 1 }, { unique: false, sparse: true });
 
+// Prevent createdBy from being modified after creation
+PeopleSchema.pre('findOneAndUpdate', function() {
+  // Remove createdBy from update if it exists
+  const update = this.getUpdate();
+  if (update && update.createdBy !== undefined) {
+    delete update.createdBy;
+  }
+  // Also handle $set operations
+  if (update && update.$set && update.$set.createdBy !== undefined) {
+    delete update.$set.createdBy;
+  }
+});
+
+PeopleSchema.pre('save', async function(next) {
+  // If this is an update (not new document) and createdBy is being changed, prevent it
+  if (!this.isNew && this.isModified('createdBy')) {
+    try {
+      // Fetch the original document to get the original createdBy value
+      const original = await this.constructor.findById(this._id).select('createdBy').lean();
+      if (original && original.createdBy) {
+        // Restore the original value
+        this.createdBy = original.createdBy;
+        // Mark the field as unmodified
+        this.unmarkModified('createdBy');
+      }
+      next();
+    } catch (error) {
+      // If we can't fetch the original, prevent the save
+      next(new Error('createdBy field cannot be modified after creation'));
+    }
+  } else {
+    next();
+  }
+});
+
 module.exports = mongoose.model('People', PeopleSchema);
 
 
