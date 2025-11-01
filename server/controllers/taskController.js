@@ -85,6 +85,8 @@ const getTasks = async (req, res) => {
       priority,
       assignedTo,
       projectId,
+      contactId,
+      organizationId,
       dueDate,
       overdue,
       search,
@@ -104,6 +106,14 @@ const getTasks = async (req, res) => {
       query.assignedTo = assignedTo === 'me' ? req.user._id : assignedTo;
     }
     if (projectId) query.projectId = projectId;
+    if (contactId) {
+      query['relatedTo.type'] = 'contact';
+      query['relatedTo.id'] = contactId;
+    }
+    if (organizationId) {
+      query['relatedTo.type'] = 'organization';
+      query['relatedTo.id'] = organizationId;
+    }
     if (dueDate) {
       const date = new Date(dueDate);
       query.dueDate = {

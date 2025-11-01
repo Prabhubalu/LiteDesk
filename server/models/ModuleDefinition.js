@@ -13,6 +13,7 @@ const ModuleDefinitionSchema = new mongoose.Schema({
                 label: { type: String, required: true, trim: true },
                 dataType: { type: String, enum: ['Text','Text-Area','Rich Text','Integer','Decimal','Currency','Date','Date-Time','Picklist','Multi-Picklist','Checkbox','Radio Button','Email','Phone','URL','Auto-Number','Lookup (Relationship)','Formula','Rollup Summary'], required: true },
                 required: { type: Boolean, default: false },
+                keyField: { type: Boolean, default: false },
                 // Options can be strings (backward compatibility) or objects with value and color
                 options: {
                     type: [

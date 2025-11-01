@@ -37,6 +37,7 @@ exports.list = async (req, res) => {
     const query = { organizationId: req.user.organizationId };
     if (req.query.type) query.type = req.query.type;
     if (req.query.email) query.email = req.query.email;
+    if (req.query.organization) query.organization = req.query.organization;
 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;

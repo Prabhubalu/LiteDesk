@@ -30,7 +30,7 @@
         }"
       >
         <div class="px-6 py-4">
-          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <!-- Left Group: Record Identity & Quick Actions -->
             <div class="flex items-center gap-4 flex-1 min-w-0">
               <!-- Icon/Avatar -->
@@ -151,20 +151,57 @@
             </div>
 
             <!-- Right Group: Primary Record Actions -->
-            <div class="flex items-center gap-3 justify-end lg:justify-start flex-wrap">
+            <div class="flex items-center gap-3 justify-end md:justify-start flex-wrap">
               <!-- Status/Lifecycle Stage Dropdowns (Dynamic based on module) -->
-              <select
+              <Menu
                 v-for="field in getLifecycleStatusFields"
                 :key="field.key"
-                :value="field.value"
-                @change="updateField(field.key, $event.target.value)"
-                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                as="div"
+                class="relative"
               >
-                <option value="">{{ field.label }}</option>
-                <option v-for="option in field.options" :key="option" :value="option">
-                  {{ option }}
-                </option>
-              </select>
+                <MenuButton 
+                  :class="getButtonColorClasses(field)"
+                  :style="getButtonColorStyle(field)"
+                >
+                  <span>{{ field.value || 'Select...' }}</span>
+                </MenuButton>
+                <Transition
+                  enter-active-class="transition ease-out duration-100"
+                  enter-from-class="transform opacity-0 scale-95"
+                  enter-to-class="transform opacity-100 scale-100"
+                  leave-active-class="transition ease-in duration-75"
+                  leave-from-class="transform opacity-100 scale-100"
+                  leave-to-class="transform opacity-0 scale-95"
+                >
+                  <MenuItems class="absolute left-0 mt-2 w-auto min-w-[12rem] rounded-lg shadow-xl py-1 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 z-10" style="min-width: max(12rem, 100%)">
+                    <div class="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      {{ field.label }}
+                    </div>
+                    <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                    <MenuItem
+                      v-for="option in field.options"
+                      :key="typeof option === 'string' ? option : option.value"
+                      v-slot="{ active }"
+                      as="template"
+                    >
+                      <button
+                        @click="updateField(field.key, typeof option === 'string' ? option : option.value)"
+                        :class="[
+                          'w-full text-left px-4 py-2 text-sm transition-colors duration-150 flex items-center justify-between',
+                          active ? 'bg-gray-100 dark:bg-gray-700' : '',
+                          getOptionIsSelected(field, option) ? 'text-brand-600 dark:text-brand-400 font-medium' : 'text-gray-700 dark:text-gray-300'
+                        ]"
+                      >
+                        <div class="flex items-center gap-2">
+                          <span v-if="getColorForOption(option)" class="w-3 h-3 rounded-full flex-shrink-0" :style="{ backgroundColor: getColorForOption(option) }"></span>
+                          <span>{{ typeof option === 'string' ? option : option.value }}</span>
+                        </div>
+                        <CheckIcon v-if="getOptionIsSelected(field, option)" class="h-5 w-5" />
+                      </button>
+                    </MenuItem>
+                  </MenuItems>
+                </Transition>
+              </Menu>
 
               <!-- Add Relation Dropdown (Desktop only) -->
               <button
@@ -361,7 +398,7 @@
                             active ? 'bg-gray-100 dark:bg-gray-700' : ''
                           ]"
                         >
-                          <input
+                  <input
                             type="checkbox"
                             v-model="showEmptyFields"
                             class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
@@ -373,7 +410,7 @@
                       
                       <!-- Manage Fields (only if user has permission) -->
                       <MenuItem v-slot="{ active }" v-if="hasManageFieldsPermission" as="template">
-                        <button
+                  <button
                           @click="goToManageFields"
                           :class="[
                             'w-full text-left px-4 py-2 text-sm transition-colors duration-150 flex items-center gap-2',
@@ -383,16 +420,16 @@
                         >
                           <Cog6ToothIcon class="w-4 h-4" />
                           Manage Fields
-                        </button>
+                  </button>
                       </MenuItem>
                     </MenuItems>
                   </transition>
                 </Menu>
+                </div>
               </div>
-            </div>
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <!-- Fields Grid using DynamicFormField -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div :class="detailsGridClass" :style="detailsGridStyle">
               <div 
                 v-for="fieldData in getFieldsWithDefinitions" 
                 :key="fieldData.key"
@@ -425,11 +462,211 @@
         <!-- Updates/Timeline Tab -->
         <div v-else-if="activeTab === 'updates'" class="space-y-4">
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Activity Timeline</h2>
-            <div v-if="activityItems.length === 0" class="text-center py-8 text-gray-500 dark:text-gray-400">
-              No activity yet
+            <!-- Filters -->
+            <div class="mb-6 flex justify-end">
+              <Menu as="div" class="relative">
+                <MenuButton class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+                  <FunnelIcon class="w-5 h-5" />
+                  <span>Filters</span>
+                  <ChevronDownIcon class="w-4 h-4" />
+                </MenuButton>
+                <Transition
+                  enter-active-class="transition duration-100 ease-out"
+                  enter-from-class="transform scale-95 opacity-0"
+                  enter-to-class="transform scale-100 opacity-100"
+                  leave-active-class="transition duration-75 ease-in"
+                  leave-from-class="transform scale-100 opacity-100"
+                  leave-to-class="transform scale-95 opacity-0"
+                >
+                  <MenuItems class="absolute right-0 mt-2 w-80 origin-top-right bg-white dark:bg-gray-800 rounded-lg shadow-xl ring-1 ring-black/5 dark:ring-white/10 focus:outline-none z-10">
+                    <div class="p-4 space-y-4">
+                      <!-- Search -->
+                      <div>
+                        <label for="activity-search" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Search</label>
+                        <div class="relative mt-1">
+                          <MagnifyingGlassIcon class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
+                          <input
+                            id="activity-search"
+                            v-model="activitySearchQuery"
+                            type="text"
+                            placeholder="Search activities..."
+                            class="block w-full rounded-md bg-gray-100 px-3 py-2 pl-10 text-gray-900 text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:text-white dark:bg-gray-700 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                          />
                   </div>
+                </div>
+                      
+                      <!-- User Filter -->
+                      <div>
+                        <label for="activity-user" class="block text-sm/6 font-medium text-gray-900 dark:text-white">User</label>
+                        <Listbox v-model="activityFilterUser" as="div" class="mt-1 relative">
+                          <ListboxButton
+                            class="block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500 relative cursor-default text-left"
+                          >
+                            <span :class="['block truncate', !activityFilterUser && 'text-gray-500 dark:text-gray-500']">{{ activityFilterUser || 'All Users' }}</span>
+                            <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                              <ChevronUpDownIcon class="h-5 w-5 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+                            </span>
+                          </ListboxButton>
+                          <Transition
+                            leave-active-class="transition duration-100 ease-in"
+                            leave-from-class="opacity-100"
+                            leave-to-class="opacity-0"
+                          >
+                            <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm">
+                              <ListboxOption
+                                v-slot="{ active, selected }"
+                                :value="''"
+                              >
+                                <li
+                                  :class="[
+                                    'relative cursor-default select-none py-2 pl-10 pr-4',
+                                    active ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-900 dark:text-brand-100' : 'text-gray-900 dark:text-gray-100'
+                                  ]"
+                                >
+                                  <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">All Users</span>
+                                  <span
+                                    v-if="selected"
+                                    class="absolute inset-y-0 left-0 flex items-center pl-3 text-brand-600 dark:text-brand-400"
+                                  >
+                                    <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                                  </span>
+                                </li>
+                              </ListboxOption>
+                              <ListboxOption
+                                v-for="user in uniqueActivityUsers"
+                                :key="user"
+                                :value="user"
+                                v-slot="{ active, selected }"
+                              >
+                                <li
+                                  :class="[
+                                    'relative cursor-default select-none py-2 pl-10 pr-4',
+                                    active ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-900 dark:text-brand-100' : 'text-gray-900 dark:text-gray-100'
+                                  ]"
+                                >
+                                  <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">{{ user }}</span>
+                                  <span
+                                    v-if="selected"
+                                    class="absolute inset-y-0 left-0 flex items-center pl-3 text-brand-600 dark:text-brand-400"
+                                  >
+                                    <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                                  </span>
+                                </li>
+                              </ListboxOption>
+                            </ListboxOptions>
+                          </Transition>
+                        </Listbox>
+                </div>
+                      
+                      <!-- Type Filter -->
+                      <div>
+                        <label for="activity-type" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Type</label>
+                        <Listbox v-model="activityFilterType" as="div" class="mt-1 relative">
+                          <ListboxButton
+                            class="block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500 relative cursor-default text-left"
+                          >
+                            <span :class="['block truncate', !activityFilterType && 'text-gray-500 dark:text-gray-500']">{{ activityFilterType || 'All Types' }}</span>
+                            <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                              <ChevronUpDownIcon class="h-5 w-5 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+                            </span>
+                          </ListboxButton>
+                          <Transition
+                            leave-active-class="transition duration-100 ease-in"
+                            leave-from-class="opacity-100"
+                            leave-to-class="opacity-0"
+                          >
+                            <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm">
+                              <ListboxOption
+                                v-slot="{ active, selected }"
+                                :value="''"
+                              >
+                                <li
+                                  :class="[
+                                    'relative cursor-default select-none py-2 pl-10 pr-4',
+                                    active ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-900 dark:text-brand-100' : 'text-gray-900 dark:text-gray-100'
+                                  ]"
+                                >
+                                  <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">All Types</span>
+                                  <span
+                                    v-if="selected"
+                                    class="absolute inset-y-0 left-0 flex items-center pl-3 text-brand-600 dark:text-brand-400"
+                                  >
+                                    <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                                  </span>
+                                </li>
+                              </ListboxOption>
+                              <ListboxOption
+                                v-slot="{ active, selected }"
+                                value="comment"
+                              >
+                                <li
+                                  :class="[
+                                    'relative cursor-default select-none py-2 pl-10 pr-4',
+                                    active ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-900 dark:text-brand-100' : 'text-gray-900 dark:text-gray-100'
+                                  ]"
+                                >
+                                  <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">Comments</span>
+                                  <span
+                                    v-if="selected"
+                                    class="absolute inset-y-0 left-0 flex items-center pl-3 text-brand-600 dark:text-brand-400"
+                                  >
+                                    <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                                  </span>
+                                </li>
+                              </ListboxOption>
+                              <ListboxOption
+                                v-slot="{ active, selected }"
+                                value="assignment"
+                              >
+                                <li
+                                  :class="[
+                                    'relative cursor-default select-none py-2 pl-10 pr-4',
+                                    active ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-900 dark:text-brand-100' : 'text-gray-900 dark:text-gray-100'
+                                  ]"
+                                >
+                                  <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">Field Changes</span>
+                                  <span
+                                    v-if="selected"
+                                    class="absolute inset-y-0 left-0 flex items-center pl-3 text-brand-600 dark:text-brand-400"
+                                  >
+                                    <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                                  </span>
+                                </li>
+                              </ListboxOption>
+                              <ListboxOption
+                                v-slot="{ active, selected }"
+                                value="tags"
+                              >
+                                <li
+                                  :class="[
+                                    'relative cursor-default select-none py-2 pl-10 pr-4',
+                                    active ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-900 dark:text-brand-100' : 'text-gray-900 dark:text-gray-100'
+                                  ]"
+                                >
+                                  <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">Tags</span>
+                                  <span
+                                    v-if="selected"
+                                    class="absolute inset-y-0 left-0 flex items-center pl-3 text-brand-600 dark:text-brand-400"
+                                  >
+                                    <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                                  </span>
+                                </li>
+                              </ListboxOption>
+                            </ListboxOptions>
+                          </Transition>
+                        </Listbox>
+              </div>
+                    </div>
+                  </MenuItems>
+                </Transition>
+              </Menu>
+            </div>
+            
+            <div v-if="activityItems.length === 0" class="text-center py-8 text-gray-500 dark:text-gray-400">
+                No activity yet
+              </div>
             <div v-else class="flow-root">
+              <div class="max-w-2xl mx-auto">
               <ul role="list" class="-mb-8">
                 <li v-for="(activityItem, activityItemIdx) in activityItems" :key="activityItem.id">
                   <div class="relative pb-8">
@@ -441,7 +678,7 @@
                             <span :class="['text-sm font-medium', getColorForName(activityItem.person.name).text]">
                               {{ getInitials(activityItem.person.name) }}
                             </span>
-                </div>
+            </div>
                           <span class="absolute -right-1 -bottom-0.5 rounded-tl bg-white dark:bg-gray-800 px-0.5 py-px">
                             <ChatBubbleLeftEllipsisIcon class="size-5 text-gray-400 dark:text-gray-500" aria-hidden="true" />
                           </span>
@@ -504,20 +741,21 @@
                                 <span class="inline-flex items-center gap-x-1.5 rounded-full px-2 py-1 text-xs font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-700 ring-1 ring-gray-300 dark:ring-gray-600">
                                   <svg :class="[tag.color, 'size-1.5']" viewBox="0 0 6 6" aria-hidden="true">
                                     <circle cx="3" cy="3" r="3" />
-                                  </svg>
+                    </svg>
                                   {{ tag.name }}
                                 </span>
                                 {{ ' ' }}
                               </template>
                             </span>
                             <span class="whitespace-nowrap">{{ activityItem.date }}</span>
-                          </div>
-                        </div>
-                      </template>
-                    </div>
                   </div>
+                </div>
+                      </template>
+                </div>
+              </div>
                 </li>
               </ul>
+              </div>
             </div>
           </div>
         </div>
@@ -591,13 +829,18 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch, createApp, h } from 'vue';
-import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
+import { Menu, MenuButton, MenuItem, MenuItems, Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue';
 import { GridStack } from 'gridstack';
 import 'gridstack/dist/gridstack.min.css';
 import RelatedContactsWidget from '@/components/organizations/RelatedContactsWidget.vue';
 import RelatedUsersWidget from '@/components/organizations/RelatedUsersWidget.vue';
 import RelatedDealsWidget from '@/components/deals/RelatedDealsWidget.vue';
+import RelatedTasksWidget from '@/components/tasks/RelatedTasksWidget.vue';
+import RelatedEventsWidget from '@/components/events/RelatedEventsWidget.vue';
+import RelatedOrganizationWidget from '@/components/organizations/RelatedOrganizationWidget.vue';
 import OrganizationMetricsWidget from '@/components/organizations/OrganizationMetricsWidget.vue';
+import LifecycleStageWidget from '@/components/common/LifecycleStageWidget.vue';
+import KeyFieldsWidget from '@/components/common/KeyFieldsWidget.vue';
 import apiClient from '@/utils/apiClient';
 import { useAuthStore } from '@/stores/auth';
 import { useTabs } from '@/composables/useTabs';
@@ -616,7 +859,11 @@ import {
   ClockIcon,
   XMarkIcon,
   UserCircleIcon,
-  Cog6ToothIcon
+  Cog6ToothIcon,
+  FunnelIcon,
+  ChevronDownIcon,
+  ChevronUpDownIcon,
+  CheckIcon
 } from '@heroicons/vue/24/outline';
 import { HeartIcon as HeartIconSolid, TagIcon as TagIconSolid, ChatBubbleLeftEllipsisIcon } from '@heroicons/vue/24/solid';
 
@@ -752,6 +999,7 @@ const fixedTabs = [
 
 // Module definitions
 const moduleDefinition = ref(null);
+const allModuleDefinitions = ref({});
 
 // Field values tracking for discard functionality
 const originalFieldValues = ref({});
@@ -872,6 +1120,11 @@ let isInitializing = false;
 // Timeline updates - store all activity logs
 const timelineUpdates = ref([]);
 const loggedRecordIds = ref(new Set()); // Track which records we've logged initial load for
+
+// Filter state
+const activityFilterUser = ref('');
+const activityFilterType = ref('');
+const activitySearchQuery = ref('');
 
 // Get current user name for activity logs
 const getCurrentUserName = () => {
@@ -1005,11 +1258,22 @@ const sortedTimelineUpdates = computed(() => {
   });
 });
 
+// Get unique users from activity
+const uniqueActivityUsers = computed(() => {
+  const users = new Set();
+  sortedTimelineUpdates.value.forEach(update => {
+    if (update.user) {
+      users.add(update.user);
+    }
+  });
+  return Array.from(users).sort();
+});
+
 // Computed padding for tab content (accounts for taller header on mobile/tablet)
 const tabContentPadding = computed(() => {
-  // On desktop (lg+), header is single row, needs less padding
-  // On mobile/tablet, header is two rows, needs more padding
-  if (viewportWidth.value >= 1024) {
+  // On tablet/desktop (md+), header is single row, needs less padding
+  // On mobile, header is two rows, needs more padding
+  if (viewportWidth.value >= 768) {
     return 'pt-32'; // ~128px top padding, p-6 for other sides
   } else {
     return 'pt-48'; // ~192px top padding, p-6 for other sides
@@ -1018,8 +1282,11 @@ const tabContentPadding = computed(() => {
 
 // Computed class and style for details grid columns
 const detailsGridClass = computed(() => {
-  if (viewportWidth.value >= 1280) {
-    // 3 columns at 1280px+
+  if (viewportWidth.value >= 1440) {
+    // At 1440px+, don't apply xl:grid-cols-3 to avoid conflict with inline style
+    return 'grid grid-cols-1 md:grid-cols-2 gap-6';
+  } else if (viewportWidth.value >= 1280) {
+    // 3 columns at 1280px - 1439px
     return 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6';
   } else if (viewportWidth.value >= 768) {
     // 2 columns at 768px - 1279px
@@ -1039,7 +1306,7 @@ const detailsGridStyle = computed(() => {
 
 // Transform activity logs into activity items for the feeds UI
 const activityItems = computed(() => {
-  return sortedTimelineUpdates.value.map((update, index) => {
+  const items = sortedTimelineUpdates.value.map((update, index) => {
     const action = update.action || '';
     const lowerAction = action.toLowerCase();
     
@@ -1112,6 +1379,30 @@ const activityItems = computed(() => {
       date: formatDate(update.timestamp)
     };
   });
+  
+  // Apply filters
+  return items.filter(item => {
+    // Filter by user
+    if (activityFilterUser.value && item.person.name.toLowerCase() !== activityFilterUser.value.toLowerCase()) {
+      return false;
+    }
+    
+    // Filter by type
+    if (activityFilterType.value && item.type !== activityFilterType.value) {
+      return false;
+    }
+    
+    // Filter by search query
+    if (activitySearchQuery.value) {
+      const query = activitySearchQuery.value.toLowerCase();
+      const searchableText = `${item.person.name} ${item.comment} ${item.fieldName}`.toLowerCase();
+      if (!searchableText.includes(query)) {
+        return false;
+      }
+    }
+    
+    return true;
+  });
 });
 
 // Available widgets
@@ -1182,7 +1473,7 @@ const initializeGridStack = async () => {
     gridStack = GridStack.init({
       column: 12,
       cellHeight: 70,
-      margin: 8,
+      margin: '16px',
       animate: true,
       disableResize: false,
       disableDrag: false,
@@ -1433,12 +1724,12 @@ const loadDefaultWidgets = () => {
   } else {
     // Default widgets for other record types
     defaultWidgets = [
-      { type: 'related-records', x: 0, y: 0, w: 6, h: 4 },
-      { type: 'activity-stream', x: 6, y: 0, w: 6, h: 4 },
-      { type: 'lifecycle-stage', x: 0, y: 4, w: 4, h: 3 },
-      { type: 'metrics', x: 4, y: 4, w: 4, h: 3 },
-      { type: 'touchpoints', x: 8, y: 4, w: 4, h: 3 },
-      { type: 'key-fields', x: 0, y: 7, w: 12, h: 3 }
+      { type: 'related-organization', x: 0, y: 0, w: 6, h: 4 },
+      { type: 'related-deals', x: 6, y: 0, w: 6, h: 4 },
+      { type: 'related-tasks', x: 0, y: 4, w: 6, h: 4 },
+      { type: 'related-events', x: 6, y: 4, w: 6, h: 4 },
+      { type: 'lifecycle-stage', x: 0, y: 8, w: 6, h: 4 },
+      { type: 'key-fields', x: 6, y: 8, w: 6, h: 4 }
     ];
   }
 
@@ -1465,7 +1756,7 @@ const addWidgetToGrid = (widgetType, x = 0, y = 0, w = 4, h = 3) => {
   if (!gridStack || !gridStackContainer.value) return;
   
   // Ensure record is available before creating widgets that need it
-  if ((widgetType === 'related-contacts' || widgetType === 'related-users' || widgetType === 'related-deals') && !props.record?._id) {
+  if ((widgetType === 'related-contacts' || widgetType === 'related-users' || widgetType === 'related-deals' || widgetType === 'related-tasks' || widgetType === 'related-events') && !props.record?._id) {
     console.warn(`Cannot create ${widgetType} widget: record._id not available`);
     return;
   }
@@ -1500,8 +1791,7 @@ const widgetApps = new Map();
 const createWidgetElement = (widgetType) => {
   // Create container div with card styling - this becomes the widget card
   const container = document.createElement('div');
-  container.className = 'bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4';
-  container.style.margin = '4px';
+  container.className = 'bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700';
   container.style.boxSizing = 'border-box';
   container.style.height = '100%';
   container.style.display = 'flex';
@@ -1519,20 +1809,92 @@ const createWidgetElement = (widgetType) => {
         Component = RelatedContactsWidget;
         componentProps.organizationId = props.record._id;
         componentProps.limit = 5;
+        componentProps.moduleDefinition = allModuleDefinitions.value['people'];
         break;
       case 'related-users':
         Component = RelatedUsersWidget;
-        componentProps.organizationId = props.record._id;
+        componentProps.organizationId = props.record.legacyOrganizationId || props.record._id;
         componentProps.limit = 5;
+        componentProps.moduleDefinition = allModuleDefinitions.value['users'];
         break;
       case 'related-deals':
         Component = RelatedDealsWidget;
+        componentProps.organizationId = props.record.legacyOrganizationId || props.record._id;
+        componentProps.limit = 5;
+        componentProps.moduleDefinition = allModuleDefinitions.value['deals'];
+        break;
+      case 'related-tasks':
+        Component = RelatedTasksWidget;
         componentProps.organizationId = props.record._id;
         componentProps.limit = 5;
+        componentProps.moduleDefinition = allModuleDefinitions.value['tasks'];
+        break;
+      case 'related-events':
+        Component = RelatedEventsWidget;
+        componentProps.relatedType = 'Organization';
+        componentProps.relatedId = props.record._id;
+        componentProps.limit = 5;
+        componentProps.moduleDefinition = allModuleDefinitions.value['events'];
         break;
       case 'metrics':
         Component = OrganizationMetricsWidget;
         componentProps.stats = props.stats || {};
+        break;
+      case 'lifecycle-stage':
+        Component = LifecycleStageWidget;
+        componentProps.record = props.record;
+        componentProps.recordType = props.recordType;
+        componentProps.moduleDefinition = moduleDefinition.value;
+        break;
+      case 'key-fields':
+        Component = KeyFieldsWidget;
+        componentProps.record = props.record;
+        componentProps.recordType = props.recordType;
+        componentProps.moduleDefinition = moduleDefinition.value;
+        break;
+      default:
+        // Fallback to simple HTML widget
+        container.innerHTML = getWidgetContent(widgetType);
+        return container;
+    }
+  } else if (props.record?._id) {
+    // For other record types, support lifecycle-stage and related-organization widgets
+    switch (widgetType) {
+      case 'lifecycle-stage':
+        Component = LifecycleStageWidget;
+        componentProps.record = props.record;
+        componentProps.recordType = props.recordType;
+        componentProps.moduleDefinition = moduleDefinition.value;
+        break;
+      case 'key-fields':
+        Component = KeyFieldsWidget;
+        componentProps.record = props.record;
+        componentProps.recordType = props.recordType;
+        componentProps.moduleDefinition = moduleDefinition.value;
+        break;
+      case 'related-organization':
+        Component = RelatedOrganizationWidget;
+        componentProps.organization = props.record.organization;
+        componentProps.moduleDefinition = allModuleDefinitions.value['organizations'];
+        break;
+      case 'related-deals':
+        Component = RelatedDealsWidget;
+        componentProps.contactId = props.record._id;
+        componentProps.limit = 5;
+        componentProps.moduleDefinition = allModuleDefinitions.value['deals'];
+        break;
+      case 'related-tasks':
+        Component = RelatedTasksWidget;
+        componentProps.contactId = props.record._id;
+        componentProps.limit = 5;
+        componentProps.moduleDefinition = allModuleDefinitions.value['tasks'];
+        break;
+      case 'related-events':
+        Component = RelatedEventsWidget;
+        componentProps.relatedType = 'Contact';
+        componentProps.relatedId = props.record._id;
+        componentProps.limit = 5;
+        componentProps.moduleDefinition = allModuleDefinitions.value['events'];
         break;
       default:
         // Fallback to simple HTML widget
@@ -1561,18 +1923,46 @@ const createWidgetElement = (widgetType) => {
     const handleViewDeal = (id) => {
       handleOpenRelatedRecord({ type: 'deals', id });
     };
+    const handleViewOrganization = (id) => {
+      handleOpenRelatedRecord({ type: 'organizations', id });
+    };
+    const handleViewTask = (id) => {
+      handleOpenRelatedRecord({ type: 'tasks', id });
+    };
+    const handleViewEvent = (id) => {
+      handleOpenRelatedRecord({ type: 'events', id });
+    };
     
     const wrapperComponent = {
       setup() {
         // Pass props directly - widgets will watch for changes
+        const handleUpdate = (data) => {
+          // Handle lifecycle stage updates
+          if (data.field && data.value !== undefined) {
+            updateField(data.field, data.value);
+          }
+        };
+        
         return () => h(Component, {
           ...componentProps,
+          // Pass reactive record from props if lifecycle-stage widget
+          record: widgetType === 'lifecycle-stage' ? props.record : componentProps.record,
+          recordType: widgetType === 'lifecycle-stage' ? props.recordType : componentProps.recordType,
+          moduleDefinition: widgetType === 'lifecycle-stage' ? moduleDefinition.value : componentProps.moduleDefinition,
+          // Pass reactive organization from props if related-organization widget
+          organization: widgetType === 'related-organization' ? props.record.organization : componentProps.organization,
           onViewContact: handleViewContact,
           onViewUser: handleViewUser,
           onViewDeal: handleViewDeal,
+          onViewOrganization: handleViewOrganization,
+          onViewTask: handleViewTask,
+          onViewEvent: handleViewEvent,
           onCreateContact: () => {},
           onCreateUser: () => {},
-          onCreateDeal: () => {}
+          onCreateDeal: () => {},
+          onCreateTask: () => {},
+          onCreateEvent: () => {},
+          onUpdate: handleUpdate
         });
       }
     };
@@ -1738,6 +2128,15 @@ const fetchModuleDefinition = async () => {
   try {
     const response = await apiClient.get('/modules');
     const modules = response.data || [];
+    
+    // Create a map of all module definitions by key
+    const moduleMap = {};
+    modules.forEach(mod => {
+      moduleMap[mod.key] = mod;
+    });
+    allModuleDefinitions.value = moduleMap;
+    
+    // Set the current module definition
     const module = modules.find(m => m.key === props.recordType);
     if (module) {
       moduleDefinition.value = module;
@@ -2012,6 +2411,106 @@ const getColorForName = (name) => {
   if (!name) return getColorForLetter('?');
   const firstLetter = name.trim()[0];
   return getColorForLetter(firstLetter);
+};
+
+// Get color for a picklist option
+const getColorForOption = (option) => {
+  // Handle null/undefined
+  if (!option) return null;
+  
+  // Support both string (backward compatibility) and object formats
+  if (typeof option === 'object' && option.color) {
+    return option.color;
+  }
+  return null;
+};
+
+// Convert hex color to RGB
+const hexToRgb = (hexColor) => {
+  if (!hexColor) return null;
+  
+  // Remove # if present
+  const hex = hexColor.replace('#', '');
+  
+  // Convert to RGB
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  
+  return { r, g, b };
+};
+
+// Get contrast color (black or white) based on background brightness
+const getContrastColor = (hexColor) => {
+  if (!hexColor) return '#1f2937';
+  
+  const rgb = hexToRgb(hexColor);
+  if (!rgb) return '#1f2937';
+  
+  // Calculate brightness using relative luminance formula
+  const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+  
+  // Return black for light colors, white for dark colors
+  return brightness > 155 ? '#1f2937' : '#ffffff';
+};
+
+// Get selected option for a field
+const getSelectedOption = (field) => {
+  if (!field.value || !field.options) return null;
+  
+  return field.options.find(opt => {
+    const optValue = typeof opt === 'string' ? opt : opt.value;
+    return String(optValue) === String(field.value);
+  });
+};
+
+// Get button color classes
+const getButtonColorClasses = (field) => {
+  const selectedOption = getSelectedOption(field);
+  const optionColor = getColorForOption(selectedOption);
+  
+  // Base classes for all buttons
+  const baseClasses = 'px-3 py-2 rounded-lg text-sm font-medium transition-colors border';
+  
+  // If no color, use default classes
+  if (!optionColor) {
+    return `${baseClasses} bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600`;
+  }
+  
+  // If we have a custom color, return base classes only (inline styles will handle colors)
+  return `${baseClasses} hover:opacity-90`;
+};
+
+// Get button color style (inline styles for custom colors)
+const getButtonColorStyle = (field) => {
+  const selectedOption = getSelectedOption(field);
+  const optionColor = getColorForOption(selectedOption);
+  
+  // If no color, return empty style
+  if (!optionColor) {
+    return {};
+  }
+  
+  // Convert hex to RGB for opacity calculation
+  const rgb = hexToRgb(optionColor);
+  if (!rgb) {
+    return {};
+  }
+  
+  // Apply the color as text and use 15% opacity for background
+  return {
+    backgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.15)`,
+    borderColor: optionColor,
+    color: optionColor
+  };
+};
+
+// Check if an option is selected
+const getOptionIsSelected = (field, option) => {
+  if (!field.value) return false;
+  
+  const optValue = typeof option === 'string' ? option : option.value;
+  return String(optValue) === String(field.value);
 };
 
 // Handler functions for dynamic tabs

@@ -170,8 +170,13 @@
                   </select>
                   <p v-if="isCoreField(currentField, selectedModule?.key)" class="mt-1 text-xs text-gray-500 dark:text-gray-400">Core fields cannot have their type changed</p>
                 </div>
-                <div class="flex items-center gap-6 mt-6">
+                <div class="flex items-center gap-6 mt-6 flex-wrap">
                   <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" v-model="currentField.required" :disabled="isSystemField(currentField) || currentField.dataType === 'Auto-Number' || currentField.dataType === 'Formula' || currentField.dataType === 'Rollup Summary'" /> Required</label>
+                  <label class="inline-flex items-center gap-2 text-sm">
+                    <input type="checkbox" v-model="currentField.keyField" :disabled="isSystemField(currentField) || !canMarkAsKeyField" />
+                    Key Field
+                    <span v-if="keyFieldCount > 0" class="text-xs text-gray-500 dark:text-gray-400">({{ keyFieldCount }}/10)</span>
+                  </label>
                   <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" v-model="currentField.visibility.list" :disabled="isSystemField(currentField)" /> Show in List</label>
                   <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" v-model="currentField.visibility.detail" :disabled="isSystemField(currentField)" /> Show in Detail</label>
                 </div>
@@ -1716,6 +1721,15 @@ const selectField = (idx) => {
 const currentField = computed(() => editFields.value[selectedFieldIdx.value]);
 const currentFieldTitle = computed(() => currentField.value?.label || currentField.value?.key || 'Field');
 const otherFields = computed(() => editFields.value.filter((_, i) => i !== selectedFieldIdx.value));
+
+// Key field validation
+const keyFieldCount = computed(() => editFields.value.filter(f => f.keyField === true).length);
+const canMarkAsKeyField = computed(() => {
+  if (!currentField.value?.keyField) {
+    return keyFieldCount.value < 10;
+  }
+  return true;
+});
 
 // Initialize options array if it doesn't exist and load settings when field changes
 watch(() => currentField.value?.dataType, (newType) => {

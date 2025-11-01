@@ -458,9 +458,9 @@ const columns = computed(() => {
   if (!moduleDefinition.value) {
     // Fallback to basic columns while loading
     return [
-      { key: 'name', label: 'Organization', sortable: true },
-      { key: 'contactCount', label: 'Contacts', sortable: true },
-      { key: 'createdAt', label: 'Created', sortable: true }
+      { key: 'name', label: 'Organization', sortable: true, minWidth: '200px' },
+      { key: 'contactCount', label: 'Contacts', sortable: true, minWidth: '120px' },
+      { key: 'createdAt', label: 'Created', sortable: true, minWidth: '140px' }
     ];
   }
   
@@ -470,10 +470,12 @@ const columns = computed(() => {
     if (visibleCol.visible) {
       // Handle special columns
       if (visibleCol.key === 'name' || visibleCol.key === 'contactCount' || visibleCol.key === 'createdAt') {
+        const minWidth = visibleCol.key === 'name' ? '200px' : '120px';
         orderedColumns.push({
           key: visibleCol.key,
           label: visibleCol.label,
-          sortable: visibleCol.sortable !== false
+          sortable: visibleCol.sortable !== false,
+          minWidth
         });
       } else {
         // Regular module fields
@@ -482,11 +484,26 @@ const columns = computed(() => {
         );
         
         if (field) {
+          // Determine minWidth based on data type
+          let minWidth = '120px';
+          if (['Email', 'Phone', 'URL'].includes(field.dataType)) {
+            minWidth = '180px';
+          } else if (['Text-Area', 'Rich Text'].includes(field.dataType)) {
+            minWidth = '250px';
+          } else if (['Currency', 'Integer', 'Decimal'].includes(field.dataType)) {
+            minWidth = '120px';
+          } else if (['Date', 'Date-Time'].includes(field.dataType)) {
+            minWidth = '140px';
+          } else if (['Picklist', 'Multi-Picklist'].includes(field.dataType)) {
+            minWidth = '150px';
+          }
+          
           orderedColumns.push({
             key: field.key,
             label: field.label || field.key,
             sortable: visibleCol.sortable !== false && !['Multi-Picklist', 'Text-Area', 'Rich Text', 'Formula', 'Rollup Summary'].includes(field.dataType),
-            dataType: field.dataType
+            dataType: field.dataType,
+            minWidth
           });
         }
       }

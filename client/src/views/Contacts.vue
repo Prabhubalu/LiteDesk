@@ -523,7 +523,8 @@ const tableColumns = computed(() => {
       key: 'name', 
       label: 'Name', 
       sortable: true,
-      sortValue: (row) => `${row.first_name || ''} ${row.last_name || ''}`.trim()
+      sortValue: (row) => `${row.first_name || ''} ${row.last_name || ''}`.trim(),
+      minWidth: '180px'
     },
   ];
   
@@ -533,7 +534,8 @@ const tableColumns = computed(() => {
     baseColumns.push({ 
       key: 'organization', 
       label: 'Organization', 
-      sortable: false 
+      sortable: false,
+      minWidth: '180px'
     });
   }
   
@@ -546,11 +548,26 @@ const tableColumns = computed(() => {
       );
       
       if (field) {
+        // Determine minWidth based on data type
+        let minWidth = '120px';
+        if (['Email', 'Phone', 'URL'].includes(field.dataType)) {
+          minWidth = '180px';
+        } else if (['Text-Area', 'Rich Text'].includes(field.dataType)) {
+          minWidth = '250px';
+        } else if (['Currency', 'Integer', 'Decimal'].includes(field.dataType)) {
+          minWidth = '120px';
+        } else if (['Date', 'Date-Time'].includes(field.dataType)) {
+          minWidth = '140px';
+        } else if (['Picklist', 'Multi-Picklist'].includes(field.dataType)) {
+          minWidth = '150px';
+        }
+        
         orderedColumns.push({
           key: field.key,
           label: field.label || field.key,
           sortable: visibleCol.sortable !== false && !['Multi-Picklist', 'Text-Area', 'Rich Text', 'Formula', 'Rollup Summary'].includes(field.dataType),
-          dataType: field.dataType
+          dataType: field.dataType,
+          minWidth
         });
       }
     }

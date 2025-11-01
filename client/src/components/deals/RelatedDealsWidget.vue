@@ -26,29 +26,24 @@
         @click="$emit('view-deal', deal._id)"
         class="p-3 mb-3 bg-gray-50 dark:bg-gray-900 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors"
       >
-        <div class="flex items-start justify-between gap-2">
-          <div class="flex-1 min-w-0">
-            <h4 class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ deal.name }}</h4>
-            <div class="flex items-center gap-2 mt-1">
-              <span class="text-lg font-bold text-green-600 dark:text-green-400">
-                ${{ deal.amount?.toLocaleString() || 0 }}
-              </span>
-              <span :class="getStageClass(deal.stage)">{{ deal.stage }}</span>
+        <!-- Deal Name -->
+        <h4 class="text-sm font-medium text-gray-900 dark:text-white truncate mb-2">{{ deal.name }}</h4>
+        
+        <!-- Key Fields -->
+        <div v-if="keyFields.length > 0" class="flex flex-wrap gap-x-4 gap-y-1">
+          <div
+            v-for="fieldDef in keyFields"
+            :key="fieldDef.key"
+            class="flex flex-col"
+          >
+            <div class="text-xs font-medium text-gray-500 dark:text-gray-400">
+              {{ fieldDef.label }}
             </div>
-            <div class="flex items-center gap-3 mt-2 text-xs text-gray-500 dark:text-gray-400">
-              <span class="flex items-center gap-1">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                {{ formatDate(deal.expectedCloseDate || deal.createdAt) }}
-              </span>
-              <span v-if="deal.probability" class="flex items-center gap-1">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
-                {{ deal.probability }}%
-              </span>
-              <span :class="getStatusClass(deal.status)">{{ deal.status }}</span>
+            <div class="text-xs text-gray-900 dark:text-white">
+              <template v-if="getFieldValue(fieldDef, deal)">
+                {{ getFieldValue(fieldDef, deal) }}
+              </template>
+              <span v-else class="text-gray-400 dark:text-gray-500 italic">Empty</span>
             </div>
           </div>
         </div>
@@ -72,8 +67,9 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import apiClient from '@/utils/apiClient';
+import { getKeyFields, getFieldValue } from '@/utils/fieldDisplay';
 
 const props = defineProps({
   contactId: {
@@ -87,6 +83,10 @@ const props = defineProps({
   limit: {
     type: Number,
     default: 5
+  },
+  moduleDefinition: {
+    type: Object,
+    required: false
   }
 });
 
@@ -94,6 +94,11 @@ defineEmits(['create-deal', 'view-deal']);
 
 const deals = ref([]);
 const loading = ref(false);
+
+// Get key fields from module definition
+const keyFields = computed(() => {
+  return getKeyFields(props.moduleDefinition);
+});
 
 const fetchDeals = async () => {
   if (!props.contactId && !props.organizationId) return;

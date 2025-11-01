@@ -34,10 +34,10 @@
 
 /* Ensure GridStack margins are visible */
 .grid-stack {
-  --gs-item-margin-top: 8px !important;
-  --gs-item-margin-bottom: 8px !important;
-  --gs-item-margin-left: 8px !important;
-  --gs-item-margin-right: 8px !important;
+  --gs-item-margin-top: 16px !important;
+  --gs-item-margin-bottom: 16px !important;
+  --gs-item-margin-left: 16px !important;
+  --gs-item-margin-right: 16px !important;
 }
 
 /* Prevent GridStack resize handles from appearing above fixed headers */

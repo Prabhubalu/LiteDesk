@@ -5,9 +5,7 @@
       <div v-if="selectable && showSelectAllBanner" class="mb-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-xl px-6 py-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <InformationCircleIcon class="w-5 h-5 text-blue-600 dark:text-blue-400" />
             <p class="text-sm font-medium text-blue-900 dark:text-blue-100">
               All {{ displayData.length }} items on this page are selected.
             </p>
@@ -50,9 +48,7 @@
                 class="p-2 hover:bg-white/20 rounded-lg transition-all"
                 title="Clear selection"
               >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <XMarkIcon class="w-5 h-5" />
               </button>
             </div>
 
@@ -74,18 +70,10 @@
                   'bg-white/20 hover:bg-white/30'
                 ]"
               >
-                <svg v-if="action.icon === 'trash'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0 0 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" />
-                </svg>
-                <svg v-else-if="action.icon === 'edit'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                <svg v-else-if="action.icon === 'export'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                <svg v-else-if="action.icon === 'archive'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                </svg>
+                <TrashIcon v-if="action.icon === 'trash'" class="w-4 h-4" />
+                <PencilSquareIcon v-else-if="action.icon === 'edit'" class="w-4 h-4" />
+                <ArrowDownTrayIcon v-else-if="action.icon === 'export'" class="w-4 h-4" />
+                <ArchiveBoxIcon v-else-if="action.icon === 'archive'" class="w-4 h-4" />
                 {{ action.label }}
               </button>
 
@@ -95,9 +83,7 @@
                 @click="handleBulkAction('delete')"
                 class="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg font-medium transition-all hover:scale-105 flex items-center gap-2"
               >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0 0 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" />
-                </svg>
+                <TrashIcon class="w-4 h-4" />
                 Delete Selected
               </button>
             </div>
@@ -110,9 +96,7 @@
     <div v-if="showControls" class="flex items-center justify-between mb-6 gap-4 flex-wrap">
       <!-- Search -->
       <div v-if="searchable" class="relative flex-1 min-w-[280px] max-w-md">
-        <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
+        <MagnifyingGlassIcon class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
         <input
           v-model="searchQuery"
           type="text"
@@ -135,9 +119,7 @@
         class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition-all shadow-sm"
         title="Column Settings"
       >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-        </svg>
+        <Cog6ToothIcon class="w-5 h-5" />
         <span>Columns</span>
       </button>
     </div>
@@ -158,9 +140,7 @@
                 @click="showColumnSettings = false"
                 class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
-                <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <XMarkIcon class="w-5 h-5 text-gray-500 dark:text-gray-400" />
               </button>
             </div>
 
@@ -189,9 +169,7 @@
                     :class="{ 'opacity-50': draggedIndex === index }"
                   >
                     <!-- Drag Handle -->
-                    <svg class="w-5 h-5 text-gray-400 dark:text-gray-500 cursor-move flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
-                    </svg>
+                    <ArrowsUpDownIcon class="w-5 h-5 text-gray-400 dark:text-gray-500 cursor-move flex-shrink-0" />
                     
                     <!-- Visibility Checkbox -->
                     <input
@@ -220,9 +198,7 @@
                       ]"
                       :title="isColumnFrozen(column.key) ? 'Unfreeze column' : frozenColumns.length >= 2 ? 'Maximum 2 columns can be frozen' : 'Freeze column'"
                     >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                      </svg>
+                      <BookmarkIcon class="w-4 h-4" />
                     </button>
                     
                     <!-- Hidden Badge -->
@@ -274,7 +250,7 @@
     </Teleport>
 
     <!-- Table Wrapper -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
       <!-- Table Container with Horizontal Scroll -->
       <div class="overflow-x-auto">
       <!-- Loading State -->
@@ -286,16 +262,14 @@
       <!-- Empty State -->
       <div v-else-if="!data || data.length === 0" class="flex flex-col items-center justify-center py-16 px-4">
         <slot name="empty">
-          <svg class="w-20 h-20 text-gray-300 dark:text-gray-600 mb-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-          </svg>
+          <ArchiveBoxXMarkIcon class="w-20 h-20 text-gray-300 dark:text-gray-600 mb-5" />
           <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">{{ emptyTitle }}</h3>
           <p class="text-base text-gray-500 dark:text-gray-400 text-center max-w-md">{{ emptyMessage }}</p>
         </slot>
       </div>
 
       <!-- Data Table -->
-      <table v-else class="w-full min-w-full" :class="{ 'table-fixed': resizable }">
+      <table v-else class="min-w-max">
         <thead class="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 border-b-2 border-gray-200 dark:border-gray-600">
           <tr>
             <!-- Selection Column (Always Frozen) -->
@@ -337,19 +311,13 @@
                 <span v-if="column.sortable !== false" class="flex items-center ml-auto">
                   <!-- Active sort -->
                   <span v-if="sortBy === column.key" class="text-brand-600 dark:text-brand-500">
-                    <svg v-if="sortOrder === 'asc'" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" />
-                    </svg>
-                    <svg v-else class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                    </svg>
+                    <ChevronUpIcon v-if="sortOrder === 'asc'" class="w-4 h-4" />
+                    <ChevronDownIcon v-else class="w-4 h-4" />
                   </span>
                   
                   <!-- Sortable indicator (inactive) -->
                   <span v-else class="text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-                    </svg>
+                    <ArrowsUpDownIcon class="w-4 h-4" />
                   </span>
                 </span>
               </div>
@@ -448,9 +416,7 @@
                     class="p-2 rounded-lg transition-all duration-200 hover:scale-110 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30"
                     title="Edit"
                   >
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
+                    <PencilSquareIcon class="w-5 h-5" />
                   </button>
                   <button
                     v-if="!hideDelete"
@@ -458,9 +424,7 @@
                     class="p-2 rounded-lg transition-all duration-200 hover:scale-110 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
                     title="Delete"
                   >
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
+                    <TrashIcon class="w-5 h-5" />
                   </button>
                 </slot>
               </div>
@@ -485,9 +449,7 @@
           :disabled="currentPage === 1"
           class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-400 dark:hover:border-gray-500 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white dark:disabled:hover:bg-gray-700 transition-all shadow-sm hover:shadow-md hover:scale-105"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
+          <ChevronLeftIcon class="w-4 h-4" />
           Previous
         </button>
 
@@ -513,9 +475,7 @@
           class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-400 dark:hover:border-gray-500 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white dark:disabled:hover:bg-gray-700 transition-all shadow-sm hover:shadow-md hover:scale-105"
         >
           Next
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
+          <ChevronRightIcon class="w-4 h-4" />
         </button>
       </div>
     </div>
@@ -524,6 +484,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { InformationCircleIcon, XMarkIcon, TrashIcon, PencilSquareIcon, ArrowDownTrayIcon, ArchiveBoxIcon, ChevronLeftIcon, ChevronRightIcon, ArrowsUpDownIcon, EyeIcon, MagnifyingGlassIcon, Cog6ToothIcon, BookmarkIcon, ArchiveBoxXMarkIcon, ChevronUpIcon, ChevronDownIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
   // Data
@@ -770,9 +731,13 @@ const handleResize = (event) => {
   
   const { columnKey, startX, startWidth } = resizing.value;
   const diff = event.clientX - startX;
-  const newWidth = Math.max(100, startWidth + diff); // Minimum width of 100px
   
-  console.log(`Resizing ${columnKey}:`, { diff, newWidth });
+  // Get the column definition to check for minWidth
+  const column = props.columns.find(col => col.key === columnKey);
+  const minWidth = column?.minWidth ? parseInt(column.minWidth) : 100;
+  const newWidth = Math.max(minWidth, startWidth + diff);
+  
+  console.log(`Resizing ${columnKey}:`, { diff, newWidth, minWidth });
   
   // Update the column width
   columnWidths.value = {

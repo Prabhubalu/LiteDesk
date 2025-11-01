@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+  <div class="flex flex-col h-full w-full">
     <div class="flex items-center justify-between mb-3">
       <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Related Events</h3>
       <button
@@ -26,39 +26,24 @@
         @click="$emit('view-event', event._id)"
         class="p-3 mb-3 bg-gray-50 dark:bg-gray-900 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors"
       >
-        <div class="flex items-start gap-2">
+        <!-- Event Title -->
+        <h4 class="text-sm font-medium text-gray-900 dark:text-white truncate mb-2">{{ event.title }}</h4>
+        
+        <!-- Key Fields -->
+        <div v-if="keyFields.length > 0" class="flex flex-wrap gap-x-4 gap-y-1">
           <div
-            :style="{ backgroundColor: event.color }"
-            class="w-1 h-full rounded-full flex-shrink-0 mt-1"
-          ></div>
-          <div class="flex-1 min-w-0">
-            <div class="flex items-start justify-between gap-2">
-              <h4 class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ event.title }}</h4>
-              <span :class="getStatusBadgeClass(event.status)">{{ event.status }}</span>
+            v-for="fieldDef in keyFields"
+            :key="fieldDef.key"
+            class="flex flex-col"
+          >
+            <div class="text-xs font-medium text-gray-500 dark:text-gray-400">
+              {{ fieldDef.label }}
             </div>
-            <div class="flex items-center gap-3 mt-1 text-xs text-gray-500 dark:text-gray-400">
-              <span class="flex items-center gap-1">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                {{ formatDate(event.startDate) }}
-              </span>
-              <span class="flex items-center gap-1">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ formatTime(event.startDate) }}
-              </span>
-              <span v-if="event.type" class="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs">
-                {{ event.type }}
-              </span>
-            </div>
-            <!-- Show related record if it's a rollup event -->
-            <div v-if="event.relatedTo && showRelatedInfo(event)" class="mt-1 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              <span>{{ event.relatedTo.type }}: {{ getRelatedName(event.relatedTo.id) }}</span>
+            <div class="text-xs text-gray-900 dark:text-white">
+              <template v-if="getFieldValue(fieldDef, event)">
+                {{ getFieldValue(fieldDef, event) }}
+              </template>
+              <span v-else class="text-gray-400 dark:text-gray-500 italic">Empty</span>
             </div>
           </div>
         </div>
@@ -82,9 +67,10 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, computed } from 'vue';
 import apiClient from '@/utils/apiClient';
 import dateUtils from '@/utils/dateUtils';
+import { getKeyFields, getFieldValue } from '@/utils/fieldDisplay';
 
 const props = defineProps({
   relatedType: {
@@ -98,6 +84,10 @@ const props = defineProps({
   limit: {
     type: Number,
     default: 5
+  },
+  moduleDefinition: {
+    type: Object,
+    required: false
   }
 });
 
@@ -105,6 +95,11 @@ defineEmits(['create-event', 'view-event']);
 
 const events = ref([]);
 const loading = ref(false);
+
+// Get key fields from module definition
+const keyFields = computed(() => {
+  return getKeyFields(props.moduleDefinition);
+});
 
 const fetchEvents = async () => {
   if (!props.relatedId) return;

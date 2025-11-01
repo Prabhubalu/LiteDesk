@@ -26,25 +26,24 @@
         @click="$emit('view-contact', contact._id)"
         class="p-3 mb-3 bg-gray-50 dark:bg-gray-900 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors"
       >
-        <div class="flex items-start justify-between gap-2">
-          <div class="flex-1 min-w-0">
-            <h4 class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ contact.name }}</h4>
-            <div class="flex items-center gap-2 mt-1 text-xs text-gray-500 dark:text-gray-400">
-              <span v-if="contact.email" class="flex items-center gap-1">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                {{ contact.email }}
-              </span>
-              <span v-if="contact.phone" class="flex items-center gap-1">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-                {{ contact.phone }}
-              </span>
+        <!-- Contact Name -->
+        <h4 class="text-sm font-medium text-gray-900 dark:text-white truncate mb-2">{{ (contact.first_name || '') + ' ' + (contact.last_name || '') }}</h4>
+        
+        <!-- Key Fields -->
+        <div v-if="keyFields.length > 0" class="flex flex-wrap gap-x-4 gap-y-1">
+          <div
+            v-for="fieldDef in keyFields"
+            :key="fieldDef.key"
+            class="flex flex-col"
+          >
+            <div class="text-xs font-medium text-gray-500 dark:text-gray-400">
+              {{ fieldDef.label }}
             </div>
-            <div v-if="contact.title" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              {{ contact.title }}
+            <div class="text-xs text-gray-900 dark:text-white">
+              <template v-if="getFieldValue(fieldDef, contact)">
+                {{ getFieldValue(fieldDef, contact) }}
+              </template>
+              <span v-else class="text-gray-400 dark:text-gray-500 italic">Empty</span>
             </div>
           </div>
         </div>
@@ -68,17 +67,22 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, computed } from 'vue';
 import apiClient from '@/utils/apiClient';
+import { getKeyFields, getFieldValue } from '@/utils/fieldDisplay';
 
 const props = defineProps({
   organizationId: {
     type: String,
-    required: true
+    required: false
   },
   limit: {
     type: Number,
     default: 5
+  },
+  moduleDefinition: {
+    type: Object,
+    required: false
   }
 });
 
@@ -87,6 +91,11 @@ defineEmits(['view-contact', 'create-contact']);
 const contacts = ref([]);
 const loading = ref(false);
 
+// Get key fields from module definition
+const keyFields = computed(() => {
+  return getKeyFields(props.moduleDefinition);
+});
+
 const fetchContacts = async () => {
   if (!props.organizationId) return;
   
@@ -94,7 +103,7 @@ const fetchContacts = async () => {
   try {
     const data = await apiClient.get('/people', {
       params: {
-        organizationId: props.organizationId,
+        organization: props.organizationId,
         limit: props.limit,
         sortBy: 'createdAt',
         sortOrder: 'desc'
