@@ -199,7 +199,7 @@ onUnmounted(() => {
 
 <template>
   <div 
-    class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 fixed top-16 left-0 right-0 lg:top-0 lg:left-auto lg:right-auto z-30 overflow-x-hidden"
+    class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 fixed top-16 left-0 right-0 lg:top-0 lg:left-auto lg:right-auto z-30 overflow-x-hidden transition-all duration-300 ease-in-out"
     :style="{ 
       width: tabBarWidth + 'px',
       maxWidth: tabBarWidth + 'px',

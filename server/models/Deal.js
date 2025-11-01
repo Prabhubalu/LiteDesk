@@ -60,7 +60,7 @@ const DealSchema = new Schema({
     // **********************************
     contactId: {
         type: Schema.Types.ObjectId,
-        ref: 'Contact',
+        ref: 'People',
         index: true
     },
     accountId: {

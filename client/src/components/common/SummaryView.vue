@@ -23,9 +23,8 @@
     <div v-else-if="record" class="max-w-7xl mx-auto">
       <!-- Header Component - Fixed below TabBar -->
       <div 
-        class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 fixed z-40"
+        class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 fixed top-[65px] md:top-[113px] lg:top-[49px] z-40 transition-all duration-300 ease-in-out"
         :style="{ 
-          top: '48px', // TabBar height
           left: headerLeft,
           right: '0px'
         }"
@@ -36,10 +35,10 @@
             <div class="flex items-center gap-4">
               <!-- Icon/Avatar -->
               <div class="flex-shrink-0">
-                <div v-if="record.avatar" class="w-12 h-12 rounded-full overflow-hidden">
+                <div v-if="record.avatar" class="w-12 h-12 rounded-lg overflow-hidden">
                   <img :src="record.avatar" :alt="record.name" class="w-full h-full object-cover" />
                 </div>
-                <div v-else class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-lg font-bold">
+                <div v-else :class="['w-12 h-12 rounded-lg flex items-center justify-center text-xl font-medium', getColorForName(record.name).bg, getColorForName(record.name).text]">
                   {{ getInitials(record.name) }}
                 </div>
               </div>
@@ -67,21 +66,75 @@
                   ]"
                   :title="isFollowing ? 'Unfollow' : 'Follow'"
                 >
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
+                  <HeartIconSolid v-if="isFollowing" class="w-5 h-5" />
+                  <HeartIcon v-else class="w-5 h-5" />
                 </button>
 
-                <!-- Tag Icon -->
-                <button
-                  @click="showTagModal = true"
-                  class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                  title="Add Tag"
-                >
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                  </svg>
-                </button>
+                <!-- Tag Dropdown -->
+                <Menu as="div" class="relative">
+                  <MenuButton 
+                    :class="[
+                      'p-2 rounded-lg transition-colors',
+                      tags.length > 0
+                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    ]"
+                    :title="tags.length > 0 ? 'Manage Tags' : 'Add Tag'"
+                  >
+                    <TagIconSolid v-if="tags.length > 0" class="w-5 h-5" />
+                    <TagIcon v-else class="w-5 h-5" />
+                  </MenuButton>
+
+                  <transition
+                    enter-active-class="transition ease-out duration-100"
+                    enter-from-class="transform opacity-0 scale-95"
+                    enter-to-class="transform opacity-100 scale-100"
+                    leave-active-class="transition ease-in duration-75"
+                    leave-from-class="transform opacity-100 scale-100"
+                    leave-to-class="transform opacity-0 scale-95"
+                  >
+                    <MenuItems class="absolute left-0 mt-2 w-64 rounded-lg shadow-xl py-1 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 z-50">
+                      <!-- Existing Tags -->
+                      <div v-if="tags.length > 0" class="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Tags</p>
+                        <div class="flex flex-wrap gap-1">
+                          <span 
+                            v-for="(tag, index) in tags" 
+                            :key="index"
+                            class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-sm"
+                          >
+                            {{ tag }}
+                            <button
+                              @click="removeTag(index)"
+                              class="ml-1 hover:bg-blue-200 dark:hover:bg-blue-900/50 rounded p-0.5"
+                            >
+                              <XMarkIcon class="w-3 h-3" />
+                            </button>
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <!-- Empty State or Add New -->
+                      <div class="px-3 py-2">
+                        <div v-if="tags.length === 0" class="text-center py-2 mb-2">
+                          <p class="text-sm text-gray-500 dark:text-gray-400">No tags yet</p>
+                        </div>
+                        <MenuItem v-slot="{ active }">
+                          <button
+                            @click="showTagModal = true"
+                            :class="[
+                              'w-full text-left px-4 py-2 text-sm transition-colors duration-150 flex items-center gap-2',
+                              active ? 'bg-gray-100 dark:bg-gray-700' : ''
+                            ]"
+                          >
+                            <PlusIcon class="w-4 h-4" />
+                            {{ tags.length > 0 ? 'Add Another Tag' : 'Add Tag' }}
+                          </button>
+                        </MenuItem>
+                      </div>
+                    </MenuItems>
+                  </transition>
+                </Menu>
 
                 <!-- Copy URL Link -->
                 <button
@@ -89,27 +142,25 @@
                   class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                   title="Copy Link"
                 >
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
+                  <LinkIcon class="w-5 h-5" />
                 </button>
               </div>
             </div>
 
             <!-- Right Group: Primary Record Actions -->
             <div class="flex items-center gap-3">
-              <!-- Status/Lifecycle Stage Dropdown -->
+              <!-- Status/Lifecycle Stage Dropdowns (Dynamic based on module) -->
               <select
-                :value="record.status || record.lifecycleStage || 'Active'"
-                @change="updateField('status', $event.target.value)"
+                v-for="field in getLifecycleStatusFields"
+                :key="field.key"
+                :value="field.value"
+                @change="updateField(field.key, $event.target.value)"
                 class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-                <option value="Pending">Pending</option>
-                <option value="Suspended">Suspended</option>
-                <option value="Qualified">Qualified</option>
-                <option value="Unqualified">Unqualified</option>
+                <option value="">{{ field.label }}</option>
+                <option v-for="option in field.options" :key="option" :value="option">
+                  {{ option }}
+                </option>
               </select>
 
               <!-- Add Relation Dropdown -->
@@ -123,20 +174,16 @@
               <!-- Record Edit Button -->
               <button
                 @click="$emit('edit')"
-                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
+                class="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors inline-flex items-center"
               >
-                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
+                <PencilSquareIcon class="w-4 h-4 mr-2" />
                 Edit
               </button>
 
               <!-- More Dropdown -->
               <Menu as="div" class="relative">
                 <MenuButton class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                  </svg>
+                  <EllipsisVerticalIcon class="w-5 h-5" />
                 </MenuButton>
 
                 <transition
@@ -207,9 +254,7 @@
               class="inline-flex items-center gap-2 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full font-medium transition-colors shadow-lg hover:shadow-xl"
               title="Add Custom Widget"
             >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-              </svg>
+              <PlusIcon class="w-5 h-5" />
               <span class="hidden sm:inline">Add Widget</span>
             </button>
           </div>
@@ -217,30 +262,89 @@
 
         <!-- Details Tab -->
         <div v-else-if="activeTab === 'details'" class="space-y-6">
+                        <!-- Top Bar: Search, Toggle, and Manage Button -->
+                        <div class="flex items-center justify-between mb-4">
+              <!-- Search Field -->
+              <div class="relative w-100">
+                <input
+                  v-model="detailsSearch"
+                  type="text"
+                  placeholder="Search fields..."
+                  class="block w-full rounded-md bg-white border border-gray-200 dark:bg-gray-700 dark:border-transparent px-3 py-1.5 pl-10 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:focus:outline-indigo-500"
+                />
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <MagnifyingGlassIcon class="w-5 h-5 text-gray-400" />
+                </div>
+              </div>
+              
+              <!-- Right Side: Toggle and Manage Button -->
+              <div class="flex items-center gap-3">
+                <!-- Show empty fields toggle -->
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    v-model="showEmptyFields"
+                    class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                  />
+                  <span class="text-sm text-gray-700 dark:text-gray-300">Show empty fields</span>
+                </label>
+                
+                <!-- Manage Fields Button (only if user has permission) -->
+                <PermissionButton
+                  v-if="hasManageFieldsPermission"
+                  module="settings"
+                  action="edit"
+                  variant="secondary"
+                  icon="cog"
+                  @click="goToManageFields"
+                >
+                  Manage Fields
+                </PermissionButton>
+              </div>
+            </div>
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Record Details</h2>
+
+            
+            <!-- Fields Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div v-for="(value, key) in record" :key="key" class="space-y-1">
-                <label class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+              <div v-for="(value, key) in filteredRecordFields" :key="key">
+                <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">
                   {{ formatFieldName(key) }}
                 </label>
-                <div v-if="isEditableField(key)" class="flex items-center gap-2">
+                <div v-if="isEditableField(key)" class="mt-2">
+                  <select
+                    v-if="isPicklistField(key)"
+                    :value="value"
+                    @change="updateField(key, $event.target.value)"
+                    class="block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-1.5 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:focus:outline-indigo-500"
+                  >
+                    <option value="">-- Select --</option>
+                    <option v-for="option in getPicklistOptions(key)" :key="option.value || option" :value="option.value || option">
+                      {{ option.label || option }}
+                    </option>
+                  </select>
+                  <textarea
+                    v-else-if="isTextAreaField(key)"
+                    :value="value"
+                    @focus="originalFieldValues[key] = value"
+                    @blur="updateField(key, $event.target.value)"
+                    @keydown.esc="discardField(key, $event)"
+                    @keydown.enter="updateField(key, $event.target.value); $event.target.blur()"
+                    rows="3"
+                    class="block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-1.5 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:focus:outline-indigo-500 resize-none"
+                  ></textarea>
                   <input
+                    v-else
                     :type="getInputType(key, value)"
                     :value="value"
+                    @focus="originalFieldValues[key] = value"
                     @blur="updateField(key, $event.target.value)"
-                    class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    @keydown.esc="discardField(key, $event)"
+                    @keydown.enter="updateField(key, $event.target.value); $event.target.blur()"
+                    class="block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-1.5 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:focus:outline-indigo-500"
                   />
-                  <button
-                    @click="saveField(key, $event.target.value)"
-                    class="p-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </button>
                 </div>
-                <p v-else class="text-sm text-gray-900 dark:text-white">{{ formatFieldValue(value) }}</p>
+                <p v-else class="mt-2 text-sm text-gray-900 dark:text-white">{{ formatFieldValue(value) }}</p>
               </div>
             </div>
           </div>
@@ -254,9 +358,7 @@
               <div v-for="(update, index) in timelineUpdates" :key="index" class="flex gap-4">
                 <div class="flex-shrink-0">
                   <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                    <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                    <ClockIcon class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                   </div>
                 </div>
                 <div class="flex-1 min-w-0">
@@ -292,9 +394,7 @@
               >
                 <div class="flex items-center space-x-3">
                   <div class="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
-                    <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                    </svg>
+                    <LinkIcon class="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                   </div>
                   <div>
                     <h4 class="text-sm font-medium text-gray-900 dark:text-white">{{ widget.name }}</h4>
@@ -353,7 +453,21 @@ import RelatedDealsWidget from '@/components/deals/RelatedDealsWidget.vue';
 import OrganizationMetricsWidget from '@/components/organizations/OrganizationMetricsWidget.vue';
 import apiClient from '@/utils/apiClient';
 import { useAuthStore } from '@/stores/auth';
-import { openRecordInTab } from '@/utils/tabNavigation';
+import { useTabs } from '@/composables/useTabs';
+import PermissionButton from '@/components/common/PermissionButton.vue';
+import { useRouter } from 'vue-router';
+import {
+  MagnifyingGlassIcon,
+  HeartIcon,
+  TagIcon,
+  LinkIcon,
+  PencilSquareIcon,
+  EllipsisVerticalIcon,
+  PlusIcon,
+  ClockIcon,
+  XMarkIcon
+} from '@heroicons/vue/24/outline';
+import { HeartIcon as HeartIconSolid, TagIcon as TagIconSolid } from '@heroicons/vue/24/solid';
 
 // Props
 const props = defineProps({
@@ -382,8 +496,42 @@ const props = defineProps({
 // Emits
 const emit = defineEmits(['close', 'update', 'edit', 'delete', 'addRelation', 'openRelatedRecord']);
 
-// Dynamic positioning based on sidebar state
+// Get openTab from useTabs
+const { openTab } = useTabs();
+
+// Initialize router and auth store
+const router = useRouter();
+const authStore = useAuthStore();
+
+// Force recompute trigger (similar to TabBar viewportWidth)
+const recomputeTrigger = ref(0);
+
+// Viewport width for responsive calculations
+const viewportWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1920);
+
+// Handle resize for viewport width
+const handleResize = () => {
+  viewportWidth.value = window.innerWidth;
+};
+
+// Listen for sidebar toggle custom event
+const handleSidebarToggle = (e) => {
+  // Force recompute by toggling trigger value
+  // This causes headerLeft computed to recalculate
+  recomputeTrigger.value++;
+};
+
+// Dynamic positioning based on sidebar state (reads localStorage like TabBar)
 const headerLeft = computed(() => {
+  // Force dependency on recomputeTrigger
+  const _ = recomputeTrigger.value;
+  
+  // On mobile/tablet (< 1024px), always at left: 0 (like TabBar)
+  if (viewportWidth.value < 1024) {
+    return '0px';
+  }
+  
+  // On desktop (≥ 1024px), position based on sidebar state
   const sidebarCollapsed = localStorage.getItem('litedesk-sidebar-collapsed') === 'true';
   return sidebarCollapsed ? '80px' : '256px';
 });
@@ -444,6 +592,62 @@ const fixedTabs = [
   { id: 'details', name: 'Details' },
   { id: 'updates', name: 'Updates' }
 ];
+
+// Module definitions
+const moduleDefinition = ref(null);
+
+// Field values tracking for discard functionality
+const originalFieldValues = ref({});
+
+// Details tab search
+const detailsSearch = ref('');
+const showEmptyFields = ref(true); // Show empty fields by default
+
+// Permission check for managing fields
+const hasManageFieldsPermission = computed(() => {
+  return authStore.can('settings', 'edit');
+});
+
+// Filtered record fields for details tab based on search and empty fields toggle
+const filteredRecordFields = computed(() => {
+  if (!props.record) return {};
+  
+  let fields = { ...props.record };
+  
+  // Filter empty fields if toggle is off
+  if (!showEmptyFields.value) {
+    fields = Object.fromEntries(
+      Object.entries(fields).filter(([key, value]) => 
+        value !== null && value !== undefined && value !== '' && 
+        !(Array.isArray(value) && value.length === 0)
+      )
+    );
+  }
+  
+  // Apply search filter
+  if (detailsSearch.value) {
+    const searchLower = detailsSearch.value.toLowerCase();
+    const filtered = {};
+    
+    for (const [key, value] of Object.entries(fields)) {
+      const fieldName = formatFieldName(key).toLowerCase();
+      const fieldValue = String(value || '').toLowerCase();
+      
+      if (fieldName.includes(searchLower) || fieldValue.includes(searchLower)) {
+        filtered[key] = value;
+      }
+    }
+    
+    return filtered;
+  }
+  
+  return fields;
+});
+
+// Navigate to manage fields in a new tab
+const goToManageFields = () => {
+  window.open(`/settings?tab=modules&module=${props.recordType}`, '_blank');
+};
 
 // GridStack
 const gridStackContainer = ref(null);
@@ -530,7 +734,13 @@ const initializeGridStack = async () => {
       margin: 8,
       animate: true,
       disableResize: false,
-      disableDrag: false
+      disableDrag: false,
+      columnOpts: {
+        breakpoints: [
+          { w: 600, c: 1 },  // Mobile: 1 column (< 600px)
+          { w: 1024, c: 2 }  // Tablet: 2 columns (< 1024px)
+        ]
+      }
     }, gridStackContainer.value);
     
     // Add event listeners to save layout on changes
@@ -873,7 +1083,7 @@ const createWidgetElement = (widgetType) => {
     // We need to get the record data from the widget props/state
     // Since widgets emit just IDs, we'll fetch the name in handleOpenRelatedRecord
     const handleViewContact = (id) => {
-      handleOpenRelatedRecord({ type: 'contacts', id });
+      handleOpenRelatedRecord({ type: 'people', id });
     };
     const handleViewUser = (id) => {
       handleOpenRelatedRecord({ type: 'users', id });
@@ -954,7 +1164,12 @@ const addTag = () => {
   }
 };
 
-// Update field
+// Remove tag
+const removeTag = (index) => {
+  tags.value.splice(index, 1);
+};
+
+// Update field (auto-saves on blur)
 const updateField = (field, value) => {
   emit('update', { field, value });
   if (props.record) {
@@ -962,9 +1177,16 @@ const updateField = (field, value) => {
   }
 };
 
-// Save field
-const saveField = (field, value) => {
-  updateField(field, value);
+// Discard field changes (revert to original value)
+const discardField = (field, event) => {
+  // Restore original value
+  if (props.record) {
+    props.record[field] = originalFieldValues.value[field];
+  }
+  // Update the input/textarea element
+  if (event && event.target) {
+    event.target.value = originalFieldValues.value[field] || '';
+  }
 };
 
 // Format field name
@@ -985,14 +1207,214 @@ const isEditableField = (key) => {
   return !nonEditableFields.includes(key);
 };
 
-// Get input type
+// Fetch module definition
+const fetchModuleDefinition = async () => {
+  try {
+    const response = await apiClient.get('/modules');
+    const modules = response.data || [];
+    const module = modules.find(m => m.key === props.recordType);
+    if (module) {
+      moduleDefinition.value = module;
+    }
+  } catch (error) {
+    console.error('Error fetching module definition:', error);
+  }
+};
+
+// Get field definition for a given key
+const getFieldDefinition = (key) => {
+  if (!moduleDefinition.value?.fields) return null;
+  return moduleDefinition.value.fields.find(f => 
+    f.key?.toLowerCase() === key.toLowerCase()
+  );
+};
+
+// Get input type based on field definition and value
 const getInputType = (key, value) => {
+  const fieldDef = getFieldDefinition(key);
+  
+  if (fieldDef) {
+    switch (fieldDef.dataType) {
+      case 'Date':
+        return 'date';
+      case 'DateTime':
+        return 'datetime-local';
+      case 'Number':
+      case 'Currency':
+        return 'number';
+      case 'Checkbox':
+      case 'Boolean':
+        return 'checkbox';
+      case 'Email':
+        return 'email';
+      case 'Phone':
+        return 'tel';
+      case 'URL':
+      case 'Website':
+        return 'url';
+      case 'Text':
+      case 'Text-Area':
+      case 'Rich Text':
+        return 'text';
+      default:
+        return 'text';
+    }
+  }
+  
+  // Fallback to value-based detection
   if (typeof value === 'number') return 'number';
   if (typeof value === 'boolean') return 'checkbox';
   if (key.includes('email')) return 'email';
   if (key.includes('date')) return 'date';
+  if (key.includes('phone')) return 'tel';
+  if (key.includes('url')) return 'url';
   return 'text';
 };
+
+// Check if field is a picklist
+const isPicklistField = (key) => {
+  const fieldDef = getFieldDefinition(key);
+  if (!fieldDef) return false;
+  return fieldDef.dataType === 'Picklist' || fieldDef.dataType === 'Multi-Picklist';
+};
+
+// Check if field is a text area
+const isTextAreaField = (key) => {
+  const fieldDef = getFieldDefinition(key);
+  if (!fieldDef) return false;
+  return fieldDef.dataType === 'Text-Area' || fieldDef.dataType === 'Rich Text';
+};
+
+// Get picklist options
+const getPicklistOptions = (key) => {
+  const fieldDef = getFieldDefinition(key);
+  if (!fieldDef || !fieldDef.options) return [];
+  return fieldDef.options;
+};
+
+// Get lifecycle and status fields for display in header
+const getLifecycleStatusFields = computed(() => {
+  if (!moduleDefinition.value?.fields || !props.record) return [];
+  
+  const statusFields = [];
+  const record = props.record;
+  
+  // For People module, show type + lead_status/contact_status
+  if (props.recordType === 'people') {
+    // Type field
+    const typeField = getFieldDefinition('type');
+    if (typeField) {
+      statusFields.push({
+        key: 'type',
+        label: 'Type',
+        value: record.type,
+        options: typeField.options || [],
+        fieldDef: typeField
+      });
+    }
+    
+    // Lead status (if type is Lead)
+    if (record.type === 'Lead') {
+      const leadStatusField = getFieldDefinition('lead_status');
+      if (leadStatusField) {
+        statusFields.push({
+          key: 'lead_status',
+          label: 'Lead Status',
+          value: record.lead_status,
+          options: leadStatusField.options || [],
+          fieldDef: leadStatusField
+        });
+      }
+    }
+    
+    // Contact status (if type is Contact)
+    if (record.type === 'Contact') {
+      const contactStatusField = getFieldDefinition('contact_status');
+      if (contactStatusField) {
+        statusFields.push({
+          key: 'contact_status',
+          label: 'Contact Status',
+          value: record.contact_status,
+          options: contactStatusField.options || [],
+          fieldDef: contactStatusField
+        });
+      }
+    }
+  } else if (props.recordType === 'organizations') {
+    // For Organizations module, show types + relevant status fields
+    // Note: types is a Multi-Picklist (array), so we'll show it as a display field and show status fields
+    // Show relevant status fields based on types
+    if (Array.isArray(record.types) && record.types.length > 0) {
+      // Customer status (if Customer is in types)
+      if (record.types.includes('Customer')) {
+        const customerStatusField = getFieldDefinition('customerStatus');
+        if (customerStatusField) {
+          statusFields.push({
+            key: 'customerStatus',
+            label: 'Customer Status',
+            value: record.customerStatus,
+            options: customerStatusField.options || [],
+            fieldDef: customerStatusField
+          });
+        }
+      }
+      
+      // Partner status (if Partner is in types)
+      if (record.types.includes('Partner')) {
+        const partnerStatusField = getFieldDefinition('partnerStatus');
+        if (partnerStatusField) {
+          statusFields.push({
+            key: 'partnerStatus',
+            label: 'Partner Status',
+            value: record.partnerStatus,
+            options: partnerStatusField.options || [],
+            fieldDef: partnerStatusField
+          });
+        }
+      }
+      
+      // Vendor status (if Vendor is in types)
+      if (record.types.includes('Vendor')) {
+        const vendorStatusField = getFieldDefinition('vendorStatus');
+        if (vendorStatusField) {
+          statusFields.push({
+            key: 'vendorStatus',
+            label: 'Vendor Status',
+            value: record.vendorStatus,
+            options: vendorStatusField.options || [],
+            fieldDef: vendorStatusField
+          });
+        }
+      }
+    }
+  } else {
+    // For other modules, look for common status/lifecycle fields
+    const statusField = getFieldDefinition('status');
+    const lifecycleField = getFieldDefinition('lifecycle_stage');
+    
+    if (lifecycleField) {
+      statusFields.push({
+        key: 'lifecycle_stage',
+        label: 'Lifecycle Stage',
+        value: record.lifecycle_stage,
+        options: lifecycleField.options || [],
+        fieldDef: lifecycleField
+      });
+    }
+    
+    if (statusField) {
+      statusFields.push({
+        key: 'status',
+        label: 'Status',
+        value: record.status,
+        options: statusField.options || [],
+        fieldDef: statusField
+      });
+    }
+  }
+  
+  return statusFields;
+});
 
 // Format date
 const formatDate = (date) => {
@@ -1007,7 +1429,47 @@ const formatDate = (date) => {
 // Get initials
 const getInitials = (name) => {
   if (!name) return '?';
-  return name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2);
+  return name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 1);
+};
+
+// Color mapping for alphabets A-Z
+const getColorForLetter = (letter) => {
+  const colors = {
+    'A': { bg: 'bg-red-100 dark:bg-red-900', text: 'text-red-700 dark:text-red-300' },
+    'B': { bg: 'bg-orange-100 dark:bg-orange-900', text: 'text-orange-700 dark:text-orange-300' },
+    'C': { bg: 'bg-amber-100 dark:bg-amber-900', text: 'text-amber-700 dark:text-amber-300' },
+    'D': { bg: 'bg-yellow-100 dark:bg-yellow-900', text: 'text-yellow-700 dark:text-yellow-300' },
+    'E': { bg: 'bg-lime-100 dark:bg-lime-900', text: 'text-lime-700 dark:text-lime-300' },
+    'F': { bg: 'bg-green-100 dark:bg-green-900', text: 'text-green-700 dark:text-green-300' },
+    'G': { bg: 'bg-emerald-100 dark:bg-emerald-900', text: 'text-emerald-700 dark:text-emerald-300' },
+    'H': { bg: 'bg-teal-100 dark:bg-teal-900', text: 'text-teal-700 dark:text-teal-300' },
+    'I': { bg: 'bg-cyan-100 dark:bg-cyan-900', text: 'text-cyan-700 dark:text-cyan-300' },
+    'J': { bg: 'bg-sky-100 dark:bg-sky-900', text: 'text-sky-700 dark:text-sky-300' },
+    'K': { bg: 'bg-blue-100 dark:bg-blue-900', text: 'text-blue-700 dark:text-blue-300' },
+    'L': { bg: 'bg-indigo-100 dark:bg-indigo-900', text: 'text-indigo-700 dark:text-indigo-300' },
+    'M': { bg: 'bg-violet-100 dark:bg-violet-900', text: 'text-violet-700 dark:text-violet-300' },
+    'N': { bg: 'bg-purple-100 dark:bg-purple-900', text: 'text-purple-700 dark:text-purple-300' },
+    'O': { bg: 'bg-fuchsia-100 dark:bg-fuchsia-900', text: 'text-fuchsia-700 dark:text-fuchsia-300' },
+    'P': { bg: 'bg-pink-100 dark:bg-pink-900', text: 'text-pink-700 dark:text-pink-300' },
+    'Q': { bg: 'bg-rose-100 dark:bg-rose-900', text: 'text-rose-700 dark:text-rose-300' },
+    'R': { bg: 'bg-red-100 dark:bg-red-900', text: 'text-red-800 dark:text-red-200' },
+    'S': { bg: 'bg-orange-100 dark:bg-orange-900', text: 'text-orange-800 dark:text-orange-200' },
+    'T': { bg: 'bg-amber-100 dark:bg-amber-900', text: 'text-amber-800 dark:text-amber-200' },
+    'U': { bg: 'bg-yellow-100 dark:bg-yellow-900', text: 'text-yellow-800 dark:text-yellow-200' },
+    'V': { bg: 'bg-lime-100 dark:bg-lime-900', text: 'text-lime-800 dark:text-lime-200' },
+    'W': { bg: 'bg-green-100 dark:bg-green-900', text: 'text-green-800 dark:text-green-200' },
+    'X': { bg: 'bg-emerald-100 dark:bg-emerald-900', text: 'text-emerald-800 dark:text-emerald-200' },
+    'Y': { bg: 'bg-teal-100 dark:bg-teal-900', text: 'text-teal-800 dark:text-teal-200' },
+    'Z': { bg: 'bg-cyan-100 dark:bg-cyan-900', text: 'text-cyan-800 dark:text-cyan-200' }
+  };
+  return colors[letter.toUpperCase()] || { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-700 dark:text-gray-300' };
+};
+
+// Get color for a name based on first letter
+const getColorForName = (name) => {
+  if (!name) return getColorForLetter('?');
+  const firstLetter = name.trim()[0];
+  return getColorForLetter(firstLetter);
 };
 
 // Handler functions for dynamic tabs
@@ -1036,6 +1498,7 @@ const handleOpenRelatedRecord = async (relatedRecord) => {
     const path = `/${relatedRecord.type}/${relatedRecord.id}`;
     const icon = relatedRecord.type === 'deals' ? 'briefcase' : 
                  relatedRecord.type === 'contacts' ? 'users' : 
+                 relatedRecord.type === 'people' ? 'users' :
                  relatedRecord.type === 'users' ? 'users' : 'document';
     
     // If we don't have the name, fetch it first
@@ -1051,12 +1514,12 @@ const handleOpenRelatedRecord = async (relatedRecord) => {
           endpoint = isAdmin 
             ? `/admin/organizations/${relatedRecord.id}`
             : `/organization`;
-        } else if (relatedRecord.type === 'contacts') {
+        } else if (relatedRecord.type === 'contacts' || relatedRecord.type === 'people') {
           const authStore = useAuthStore();
           const isAdmin = authStore.isOwner || authStore.userRole === 'admin';
           endpoint = isAdmin 
             ? `/admin/contacts/${relatedRecord.id}`
-            : `/contacts/${relatedRecord.id}`;
+            : `/people/${relatedRecord.id}`;
         } else {
           endpoint = `/${relatedRecord.type}/${relatedRecord.id}`;
         }
@@ -1067,7 +1530,7 @@ const handleOpenRelatedRecord = async (relatedRecord) => {
         if (response.success && response.data) {
           const record = response.data;
           // Different record types have different name fields
-          if (relatedRecord.type === 'contacts') {
+          if (relatedRecord.type === 'contacts' || relatedRecord.type === 'people') {
             title = `${record.first_name || ''} ${record.last_name || ''}`.trim() || record.email || 'Contact';
           } else if (relatedRecord.type === 'users') {
             title = record.name || record.email || 'User';
@@ -1082,7 +1545,7 @@ const handleOpenRelatedRecord = async (relatedRecord) => {
     }
     
     // Open tab - openTab already handles router.push which will trigger component load
-    openRecordInTab(path, {
+    openTab(path, {
       title: title,
       icon: icon,
       params: { name: title } // Pass name in params for potential title updates
@@ -1121,7 +1584,22 @@ watch(() => props.record, (newRecord) => {
 });
 
 // Lifecycle hooks
-onMounted(() => {
+onMounted(async () => {
+  // Fetch module definition for field mapping
+  await fetchModuleDefinition();
+  
+  // Initialize tags from record if available
+  if (props.record && props.record.tags && Array.isArray(props.record.tags)) {
+    tags.value = [...props.record.tags];
+  }
+  
+  // Listen for sidebar toggle events and window resize
+  window.addEventListener('sidebar-toggle', handleSidebarToggle);
+  window.addEventListener('resize', handleResize);
+  
+  // Set initial viewport width
+  viewportWidth.value = window.innerWidth;
+  
   // Load saved tab if record is already loaded
   if (props.record && (props.record._id || props.record.id)) {
     const savedTab = loadActiveTab();
@@ -1147,6 +1625,9 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  // Remove event listeners
+  window.removeEventListener('sidebar-toggle', handleSidebarToggle);
+  window.removeEventListener('resize', handleResize);
   destroyGridStack();
 });
 

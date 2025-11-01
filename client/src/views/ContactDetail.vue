@@ -13,7 +13,7 @@
       <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Error Loading Contact</h2>
         <p class="text-gray-600 dark:text-gray-400 mb-6">{{ error }}</p>
-        <button @click="$router.push('/contacts')" class="px-6 py-3 bg-brand-600 text-white rounded-xl hover:bg-brand-700 font-medium">
+        <button @click="$router.push('/people')" class="px-6 py-3 bg-brand-600 text-white rounded-xl hover:bg-brand-700 font-medium">
           Back to Contacts
         </button>
       </div>
@@ -23,7 +23,7 @@
     <div v-else-if="contact" class="max-w-7xl mx-auto p-3 sm:p-4 lg:p-6">
       <!-- Header Actions -->
       <div class="flex items-center justify-between mb-4">
-        <button @click="$router.push('/contacts')" class="inline-flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+        <button @click="$router.push('/people')" class="inline-flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
@@ -461,7 +461,7 @@ const fetchContact = async () => {
     const isAdmin = authStore.isOwner || authStore.userRole === 'admin';
     const endpoint = isAdmin 
       ? `/admin/contacts/${route.params.id}`
-      : `/contacts/${route.params.id}`;
+      : `/people/${route.params.id}`;
     
     const data = await apiClient(endpoint, {
       method: 'GET'
@@ -518,10 +518,10 @@ const deleteContact = async () => {
   if (!confirm('Are you sure you want to delete this contact?')) return;
   
   try {
-    await apiClient(`/contacts/${route.params.id}`, {
+    await apiClient(`/people/${route.params.id}`, {
       method: 'DELETE'
     });
-    router.push('/contacts');
+    router.push('/people');
   } catch (err) {
     console.error('Error deleting contact:', err);
     alert('Failed to delete contact');
@@ -532,7 +532,7 @@ const addNote = async () => {
   if (!newNote.value.trim()) return;
   
   try {
-    const data = await apiClient.post(`/contacts/${route.params.id}/notes`, {
+    const data = await apiClient.post(`/people/${route.params.id}/notes`, {
       text: newNote.value.trim()
     });
     
@@ -588,7 +588,7 @@ const unlinkOrganization = async () => {
   if (!confirm('Are you sure you want to unlink this organization?')) return;
   
   try {
-    const response = await apiClient.put(`/contacts/${contact.value._id}`, {
+    const response = await apiClient.put(`/people/${contact.value._id}`, {
       organization: null
     });
     

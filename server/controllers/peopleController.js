@@ -43,7 +43,10 @@ exports.list = async (req, res) => {
 // Get by ID
 exports.getById = async (req, res) => {
   try {
-    const record = await People.findOne({ _id: req.params.id, organizationId: req.user.organizationId });
+    const record = await People.findOne({ _id: req.params.id, organizationId: req.user.organizationId })
+      .populate('organization', 'name industry status email phone website')
+      .populate('assignedTo', 'firstName lastName email')
+      .populate('notes.created_by', 'firstName lastName');
     if (!record) return res.status(404).json({ success: false, message: 'Not found' });
     res.json({ success: true, data: record });
   } catch (error) {
@@ -82,6 +85,59 @@ exports.remove = async (req, res) => {
     res.json({ success: true, data: deleted._id });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Error deleting record', error: error.message });
+  }
+};
+
+// Add note to person
+exports.addNote = async (req, res) => {
+  try {
+    const { text } = req.body;
+    
+    if (!text || !text.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Note text is required'
+      });
+    }
+    
+    const person = await People.findOneAndUpdate(
+      { 
+        _id: req.params.id, 
+        organizationId: req.user.organizationId 
+      },
+      {
+        $push: {
+          notes: {
+            text: text.trim(),
+            created_by: req.user._id,
+            created_at: new Date()
+          }
+        }
+      },
+      { new: true, runValidators: true }
+    )
+    .populate('organization', 'name industry status email phone website')
+    .populate('assignedTo', 'firstName lastName email')
+    .populate('notes.created_by', 'firstName lastName');
+    
+    if (!person) {
+      return res.status(404).json({
+        success: false,
+        message: 'Person not found or access denied'
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      data: person
+    });
+  } catch (error) {
+    console.error('Add note error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error adding note',
+      error: error.message
+    });
   }
 };
 

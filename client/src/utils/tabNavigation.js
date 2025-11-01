@@ -84,6 +84,7 @@ export const vTabLink = {
 export function getModuleIcon(path) {
   const icons = {
     'contacts': 'users',
+    'people': 'users',
     'organizations': 'building',
     'deals': 'briefcase',
     'tasks': 'check',

@@ -58,10 +58,21 @@ const goBack = () => {
   router.push('/organizations');
 };
 
-const handleUpdate = (updateData) => {
-  console.log('Organization updated:', updateData);
-  if (organization.value) {
-    organization.value[updateData.field] = updateData.value;
+const handleUpdate = async (updateData) => {
+  try {
+    // Update local state immediately for UI responsiveness
+    if (organization.value) {
+      organization.value[updateData.field] = updateData.value;
+    }
+    
+    // Persist to server
+    await apiClient.put(`/admin/organizations/${route.params.id}`, {
+      [updateData.field]: updateData.value
+    });
+  } catch (err) {
+    console.error('Error updating organization:', err);
+    // Revert on error
+    fetchOrganization();
   }
 };
 

@@ -318,7 +318,7 @@ const logoSrc = computed(() => {
                       leave-to-class="transform opacity-0 scale-95"
                     >
                       <MenuItems
-                        class="absolute bottom-full mb-2 w-48 rounded-lg shadow-xl py-1 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 left-6"
+                        class="absolute bottom-full mb-2 w-48 rounded-lg shadow-xl py-1 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 left-6 z-50"
                       >
                         <template v-for="(item, index) in userMenuItems" :key="index">
                           <hr v-if="item.divider" class="my-1 border-gray-200 dark:border-gray-700" />
@@ -361,7 +361,7 @@ const logoSrc = computed(() => {
         // Width based on expanded state (click or hover)
         shouldShowExpanded ? 'lg:w-64' : 'lg:w-20',
         // Z-index and shadow - higher when hovering for overlay effect
-        isHovering ? 'z-50 shadow-2xl' : 'z-40 shadow-lg'
+        isHovering ? 'z-50 shadow-2xl' : 'z-50 shadow-lg'
       ]"
     >
       <!-- Logo Section -->
@@ -554,7 +554,7 @@ const logoSrc = computed(() => {
                 'absolute bottom-full mb-2 w-48 rounded-lg shadow-xl py-1',
                 'bg-white dark:bg-gray-800',
                 'ring-1 ring-black/5 dark:ring-white/10',
-                'left-0'
+                'left-0 z-50'
               ]"
             >
               <template v-for="(item, index) in userMenuItems" :key="index">
@@ -581,7 +581,7 @@ const logoSrc = computed(() => {
     </div>
 
     <!-- Mobile top bar -->
-    <div class="fixed top-0 left-0 right-0 z-40 flex items-center gap-x-6 bg-white dark:bg-gray-900 px-4 py-3 h-16 after:pointer-events-none after:absolute after:inset-0 after:border-b after:border-gray-200 dark:after:border-white/10 dark:after:bg-black/10 sm:px-6 lg:hidden">
+    <div class="fixed top-0 left-0 right-0 z-50 flex items-center gap-x-6 bg-white dark:bg-gray-900 px-4 py-3 h-16 after:pointer-events-none after:absolute after:inset-0 after:border-b after:border-gray-200 dark:after:border-white/10 dark:after:bg-black/10 sm:px-6 lg:hidden">
       <button type="button" class="-m-2.5 p-2.5 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white lg:hidden" @click="sidebarOpen = true">
         <span class="sr-only">Open sidebar</span>
         <Bars3Icon class="size-6 text-gray-900 dark:text-gray-400" aria-hidden="true" />
@@ -611,7 +611,7 @@ const logoSrc = computed(() => {
             leave-to-class="transform opacity-0 scale-95"
           >
             <MenuItems
-              class="absolute right-0 top-full mt-2 w-48 rounded-lg shadow-xl py-1 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10"
+              class="absolute right-0 top-full mt-2 w-48 rounded-lg shadow-xl py-1 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 z-50"
             >
               <template v-for="(item, index) in userMenuItems" :key="index">
                 <hr v-if="item.divider" class="my-1 border-gray-200 dark:border-gray-700" />

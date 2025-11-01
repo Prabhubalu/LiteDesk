@@ -254,6 +254,39 @@ const getContactById = async (req, res) => {
     }
 };
 
+// @desc    Update contact by ID (Admin only)
+// @route   PUT /api/admin/contacts/:id
+// @access  Private (Admin/Owner only)
+const updateContactById = async (req, res) => {
+    try {
+        const contact = await People.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true, runValidators: true }
+        );
+        
+        if (!contact) {
+            return res.status(404).json({
+                success: false,
+                message: 'Contact not found'
+            });
+        }
+        
+        res.status(200).json({
+            success: true,
+            message: 'Contact updated successfully',
+            data: contact
+        });
+    } catch (error) {
+        console.error('Update contact by ID error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error updating contact',
+            error: error.message
+        });
+    }
+};
+
 // @desc    Get single organization by ID (Admin only)
 // @route   GET /api/admin/organizations/:id
 // @access  Private (Admin/Owner only)
@@ -316,10 +349,55 @@ const getOrganizationById = async (req, res) => {
     }
 };
 
+// @desc    Update organization by ID (Admin only)
+// @route   PUT /api/admin/organizations/:id
+// @access  Private (Admin/Owner only)
+const updateOrganizationById = async (req, res) => {
+    try {
+        // Try to find and update in OrganizationV2 first
+        let organization = await OrganizationV2.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true, runValidators: true }
+        );
+        
+        if (!organization) {
+            // Try legacy Organization
+            organization = await Organization.findByIdAndUpdate(
+                req.params.id,
+                req.body,
+                { new: true, runValidators: true }
+            );
+            
+            if (!organization) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Organization not found'
+                });
+            }
+        }
+        
+        res.status(200).json({
+            success: true,
+            message: 'Organization updated successfully',
+            data: organization
+        });
+    } catch (error) {
+        console.error('Update organization by ID error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error updating organization',
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
     getAllContactsAcrossOrgs,
     getAllOrganizations,
     getContactById,
-    getOrganizationById
+    updateContactById,
+    getOrganizationById,
+    updateOrganizationById
 };
 

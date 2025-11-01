@@ -51,7 +51,7 @@ const routes = [
   {
     path: '/people/:id',
     name: 'person-detail',
-    component: () => import('@/views/ContactDetail.vue'),
+    component: () => import('@/views/PeopleDetail.vue'),
     meta: { requiresAuth: true, requiresPermission: { module: 'people', action: 'view' } }
   },
   // Backward-compat redirects
