@@ -654,14 +654,14 @@ const sortOrder = ref('desc');
 // Column definitions for table view
 const tableColumns = computed(() => {
   const allColumns = [
-    { key: 'name', label: 'Deal Name', sortable: true },
-    { key: 'amount', label: 'Amount', sortable: true },
-    { key: 'stage', label: 'Stage', sortable: true },
-    { key: 'contactId', label: 'Contact', sortable: true },
-    { key: 'ownerId', label: 'Owner', sortable: true },
-    { key: 'expectedCloseDate', label: 'Close Date', sortable: true },
-    { key: 'probability', label: 'Probability', sortable: true },
-    { key: 'priority', label: 'Priority', sortable: true }
+    { key: 'name', label: 'Deal Name', sortable: true, minWidth: '200px' },
+    { key: 'amount', label: 'Amount', sortable: true, minWidth: '120px' },
+    { key: 'stage', label: 'Stage', sortable: true, minWidth: '150px' },
+    { key: 'contactId', label: 'Contact', sortable: true, minWidth: '180px' },
+    { key: 'ownerId', label: 'Owner', sortable: true, minWidth: '150px' },
+    { key: 'expectedCloseDate', label: 'Close Date', sortable: true, minWidth: '140px' },
+    { key: 'probability', label: 'Probability', sortable: true, minWidth: '120px' },
+    { key: 'priority', label: 'Priority', sortable: true, minWidth: '120px' }
   ];
   
   // Filter and order columns based on visibleColumns settings

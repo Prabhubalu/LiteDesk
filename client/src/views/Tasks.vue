@@ -472,20 +472,21 @@ const massActions = computed(() => {
 // Column definitions
 const columns = computed(() => {
   const allColumns = [
-    { key: 'title', label: 'Task', sortable: true },
-    { key: 'priority', label: 'Priority', sortable: true },
-    { key: 'status', label: 'Status', sortable: true },
+    { key: 'title', label: 'Task', sortable: true, minWidth: '250px' },
+    { key: 'priority', label: 'Priority', sortable: true, minWidth: '120px' },
+    { key: 'status', label: 'Status', sortable: true, minWidth: '150px' },
     { 
       key: 'assignedTo', 
       label: 'Assigned To', 
       sortable: false,  // Server doesn't support sorting by populated field
+      minWidth: '180px',
       sortValue: (row) => {
         if (!row.assignedTo) return '';
         return `${row.assignedTo.firstName || ''} ${row.assignedTo.lastName || ''}`.trim();
       }
     },
-    { key: 'dueDate', label: 'Due Date', sortable: true },
-    { key: 'tags', label: 'Tags', sortable: false }
+    { key: 'dueDate', label: 'Due Date', sortable: true, minWidth: '140px' },
+    { key: 'tags', label: 'Tags', sortable: false, minWidth: '150px' }
   ];
   
   // Filter and order columns based on visibleColumns settings

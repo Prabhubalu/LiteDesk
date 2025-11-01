@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col h-full w-full">
     <div class="flex items-center justify-between mb-3">
-      <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Users</h3>
+      <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Related Users</h3>
       <button
         @click="$emit('create-user')"
         class="p-1 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded transition-colors"
@@ -26,22 +26,24 @@
         @click="$emit('view-user', user._id)"
         class="p-3 mb-3 bg-gray-50 dark:bg-gray-900 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors"
       >
-        <div class="flex items-start justify-between gap-2">
-          <div class="flex items-center gap-2 flex-1 min-w-0">
-            <div v-if="user.avatar" class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
-              <img :src="user.avatar" :alt="user.name" class="w-full h-full object-cover" />
+        <!-- User Name -->
+        <h4 class="text-sm font-medium text-gray-900 dark:text-white truncate mb-2">{{ user.name }}</h4>
+        
+        <!-- Key Fields -->
+        <div v-if="keyFields.length > 0" class="flex flex-wrap gap-x-4 gap-y-1">
+          <div
+            v-for="fieldDef in keyFields"
+            :key="fieldDef.key"
+            class="flex flex-col"
+          >
+            <div class="text-xs font-medium text-gray-500 dark:text-gray-400">
+              {{ fieldDef.label }}
             </div>
-            <div v-else class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
-              {{ getInitials(user.name) }}
-            </div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ user.name }}</h4>
-              <div class="flex items-center gap-2 mt-1 text-xs text-gray-500 dark:text-gray-400">
-                <span v-if="user.email" class="truncate">{{ user.email }}</span>
-                <span v-if="user.role" class="px-1.5 py-0.5 bg-brand-100 dark:bg-brand-900/50 text-brand-800 dark:text-brand-300 rounded">
-                  {{ user.role }}
-                </span>
-              </div>
+            <div class="text-xs text-gray-900 dark:text-white">
+              <template v-if="getFieldValue(fieldDef, user)">
+                {{ getFieldValue(fieldDef, user) }}
+              </template>
+              <span v-else class="text-gray-400 dark:text-gray-500 italic">Empty</span>
             </div>
           </div>
         </div>
@@ -65,8 +67,9 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, computed } from 'vue';
 import apiClient from '@/utils/apiClient';
+import { getKeyFields, getFieldValue } from '@/utils/fieldDisplay';
 
 const props = defineProps({
   organizationId: {
@@ -76,6 +79,10 @@ const props = defineProps({
   limit: {
     type: Number,
     default: 5
+  },
+  moduleDefinition: {
+    type: Object,
+    required: false
   }
 });
 
@@ -83,6 +90,11 @@ defineEmits(['view-user', 'create-user']);
 
 const users = ref([]);
 const loading = ref(false);
+
+// Get key fields from module definition
+const keyFields = computed(() => {
+  return getKeyFields(props.moduleDefinition);
+});
 
 const getInitials = (name) => {
   if (!name) return '?';

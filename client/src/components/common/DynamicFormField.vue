@@ -2,7 +2,7 @@
   <div>
     <label 
       :for="field.key" 
-      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+      class="block text-sm/6 font-medium text-gray-900 dark:text-white"
     >
       {{ field.label || field.key }}
       <span v-if="isRequired" class="text-red-500">*</span>
@@ -20,10 +20,10 @@
       :required="isRequired"
       :disabled="isReadOnly"
       :class="[
-        'w-full px-4 py-2.5 rounded-lg border bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:border-transparent transition-all',
+        'block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500',
         localValidationError || errors[field.key]
           ? 'border-red-500 dark:border-red-500 focus:ring-red-500 dark:focus:ring-red-500'
-          : 'border-gray-300 dark:border-gray-600 focus:ring-brand-500 dark:focus:ring-brand-600'
+          : ''
       ]"
     />
     
@@ -39,12 +39,7 @@
       :disabled="isReadOnly"
       :rows="field.textSettings?.rows || 4"
       :maxlength="field.textSettings?.maxLength"
-      :class="[
-        'w-full px-4 py-2.5 rounded-lg border bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:border-transparent transition-all resize-y',
-        localValidationError || errors[field.key]
-          ? 'border-red-500 dark:border-red-500 focus:ring-red-500 dark:focus:ring-red-500'
-          : 'border-gray-300 dark:border-gray-600 focus:ring-brand-500 dark:focus:ring-brand-600'
-      ]"
+      class="block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500 resize-none"
     />
     
     <!-- Email -->
@@ -58,12 +53,7 @@
       :placeholder="field.placeholder || `email@example.com`"
       :required="isRequired"
       :disabled="isReadOnly"
-      :class="[
-        'w-full px-4 py-2.5 rounded-lg border bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:border-transparent transition-all',
-        localValidationError || errors[field.key]
-          ? 'border-red-500 dark:border-red-500 focus:ring-red-500 dark:focus:ring-red-500'
-          : 'border-gray-300 dark:border-gray-600 focus:ring-brand-500 dark:focus:ring-brand-600'
-      ]"
+      class="block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
     />
     
     <!-- Phone -->
@@ -77,12 +67,7 @@
       :placeholder="field.placeholder || `+1 (555) 123-4567`"
       :required="isRequired"
       :disabled="isReadOnly"
-      :class="[
-        'w-full px-4 py-2.5 rounded-lg border bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:border-transparent transition-all',
-        localValidationError || errors[field.key]
-          ? 'border-red-500 dark:border-red-500 focus:ring-red-500 dark:focus:ring-red-500'
-          : 'border-gray-300 dark:border-gray-600 focus:ring-brand-500 dark:focus:ring-brand-600'
-      ]"
+      class="block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
     />
     
     <!-- Integer, Decimal, Currency -->
@@ -99,12 +84,7 @@
       :min="field.numberSettings?.min"
       :max="field.numberSettings?.max"
       :step="field.dataType === 'Integer' ? 1 : (field.numberSettings?.decimalPlaces ? Math.pow(0.1, field.numberSettings.decimalPlaces) : 0.01)"
-      :class="[
-        'w-full px-4 py-2.5 rounded-lg border bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:border-transparent transition-all',
-        localValidationError || errors[field.key]
-          ? 'border-red-500 dark:border-red-500 focus:ring-red-500 dark:focus:ring-red-500'
-          : 'border-gray-300 dark:border-gray-600 focus:ring-brand-500 dark:focus:ring-brand-600'
-      ]"
+      class="block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
     />
     
     <!-- Date -->
@@ -117,7 +97,7 @@
       @input="updateValue($event.target.value)"
       :required="isRequired"
       :disabled="isReadOnly"
-      class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 focus:border-transparent transition-all"
+      class="block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
     />
     
     <!-- Date-Time -->
@@ -130,28 +110,29 @@
       @input="updateValue($event.target.value)"
       :required="isRequired"
       :disabled="isReadOnly"
-      class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 focus:border-transparent transition-all"
+      class="block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
     />
     
     <!-- Picklist (using Headless UI Combobox with search input inside dropdown) -->
-    <div v-else-if="field.dataType === 'Picklist'" class="relative">
+    <div v-else-if="field.dataType === 'Picklist'" class="mt-2 relative">
       <Combobox :model-value="value || ''" @update:model-value="updateValue" :disabled="isReadOnly" nullable>
         <div class="relative">
           <ComboboxButton
             @click="handlePicklistButtonClick"
             :class="[
-              'relative w-full cursor-default rounded-lg border py-2.5 pl-4 pr-10 text-left shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 sm:text-sm transition-all',
+              'block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500',
+              'relative cursor-default text-left',
               isReadOnly
-                ? 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600 cursor-not-allowed'
-                : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600',
+                ? 'opacity-50 cursor-not-allowed'
+                : '',
               localValidationError || errors[field.key]
-                ? 'border-red-500 dark:border-red-500 focus:ring-red-500 dark:focus:ring-red-500'
+                ? 'border-red-500 dark:border-red-500'
                 : ''
             ]"
           >
             <div class="flex items-center gap-2">
               <span v-if="getSelectedPicklistOptionColor() && value" class="w-3 h-3 rounded-full flex-shrink-0" :style="{ backgroundColor: getSelectedPicklistOptionColor() }"></span>
-              <span class="block truncate">{{ getSelectedPicklistLabel() || (field.placeholder || `Select ${field.label || field.key}`) }}</span>
+              <span :class="['block truncate', !value && 'text-gray-500 dark:text-gray-500']">{{ getSelectedPicklistLabel() || (field.placeholder || `Select ${field.label || field.key}`) }}</span>
             </div>
             <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
               <ChevronUpDownIcon class="h-5 w-5 text-gray-400 dark:text-gray-500" aria-hidden="true" />
@@ -181,7 +162,7 @@
                     @click.stop
                     @mousedown.stop
                     placeholder="Search options..."
-                    class="w-full pl-9 pr-3 py-2 text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 relative z-10"
+                    class="w-full pl-9 pr-3 py-2 text-sm rounded-md bg-gray-100 dark:bg-gray-700 outline-1 -outline-offset-1 outline-gray-300/20 dark:outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:outline-indigo-500 text-gray-900 dark:text-white placeholder:text-gray-500 relative z-10"
                     autocomplete="off"
                   />
                 </div>
@@ -200,7 +181,7 @@
                 >
                   <li
                     :class="[
-                      'relative cursor-default select-none py-2 pl-10 pr-4',
+                      'relative cursor-default select-none py-2 pl-4 pr-10',
                       active ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-900 dark:text-brand-100' : 'text-gray-900 dark:text-gray-100'
                     ]"
                   >
@@ -212,7 +193,7 @@
                     </div>
                     <span
                       v-if="selected"
-                      class="absolute inset-y-0 left-0 flex items-center pl-3 text-brand-600 dark:text-brand-400"
+                      class="absolute inset-y-0 right-0 flex items-center pr-3 text-brand-600 dark:text-brand-400"
                     >
                       <CheckIcon class="h-5 w-5" aria-hidden="true" />
                     </span>
@@ -226,18 +207,19 @@
     </div>
     
     <!-- Radio Button (using Headless UI Listbox) -->
-    <div v-else-if="field.dataType === 'Radio Button'" class="relative">
+    <div v-else-if="field.dataType === 'Radio Button'" class="mt-2 relative">
       <Listbox :model-value="value || ''" @update:model-value="updateValue" :disabled="isReadOnly">
         <div class="relative">
           <ListboxButton
             :class="[
-              'relative w-full cursor-default rounded-lg border py-2.5 pl-4 pr-10 text-left shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 sm:text-sm transition-all',
+              'block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500',
+              'relative cursor-default text-left',
               isReadOnly
-                ? 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600 cursor-not-allowed'
-                : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+                ? 'opacity-50 cursor-not-allowed'
+                : ''
             ]"
           >
-            <span class="block truncate">{{ getSelectedLabel() || (field.placeholder || `Select ${field.label || field.key}`) }}</span>
+            <span :class="['block truncate', !value && 'text-gray-500 dark:text-gray-500']">{{ getSelectedLabel() || (field.placeholder || `Select ${field.label || field.key}`) }}</span>
             <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
               <ChevronUpDownIcon class="h-5 w-5 text-gray-400 dark:text-gray-500" aria-hidden="true" />
             </span>
@@ -259,7 +241,7 @@
               >
                 <li
                   :class="[
-                    'relative cursor-default select-none py-2 pl-10 pr-4',
+                    'relative cursor-default select-none py-2 pl-4 pr-10',
                     active ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-900 dark:text-brand-100' : 'text-gray-900 dark:text-gray-100'
                   ]"
                 >
@@ -271,7 +253,7 @@
                   </div>
                   <span
                     v-if="selected"
-                    class="absolute inset-y-0 left-0 flex items-center pl-3 text-brand-600 dark:text-brand-400"
+                    class="absolute inset-y-0 right-0 flex items-center pr-3 text-brand-600 dark:text-brand-400"
                   >
                     <CheckIcon class="h-5 w-5" aria-hidden="true" />
                   </span>
@@ -283,20 +265,20 @@
       </Listbox>
     </div>
     
-    <!-- Multi-Picklist (custom tag-based multi-select) -->
-    <div v-else-if="field.dataType === 'Multi-Picklist'" class="relative">
+      <!-- Multi-Picklist (custom tag-based multi-select) -->
+    <div v-else-if="field.dataType === 'Multi-Picklist'" class="mt-2 relative">
       <div
         :class="[
-          'w-full min-h-[2.5rem] rounded-lg border transition-all',
+          'w-full rounded-md transition-all text-base sm:text-sm/6',
           isReadOnly
-            ? 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 cursor-not-allowed'
-            : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus-within:ring-2 focus-within:ring-brand-500 dark:focus-within:ring-brand-600 focus-within:border-transparent cursor-pointer',
-          showMultiOptions ? 'ring-2 ring-brand-500 dark:ring-brand-600 border-transparent' : ''
+            ? 'bg-gray-100 dark:bg-gray-700 opacity-50 cursor-not-allowed'
+            : 'bg-gray-100 dark:bg-gray-700 cursor-pointer focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-500 dark:focus:bg-gray-800 dark:outline-white/10',
+          showMultiOptions ? 'outline-2 -outline-offset-2 outline-indigo-500 dark:outline-indigo-500' : ''
         ]"
         @click.stop="!isReadOnly && (showMultiOptions = !showMultiOptions)"
       >
         <!-- Selected tags and placeholder -->
-        <div class="flex flex-wrap items-center gap-2 p-2 min-h-[2.5rem]">
+        <div class="flex flex-wrap items-center gap-2 px-3 py-2">
           <template v-if="selectedMultiValues.length > 0">
             <span
               v-for="(selected, selIdx) in selectedMultiValues"
@@ -318,7 +300,7 @@
           </template>
           <span
             v-else
-            class="text-gray-400 dark:text-gray-500 text-sm px-2"
+            class="text-gray-500 dark:text-gray-500 text-base sm:text-sm/6 px-2"
           >
             {{ field.placeholder || `Select ${field.label || field.key}...` }}
           </span>
@@ -362,18 +344,7 @@
                       : 'border-gray-300 dark:border-gray-600'
                   ]"
                 >
-                  <svg
-                    v-if="isMultiValueSelected(option)"
-                    class="w-3 h-3 text-white"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clip-rule="evenodd"
-                    />
-                  </svg>
+                  <CheckSolidIcon v-if="isMultiValueSelected(option)" class="w-3 h-3 text-white" />
                 </div>
                 <span v-if="getPicklistOptionColor(option)" class="w-3 h-3 rounded-full flex-shrink-0" :style="{ backgroundColor: getPicklistOptionColor(option) }"></span>
                 <span>{{ normalizePicklistOption(option) }}</span>
@@ -391,7 +362,7 @@
     </div>
     
     <!-- Checkbox -->
-    <div v-else-if="field.dataType === 'Checkbox'" class="flex items-center space-x-2">
+    <div v-else-if="field.dataType === 'Checkbox'" class="mt-2 flex items-center space-x-2">
       <input 
         :id="field.key"
         :name="field.key"
@@ -411,41 +382,29 @@
     </div>
     
     <!-- Lookup (Relationship) - with searchable Combobox and modal browse button -->
-    <div v-else-if="field.dataType === 'Lookup (Relationship)'" class="relative">
+    <div v-else-if="field.dataType === 'Lookup (Relationship)'" class="mt-2 relative">
       <Combobox :model-value="normalizedLookupValue || ''" @update:model-value="updateValue" :disabled="isReadOnly" nullable>
         <div class="relative">
           <ComboboxButton
             @click="handleLookupButtonClick"
             :class="[
-              'relative w-full cursor-default rounded-lg border py-2.5 pl-4 pr-20 text-left shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 sm:text-sm transition-all',
+              'block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500',
+              'relative cursor-default text-left',
               isReadOnly
-                ? 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600 cursor-not-allowed'
-                : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600',
+                ? 'opacity-50 cursor-not-allowed'
+                : '',
               localValidationError || errors[field.key]
-                ? 'border-red-500 dark:border-red-500 focus:ring-red-500 dark:focus:ring-red-500'
+                ? 'border-red-500 dark:border-red-500'
                 : ''
             ]"
           >
             <!-- Show selected user with avatar/initial for assignedTo -->
             <div v-if="isAssignedToField && value && getSelectedLookupOption()" class="flex items-center gap-2">
-              <div class="flex-shrink-0">
-                <img
-                  v-if="getSelectedLookupOption()?.avatar"
-                  :src="getSelectedLookupOption().avatar"
-                  :alt="getUserDisplayName(getSelectedLookupOption())"
-                  class="h-6 w-6 rounded-full object-cover"
-                />
-                <div
-                  v-else
-                  class="h-6 w-6 rounded-full bg-brand-500 dark:bg-brand-600 flex items-center justify-center text-white text-xs font-medium"
-                >
-                  {{ getUserInitials(getSelectedLookupOption()) }}
-                </div>
-              </div>
+              <Avatar :user="getSelectedLookupOption()" size="sm" />
               <span class="block truncate">{{ getLookupSelectedLabel() }}</span>
             </div>
             <!-- Default placeholder or non-user lookup -->
-            <span v-else class="block truncate">{{ getLookupSelectedLabel() || (field.placeholder || `Select ${field.label || field.key}`) }}</span>
+            <span v-else :class="['block truncate', !value && 'text-gray-500 dark:text-gray-500']">{{ getLookupSelectedLabel() || (field.placeholder || `Select ${field.label || field.key}`) }}</span>
             <!-- Modal browse button -->
             <button
               type="button"
@@ -457,7 +416,7 @@
               <MagnifyingGlassIcon class="w-5 h-5" />
             </button>
             <!-- Dropdown arrow -->
-            <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+            <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
               <ChevronUpDownIcon class="h-5 w-5 text-gray-400 dark:text-gray-500" aria-hidden="true" />
             </span>
           </ComboboxButton>
@@ -485,7 +444,7 @@
                     @click.stop
                     @mousedown.stop
                     placeholder="Search records..."
-                    class="w-full pl-9 pr-3 py-2 text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 relative z-10"
+                    class="w-full pl-9 pr-3 py-2 text-sm rounded-md bg-gray-100 dark:bg-gray-700 outline-1 -outline-offset-1 outline-gray-300/20 dark:outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:outline-indigo-500 text-gray-900 dark:text-white placeholder:text-gray-500 relative z-10"
                     autocomplete="off"
                   />
                 </div>
@@ -510,22 +469,7 @@
                   >
                     <!-- User avatar/initial for assignedTo fields -->
                     <div v-if="isAssignedToField" class="flex items-center gap-3 pl-10">
-                      <div class="flex-shrink-0">
-                        <!-- Avatar image if available -->
-                        <img
-                          v-if="item.avatar"
-                          :src="item.avatar"
-                          :alt="getUserDisplayName(item)"
-                          class="h-8 w-8 rounded-full object-cover"
-                        />
-                        <!-- Initials fallback -->
-                        <div
-                          v-else
-                          class="h-8 w-8 rounded-full bg-brand-500 dark:bg-brand-600 flex items-center justify-center text-white text-xs font-medium"
-                        >
-                          {{ getUserInitials(item) }}
-                        </div>
-                      </div>
+                      <Avatar :user="item" size="md" />
                       <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate flex-1']">
                         {{ getLookupDisplay(item) }}
                       </span>
@@ -575,9 +519,7 @@
                   @click="closeLookupModal"
                   class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 >
-                  <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <XMarkIcon class="w-5 h-5 text-gray-500 dark:text-gray-400" />
                 </button>
               </div>
 
@@ -601,20 +543,7 @@
                   <!-- Custom display field rendering -->
                   <template v-if="isAssignedToField" #name="{ row }">
                     <div class="flex items-center gap-3">
-                      <div class="flex-shrink-0">
-                        <img
-                          v-if="row.avatar"
-                          :src="row.avatar"
-                          :alt="getUserDisplayName(row)"
-                          class="h-8 w-8 rounded-full object-cover"
-                        />
-                        <div
-                          v-else
-                          class="h-8 w-8 rounded-full bg-brand-500 dark:bg-brand-600 flex items-center justify-center text-white text-xs font-medium"
-                        >
-                          {{ getUserInitials(row) }}
-                        </div>
-                      </div>
+                      <Avatar :user="row" size="md" />
                       <span class="font-medium text-gray-900 dark:text-white">{{ getUserDisplayName(row) }}</span>
                     </div>
                   </template>
@@ -647,7 +576,7 @@
       :placeholder="field.placeholder || `https://example.com`"
       :required="isRequired"
       :disabled="isReadOnly"
-      class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 focus:border-transparent transition-all"
+      class="block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
     />
     
     <!-- Auto-Number, Formula, Rollup Summary (Read-only display) -->
@@ -658,7 +587,7 @@
       type="text"
       :value="value || field.defaultValue || '(Auto-generated)'"
       disabled
-      class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+      class="block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-800 px-3 py-2 text-gray-500 dark:text-gray-400 text-base outline-1 -outline-offset-1 outline-gray-300/20 sm:text-sm/6 cursor-not-allowed"
     />
     
     <!-- Error message and help text container (always reserves space to prevent jittering) -->
@@ -680,8 +609,10 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption, Combobox, ComboboxButton, ComboboxInput, ComboboxOptions, ComboboxOption } from '@headlessui/vue';
 import { CheckIcon, ChevronUpDownIcon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
+import { CheckIcon as CheckSolidIcon } from '@heroicons/vue/24/solid';
 import { Teleport, Transition } from 'vue';
 import DataTable from '@/components/common/DataTable.vue';
+import Avatar from '@/components/common/Avatar.vue';
 import apiClient from '@/utils/apiClient';
 import { validateField } from '@/utils/fieldValidation';
 import { useAuthStore } from '@/stores/auth';
@@ -1159,23 +1090,6 @@ const isMultiValueSelected = (option) => {
   });
 };
 
-// Get user initials for avatar fallback
-const getUserInitials = (user) => {
-  if (user.firstName && user.lastName) {
-    return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
-  }
-  if (user.firstName) {
-    return user.firstName[0].toUpperCase();
-  }
-  if (user.username) {
-    return user.username.substring(0, 2).toUpperCase();
-  }
-  if (user.email) {
-    return user.email.substring(0, 2).toUpperCase();
-  }
-  return '??';
-};
-
 // Get user display name
 const getUserDisplayName = (user) => {
   const name = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
@@ -1378,7 +1292,13 @@ const fetchLookupModalData = async () => {
     if (isAssignedToField.value) {
       endpoint = '/users/list';
     } else if (props.field.lookupSettings?.targetModule) {
-      endpoint = `/${props.field.lookupSettings.targetModule}`;
+      const moduleKey = props.field.lookupSettings.targetModule;
+      // Handle special module key mappings
+      if (moduleKey === 'organization' || moduleKey === 'organizations') {
+        endpoint = '/v2/organization';
+      } else {
+        endpoint = `/${moduleKey}`;
+      }
     } else {
       lookupModalLoading.value = false;
       return;
