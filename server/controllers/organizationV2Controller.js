@@ -3,9 +3,32 @@ const OrganizationV2 = require('../models/OrganizationV2');
 // Create
 exports.create = async (req, res) => {
   try {
+    const User = require('../models/User');
+    
+    // Get user name for activity log (if user is authenticated)
+    let userName = 'System';
+    if (req.user && req.user._id) {
+      const user = await User.findById(req.user._id).select('firstName lastName username');
+      if (user) {
+        userName = (user.firstName || user.lastName ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : user.username) || 'User';
+      }
+    }
+    
+    const body = {
+      ...req.body,
+      // Add initial activity log for record creation
+      activityLogs: [{
+        user: userName,
+        userId: req.user?._id || null,
+        action: 'created this record',
+        details: { type: 'create' },
+        timestamp: new Date()
+      }]
+    };
+    
     // OrganizationV2 doesn't have organizationId - it's a tenant-level model
     // Just create with the provided data
-    const org = await OrganizationV2.create(req.body);
+    const org = await OrganizationV2.create(body);
     res.status(201).json({ success: true, data: org });
   } catch (error) {
     res.status(400).json({ success: false, message: 'Error creating organization', error: error.message });
@@ -61,6 +84,89 @@ exports.remove = async (req, res) => {
     res.json({ success: true, data: deleted._id });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Error deleting organization', error: error.message });
+  }
+};
+
+// Get activity logs for an organization
+exports.getActivityLogs = async (req, res) => {
+  try {
+    const org = await OrganizationV2.findById(req.params.id).select('activityLogs');
+    
+    if (!org) {
+      return res.status(404).json({
+        success: false,
+        message: 'Organization not found'
+      });
+    }
+    
+    // Sort by timestamp (newest first)
+    const logs = (org.activityLogs || []).sort((a, b) => 
+      new Date(b.timestamp) - new Date(a.timestamp)
+    );
+    
+    res.status(200).json({
+      success: true,
+      data: logs
+    });
+  } catch (error) {
+    console.error('Get activity logs error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching activity logs',
+      error: error.message
+    });
+  }
+};
+
+// Add activity log to an organization
+exports.addActivityLog = async (req, res) => {
+  try {
+    const { user, action, details } = req.body;
+    
+    if (!user || !action) {
+      return res.status(400).json({
+        success: false,
+        message: 'User and action are required'
+      });
+    }
+    
+    const org = await OrganizationV2.findByIdAndUpdate(
+      req.params.id,
+      {
+        $push: {
+          activityLogs: {
+            user: user,
+            userId: req.user?._id || null,
+            action: action,
+            details: details || null,
+            timestamp: new Date()
+          }
+        }
+      },
+      { new: true, runValidators: true }
+    );
+    
+    if (!org) {
+      return res.status(404).json({
+        success: false,
+        message: 'Organization not found'
+      });
+    }
+    
+    // Return the newly added log
+    const newLog = org.activityLogs[org.activityLogs.length - 1];
+    
+    res.status(200).json({
+      success: true,
+      data: newLog
+    });
+  } catch (error) {
+    console.error('Add activity log error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error adding activity log',
+      error: error.message
+    });
   }
 };
 

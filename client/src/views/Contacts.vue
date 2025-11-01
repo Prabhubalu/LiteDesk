@@ -387,8 +387,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useBulkActions } from '@/composables/useBulkActions';
 import { useTabs } from '@/composables/useTabs';
@@ -402,6 +402,7 @@ import ModuleActions from '@/components/common/ModuleActions.vue';
 import RowActions from '@/components/common/RowActions.vue';
 
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
 
 // Use tabs composable
@@ -992,6 +993,13 @@ onMounted(async () => {
   }
   
   fetchContacts();
+});
+
+// Watch for route query changes (for refresh)
+watch(() => route.query.refresh, () => {
+  if (route.query.refresh) {
+    fetchContacts();
+  }
 });
 </script>
 

@@ -7,6 +7,11 @@ router.use(protect);
 
 router.post('/', controller.create);
 router.get('/', controller.list);
+
+// Activity logs (must be before /:id route)
+router.get('/:id/activity-logs', controller.getActivityLogs);
+router.post('/:id/activity-logs', controller.addActivityLog);
+
 router.get('/:id', controller.getById);
 router.put('/:id', controller.update);
 router.delete('/:id', controller.remove);

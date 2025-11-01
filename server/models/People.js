@@ -67,6 +67,15 @@ const PeopleSchema = new Schema({
     text: { type: String, required: true },
     created_by: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     created_at: { type: Date, default: Date.now }
+  }],
+  
+  // Activity Logs
+  activityLogs: [{
+    user: { type: String, required: true },
+    userId: { type: Schema.Types.ObjectId, ref: 'User' },
+    action: { type: String, required: true },
+    details: { type: Schema.Types.Mixed },
+    timestamp: { type: Date, default: Date.now, required: true }
   }]
 }, {
   timestamps: true

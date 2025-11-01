@@ -74,7 +74,16 @@ const OrganizationV2Schema = new Schema({
   },
   terms: { type: String, trim: true },
   shippingAddress: { type: String, trim: true },
-  logisticsPartner: { type: Schema.Types.ObjectId, ref: 'Organization' }
+  logisticsPartner: { type: Schema.Types.ObjectId, ref: 'Organization' },
+  
+  // Activity Logs
+  activityLogs: [{
+    user: { type: String, required: true },
+    userId: { type: Schema.Types.ObjectId, ref: 'User' },
+    action: { type: String, required: true },
+    details: { type: Schema.Types.Mixed },
+    timestamp: { type: Date, default: Date.now, required: true }
+  }]
 }, {
   timestamps: true
 });

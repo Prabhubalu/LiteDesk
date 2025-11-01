@@ -331,8 +331,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { useBulkActions } from '@/composables/useBulkActions';
 import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
@@ -344,6 +344,7 @@ import RowActions from '@/components/common/RowActions.vue';
 import OrganizationFormModal from '@/components/organizations/OrganizationFormModal.vue';
 
 const router = useRouter();
+const route = useRoute();
 
 // Use tabs composable
 const { openTab } = useTabs();
@@ -795,6 +796,13 @@ onMounted(async () => {
   }
   
   fetchOrganizations();
+});
+
+// Watch for route query changes (for refresh)
+watch(() => route.query.refresh, () => {
+  if (route.query.refresh) {
+    fetchOrganizations();
+  }
 });
 </script>
 

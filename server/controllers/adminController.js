@@ -392,12 +392,263 @@ const updateOrganizationById = async (req, res) => {
     }
 };
 
+// @desc    Get activity logs for a contact (Admin only)
+// @route   GET /api/admin/contacts/:id/activity-logs
+// @access  Private (Admin/Owner only)
+const getContactActivityLogs = async (req, res) => {
+    try {
+        const contact = await People.findById(req.params.id).select('activityLogs');
+        
+        if (!contact) {
+            return res.status(404).json({
+                success: false,
+                message: 'Contact not found'
+            });
+        }
+        
+        // Sort by timestamp (newest first)
+        const logs = (contact.activityLogs || []).sort((a, b) => 
+            new Date(b.timestamp) - new Date(a.timestamp)
+        );
+        
+        res.status(200).json({
+            success: true,
+            data: logs
+        });
+    } catch (error) {
+        console.error('Get contact activity logs error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching activity logs',
+            error: error.message
+        });
+    }
+};
+
+// @desc    Add activity log to a contact (Admin only)
+// @route   POST /api/admin/contacts/:id/activity-logs
+// @access  Private (Admin/Owner only)
+const addContactActivityLog = async (req, res) => {
+    try {
+        const { user, action, details } = req.body;
+        
+        if (!user || !action) {
+            return res.status(400).json({
+                success: false,
+                message: 'User and action are required'
+            });
+        }
+        
+        const contact = await People.findByIdAndUpdate(
+            req.params.id,
+            {
+                $push: {
+                    activityLogs: {
+                        user: user,
+                        userId: req.user?._id || null,
+                        action: action,
+                        details: details || null,
+                        timestamp: new Date()
+                    }
+                }
+            },
+            { new: true, runValidators: true }
+        );
+        
+        if (!contact) {
+            return res.status(404).json({
+                success: false,
+                message: 'Contact not found'
+            });
+        }
+        
+        // Return the newly added log
+        const newLog = contact.activityLogs[contact.activityLogs.length - 1];
+        
+        res.status(200).json({
+            success: true,
+            data: newLog
+        });
+    } catch (error) {
+        console.error('Add contact activity log error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error adding activity log',
+            error: error.message
+        });
+    }
+};
+
+// @desc    Get activity logs for an organization (Admin only)
+// @route   GET /api/admin/organizations/:id/activity-logs
+// @access  Private (Admin/Owner only)
+const getOrganizationActivityLogs = async (req, res) => {
+    try {
+        // Try OrganizationV2 first
+        let org = await OrganizationV2.findById(req.params.id).select('activityLogs').lean();
+        
+        if (!org) {
+            // Try legacy Organization (though it might not have activityLogs)
+            org = await Organization.findById(req.params.id).select('activityLogs').lean();
+        }
+        
+        if (!org) {
+            return res.status(404).json({
+                success: false,
+                message: 'Organization not found'
+            });
+        }
+        
+        // Sort by timestamp (newest first)
+        const logs = (org.activityLogs || []).sort((a, b) => 
+            new Date(b.timestamp) - new Date(a.timestamp)
+        );
+        
+        res.status(200).json({
+            success: true,
+            data: logs
+        });
+    } catch (error) {
+        console.error('Get organization activity logs error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching activity logs',
+            error: error.message
+        });
+    }
+};
+
+// @desc    Add activity log to an organization (Admin only)
+// @route   POST /api/admin/organizations/:id/activity-logs
+// @access  Private (Admin/Owner only)
+const addOrganizationActivityLog = async (req, res) => {
+    try {
+        const { user, action, details } = req.body;
+        
+        if (!user || !action) {
+            return res.status(400).json({
+                success: false,
+                message: 'User and action are required'
+            });
+        }
+        
+        // Try OrganizationV2 first
+        let org = await OrganizationV2.findByIdAndUpdate(
+            req.params.id,
+            {
+                $push: {
+                    activityLogs: {
+                        user: user,
+                        userId: req.user?._id || null,
+                        action: action,
+                        details: details || null,
+                        timestamp: new Date()
+                    }
+                }
+            },
+            { new: true, runValidators: true }
+        );
+        
+        if (!org) {
+            return res.status(404).json({
+                success: false,
+                message: 'Organization not found'
+            });
+        }
+        
+        // Return the newly added log
+        const newLog = org.activityLogs[org.activityLogs.length - 1];
+        
+        res.status(200).json({
+            success: true,
+            data: newLog
+        });
+    } catch (error) {
+        console.error('Add organization activity log error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error adding activity log',
+            error: error.message
+        });
+    }
+};
+
+// @desc    Delete contact by ID (Admin only)
+// @route   DELETE /api/admin/contacts/:id
+// @access  Private (Admin/Owner only)
+const deleteContactById = async (req, res) => {
+    try {
+        const contact = await People.findByIdAndDelete(req.params.id);
+        
+        if (!contact) {
+            return res.status(404).json({
+                success: false,
+                message: 'Contact not found'
+            });
+        }
+        
+        res.status(200).json({
+            success: true,
+            message: 'Contact deleted successfully',
+            data: contact._id
+        });
+    } catch (error) {
+        console.error('Delete contact by ID error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error deleting contact',
+            error: error.message
+        });
+    }
+};
+
+// @desc    Delete organization by ID (Admin only)
+// @route   DELETE /api/admin/organizations/:id
+// @access  Private (Admin/Owner only)
+const deleteOrganizationById = async (req, res) => {
+    try {
+        // Try OrganizationV2 first
+        let org = await OrganizationV2.findByIdAndDelete(req.params.id);
+        
+        if (!org) {
+            // Try legacy Organization
+            org = await Organization.findByIdAndDelete(req.params.id);
+        }
+        
+        if (!org) {
+            return res.status(404).json({
+                success: false,
+                message: 'Organization not found'
+            });
+        }
+        
+        res.status(200).json({
+            success: true,
+            message: 'Organization deleted successfully',
+            data: org._id
+        });
+    } catch (error) {
+        console.error('Delete organization by ID error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error deleting organization',
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
     getAllContactsAcrossOrgs,
     getAllOrganizations,
     getContactById,
     updateContactById,
+    deleteContactById,
+    getContactActivityLogs,
+    addContactActivityLog,
     getOrganizationById,
-    updateOrganizationById
+    updateOrganizationById,
+    deleteOrganizationById,
+    getOrganizationActivityLogs,
+    addOrganizationActivityLog
 };
 
