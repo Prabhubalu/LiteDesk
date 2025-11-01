@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+  <div class="flex flex-col h-full w-full">
     <div class="flex items-center justify-between mb-3">
       <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Related Deals</h3>
       <button
@@ -78,7 +78,11 @@ import apiClient from '@/utils/apiClient';
 const props = defineProps({
   contactId: {
     type: String,
-    required: true
+    required: false
+  },
+  organizationId: {
+    type: String,
+    required: false
   },
   limit: {
     type: Number,
@@ -92,18 +96,23 @@ const deals = ref([]);
 const loading = ref(false);
 
 const fetchDeals = async () => {
-  if (!props.contactId) return;
+  if (!props.contactId && !props.organizationId) return;
   
   loading.value = true;
   try {
-    const response = await apiClient.get('/deals', {
-      params: {
-        contactId: props.contactId,
-        limit: props.limit,
-        sortBy: 'createdAt',
-        sortOrder: 'desc'
-      }
-    });
+    const params = {
+      limit: props.limit,
+      sortBy: 'createdAt',
+      sortOrder: 'desc'
+    };
+    
+    if (props.contactId) {
+      params.contactId = props.contactId;
+    } else if (props.organizationId) {
+      params.organizationId = props.organizationId;
+    }
+    
+    const response = await apiClient.get('/deals', { params });
     
     if (response.success) {
       deals.value = response.data;
@@ -147,7 +156,7 @@ const getStatusClass = (status) => {
 };
 
 // Watch for prop changes
-watch(() => props.contactId, () => {
+watch(() => [props.contactId, props.organizationId], () => {
   fetchDeals();
 }, { immediate: true });
 

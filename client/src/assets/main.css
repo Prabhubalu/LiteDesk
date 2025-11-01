@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import 'gridstack/dist/gridstack.min.css';
 
 @variant dark (.dark &);
 
@@ -11,6 +12,34 @@
 .dark {
   color-scheme: dark;
 }
+
+/* GridStack Styles */
+.grid-stack {
+  /* background: transparent !important; */
+  box-sizing: border-box !important;
+}
+
+.grid-stack-item {
+  /* background: transparent !important; */
+  box-sizing: border-box !important;
+  padding: 1rem !important;
+}
+
+.grid-stack-item-content {
+  /* background: transparent !important; */
+  border: none !important;
+  overflow: visible !important;
+  padding: 0 !important;
+}
+
+/* Ensure GridStack margins are visible */
+.grid-stack {
+  --gs-item-margin-top: 8px !important;
+  --gs-item-margin-bottom: 8px !important;
+  --gs-item-margin-left: 8px !important;
+  --gs-item-margin-right: 8px !important;
+}
+
 
 /* FullCalendar Styles - Reset and Mac-style tabs */
 .fc-toolbar {

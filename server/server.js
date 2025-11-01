@@ -61,6 +61,7 @@ const instanceRoutes = require('./routes/instanceRoutes');
 const healthRoutes = require('./routes/healthRoutes');
 const metricsRoutes = require('./routes/metricsRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const userPreferencesRoutes = require('./routes/userPreferencesRoutes');
 const peopleRoutes = require('./routes/peopleRoutes');
 const organizationV2Routes = require('./routes/organizationV2Routes');
 const moduleRoutes = require('./routes/moduleRoutes');
@@ -79,6 +80,7 @@ app.use('/api/demo', demoRoutes);
 app.use('/api/instances', instanceRoutes);
 app.use('/api/metrics', metricsRoutes);
 app.use('/api/admin', adminRoutes); // Admin-only cross-organization endpoints
+app.use('/api/user-preferences', userPreferencesRoutes);
 app.use('/health', healthRoutes); // Public health check endpoint
 // New versioned endpoints (non-breaking)
 app.use('/api/people', peopleRoutes);
