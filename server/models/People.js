@@ -60,7 +60,14 @@ const PeopleSchema = new Schema({
   preferred_contact_method: {
     type: String,
     enum: ['Email', 'Phone', 'WhatsApp', 'SMS', 'None']
-  }
+  },
+  
+  // Notes & Activities
+  notes: [{
+    text: { type: String, required: true },
+    created_by: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    created_at: { type: Date, default: Date.now }
+  }]
 }, {
   timestamps: true
 });

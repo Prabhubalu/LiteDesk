@@ -90,7 +90,7 @@ const loading = ref(false);
 const fetchContacts = async () => {
   loading.value = true;
   try {
-    const data = await apiClient.get('/contacts', {
+    const data = await apiClient.get('/people', {
       params: {
         organizationId: props.organizationId,
         limit: props.limit,

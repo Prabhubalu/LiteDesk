@@ -40,6 +40,12 @@
   --gs-item-margin-right: 8px !important;
 }
 
+/* Prevent GridStack resize handles from appearing above fixed headers */
+.ui-resizable-handle,
+.grid-stack-item > .ui-resizable-handle {
+  z-index: 1 !important;
+}
+
 
 /* FullCalendar Styles - Reset and Mac-style tabs */
 .fc-toolbar {

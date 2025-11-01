@@ -60,6 +60,12 @@ exports.getDeals = async (req, res) => {
         if (req.query.ownerId) {
             query.ownerId = req.query.ownerId;
         }
+        if (req.query.contactId) {
+            query.contactId = req.query.contactId;
+        }
+        if (req.query.accountId) {
+            query.accountId = req.query.accountId;
+        }
         
         // Search functionality
         if (req.query.search) {
@@ -88,7 +94,7 @@ exports.getDeals = async (req, res) => {
         
         // Execute query
         const deals = await Deal.find(query)
-            .populate('contactId', 'first_name last_name email company')
+            .populate('contactId', 'first_name last_name email')
             .populate('ownerId', 'firstName lastName email')
             .populate('accountId', 'name')
             .sort(sort)
@@ -162,7 +168,7 @@ exports.getDealById = async (req, res) => {
             _id: req.params.id, 
             organizationId: req.user.organizationId 
         })
-        .populate('contactId', 'first_name last_name email phone company')
+        .populate('contactId', 'first_name last_name email phone')
         .populate('ownerId', 'firstName lastName email')
         .populate('accountId', 'name industry')
         .populate('notes.createdBy', 'firstName lastName')

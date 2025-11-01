@@ -230,11 +230,22 @@
 
       <!-- Dynamic Picklist/Multi-Picklist cells with colors -->
       <template v-for="field in picklistFields" :key="field.key" #[`cell-${field.key}`]="{ value, row }">
-        <BadgeCell 
-          v-if="field.dataType === 'Picklist' || field.dataType === 'Multi-Picklist'"
-          :value="value" 
-          :options="field.options || []"
-        />
+        <div v-if="field.dataType === 'Picklist' || field.dataType === 'Multi-Picklist'" class="flex flex-wrap gap-1">
+          <template v-if="Array.isArray(value) && value.length > 0">
+            <BadgeCell 
+              v-for="(item, index) in value" 
+              :key="index"
+              :value="item" 
+              :options="field.options || []"
+            />
+          </template>
+          <BadgeCell 
+            v-else-if="value && !Array.isArray(value)"
+            :value="value" 
+            :options="field.options || []"
+          />
+          <span v-else class="text-gray-400 dark:text-gray-500">-</span>
+        </div>
         <span v-else class="text-gray-700 dark:text-gray-300">{{ value || '-' }}</span>
       </template>
 
