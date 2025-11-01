@@ -3,10 +3,26 @@ const People = require('../models/People');
 // Create People
 exports.create = async (req, res) => {
   try {
+    const User = require('../models/User');
+    
+    // Get user name for activity log
+    const user = await User.findById(req.user._id).select('firstName lastName username');
+    const userName = user ? 
+      (user.firstName || user.lastName ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : user.username) || 'User' 
+      : 'System';
+    
     const body = {
       ...req.body,
       organizationId: req.user.organizationId,
-      createdBy: req.user._id
+      createdBy: req.user._id,
+      // Add initial activity log for record creation
+      activityLogs: [{
+        user: userName,
+        userId: req.user._id,
+        action: 'created this record',
+        details: { type: 'create' },
+        timestamp: new Date()
+      }]
     };
     const record = await People.create(body);
     res.status(201).json({ success: true, data: record });
@@ -164,6 +180,95 @@ exports.addNote = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error adding note',
+      error: error.message
+    });
+  }
+};
+
+// Get activity logs for a person
+exports.getActivityLogs = async (req, res) => {
+  try {
+    const person = await People.findOne({ 
+      _id: req.params.id, 
+      organizationId: req.user.organizationId 
+    }).select('activityLogs');
+    
+    if (!person) {
+      return res.status(404).json({
+        success: false,
+        message: 'Person not found or access denied'
+      });
+    }
+    
+    // Sort by timestamp (newest first)
+    const logs = (person.activityLogs || []).sort((a, b) => 
+      new Date(b.timestamp) - new Date(a.timestamp)
+    );
+    
+    res.status(200).json({
+      success: true,
+      data: logs
+    });
+  } catch (error) {
+    console.error('Get activity logs error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching activity logs',
+      error: error.message
+    });
+  }
+};
+
+// Add activity log to a person
+exports.addActivityLog = async (req, res) => {
+  try {
+    const { user, action, details } = req.body;
+    
+    if (!user || !action) {
+      return res.status(400).json({
+        success: false,
+        message: 'User and action are required'
+      });
+    }
+    
+    const person = await People.findOneAndUpdate(
+      { 
+        _id: req.params.id, 
+        organizationId: req.user.organizationId 
+      },
+      {
+        $push: {
+          activityLogs: {
+            user: user,
+            userId: req.user._id,
+            action: action,
+            details: details || null,
+            timestamp: new Date()
+          }
+        }
+      },
+      { new: true, runValidators: true }
+    );
+    
+    if (!person) {
+      return res.status(404).json({
+        success: false,
+        message: 'Person not found or access denied'
+      });
+    }
+    
+    // Return the newly added log
+    const newLog = person.activityLogs[person.activityLogs.length - 1];
+    
+    res.status(200).json({
+      success: true,
+      data: newLog
+    });
+  } catch (error) {
+    console.error('Add activity log error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error adding activity log',
       error: error.message
     });
   }

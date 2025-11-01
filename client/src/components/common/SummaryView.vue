@@ -20,7 +20,7 @@
     </div>
 
     <!-- Main Summary View -->
-    <div v-else-if="record" class="max-w-7xl mx-auto">
+    <div v-else-if="record" class="max-w-full mx-auto">
       <!-- Header Component - Fixed below TabBar -->
       <div 
         class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 fixed top-[65px] md:top-[113px] lg:top-[49px] z-40 transition-all duration-300 ease-in-out"
@@ -30,9 +30,9 @@
         }"
       >
         <div class="px-6 py-4">
-          <div class="flex items-center justify-between">
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <!-- Left Group: Record Identity & Quick Actions -->
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-4 flex-1 min-w-0">
               <!-- Icon/Avatar -->
               <div class="flex-shrink-0">
                 <div v-if="record.avatar" class="w-12 h-12 rounded-lg overflow-hidden">
@@ -43,112 +43,115 @@
                 </div>
               </div>
 
-              <!-- Record Name -->
+              <!-- Record Name with Actions -->
               <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
                 <h1 class="text-xl font-bold text-gray-900 dark:text-white truncate">
                   {{ record.name }}
                 </h1>
-                <p v-if="record.subtitle" class="text-sm text-gray-600 dark:text-gray-400 truncate">
-                  {{ record.subtitle }}
-                </p>
-              </div>
 
-              <!-- Action Icons -->
-              <div class="flex items-center gap-2">
+                  <!-- Action Icons - Right next to title -->
+                  <div class="flex items-center gap-1">
                 <!-- Follow Toggle -->
                 <button
                   @click="toggleFollow"
                   :class="[
-                    'p-2 rounded-lg transition-colors',
+                        'p-1.5 rounded-lg transition-colors',
                     isFollowing 
                       ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' 
                       : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
                   ]"
                   :title="isFollowing ? 'Unfollow' : 'Follow'"
                 >
-                  <HeartIconSolid v-if="isFollowing" class="w-5 h-5" />
-                  <HeartIcon v-else class="w-5 h-5" />
+                      <HeartIconSolid v-if="isFollowing" class="w-4 h-4" />
+                      <HeartIcon v-else class="w-4 h-4" />
                 </button>
 
-                <!-- Tag Dropdown -->
-                <Menu as="div" class="relative">
-                  <MenuButton 
-                    :class="[
-                      'p-2 rounded-lg transition-colors',
-                      tags.length > 0
-                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    ]"
-                    :title="tags.length > 0 ? 'Manage Tags' : 'Add Tag'"
-                  >
-                    <TagIconSolid v-if="tags.length > 0" class="w-5 h-5" />
-                    <TagIcon v-else class="w-5 h-5" />
-                  </MenuButton>
+                    <!-- Tag Dropdown -->
+                    <Menu as="div" class="relative">
+                      <MenuButton 
+                        :class="[
+                          'p-1.5 rounded-lg transition-colors',
+                          tags.length > 0
+                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        ]"
+                        :title="tags.length > 0 ? 'Manage Tags' : 'Add Tag'"
+                      >
+                        <TagIconSolid v-if="tags.length > 0" class="w-4 h-4" />
+                        <TagIcon v-else class="w-4 h-4" />
+                      </MenuButton>
 
-                  <transition
-                    enter-active-class="transition ease-out duration-100"
-                    enter-from-class="transform opacity-0 scale-95"
-                    enter-to-class="transform opacity-100 scale-100"
-                    leave-active-class="transition ease-in duration-75"
-                    leave-from-class="transform opacity-100 scale-100"
-                    leave-to-class="transform opacity-0 scale-95"
-                  >
-                    <MenuItems class="absolute left-0 mt-2 w-64 rounded-lg shadow-xl py-1 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 z-50">
-                      <!-- Existing Tags -->
-                      <div v-if="tags.length > 0" class="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
-                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Tags</p>
-                        <div class="flex flex-wrap gap-1">
-                          <span 
-                            v-for="(tag, index) in tags" 
-                            :key="index"
-                            class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-sm"
-                          >
-                            {{ tag }}
-                            <button
-                              @click="removeTag(index)"
-                              class="ml-1 hover:bg-blue-200 dark:hover:bg-blue-900/50 rounded p-0.5"
-                            >
-                              <XMarkIcon class="w-3 h-3" />
-                            </button>
-                          </span>
-                        </div>
-                      </div>
-                      
-                      <!-- Empty State or Add New -->
-                      <div class="px-3 py-2">
-                        <div v-if="tags.length === 0" class="text-center py-2 mb-2">
-                          <p class="text-sm text-gray-500 dark:text-gray-400">No tags yet</p>
-                        </div>
-                        <MenuItem v-slot="{ active }">
-                          <button
-                            @click="showTagModal = true"
-                            :class="[
-                              'w-full text-left px-4 py-2 text-sm transition-colors duration-150 flex items-center gap-2',
-                              active ? 'bg-gray-100 dark:bg-gray-700' : ''
-                            ]"
-                          >
-                            <PlusIcon class="w-4 h-4" />
-                            {{ tags.length > 0 ? 'Add Another Tag' : 'Add Tag' }}
-                          </button>
-                        </MenuItem>
-                      </div>
-                    </MenuItems>
-                  </transition>
-                </Menu>
+                      <transition
+                        enter-active-class="transition ease-out duration-100"
+                        enter-from-class="transform opacity-0 scale-95"
+                        enter-to-class="transform opacity-100 scale-100"
+                        leave-active-class="transition ease-in duration-75"
+                        leave-from-class="transform opacity-100 scale-100"
+                        leave-to-class="transform opacity-0 scale-95"
+                      >
+                        <MenuItems class="absolute left-0 mt-2 w-64 rounded-lg shadow-xl py-1 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 z-50">
+                          <!-- Existing Tags -->
+                          <div v-if="tags.length > 0" class="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+                            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Tags</p>
+                            <div class="flex flex-wrap gap-1">
+                              <span 
+                                v-for="(tag, index) in tags" 
+                                :key="index"
+                                class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-sm"
+                              >
+                                {{ tag }}
+                                <button
+                                  @click="removeTag(index)"
+                                  class="ml-1 hover:bg-blue-200 dark:hover:bg-blue-900/50 rounded p-0.5"
+                                >
+                                  <XMarkIcon class="w-3 h-3" />
+                                </button>
+                              </span>
+                            </div>
+                          </div>
+                          
+                          <!-- Empty State or Add New -->
+                          <div class="px-3 py-2">
+                            <div v-if="tags.length === 0" class="text-center py-2 mb-2">
+                              <p class="text-sm text-gray-500 dark:text-gray-400">No tags yet</p>
+                            </div>
+                            <MenuItem v-slot="{ active }">
+                <button
+                  @click="showTagModal = true"
+                                :class="[
+                                  'w-full text-left px-4 py-2 text-sm transition-colors duration-150 flex items-center gap-2',
+                                  active ? 'bg-gray-100 dark:bg-gray-700' : ''
+                                ]"
+                              >
+                                <PlusIcon class="w-4 h-4" />
+                                {{ tags.length > 0 ? 'Add Another Tag' : 'Add Tag' }}
+                </button>
+                            </MenuItem>
+                          </div>
+                        </MenuItems>
+                      </transition>
+                    </Menu>
 
                 <!-- Copy URL Link -->
                 <button
                   @click="copyUrl"
-                  class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                      class="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                   title="Copy Link"
                 >
-                  <LinkIcon class="w-5 h-5" />
+                      <LinkIcon class="w-4 h-4" />
                 </button>
+                  </div>
+                </div>
+                
+                <p v-if="record.subtitle" class="text-sm text-gray-600 dark:text-gray-400 truncate mt-1">
+                  {{ record.subtitle }}
+                </p>
               </div>
             </div>
 
             <!-- Right Group: Primary Record Actions -->
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 justify-end lg:justify-start flex-wrap">
               <!-- Status/Lifecycle Stage Dropdowns (Dynamic based on module) -->
               <select
                 v-for="field in getLifecycleStatusFields"
@@ -163,18 +166,18 @@
                 </option>
               </select>
 
-              <!-- Add Relation Dropdown -->
+              <!-- Add Relation Dropdown (Desktop only) -->
               <button
                 @click="showRelationModal = true"
-                class="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors"
+                class="hidden lg:inline-flex px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors"
               >
                 + Add Relation
               </button>
 
-              <!-- Record Edit Button -->
+              <!-- Record Edit Button (Desktop only) -->
               <button
                 @click="$emit('edit')"
-                class="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors inline-flex items-center"
+                class="hidden lg:inline-flex px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors items-center"
               >
                 <PencilSquareIcon class="w-4 h-4 mr-2" />
                 Edit
@@ -195,6 +198,39 @@
                   leave-to-class="transform opacity-0 scale-95"
                 >
                   <MenuItems class="absolute right-0 mt-2 w-48 rounded-lg shadow-xl py-1 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10">
+                    <!-- Edit (Mobile/Tablet only) -->
+                    <MenuItem v-slot="{ active }" class="lg:hidden">
+                      <button
+                        @click="$emit('edit')"
+                        :class="[
+                          'w-full text-left px-4 py-2 text-sm transition-colors duration-150 flex items-center gap-2',
+                          active ? 'bg-gray-100 dark:bg-gray-700' : '',
+                          'text-gray-700 dark:text-gray-300'
+                        ]"
+                      >
+                        <PencilSquareIcon class="w-4 h-4" />
+                        Edit
+                      </button>
+                    </MenuItem>
+                    
+                    <!-- Add Relation (Mobile/Tablet only) -->
+                    <MenuItem v-slot="{ active }" class="lg:hidden">
+                      <button
+                        @click="showRelationModal = true"
+                        :class="[
+                          'w-full text-left px-4 py-2 text-sm transition-colors duration-150',
+                          active ? 'bg-gray-100 dark:bg-gray-700' : '',
+                          'text-gray-700 dark:text-gray-300'
+                        ]"
+                      >
+                        + Add Relation
+                      </button>
+                    </MenuItem>
+
+                    <!-- Divider (Mobile/Tablet only) -->
+                    <div class="lg:hidden border-t border-gray-200 dark:border-gray-700 my-1"></div>
+
+                    <!-- Delete Record -->
                     <MenuItem v-slot="{ active }">
                       <button
                         @click="$emit('delete')"
@@ -239,7 +275,7 @@
       </div>
 
       <!-- Tab Content -->
-      <div class="p-6 pt-32">
+      <div :class="tabContentPadding">
         <!-- Summary Tab with GridStack Dashboard -->
         <div v-if="activeTab === 'summary'">
           <!-- GridStack Container -->
@@ -279,8 +315,8 @@
               
               <!-- Right Side: Toggle and Manage Button -->
               <div class="flex items-center gap-3">
-                <!-- Show empty fields toggle -->
-                <label class="flex items-center gap-2 cursor-pointer">
+                <!-- Show empty fields toggle (Desktop only) -->
+                <label class="hidden lg:flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     v-model="showEmptyFields"
@@ -289,24 +325,76 @@
                   <span class="text-sm text-gray-700 dark:text-gray-300">Show empty fields</span>
                 </label>
                 
-                <!-- Manage Fields Button (only if user has permission) -->
-                <PermissionButton
-                  v-if="hasManageFieldsPermission"
-                  module="settings"
-                  action="edit"
-                  variant="secondary"
-                  icon="cog"
-                  @click="goToManageFields"
-                >
-                  Manage Fields
-                </PermissionButton>
+                <!-- Manage Fields Button (Desktop only) -->
+                <div v-if="hasManageFieldsPermission" class="hidden lg:block">
+                  <PermissionButton
+                    module="settings"
+                    action="edit"
+                    variant="secondary"
+                    icon="cog"
+                    @click="goToManageFields"
+                  >
+                    Manage Fields
+                  </PermissionButton>
+                </div>
+
+                <!-- More Dropdown (Mobile/Tablet only) -->
+                <Menu as="div" class="relative lg:hidden">
+                  <MenuButton class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                    <EllipsisVerticalIcon class="w-5 h-5" />
+                  </MenuButton>
+
+                  <transition
+                    enter-active-class="transition ease-out duration-100"
+                    enter-from-class="transform opacity-0 scale-95"
+                    enter-to-class="transform opacity-100 scale-100"
+                    leave-active-class="transition ease-in duration-75"
+                    leave-from-class="transform opacity-100 scale-100"
+                    leave-to-class="transform opacity-0 scale-95"
+                  >
+                    <MenuItems class="absolute right-0 mt-2 w-48 rounded-lg shadow-xl py-1 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 z-50">
+                      <!-- Show empty fields toggle -->
+                      <MenuItem v-slot="{ active }" as="template">
+                        <label 
+                          :class="[
+                            'flex items-center gap-2 px-4 py-2 cursor-pointer',
+                            active ? 'bg-gray-100 dark:bg-gray-700' : ''
+                          ]"
+                        >
+                          <input
+                            type="checkbox"
+                            v-model="showEmptyFields"
+                            class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                            @click.stop
+                          />
+                          <span class="text-sm text-gray-700 dark:text-gray-300">Show empty fields</span>
+                        </label>
+                      </MenuItem>
+                      
+                      <!-- Manage Fields (only if user has permission) -->
+                      <MenuItem v-slot="{ active }" v-if="hasManageFieldsPermission" as="template">
+                        <button
+                          @click="goToManageFields"
+                          :class="[
+                            'w-full text-left px-4 py-2 text-sm transition-colors duration-150 flex items-center gap-2',
+                            active ? 'bg-gray-100 dark:bg-gray-700' : '',
+                            'text-gray-700 dark:text-gray-300'
+                          ]"
+                        >
+                          <Cog6ToothIcon class="w-4 h-4" />
+                          Manage Fields
+                        </button>
+                      </MenuItem>
+                    </MenuItems>
+                  </transition>
+                </Menu>
               </div>
             </div>
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
 
             
             <!-- Fields Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div :class="detailsGridClass" :style="detailsGridStyle">
               <div v-for="(value, key) in filteredRecordFields" :key="key">
                 <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">
                   {{ formatFieldName(key) }}
@@ -354,23 +442,98 @@
         <div v-else-if="activeTab === 'updates'" class="space-y-4">
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Activity Timeline</h2>
-            <div class="space-y-4">
-              <div v-for="(update, index) in timelineUpdates" :key="index" class="flex gap-4">
-                <div class="flex-shrink-0">
-                  <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                    <ClockIcon class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            <div v-if="activityItems.length === 0" class="text-center py-8 text-gray-500 dark:text-gray-400">
+              No activity yet
                   </div>
+            <div v-else class="flow-root">
+              <ul role="list" class="-mb-8">
+                <li v-for="(activityItem, activityItemIdx) in activityItems" :key="activityItem.id">
+                  <div class="relative pb-8">
+                    <span v-if="activityItemIdx !== activityItems.length - 1" class="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-200 dark:bg-gray-700" aria-hidden="true"></span>
+                    <div class="relative flex items-start space-x-3">
+                      <template v-if="activityItem.type === 'comment'">
+                        <div class="relative">
+                          <div :class="['flex size-10 items-center justify-center rounded-full ring-8 ring-white dark:ring-gray-800 outline -outline-offset-1 outline-black/5 dark:outline-white/5', getColorForName(activityItem.person.name).bg]">
+                            <span :class="['text-sm font-medium', getColorForName(activityItem.person.name).text]">
+                              {{ getInitials(activityItem.person.name) }}
+                            </span>
                 </div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm text-gray-900 dark:text-white">
-                    <span class="font-medium">{{ update.user }}</span> {{ update.action }}
-                  </p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ formatDate(update.timestamp) }}</p>
+                          <span class="absolute -right-1 -bottom-0.5 rounded-tl bg-white dark:bg-gray-800 px-0.5 py-px">
+                            <ChatBubbleLeftEllipsisIcon class="size-5 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+                          </span>
                 </div>
+                        <div class="min-w-0 flex-1">
+                          <div>
+                            <div class="text-sm">
+                              <span class="font-medium text-gray-900 dark:text-white">{{ activityItem.person.name }}</span>
               </div>
-              <div v-if="timelineUpdates.length === 0" class="text-center py-8 text-gray-500 dark:text-gray-400">
-                No activity yet
+                            <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{{ activityItem.date }}</p>
               </div>
+                          <div class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+                            <p>{{ activityItem.comment }}</p>
+                          </div>
+                        </div>
+                      </template>
+                      <template v-else-if="activityItem.type === 'assignment'">
+                        <div>
+                          <div class="relative px-1">
+                            <div class="flex size-8 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 ring-8 ring-white dark:ring-gray-800">
+                              <UserCircleIcon class="size-5 text-gray-500 dark:text-gray-400" aria-hidden="true" />
+                            </div>
+                          </div>
+                        </div>
+                        <div class="min-w-0 flex-1 py-1.5">
+                          <div>
+                            <div class="text-sm">
+                              <span class="font-medium text-gray-900 dark:text-white">{{ activityItem.person.name }}</span>
+                              {{ ' ' }}
+                              <span class="text-gray-500 dark:text-gray-400">{{ activityItem.action }}</span>
+                              {{ ' ' }}
+                              <span class="font-medium text-gray-900 dark:text-white">{{ activityItem.fieldName || '' }}</span>
+                              {{ ' ' }}
+                              <span class="whitespace-nowrap text-gray-500 dark:text-gray-400">{{ activityItem.date }}</span>
+                            </div>
+                            <div v-if="activityItem.comment && activityItem.comment !== activityItem.action" class="mt-1 text-sm text-gray-700 dark:text-gray-300">
+                              <p>{{ activityItem.comment }}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </template>
+                      <template v-else-if="activityItem.type === 'tags'">
+                        <div>
+                          <div class="relative px-1">
+                            <div class="flex size-8 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 ring-8 ring-white dark:ring-gray-800">
+                              <TagIconSolid class="size-5 text-gray-500 dark:text-gray-400" aria-hidden="true" />
+                            </div>
+                          </div>
+                        </div>
+                        <div class="min-w-0 flex-1 py-0">
+                          <div class="text-sm/8 text-gray-500 dark:text-gray-400">
+                            <span class="mr-0.5">
+                              <span class="font-medium text-gray-900 dark:text-white">{{ activityItem.person.name }}</span>
+                              {{ ' ' }}
+                              {{ activityItem.action }}
+                            </span>
+                            {{ ' ' }}
+                            <span class="mr-0.5">
+                              <template v-for="(tag, tagIdx) in activityItem.tags" :key="tag.name">
+                                <span class="inline-flex items-center gap-x-1.5 rounded-full px-2 py-1 text-xs font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-700 ring-1 ring-gray-300 dark:ring-gray-600">
+                                  <svg :class="[tag.color, 'size-1.5']" viewBox="0 0 6 6" aria-hidden="true">
+                                    <circle cx="3" cy="3" r="3" />
+                                  </svg>
+                                  {{ tag.name }}
+                                </span>
+                                {{ ' ' }}
+                              </template>
+                            </span>
+                            <span class="whitespace-nowrap">{{ activityItem.date }}</span>
+                          </div>
+                        </div>
+                      </template>
+                    </div>
+                  </div>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
@@ -465,9 +628,11 @@ import {
   EllipsisVerticalIcon,
   PlusIcon,
   ClockIcon,
-  XMarkIcon
+  XMarkIcon,
+  UserCircleIcon,
+  Cog6ToothIcon
 } from '@heroicons/vue/24/outline';
-import { HeartIcon as HeartIconSolid, TagIcon as TagIconSolid } from '@heroicons/vue/24/solid';
+import { HeartIcon as HeartIconSolid, TagIcon as TagIconSolid, ChatBubbleLeftEllipsisIcon } from '@heroicons/vue/24/solid';
 
 // Props
 const props = defineProps({
@@ -547,6 +712,12 @@ const getStorageKey = () => {
 const getLayoutStorageKey = () => {
   const recordId = props.record?._id || props.record?.id || 'default';
   return `summaryview-layout-${props.recordType}-${recordId}`;
+};
+
+// Get storage key for activity logs
+const getActivityLogsStorageKey = () => {
+  const recordId = props.record?._id || props.record?.id || 'default';
+  return `summaryview-activity-${props.recordType}-${recordId}`;
 };
 
 // Load active tab from localStorage or default to 'summary'
@@ -654,14 +825,250 @@ const gridStackContainer = ref(null);
 let gridStack = null;
 let isInitializing = false;
 
-// Timeline updates
-const timelineUpdates = ref([
-  {
-    user: 'System',
-    action: 'created this record',
-    timestamp: new Date()
+// Timeline updates - store all activity logs
+const timelineUpdates = ref([]);
+const loggedRecordIds = ref(new Set()); // Track which records we've logged initial load for
+
+// Get current user name for activity logs
+const getCurrentUserName = () => {
+  if (authStore.user) {
+    const firstName = authStore.user.firstName || '';
+    const lastName = authStore.user.lastName || '';
+    if (firstName || lastName) {
+      return `${firstName} ${lastName}`.trim();
+    }
+    return authStore.user.username || 'User';
   }
-]);
+  return 'System';
+};
+
+// Get activity logs API endpoint
+const getActivityLogsEndpoint = (recordId) => {
+  const isAdmin = authStore.isOwner || authStore.userRole === 'admin';
+  
+  if (props.recordType === 'people') {
+    return isAdmin 
+      ? `/admin/contacts/${recordId}/activity-logs`
+      : `/people/${recordId}/activity-logs`;
+  } else if (props.recordType === 'organizations') {
+    // Organizations always use admin endpoint
+    return `/admin/organizations/${recordId}/activity-logs`;
+  }
+  return null;
+};
+
+// Load activity logs from API (with localStorage fallback)
+const loadActivityLogs = async () => {
+  if (!props.record?._id && !props.record?.id) return;
+  
+  const recordId = props.record._id || props.record.id;
+  const endpoint = getActivityLogsEndpoint(recordId);
+  
+  if (!endpoint) return;
+  
+  try {
+    // Try API first
+    const response = await apiClient.get(endpoint);
+    if (response.success && response.data) {
+      // Convert ISO strings back to Date objects
+      timelineUpdates.value = response.data.map(log => ({
+        ...log,
+        timestamp: new Date(log.timestamp)
+      }));
+      return;
+    }
+  } catch (apiError) {
+    console.warn('Error loading activity logs from API, trying localStorage:', apiError);
+  }
+  
+  // Fallback to localStorage
+  try {
+    const saved = localStorage.getItem(getActivityLogsStorageKey());
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Convert ISO strings back to Date objects
+      timelineUpdates.value = parsed.map(log => ({
+        ...log,
+        timestamp: new Date(log.timestamp)
+      }));
+    }
+  } catch (e) {
+    console.error('Error loading activity logs from localStorage:', e);
+    timelineUpdates.value = [];
+  }
+};
+
+// Save activity log to API (with localStorage fallback)
+const saveActivityLogToAPI = async (logEntry) => {
+  if (!props.record?._id && !props.record?.id) return;
+  
+  const recordId = props.record._id || props.record.id;
+  const endpoint = getActivityLogsEndpoint(recordId);
+  
+  if (!endpoint) return;
+  
+  try {
+    // Convert Date to ISO string for API
+    const payload = {
+      user: logEntry.user,
+      action: logEntry.action,
+      details: logEntry.details || null
+    };
+    
+    await apiClient.post(endpoint, payload);
+    return true;
+  } catch (apiError) {
+    console.warn('Error saving activity log to API, saving to localStorage:', apiError);
+    
+    // Fallback to localStorage
+    try {
+      const logsToSave = timelineUpdates.value.map(log => ({
+        ...log,
+        timestamp: log.timestamp instanceof Date ? log.timestamp.toISOString() : log.timestamp
+      }));
+      localStorage.setItem(getActivityLogsStorageKey(), JSON.stringify(logsToSave));
+    } catch (e) {
+      console.error('Error saving activity logs to localStorage:', e);
+    }
+    return false;
+  }
+};
+
+// Add activity log entry
+const addActivityLog = async (action, details = null) => {
+  const update = {
+    user: getCurrentUserName(),
+    action: action,
+    details: details,
+    timestamp: new Date()
+  };
+  
+  timelineUpdates.value.unshift(update); // Add to beginning for newest first
+  
+  // Optional: Limit to last 100 updates to prevent memory issues
+  if (timelineUpdates.value.length > 100) {
+    timelineUpdates.value = timelineUpdates.value.slice(0, 100);
+  }
+  
+  // Save to API (with localStorage fallback)
+  await saveActivityLogToAPI(update);
+};
+
+// Computed property for sorted timeline (newest first - already sorted since we unshift)
+const sortedTimelineUpdates = computed(() => {
+  return [...timelineUpdates.value].sort((a, b) => {
+    return new Date(b.timestamp) - new Date(a.timestamp);
+  });
+});
+
+// Computed padding for tab content (accounts for taller header on mobile/tablet)
+const tabContentPadding = computed(() => {
+  // On desktop (lg+), header is single row, needs less padding
+  // On mobile/tablet, header is two rows, needs more padding
+  if (viewportWidth.value >= 1024) {
+    return 'pt-32'; // ~128px top padding, p-6 for other sides
+  } else {
+    return 'pt-48'; // ~192px top padding, p-6 for other sides
+  }
+});
+
+// Computed class and style for details grid columns
+const detailsGridClass = computed(() => {
+  if (viewportWidth.value >= 1280) {
+    // 3 columns at 1280px+
+    return 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6';
+  } else if (viewportWidth.value >= 768) {
+    // 2 columns at 768px - 1279px
+    return 'grid grid-cols-1 md:grid-cols-2 gap-6';
+  }
+  // 1 column below 768px
+  return 'grid grid-cols-1 gap-6';
+});
+
+const detailsGridStyle = computed(() => {
+  if (viewportWidth.value >= 1440) {
+    // Override to 4 columns at 1440px+
+    return { gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' };
+  }
+  return {};
+});
+
+// Transform activity logs into activity items for the feeds UI
+const activityItems = computed(() => {
+  return sortedTimelineUpdates.value.map((update, index) => {
+    const action = update.action || '';
+    const lowerAction = action.toLowerCase();
+    
+    // Determine activity type based on action content
+    let type = 'comment';
+    let comment = action;
+    let fieldName = '';
+    let tags = [];
+    let actionText = '';
+    
+    // Check for tag operations (e.g., "added tag "name"" or "removed tag "name"")
+    if (lowerAction.includes('tag')) {
+      type = 'tags';
+      const tagMatch = action.match(/(?:added|removed)\s+tag\s+"?([^"]+)"?/i);
+      if (tagMatch) {
+        const tagName = tagMatch[1].replace(/^"|"$/g, ''); // Remove quotes if present
+        const isRemoved = lowerAction.includes('removed');
+        tags = [{
+          name: tagName,
+          color: 'fill-indigo-500'
+        }];
+        actionText = isRemoved ? 'removed tag' : 'added tag';
+      } else {
+        // Fallback for tag actions without proper format
+        comment = action;
+      }
+    }
+    // Check for field changes (e.g., "set First Name to "John"" or "changed First Name from "Old" to "New"")
+    else if (lowerAction.includes('changed') || lowerAction.includes('set')) {
+      type = 'assignment';
+      
+      // Try to extract field name and values
+      const setMatch = action.match(/set\s+([^"]+?)\s+to\s+"([^"]*)"/i);
+      const changeMatch = action.match(/changed\s+([^"]+?)\s+from\s+"([^"]*)"\s+to\s+"([^"]*)"/i);
+      
+      if (setMatch) {
+        fieldName = formatFieldName(setMatch[1].trim());
+        actionText = 'set';
+        comment = `Set ${fieldName} to "${setMatch[2]}"`;
+      } else if (changeMatch) {
+        fieldName = formatFieldName(changeMatch[1].trim());
+        actionText = 'changed';
+        const oldVal = changeMatch[2] || 'empty';
+        comment = `Changed ${fieldName} from "${oldVal}" to "${changeMatch[3]}"`;
+      } else {
+        // Fallback: try to extract just the field name
+        const fieldMatch = action.match(/(?:changed|set)\s+([^\s]+)/i);
+        if (fieldMatch) {
+          fieldName = formatFieldName(fieldMatch[1]);
+          actionText = lowerAction.includes('set') ? 'set' : 'changed';
+        }
+      }
+    }
+    // Everything else is a comment (follow, viewed, created, etc.)
+    else {
+      comment = action;
+    }
+    
+    return {
+      id: `activity-${update.timestamp?.getTime() || index}`,
+      type,
+      person: {
+        name: update.user || 'System',
+        href: '#'
+      },
+      comment,
+      action: actionText,
+      fieldName,
+      tags,
+      date: formatDate(update.timestamp)
+    };
+  });
+});
 
 // Available widgets
 const availableWidgets = [
@@ -790,6 +1197,17 @@ const initializeGridStack = async () => {
       }
       
       try {
+        // Ensure record is available before loading widgets
+        if (!props.record?._id && props.recordType === 'organizations') {
+          console.warn('Record not available yet, retrying widget initialization...');
+          setTimeout(() => {
+            if (props.record?._id) {
+              initializeGridStack();
+            }
+          }, 200);
+          return;
+        }
+        
         // Check if there are any widgets already (by checking GridStack items)
         const existingWidgets = gridStack.getGridItems();
         if (existingWidgets.length === 0) {
@@ -821,9 +1239,11 @@ const initializeGridStack = async () => {
 // Destroy GridStack
 const destroyGridStack = () => {
   // Unmount all Vue widget apps
-  widgetApps.forEach((app, element) => {
+  widgetApps.forEach((widgetData, element) => {
     try {
-      app.unmount();
+      if (widgetData.app) {
+        widgetData.app.unmount();
+      }
     } catch (e) {
       console.error('Error unmounting widget:', e);
     }
@@ -999,6 +1419,12 @@ const loadDefaultWidgets = () => {
 // Add widget to GridStack
 const addWidgetToGrid = (widgetType, x = 0, y = 0, w = 4, h = 3) => {
   if (!gridStack || !gridStackContainer.value) return;
+  
+  // Ensure record is available before creating widgets that need it
+  if ((widgetType === 'related-contacts' || widgetType === 'related-users' || widgetType === 'related-deals') && !props.record?._id) {
+    console.warn(`Cannot create ${widgetType} widget: record._id not available`);
+    return;
+  }
 
   const widgetElement = createWidgetElement(widgetType);
   
@@ -1094,6 +1520,7 @@ const createWidgetElement = (widgetType) => {
     
     const wrapperComponent = {
       setup() {
+        // Pass props directly - widgets will watch for changes
         return () => h(Component, {
           ...componentProps,
           onViewContact: handleViewContact,
@@ -1110,7 +1537,7 @@ const createWidgetElement = (widgetType) => {
     app.mount(container);
     
     // Store app instance for cleanup
-    widgetApps.set(container, app);
+    widgetApps.set(container, { app });
   }
   
   return container;
@@ -1145,6 +1572,13 @@ const addWidget = (widgetType) => {
 // Toggle follow
 const toggleFollow = () => {
   isFollowing.value = !isFollowing.value;
+  
+  // Log activity
+  if (isFollowing.value) {
+    addActivityLog('started following this record');
+  } else {
+    addActivityLog('stopped following this record');
+  }
 };
 
 // Copy URL
@@ -1158,23 +1592,71 @@ const copyUrl = () => {
 // Add tag
 const addTag = () => {
   if (newTag.value.trim()) {
-    tags.value.push(newTag.value.trim());
+    const tagName = newTag.value.trim();
+    tags.value.push(tagName);
     newTag.value = '';
     showTagModal.value = false;
+    
+    // Log activity
+    addActivityLog(`added tag "${tagName}"`);
   }
 };
 
 // Remove tag
 const removeTag = (index) => {
+  const tagName = tags.value[index];
   tags.value.splice(index, 1);
+  
+  // Log activity
+  if (tagName) {
+    addActivityLog(`removed tag "${tagName}"`);
+  }
+};
+
+// Helper function to normalize values for comparison
+const normalizeValue = (val) => {
+  if (val === null || val === undefined || val === '') return '';
+  
+  // Handle arrays (for multi-picklist fields)
+  if (Array.isArray(val)) {
+    return JSON.stringify(val.sort());
+  }
+  
+  // Handle objects
+  if (typeof val === 'object') {
+    return JSON.stringify(val);
+  }
+  
+  return String(val).trim();
 };
 
 // Update field (auto-saves on blur)
 const updateField = (field, value) => {
+  const oldValue = props.record ? props.record[field] : null;
+  const fieldName = formatFieldName(field);
+  
+  // Normalize values for comparison
+  const normalizedOldValue = normalizeValue(oldValue);
+  const normalizedNewValue = normalizeValue(value);
+  
+  // Only proceed if value actually changed
+  if (normalizedOldValue === normalizedNewValue) {
+    return; // No change, don't update or log
+  }
+  
   emit('update', { field, value });
   if (props.record) {
     props.record[field] = value;
   }
+  
+  // Log activity only if value changed
+  let action = '';
+  if (normalizedOldValue === '') {
+    action = `set ${fieldName} to "${value}"`;
+  } else {
+    action = `changed ${fieldName} from "${oldValue}" to "${value}"`;
+  }
+  addActivityLog(action);
 };
 
 // Discard field changes (revert to original value)
@@ -1416,13 +1898,29 @@ const getLifecycleStatusFields = computed(() => {
   return statusFields;
 });
 
-// Format date
+// Format date with time for activity timeline
 const formatDate = (date) => {
   if (!date) return '-';
-  return new Date(date).toLocaleDateString('en-US', {
+  const dateObj = new Date(date);
+  const now = new Date();
+  const diffMs = now - dateObj;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  
+  // Show relative time for recent activities
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  
+  // For older activities, show full date and time
+  return dateObj.toLocaleDateString('en-US', {
     year: 'numeric',
-    month: 'long',
-    day: 'numeric'
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
   });
 };
 
@@ -1571,9 +2069,35 @@ watch(activeTab, (newTab, oldTab) => {
   }
 });
 
-// Watch for record changes to reload saved tab
-watch(() => props.record, (newRecord) => {
+// Watch for record changes to reload saved tab and log initial load
+watch(() => props.record, async (newRecord, oldRecord) => {
   if (newRecord && (newRecord._id || newRecord.id)) {
+    const recordId = newRecord._id || newRecord.id;
+    const oldRecordId = oldRecord?._id || oldRecord?.id;
+    
+    // If record changed (different ID), reset logs and load new ones
+    if (oldRecordId !== recordId) {
+      timelineUpdates.value = [];
+      loggedRecordIds.value.clear();
+      await loadActivityLogs();
+    } else if (!oldRecordId) {
+      // First load - load existing logs from API
+      await loadActivityLogs();
+    }
+    
+    // Log initial load if this is a new record we haven't logged yet
+    // Only add "viewed" log if:
+    // 1. We haven't logged this record ID before
+    // 2. AND there are no existing logs (meaning it's a fresh record, not loaded from storage)
+    if (!loggedRecordIds.value.has(recordId) && timelineUpdates.value.length === 0) {
+      loggedRecordIds.value.add(recordId);
+      const recordName = newRecord.name || 'this record';
+      await addActivityLog(`viewed ${recordName}`, { type: 'view', recordId });
+    } else if (!loggedRecordIds.value.has(recordId)) {
+      // If we have logs but haven't tracked this record ID, just mark it as logged
+      loggedRecordIds.value.add(recordId);
+    }
+    
     const savedTab = loadActiveTab();
     // Validate that the saved tab still exists
     const isValidTab = fixedTabs.some(t => t.id === savedTab);
@@ -1581,7 +2105,7 @@ watch(() => props.record, (newRecord) => {
       activeTab.value = savedTab;
     }
   }
-});
+}, { immediate: true }); // Run immediately to catch initial load
 
 // Lifecycle hooks
 onMounted(async () => {

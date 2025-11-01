@@ -9,12 +9,17 @@ router.use(organizationIsolation);
 
 router.post('/', controller.create);
 router.get('/', controller.list);
+
+// Add note to person (must be before /:id route)
+router.post('/:id/notes', controller.addNote);
+
+// Activity logs (must be before /:id route)
+router.get('/:id/activity-logs', controller.getActivityLogs);
+router.post('/:id/activity-logs', controller.addActivityLog);
+
 router.get('/:id', controller.getById);
 router.put('/:id', controller.update);
 router.delete('/:id', controller.remove);
-
-// Add note to person
-router.post('/:id/notes', controller.addNote);
 
 module.exports = router;
 

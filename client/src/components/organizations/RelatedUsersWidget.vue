@@ -65,7 +65,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import apiClient from '@/utils/apiClient';
 
 const props = defineProps({
@@ -90,6 +90,8 @@ const getInitials = (name) => {
 };
 
 const fetchUsers = async () => {
+  if (!props.organizationId) return;
+  
   loading.value = true;
   try {
     const data = await apiClient.get('/users', {
@@ -113,10 +115,21 @@ const fetchUsers = async () => {
   }
 };
 
+// Watch for prop changes (works better with dynamic mounting)
+watch(() => props.organizationId, () => {
+  fetchUsers();
+}, { immediate: true });
+
+// Also try onMounted as fallback
 onMounted(() => {
-  if (props.organizationId) {
+  if (props.organizationId && users.value.length === 0) {
     fetchUsers();
   }
+});
+
+// Expose refresh method
+defineExpose({
+  refresh: fetchUsers
 });
 </script>
 
