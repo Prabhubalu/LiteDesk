@@ -679,7 +679,21 @@
             <p class="text-xs text-gray-500 dark:text-gray-400">Module: {{ selectedModule?.name }} • Key: {{ selectedModule?.key }}</p>
           </div>
           <div class="flex items-center gap-2">
-            <button v-if="(activeTopTab === 'details' || activeTopTab === 'relationships') && isDirty" @click="saveModule" class="px-3 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium">Save changes</button>
+            <button 
+              v-if="(activeTopTab === 'details' || activeTopTab === 'relationships') && isDirty" 
+              @click="saveModule" 
+              :disabled="isSaving"
+              class="px-4 py-2 bg-brand-600 hover:bg-brand-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm hover:shadow-md"
+            >
+              <svg v-if="!isSaving" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <svg v-else class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              {{ isSaving ? 'Saving...' : 'Save Changes' }}
+            </button>
           </div>
         </div>
 
@@ -704,57 +718,220 @@
           </div>
         </div>
 
-        <div class="p-4" v-else-if="activeTopTab === 'relationships'">
-          <div class="mb-3 flex items-center justify-between">
-            <h4 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Relationships</h4>
-            <button @click="addRelationship" class="px-3 py-1.5 bg-gray-100 dark:bg-white/10 rounded text-xs">Add relationship</button>
+        <div class="p-6" v-else-if="activeTopTab === 'relationships'">
+          <!-- Header -->
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Relationships</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              Define relationships between this module and other modules. Relationships enable data linking and cross-module references.
+            </p>
           </div>
-          <div v-if="relationships.length === 0" class="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-white/5 border border-dashed border-gray-200 dark:border-white/10 rounded-xl p-6 text-center">
-            No relationships defined.
+
+          <!-- Empty State -->
+          <div v-if="relationships.length === 0" class="bg-gray-50 dark:bg-white/5 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-12 text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">No relationships defined</p>
+            <p class="text-xs text-gray-500 dark:text-gray-500 mb-4">Get started by adding your first relationship</p>
+            <button @click="addRelationship" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 mx-auto shadow-sm hover:shadow-md">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Add Relationship
+            </button>
           </div>
-          <div v-else class="space-y-3">
-            <div v-for="(r, ri) in relationships" :key="ri" class="border border-gray-200 dark:border-white/10 rounded-lg p-3">
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div>
-                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Name</label>
-                  <input v-model="r.name" placeholder="e.g., Primary Organization" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+
+          <!-- Relationships List -->
+          <div v-else class="space-y-4">
+            <div v-for="(r, ri) in relationships" :key="ri" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
+              <!-- Relationship Header -->
+              <div class="bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-white/5 dark:to-white/10 px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white">
+                      {{ r.name || `Relationship ${ri + 1}` }}
+                    </h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                      {{ getRelationshipTypeLabel(r.type) }}
+                      <span v-if="r.targetModuleKey"> • {{ getModuleName(r.targetModuleKey) }}</span>
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Type</label>
-                  <select v-model="r.type" class="w-full px-2 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-                    <option value="one_to_one">One-to-One</option>
-                    <option value="one_to_many">One-to-Many</option>
-                    <option value="many_to_many">Many-to-Many</option>
-                    <option value="lookup">Lookup</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Target Module</label>
-                  <select v-model="r.targetModuleKey" class="w-full px-2 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-                    <option v-for="m in modules" :key="m.key" :value="m.key">{{ m.name }}</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Local Field</label>
-                  <input v-model="r.localField" placeholder="e.g., organizationId" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
-                </div>
-                <div>
-                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Foreign Field</label>
-                  <input v-model="r.foreignField" placeholder="e.g., _id" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
-                </div>
-                <div>
-                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Label</label>
-                  <input v-model="r.label" placeholder="Display label" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
-                </div>
+                <button 
+                  @click="removeRelationship(ri)" 
+                  class="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
+                  title="Remove relationship"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
               </div>
-              <div class="mt-3 flex items-center gap-4 text-sm">
-                <label class="inline-flex items-center gap-2"><input type="checkbox" v-model="r.required" /> Required</label>
-                <label class="inline-flex items-center gap-2"><input type="checkbox" v-model="r.unique" /> Unique</label>
-                <label class="inline-flex items-center gap-2"><input type="checkbox" v-model="r.index" /> Index</label>
-                <label class="inline-flex items-center gap-2"><input type="checkbox" v-model="r.cascadeDelete" /> Cascade Delete</label>
-                <button @click="removeRelationship(ri)" class="ml-auto text-red-600 dark:text-red-400">Remove</button>
+
+              <!-- Relationship Content -->
+              <div class="p-4 space-y-4">
+                <!-- Basic Information -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                      Relationship Name <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                      v-model="r.name" 
+                      placeholder="e.g., Primary Organization" 
+                      class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-400 focus:border-transparent transition-all" 
+                    />
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">A descriptive name for this relationship</p>
+                  </div>
+                  
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                      Relationship Type <span class="text-red-500">*</span>
+                    </label>
+                    <select 
+                      v-model="r.type" 
+                      class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-400 focus:border-transparent transition-all"
+                    >
+                      <option value="one_to_one">One-to-One (1:1)</option>
+                      <option value="one_to_many">One-to-Many (1:N)</option>
+                      <option value="many_to_one">Many-to-One (N:1)</option>
+                      <option value="many_to_many">Many-to-Many (N:N)</option>
+                      <option value="lookup">Lookup</option>
+                    </select>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">How records relate to each other</p>
+                  </div>
+                </div>
+
+                <!-- Module Configuration -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                      Target Module <span class="text-red-500">*</span>
+                    </label>
+                    <select 
+                      v-model="r.targetModuleKey" 
+                      class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-400 focus:border-transparent transition-all"
+                    >
+                      <option value="">Select module</option>
+                      <option v-for="m in modules" :key="m.key" :value="m.key">{{ m.name }}</option>
+                    </select>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">The module this relationship links to</p>
+                  </div>
+                  
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                      Display Label
+                    </label>
+                    <input 
+                      v-model="r.label" 
+                      placeholder="e.g., Related Organizations" 
+                      class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-400 focus:border-transparent transition-all" 
+                    />
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Label shown in the UI</p>
+                  </div>
+                </div>
+
+                <!-- Field Configuration -->
+                <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+                  <h5 class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Field Mapping
+                  </h5>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                        Local Field <span class="text-red-500">*</span>
+                      </label>
+                      <select 
+                        v-model="r.localField" 
+                        class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-400 focus:border-transparent transition-all"
+                      >
+                        <option value="">Select field</option>
+                        <option v-for="field in editFields" :key="field.key" :value="field.key">
+                          {{ field.label || field.key }} ({{ field.key }})
+                        </option>
+                      </select>
+                      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Field in this module</p>
+                    </div>
+                    
+                    <div>
+                      <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                        Foreign Field <span class="text-red-500">*</span>
+                      </label>
+                      <input 
+                        v-model="r.foreignField" 
+                        placeholder="e.g., _id" 
+                        class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-400 focus:border-transparent transition-all" 
+                      />
+                      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Field in target module</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Options -->
+                <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+                  <h5 class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                    </svg>
+                    Relationship Options
+                  </h5>
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <label class="flex items-center gap-2 p-3 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+                      <input 
+                        type="checkbox" 
+                        v-model="r.required" 
+                        class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500 dark:focus:ring-brand-400"
+                      />
+                      <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Required</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-3 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+                      <input 
+                        type="checkbox" 
+                        v-model="r.unique" 
+                        class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500 dark:focus:ring-brand-400"
+                      />
+                      <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Unique</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-3 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+                      <input 
+                        type="checkbox" 
+                        v-model="r.index" 
+                        class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500 dark:focus:ring-brand-400"
+                      />
+                      <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Index</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-3 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+                      <input 
+                        type="checkbox" 
+                        v-model="r.cascadeDelete" 
+                        class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500 dark:focus:ring-brand-400"
+                      />
+                      <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Cascade Delete</span>
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
+
+            <!-- Add Button -->
+            <button 
+              @click="addRelationship" 
+              class="w-full px-4 py-3 bg-white dark:bg-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-brand-500 dark:hover:border-brand-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors flex items-center justify-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Add Another Relationship
+            </button>
           </div>
         </div>
 
@@ -1459,9 +1636,13 @@ const removeField = (idx) => {
   syncOptionsBuffer();
 };
 
+const isSaving = ref(false);
 const saveModule = async () => {
   const mod = selectedModule.value;
   if (!mod) return;
+  if (isSaving.value) return; // Prevent double-click
+  
+  isSaving.value = true;
   try {
     // Deduplicate fields before saving
     const deduplicatedFields = uniqueFieldsByKey(editFields.value);
@@ -1479,24 +1660,45 @@ const saveModule = async () => {
       name: moduleNameEdit.value,
       enabled: moduleEnabled.value
     };
+    console.log('Saving module with relationships:', {
+      relationshipsCount: relationships.value.length,
+      relationships: relationships.value
+    });
     const res = await fetch(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authStore.user?.token}` },
       body: JSON.stringify(payload)
     });
     const data = await res.json();
-    if (!res.ok || !data.success) return alert(data.message || 'Failed to save');
+    if (!res.ok || !data.success) {
+      alert(data.message || 'Failed to save');
+      return;
+    }
     await fetchModules();
     // Re-select by key to avoid unstable IDs on system modules
     const updated = modules.value.find(m => m.key === mod.key);
     // preserve current selected field
     const currentFieldKey = editFields.value[selectedFieldIdx.value]?.key || null;
-    if (updated) selectModule(updated, currentFieldKey);
-  // reset snapshot after successful save
-  originalSnapshot.value = getSnapshot();
-  quickOriginalSnapshot.value = getQuickSnapshot();
+    if (updated) {
+      // selectModule will reload relationships from updated module, so call it first
+      selectModule(updated, currentFieldKey);
+      // Double-check: ensure relationships are loaded from the updated module
+      if (updated.relationships && Array.isArray(updated.relationships)) {
+        relationships.value = JSON.parse(JSON.stringify(updated.relationships));
+        console.log('Relationships restored after save:', relationships.value.length);
+      } else {
+        console.warn('⚠️  No relationships found in updated module after save');
+      }
+    }
+    // reset snapshot after successful save
+    originalSnapshot.value = getSnapshot();
+    quickOriginalSnapshot.value = getQuickSnapshot();
+    console.log('Module saved successfully, relationships updated');
   } catch (e) {
     console.error('Save module failed', e);
+    alert('Failed to save: ' + (e.message || 'Unknown error'));
+  } finally {
+    isSaving.value = false;
   }
 };
 
@@ -1612,7 +1814,27 @@ function addRelationship() {
   relationships.value.push({ name: '', type: 'lookup', targetModuleKey: '', localField: '', foreignField: '_id', inverseName: '', inverseField: '', required: false, unique: false, index: true, cascadeDelete: false, label: '' });
 }
 function removeRelationship(idx) {
-  relationships.value.splice(idx, 1);
+  if (confirm('Are you sure you want to remove this relationship?')) {
+    relationships.value.splice(idx, 1);
+  }
+}
+
+// Helper functions for Relationships tab
+function getRelationshipTypeLabel(type) {
+  const labels = {
+    'one_to_one': 'One-to-One (1:1)',
+    'one_to_many': 'One-to-Many (1:N)',
+    'many_to_one': 'Many-to-One (N:1)',
+    'many_to_many': 'Many-to-Many (N:N)',
+    'lookup': 'Lookup'
+  };
+  return labels[type] || type;
+}
+
+function getModuleName(key) {
+  if (!key || !modules.value) return '';
+  const module = modules.value.find(m => m.key === key);
+  return module ? module.name : key;
 }
 
 const autoSaveTimeout = ref(null);

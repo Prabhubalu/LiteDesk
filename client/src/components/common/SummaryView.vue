@@ -391,48 +391,32 @@
               </div>
             </div>
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-
-            
-            <!-- Fields Grid -->
-            <div :class="detailsGridClass" :style="detailsGridStyle">
-              <div v-for="(value, key) in filteredRecordFields" :key="key">
-                <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">
-                  {{ formatFieldName(key) }}
-                </label>
-                <div v-if="isEditableField(key)" class="mt-2">
-                  <select
-                    v-if="isPicklistField(key)"
-                    :value="value"
-                    @change="updateField(key, $event.target.value)"
-                    class="block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-1.5 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:focus:outline-indigo-500"
-                  >
-                    <option value="">-- Select --</option>
-                    <option v-for="option in getPicklistOptions(key)" :key="option.value || option" :value="option.value || option">
-                      {{ option.label || option }}
-                    </option>
-                  </select>
-                  <textarea
-                    v-else-if="isTextAreaField(key)"
-                    :value="value"
-                    @focus="originalFieldValues[key] = value"
-                    @blur="updateField(key, $event.target.value)"
-                    @keydown.esc="discardField(key, $event)"
-                    @keydown.enter="updateField(key, $event.target.value); $event.target.blur()"
-                    rows="3"
-                    class="block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-1.5 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:focus:outline-indigo-500 resize-none"
-                  ></textarea>
-                  <input
-                    v-else
-                    :type="getInputType(key, value)"
-                    :value="value"
-                    @focus="originalFieldValues[key] = value"
-                    @blur="updateField(key, $event.target.value)"
-                    @keydown.esc="discardField(key, $event)"
-                    @keydown.enter="updateField(key, $event.target.value); $event.target.blur()"
-                    class="block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-1.5 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:focus:outline-indigo-500"
-                  />
-                </div>
-                <p v-else class="mt-2 text-sm text-gray-900 dark:text-white">{{ formatFieldValue(value) }}</p>
+            <!-- Fields Grid using DynamicFormField -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div 
+                v-for="fieldData in getFieldsWithDefinitions" 
+                :key="fieldData.key"
+                :class="[
+                  fieldData.field.dataType === 'Text-Area' || 
+                  fieldData.field.dataType === 'Rich Text' 
+                    ? 'md:col-span-2' 
+                    : ''
+                ]"
+              >
+                <DynamicFormField 
+                  :field="fieldData.field"
+                  :value="fieldData.value"
+                  @update:value="updateField(fieldData.key, $event)"
+                  :errors="{}"
+                  :dependency-state="fieldData.dependencyState"
+                />
+              </div>
+              
+              <!-- Empty state -->
+              <div v-if="getFieldsWithDefinitions.length === 0" class="md:col-span-2 text-center py-8 text-gray-500 dark:text-gray-400">
+                <p v-if="detailsSearch">No fields match your search.</p>
+                <p v-else-if="!showEmptyFields">No fields with values to display.</p>
+                <p v-else>No fields available.</p>
               </div>
             </div>
           </div>
@@ -618,6 +602,8 @@ import apiClient from '@/utils/apiClient';
 import { useAuthStore } from '@/stores/auth';
 import { useTabs } from '@/composables/useTabs';
 import PermissionButton from '@/components/common/PermissionButton.vue';
+import DynamicFormField from '@/components/common/DynamicFormField.vue';
+import { getFieldDependencyState } from '@/utils/dependencyEvaluation';
 import { useRouter } from 'vue-router';
 import {
   MagnifyingGlassIcon,
@@ -779,40 +765,98 @@ const hasManageFieldsPermission = computed(() => {
   return authStore.can('settings', 'edit');
 });
 
-// Filtered record fields for details tab based on search and empty fields toggle
-const filteredRecordFields = computed(() => {
-  if (!props.record) return {};
-  
-  let fields = { ...props.record };
-  
-  // Filter empty fields if toggle is off
-  if (!showEmptyFields.value) {
-    fields = Object.fromEntries(
-      Object.entries(fields).filter(([key, value]) => 
-        value !== null && value !== undefined && value !== '' && 
-        !(Array.isArray(value) && value.length === 0)
-      )
-    );
+// Get field dependency state for a field (reactive)
+const getFieldState = (field) => {
+  if (!field || !field.dependencies || !Array.isArray(field.dependencies) || field.dependencies.length === 0) {
+    return {
+      visible: true,
+      readonly: false,
+      required: field.required || false,
+      allowedOptions: null
+    };
   }
+  // Use record data for dependency evaluation
+  const currentFormData = props.record || {};
+  return getFieldDependencyState(field, currentFormData, moduleDefinition.value?.fields || []);
+};
+
+// Get fields with their definitions for details tab
+const getFieldsWithDefinitions = computed(() => {
+  if (!props.record || !moduleDefinition.value?.fields) return [];
   
-  // Apply search filter
-  if (detailsSearch.value) {
-    const searchLower = detailsSearch.value.toLowerCase();
-    const filtered = {};
+  // Create a map of field keys to field definitions
+  const fieldMap = new Map();
+  moduleDefinition.value.fields.forEach(field => {
+    if (field.key) {
+      const keyLower = field.key.toLowerCase();
+      fieldMap.set(keyLower, field);
+      fieldMap.set(field.key, field); // Also store with original case
+    }
+  });
+  
+  // System fields to exclude
+  const systemFieldKeys = ['_id', 'id', '__v', 'createdat', 'updatedat', 'createdby', 'organizationid'];
+  
+  // Get all field definitions with their values
+  const fieldsWithDefs = [];
+  
+  for (const [key, value] of Object.entries(props.record)) {
+    const keyLower = key.toLowerCase();
     
-    for (const [key, value] of Object.entries(fields)) {
-      const fieldName = formatFieldName(key).toLowerCase();
+    // Skip system fields
+    if (systemFieldKeys.includes(keyLower)) continue;
+    
+    // Get field definition
+    const fieldDef = fieldMap.get(key) || fieldMap.get(keyLower);
+    
+    // If no field definition, create a basic one from the key
+    if (!fieldDef) {
+      // Skip if we don't want to show fields without definitions
+      continue;
+    }
+    
+    // Evaluate dependency-based visibility
+    const depState = getFieldState(fieldDef);
+    if (!depState.visible && depState.visible !== undefined) {
+      continue; // Skip hidden fields
+    }
+    
+    // Filter empty fields if toggle is off
+    if (!showEmptyFields.value) {
+      const isEmpty = value === null || 
+                     value === undefined || 
+                     value === '' || 
+                     (Array.isArray(value) && value.length === 0);
+      if (isEmpty) continue;
+    }
+    
+    // Apply search filter
+    if (detailsSearch.value) {
+      const searchLower = detailsSearch.value.toLowerCase();
+      const fieldName = (fieldDef.label || fieldDef.key || key).toLowerCase();
       const fieldValue = String(value || '').toLowerCase();
       
-      if (fieldName.includes(searchLower) || fieldValue.includes(searchLower)) {
-        filtered[key] = value;
+      if (!fieldName.includes(searchLower) && !fieldValue.includes(searchLower)) {
+        continue;
       }
     }
     
-    return filtered;
+    fieldsWithDefs.push({
+      field: fieldDef,
+      key: fieldDef.key,
+      value: value,
+      dependencyState: depState
+    });
   }
   
-  return fields;
+  // Sort by field order if available
+  fieldsWithDefs.sort((a, b) => {
+    const orderA = a.field.order ?? Number.MAX_SAFE_INTEGER;
+    const orderB = b.field.order ?? Number.MAX_SAFE_INTEGER;
+    return orderA - orderB;
+  });
+  
+  return fieldsWithDefs;
 });
 
 // Navigate to manage fields in a new tab

@@ -356,7 +356,18 @@ exports.updateModule = async (req, res) => {
         if (name !== undefined) mod.name = String(name).trim();
         if (enabled !== undefined) mod.enabled = !!enabled;
         if (Array.isArray(fields)) mod.fields = fields;
-        if (Array.isArray(relationships)) mod.relationships = relationships;
+        
+        // Always update relationships if provided (even if empty array)
+        if (relationships !== undefined) {
+            const newRelationships = Array.isArray(relationships) ? relationships : [];
+            console.log('📝 Setting relationships:', {
+                from: mod.relationships?.length || 0,
+                to: newRelationships.length,
+                relationships: newRelationships
+            });
+            mod.set('relationships', newRelationships);
+            mod.markModified('relationships');
+        }
         
         // Always update quickCreate if provided (even if empty array)
         if (quickCreate !== undefined) {
@@ -393,6 +404,8 @@ exports.updateModule = async (req, res) => {
         
         console.log('✅ Module saved. Verification:', {
             key: saved.key,
+            relationships: saved.relationships,
+            relationshipsLength: saved.relationships?.length || 0,
             quickCreate: saved.quickCreate,
             quickCreateLength: saved.quickCreate?.length || 0,
             quickCreateType: Array.isArray(saved.quickCreate),
@@ -406,10 +419,15 @@ exports.updateModule = async (req, res) => {
         const responseData = saved || {};
         
         // Always explicitly set these fields from the saved document
+        responseData.relationships = saved?.relationships || [];
         responseData.quickCreate = saved?.quickCreate || [];
         responseData.quickCreateLayout = saved?.quickCreateLayout || { version: 1, rows: [] };
         
         // Final check - ensure responseData has the fields before sending
+        if (!('relationships' in responseData) || responseData.relationships === undefined) {
+            console.warn('⚠️  relationships missing in responseData, forcing set from saved');
+            responseData.relationships = saved?.relationships || [];
+        }
         if (!('quickCreate' in responseData) || responseData.quickCreate === undefined) {
             console.warn('⚠️  quickCreate missing in responseData, forcing set from saved');
             responseData.quickCreate = saved?.quickCreate || [];
@@ -534,7 +552,7 @@ exports.updateSystemModule = async (req, res) => {
         const otherFields = {};
         
         Object.keys(cleanUpdateObj).forEach(key => {
-            if (key === 'quickCreate' || key === 'quickCreateLayout' || key === 'fields') {
+            if (key === 'quickCreate' || key === 'quickCreateLayout' || key === 'fields' || key === 'relationships') {
                 criticalFields[key] = cleanUpdateObj[key];
             } else {
                 otherFields[key] = cleanUpdateObj[key];
@@ -576,6 +594,7 @@ exports.updateSystemModule = async (req, res) => {
                 modifiedCount: directUpdateResult.modifiedCount,
                 acknowledged: directUpdateResult.acknowledged,
                 fields: Object.keys(criticalFields),
+                relationshipsCount: criticalFields.relationships?.length || 0,
                 quickCreate: criticalFields.quickCreate?.length || 0,
                 fieldsCount: criticalFields.fields?.length || 0
             });
@@ -600,6 +619,8 @@ exports.updateSystemModule = async (req, res) => {
         
         console.log('📄 Document after updateOne:', {
             docId: doc._id,
+            docRelationships: doc.relationships,
+            docRelationshipsLength: doc.relationships?.length || 0,
             docQuickCreate: doc.quickCreate,
             docQuickCreateLength: doc.quickCreate?.length || 0,
             docQuickCreateType: typeof doc.quickCreate,
@@ -629,6 +650,7 @@ exports.updateSystemModule = async (req, res) => {
         });
         
         console.log('🔍 Raw MongoDB document keys:', verifiedRaw ? Object.keys(verifiedRaw) : 'Document not found');
+        console.log('🔍 Raw MongoDB relationships:', verifiedRaw?.relationships, 'length:', verifiedRaw?.relationships?.length || 0);
         console.log('🔍 Raw MongoDB quickCreate:', verifiedRaw?.quickCreate);
         console.log('🔍 Raw MongoDB fields count:', verifiedRaw?.fields?.length || 0);
         
@@ -645,6 +667,9 @@ exports.updateSystemModule = async (req, res) => {
         });
         
         console.log('🔍 After lean query (from database):', {
+            verifiedRelationships: verified?.relationships,
+            verifiedRelationshipsLength: verified?.relationships?.length || 0,
+            verifiedHasRelationships: verified && 'relationships' in verified,
             verifiedQuickCreate: verified?.quickCreate,
             verifiedQuickCreateLength: verified?.quickCreate?.length || 0,
             verifiedHasQuickCreate: verified && 'quickCreate' in verified,
@@ -658,6 +683,9 @@ exports.updateSystemModule = async (req, res) => {
         // Compare with Mongoose document version
         if (verifiedDoc) {
             console.log('🔍 Mongoose document (not lean):', {
+                docRelationships: verifiedDoc.relationships,
+                docRelationshipsLength: verifiedDoc.relationships?.length || 0,
+                docHasRelationships: 'relationships' in verifiedDoc,
                 docQuickCreate: verifiedDoc.quickCreate,
                 docQuickCreateLength: verifiedDoc.quickCreate?.length || 0,
                 docHasQuickCreate: 'quickCreate' in verifiedDoc,
@@ -668,8 +696,31 @@ exports.updateSystemModule = async (req, res) => {
         
         // Use raw MongoDB document if available (most reliable), otherwise fall back to Mongoose verified
         const sourceDoc = verifiedRaw || verified;
+        // Ensure verified includes relationships from sourceDoc
+        if (verified && sourceDoc?.relationships) {
+            verified.relationships = sourceDoc.relationships;
+        }
         
         // Verify critical fields were saved correctly
+        if (criticalFields.relationships) {
+            const savedRelationships = sourceDoc?.relationships || [];
+            const savedLength = Array.isArray(savedRelationships) ? savedRelationships.length : 0;
+            const expectedLength = Array.isArray(criticalFields.relationships) ? criticalFields.relationships.length : 0;
+            
+            if (savedLength !== expectedLength) {
+                console.error('🚨 CRITICAL: relationships still not saved correctly!', {
+                    expected: expectedLength,
+                    saved: savedLength,
+                    relationships: criticalFields.relationships
+                });
+            } else {
+                console.log('✅ Relationships saved correctly:', {
+                    expected: expectedLength,
+                    saved: savedLength
+                });
+            }
+        }
+        
         if (criticalFields.quickCreate) {
             const savedQuickCreate = sourceDoc?.quickCreate || [];
             const savedLength = Array.isArray(savedQuickCreate) ? savedQuickCreate.length : 0;
@@ -756,10 +807,15 @@ exports.updateSystemModule = async (req, res) => {
         // Always explicitly set these fields - prioritize verified (from lean query)
         // verified is a plain object, so it should have all fields
         // Note: verified was already updated from sourceDoc earlier, so use it directly
+        let relationshipsValue = verified?.relationships;
         let quickCreateValue = verified?.quickCreate;
         let quickCreateLayoutValue = verified?.quickCreateLayout;
         
         // If verified doesn't have it, check updateObj (what we tried to save)
+        if (!relationshipsValue && updateObj.relationships) {
+            console.warn('⚠️  relationships not found in saved doc, using updateObj value');
+            relationshipsValue = updateObj.relationships;
+        }
         if (!quickCreateValue && updateObj.quickCreate) {
             console.warn('⚠️  quickCreate not found in saved doc, using updateObj value');
             quickCreateValue = updateObj.quickCreate;
@@ -781,6 +837,7 @@ exports.updateSystemModule = async (req, res) => {
         });
         
         // Set the values - always use arrays/objects, never undefined
+        responseData.relationships = Array.isArray(relationshipsValue) ? relationshipsValue : (relationshipsValue || []);
         responseData.quickCreate = Array.isArray(quickCreateValue) ? quickCreateValue : (quickCreateValue || []);
         responseData.quickCreateLayout = (quickCreateLayoutValue && typeof quickCreateLayoutValue === 'object') 
             ? quickCreateLayoutValue 
@@ -817,6 +874,14 @@ exports.updateSystemModule = async (req, res) => {
             responseDataKeys: Object.keys(responseData)
         });
         
+        // Final relationships value - prioritize saved, fallback to updateObj
+        let finalRelationships = [];
+        if (relationshipsValue && Array.isArray(relationshipsValue)) {
+            finalRelationships = relationshipsValue; // Use what's in the database
+        } else if (updateObj.relationships && Array.isArray(updateObj.relationships)) {
+            finalRelationships = updateObj.relationships; // Fallback to what was requested
+        }
+        
         // Create a fresh object to ensure no Mongoose document weirdness
         const finalResponse = {
             _id: responseData._id || doc._id,
@@ -826,7 +891,7 @@ exports.updateSystemModule = async (req, res) => {
             type: responseData.type || doc.type || 'system',
             enabled: responseData.enabled !== undefined ? responseData.enabled : doc.enabled,
             fields: responseData.fields || doc.fields || [],
-            relationships: responseData.relationships || doc.relationships || [],
+            relationships: finalRelationships,
             quickCreate: finalQuickCreate,
             quickCreateLayout: finalQuickCreateLayout,
             createdAt: responseData.createdAt || doc.createdAt,

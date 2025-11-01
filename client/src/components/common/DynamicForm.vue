@@ -125,6 +125,9 @@ const orderedFields = computed(() => {
   // assignedTo should be visible in Quick Create forms (admin can assign)
   const systemFieldKeys = ['createdby', 'organizationid', 'createdat', 'updatedat', '_id', '__v'];
   
+  // Access localFormData.value to ensure Vue tracks this dependency for reactivity
+  const currentFormData = localFormData.value || {};
+  
   // Create a case-insensitive field map for lookup
   const fieldMapByKey = new Map();
   for (const field of allFields) {
@@ -144,12 +147,12 @@ const orderedFields = computed(() => {
     quickCreateArray: quickCreate,
     quickCreateLength: quickCreate.length,
     fieldMapByKeySize: fieldMapByKey.size,
-    systemFieldKeys: systemFieldKeys
+    systemFieldKeys: systemFieldKeys,
+    currentFormData: currentFormData
   });
   
   // First, add fields from quickCreate array in the exact order they appear
-  // If a field is explicitly in Quick Create config, show it regardless of visibility
-  // (Admin has explicitly chosen to include it)
+  // Check dependency visibility based on current form data
   for (const key of quickCreate) {
     if (!key) continue;
     const keyLower = key.toLowerCase().trim();
@@ -168,24 +171,36 @@ const orderedFields = computed(() => {
     }
     
     const fieldKeyLower = field.key?.toLowerCase();
-    // Only exclude system fields - ignore visibility for Quick Create fields
+    // Exclude system fields
     const isSystem = systemFieldKeys.includes(fieldKeyLower);
+    
+    // Check dependency-based visibility using current form data
+    let isVisible = true;
+    if (field.dependencies && Array.isArray(field.dependencies) && field.dependencies.length > 0) {
+      const depState = getFieldDependencyState(field, currentFormData, allFields);
+      isVisible = depState.visible !== false; // Default to visible if undefined
+    }
     
     console.log(`✅ Processing field "${key}":`, {
       found: !!field,
       fieldKey: field.key,
       fieldLabel: field.label,
       isSystem: isSystem,
-      systemFieldKeys: systemFieldKeys,
-      willInclude: !isSystem
+      isVisible: isVisible,
+      hasDependencies: !!(field.dependencies && field.dependencies.length > 0),
+      willInclude: !isSystem && isVisible
     });
     
-    if (!isSystem) {
+    if (!isSystem && isVisible) {
       ordered.push(field);
       seen.add(keyLower);
       console.log(`✅ Added field "${key}" to ordered list`);
     } else {
-      console.log(`⏭️  Excluding system field "${key}"`);
+      if (isSystem) {
+        console.log(`⏭️  Excluding system field "${key}"`);
+      } else {
+        console.log(`⏭️  Excluding hidden field "${key}" (dependency not met)`);
+      }
     }
   }
   
@@ -201,9 +216,17 @@ const orderedFields = computed(() => {
       const fieldKeyLower = field.key?.toLowerCase();
       const isSystem = systemFieldKeys.includes(fieldKeyLower);
       
+      // Check dependency visibility for required fields too
+      let isVisible = true;
+      if (field.dependencies && Array.isArray(field.dependencies) && field.dependencies.length > 0) {
+        const depState = getFieldDependencyState(field, currentFormData, allFields);
+        isVisible = depState.visible !== false;
+      }
+      
       if (field.required && 
           !seen.has(fieldKeyLower) && 
-          !isSystem) {
+          !isSystem &&
+          isVisible) {
         ordered.push(field);
         seen.add(fieldKeyLower);
       }
@@ -259,10 +282,11 @@ const shouldShowField = (field) => {
   
   // Evaluate dependency-based visibility using getFieldState for consistency
   // Access localFormData.value to ensure Vue tracks this dependency
-  const currentFormData = localFormData.value;
+  const currentFormData = localFormData.value || {};
   if (field.dependencies && Array.isArray(field.dependencies) && field.dependencies.length > 0) {
     const depState = getFieldDependencyState(field, currentFormData, moduleDefinition.value?.fields || []);
-    if (!depState.visible) return false;
+    // Only hide if explicitly set to false, default to visible if undefined
+    if (depState.visible === false) return false;
   }
   
   // For Quick Create fields, ignore visibility - if admin added it to Quick Create, show it
