@@ -52,7 +52,6 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const roleRoutes = require('./routes/roleRoutes');
 const organizationRoutes = require('./routes/organizationRoutes');
-const contactRoutes = require('./routes/contactRoutes');
 const dealRoutes = require('./routes/dealRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 const eventRoutes = require('./routes/eventRoutes');
@@ -63,13 +62,15 @@ const healthRoutes = require('./routes/healthRoutes');
 const metricsRoutes = require('./routes/metricsRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const userPreferencesRoutes = require('./routes/userPreferencesRoutes');
+const peopleRoutes = require('./routes/peopleRoutes');
+const organizationV2Routes = require('./routes/organizationV2Routes');
+const moduleRoutes = require('./routes/moduleRoutes');
 
 // Route Linking
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/roles', roleRoutes);
 app.use('/api/organization', organizationRoutes);
-app.use('/api/contacts', contactRoutes);
 app.use('/api/deals', dealRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/events', eventRoutes);
@@ -81,9 +82,30 @@ app.use('/api/metrics', metricsRoutes);
 app.use('/api/admin', adminRoutes); // Admin-only cross-organization endpoints
 app.use('/api/user-preferences', userPreferencesRoutes);
 app.use('/health', healthRoutes); // Public health check endpoint
+// New versioned endpoints (non-breaking)
+app.use('/api/people', peopleRoutes);
+app.use('/api/v2/organization', organizationV2Routes);
+app.use('/api/modules', moduleRoutes);
 
 // 1. Database Connection
 console.log('🔄 Connecting to MongoDB...');
+
+// Feature flags (defaults can be overridden via environment)
+process.env.FEATURE_READ_THROUGH_PEOPLE = typeof process.env.FEATURE_READ_THROUGH_PEOPLE === 'undefined' ? 'true' : process.env.FEATURE_READ_THROUGH_PEOPLE;
+process.env.FEATURE_CONTACTS_USE_PEOPLE = typeof process.env.FEATURE_CONTACTS_USE_PEOPLE === 'undefined' ? 'true' : process.env.FEATURE_CONTACTS_USE_PEOPLE;
+process.env.FEATURE_READ_THROUGH_ORG = typeof process.env.FEATURE_READ_THROUGH_ORG === 'undefined' ? 'true' : process.env.FEATURE_READ_THROUGH_ORG;
+process.env.FEATURE_ORG_USE_V2 = typeof process.env.FEATURE_ORG_USE_V2 === 'undefined' ? 'true' : process.env.FEATURE_ORG_USE_V2;
+process.env.FEATURE_DUAL_WRITE_PEOPLE = typeof process.env.FEATURE_DUAL_WRITE_PEOPLE === 'undefined' ? 'false' : process.env.FEATURE_DUAL_WRITE_PEOPLE;
+process.env.FEATURE_DUAL_WRITE_ORG = typeof process.env.FEATURE_DUAL_WRITE_ORG === 'undefined' ? 'false' : process.env.FEATURE_DUAL_WRITE_ORG;
+
+console.log('🧪 Feature Flags:', {
+  FEATURE_READ_THROUGH_PEOPLE: process.env.FEATURE_READ_THROUGH_PEOPLE,
+  FEATURE_CONTACTS_USE_PEOPLE: process.env.FEATURE_CONTACTS_USE_PEOPLE,
+  FEATURE_READ_THROUGH_ORG: process.env.FEATURE_READ_THROUGH_ORG,
+  FEATURE_ORG_USE_V2: process.env.FEATURE_ORG_USE_V2,
+  FEATURE_DUAL_WRITE_PEOPLE: process.env.FEATURE_DUAL_WRITE_PEOPLE,
+  FEATURE_DUAL_WRITE_ORG: process.env.FEATURE_DUAL_WRITE_ORG
+});
 
 if (!MONGO_URI) {
   console.error('❌ FATAL ERROR: MONGO_URI is not defined in environment variables!');

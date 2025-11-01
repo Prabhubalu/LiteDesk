@@ -28,7 +28,7 @@ const routes = [
     path: '/settings',
     name: 'settings',
     component: () => import('@/views/Settings.vue'),
-    meta: { requiresAuth: true } // Settings accessible to all, tabs filtered by permission
+    meta: { requiresAuth: true, hideShell: true } // render without main nav/topbar
   },
   {
     path: '/demo-requests',
@@ -43,17 +43,20 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/contacts',
-    name: 'contacts',
+    path: '/people',
+    name: 'people',
     component: () => import('@/views/Contacts.vue'),
-    meta: { requiresAuth: true, requiresPermission: { module: 'contacts', action: 'view' } }
+    meta: { requiresAuth: true, requiresPermission: { module: 'people', action: 'view' } }
   },
   {
-    path: '/contacts/:id',
-    name: 'contact-detail',
+    path: '/people/:id',
+    name: 'person-detail',
     component: () => import('@/views/ContactDetail.vue'),
-    meta: { requiresAuth: true, requiresPermission: { module: 'contacts', action: 'view' } }
+    meta: { requiresAuth: true, requiresPermission: { module: 'people', action: 'view' } }
   },
+  // Backward-compat redirects
+  { path: '/contacts', redirect: { name: 'people' } },
+  { path: '/contacts/:id', redirect: to => ({ name: 'person-detail', params: { id: to.params.id } }) },
   {
     path: '/deals',
     name: 'deals',

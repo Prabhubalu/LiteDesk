@@ -64,6 +64,40 @@ exports.getUsers = async (req, res) => {
     }
 };
 
+// --- Get users list for assignment (no permission required, any authenticated user can see org users) ---
+exports.getUsersForAssignment = async (req, res) => {
+    try {
+        // Ensure organizationId is available
+        if (!req.user || !req.user.organizationId) {
+            return res.status(401).json({
+                success: false,
+                message: 'Unauthorized - organization context missing'
+            });
+        }
+
+        // Simple query - just get users in the organization with basic info
+        const users = await User.find({ 
+            organizationId: req.user.organizationId,
+            status: 'active' // Only active users
+        })
+        .select('_id firstName lastName email username avatar') // Include avatar for display
+        .sort({ firstName: 1, lastName: 1 })
+        .lean();
+
+        res.json({
+            success: true,
+            data: users
+        });
+    } catch (error) {
+        console.error('Get users for assignment error:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Server error fetching users',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+};
+
 // --- Get single user ---
 exports.getUser = async (req, res) => {
     try {
@@ -181,6 +215,14 @@ exports.inviteUser = async (req, res) => {
                 delete: roleDoc.permissions.contacts.delete,
                 viewAll: roleDoc.permissions.contacts.viewAll || false,
                 exportData: roleDoc.permissions.contacts.export || false
+            },
+            organizations: {
+                view: roleDoc.permissions.organizations?.read || false,
+                create: roleDoc.permissions.organizations?.create || false,
+                edit: roleDoc.permissions.organizations?.update || false,
+                delete: roleDoc.permissions.organizations?.delete || false,
+                viewAll: roleDoc.permissions.organizations?.viewAll || false,
+                exportData: roleDoc.permissions.organizations?.export || false
             },
             deals: {
                 view: roleDoc.permissions.deals.read,
@@ -324,6 +366,14 @@ exports.updateUser = async (req, res) => {
                     viewAll: roleDoc.permissions.contacts.viewAll || false,
                     exportData: roleDoc.permissions.contacts.export || false
                 },
+                organizations: {
+                    view: roleDoc.permissions.organizations?.read || false,
+                    create: roleDoc.permissions.organizations?.create || false,
+                    edit: roleDoc.permissions.organizations?.update || false,
+                    delete: roleDoc.permissions.organizations?.delete || false,
+                    viewAll: roleDoc.permissions.organizations?.viewAll || false,
+                    exportData: roleDoc.permissions.organizations?.export || false
+                },
                 deals: {
                     view: roleDoc.permissions.deals.read,
                     create: roleDoc.permissions.deals.create,
@@ -376,7 +426,12 @@ exports.updateUser = async (req, res) => {
 
         // Allow custom permissions override (if provided)
         if (permissions !== undefined) {
-            user.permissions = { ...user.permissions, ...permissions };
+            const normalized = { ...permissions };
+            if (normalized.people) {
+                normalized.contacts = normalized.people;
+                delete normalized.people;
+            }
+            user.permissions = { ...user.permissions, ...normalized };
         }
 
         await user.save();
@@ -467,10 +522,9 @@ exports.getProfile = async (req, res) => {
             .populate('organizationId', 'name subscription limits enabledModules settings')
             .populate('roleId', 'name description color icon level permissions');
 
-        // If user has roleId, ensure permissions are synced from role
+        // If user has roleId, merge role permissions as baseline, overlay user's stored permissions (preserve overrides)
         if (user.roleId && user.roleId.permissions) {
-            // Map role permissions to user permissions structure
-            user.permissions = {
+            const rolePerms = {
                 contacts: {
                     view: user.roleId.permissions.contacts?.read || false,
                     create: user.roleId.permissions.contacts?.create || false,
@@ -534,6 +588,23 @@ exports.getProfile = async (req, res) => {
                     exportReports: user.roleId.permissions.reports?.export || false
                 }
             };
+            // Merge stored user.permissions over rolePerms
+            const merged = { ...rolePerms, ...(user.permissions || {}) };
+            // Ensure UI aliases and missing modules are present with safe defaults
+            if (merged.contacts && !merged.people) merged.people = merged.contacts;
+            const ensureModule = (key, template) => {
+                if (!merged[key]) merged[key] = { ...template };
+            };
+            ensureModule('contacts', { view: false, create: false, edit: false, delete: false, viewAll: false, exportData: false });
+            ensureModule('people', { view: false, create: false, edit: false, delete: false, viewAll: false, exportData: false });
+            ensureModule('organizations', { view: false, create: false, edit: false, delete: false, viewAll: false, exportData: false });
+            ensureModule('deals', { view: false, create: false, edit: false, delete: false, viewAll: false, exportData: false });
+            ensureModule('tasks', { view: false, create: false, edit: false, delete: false, viewAll: false });
+            ensureModule('events', { view: false, create: false, edit: false, delete: false, viewAll: false });
+            ensureModule('imports', { view: false, create: false, delete: false });
+            ensureModule('settings', { manageUsers: false, manageBilling: false, manageIntegrations: false, customizeFields: false });
+            ensureModule('reports', { viewStandard: false, viewCustom: false, createCustom: false, exportReports: false });
+            user.permissions = merged;
         }
 
         res.json({

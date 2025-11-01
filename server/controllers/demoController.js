@@ -1,6 +1,6 @@
 const DemoRequest = require('../models/DemoRequest');
 const Organization = require('../models/Organization');
-const Contact = require('../models/Contact');
+const People = require('../models/People');
 const User = require('../models/User');
 const Role = require('../models/Role');
 const bcrypt = require('bcrypt');
@@ -82,30 +82,23 @@ exports.submitDemoRequest = async (req, res) => {
             // Continue even if role creation fails
         }
         
-        // Step 2: Create Contact for the requester
-        console.log('👤 Creating contact for:', contactName);
-        const contact = await Contact.create({
+        // Step 2: Create People for the requester
+        console.log('👤 Creating person for:', contactName);
+        const person = await People.create({
             organizationId: organization._id,
+            createdBy: null,
+            assignedTo: null,
+            type: 'Lead',
             first_name: contactName.split(' ')[0] || contactName,
             last_name: contactName.split(' ').slice(1).join(' ') || '',
             email: email.toLowerCase(),
             phone: phone || '',
-            job_title: jobTitle || '',
-            company: companyName,
-            lifecycle_stage: 'Lead', // They're a lead
-            status: 'Active',
-            lead_source: 'Website - Demo Request',
-            lead_score: 50, // Default score for demo requests
-            tags: ['demo-request', industry, companySize],
-            owner_id: null, // Will be assigned when demo request is assigned
-            notes: message ? [{
-                text: message,
-                created_by: null, // System-generated note
-                created_at: new Date()
-            }] : [] // Don't add note if no message
+            source: 'Website - Demo Request',
+            lead_score: 50,
+            tags: ['demo-request', industry, companySize]
         });
         
-        console.log('✅ Contact created:', contact._id, contact.email);
+        console.log('✅ People created:', person._id, person.email);
         
         // Step 3: Create demo request with references
         const demoRequest = await DemoRequest.create({
@@ -120,12 +113,12 @@ exports.submitDemoRequest = async (req, res) => {
             status: 'pending',
             source: 'website',
             organizationId: organization._id, // Link to organization
-            contactId: contact._id // Link to contact
+            contactId: person._id // Link to people
         });
         
         console.log('✅ Demo request created:', demoRequest._id);
         console.log('🔗 Linked to Organization:', organization._id);
-        console.log('🔗 Linked to Contact:', contact._id);
+        console.log('🔗 Linked to People:', person._id);
         
         // TODO: Send email notification to sales team
         // TODO: Send confirmation email to requester

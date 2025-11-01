@@ -60,7 +60,7 @@ const DemoRequestSchema = new mongoose.Schema({
     },
     contactId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Contact'
+        ref: 'People'
     },
     
     // Conversion (Multi-Instance Architecture)

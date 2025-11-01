@@ -30,6 +30,13 @@ router.post('/check-duplicates/contacts',
   checkPermission('contacts', 'view'),
   checkContactDuplicates
 );
+// Alias for people
+router.post('/check-duplicates/people',
+  organizationIsolation,
+  checkTrialStatus,
+  checkPermission('people', 'view'),
+  checkContactDuplicates
+);
 
 router.post('/check-duplicates/deals',
   organizationIsolation,
@@ -53,6 +60,14 @@ router.post('/import/contacts',
   checkPermission('contacts', 'create'),
   importContacts
 );
+// Alias for people
+router.post('/import/people', 
+  organizationIsolation,
+  checkTrialStatus,
+  checkPermission('imports', 'create'),
+  checkPermission('people', 'create'),
+  importContacts
+);
 
 router.post('/import/deals',
   organizationIsolation,
@@ -74,6 +89,12 @@ router.post('/import/tasks',
 router.get('/export/contacts',
   organizationIsolation,
   checkPermission('contacts', 'view'),
+  exportContacts
+);
+// Alias for people
+router.get('/export/people',
+  organizationIsolation,
+  checkPermission('people', 'view'),
   exportContacts
 );
 

@@ -1,0 +1,88 @@
+const People = require('../models/People');
+
+// Create People
+exports.create = async (req, res) => {
+  try {
+    const body = {
+      ...req.body,
+      organizationId: req.user.organizationId,
+      createdBy: req.user._id
+    };
+    const record = await People.create(body);
+    res.status(201).json({ success: true, data: record });
+  } catch (error) {
+    res.status(400).json({ success: false, message: 'Error creating record', error: error.message });
+  }
+};
+
+// List People with org isolation and basic filters
+exports.list = async (req, res) => {
+  try {
+    const query = { organizationId: req.user.organizationId };
+    if (req.query.type) query.type = req.query.type;
+    if (req.query.email) query.email = req.query.email;
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const User = require('../models/User');
+    const data = await People.find(query)
+      .populate('assignedTo', 'firstName lastName email avatar')
+      .populate('organization', 'name')
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .skip(skip);
+    const total = await People.countDocuments(query);
+    res.json({ success: true, data, meta: { page, limit, total } });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error fetching records', error: error.message });
+  }
+};
+
+// Get by ID
+exports.getById = async (req, res) => {
+  try {
+    const record = await People.findOne({ _id: req.params.id, organizationId: req.user.organizationId });
+    if (!record) return res.status(404).json({ success: false, message: 'Not found' });
+    res.json({ success: true, data: record });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error fetching record', error: error.message });
+  }
+};
+
+// Update
+exports.update = async (req, res) => {
+  try {
+    // Remove createdBy from body to prevent it from being changed
+    const { createdBy, ...updateData } = req.body;
+    
+    // If someone tried to change createdBy, log a warning (but don't fail the request)
+    if (createdBy !== undefined) {
+      console.warn(`Attempt to modify createdBy field blocked for People record ${req.params.id}`);
+    }
+    
+    const updated = await People.findOneAndUpdate(
+      { _id: req.params.id, organizationId: req.user.organizationId },
+      updateData,
+      { new: true }
+    );
+    if (!updated) return res.status(404).json({ success: false, message: 'Not found' });
+    res.json({ success: true, data: updated });
+  } catch (error) {
+    res.status(400).json({ success: false, message: 'Error updating record', error: error.message });
+  }
+};
+
+// Delete
+exports.remove = async (req, res) => {
+  try {
+    const deleted = await People.findOneAndDelete({ _id: req.params.id, organizationId: req.user.organizationId });
+    if (!deleted) return res.status(404).json({ success: false, message: 'Not found' });
+    res.json({ success: true, data: deleted._id });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error deleting record', error: error.message });
+  }
+};
+
+

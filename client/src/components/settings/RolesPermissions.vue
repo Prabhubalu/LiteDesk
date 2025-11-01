@@ -174,14 +174,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import apiClient from '@/utils/apiClient';
 import RoleFormModal from './RoleFormModal.vue';
 import OrganizationHierarchy from './OrganizationHierarchy.vue';
 import RoleUsersModal from './RoleUsersModal.vue';
 import EditUserModal from './EditUserModal.vue';
 
-const activeTab = ref('roles');
+const ROLES_PERMS_TAB_KEY = 'litedesk-settings-rolesperms-tab';
+const activeTab = ref(localStorage.getItem(ROLES_PERMS_TAB_KEY) || 'roles');
 const roles = ref([]);
 const loading = ref(false);
 const showRoleModal = ref(false);
@@ -300,6 +301,11 @@ const handleUserUpdated = () => {
 
 onMounted(() => {
   fetchRoles();
+});
+
+// Persist sub-tab selection and validate against available tabs
+watch(activeTab, (v) => {
+  localStorage.setItem(ROLES_PERMS_TAB_KEY, v);
 });
 </script>
 

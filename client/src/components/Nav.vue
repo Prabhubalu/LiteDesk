@@ -88,13 +88,13 @@ const navigation = computed(() => {
     current: route.path === '/dashboard'
   });
   
-  // Contacts - check permission
-  if (authStore.can('contacts', 'view')) {
+  // People - check permission (uses 'contacts' permission module)
+  if (authStore.can('people', 'view') || authStore.can('contacts', 'view')) {
     nav.push({ 
-      name: 'Contacts', 
-      href: '/contacts', 
+      name: 'People', 
+      href: '/people', 
       icon: UsersIcon,
-      current: route.path.startsWith('/contacts')
+      current: route.path.startsWith('/people')
     });
   }
   
@@ -216,7 +216,7 @@ const toggleColorModeFromMenu = () => {
 // Menu items for the user dropdown
 const userMenuItems = computed(() => [
     { name: 'Your Profile', action: () => router.push('/profile') },
-    { name: 'Settings', action: () => router.push('/settings') },
+    { name: 'Settings', action: () => window.open('/settings', '_blank') },
     { 
         name: `Mode: ${colorMode.value === 'light' ? '🌙 Light' : '☀️ Dark'}`, 
         action: toggleColorModeFromMenu, 

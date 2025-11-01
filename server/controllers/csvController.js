@@ -1,4 +1,4 @@
-const Contact = require('../models/Contact');
+const People = require('../models/People');
 const Deal = require('../models/Deal');
 const Task = require('../models/Task');
 const Organization = require('../models/Organization');
@@ -96,7 +96,7 @@ const parseCSVFile = async (req, res) => {
   }
 };
 
-// @desc    Check for duplicate contacts before import
+// @desc    Check for duplicate people before import
 // @route   POST /api/csv/check-duplicates/contacts
 // @access  Private
 const checkContactDuplicates = async (req, res) => {
@@ -217,8 +217,8 @@ const checkContactDuplicates = async (req, res) => {
         continue;
       }
 
-      // Check for existing contact with all matching fields
-      const existing = await Contact.findOne(query).lean();
+      // Check for existing person with all matching fields
+      const existing = await People.findOne(query).lean();
 
       if (existing) {
         duplicates.push({
@@ -402,7 +402,7 @@ const checkDealDuplicates = async (req, res) => {
   }
 };
 
-// @desc    Import contacts from CSV
+// @desc    Import people from CSV
 // @route   POST /api/csv/import/contacts
 // @access  Private
 const importContacts = async (req, res) => {
@@ -453,7 +453,7 @@ const importContacts = async (req, res) => {
 
     for (const [index, row] of rows.entries()) {
       try {
-        // Map CSV fields to Contact fields
+        // Map CSV fields to People fields
         const contactData = {
           organizationId: req.user.organizationId
         };
@@ -474,14 +474,14 @@ const importContacts = async (req, res) => {
 
         // Check duplicates only if enabled
         if (shouldCheckDuplicates && contactData.email) {
-          const existing = await Contact.findOne({
+          const existing = await People.findOne({
             organizationId: req.user.organizationId,
             email: contactData.email
           });
 
           if (existing) {
             if (updateExisting) {
-              await Contact.updateOne({ _id: existing._id }, contactData);
+              await People.updateOne({ _id: existing._id }, contactData);
               results.updated++;
               results.updatedIds.push(existing._id);
             } else {
@@ -492,13 +492,13 @@ const importContacts = async (req, res) => {
               });
             }
           } else {
-            const newContact = await Contact.create(contactData);
+            const newContact = await People.create(contactData);
             results.created++;
             results.createdIds.push(newContact._id);
           }
         } else {
           // No duplicate check or no email - always create
-          const newContact = await Contact.create(contactData);
+          const newContact = await People.create(contactData);
           results.created++;
           results.createdIds.push(newContact._id);
         }
@@ -723,10 +723,10 @@ const importDeals = async (req, res) => {
 // @access  Private
 const exportContacts = async (req, res) => {
   try {
-    const contacts = await Contact.find({
+    const contacts = await People.find({
       organizationId: req.user.organizationId
     })
-    .populate('owner_id', 'firstName lastName email')
+    .populate('assignedTo', 'firstName lastName email')
     .lean();
 
     const headers = [
@@ -734,13 +734,11 @@ const exportContacts = async (req, res) => {
       'last_name',
       'email',
       'phone',
-      'job_title',
-      'company',
-      'lifecycle_stage',
-      'lead_source',
-      'status',
+      'type',
+      'source',
+      'contact_status',
       'lead_score',
-      'owner_name',
+      'assigned_to',
       'created_at'
     ];
 
@@ -749,13 +747,11 @@ const exportContacts = async (req, res) => {
       last_name: contact.last_name || '',
       email: contact.email || '',
       phone: contact.phone || '',
-      job_title: contact.job_title || '',
-      company: contact.company || '',
-      lifecycle_stage: contact.lifecycle_stage || '',
-      lead_source: contact.lead_source || '',
-      status: contact.status || '',
+      type: contact.type || '',
+      source: contact.source || '',
+      contact_status: contact.contact_status || '',
       lead_score: contact.lead_score || '',
-      owner_name: contact.owner_id ? `${contact.owner_id.firstName} ${contact.owner_id.lastName}` : '',
+      assigned_to: contact.assignedTo ? `${contact.assignedTo.firstName} ${contact.assignedTo.lastName}` : '',
       created_at: contact.createdAt ? new Date(contact.createdAt).toISOString() : ''
     }));
 

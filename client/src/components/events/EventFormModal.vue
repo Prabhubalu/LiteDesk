@@ -471,7 +471,7 @@ const fetchRelatedRecords = async (type) => {
     let endpoint = '';
     switch (type) {
       case 'Contact':
-        endpoint = '/contacts';
+        endpoint = '/people';
         break;
       case 'Deal':
         endpoint = '/deals';

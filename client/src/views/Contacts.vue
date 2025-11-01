@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="flex justify-between items-center mb-8">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Contacts</h1>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">People</h1>
         <p class="text-lg text-gray-600 dark:text-gray-400 mt-2">Manage your customer relationships</p>
       </div>
       <ModuleActions 
@@ -25,7 +25,7 @@
         </div>
         <div>
           <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.totalContacts || 0 }}</p>
-          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Contacts</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total People</p>
         </div>
       </div>
 
@@ -148,8 +148,8 @@
       :mass-actions="massActions"
       :show-controls="false"
       row-key="_id"
-      empty-title="No contacts yet"
-      empty-message="Start building your network by adding your first contact"
+      empty-title="No people yet"
+      empty-message="Start building your network by adding your first person"
       @row-click="handleRowClick"
       @edit="editContact"
       @delete="handleDelete"
@@ -209,9 +209,33 @@
         <span class="text-sm text-gray-700 dark:text-gray-300">{{ row.owner_id?.firstName || 'Unassigned' }}</span>
       </template>
 
+      <!-- Custom Assigned To Cell -->
+      <template #cell-assignedTo="{ row }">
+        <div v-if="row.assignedTo" class="flex items-center gap-2">
+          <div v-if="row.assignedTo.avatar" class="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
+            <img :src="row.assignedTo.avatar" :alt="getUserDisplayName(row.assignedTo)" class="w-full h-full object-cover" />
+          </div>
+          <div v-else class="w-6 h-6 rounded-full bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+            {{ getUserInitials(row.assignedTo) }}
+          </div>
+          <span class="text-sm text-gray-700 dark:text-gray-300">{{ getUserDisplayName(row.assignedTo) }}</span>
+        </div>
+        <span v-else class="text-sm text-gray-500 dark:text-gray-400">Unassigned</span>
+      </template>
+
       <!-- Custom Last Contact Cell -->
       <template #cell-last_contacted_at="{ value }">
         <DateCell :value="value" format="short" />
+      </template>
+
+      <!-- Dynamic Picklist/Multi-Picklist cells with colors -->
+      <template v-for="field in picklistFields" :key="field.key" #[`cell-${field.key}`]="{ value, row }">
+        <BadgeCell 
+          v-if="field.dataType === 'Picklist' || field.dataType === 'Multi-Picklist'"
+          :value="value" 
+          :options="field.options || []"
+        />
+        <span v-else class="text-gray-700 dark:text-gray-300">{{ value || '-' }}</span>
       </template>
 
       <!-- Custom Actions -->
@@ -363,7 +387,7 @@ const authStore = useAuthStore();
 const { openTab } = useTabs();
 
 // Use bulk actions composable with permissions
-const { bulkActions: massActions } = useBulkActions('contacts');
+const { bulkActions: massActions } = useBulkActions('people');
 
 // State
 const contacts = ref([]);
@@ -374,17 +398,10 @@ const showFormModal = ref(false);
 const showImportModal = ref(false);
 const editingContact = ref(null);
 const showColumnSettings = ref(false);
+const moduleDefinition = ref(null);
 
-// Column settings state
-const visibleColumns = ref([
-  { key: 'name', label: 'Name', visible: true },
-  { key: 'email', label: 'Email', visible: true },
-  { key: 'phone', label: 'Phone', visible: true },
-  { key: 'account_id', label: 'Company', visible: true },
-  { key: 'lifecycle_stage', label: 'Stage', visible: true },
-  { key: 'owner_id', label: 'Owner', visible: true },
-  { key: 'last_contacted_at', label: 'Last Contact', visible: true }
-]);
+// Column settings state - will be populated from module definition
+const visibleColumns = ref([]);
 
 const filters = reactive({
   lifecycle_stage: '',
@@ -410,8 +427,77 @@ const hasActiveFilters = computed(() => {
          (filters?.owner_id || '') !== '';
 });
 
-// Column definitions (dynamically include Organization column for admins)
+// Fetch module definition to build columns dynamically
+const fetchModuleDefinition = async () => {
+  try {
+    const response = await apiClient.get('/modules');
+    const modules = response.data || [];
+    const peopleModule = modules.find(m => m.key === 'people');
+    if (peopleModule) {
+      moduleDefinition.value = peopleModule;
+      initializeColumnsFromModule(peopleModule);
+    }
+  } catch (error) {
+    console.error('Error fetching module definition:', error);
+  }
+};
+
+// Initialize columns from module definition
+const initializeColumnsFromModule = (module) => {
+  if (!module || !module.fields) return;
+  
+  const fields = module.fields || [];
+  const systemFieldKeys = ['createdby', 'organizationid', 'createdat', 'updatedat', '_id', '__v'];
+  
+  // Filter out system fields and build visible columns
+  const moduleColumns = fields
+    .filter(field => {
+      const key = field.key?.toLowerCase();
+      return key && !systemFieldKeys.includes(key) && field.visibility?.list !== false;
+    })
+    .map(field => ({
+      key: field.key,
+      label: field.label || field.key,
+      visible: true,
+      dataType: field.dataType,
+      sortable: !['Multi-Picklist', 'Text-Area', 'Rich Text', 'Formula', 'Rollup Summary'].includes(field.dataType)
+    }));
+  
+  // Always include 'name' column at the beginning
+  const nameColumn = { key: 'name', label: 'Name', visible: true, sortable: true };
+  const initialColumns = [nameColumn];
+  
+  // Add organization column for admins
+  if (isAdmin.value) {
+    initialColumns.push({ key: 'organization', label: 'Organization', visible: true, sortable: false });
+  }
+  
+  // Merge with module columns, avoiding duplicates
+  const existingKeys = new Set(initialColumns.map(c => c.key.toLowerCase()));
+  moduleColumns.forEach(col => {
+    if (!existingKeys.has(col.key.toLowerCase())) {
+      initialColumns.push(col);
+      existingKeys.add(col.key.toLowerCase());
+    }
+  });
+  
+  visibleColumns.value = initialColumns;
+};
+
+// Column definitions (dynamically generated from module fields)
 const tableColumns = computed(() => {
+  if (!moduleDefinition.value) {
+    // Fallback to basic columns while loading
+    return [
+      { 
+        key: 'name', 
+        label: 'Name', 
+        sortable: true,
+        sortValue: (row) => `${row.first_name || ''} ${row.last_name || ''}`.trim()
+      }
+    ];
+  }
+  
   const baseColumns = [
     { 
       key: 'name', 
@@ -425,26 +511,21 @@ const tableColumns = computed(() => {
     baseColumns.push({ key: 'organization', label: 'Organization', sortable: false });
   }
   
-  // Add other columns based on visibility settings and order
-  const otherColumns = [
-    { key: 'email', label: 'Email', sortable: true },
-    { key: 'phone', label: 'Phone', sortable: true },
-    { key: 'account_id', label: 'Company', sortable: true },
-    { key: 'lifecycle_stage', label: 'Stage', sortable: true },
-    { key: 'owner_id', label: 'Owner', sortable: true },
-    { key: 'last_contacted_at', label: 'Last Contact', sortable: true }
-  ];
-  
-  // Filter and order columns based on visibleColumns settings
-  const visibleColumnKeys = visibleColumns.value.filter(col => col.visible).map(col => col.key);
+  // Build columns from visibleColumns, respecting order
   const orderedColumns = [];
-  
-  // Add columns in the order specified by visibleColumns
   visibleColumns.value.forEach(visibleCol => {
-    if (visibleCol.visible) {
-      const column = otherColumns.find(col => col.key === visibleCol.key);
-      if (column) {
-        orderedColumns.push(column);
+    if (visibleCol.visible && visibleCol.key !== 'name' && visibleCol.key !== 'organization') {
+      const field = moduleDefinition.value.fields?.find(f => 
+        f.key?.toLowerCase() === visibleCol.key?.toLowerCase()
+      );
+      
+      if (field) {
+        orderedColumns.push({
+          key: field.key,
+          label: field.label || field.key,
+          sortable: visibleCol.sortable !== false && !['Multi-Picklist', 'Text-Area', 'Rich Text', 'Formula', 'Rollup Summary'].includes(field.dataType),
+          dataType: field.dataType
+        });
       }
     }
   });
@@ -452,6 +533,15 @@ const tableColumns = computed(() => {
   baseColumns.push(...orderedColumns);
   
   return baseColumns;
+});
+
+// Picklist fields for dynamic cell rendering
+const picklistFields = computed(() => {
+  if (!moduleDefinition.value?.fields) return [];
+  return moduleDefinition.value.fields.filter(f => 
+    (f.dataType === 'Picklist' || f.dataType === 'Multi-Picklist') && 
+    f.visibility?.list !== false
+  );
 });
 
 // Event handlers
@@ -519,7 +609,7 @@ const sortOrder = ref('desc');
 // Methods
 const fetchContacts = async () => {
   loading.value = true;
-  console.log('🔍 Fetching contacts...');
+  console.log('🔍 Fetching people...');
   console.log('👤 Is Admin:', isAdmin.value);
   
   try {
@@ -537,7 +627,7 @@ const fetchContacts = async () => {
     // Admins/Owners see ALL contacts across organizations
     const endpoint = isAdmin.value
       ? `/admin/contacts/all?${params.toString()}`
-      : `/contacts?${params.toString()}`;
+      : `/people?${params.toString()}`;
 
     console.log('🌐 API Endpoint:', endpoint);
 
@@ -545,7 +635,7 @@ const fetchContacts = async () => {
       method: 'GET'
     });
 
-    console.log('📦 Contacts data:', data);
+    console.log('📦 People data:', data);
     
     if (data.success) {
       contacts.value = data.data;
@@ -574,7 +664,7 @@ const viewContact = (contactId, event = null) => {
   const contact = contacts.value.find(c => c._id === contactId);
   const title = contact 
     ? `${contact.first_name} ${contact.last_name}` 
-    : 'Contact Detail';
+    : 'Person Detail';
   
   // Check if user wants to open in background
   // Middle click (button 1) OR Cmd/Ctrl + click
@@ -584,7 +674,7 @@ const viewContact = (contactId, event = null) => {
     event.ctrlKey         // Ctrl on Windows/Linux
   );
   
-  openTab(`/contacts/${contactId}`, {
+  openTab(`/people/${contactId}`, {
     title,
     icon: 'users',
     params: { name: title },
@@ -621,7 +711,7 @@ const deleteContact = async (contactId) => {
   if (!confirm('Are you sure you want to delete this contact?')) return;
   
   try {
-    await apiClient(`/contacts/${contactId}`, {
+    await apiClient(`/people/${contactId}`, {
       method: 'DELETE'
     });
     fetchContacts();
@@ -636,9 +726,9 @@ const bulkDelete = async () => {
   if (!confirm(`Are you sure you want to delete ${selectedContacts.value.length} contact(s)?`)) return;
   
   try {
-    await apiClient.post('/contacts/bulk-delete', {
-      ids: selectedContacts.value
-    });
+    for (const id of selectedContacts.value) {
+      await apiClient(`/people/${id}`, { method: 'DELETE' });
+    }
     selectedContacts.value = [];
     fetchContacts();
   } catch (error) {
@@ -794,6 +884,20 @@ const getInitials = (contact) => {
   return `${contact.first_name?.[0] || ''}${contact.last_name?.[0] || ''}`.toUpperCase();
 };
 
+const getUserInitials = (user) => {
+  if (!user) return 'U';
+  const firstInitial = user.firstName?.[0] || '';
+  const lastInitial = user.lastName?.[0] || '';
+  return `${firstInitial}${lastInitial}`.toUpperCase() || 'U';
+};
+
+const getUserDisplayName = (user) => {
+  if (!user) return 'Unassigned';
+  const firstName = user.firstName || '';
+  const lastName = user.lastName || '';
+  return `${firstName} ${lastName}`.trim() || user.email || 'Unassigned';
+};
+
 const formatDate = (date) => {
   if (!date) return '-';
   return new Date(date).toLocaleDateString('en-US', {
@@ -804,7 +908,10 @@ const formatDate = (date) => {
 };
 
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
+  // Fetch module definition first to build columns dynamically
+  await fetchModuleDefinition();
+  
   // Load saved sort state from localStorage before fetching
   const savedSort = localStorage.getItem('datatable-contacts-table-sort');
   if (savedSort) {
