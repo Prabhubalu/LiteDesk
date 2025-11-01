@@ -293,7 +293,7 @@
             : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus-within:ring-2 focus-within:ring-brand-500 dark:focus-within:ring-brand-600 focus-within:border-transparent cursor-pointer',
           showMultiOptions ? 'ring-2 ring-brand-500 dark:ring-brand-600 border-transparent' : ''
         ]"
-        @click="!isReadOnly && (showMultiOptions = !showMultiOptions)"
+        @click.stop="!isReadOnly && (showMultiOptions = !showMultiOptions)"
       >
         <!-- Selected tags and placeholder -->
         <div class="flex flex-wrap items-center gap-2 p-2 min-h-[2.5rem]">
@@ -337,6 +337,7 @@
         <div
           v-if="showMultiOptions && !isReadOnly"
           v-click-outside="() => showMultiOptions = false"
+          @click.stop
           class="absolute z-20 mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10 max-h-60 overflow-auto"
         >
           <div class="py-1">
@@ -344,7 +345,7 @@
               v-for="(option, optIdx) in filteredPicklistOptions"
               :key="optIdx"
               type="button"
-              @click="toggleMultiSelect(option)"
+              @click.stop="toggleMultiSelect(option)"
               :class="[
                 'w-full text-left px-4 py-2 text-sm transition-colors',
                 isMultiValueSelected(option)
@@ -411,7 +412,7 @@
     
     <!-- Lookup (Relationship) - with searchable Combobox and modal browse button -->
     <div v-else-if="field.dataType === 'Lookup (Relationship)'" class="relative">
-      <Combobox :model-value="value || ''" @update:model-value="updateValue" :disabled="isReadOnly" nullable>
+      <Combobox :model-value="normalizedLookupValue || ''" @update:model-value="updateValue" :disabled="isReadOnly" nullable>
         <div class="relative">
           <ComboboxButton
             @click="handleLookupButtonClick"
@@ -693,14 +694,29 @@ import { useAuthStore } from '@/stores/auth';
 const vClickOutside = {
   mounted(el, binding) {
     el.clickOutsideEvent = (event) => {
-      if (!(el === event.target || el.contains(event.target))) {
-        binding.value(event);
-      }
+      // Use setTimeout to ensure this runs after any click handlers that might toggle visibility
+      // This allows Vue to update the DOM before we check if the element should be closed
+      setTimeout(() => {
+        // Check if element is still mounted
+        if (!document.contains(el)) return;
+        
+        // Check if click was outside the element and its parent container
+        // The parent container includes both the dropdown and the trigger button
+        const container = el.closest('.relative');
+        if (!container) return;
+        
+        if (!(container === event.target || container.contains(event.target))) {
+          binding.value(event);
+        }
+      }, 10);
     };
+    // Use normal bubbling phase but with a delay to allow state updates
     document.addEventListener('click', el.clickOutsideEvent);
   },
   unmounted(el) {
-    document.removeEventListener('click', el.clickOutsideEvent);
+    if (el.clickOutsideEvent) {
+      document.removeEventListener('click', el.clickOutsideEvent);
+    }
   }
 };
 
@@ -1180,9 +1196,30 @@ const getLookupDisplay = (item) => {
   return item[displayField] || item._id;
 };
 
+// Normalize value - handle both ID strings and populated objects
+const normalizedLookupValue = computed(() => {
+  if (!props.value) return null;
+  // If value is an object (populated), extract the ID
+  if (typeof props.value === 'object' && props.value._id) {
+    return props.value._id;
+  }
+  // If it's already an ID, return as is
+  return props.value;
+});
+
+// Get the populated object if value is an object, otherwise find it in options
 const getSelectedLookupOption = () => {
-  if (!props.value || !lookupOptions.value.length) return null;
-  return lookupOptions.value.find(opt => opt._id === props.value || opt._id?.toString() === props.value?.toString());
+  if (!props.value) return null;
+  
+  // If value is a populated object (has _id and other properties), return it directly
+  if (typeof props.value === 'object' && props.value._id && Object.keys(props.value).length > 1) {
+    return props.value;
+  }
+  
+  // Otherwise, find it in lookupOptions
+  if (!lookupOptions.value.length) return null;
+  const valueId = normalizedLookupValue.value;
+  return lookupOptions.value.find(opt => opt._id === valueId || opt._id?.toString() === valueId?.toString());
 };
 
 const getLookupSelectedLabel = () => {
@@ -1190,6 +1227,13 @@ const getLookupSelectedLabel = () => {
   const selected = getSelectedLookupOption();
   if (selected) {
     return getLookupDisplay(selected);
+  }
+  // Fallback: if value is an object, try to display it
+  if (typeof props.value === 'object' && props.value._id) {
+    if (isAssignedToField.value) {
+      return getUserDisplayName(props.value);
+    }
+    return props.value.name || props.value.title || props.value._id;
   }
   return props.value;
 };
@@ -1420,6 +1464,22 @@ const handleLookupSort = (sortBy, sortOrder) => {
   fetchLookupModalData();
 };
 
+// Handle populated object values - add them to lookupOptions if needed
+const handlePopulatedValue = () => {
+  if (props.field.dataType !== 'Lookup (Relationship)') return;
+  if (!props.value || typeof props.value !== 'object' || !props.value._id) return;
+  
+  // Check if this populated object is already in lookupOptions
+  const exists = lookupOptions.value.some(opt => 
+    opt._id === props.value._id || opt._id?.toString() === props.value._id?.toString()
+  );
+  
+  // If not found and it's a populated object (has more than just _id), add it
+  if (!exists && Object.keys(props.value).length > 1) {
+    lookupOptions.value = [...lookupOptions.value, props.value];
+  }
+};
+
 // Watch for field changes to refetch lookup options
 watch(() => props.field, async (newField, oldField) => {
   // If targetModule changed, refetch
@@ -1428,14 +1488,24 @@ watch(() => props.field, async (newField, oldField) => {
     const oldTargetModule = oldField?.lookupSettings?.targetModule;
     if (newTargetModule !== oldTargetModule || !lookupOptions.value.length) {
       await fetchLookupOptions();
+      handlePopulatedValue();
     }
   }
 }, { deep: true, immediate: false });
+
+// Watch for value changes to handle populated objects
+watch(() => props.value, () => {
+  if (props.field.dataType === 'Lookup (Relationship)') {
+    handlePopulatedValue();
+  }
+}, { deep: true, immediate: true });
 
 onMounted(async () => {
   // Fetch lookup options immediately when component mounts
   if (props.field.dataType === 'Lookup (Relationship)') {
     await fetchLookupOptions();
+    // Handle populated object value after fetching options
+    handlePopulatedValue();
   }
   
   // Set default value if provided

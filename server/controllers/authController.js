@@ -3,6 +3,7 @@ const Organization = require('../models/Organization');
 const Role = require('../models/Role');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const updatePeopleModuleFields = require('../scripts/updatePeopleModuleFields');
 
 // --- Helper Function: Generate Token ---
 const generateToken = (id) => {
@@ -90,6 +91,17 @@ exports.registerUser = async (req, res) => {
         } catch (roleError) {
             console.warn('⚠️  Failed to create default roles:', roleError.message);
             // Continue even if role creation fails - roles can be initialized manually
+        }
+        console.log('\n');
+
+        // 1.6. Initialize People Module Definition with dependencies
+        console.log('🔍 Step 3.6: Initializing People module definition...');
+        try {
+            await updatePeopleModuleFields(organization._id);
+            console.log('✅ People module definition initialized with dependencies');
+        } catch (moduleError) {
+            console.warn('⚠️  Failed to initialize People module:', moduleError.message);
+            // Continue even if module initialization fails - can be run manually later
         }
         console.log('\n');
 
