@@ -62,6 +62,7 @@ const instanceRoutes = require('./routes/instanceRoutes');
 const healthRoutes = require('./routes/healthRoutes');
 const metricsRoutes = require('./routes/metricsRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const userPreferencesRoutes = require('./routes/userPreferencesRoutes');
 
 // Route Linking
 app.use('/api/auth', authRoutes);
@@ -78,6 +79,7 @@ app.use('/api/demo', demoRoutes);
 app.use('/api/instances', instanceRoutes);
 app.use('/api/metrics', metricsRoutes);
 app.use('/api/admin', adminRoutes); // Admin-only cross-organization endpoints
+app.use('/api/user-preferences', userPreferencesRoutes);
 app.use('/health', healthRoutes); // Public health check endpoint
 
 // 1. Database Connection

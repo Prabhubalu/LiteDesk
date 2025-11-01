@@ -343,7 +343,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
@@ -510,4 +510,11 @@ const handleEventSaved = () => {
 onMounted(() => {
   fetchDeal();
 });
+
+// Watch for route param changes to reload data when switching tabs
+watch(() => route.params.id, (newId, oldId) => {
+  if (newId && newId !== oldId) {
+    fetchDeal();
+  }
+}, { immediate: false });
 </script>
