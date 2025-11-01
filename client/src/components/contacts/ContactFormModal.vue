@@ -204,17 +204,29 @@ const handleSubmit = async (event) => {
     delete submitData._id;
     delete submitData.__v;
     
-    // Convert empty strings to null for optional fields
+    // Handle organization field - ensure it's an ObjectId string, not an object
+    if (submitData.organization && typeof submitData.organization === 'object') {
+      submitData.organization = submitData.organization._id || submitData.organization;
+    }
+    
+    // Convert empty strings to null for optional fields (but preserve organization if it's explicitly set)
     for (const key in submitData) {
-      if (submitData[key] === '') {
+      if (submitData[key] === '' && key !== 'organization') {
         submitData[key] = null;
       }
+    }
+    
+    // If organization is empty string, convert to null (but don't delete it - let backend handle it)
+    if (submitData.organization === '') {
+      submitData.organization = null;
     }
     
     console.log('📤 Submitting data:', {
       isEditing: isEditing.value,
       submitDataKeys: Object.keys(submitData),
-      submitDataSample: Object.fromEntries(Object.entries(submitData).slice(0, 5))
+      submitDataSample: Object.fromEntries(Object.entries(submitData).slice(0, 5)),
+      organization: submitData.organization,
+      organizationType: typeof submitData.organization
     });
     
     let data;

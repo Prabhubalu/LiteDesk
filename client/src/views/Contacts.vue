@@ -168,9 +168,19 @@
         </div>
       </template>
 
-      <!-- Custom Organization Cell (only for admins) -->
-      <template #cell-organization="{ row }" v-if="isAdmin">
-        <span class="font-medium text-gray-900 dark:text-white">{{ row.organization?.name || '-' }}</span>
+      <!-- Custom Organization Cell -->
+      <template #cell-organization="{ row }">
+        <span class="font-medium text-gray-900 dark:text-white">
+          <template v-if="row.organization && typeof row.organization === 'object' && row.organization.name">
+            {{ row.organization.name }}
+          </template>
+          <template v-else-if="row.organization && typeof row.organization === 'string'">
+            {{ row.organization }}
+          </template>
+          <template v-else>
+            <span class="text-gray-400 dark:text-gray-500">-</span>
+          </template>
+        </span>
       </template>
 
       <!-- Custom Email Cell -->
@@ -478,10 +488,8 @@ const initializeColumnsFromModule = (module) => {
   const nameColumn = { key: 'name', label: 'Name', visible: true, sortable: true };
   const initialColumns = [nameColumn];
   
-  // Add organization column for admins
-  if (isAdmin.value) {
-    initialColumns.push({ key: 'organization', label: 'Organization', visible: true, sortable: false });
-  }
+  // Add organization column (always visible)
+  initialColumns.push({ key: 'organization', label: 'Organization', visible: true, sortable: false });
   
   // Merge with module columns, avoiding duplicates
   const existingKeys = new Set(initialColumns.map(c => c.key.toLowerCase()));
@@ -518,8 +526,14 @@ const tableColumns = computed(() => {
     },
   ];
   
-  if (isAdmin.value) {
-    baseColumns.push({ key: 'organization', label: 'Organization', sortable: false });
+  // Add organization column if it's in visibleColumns and visible
+  const orgColumn = visibleColumns.value.find(col => col.key === 'organization' && col.visible);
+  if (orgColumn) {
+    baseColumns.push({ 
+      key: 'organization', 
+      label: 'Organization', 
+      sortable: false 
+    });
   }
   
   // Build columns from visibleColumns, respecting order
@@ -650,9 +664,38 @@ const fetchContacts = async () => {
     
     if (data.success) {
       contacts.value = data.data;
-      pagination.value = data.pagination;
+      // Handle both 'pagination' and 'meta' response formats
+      if (data.pagination) {
+        pagination.value = data.pagination;
+      } else if (data.meta) {
+        pagination.value = {
+          currentPage: data.meta.page || 1,
+          totalPages: Math.ceil((data.meta.total || 0) / (data.meta.limit || 20)),
+          totalContacts: data.meta.total || 0,
+          limit: data.meta.limit || 20
+        };
+      }
       statistics.value = data.statistics || statistics.value;
       console.log(`✅ Loaded ${data.data.length} contacts`);
+      
+      // Debug: Check organization field in contacts
+      if (data.data.length > 0) {
+        console.log('🔍 Checking organization data in contacts...');
+        data.data.forEach((contact, idx) => {
+          if (idx < 3) { // Log first 3 contacts
+            console.log(`Contact ${idx + 1}:`, {
+              name: `${contact.first_name} ${contact.last_name}`,
+              organization: contact.organization,
+              orgType: typeof contact.organization,
+              orgIsNull: contact.organization === null,
+              orgIsUndefined: contact.organization === undefined,
+              orgName: contact.organization?.name,
+              orgId: contact.organization?._id,
+              fullOrg: JSON.stringify(contact.organization)
+            });
+          }
+        });
+      }
     }
   } catch (error) {
     console.error('❌ Error fetching contacts:', error);
