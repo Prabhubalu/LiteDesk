@@ -45,7 +45,7 @@ exports.getById = async (req, res) => {
   try {
     const record = await People.findOne({ _id: req.params.id, organizationId: req.user.organizationId })
       .populate('organization', 'name industry status email phone website')
-      .populate('assignedTo', 'firstName lastName email')
+      .populate('assignedTo', 'firstName lastName email avatar')
       .populate('notes.created_by', 'firstName lastName');
     if (!record) return res.status(404).json({ success: false, message: 'Not found' });
     res.json({ success: true, data: record });
@@ -65,14 +65,42 @@ exports.update = async (req, res) => {
       console.warn(`Attempt to modify createdBy field blocked for People record ${req.params.id}`);
     }
     
+    // Ensure organization field is properly formatted (ObjectId string or null)
+    if (updateData.organization !== undefined) {
+      if (updateData.organization === null || updateData.organization === '') {
+        updateData.organization = null;
+      } else if (typeof updateData.organization === 'object' && updateData.organization._id) {
+        // If it's an object with _id, extract the _id
+        updateData.organization = updateData.organization._id;
+      }
+      // Otherwise keep it as is (should be an ObjectId string)
+    }
+    
+    console.log('📝 Updating People record:', {
+      id: req.params.id,
+      organization: updateData.organization,
+      organizationType: typeof updateData.organization,
+      updateKeys: Object.keys(updateData)
+    });
+    
     const updated = await People.findOneAndUpdate(
       { _id: req.params.id, organizationId: req.user.organizationId },
-      updateData,
-      { new: true }
-    );
+      { $set: updateData },
+      { new: true, runValidators: true }
+    )
+      .populate('assignedTo', 'firstName lastName email avatar')
+      .populate('organization', 'name');
     if (!updated) return res.status(404).json({ success: false, message: 'Not found' });
+    
+    console.log('✅ Updated People record:', {
+      id: updated._id,
+      organization: updated.organization,
+      organizationType: typeof updated.organization
+    });
+    
     res.json({ success: true, data: updated });
   } catch (error) {
+    console.error('❌ Error updating People record:', error);
     res.status(400).json({ success: false, message: 'Error updating record', error: error.message });
   }
 };

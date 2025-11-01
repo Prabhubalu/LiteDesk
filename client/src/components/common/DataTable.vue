@@ -958,6 +958,21 @@ const getCellValue = (row, key) => {
   if (key.includes('.')) {
     return key.split('.').reduce((obj, k) => obj?.[k], row);
   }
+  
+  const value = row[key];
+  
+  // Handle populated relationship fields (lookup fields)
+  // If value is an object with _id and a display field (name, title, etc.), extract the display value
+  if (value && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)) {
+    // Check for common display fields in order of preference
+    if (value.name) return value.name;
+    if (value.title) return value.title;
+    if (value.firstName && value.lastName) return `${value.firstName} ${value.lastName}`;
+    if (value.first_name && value.last_name) return `${value.first_name} ${value.last_name}`;
+    // If it's just an object with _id, return the object itself (will be handled by custom cell templates)
+    if (value._id) return value;
+  }
+  
   return row[key];
 };
 

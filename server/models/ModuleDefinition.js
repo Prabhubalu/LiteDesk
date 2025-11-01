@@ -93,11 +93,29 @@ const ModuleDefinitionSchema = new mongoose.Schema({
                 },
                 dependencyLogic: { type: String, enum: ['AND','OR'], default: 'AND' },
                 dependencies: {
-                    type: [new mongoose.Schema({
-                        fieldKey: { type: String, trim: true },
-                        operator: { type: String, enum: ['equals','in'], default: 'equals' },
-                        value: { type: mongoose.Schema.Types.Mixed }
-                    }, { _id: false })],
+                    type: [
+                        // Support unified dependency structure (new format)
+                        new mongoose.Schema({
+                            name: { type: String, trim: true, default: '' },
+                            type: { type: String, enum: ['visibility','readonly','required','picklist'], required: false },
+                            logic: { type: String, enum: ['AND','OR'], default: 'AND' },
+                            // For backward compatibility and simple dependencies
+                            fieldKey: { type: String, trim: true },
+                            operator: { type: String, enum: ['equals','not_equals','in','not_in','exists','gt','lt','gte','lte','contains'], default: 'equals' },
+                            value: { type: mongoose.Schema.Types.Mixed },
+                            // Multiple conditions support
+                            conditions: {
+                                type: [new mongoose.Schema({
+                                    fieldKey: { type: String, trim: true, required: true },
+                                    operator: { type: String, enum: ['equals','not_equals','in','not_in','exists','gt','lt','gte','lte','contains'], default: 'equals' },
+                                    value: { type: mongoose.Schema.Types.Mixed }
+                                }, { _id: false })],
+                                default: []
+                            },
+                            // For picklist type, specify allowed options when conditions satisfied
+                            allowedOptions: { type: [String], default: [] }
+                        }, { _id: false })
+                    ],
                     default: []
                 },
                 // For enum/multienum fields: filter allowed options based on another field's value

@@ -376,182 +376,289 @@
             </div>
             <div v-if="activeSubTab === 'validations'" class="space-y-3">
               <div>
-                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-2">Field Validation</label>
-                <div class="flex items-center gap-2 flex-wrap mb-3">
-                  <button @click="addValidation" class="px-2 py-1 bg-gray-100 dark:bg-white/10 rounded text-xs">Add custom validation</button>
+                <!-- Empty State -->
+                <div v-if="!currentField.validations || currentField.validations.length === 0" class="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Validation Rules</h3>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 text-center max-w-md mb-6">
+                    Add validation conditions to ensure data integrity and enforce business rules for this field.
+                  </p>
+                  <button @click="addValidation" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add Condition
+                  </button>
                 </div>
-                <div class="space-y-3">
-                  <div v-for="(v, vi) in currentField.validations" :key="vi" class="border border-gray-200 dark:border-white/10 rounded-lg p-3 space-y-2">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div>
-                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Validation Name</label>
-                        <input v-model="v.name" placeholder="e.g., Phone must be 10 digits" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+
+                <!-- Validation List -->
+                <div v-else>
+                  <div class="space-y-3">
+                    <div v-for="(v, vi) in currentField.validations" :key="vi" class="relative border border-gray-200 dark:border-white/10 rounded-lg p-3 space-y-2">
+                      <!-- Delete button in top right corner -->
+                      <button 
+                        @click="removeValidation(vi)" 
+                        class="absolute -top-2 -right-2 p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all hover:scale-110 bg-white dark:bg-gray-800 border border-gray-200 dark:border-white/10 shadow-sm"
+                        title="Remove validation"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Validation Name</label>
+                          <input v-model="v.name" placeholder="e.g., Phone must be 10 digits" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+                        </div>
+                        <div>
+                          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Type</label>
+                          <select v-model="v.type" class="w-full px-2 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+                            <option value="regex">Regular Expression</option>
+                            <option value="length">Length</option>
+                            <option value="range">Range</option>
+                            <option value="picklist_single">Single picklist value matching</option>
+                            <option value="picklist_multi">Multiple picklist value matching</option>
+                            <option value="email">Email</option>
+                          </select>
+                        </div>
                       </div>
+
+                      <!-- Type-specific fields -->
+                      <div v-if="v.type === 'regex'">
+                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Pattern</label>
+                        <input v-model="v.pattern" placeholder="Regex pattern" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+                      </div>
+
+                      <div v-else-if="v.type === 'length'" class="grid grid-cols-2 gap-3">
+                        <div>
+                          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Min Length</label>
+                          <input type="number" min="0" v-model.number="v.minLength" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+                        </div>
+                        <div>
+                          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Max Length</label>
+                          <input type="number" min="0" v-model.number="v.maxLength" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+                        </div>
+                      </div>
+
+                      <div v-else-if="v.type === 'range'" class="grid grid-cols-2 gap-3">
+                        <div>
+                          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Min</label>
+                          <input type="number" v-model.number="v.min" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+                        </div>
+                        <div>
+                          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Max</label>
+                          <input type="number" v-model.number="v.max" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+                        </div>
+                      </div>
+
+                      <div v-else-if="v.type === 'picklist_single'">
+                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Allowed Values (comma separated)</label>
+                        <input v-model="allowedValuesBuffers[vi]" @change="applyAllowedValues(vi)" placeholder="e.g., New, Contacted, Qualified" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+                      </div>
+
+                      <div v-else-if="v.type === 'picklist_multi'">
+                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Allowed Values (comma separated)</label>
+                        <input v-model="allowedValuesBuffers[vi]" @change="applyAllowedValues(vi)" placeholder="e.g., New, Contacted, Qualified" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+                      </div>
+
+                      <!-- Email has no extra inputs -->
+
                       <div>
-                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Type</label>
-                        <select v-model="v.type" class="w-full px-2 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-                          <option value="regex">Regular Expression</option>
-                          <option value="length">Length</option>
-                          <option value="range">Range</option>
-                          <option value="picklist_single">Single picklist value matching</option>
-                          <option value="picklist_multi">Multiple picklist value matching</option>
-                          <option value="email">Email</option>
-                        </select>
+                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Error Message</label>
+                        <input v-model="v.message" placeholder="Message to show when validation fails" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
                       </div>
                     </div>
-
-                    <!-- Type-specific fields -->
-                    <div v-if="v.type === 'regex'">
-                      <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Pattern</label>
-                      <input v-model="v.pattern" placeholder="Regex pattern" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
-                    </div>
-
-                    <div v-else-if="v.type === 'length'" class="grid grid-cols-2 gap-3">
-                      <div>
-                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Min Length</label>
-                        <input type="number" min="0" v-model.number="v.minLength" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
-                      </div>
-                      <div>
-                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Max Length</label>
-                        <input type="number" min="0" v-model.number="v.maxLength" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
-                      </div>
-                    </div>
-
-                    <div v-else-if="v.type === 'range'" class="grid grid-cols-2 gap-3">
-                      <div>
-                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Min</label>
-                        <input type="number" v-model.number="v.min" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
-                      </div>
-                      <div>
-                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Max</label>
-                        <input type="number" v-model.number="v.max" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
-                      </div>
-                    </div>
-
-                    <div v-else-if="v.type === 'picklist_single'">
-                      <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Allowed Values (comma separated)</label>
-                      <input v-model="allowedValuesBuffers[vi]" @change="applyAllowedValues(vi)" placeholder="e.g., New, Contacted, Qualified" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
-                    </div>
-
-                    <div v-else-if="v.type === 'picklist_multi'">
-                      <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Allowed Values (comma separated)</label>
-                      <input v-model="allowedValuesBuffers[vi]" @change="applyAllowedValues(vi)" placeholder="e.g., New, Contacted, Qualified" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
-                    </div>
-
-                    <!-- Email has no extra inputs -->
-
-                    <div>
-                      <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Error Message</label>
-                      <input v-model="v.message" placeholder="Message to show when validation fails" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
-                    </div>
-
-                    <div class="flex justify-end">
-                      <button @click="removeValidation(vi)" class="text-red-600 dark:text-red-400 text-sm">Remove validation</button>
-                    </div>
+                  </div>
+                  <div class="flex items-center gap-2 flex-wrap mt-4">
+                    <button @click="addValidation" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm hover:shadow-md">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                      </svg>
+                      Add custom validation
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
             <div v-if="activeSubTab === 'dependencies'">
               <div>
-                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Dependencies</label>
-                <div class="mb-2">
-                  <label class="text-xs text-gray-600 dark:text-gray-400 mr-2">Logic</label>
-                  <select v-model="currentField.dependencyLogic" class="px-2 py-1 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm">
-                    <option value="AND">AND</option>
-                    <option value="OR">OR</option>
-                  </select>
+                <!-- Empty State -->
+                <div v-if="!currentField.dependencies || currentField.dependencies.length === 0" class="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  </svg>
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Dependencies</h3>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 text-center max-w-md mb-6">
+                    Add field dependencies to control visibility, read-only state, required state, or filter picklist options based on other field values.
+                  </p>
+                  <button @click="addDependency" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add Dependency
+                  </button>
                 </div>
-                <div class="space-y-2">
-                  <div v-for="(d, di) in currentField.dependencies" :key="di" class="grid grid-cols-12 gap-2 items-center">
-                    <select v-model="d.fieldKey" class="col-span-5 px-2 py-1 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm">
-                      <option v-for="f in otherFields" :key="f.key" :value="f.key">{{ f.label || f.key }}</option>
-                    </select>
-                    <select v-model="d.operator" class="col-span-2 px-2 py-1 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm">
-                      <option value="equals">equals</option>
-                      <option value="in">in</option>
-                    </select>
-                    <input v-if="d.operator === 'equals'" v-model="d.value" placeholder="Value" class="col-span-4 px-2 py-1 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm" />
-                    <input v-else v-model="dependencyValuesBuffer[di]" placeholder="a, b, c" class="col-span-4 px-2 py-1 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm" @change="applyDependencyValues(di)" />
-                    <button @click="removeDependency(di)" class="col-span-1 text-red-600 dark:text-red-400 text-sm">✕</button>
-                  </div>
-                  <button @click="addDependency" class="px-2 py-1 bg-gray-100 dark:bg-white/10 rounded text-xs">Add dependency</button>
-                </div>
-              </div>
-              <!-- Picklist dependencies (filter options) -->
-              <div v-if="['Picklist','Multi-Picklist'].includes(currentField.dataType)" class="mt-6">
-                <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Picklist Dependencies</label>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Filter this field's options based on another field's value.</p>
-                <div class="space-y-3">
-                  <div v-for="(pd, pdi) in (currentField.picklistDependencies || (currentField.picklistDependencies = []))" :key="pdi" class="border border-gray-200 dark:border-white/10 rounded-lg p-3">
-                    <div class="flex items-center gap-2 mb-2">
-                      <span class="text-xs text-gray-600 dark:text-gray-400">Source field</span>
-                      <select v-model="pd.sourceFieldKey" class="px-2 py-1 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs">
-                        <option disabled value="">Select field</option>
-                        <option v-for="f in otherFields" :key="f.key" :value="f.key">{{ f.label || f.key }}</option>
-                      </select>
-                      <button @click="removePicklistDependency(pdi)" class="ml-auto text-xs text-red-600 dark:text-red-400">Remove</button>
-                    </div>
-                    <div class="space-y-2">
-                      <div v-for="(m, mi) in (pd.mappings || (pd.mappings = []))" :key="mi" class="grid grid-cols-12 gap-2 items-center">
-                        <input v-model="m.whenValue" placeholder="When value equals..." class="col-span-4 px-2 py-1 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs" />
-                        <input v-model="picklistOptionsBuffers[pdi + '-' + mi]" @change="applyPicklistOptions(pdi, mi)" placeholder="Allowed options (comma separated)" class="col-span-7 px-2 py-1 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs" />
-                        <button @click="removePicklistMapping(pdi, mi)" class="col-span-1 text-xs text-red-600 dark:text-red-400">✕</button>
+
+                <!-- Dependencies List -->
+                <div v-else>
+                  <div class="space-y-3">
+                    <div v-for="(d, di) in currentField.dependencies" :key="di" class="relative border border-gray-200 dark:border-white/10 rounded-lg p-3 space-y-3">
+                      <!-- Delete button in top right corner -->
+                      <button 
+                        @click="removeDependency(di)" 
+                        class="absolute -top-2 -right-2 p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all hover:scale-110 bg-white dark:bg-gray-800 border border-gray-200 dark:border-white/10 shadow-sm"
+                        title="Remove dependency"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+
+                      <!-- Dependency Name and Type in one row -->
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Dependency Name</label>
+                          <input v-model="d.name" placeholder="e.g., Show when Status is Active" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm" />
+                        </div>
+                        <div>
+                          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Dependency Type</label>
+                          <select v-model="d.type" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm">
+                            <option value="visibility">Visibility</option>
+                            <option value="readonly">Read-only</option>
+                            <option value="required">Required</option>
+                            <option value="picklist">Picklist Options Filter</option>
+                          </select>
+                        </div>
                       </div>
-                      <button @click="addPicklistMapping(pdi)" class="px-2 py-1 bg-gray-100 dark:bg-white/10 rounded text-xs">Add mapping</button>
+
+                      <!-- Logic for multiple conditions (show when 2+ conditions or always for clarity) -->
+                      <div v-if="getConditionCount(d) > 1">
+                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Logic</label>
+                        <select v-model="d.logic" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm">
+                          <option value="AND">AND</option>
+                          <option value="OR">OR</option>
+                        </select>
+                      </div>
+
+                      <!-- Conditions list - always show conditions array mode -->
+                      <div class="space-y-2">
+                        <div class="flex items-center justify-between mb-2">
+                          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">Conditions</label>
+                          <button @click="addDependencyCondition(di)" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm hover:shadow-md">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Add Condition
+                          </button>
+                        </div>
+                        
+                        <!-- Show message if no conditions -->
+                        <div v-if="getConditionCount(d) === 0" class="text-xs text-gray-500 dark:text-gray-400 py-4 px-3 bg-gray-50 dark:bg-white/5 rounded border border-dashed border-gray-300 dark:border-gray-600 text-center">
+                          No conditions defined. Click "Add Condition" to get started.
+                        </div>
+                        
+                        <!-- Conditions -->
+                        <div v-for="(c, ci) in getDependencyConditions(d)" :key="ci" class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end border border-gray-200 dark:border-white/10 rounded-lg p-3 bg-gray-50/50 dark:bg-white/5">
+                          <div class="md:col-span-5">
+                            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Field</label>
+                            <select v-model="c.fieldKey" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm">
+                              <option value="">Select field</option>
+                              <option v-for="f in otherFields" :key="f.key" :value="f.key">{{ f.label || f.key }}</option>
+                            </select>
+                          </div>
+                          <div class="md:col-span-3">
+                            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Operator</label>
+                            <select v-model="c.operator" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm">
+                              <option value="equals">equals</option>
+                              <option value="not_equals">not equals</option>
+                              <option value="in">in</option>
+                              <option value="not_in">not in</option>
+                              <option value="exists">exists</option>
+                              <option value="gt">&gt;</option>
+                              <option value="lt">&lt;</option>
+                              <option value="gte">&ge;</option>
+                              <option value="lte">&le;</option>
+                              <option value="contains">contains</option>
+                            </select>
+                          </div>
+                          <div class="md:col-span-3">
+                            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Value</label>
+                            <!-- Picklist dropdown -->
+                            <select v-if="getDependencyFieldType(c.fieldKey) === 'Picklist' || getDependencyFieldType(c.fieldKey) === 'Multi-Picklist'" v-model="c.value" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm">
+                              <option value="">Select option</option>
+                              <option v-for="opt in getDependencyFieldOptions(c.fieldKey)" :key="opt" :value="opt">{{ opt }}</option>
+                            </select>
+                            <!-- Checkbox -->
+                            <select v-else-if="getDependencyFieldType(c.fieldKey) === 'Checkbox'" v-model="c.value" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm">
+                              <option value="">Select value</option>
+                              <option value="true">true</option>
+                              <option value="false">false</option>
+                            </select>
+                            <!-- Date -->
+                            <input v-else-if="getDependencyFieldType(c.fieldKey) === 'Date'" type="date" v-model="c.value" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm" />
+                            <!-- Date-Time -->
+                            <input v-else-if="getDependencyFieldType(c.fieldKey) === 'Date-Time'" type="datetime-local" v-model="c.value" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm" />
+                            <!-- Number fields -->
+                            <input v-else-if="['Integer', 'Decimal', 'Currency'].includes(getDependencyFieldType(c.fieldKey))" type="number" v-model.number="c.value" placeholder="Number" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm" />
+                            <!-- Text input for 'in' or 'not_in' operators -->
+                            <input v-else-if="c.operator === 'in' || c.operator === 'not_in'" v-model="dependencyConditionBuffers[di + '-' + ci]" placeholder="a, b, c" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm" @change="applyDependencyConditionValue(di, ci)" />
+                            <!-- Comparison operators need numbers -->
+                            <input v-else-if="['gt', 'lt', 'gte', 'lte'].includes(c.operator)" type="number" v-model.number="c.value" placeholder="Number" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm" />
+                            <!-- Exists operator -->
+                            <input v-else-if="c.operator === 'exists'" type="text" disabled value="(exists check)" class="w-full px-3 py-2 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-sm cursor-not-allowed" />
+                            <!-- Default text input -->
+                            <input v-else v-model="c.value" placeholder="Value" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm" />
+                          </div>
+                          <button @click="removeDependencyCondition(di, ci)" class="md:col-span-1 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm transition-colors flex items-center justify-center" title="Remove condition">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Picklist-specific settings -->
+                      <div v-if="d.type === 'picklist' && (currentField.dataType === 'Picklist' || currentField.dataType === 'Multi-Picklist')" class="border-t border-gray-200 dark:border-white/10 pt-3">
+                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-2">Picklist Options to Show</label>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                          Select which options from this field should be visible when the dependency condition is met.
+                        </p>
+                        <div v-if="!currentField.options || currentField.options.length === 0" class="text-xs text-gray-500 dark:text-gray-400 py-2">
+                          No picklist options available. Please add options to this field first.
+                        </div>
+                        <div v-else class="space-y-2">
+                          <div v-for="(option, optIdx) in getPicklistOptions(currentField)" :key="optIdx" class="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              :id="`picklist-option-${di}-${optIdx}`"
+                              :checked="isPicklistOptionSelected(di, option)"
+                              @change="togglePicklistOption(di, option)"
+                              class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500"
+                            />
+                            <label :for="`picklist-option-${di}-${optIdx}`" class="text-sm text-gray-700 dark:text-gray-300 cursor-pointer flex items-center gap-2">
+                              <span v-if="typeof option === 'object' && option.color" class="w-3 h-3 rounded-full flex-shrink-0" :style="{ backgroundColor: option.color }"></span>
+                              <span>{{ normalizePicklistOption(option) }}</span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                      <div v-else-if="d.type === 'picklist'" class="border-t border-gray-200 dark:border-white/10 pt-3">
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                          Picklist filter is only available for Picklist or Multi-Picklist field types.
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  <button @click="addPicklistDependency" class="px-2 py-1 bg-gray-100 dark:bg-white/10 rounded text-xs">Add picklist dependency</button>
-                </div>
-              </div>
-              <!-- Advanced Dependencies: visibility, read-only, picklist updates -->
-              <div class="mt-6">
-                <div class="flex items-center justify-between mb-2">
-                  <label class="block text-xs text-gray-600 dark:text-gray-400">Advanced Dependencies</label>
-                  <button @click="addAdvancedDependency" class="px-2 py-1 bg-gray-100 dark:bg-white/10 rounded text-xs">Add rule</button>
-                </div>
-                <div v-if="!currentField.advancedDependencies || currentField.advancedDependencies.length === 0" class="text-xs text-gray-500 dark:text-gray-400">No advanced rules.</div>
-                <div v-else class="space-y-3">
-                  <div v-for="(r, ri) in currentField.advancedDependencies" :key="ri" class="border border-gray-200 dark:border-white/10 rounded-lg p-3 space-y-2">
-                    <div class="grid grid-cols-12 gap-2 items-center">
-                      <input v-model="r.name" placeholder="Rule name" class="col-span-4 px-2 py-1 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs" />
-                      <select v-model="r.type" class="col-span-3 px-2 py-1 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs">
-                        <option value="visibility">Visibility</option>
-                        <option value="readonly">Read-only</option>
-                        <option value="picklist">Picklist Options</option>
-                      </select>
-                      <select v-model="r.logic" class="col-span-2 px-2 py-1 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs">
-                        <option value="AND">AND</option>
-                        <option value="OR">OR</option>
-                      </select>
-                      <button @click="removeAdvancedDependency(ri)" class="col-span-1 text-xs text-red-600 dark:text-red-400">✕</button>
-                    </div>
-                    <div class="space-y-2">
-                      <div v-for="(c, ci) in (r.conditions || (r.conditions = []))" :key="ci" class="grid grid-cols-12 gap-2 items-center">
-                        <select v-model="c.fieldKey" class="col-span-4 px-2 py-1 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs">
-                          <option v-for="f in otherFields" :key="f.key" :value="f.key">{{ f.label || f.key }}</option>
-                        </select>
-                        <select v-model="c.operator" class="col-span-3 px-2 py-1 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs">
-                          <option value="equals">equals</option>
-                          <option value="not_equals">not equals</option>
-                          <option value="in">in</option>
-                          <option value="not_in">not in</option>
-                          <option value="exists">exists</option>
-                          <option value="gt">&gt;</option>
-                          <option value="lt">&lt;</option>
-                          <option value="gte">&ge;</option>
-                          <option value="lte">&le;</option>
-                          <option value="contains">contains</option>
-                        </select>
-                        <input v-model="advancedValueBuffers[ri + '-' + ci]" @change="applyAdvancedValue(ri, ci)" :placeholder="advancedValuePlaceholder(c.fieldKey)" class="col-span-4 px-2 py-1 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs" />
-                        <button @click="removeAdvancedCondition(ri, ci)" class="col-span-1 text-xs text-red-600 dark:text-red-400">✕</button>
-                      </div>
-                      <button @click="addAdvancedCondition(ri)" class="px-2 py-1 bg-gray-100 dark:bg-white/10 rounded text-xs">Add condition</button>
-                    </div>
-                    <div v-if="r.type === 'picklist'" class="grid grid-cols-12 gap-2 items-center">
-                      <span class="col-span-3 text-xs text-gray-600 dark:text-gray-400">Allowed options</span>
-                      <input v-model="advancedOptionsBuffers[ri]" @change="applyAdvancedOptions(ri)" placeholder="Comma separated" class="col-span-8 px-2 py-1 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs" />
-                    </div>
+                  <div class="flex items-center gap-2 flex-wrap mt-4">
+                    <button @click="addDependency" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm hover:shadow-md">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                      </svg>
+                      Add dependency
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1449,6 +1556,9 @@ watch([numberSettings, textSettings, dateSettings, formulaSettings, lookupSettin
   }
 }, { deep: true });
 const dependencyValuesBuffer = ref({});
+const dependencyConditionBuffers = ref({});
+const dependencyMappingBuffers = ref({});
+const dependencyOptionsBuffer = ref({});
 const picklistOptionsBuffers = ref({});
 const advancedValueBuffers = ref({});
 const advancedOptionsBuffers = ref({});
@@ -1786,19 +1896,229 @@ function addPreset(kind) {
   Object.assign(currentField.value.validations[last], presets[kind] || {});
 }
 
+// Helper function to get field type for dependency field selection
+function getDependencyFieldType(fieldKey) {
+  if (!fieldKey) return '';
+  const field = editFields.value.find(f => f.key === fieldKey);
+  return field?.dataType || '';
+}
+
+// Helper function to normalize picklist option (handle both strings and objects)
+function normalizePicklistOption(option) {
+  if (typeof option === 'string') return option;
+  if (typeof option === 'object' && option !== null) {
+    return option.value || option.label || String(option);
+  }
+  return String(option);
+}
+
+// Helper function to get picklist option value for comparison
+function getPicklistOptionValue(option) {
+  if (typeof option === 'string') return option;
+  if (typeof option === 'object' && option !== null) {
+    return option.value || option.label || String(option);
+  }
+  return String(option);
+}
+
+// Helper function to get picklist options for a field (returns normalized values)
+function getDependencyFieldOptions(fieldKey) {
+  if (!fieldKey) return [];
+  const field = editFields.value.find(f => f.key === fieldKey);
+  if (!field?.options) return [];
+  return field.options.map(opt => normalizePicklistOption(opt));
+}
+
+// Helper function to get picklist options with their full objects
+function getPicklistOptions(field) {
+  if (!field?.options) return [];
+  return field.options;
+}
+
 // removed addSelectedPreset (preset picker removed)
 function addDependency() {
   if (!currentField.value.dependencies) currentField.value.dependencies = [];
-  currentField.value.dependencies.push({ fieldKey: '', operator: 'equals', value: '' });
+  // Create unified dependency structure with type, supporting backward compatibility
+  currentField.value.dependencies.push({ 
+    name: '',  // Dependency name
+    type: 'visibility',  // default type
+    fieldKey: '', 
+    operator: 'equals', 
+    value: '', 
+    logic: 'AND',
+    conditions: [],
+    mappings: [],
+    allowedOptions: []  // For picklist filter - stores which options to show
+  });
 }
 function removeDependency(idx) {
   currentField.value.dependencies.splice(idx, 1);
   delete dependencyValuesBuffer.value[idx];
+  // Clean up condition buffers
+  Object.keys(dependencyConditionBuffers.value).forEach(key => {
+    if (key.startsWith(idx + '-')) delete dependencyConditionBuffers.value[key];
+  });
+  // Clean up mapping buffers
+  Object.keys(dependencyMappingBuffers.value).forEach(key => {
+    if (key.startsWith(idx + '-')) delete dependencyMappingBuffers.value[key];
+  });
+  delete dependencyOptionsBuffer.value[idx];
 }
 function applyDependencyValues(idx) {
   const raw = dependencyValuesBuffer.value[idx] || '';
   const arr = raw.split(',').map(s => s.trim()).filter(Boolean);
-  currentField.value.dependencies[idx].value = arr;
+  const dep = currentField.value.dependencies[idx];
+  if (dep) {
+    // Support both old and new structure
+    if (dep.conditions && dep.conditions.length > 0) {
+      // If using conditions array, this shouldn't be called
+      dep.value = arr;
+    } else {
+      dep.value = arr;
+    }
+  }
+}
+// Add condition to a dependency
+// Get conditions for a dependency (handles both old and new format)
+// IMPORTANT: This ensures conditions array exists and converts old format if needed
+function getDependencyConditions(dep) {
+  if (!dep) return [];
+  // Initialize conditions array if it doesn't exist
+  if (!dep.conditions) dep.conditions = [];
+  
+  // If simple dependency format exists (fieldKey), migrate it to conditions array
+  if (dep.fieldKey && dep.conditions.length === 0) {
+    dep.conditions.push({
+      fieldKey: dep.fieldKey,
+      operator: dep.operator || 'equals',
+      value: dep.value || ''
+    });
+    // Clear old fields after migration
+    dep.fieldKey = '';
+    dep.operator = 'equals';
+    dep.value = '';
+  }
+  
+  return dep.conditions;
+}
+
+// Get condition count for a dependency
+function getConditionCount(dep) {
+  if (!dep) return 0;
+  // Check conditions array
+  if (dep.conditions && Array.isArray(dep.conditions)) {
+    return dep.conditions.length;
+  }
+  // Check simple format
+  if (dep.fieldKey) {
+    return 1;
+  }
+  return 0;
+}
+
+function addDependencyCondition(di) {
+  const dep = currentField.value.dependencies[di];
+  if (!dep) return;
+  if (!dep.conditions) dep.conditions = [];
+  // Convert simple dependency to conditions array if needed
+  if (!dep.conditions.length && dep.fieldKey) {
+    dep.conditions.push({
+      fieldKey: dep.fieldKey,
+      operator: dep.operator || 'equals',
+      value: dep.value || ''
+    });
+    // Clear old fields
+    dep.fieldKey = '';
+    dep.operator = '';
+    dep.value = '';
+  }
+  dep.conditions.push({ fieldKey: '', operator: 'equals', value: '' });
+}
+// Remove condition from a dependency
+function removeDependencyCondition(di, ci) {
+  const dep = currentField.value.dependencies[di];
+  if (!dep || !dep.conditions) return;
+  dep.conditions.splice(ci, 1);
+  delete dependencyConditionBuffers.value[di + '-' + ci];
+}
+// Apply condition value from buffer
+function applyDependencyConditionValue(di, ci) {
+  const key = di + '-' + ci;
+  const val = dependencyConditionBuffers.value[key];
+  const dep = currentField.value.dependencies?.[di];
+  if (dep && dep.conditions?.[ci]) {
+    const raw = val || '';
+    const arr = raw.split(',').map(s => s.trim()).filter(Boolean);
+    dep.conditions[ci].value = arr;
+  }
+}
+// Add mapping to picklist dependency
+function addDependencyMapping(di) {
+  const dep = currentField.value.dependencies[di];
+  if (!dep) return;
+  if (!dep.mappings) dep.mappings = [];
+  dep.mappings.push({ whenValue: '', allowedOptions: [] });
+}
+// Remove mapping from picklist dependency
+function removeDependencyMapping(di, mi) {
+  const dep = currentField.value.dependencies[di];
+  if (!dep || !dep.mappings) return;
+  dep.mappings.splice(mi, 1);
+  delete dependencyMappingBuffers.value[di + '-' + mi];
+}
+// Apply mapping options from buffer
+function applyDependencyMapping(di, mi) {
+  const key = di + '-' + mi;
+  const raw = dependencyMappingBuffers.value[key] || '';
+  const arr = raw.split(',').map(s => s.trim()).filter(Boolean);
+  const dep = currentField.value.dependencies?.[di];
+  if (dep && dep.mappings?.[mi]) {
+    dep.mappings[mi].allowedOptions = arr;
+  }
+}
+// Check if a picklist option is selected for a dependency
+function isPicklistOptionSelected(di, option) {
+  const dep = currentField.value.dependencies?.[di];
+  if (!dep) return false;
+  if (!dep.allowedOptions) dep.allowedOptions = [];
+  const optionValue = getPicklistOptionValue(option);
+  // Check if the value is in allowedOptions (handle both string and object values)
+  return dep.allowedOptions.some(selected => {
+    const selectedValue = getPicklistOptionValue(selected);
+    return selectedValue === optionValue;
+  });
+}
+
+// Toggle a picklist option selection
+function togglePicklistOption(di, option) {
+  const dep = currentField.value.dependencies?.[di];
+  if (!dep) return;
+  if (!dep.allowedOptions) dep.allowedOptions = [];
+  const optionValue = getPicklistOptionValue(option);
+  
+  // Find index by comparing values
+  const index = dep.allowedOptions.findIndex(selected => {
+    const selectedValue = getPicklistOptionValue(selected);
+    return selectedValue === optionValue;
+  });
+  
+  if (index > -1) {
+    // Remove if already selected
+    dep.allowedOptions.splice(index, 1);
+  } else {
+    // Add if not selected - store the normalized value (string) for consistency
+    dep.allowedOptions.push(optionValue);
+  }
+}
+
+// Apply allowed options for picklist dependency (legacy support)
+function applyDependencyOptions(di) {
+  const raw = dependencyOptionsBuffer.value[di] || '';
+  const arr = raw.split(',').map(s => s.trim()).filter(Boolean);
+  const dep = currentField.value.dependencies?.[di];
+  if (dep) {
+    dep.allowedOptions = arr;
+  }
 }
 
 function addAdvancedDependency() {

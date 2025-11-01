@@ -26,6 +26,7 @@
             :value="localFormData[col.fieldKey]"
             @update:value="updateField(col.fieldKey, $event)"
             :errors="errors"
+            :dependency-state="getFieldState(getFieldByKey(col.fieldKey))"
           />
         </div>
       </div>
@@ -44,6 +45,7 @@
             :value="localFormData[field.key]"
             @update:value="updateField(field.key, $event)"
             :errors="errors"
+            :dependency-state="getFieldState(field)"
           />
         </div>
       </div>
@@ -56,6 +58,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import DynamicFormField from './DynamicFormField.vue';
 import apiClient from '@/utils/apiClient';
+import { getFieldDependencyState } from '@/utils/dependencyEvaluation';
 
 const props = defineProps({
   moduleKey: {
@@ -253,9 +256,32 @@ const shouldShowField = (field) => {
   // Exclude only true system fields - assignedTo should be visible in Quick Create
   const systemFieldKeys = ['createdby', 'organizationid', 'createdat', 'updatedat', '_id', '__v'];
   if (systemFieldKeys.includes(field.key.toLowerCase())) return false;
+  
+  // Evaluate dependency-based visibility using getFieldState for consistency
+  // Access localFormData.value to ensure Vue tracks this dependency
+  const currentFormData = localFormData.value;
+  if (field.dependencies && Array.isArray(field.dependencies) && field.dependencies.length > 0) {
+    const depState = getFieldDependencyState(field, currentFormData, moduleDefinition.value?.fields || []);
+    if (!depState.visible) return false;
+  }
+  
   // For Quick Create fields, ignore visibility - if admin added it to Quick Create, show it
   // Visibility settings apply to detail/list views, not Quick Create forms
   return true;
+};
+
+// Get field dependency state for a field (reactive)
+const getFieldState = (field) => {
+  if (!field || !field.dependencies || !Array.isArray(field.dependencies) || field.dependencies.length === 0) {
+    return {
+      readonly: false,
+      required: field.required || false,
+      allowedOptions: null
+    };
+  }
+  // Access localFormData.value to ensure reactivity - Vue tracks this dependency
+  const currentFormData = localFormData.value;
+  return getFieldDependencyState(field, currentFormData, moduleDefinition.value?.fields || []);
 };
 
 const updateField = (key, value) => {
