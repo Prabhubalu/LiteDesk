@@ -230,6 +230,37 @@
         <span v-else class="text-sm text-gray-500 dark:text-gray-400">-</span>
       </template>
 
+      <!-- Custom Assigned To Cell - handle different case variations -->
+      <template #cell-assignedTo="{ row, value }">
+        <!-- Debug: Log once per render -->
+        <div v-if="false" style="display: none;">
+          {{ console.log('🔍 assignedTo cell render:', { row: row?.assignedTo, value, isObject: typeof row?.assignedTo === 'object' }) }}
+        </div>
+        <div v-if="row.assignedTo && typeof row.assignedTo === 'object' && row.assignedTo !== null && !Array.isArray(row.assignedTo)" class="flex items-center gap-2">
+          <div v-if="row.assignedTo.avatar" class="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
+            <img :src="row.assignedTo.avatar" :alt="getUserDisplayName(row.assignedTo)" class="w-full h-full object-cover" />
+          </div>
+          <div v-else class="w-6 h-6 rounded-full bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+            {{ getUserInitials(row.assignedTo) }}
+          </div>
+          <span class="text-sm text-gray-700 dark:text-gray-300">{{ getUserDisplayName(row.assignedTo) }}</span>
+        </div>
+        <span v-else class="text-sm text-gray-500 dark:text-gray-400">Unassigned</span>
+      </template>
+      <!-- Also support lowercase variant -->
+      <template #cell-assignedto="{ row, value }">
+        <div v-if="row.assignedTo && typeof row.assignedTo === 'object' && row.assignedTo !== null && !Array.isArray(row.assignedTo)" class="flex items-center gap-2">
+          <div v-if="row.assignedTo.avatar" class="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
+            <img :src="row.assignedTo.avatar" :alt="getUserDisplayName(row.assignedTo)" class="w-full h-full object-cover" />
+          </div>
+          <div v-else class="w-6 h-6 rounded-full bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+            {{ getUserInitials(row.assignedTo) }}
+          </div>
+          <span class="text-sm text-gray-700 dark:text-gray-300">{{ getUserDisplayName(row.assignedTo) }}</span>
+        </div>
+        <span v-else class="text-sm text-gray-500 dark:text-gray-400">Unassigned</span>
+      </template>
+
       <!-- Custom Actions -->
       <template #actions="{ row }">
         <RowActions 
@@ -540,14 +571,21 @@ const columns = computed(() => {
             minWidth = '150px';
           }
           
-          orderedColumns.push({
+          const columnDef = {
             key: field.key,
             label: field.label || field.key,
             sortable: visibleCol.sortable !== false && !['Multi-Picklist', 'Text-Area', 'Rich Text', 'Formula', 'Rollup Summary'].includes(field.dataType),
             dataType: field.dataType,
             options: field.options || [], // Include options for BadgeCell color lookup
             minWidth
-          });
+          };
+          
+          // Debug: Log assignedTo column
+          if (field.key?.toLowerCase() === 'assignedto') {
+            console.log('🔍 assignedTo column definition:', columnDef);
+          }
+          
+          orderedColumns.push(columnDef);
         }
       }
     }
@@ -594,6 +632,15 @@ const fetchOrganizations = async () => {
     });
 
     console.log('📦 Organizations data:', data);
+    // Debug: Check if assignedTo is populated
+    if (data.success && data.data && data.data.length > 0) {
+      console.log('🔍 Sample organization assignedTo:', {
+        org: data.data[0].name,
+        assignedTo: data.data[0].assignedTo,
+        assignedToType: typeof data.data[0].assignedTo,
+        assignedToIsObject: typeof data.data[0].assignedTo === 'object' && data.data[0].assignedTo !== null
+      });
+    }
     
     if (data.success) {
       organizations.value = data.data;
