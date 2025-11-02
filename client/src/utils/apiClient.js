@@ -47,10 +47,11 @@ const apiClient = async (url, options = {}) => {
                 throw error;
             }
             
+            let errorData = null;
             try {
                 // Clone response before reading to avoid "body stream already read" error
                 const clonedResponse = response.clone();
-                const errorData = await clonedResponse.json();
+                errorData = await clonedResponse.json();
                 errorMessage = errorData.message || errorMessage;
             } catch (parseError) {
                 // If response is not JSON (e.g., HTML error page), get text content
@@ -68,6 +69,10 @@ const apiClient = async (url, options = {}) => {
             const error = new Error(errorMessage);
             error.status = response.status;
             error.is404 = false;
+            // Attach response data for 400 errors (validation errors)
+            if (errorData) {
+                error.response = { data: errorData };
+            }
             throw error;
         }
 

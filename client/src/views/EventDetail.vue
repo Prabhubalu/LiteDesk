@@ -234,10 +234,11 @@
       </div>
     </div>
 
-    <!-- Event Form Modal -->
-    <EventFormModal
-      :is-open="showEditModal"
-      :event="event"
+    <!-- Event Form Drawer -->
+    <CreateRecordDrawer
+      :isOpen="showEditModal"
+      moduleKey="events"
+      :record="event"
       @close="showEditModal = false"
       @saved="handleEventUpdated"
     />
@@ -249,7 +250,7 @@ import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import apiClient from '@/utils/apiClient';
 import dateUtils from '@/utils/dateUtils';
-import EventFormModal from '@/components/events/EventFormModal.vue';
+import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 
 const route = useRoute();
 const router = useRouter();

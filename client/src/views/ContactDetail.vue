@@ -403,18 +403,20 @@
       </div>
     </div>
 
-    <!-- Edit Modal -->
-    <ContactFormModal 
-      v-if="showEditModal"
-      :contact="contact"
+    <!-- Edit Drawer -->
+    <CreateRecordDrawer 
+      :isOpen="showEditModal"
+      moduleKey="people"
+      :record="contact"
       @close="showEditModal = false"
       @saved="handleContactUpdated"
     />
 
-    <!-- Event Form Modal -->
-    <EventFormModal
-      :is-open="showEventModal"
-      :event="eventToEdit"
+    <!-- Event Form Drawer -->
+    <CreateRecordDrawer
+      :isOpen="showEventModal"
+      moduleKey="events"
+      :record="eventToEdit"
       @close="showEventModal = false"
       @saved="handleEventSaved"
     />
@@ -426,9 +428,8 @@ import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
-import ContactFormModal from '@/components/contacts/ContactFormModal.vue';
+import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import RelatedEventsWidget from '@/components/events/RelatedEventsWidget.vue';
-import EventFormModal from '@/components/events/EventFormModal.vue';
 import RelatedDealsWidget from '@/components/deals/RelatedDealsWidget.vue';
 import RelatedTasksWidget from '@/components/tasks/RelatedTasksWidget.vue';
 import RelatedOrganizationWidget from '@/components/organizations/RelatedOrganizationWidget.vue';
