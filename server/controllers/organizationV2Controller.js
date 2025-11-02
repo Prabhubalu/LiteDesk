@@ -1,6 +1,6 @@
-const OrganizationV2 = require('../models/OrganizationV2');
+const Organization = require('../models/Organization');
 
-// Create
+// Create (CRM organization)
 exports.create = async (req, res) => {
   try {
     const User = require('../models/User');
@@ -20,6 +20,8 @@ exports.create = async (req, res) => {
       createdBy: req.user?._id || null,
       // Default assignedTo to creator if not provided (similar to tasks)
       assignedTo: req.body.assignedTo || req.user?._id || null,
+      // Mark as CRM organization (not tenant)
+      isTenant: false,
       // Add initial activity log for record creation
       activityLogs: [{
         user: userName,
@@ -30,19 +32,17 @@ exports.create = async (req, res) => {
       }]
     };
     
-    // OrganizationV2 doesn't have organizationId - it's a tenant-level model
-    // Just create with the provided data
-    const org = await OrganizationV2.create(body);
+    const org = await Organization.create(body);
     res.status(201).json({ success: true, data: org });
   } catch (error) {
     res.status(400).json({ success: false, message: 'Error creating organization', error: error.message });
   }
 };
 
-// List
+// List (CRM organizations only)
 exports.list = async (req, res) => {
   try {
-    const query = {};
+    const query = { isTenant: false }; // Only CRM organizations
     if (req.query.type) query.types = req.query.type;
     if (req.query.name) query.name = new RegExp(req.query.name, 'i');
 
@@ -50,23 +50,23 @@ exports.list = async (req, res) => {
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
 
-    const data = await OrganizationV2.find(query)
+    const data = await Organization.find(query)
       .populate('createdBy', 'firstName lastName email avatar username')
       .populate('assignedTo', 'firstName lastName email avatar username')
       .sort({ createdAt: -1 })
       .limit(limit)
       .skip(skip);
-    const total = await OrganizationV2.countDocuments(query);
+    const total = await Organization.countDocuments(query);
     res.json({ success: true, data, meta: { page, limit, total } });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Error fetching organizations', error: error.message });
   }
 };
 
-// Get by ID
+// Get by ID (CRM organization)
 exports.getById = async (req, res) => {
   try {
-    const org = await OrganizationV2.findById(req.params.id)
+    const org = await Organization.findOne({ _id: req.params.id, isTenant: false })
       .populate('createdBy', 'firstName lastName email avatar username')
       .populate('assignedTo', 'firstName lastName email avatar username');
     if (!org) return res.status(404).json({ success: false, message: 'Not found' });
@@ -76,10 +76,14 @@ exports.getById = async (req, res) => {
   }
 };
 
-// Update
+// Update (CRM organization)
 exports.update = async (req, res) => {
   try {
-    const updated = await OrganizationV2.findByIdAndUpdate(req.params.id, req.body, { new: true })
+    const updated = await Organization.findOneAndUpdate(
+      { _id: req.params.id, isTenant: false }, 
+      req.body, 
+      { new: true }
+    )
       .populate('createdBy', 'firstName lastName email avatar username')
       .populate('assignedTo', 'firstName lastName email avatar username');
     if (!updated) return res.status(404).json({ success: false, message: 'Not found' });
@@ -89,10 +93,10 @@ exports.update = async (req, res) => {
   }
 };
 
-// Delete
+// Delete (CRM organization only - tenants cannot be deleted this way)
 exports.remove = async (req, res) => {
   try {
-    const deleted = await OrganizationV2.findByIdAndDelete(req.params.id);
+    const deleted = await Organization.findOneAndDelete({ _id: req.params.id, isTenant: false });
     if (!deleted) return res.status(404).json({ success: false, message: 'Not found' });
     res.json({ success: true, data: deleted._id });
   } catch (error) {
@@ -103,7 +107,7 @@ exports.remove = async (req, res) => {
 // Get activity logs for an organization
 exports.getActivityLogs = async (req, res) => {
   try {
-    const org = await OrganizationV2.findById(req.params.id).select('activityLogs');
+    const org = await Organization.findOne({ _id: req.params.id, isTenant: false }).select('activityLogs');
     
     if (!org) {
       return res.status(404).json({
@@ -143,8 +147,8 @@ exports.addActivityLog = async (req, res) => {
       });
     }
     
-    const org = await OrganizationV2.findByIdAndUpdate(
-      req.params.id,
+    const org = await Organization.findOneAndUpdate(
+      { _id: req.params.id, isTenant: false },
       {
         $push: {
           activityLogs: {

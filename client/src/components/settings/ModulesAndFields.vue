@@ -79,8 +79,17 @@
           <div class="text-xs text-gray-500 dark:text-gray-400">Fields</div>
           <button v-if="selectedModule?.type === 'custom'" @click="openAddField" class="px-2 py-1 bg-gray-100 dark:bg-white/10 rounded text-xs">Add</button>
         </div>
-        <div class="p-2 border-b border-gray-200 dark:border-white/10">
+        <div class="p-2 border-b border-gray-200 dark:border-white/10 space-y-2">
           <input v-model="fieldSearch" placeholder="Search fields" class="w-full px-2 py-1 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs" />
+          <!-- Show Tenant Fields Toggle (only for organizations module) -->
+          <label v-if="selectedModule?.key === 'organizations'" class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
+            <input 
+              type="checkbox" 
+              v-model="showTenantFields" 
+              class="rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500"
+            />
+            <span>Show Tenant Fields</span>
+          </label>
         </div>
         <div class="flex-1 overflow-y-auto p-2">
           <ul class="space-y-1">
@@ -1188,10 +1197,34 @@ const subTabs = [
 ];
 const activeSubTab = ref('general');
 const fieldSearch = ref('');
+const showTenantFields = ref(false); // Hide tenant fields by default
+
 const filteredFields = computed(() => {
+  let fields = editFields.value;
+  
+  // Filter out tenant fields by default (unless showTenantFields is checked)
+  // Only apply this filter for organizations module
+  if (selectedModule.value?.key === 'organizations' && !showTenantFields.value) {
+    // Tenant fields have keys like: subscription.*, limits.*, settings.*, slug, isActive, enabledModules
+    const tenantFieldPatterns = ['subscription.', 'limits.', 'settings.', 'slug', 'isactive', 'enabledmodules'];
+    fields = fields.filter(f => {
+      const keyLower = (f.key || '').toLowerCase();
+      // Check if field is a tenant field by key pattern OR by isTenantField flag
+      const isTenantField = f.isTenantField === true || tenantFieldPatterns.some(pattern => keyLower.startsWith(pattern) || keyLower === pattern);
+      return !isTenantField;
+    });
+  }
+  
+  // Apply search filter
   const q = (fieldSearch.value || '').toLowerCase();
-  if (!q) return editFields.value;
-  return editFields.value.filter(f => (f.label || '').toLowerCase().includes(q) || (f.key || '').toLowerCase().includes(q));
+  if (q) {
+    fields = fields.filter(f => 
+      (f.label || '').toLowerCase().includes(q) || 
+      (f.key || '').toLowerCase().includes(q)
+    );
+  }
+  
+  return fields;
 });
 
 // Field type-specific settings

@@ -16,8 +16,6 @@ const bcrypt = require('bcrypt');
 const User = require('../models/User');
 const Organization = require('../models/Organization');
 const Role = require('../models/Role');
-const OrganizationV2 = require('../models/OrganizationV2');
-const { orgV1ToV2Doc } = require('../utils/mappers/organizationMapper');
 
 // Support both MONGODB_URI and MONGO_URI
 const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI || process.env.MONGO_URI_LOCAL;
@@ -99,7 +97,7 @@ async function createDefaultAdmin() {
         console.log(`   Name: ${organization.name}`);
         console.log(`   ID: ${organization._id}`);
 
-        // Defer OrganizationV2 creation until after admin user is created (to set assignedTo/accountManager)
+        // CRM organization will be created after admin user is created (to set assignedTo/accountManager)
 
         // Create Default Roles
         console.log('\n🔐 Creating default roles...');
@@ -140,9 +138,9 @@ async function createDefaultAdmin() {
         console.log(`   Email: ${adminUser.email}`);
         console.log(`   Role: ${adminUser.role}`);
 
-        // Create/Update OrganizationV2 with new field definitions
+        // Create/Update CRM organization record (optional, for demo purposes)
         try {
-            const v2Doc = {
+            const crmOrg = {
                 legacyOrganizationId: organization._id,
                 name: organization.name,
                 types: ['Customer'],
@@ -161,17 +159,18 @@ async function createDefaultAdmin() {
                 numberOfEmployees: Number(process.env.DEFAULT_ORG_EMPLOYEES || 0),
                 // Ownership/links
                 assignedTo: adminUser._id,
-                primaryContact: null
+                primaryContact: null,
+                isTenant: false // Mark as CRM organization
             };
 
-            await OrganizationV2.updateOne(
-                { legacyOrganizationId: organization._id },
-                { $set: v2Doc },
+            await Organization.updateOne(
+                { legacyOrganizationId: organization._id, isTenant: false },
+                { $set: crmOrg },
                 { upsert: true }
             );
-            console.log('✅ OrganizationV2 created/updated for the organization (new field definitions)');
-        } catch (v2err) {
-            console.warn('⚠️  Failed to create OrganizationV2:', v2err.message);
+            console.log('✅ CRM organization record created/updated');
+        } catch (crmErr) {
+            console.warn('⚠️  Failed to create CRM organization record:', crmErr.message);
         }
 
         // Success summary

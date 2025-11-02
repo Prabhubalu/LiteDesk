@@ -104,7 +104,7 @@ function getBaseFieldsForKey(key) {
     try {
         const modelByKey = {
             people: require('../models/People'),
-            organizations: require('../models/OrganizationV2'),
+            organizations: require('../models/Organization'),
             deals: require('../models/Deal'),
             tasks: require('../models/Task'),
             events: require('../models/Event'),
@@ -246,14 +246,14 @@ exports.listModules = async (req, res) => {
         // Attach field counts for system modules from actual schemas
         try {
             const People = require('../models/People');
-            const OrganizationV2 = require('../models/OrganizationV2');
+            const Organization = require('../models/Organization');
             const Deal = require('../models/Deal');
             const Task = require('../models/Task');
             const Event = require('../models/Event');
             const ImportHistory = require('../models/ImportHistory');
             const modelByKey = {
                 people: People,
-                organizations: OrganizationV2,
+                organizations: Organization,
                 deals: Deal,
                 tasks: Task,
                 events: Event,

@@ -11,7 +11,6 @@ const mongoose = require('mongoose');
 const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI || process.env.MONGO_URI_LOCAL;
 
 const Organization = require('../models/Organization');
-const OrganizationV2 = require('../models/OrganizationV2');
 const People = require('../models/People');
 const DemoRequest = require('../models/DemoRequest');
 const User = require('../models/User');
@@ -64,16 +63,17 @@ async function testDemoFlow() {
         });
         console.log('✅ Organization created:', organization._id, organization.name);
         
-        // Step 2: Create OrganizationV2 (CRM record)
-        console.log('\n📋 Step 2: Creating OrganizationV2 (CRM record)...');
-        const organizationV2 = await OrganizationV2.create({
+        // Step 2: Create CRM organization record
+        console.log('\n📋 Step 2: Creating CRM organization record...');
+        const organizationV2 = await Organization.create({
             legacyOrganizationId: organization._id,
             name: 'Test Acme Corp',
             industry: 'Technology',
             types: [],
-            customerStatus: 'Prospect'
+            customerStatus: 'Prospect',
+            isTenant: false // Mark as CRM organization
         });
-        console.log('✅ OrganizationV2 created:', organizationV2._id);
+        console.log('✅ CRM Organization created:', organizationV2._id);
         console.log('   ✅ Linked via legacyOrganizationId:', organizationV2.legacyOrganizationId.toString() === organization._id.toString());
         
         // Step 3: Create Default Roles

@@ -11,7 +11,6 @@ const mongoose = require('mongoose');
 const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI || process.env.MONGO_URI_LOCAL;
 
 const Organization = require('../models/Organization');
-const OrganizationV2 = require('../models/OrganizationV2');
 const People = require('../models/People');
 const DemoRequest = require('../models/DemoRequest');
 const Role = require('../models/Role');
@@ -35,10 +34,10 @@ async function inspectData() {
         console.log('═══════════════════════════════════════════════════════════════');
         console.log(JSON.stringify(testOrg, null, 2));
         
-        const orgV2 = await OrganizationV2.findOne({ legacyOrganizationId: testOrg._id });
+        const orgV2 = await Organization.findOne({ legacyOrganizationId: testOrg._id, isTenant: false });
         if (orgV2) {
             console.log('\n═══════════════════════════════════════════════════════════════');
-            console.log('🏢 OrganizationV2 (CRM)');
+            console.log('🏢 CRM Organization');
             console.log('═══════════════════════════════════════════════════════════════');
             console.log(JSON.stringify(orgV2, null, 2));
         }

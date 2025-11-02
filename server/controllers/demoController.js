@@ -1,6 +1,5 @@
 const DemoRequest = require('../models/DemoRequest');
 const Organization = require('../models/Organization');
-const OrganizationV2 = require('../models/OrganizationV2');
 const People = require('../models/People');
 const User = require('../models/User');
 const Role = require('../models/Role');
@@ -76,14 +75,15 @@ exports.submitDemoRequest = async (req, res) => {
         
         console.log('✅ Organization created:', organization._id, organization.name, 'slug:', slug);
         
-        // Step 1.5: Create OrganizationV2 (CRM record) linked to the tenant organization
+        // Step 1.5: Create CRM organization record linked to the tenant organization
         console.log('📋 Creating CRM organization record...');
-        const organizationV2 = await OrganizationV2.create({
+        const organizationV2 = await Organization.create({
             legacyOrganizationId: organization._id,
             name: companyName,
             industry: industry,
             types: [], // Empty types for prospects
             customerStatus: 'Prospect', // CRM status field
+            isTenant: false, // Mark as CRM organization
             // Note: No tenant fields here - those are only in InstanceRegistry after conversion
         });
         

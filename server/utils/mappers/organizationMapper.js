@@ -1,10 +1,18 @@
-// Maps Organization (v1) -> OrganizationV2 (new)
+/**
+ * DEPRECATED: Organization Mapper
+ * 
+ * This mapper was used to convert between Organization (v1/tenant) and OrganizationV2 (CRM).
+ * After consolidation, organizations are now unified in a single Organization model
+ * with an isTenant flag to distinguish tenant vs CRM organizations.
+ * 
+ * This file is kept for reference but is no longer used in the codebase.
+ */
 
+// Maps Organization (v1/tenant) -> CRM Organization fields
 exports.orgV1ToV2Doc = function(orgDoc) {
   return {
     legacyOrganizationId: orgDoc._id,
     name: orgDoc.name,
-    // leave types empty by default; can be set later per business logic
     types: [],
     website: orgDoc.settings?.website || undefined,
     phone: orgDoc.settings?.phone || undefined,
@@ -13,7 +21,7 @@ exports.orgV1ToV2Doc = function(orgDoc) {
   };
 };
 
-// Map an incoming v1 update payload to OrganizationV2 update doc
+// Map an incoming update payload to CRM organization update doc
 exports.orgUpdateReqToV2 = function(reqBody) {
   const update = {};
   if (typeof reqBody.name === 'string') update.name = reqBody.name;
@@ -23,7 +31,6 @@ exports.orgUpdateReqToV2 = function(reqBody) {
     if (typeof reqBody.settings.phone === 'string') update.phone = reqBody.settings.phone;
     if (typeof reqBody.settings.address === 'string') update.address = reqBody.settings.address;
   }
-  // allow explicit OrganizationV2 fields if provided
   if (Array.isArray(reqBody.types)) update.types = reqBody.types;
   if (typeof reqBody.website === 'string') update.website = reqBody.website;
   if (typeof reqBody.phone === 'string') update.phone = reqBody.phone;
@@ -33,13 +40,11 @@ exports.orgUpdateReqToV2 = function(reqBody) {
   return update;
 };
 
-// Optionally map OrganizationV2 to a v1-like view for non-breaking responses
+// Map CRM organization to a tenant-like view (for backward compatibility)
 exports.orgV2ToV1View = function(orgV2, baseV1) {
-  // Preserve existing v1 structure, overlay selected V2 fields
   const v1 = baseV1 ? { ...baseV1 } : {};
   v1.name = orgV2.name || v1.name;
   v1.industry = orgV2.industry || v1.industry;
-  // Attach V2 extras in a namespaced property for clients that can use it
   v1._v2 = {
     types: orgV2.types,
     website: orgV2.website,
@@ -48,5 +53,3 @@ exports.orgV2ToV1View = function(orgV2, baseV1) {
   };
   return v1;
 };
-
-
