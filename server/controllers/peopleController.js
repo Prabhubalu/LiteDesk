@@ -46,6 +46,7 @@ exports.list = async (req, res) => {
     const User = require('../models/User');
     const data = await People.find(query)
       .populate('assignedTo', 'firstName lastName email avatar')
+      .populate('createdBy', 'firstName lastName email avatar username')
       .populate('organization', 'name')
       .sort({ createdAt: -1 })
       .limit(limit)
@@ -63,6 +64,7 @@ exports.getById = async (req, res) => {
     const record = await People.findOne({ _id: req.params.id, organizationId: req.user.organizationId })
       .populate('organization', 'name industry status email phone website')
       .populate('assignedTo', 'firstName lastName email avatar')
+      .populate('createdBy', 'firstName lastName email avatar username')
       .populate('notes.created_by', 'firstName lastName');
     if (!record) return res.status(404).json({ success: false, message: 'Not found' });
     res.json({ success: true, data: record });

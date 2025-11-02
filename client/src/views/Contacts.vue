@@ -233,6 +233,25 @@
         <span v-else class="text-sm text-gray-500 dark:text-gray-400">Unassigned</span>
       </template>
 
+      <!-- Custom Created By Cell -->
+      <template #cell-createdBy="{ row }">
+        <div v-if="row.createdBy" class="flex items-center gap-2">
+          <template v-if="typeof row.createdBy === 'object'">
+            <div v-if="row.createdBy.avatar" class="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
+              <img :src="row.createdBy.avatar" :alt="getUserDisplayName(row.createdBy)" class="w-full h-full object-cover" />
+            </div>
+            <div v-else class="w-6 h-6 rounded-full bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+              {{ getUserInitials(row.createdBy) }}
+            </div>
+            <span class="text-sm text-gray-700 dark:text-gray-300">{{ getUserDisplayName(row.createdBy) }}</span>
+          </template>
+          <template v-else>
+            <span class="text-sm text-gray-500 dark:text-gray-400">{{ row.createdBy }}</span>
+          </template>
+        </div>
+        <span v-else class="text-sm text-gray-500 dark:text-gray-400">-</span>
+      </template>
+
       <!-- Custom Last Contact Cell -->
       <template #cell-last_contacted_at="{ value }">
         <DateCell :value="value" format="short" />
@@ -469,7 +488,7 @@ const initializeColumnsFromModule = (module) => {
   if (!module || !module.fields) return;
   
   const fields = module.fields || [];
-  const systemFieldKeys = ['createdby', 'organizationid', 'createdat', 'updatedat', '_id', '__v'];
+  const systemFieldKeys = ['organizationid', 'createdat', 'updatedat', '_id', '__v', 'activitylogs'];
   
   // Filter out system fields and build visible columns
   const moduleColumns = fields
@@ -567,6 +586,7 @@ const tableColumns = computed(() => {
           label: field.label || field.key,
           sortable: visibleCol.sortable !== false && !['Multi-Picklist', 'Text-Area', 'Rich Text', 'Formula', 'Rollup Summary'].includes(field.dataType),
           dataType: field.dataType,
+          options: field.options || [], // Include options for BadgeCell color lookup
           minWidth
         });
       }

@@ -271,6 +271,18 @@ async function updatePeopleModuleFields(organizationId = null) {
         fieldDef.visibility.list = true;
         fieldDef.visibility.detail = true;
       }
+      
+      // Ensure createdBy is visible in table and detail (but not editable)
+      if (fieldName === 'createdBy' || fieldName.toLowerCase() === 'createdby') {
+        fieldDef.visibility.list = true;
+        fieldDef.visibility.detail = true;
+      }
+      
+      // Hide activitylogs from table and detail views (system field)
+      if (fieldName === 'activityLogs' || fieldName.toLowerCase() === 'activitylogs') {
+        fieldDef.visibility.list = false;
+        fieldDef.visibility.detail = false;
+      }
 
       // Set lookup target module for relationship fields
       if (dataType === 'Lookup (Relationship)') {
@@ -295,7 +307,6 @@ async function updatePeopleModuleFields(organizationId = null) {
     // Sort fields by a logical order (system fields first, then core, then lead/contact specific)
     const fieldOrder = [
       'organizationId',
-      'createdBy',
       'assignedTo',
       'type',
       'source',
@@ -317,7 +328,8 @@ async function updatePeopleModuleFields(organizationId = null) {
       'contact_status',
       'role',
       'birthday',
-      'preferred_contact_method'
+      'preferred_contact_method',
+      'createdBy'  // Move createdBy to the end
     ];
 
     fields.sort((a, b) => {

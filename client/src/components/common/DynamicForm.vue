@@ -123,7 +123,9 @@ const orderedFields = computed(() => {
   
   // Exclude system fields and hidden fields
   // assignedTo should be visible in Quick Create forms (admin can assign)
-  const systemFieldKeys = ['createdby', 'organizationid', 'createdat', 'updatedat', '_id', '__v'];
+  // Note: activitylogs is NOT in this list so it's available in edit forms
+  // Note: createdby is excluded from Quick Create (set by backend automatically)
+  const systemFieldKeys = ['organizationid', 'createdat', 'updatedat', '_id', '__v', 'createdby'];
   
   // Access localFormData.value to ensure Vue tracks this dependency for reactivity
   const currentFormData = localFormData.value || {};
@@ -276,8 +278,9 @@ const getFieldComponent = (field) => {
 
 const shouldShowField = (field) => {
   if (!field || !field.key) return false;
-  // Exclude only true system fields - assignedTo should be visible in Quick Create
-  const systemFieldKeys = ['createdby', 'organizationid', 'createdat', 'updatedat', '_id', '__v'];
+  // Exclude system fields - assignedTo should be visible in Quick Create, createdby should not
+  // Note: createdby is excluded from Quick Create (set by backend automatically)
+  const systemFieldKeys = ['organizationid', 'createdat', 'updatedat', '_id', '__v', 'createdby'];
   if (systemFieldKeys.includes(field.key.toLowerCase())) return false;
   
   // Evaluate dependency-based visibility using getFieldState for consistency

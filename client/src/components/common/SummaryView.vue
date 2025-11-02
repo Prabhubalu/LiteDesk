@@ -440,7 +440,38 @@
                     : ''
                 ]"
               >
+                <!-- Special handling for createdBy field -->
+                <div v-if="fieldData.key?.toLowerCase() === 'createdby'" class="mt-2">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {{ fieldData.field.label || fieldData.field.key }}
+                  </label>
+                  <div class="flex items-center gap-2">
+                    <template v-if="fieldData.value && typeof fieldData.value === 'object' && fieldData.value !== null && !Array.isArray(fieldData.value) && fieldData.value._id">
+                      <!-- Populated user object -->
+                      <div v-if="fieldData.value.avatar" class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                        <img :src="fieldData.value.avatar" :alt="getUserDisplayName(fieldData.value)" class="w-full h-full object-cover" />
+                      </div>
+                      <div v-else class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+                        {{ getUserInitials(fieldData.value) }}
+                      </div>
+                      <span class="text-sm text-gray-900 dark:text-white">{{ getUserDisplayName(fieldData.value) }}</span>
+                    </template>
+                    <template v-else-if="fieldData.value && (typeof fieldData.value === 'string' || (typeof fieldData.value === 'object' && fieldData.value && !fieldData.value._id))">
+                      <!-- Unpopulated ObjectId string or invalid object - this shouldn't happen if backend populates correctly -->
+                      <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-400 text-xs font-semibold flex-shrink-0">
+                        ?
+                      </div>
+                      <span class="text-sm text-gray-500 dark:text-gray-400 italic">Not available</span>
+                    </template>
+                    <template v-else>
+                      <!-- No createdBy value -->
+                      <span class="text-sm text-gray-400 dark:text-gray-500">-</span>
+                    </template>
+                  </div>
+                </div>
+                <!-- Regular field rendering -->
                 <DynamicFormField 
+                  v-else
                   :field="fieldData.field"
                   :value="fieldData.value"
                   @update:value="updateField(fieldData.key, $event)"
@@ -1042,8 +1073,10 @@ const getFieldsWithDefinitions = computed(() => {
     }
   });
   
-  // System fields to exclude
-  const systemFieldKeys = ['_id', 'id', '__v', 'createdat', 'updatedat', 'createdby', 'organizationid'];
+  // System fields to exclude from detail view display
+  // Note: activitylogs is excluded from detail view but available in edit forms
+  // Note: createdby is visible in detail view but not editable
+  const systemFieldKeys = ['_id', 'id', '__v', 'createdat', 'updatedat', 'organizationid', 'activitylogs'];
   
   // Get all field definitions with their values
   const fieldsWithDefs = [];
@@ -1089,10 +1122,18 @@ const getFieldsWithDefinitions = computed(() => {
       }
     }
     
+    // Format createdBy value if it's an ObjectId string - convert to object format for display
+    let displayValue = value;
+    if (keyLower === 'createdby' && typeof value === 'string' && value.length === 24 && /^[0-9a-fA-F]{24}$/.test(value)) {
+      // It's an ObjectId string - we can't resolve it here, but we'll let the template handle it
+      // The backend should populate it, so this is just a fallback
+      displayValue = value;
+    }
+    
     fieldsWithDefs.push({
       field: fieldDef,
       key: fieldDef.key,
-      value: value,
+      value: displayValue,
       dependencyState: depState
     });
   }
@@ -1106,6 +1147,37 @@ const getFieldsWithDefinitions = computed(() => {
   
   return fieldsWithDefs;
 });
+
+// Helper functions for user display
+const getUserInitials = (user) => {
+  if (!user) return '?';
+  if (user.firstName && user.lastName) {
+    return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+  }
+  if (user.first_name && user.last_name) {
+    return `${user.first_name[0]}${user.last_name[0]}`.toUpperCase();
+  }
+  if (user.username) {
+    return user.username.substring(0, 2).toUpperCase();
+  }
+  if (user.email) {
+    return user.email.substring(0, 2).toUpperCase();
+  }
+  return '?';
+};
+
+const getUserDisplayName = (user) => {
+  if (!user) return 'Unknown';
+  if (user.firstName && user.lastName) {
+    return `${user.firstName} ${user.lastName}`.trim();
+  }
+  if (user.first_name && user.last_name) {
+    return `${user.first_name} ${user.last_name}`.trim();
+  }
+  if (user.username) return user.username;
+  if (user.email) return user.email;
+  return 'Unknown User';
+};
 
 // Navigate to manage fields in a new tab
 const goToManageFields = () => {

@@ -211,6 +211,25 @@
         <DateCell :value="value" format="short" />
       </template>
 
+      <!-- Custom Created By Cell -->
+      <template #cell-createdBy="{ row }">
+        <div v-if="row.createdBy" class="flex items-center gap-2">
+          <template v-if="typeof row.createdBy === 'object'">
+            <div v-if="row.createdBy.avatar" class="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
+              <img :src="row.createdBy.avatar" :alt="getUserDisplayName(row.createdBy)" class="w-full h-full object-cover" />
+            </div>
+            <div v-else class="w-6 h-6 rounded-full bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+              {{ getUserInitials(row.createdBy) }}
+            </div>
+            <span class="text-sm text-gray-700 dark:text-gray-300">{{ getUserDisplayName(row.createdBy) }}</span>
+          </template>
+          <template v-else>
+            <span class="text-sm text-gray-500 dark:text-gray-400">{{ row.createdBy }}</span>
+          </template>
+        </div>
+        <span v-else class="text-sm text-gray-500 dark:text-gray-400">-</span>
+      </template>
+
       <!-- Custom Actions -->
       <template #actions="{ row }">
         <RowActions 
@@ -416,7 +435,7 @@ const initializeColumnsFromModule = (module) => {
   if (!module || !module.fields) return;
   
   const fields = module.fields || [];
-  const systemFieldKeys = ['createdby', 'organizationid', 'createdat', 'updatedat', '_id', '__v'];
+  const systemFieldKeys = ['organizationid', 'createdat', 'updatedat', '_id', '__v', 'activitylogs'];
   
   // Basic columns that should be visible by default
   const basicColumns = [
@@ -526,6 +545,7 @@ const columns = computed(() => {
             label: field.label || field.key,
             sortable: visibleCol.sortable !== false && !['Multi-Picklist', 'Text-Area', 'Rich Text', 'Formula', 'Rollup Summary'].includes(field.dataType),
             dataType: field.dataType,
+            options: field.options || [], // Include options for BadgeCell color lookup
             minWidth
           });
         }
@@ -855,6 +875,36 @@ const handleDrop = (event, dropIndex) => {
 const handleDragEnd = (event) => {
   event.target.style.opacity = '1';
   dragStartIndex.value = null;
+};
+
+const getUserInitials = (user) => {
+  if (!user) return '?';
+  if (user.firstName && user.lastName) {
+    return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+  }
+  if (user.first_name && user.last_name) {
+    return `${user.first_name[0]}${user.last_name[0]}`.toUpperCase();
+  }
+  if (user.username) {
+    return user.username.substring(0, 2).toUpperCase();
+  }
+  if (user.email) {
+    return user.email.substring(0, 2).toUpperCase();
+  }
+  return '?';
+};
+
+const getUserDisplayName = (user) => {
+  if (!user) return 'Unknown';
+  if (user.firstName && user.lastName) {
+    return `${user.firstName} ${user.lastName}`.trim();
+  }
+  if (user.first_name && user.last_name) {
+    return `${user.first_name} ${user.last_name}`.trim();
+  }
+  if (user.username) return user.username;
+  if (user.email) return user.email;
+  return 'Unknown User';
 };
 
 const getInitials = (name) => {

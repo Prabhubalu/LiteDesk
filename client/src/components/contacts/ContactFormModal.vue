@@ -172,7 +172,7 @@ const handleSubmit = async (event) => {
     });
     
     // Validate required fields (exclude system fields that are auto-set by backend)
-    const systemFieldKeys = ['organizationid', 'createdby', 'createdat', 'updatedat', '_id', '__v'];
+    const systemFieldKeys = ['organizationid', 'createdby', 'createdat', 'updatedat', '_id', '__v', 'activitylogs'];
     const requiredFields = (moduleDefinition.value?.fields || [])
       .filter(f => f.required && !systemFieldKeys.includes(f.key?.toLowerCase()));
     
