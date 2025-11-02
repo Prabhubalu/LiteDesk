@@ -702,6 +702,9 @@ const lookupModalSortOrder = ref('asc');
 const isReadOnly = computed(() => {
   // Check if field is read-only by type
   if (['Auto-Number', 'Formula', 'Rollup Summary'].includes(props.field.dataType)) return true;
+  // System fields that should be visible but not editable (createdBy, organizationid)
+  const readonlySystemFields = ['createdby', 'organizationid'];
+  if (readonlySystemFields.includes((props.field.key || '').toLowerCase())) return true;
   // Check if dependency makes it read-only
   return props.dependencyState?.readonly || false;
 });

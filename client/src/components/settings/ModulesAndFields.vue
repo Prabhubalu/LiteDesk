@@ -1214,7 +1214,7 @@ const lookupTargetFields = computed(() => {
 // Check if a field is a system field that cannot be modified
 function isSystemField(field) {
   if (!field || !field.key) return false;
-  const systemFieldKeys = ['createdby', 'organizationid', 'createdat', 'updatedat'];
+  const systemFieldKeys = ['createdby', 'organizationid', 'createdat', 'updatedat', 'activitylogs'];
   return systemFieldKeys.includes((field.key || '').toLowerCase());
 }
 

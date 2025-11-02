@@ -43,6 +43,7 @@ const getAllContactsAcrossOrgs = async (req, res) => {
         const contacts = await People.find(query)
             .populate('organization', 'name industry email website')
             .populate('assignedTo', 'firstName lastName email avatar')
+            .populate('createdBy', 'firstName lastName email avatar username')
             .sort(sort)
             .limit(limit)
             .skip(skip);
@@ -160,6 +161,7 @@ const getAllOrganizations = async (req, res) => {
         // Fetch from OrganizationV2 (where new organizations are created)
         // Note: Search might not work perfectly for V2 fields, but basic queries should work
         const organizations = await OrganizationV2.find(query)
+            .populate('createdBy', 'firstName lastName email avatar username')
             .sort(sort)
             .limit(limit)
             .skip(skip)
@@ -208,7 +210,8 @@ const getContactById = async (req, res) => {
     try {
         const contact = await People.findById(req.params.id)
             .populate('organization', 'name industry status email phone website')
-            .populate('assignedTo', 'firstName lastName email');
+            .populate('assignedTo', 'firstName lastName email')
+            .populate('createdBy', 'firstName lastName email avatar username');
         
         if (!contact) {
             return res.status(404).json({
@@ -293,7 +296,10 @@ const updateContactById = async (req, res) => {
 const getOrganizationById = async (req, res) => {
     try {
         // Try OrganizationV2 first (where new organizations are created)
-        let organization = await OrganizationV2.findById(req.params.id).lean();
+        // Note: Using .lean() after populate() should work, but if it doesn't, remove .lean()
+        let organization = await OrganizationV2.findById(req.params.id)
+            .populate('createdBy', 'firstName lastName email avatar username')
+            .lean();
         
         // If not found in V2, try legacy Organization
         if (!organization) {
@@ -359,7 +365,8 @@ const updateOrganizationById = async (req, res) => {
             req.params.id,
             req.body,
             { new: true, runValidators: true }
-        );
+        )
+        .populate('createdBy', 'firstName lastName email avatar username');
         
         if (!organization) {
             // Try legacy Organization

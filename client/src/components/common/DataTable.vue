@@ -384,7 +384,7 @@
                 maxWidth: column.maxWidth || 'none',
                 ...(isColumnFrozen(column.key) ? { left: getFrozenColumnOffset(column.key) } : {})
               }"
-              :title="getCellDisplayValue(row, column)"
+              :title="getCellTitle(row, column)"
             >
               <slot :name="`cell-${column.key}`" :row="row" :value="getCellValue(row, column.key)">
                 <component
@@ -393,6 +393,26 @@
                   :value="getCellValue(row, column.key)"
                   :row="row"
                 />
+                <!-- Multi-Picklist: Render as badges -->
+                <div v-else-if="column.dataType === 'Multi-Picklist'" class="flex flex-wrap gap-1">
+                  <template v-if="getMultiPicklistArray(row, column.key).length > 0">
+                    <BadgeCell 
+                      v-for="(item, index) in getMultiPicklistArray(row, column.key)" 
+                      :key="index"
+                      :value="getPicklistItemValue(item)" 
+                      :options="column.options || []"
+                    />
+                  </template>
+                  <span v-else class="text-gray-400 dark:text-gray-500">-</span>
+                </div>
+                <!-- Picklist: Single value as badge -->
+                <BadgeCell 
+                  v-else-if="column.dataType === 'Picklist' && getCellValue(row, column.key)"
+                  :value="getPicklistItemValue(getCellValue(row, column.key))" 
+                  :options="column.options || []"
+                />
+                <!-- Picklist: Empty value -->
+                <span v-else-if="column.dataType === 'Picklist' && !getCellValue(row, column.key)" class="text-gray-400 dark:text-gray-500">-</span>
                 <span v-else-if="column.format" class="block truncate">
                   {{ column.format(getCellValue(row, column.key), row) }}
                 </span>
@@ -485,6 +505,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { InformationCircleIcon, XMarkIcon, TrashIcon, PencilSquareIcon, ArrowDownTrayIcon, ArchiveBoxIcon, ChevronLeftIcon, ChevronRightIcon, ArrowsUpDownIcon, EyeIcon, MagnifyingGlassIcon, Cog6ToothIcon, BookmarkIcon, ArchiveBoxXMarkIcon, ChevronUpIcon, ChevronDownIcon } from '@heroicons/vue/24/outline';
+import BadgeCell from '@/components/common/table/BadgeCell.vue';
 
 const props = defineProps({
   // Data
@@ -947,6 +968,42 @@ const getCellDisplayValue = (row, column) => {
     return column.format(value, row);
   }
   return value || '';
+};
+
+// Helper to get multi-picklist array (handles both array and JSON string)
+const getMultiPicklistArray = (row, key) => {
+  const value = getCellValue(row, key);
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  // Try to parse as JSON string (e.g., "[\"Customer\", \"Partner\"]")
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed;
+    } catch (e) {
+      // Not valid JSON, return empty array
+    }
+  }
+  return [];
+};
+
+// Helper to extract value from picklist item (handles both string and object formats)
+const getPicklistItemValue = (item) => {
+  if (!item) return '';
+  if (typeof item === 'string') return item;
+  if (typeof item === 'object' && item !== null) {
+    return item.value || item.label || String(item);
+  }
+  return String(item);
+};
+
+// Get cell title for tooltip (formatted nicely for multi-picklist)
+const getCellTitle = (row, column) => {
+  if (column.dataType === 'Multi-Picklist') {
+    const items = getMultiPicklistArray(row, column.key);
+    return items.length > 0 ? items.map(item => getPicklistItemValue(item)).join(', ') : '';
+  }
+  return getCellDisplayValue(row, column);
 };
 
 const getRowKey = (row, index) => {

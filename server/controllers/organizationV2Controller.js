@@ -16,6 +16,8 @@ exports.create = async (req, res) => {
     
     const body = {
       ...req.body,
+      // Set createdBy from authenticated user
+      createdBy: req.user?._id || null,
       // Add initial activity log for record creation
       activityLogs: [{
         user: userName,
@@ -46,7 +48,11 @@ exports.list = async (req, res) => {
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
 
-    const data = await OrganizationV2.find(query).sort({ createdAt: -1 }).limit(limit).skip(skip);
+    const data = await OrganizationV2.find(query)
+      .populate('createdBy', 'firstName lastName email avatar username')
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .skip(skip);
     const total = await OrganizationV2.countDocuments(query);
     res.json({ success: true, data, meta: { page, limit, total } });
   } catch (error) {
@@ -57,7 +63,8 @@ exports.list = async (req, res) => {
 // Get by ID
 exports.getById = async (req, res) => {
   try {
-    const org = await OrganizationV2.findById(req.params.id);
+    const org = await OrganizationV2.findById(req.params.id)
+      .populate('createdBy', 'firstName lastName email avatar username');
     if (!org) return res.status(404).json({ success: false, message: 'Not found' });
     res.json({ success: true, data: org });
   } catch (error) {
@@ -68,7 +75,8 @@ exports.getById = async (req, res) => {
 // Update
 exports.update = async (req, res) => {
   try {
-    const updated = await OrganizationV2.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updated = await OrganizationV2.findByIdAndUpdate(req.params.id, req.body, { new: true })
+      .populate('createdBy', 'firstName lastName email avatar username');
     if (!updated) return res.status(404).json({ success: false, message: 'Not found' });
     res.json({ success: true, data: updated });
   } catch (error) {

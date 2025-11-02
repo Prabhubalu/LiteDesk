@@ -7,6 +7,7 @@ const Organization = require('../models/Organization');
 // Field mappings from JSON - map to actual schema field keys
 const organizationFieldMappings = {
   'name': { type: 'Text', label: 'Name' },
+  'createdBy': { type: 'Lookup (Relationship)', label: 'Created By' },
   'types': { type: 'Multi-Picklist', label: 'Types', enum: ['Customer', 'Partner', 'Vendor', 'Distributor', 'Dealer'] },
   'website': { type: 'URL', label: 'Website' },
   'phone': { type: 'Phone', label: 'Phone' },
@@ -79,7 +80,8 @@ const organizationFieldOrder = [
   'dealerLevel',
   'terms',
   'shippingAddress',
-  'logisticsPartner'
+  'logisticsPartner',
+  'createdBy'  // Move createdBy to the end
 ];
 
 // Generate field definitions from mappings
@@ -116,6 +118,18 @@ function generateOrganizationFields() {
       dependencies: [],
       picklistDependencies: []
     };
+    
+    // Hide activitylogs from table and detail views (system field)
+    if (key === 'activityLogs' || key.toLowerCase() === 'activitylogs') {
+      field.visibility.list = false;
+      field.visibility.detail = false;
+    }
+
+    // Ensure createdBy is visible in table and detail (but not editable)
+    if (key === 'createdBy' || key.toLowerCase() === 'createdby') {
+      field.visibility.list = true;
+      field.visibility.detail = true;
+    }
 
     // Set lookup target module for relationship fields
     if (mapping.type === 'Lookup (Relationship)') {
@@ -127,6 +141,8 @@ function generateOrganizationFields() {
       // Set specific target modules
       if (key === 'assignedTo' || key === 'accountManager') {
         field.lookupSettings.targetModule = 'users'; // Will be handled specially like assignedTo
+      } else if (key === 'createdBy') {
+        field.lookupSettings.targetModule = 'users'; // CreatedBy is a user lookup
       } else if (key === 'primaryContact') {
         field.lookupSettings.targetModule = 'people';
       } else if (key === 'logisticsPartner') {
