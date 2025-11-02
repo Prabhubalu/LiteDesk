@@ -1,10 +1,12 @@
 const DemoRequest = require('../models/DemoRequest');
 const Organization = require('../models/Organization');
+const OrganizationV2 = require('../models/OrganizationV2');
 const People = require('../models/People');
 const User = require('../models/User');
 const Role = require('../models/Role');
 const bcrypt = require('bcrypt');
 const updatePeopleModuleFields = require('../scripts/updatePeopleModuleFields');
+const updateOrganizationsModuleFields = require('../scripts/updateOrganizationsModuleFields');
 
 // --- Submit Demo Request (Public) ---
 exports.submitDemoRequest = async (req, res) => {
@@ -30,7 +32,8 @@ exports.submitDemoRequest = async (req, res) => {
             });
         }
         
-        // Step 1: Create Organization for the prospect company
+        // Step 1: Create Organization (tenant) for the prospect company
+        // This is needed for module definitions, roles, and multi-tenancy
         console.log('📋 Creating organization for:', companyName);
         
         // Generate unique slug to avoid conflicts
@@ -73,6 +76,19 @@ exports.submitDemoRequest = async (req, res) => {
         
         console.log('✅ Organization created:', organization._id, organization.name, 'slug:', slug);
         
+        // Step 1.5: Create OrganizationV2 (CRM record) linked to the tenant organization
+        console.log('📋 Creating CRM organization record...');
+        const organizationV2 = await OrganizationV2.create({
+            legacyOrganizationId: organization._id,
+            name: companyName,
+            industry: industry,
+            types: [], // Empty types for prospects
+            customerStatus: 'Prospect', // CRM status field
+            // Note: No tenant fields here - those are only in InstanceRegistry after conversion
+        });
+        
+        console.log('✅ CRM Organization created:', organizationV2._id);
+        
         // Step 1.5: Create Default Roles for the organization
         console.log('🔐 Creating default roles...');
         try {
@@ -83,8 +99,8 @@ exports.submitDemoRequest = async (req, res) => {
             // Continue even if role creation fails
         }
         
-        // Step 1.6: Initialize People Module Definition with dependencies
-        console.log('🔍 Initializing People module definition...');
+        // Step 1.6: Initialize People and Organizations Module Definitions with dependencies
+        console.log('🔍 Initializing module definitions...');
         try {
             await updatePeopleModuleFields(organization._id);
             console.log('✅ People module definition initialized with dependencies');
@@ -93,12 +109,33 @@ exports.submitDemoRequest = async (req, res) => {
             // Continue even if module initialization fails - can be run manually later
         }
         
+        try {
+            await updateOrganizationsModuleFields(organization._id);
+            console.log('✅ Organizations module definition initialized with dependencies');
+        } catch (moduleError) {
+            console.warn('⚠️  Failed to initialize Organizations module:', moduleError.message);
+            // Continue even if module initialization fails - can be run manually later
+        }
+        
         // Step 2: Create People for the requester
+        // Find master admin user to use as createdBy/assignedTo (required fields)
+        console.log('👤 Finding master admin user...');
+        const masterAdmin = await User.findOne({ isOwner: true })
+            .sort({ createdAt: 1 }); // Get the first owner (master admin)
+        
+        if (!masterAdmin) {
+            console.error('❌ No master admin user found! Cannot create People record.');
+            throw new Error('System configuration error: Master admin not found');
+        }
+        
+        console.log('✅ Using master admin:', masterAdmin.email);
+        
         console.log('👤 Creating person for:', contactName);
         const person = await People.create({
-            organizationId: organization._id,
-            createdBy: null,
-            assignedTo: null,
+            organizationId: organization._id,  // Tenant organization
+            organization: organizationV2._id,  // CRM organization link
+            createdBy: masterAdmin._id,
+            assignedTo: masterAdmin._id,
             type: 'Lead',
             first_name: contactName.split(' ')[0] || contactName,
             last_name: contactName.split(' ').slice(1).join(' ') || '',
@@ -139,7 +176,7 @@ exports.submitDemoRequest = async (req, res) => {
             message: 'Thank you for your interest! Our team will contact you within 24 hours.',
             requestId: demoRequest._id,
             organizationId: organization._id,
-            contactId: contact._id
+            contactId: person._id
         });
         
     } catch (error) {

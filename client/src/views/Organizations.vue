@@ -331,7 +331,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted, watch, onActivated } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useBulkActions } from '@/composables/useBulkActions';
 import { useTabs } from '@/composables/useTabs';
@@ -418,39 +418,62 @@ const initializeColumnsFromModule = (module) => {
   const fields = module.fields || [];
   const systemFieldKeys = ['createdby', 'organizationid', 'createdat', 'updatedat', '_id', '__v'];
   
-  // Special columns that should always be included
-  const specialColumns = [
+  // Basic columns that should be visible by default
+  const basicColumns = [
     { key: 'name', label: 'Organization', visible: true, sortable: true },
     { key: 'contactCount', label: 'Contacts', visible: true, sortable: true },
     { key: 'createdAt', label: 'Created', visible: true, sortable: true }
   ];
   
-  // Filter out system fields and build visible columns from module
+  // Load saved column preferences from localStorage
+  const savedColumns = loadColumnSettings();
+  
+  // Filter out system fields and build columns from module
   const moduleColumns = fields
     .filter(field => {
       const key = field.key?.toLowerCase();
       return key && !systemFieldKeys.includes(key) && field.visibility?.list !== false;
     })
-    .map(field => ({
-      key: field.key,
-      label: field.label || field.key,
-      visible: true,
-      dataType: field.dataType,
-      sortable: !['Multi-Picklist', 'Text-Area', 'Rich Text', 'Formula', 'Rollup Summary'].includes(field.dataType)
-    }));
+    .map(field => {
+      // Check if we have saved user preferences for this column (overrides module definition)
+      const saved = savedColumns?.find(sc => sc.key?.toLowerCase() === field.key?.toLowerCase());
+      
+      // Default visibility: use module definition's visibility.list setting
+      // If no saved preference, respect the field configuration from module definition
+      const defaultVisible = field.visibility?.list ?? false;
+      
+      return {
+        key: field.key,
+        label: field.label || field.key,
+        visible: saved?.visible ?? defaultVisible, // Use saved preference or module definition default
+        dataType: field.dataType,
+        sortable: !['Multi-Picklist', 'Text-Area', 'Rich Text', 'Formula', 'Rollup Summary'].includes(field.dataType)
+      };
+    });
   
-  // Merge special columns with module columns
-  const initialColumns = [...specialColumns];
-  const existingKeys = new Set(specialColumns.map(c => c.key.toLowerCase()));
+  // Merge basic columns with module columns
+  const allColumns = [...basicColumns];
+  const existingKeys = new Set(basicColumns.map(c => c.key.toLowerCase()));
   
+  // Add module columns
   moduleColumns.forEach(col => {
     if (!existingKeys.has(col.key.toLowerCase())) {
-      initialColumns.push(col);
+      allColumns.push(col);
       existingKeys.add(col.key.toLowerCase());
     }
   });
   
-  visibleColumns.value = initialColumns;
+  // Apply saved preferences to basic columns if available
+  if (savedColumns) {
+    allColumns.forEach(col => {
+      const saved = savedColumns.find(sc => sc.key?.toLowerCase() === col.key?.toLowerCase());
+      if (saved) {
+        col.visible = saved.visible;
+      }
+    });
+  }
+  
+  visibleColumns.value = allColumns;
 };
 
 // Column definitions (dynamically generated from module fields)
@@ -719,14 +742,67 @@ const clearFilters = () => {
   fetchOrganizations();
 };
 
-// Column settings functions
-const resetColumnSettings = () => {
-  // Reset to default column configuration
-  visibleColumns.value = visibleColumns.value.map(col => ({ ...col, visible: true }));
+// Load column settings from localStorage
+const loadColumnSettings = () => {
+  try {
+    const saved = localStorage.getItem('organizations-column-settings');
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (e) {
+    console.error('Failed to load column settings:', e);
+  }
+  return null;
 };
 
-const applyColumnSettings = () => {
-  // Apply column settings
+// Save column settings to localStorage
+const saveColumnSettings = () => {
+  try {
+    // Save only the key and visible state for each column
+    const settings = visibleColumns.value.map(col => ({
+      key: col.key,
+      visible: col.visible
+    }));
+    localStorage.setItem('organizations-column-settings', JSON.stringify(settings));
+    console.log('Saved column settings:', settings);
+  } catch (e) {
+    console.error('Failed to save column settings:', e);
+  }
+};
+
+// Column settings functions
+const resetColumnSettings = () => {
+  // Reset to default: respect module definition's visibility.list setting
+  visibleColumns.value = visibleColumns.value.map(col => {
+    const basicColumns = ['name', 'contactCount', 'createdAt'];
+    
+    // Basic columns are always visible
+    if (basicColumns.includes(col.key)) {
+      return { ...col, visible: true };
+    }
+    
+    // For module fields, check the module definition's visibility.list setting
+    const field = moduleDefinition.value?.fields?.find(f => 
+      f.key?.toLowerCase() === col.key?.toLowerCase()
+    );
+    
+    return { 
+      ...col, 
+      visible: field?.visibility?.list ?? false // Use module definition default
+    };
+  });
+  
+  // Save the reset
+  saveColumnSettings();
+};
+
+const applyColumnSettings = async () => {
+  // Save column settings to localStorage
+  saveColumnSettings();
+  
+  // TODO: Optionally save to module definition on backend
+  // This would persist across all users, but for now we'll use localStorage (per-user)
+  
   showColumnSettings.value = false;
   console.log('Applied column settings:', visibleColumns.value);
 };
@@ -815,12 +891,28 @@ onMounted(async () => {
   fetchOrganizations();
 });
 
+// Refresh module definition when component is activated (e.g., returning from settings)
+onActivated(async () => {
+  await fetchModuleDefinition();
+});
+
 // Watch for route query changes (for refresh)
 watch(() => route.query.refresh, () => {
   if (route.query.refresh) {
     fetchOrganizations();
   }
 });
+
+// Save column settings whenever visibleColumns changes (after user modifies)
+watch(visibleColumns, (newColumns) => {
+  // Debounce saves to avoid too many localStorage writes
+  if (moduleDefinition.value) {
+    clearTimeout(window.columnSettingsSaveTimeout);
+    window.columnSettingsSaveTimeout = setTimeout(() => {
+      saveColumnSettings();
+    }, 1000);
+  }
+}, { deep: true });
 </script>
 
 
