@@ -92,12 +92,21 @@ function generateOrganizationFields() {
     const mapping = organizationFieldMappings[key];
     if (!mapping) continue;
 
+    // Convert enum strings to {value, color} objects for picklist/multi-picklist fields
+    let options = [];
+    if (mapping.enum && mapping.enum.length > 0) {
+      options = mapping.enum.map(val => ({
+        value: val,
+        color: '#3B82F6' // Default blue color for all options
+      }));
+    }
+
     const field = {
       key: key,
       label: mapping.label,
       dataType: mapping.type,
       required: false,
-      options: mapping.enum ? [...mapping.enum] : [],
+      options: options,
       defaultValue: null,
       placeholder: '',
       index: false,
@@ -131,16 +140,24 @@ function generateOrganizationFields() {
   return fields;
 }
 
-async function updateOrganizationsModuleFields() {
+async function updateOrganizationsModuleFields(organizationId = null) {
   try {
-    // Connect to MongoDB
-    const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/litedesk';
-    await mongoose.connect(mongoUri);
-    console.log('Connected to MongoDB');
+    // Connect to MongoDB if not already connected
+    if (mongoose.connection.readyState === 0) {
+      const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/litedesk';
+      await mongoose.connect(mongoUri);
+      console.log('Connected to MongoDB');
+    }
 
-    // Get all organizations
-    const organizations = await Organization.find({});
-    console.log(`Found ${organizations.length} organizations`);
+    // Get organizations to process (specific one or all)
+    let organizations;
+    if (organizationId) {
+      organizations = await Organization.find({ _id: organizationId });
+      console.log(`Found 1 organization (filtered by ID)`);
+    } else {
+      organizations = await Organization.find({});
+      console.log(`Found ${organizations.length} organizations`);
+    }
 
     // Generate field definitions
     const fields = generateOrganizationFields();
@@ -243,8 +260,11 @@ async function updateOrganizationsModuleFields() {
     console.error('❌ Error:', error);
     throw error;
   } finally {
-    await mongoose.disconnect();
-    console.log('Disconnected from MongoDB');
+    // Only disconnect if we connected in this function (when called as standalone script)
+    if (organizationId === null && mongoose.connection.readyState === 1) {
+      await mongoose.disconnect();
+      console.log('Disconnected from MongoDB');
+    }
   }
 }
 

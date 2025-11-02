@@ -177,7 +177,10 @@
                     Key Field
                     <span v-if="keyFieldCount > 0" class="text-xs text-gray-500 dark:text-gray-400">({{ keyFieldCount }}/10)</span>
                   </label>
-                  <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" v-model="currentField.visibility.list" :disabled="isSystemField(currentField)" /> Show in List</label>
+                  <label class="inline-flex items-center gap-2 text-sm" title="Controls whether this field is visible in the table/list view. Users can still customize visibility in column settings.">
+                    <input type="checkbox" v-model="currentField.visibility.list" :disabled="isSystemField(currentField)" />
+                    Show in Table
+                  </label>
                   <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" v-model="currentField.visibility.detail" :disabled="isSystemField(currentField)" /> Show in Detail</label>
                 </div>
                 <div>
