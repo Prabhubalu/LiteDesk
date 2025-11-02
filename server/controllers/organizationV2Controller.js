@@ -18,6 +18,8 @@ exports.create = async (req, res) => {
       ...req.body,
       // Set createdBy from authenticated user
       createdBy: req.user?._id || null,
+      // Default assignedTo to creator if not provided (similar to tasks)
+      assignedTo: req.body.assignedTo || req.user?._id || null,
       // Add initial activity log for record creation
       activityLogs: [{
         user: userName,
@@ -50,6 +52,7 @@ exports.list = async (req, res) => {
 
     const data = await OrganizationV2.find(query)
       .populate('createdBy', 'firstName lastName email avatar username')
+      .populate('assignedTo', 'firstName lastName email avatar username')
       .sort({ createdAt: -1 })
       .limit(limit)
       .skip(skip);
@@ -64,7 +67,8 @@ exports.list = async (req, res) => {
 exports.getById = async (req, res) => {
   try {
     const org = await OrganizationV2.findById(req.params.id)
-      .populate('createdBy', 'firstName lastName email avatar username');
+      .populate('createdBy', 'firstName lastName email avatar username')
+      .populate('assignedTo', 'firstName lastName email avatar username');
     if (!org) return res.status(404).json({ success: false, message: 'Not found' });
     res.json({ success: true, data: org });
   } catch (error) {
@@ -76,7 +80,8 @@ exports.getById = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const updated = await OrganizationV2.findByIdAndUpdate(req.params.id, req.body, { new: true })
-      .populate('createdBy', 'firstName lastName email avatar username');
+      .populate('createdBy', 'firstName lastName email avatar username')
+      .populate('assignedTo', 'firstName lastName email avatar username');
     if (!updated) return res.status(404).json({ success: false, message: 'Not found' });
     res.json({ success: true, data: updated });
   } catch (error) {

@@ -13,7 +13,7 @@ const organizationFieldMappings = {
   'phone': { type: 'Phone', label: 'Phone' },
   'address': { type: 'Text-Area', label: 'Address' },
   'industry': { type: 'Picklist', label: 'Industry' },
-  'assignedTo': { type: 'Lookup (Relationship)', label: 'Assigned To (Owner)' },
+  'assignedTo': { type: 'Lookup (Relationship)', label: 'Assigned To' },
   'primaryContact': { type: 'Lookup (Relationship)', label: 'Primary Contact' },
   'customerStatus': { type: 'Picklist', label: 'Customer Status', enum: ['Active', 'Prospect', 'Churned', 'Lead Customer'] },
   'customerTier': { type: 'Picklist', label: 'Customer Tier', enum: ['Gold', 'Silver', 'Bronze'] },
@@ -127,6 +127,12 @@ function generateOrganizationFields() {
 
     // Ensure createdBy is visible in table and detail (but not editable)
     if (key === 'createdBy' || key.toLowerCase() === 'createdby') {
+      field.visibility.list = true;
+      field.visibility.detail = true;
+    }
+
+    // Ensure assignedTo is visible in table and detail
+    if (key === 'assignedTo' || key.toLowerCase() === 'assignedto') {
       field.visibility.list = true;
       field.visibility.detail = true;
     }

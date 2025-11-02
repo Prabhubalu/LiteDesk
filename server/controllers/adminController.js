@@ -160,12 +160,13 @@ const getAllOrganizations = async (req, res) => {
         
         // Fetch from OrganizationV2 (where new organizations are created)
         // Note: Search might not work perfectly for V2 fields, but basic queries should work
+        // Note: Not using .lean() here to ensure populate() works correctly (matches People controller pattern)
         const organizations = await OrganizationV2.find(query)
             .populate('createdBy', 'firstName lastName email avatar username')
+            .populate('assignedTo', 'firstName lastName email avatar username')
             .sort(sort)
             .limit(limit)
-            .skip(skip)
-            .lean();
+            .skip(skip);
         
         const total = await OrganizationV2.countDocuments(query);
         
@@ -176,10 +177,40 @@ const getAllOrganizations = async (req, res) => {
                 // Otherwise use the _id directly
                 const orgIdForContacts = org.legacyOrganizationId || org._id;
                 const contactCount = await People.countDocuments({ organizationId: orgIdForContacts });
-                return {
-                    ...org,
+                
+                // Convert Mongoose document to plain object with populated fields preserved
+                // Use .toObject({ virtuals: true }) to ensure populated fields are included
+                const orgObj = org.toObject ? org.toObject({ virtuals: true }) : org;
+                
+                // Debug: Log assignedTo to verify populate is working
+                if (orgObj.assignedTo) {
+                    console.log(`[DEBUG] Organization ${orgObj.name}: assignedTo populated:`, {
+                        type: typeof orgObj.assignedTo,
+                        isObject: typeof orgObj.assignedTo === 'object' && orgObj.assignedTo !== null && !Array.isArray(orgObj.assignedTo),
+                        hasFirstName: !!orgObj.assignedTo?.firstName,
+                        hasId: !!orgObj.assignedTo?._id,
+                        keys: orgObj.assignedTo ? Object.keys(orgObj.assignedTo) : []
+                    });
+                } else {
+                    console.log(`[DEBUG] Organization ${orgObj.name}: assignedTo is ${orgObj.assignedTo === null ? 'null' : 'undefined'}`);
+                }
+                
+                // Ensure populated fields are properly included in response
+                // If assignedTo is still an ObjectId string, that means populate didn't work
+                const responseObj = {
+                    ...orgObj,
                     contactCount
                 };
+                
+                // Explicitly include populated fields (they should already be there, but ensure it)
+                if (orgObj.createdBy && typeof orgObj.createdBy === 'object') {
+                    responseObj.createdBy = orgObj.createdBy;
+                }
+                if (orgObj.assignedTo && typeof orgObj.assignedTo === 'object') {
+                    responseObj.assignedTo = orgObj.assignedTo;
+                }
+                
+                return responseObj;
             })
         );
         
@@ -299,6 +330,7 @@ const getOrganizationById = async (req, res) => {
         // Note: Using .lean() after populate() should work, but if it doesn't, remove .lean()
         let organization = await OrganizationV2.findById(req.params.id)
             .populate('createdBy', 'firstName lastName email avatar username')
+            .populate('assignedTo', 'firstName lastName email avatar username')
             .lean();
         
         // If not found in V2, try legacy Organization
@@ -366,7 +398,8 @@ const updateOrganizationById = async (req, res) => {
             req.body,
             { new: true, runValidators: true }
         )
-        .populate('createdBy', 'firstName lastName email avatar username');
+        .populate('createdBy', 'firstName lastName email avatar username')
+        .populate('assignedTo', 'firstName lastName email avatar username');
         
         if (!organization) {
             // Try legacy Organization
