@@ -1,22 +1,25 @@
 const mongoose = require('mongoose');
 
 const OrganizationSchema = new mongoose.Schema({
+    // ===== TENANT/SUBSCRIPTION FIELDS =====
     // Basic Information
     name: { 
         type: String, 
-        required: true 
+        required: true,
+        trim: true
     },
     slug: { 
         type: String, 
         unique: true,
+        sparse: true, // Allow null/undefined for CRM organizations
         lowercase: true
     },
     industry: { 
-        type: String, 
-        required: true 
+        type: String,
+        trim: true
     },
     
-    // Subscription Management
+    // Subscription Management (only for tenant organizations)
     subscription: {
         status: { 
             type: String, 
@@ -35,7 +38,6 @@ const OrganizationSchema = new mongoose.Schema({
         trialEndDate: { 
             type: Date,
             default: function() {
-                // 15 days from now
                 const date = new Date();
                 date.setDate(date.getDate() + 15);
                 return date;
@@ -51,11 +53,11 @@ const OrganizationSchema = new mongoose.Schema({
         stripeSubscriptionId: String
     },
     
-    // Limits & Features based on subscription tier
+    // Limits & Features based on subscription tier (only for tenant organizations)
     limits: {
         maxUsers: { 
             type: Number, 
-            default: 3  // Trial limit
+            default: 3
         },
         maxContacts: { 
             type: Number, 
@@ -71,13 +73,13 @@ const OrganizationSchema = new mongoose.Schema({
         }
     },
     
-    // Enabled Modules
+    // Enabled Modules (only for tenant organizations)
     enabledModules: {
         type: [String],
-        default: ['contacts', 'deals', 'tasks', 'events']  // Trial modules
+        default: ['contacts', 'deals', 'tasks', 'events']
     },
     
-    // Organization Settings
+    // Organization Settings (only for tenant organizations)
     settings: {
         dateFormat: { 
             type: String, 
@@ -102,22 +104,179 @@ const OrganizationSchema = new mongoose.Schema({
     isActive: { 
         type: Boolean, 
         default: true 
+    },
+    
+    // ===== CRM FIELDS (from OrganizationV2) =====
+    // CRM Core
+    types: {
+        type: [String],
+        enum: ['Customer', 'Partner', 'Vendor', 'Distributor', 'Dealer'],
+        default: []
+    },
+    website: { type: String, trim: true },
+    phone: { type: String, trim: true },
+    address: { type: String, trim: true },
+    
+    // Ownership/links (CRM)
+    createdBy: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'User', 
+        index: true 
+    },
+    assignedTo: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'User' 
+    },
+    primaryContact: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'People' 
+    },
+    
+    // Customer-specific
+    customerStatus: {
+        type: String,
+        enum: ['Active', 'Prospect', 'Churned', 'Lead Customer']
+    },
+    customerTier: {
+        type: String,
+        enum: ['Gold', 'Silver', 'Bronze']
+    },
+    slaLevel: { type: String, trim: true },
+    paymentTerms: { type: String, trim: true },
+    creditLimit: { type: Number, min: 0 },
+    accountManager: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'User' 
+    },
+    annualRevenue: { type: Number, min: 0 },
+    numberOfEmployees: { type: Number, min: 0 },
+    
+    // Partner-specific
+    partnerStatus: {
+        type: String,
+        enum: ['Active', 'Onboarding', 'Inactive']
+    },
+    partnerTier: {
+        type: String,
+        enum: ['Platinum', 'Gold', 'Silver', 'Bronze']
+    },
+    partnerType: {
+        type: String,
+        enum: ['Reseller', 'System Integrator', 'Referral', 'Technology Partner']
+    },
+    partnerSince: { type: Date },
+    partnerOnboardingSteps: mongoose.Schema.Types.Mixed,
+    territory: [{ type: String, trim: true }],
+    discountRate: { type: Number, min: 0, max: 100 },
+    
+    // Vendor-specific
+    vendorStatus: {
+        type: String,
+        enum: ['Approved', 'Pending', 'Suspended']
+    },
+    vendorRating: { type: Number, min: 0 },
+    vendorContract: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Contract' 
+    },
+    preferredPaymentMethod: { type: String, trim: true },
+    taxId: { type: String, trim: true },
+    
+    // Distributor/Dealer-specific
+    channelRegion: { type: String, trim: true },
+    distributionTerritory: [{ type: String, trim: true }],
+    distributionCapacityMonthly: { type: Number, min: 0 },
+    dealerLevel: {
+        type: String,
+        enum: ['Authorized', 'Franchise', 'Retailer']
+    },
+    terms: { type: String, trim: true },
+    shippingAddress: { type: String, trim: true },
+    logisticsPartner: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Organization' 
+    },
+    
+    // Activity Logs (CRM)
+    activityLogs: [{
+        user: { type: String, required: true },
+        userId: { 
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: 'User' 
+        },
+        action: { type: String, required: true },
+        details: { type: mongoose.Schema.Types.Mixed },
+        timestamp: { 
+            type: Date, 
+            default: Date.now, 
+            required: true 
+        }
+    }],
+    
+    // Legacy support (for migration)
+    legacyOrganizationId: { 
+        type: mongoose.Schema.Types.ObjectId
+    },
+    
+    // Distinguish tenant vs CRM organization
+    isTenant: {
+        type: Boolean,
+        default: false // CRM organizations by default
     }
 }, { 
     timestamps: true 
 });
 
-// Helper method to check if trial is expired
+// Indexes
+OrganizationSchema.index({ name: 1 });
+OrganizationSchema.index({ types: 1 });
+OrganizationSchema.index({ industry: 1 });
+OrganizationSchema.index({ customerStatus: 1 });
+OrganizationSchema.index({ partnerStatus: 1 });
+OrganizationSchema.index({ vendorStatus: 1 });
+OrganizationSchema.index({ isTenant: 1 });
+OrganizationSchema.index({ legacyOrganizationId: 1 }, { unique: true, sparse: true });
+
+// Prevent createdBy from being modified after creation (for CRM organizations)
+OrganizationSchema.pre('findOneAndUpdate', function() {
+    const update = this.getUpdate();
+    if (update && update.createdBy !== undefined) {
+        delete update.createdBy;
+    }
+    if (update && update.$set && update.$set.createdBy !== undefined) {
+        delete update.$set.createdBy;
+    }
+});
+
+OrganizationSchema.pre('save', async function(next) {
+    // Prevent createdBy modification for CRM organizations
+    if (!this.isTenant && !this.isNew && this.isModified('createdBy')) {
+        try {
+            const original = await this.constructor.findById(this._id).select('createdBy').lean();
+            if (original && original.createdBy) {
+                this.createdBy = original.createdBy;
+                this.unmarkModified('createdBy');
+            }
+            next();
+        } catch (error) {
+            next(new Error('createdBy field cannot be modified after creation'));
+        }
+    } else {
+        next();
+    }
+});
+
+// Helper method to check if trial is expired (tenant only)
 OrganizationSchema.methods.isTrialExpired = function() {
-    if (this.subscription.status !== 'trial') {
+    if (!this.isTenant || this.subscription.status !== 'trial') {
         return false;
     }
     return new Date() > this.subscription.trialEndDate;
 };
 
-// Helper method to get days remaining in trial
+// Helper method to get days remaining in trial (tenant only)
 OrganizationSchema.methods.getTrialDaysRemaining = function() {
-    if (this.subscription.status !== 'trial') {
+    if (!this.isTenant || this.subscription.status !== 'trial') {
         return 0;
     }
     const now = new Date();
@@ -125,13 +284,16 @@ OrganizationSchema.methods.getTrialDaysRemaining = function() {
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 };
 
-// Helper method to check if a feature is enabled
+// Helper method to check if a feature is enabled (tenant only)
 OrganizationSchema.methods.hasFeature = function(featureName) {
+    if (!this.isTenant) return false;
     return this.enabledModules.includes(featureName);
 };
 
-// Helper method to update limits based on tier
+// Helper method to update limits based on tier (tenant only)
 OrganizationSchema.methods.updateLimitsForTier = function(tier) {
+    if (!this.isTenant) return this;
+    
     const tierLimits = {
         trial: {
             maxUsers: 3,
@@ -152,7 +314,7 @@ OrganizationSchema.methods.updateLimitsForTier = function(tier) {
             maxStorageGB: 100
         },
         enterprise: {
-            maxUsers: -1,  // Unlimited
+            maxUsers: -1,
             maxContacts: -1,
             maxDeals: -1,
             maxStorageGB: 1000
@@ -163,8 +325,10 @@ OrganizationSchema.methods.updateLimitsForTier = function(tier) {
     return this.limits;
 };
 
-// Helper method to get enabled modules based on tier
+// Helper method to get enabled modules based on tier (tenant only)
 OrganizationSchema.methods.getModulesForTier = function(tier) {
+    if (!this.isTenant) return [];
+    
     const tierModules = {
         trial: ['contacts', 'deals', 'tasks', 'events'],
         starter: ['contacts', 'organizations', 'deals', 'tasks', 'events', 'items'],
@@ -175,9 +339,9 @@ OrganizationSchema.methods.getModulesForTier = function(tier) {
     return tierModules[tier] || tierModules.trial;
 };
 
-// Pre-save hook to generate slug from name if not provided
+// Pre-save hook to generate slug from name if not provided (tenant only)
 OrganizationSchema.pre('save', function(next) {
-    if (!this.slug && this.name) {
+    if (this.isTenant && !this.slug && this.name) {
         this.slug = this.name
             .toLowerCase()
             .replace(/[^a-z0-9]+/g, '-')
@@ -187,4 +351,3 @@ OrganizationSchema.pre('save', function(next) {
 });
 
 module.exports = mongoose.model('Organization', OrganizationSchema);
-

@@ -4,14 +4,13 @@ require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const Organization = require('../models/Organization');
-const OrganizationV2 = require('../models/OrganizationV2');
 const People = require('../models/People');
 
 async function run() {
   const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI;
   if (!MONGO_URI) throw new Error('MONGODB_URI/MONGO_URI not set');
   await mongoose.connect(MONGO_URI);
-  console.log('Connected. Seeding sample People and linking OrganizationV2 primary contact...');
+  console.log('Connected. Seeding sample People and linking CRM organization primary contact...');
 
   const admin = await User.findOne({ email: process.env.DEFAULT_ADMIN_EMAIL || 'admin@litedesk.com' });
   if (!admin) throw new Error('Default admin user not found. Run createDefaultAdmin.js first.');
@@ -19,10 +18,15 @@ async function run() {
   const org = await Organization.findById(admin.organizationId);
   if (!org) throw new Error('Organization not found for admin');
 
-  // Ensure OrgV2 exists
-  let orgV2 = await OrganizationV2.findOne({ legacyOrganizationId: org._id });
+  // Ensure CRM organization exists
+  let orgV2 = await Organization.findOne({ legacyOrganizationId: org._id, isTenant: false });
   if (!orgV2) {
-    orgV2 = await OrganizationV2.create({ legacyOrganizationId: org._id, name: org.name, types: [] });
+    orgV2 = await Organization.create({ 
+      legacyOrganizationId: org._id, 
+      name: org.name, 
+      types: [],
+      isTenant: false
+    });
   }
 
   // Create a sample People record
@@ -42,7 +46,7 @@ async function run() {
   await orgV2.save();
 
   console.log('Seeded People id:', person._id.toString());
-  console.log('Linked as primaryContact in OrganizationV2 id:', orgV2._id.toString());
+  console.log('Linked as primaryContact in CRM organization id:', orgV2._id.toString());
   await mongoose.connection.close();
 }
 

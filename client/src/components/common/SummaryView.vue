@@ -333,6 +333,73 @@
           </div>
         </div>
 
+        <!-- Tenant Details Tab (only for tenant organizations) -->
+        <div v-else-if="activeTab === 'tenant-details' && props.record?.isTenant === true" class="space-y-6">
+          <!-- Top Bar: Search and Toggle -->
+          <div class="flex items-center justify-between mb-4">
+            <!-- Search Field -->
+            <div class="relative w-100">
+              <input
+                v-model="detailsSearch"
+                type="text"
+                placeholder="Search tenant fields..."
+                class="block w-full rounded-md bg-white border border-gray-200 dark:bg-gray-700 dark:border-transparent px-3 py-1.5 pl-10 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:focus:outline-indigo-500"
+              />
+              <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <MagnifyingGlassIcon class="w-5 h-5 text-gray-400" />
+              </div>
+            </div>
+            
+            <!-- Right Side: Toggle -->
+            <div class="flex items-center gap-3">
+              <label class="hidden lg:flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  v-model="showEmptyFields"
+                  class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                />
+                <span class="text-sm text-gray-700 dark:text-gray-300">Show empty fields</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Tenant Fields Block -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Tenant Fields</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Subscription, limits, and organization settings</p>
+            </div>
+            <!-- Tenant Fields Grid -->
+            <div :class="detailsGridClass" :style="detailsGridStyle">
+              <div 
+                v-for="fieldData in getTenantFields" 
+                :key="fieldData.key"
+                :class="[
+                  fieldData.field.dataType === 'Text-Area' || 
+                  fieldData.field.dataType === 'Rich Text' 
+                    ? 'md:col-span-2' 
+                    : ''
+                ]"
+              >
+                <DynamicFormField 
+                  :field="fieldData.field"
+                  :value="fieldData.value"
+                  @update:value="updateField(fieldData.key, $event)"
+                  :errors="{}"
+                  :dependency-state="fieldData.dependencyState"
+                />
+              </div>
+              
+              <!-- Empty state -->
+              <div v-if="getTenantFields.length === 0" class="md:col-span-2 text-center py-8 text-gray-500 dark:text-gray-400">
+                <p v-if="detailsSearch">No tenant fields match your search.</p>
+                <p v-else-if="!showEmptyFields">No tenant fields with values to display.</p>
+                <p v-else>No tenant fields available.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Details Tab -->
         <div v-else-if="activeTab === 'details'" class="space-y-6">
                         <!-- Top Bar: Search, Toggle, and Manage Button -->
@@ -427,6 +494,7 @@
                 </Menu>
                 </div>
               </div>
+          <!-- CRM Fields Block -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <!-- Fields Grid using DynamicFormField -->
             <div :class="detailsGridClass" :style="detailsGridStyle">
@@ -488,6 +556,7 @@
               </div>
             </div>
           </div>
+
         </div>
 
         <!-- Updates/Timeline Tab -->
@@ -990,7 +1059,7 @@ const loadActiveTab = () => {
     const savedTab = localStorage.getItem(getStorageKey());
     if (savedTab) {
       // Check if it's a fixed tab
-      if (fixedTabs.some(t => t.id === savedTab)) {
+      if (fixedTabs.value.some(t => t.id === savedTab)) {
         return savedTab;
       }
       // For dynamic tabs, we'll validate when we load them
@@ -1021,12 +1090,21 @@ const showRelationModal = ref(false);
 const newTag = ref('');
 const tags = ref([]);
 
-// Fixed tabs
-const fixedTabs = [
-  { id: 'summary', name: 'Summary' },
-  { id: 'details', name: 'Details' },
-  { id: 'updates', name: 'Updates' }
-];
+// Fixed tabs - add Tenant Details tab if viewing tenant organization
+const fixedTabs = computed(() => {
+  const baseTabs = [
+    { id: 'summary', name: 'Summary' },
+    { id: 'details', name: 'Details' },
+    { id: 'updates', name: 'Updates' }
+  ];
+  
+  // Add Tenant Details tab if viewing a tenant organization
+  if (props.record?.isTenant === true) {
+    baseTabs.splice(2, 0, { id: 'tenant-details', name: 'Tenant Details' });
+  }
+  
+  return baseTabs;
+});
 
 // Module definitions
 const moduleDefinition = ref(null);
@@ -1078,74 +1156,204 @@ const getFieldsWithDefinitions = computed(() => {
   // Note: createdby is visible in detail view but not editable
   const systemFieldKeys = ['_id', 'id', '__v', 'createdat', 'updatedat', 'organizationid', 'activitylogs'];
   
-  // Get all field definitions with their values
-  const fieldsWithDefs = [];
+  // Helper function to process and filter fields
+  const processFields = (fieldDefs, filterTenant, filterCRM) => {
+    const processed = [];
+    const processedKeys = new Set();
+    const isTenantOrg = props.record?.isTenant === true;
+    
+    for (const fieldDef of fieldDefs) {
+      if (!fieldDef.key) continue;
+      
+      const keyLower = fieldDef.key.toLowerCase();
+      
+      // Skip if we've already processed this field (case-insensitive)
+      if (processedKeys.has(keyLower)) continue;
+      processedKeys.add(keyLower);
+      
+      // Skip system fields
+      if (systemFieldKeys.includes(keyLower)) continue;
+      
+      // Filter tenant fields: only show if isTenant is true
+      // Check by isTenantField flag OR by key patterns
+      const tenantFieldPatterns = ['subscription.', 'limits.', 'settings.', 'slug', 'isactive', 'enabledmodules'];
+      const isTenantField = fieldDef.isTenantField === true || 
+                           tenantFieldPatterns.some(pattern => keyLower.startsWith(pattern) || keyLower === pattern);
+      
+      if (filterTenant && isTenantField && !isTenantOrg) continue;
+      if (!filterTenant && isTenantField) continue; // Exclude tenant fields from CRM list
+      
+      // Filter CRM fields: only show if isTenant is false (or undefined, meaning CRM)
+      if (filterCRM && fieldDef.isCRMField && isTenantOrg) continue;
+      if (!filterCRM && fieldDef.isCRMField) continue; // Exclude CRM fields from tenant list
+      
+      // Extract value for nested field paths (e.g., subscription.status, limits.maxUsers)
+      let displayValue;
+      if (fieldDef.key && fieldDef.key.includes('.')) {
+        // Handle nested paths like subscription.status
+        displayValue = fieldDef.key.split('.').reduce((obj, k) => obj?.[k], props.record);
+      } else {
+        // Regular field access
+        displayValue = props.record[fieldDef.key] || props.record[keyLower];
+      }
+      
+      // Format createdBy value if it's an ObjectId string - convert to object format for display
+      if (keyLower === 'createdby' && typeof displayValue === 'string' && displayValue.length === 24 && /^[0-9a-fA-F]{24}$/.test(displayValue)) {
+        // It's an ObjectId string - we can't resolve it here, but we'll let the template handle it
+        // The backend should populate it, so this is just a fallback
+        displayValue = displayValue;
+      }
+      
+      // Evaluate dependency-based visibility (for tenant fields, always show by default)
+      const depState = getFieldState(fieldDef);
+      if (!filterTenant && !depState.visible && depState.visible !== undefined) {
+        continue; // Skip hidden fields for CRM fields
+      }
+      // For tenant fields, show even if dependency says hidden (they're always visible when isTenant is true)
+      
+      // Filter empty fields if toggle is off
+      if (!showEmptyFields.value) {
+        const isEmpty = displayValue === null || 
+                       displayValue === undefined || 
+                       displayValue === '' || 
+                       (Array.isArray(displayValue) && displayValue.length === 0);
+        if (isEmpty) continue;
+      }
+      
+      // Apply search filter
+      if (detailsSearch.value) {
+        const searchLower = detailsSearch.value.toLowerCase();
+        const fieldName = (fieldDef.label || fieldDef.key).toLowerCase();
+        const fieldValue = String(displayValue || '').toLowerCase();
+        
+        if (!fieldName.includes(searchLower) && !fieldValue.includes(searchLower)) {
+          continue;
+        }
+      }
+      
+      processed.push({
+        field: fieldDef,
+        key: fieldDef.key,
+        value: displayValue,
+        dependencyState: depState
+      });
+    }
+    
+    // Sort by field order if available
+    processed.sort((a, b) => {
+      const orderA = a.field.order ?? Number.MAX_SAFE_INTEGER;
+      const orderB = b.field.order ?? Number.MAX_SAFE_INTEGER;
+      return orderA - orderB;
+    });
+    
+    return processed;
+  };
   
-  for (const [key, value] of Object.entries(props.record)) {
-    const keyLower = key.toLowerCase();
+  // Separate CRM fields and tenant fields
+  const allFields = moduleDefinition.value?.fields || [];
+  const crmFields = processFields(allFields, false, true); // Include CRM fields, exclude tenant fields
+  const tenantFields = processFields(allFields, true, false); // Include tenant fields, exclude CRM fields
+  
+  // Return CRM fields by default (tenant fields will be shown separately)
+  return crmFields;
+});
+
+// Separate computed property for tenant fields
+const getTenantFields = computed(() => {
+  // Debug: Log the record and isTenant value
+  if (props.record) {
+    console.log('🔍 getTenantFields - record.isTenant:', props.record.isTenant, 'type:', typeof props.record.isTenant);
+    console.log('🔍 getTenantFields - moduleDefinition:', moduleDefinition.value?.fields?.length, 'fields');
+  }
+  
+  if (!moduleDefinition.value || !props.record) {
+    return [];
+  }
+  
+  // Check isTenant more flexibly (could be boolean, string, or undefined)
+  const isTenant = props.record.isTenant === true || props.record.isTenant === 'true' || props.record.isTenant === 1;
+  if (!isTenant) {
+    return [];
+  }
+  
+  const systemFieldKeys = ['_id', 'id', '__v', 'createdat', 'updatedat', 'organizationid', 'activitylogs'];
+  const processed = [];
+  const processedKeys = new Set();
+  
+  console.log('🔍 Processing tenant fields. Total fields:', moduleDefinition.value.fields?.length || 0);
+  
+  for (const fieldDef of moduleDefinition.value.fields || []) {
+    if (!fieldDef.key) continue;
+    
+    // Check if field is a tenant field by flag OR by key pattern
+    const tenantFieldPatterns = ['subscription.', 'limits.', 'settings.', 'slug', 'isactive', 'enabledmodules'];
+    const keyLower = fieldDef.key.toLowerCase();
+    const isTenantField = fieldDef.isTenantField === true || 
+                         tenantFieldPatterns.some(pattern => keyLower.startsWith(pattern) || keyLower === pattern);
+    
+    // Debug: Log tenant field check
+    if (fieldDef.key.includes('subscription') || fieldDef.key.includes('limits') || fieldDef.key.includes('settings')) {
+      console.log('🔍 Field:', fieldDef.key, 'isTenantField flag:', fieldDef.isTenantField, 'detected as tenant:', isTenantField);
+    }
+    
+    if (!isTenantField) continue;
+    
+    // Skip if already processed
+    if (processedKeys.has(keyLower)) continue;
+    processedKeys.add(keyLower);
     
     // Skip system fields
     if (systemFieldKeys.includes(keyLower)) continue;
     
-    // Get field definition
-    const fieldDef = fieldMap.get(key) || fieldMap.get(keyLower);
-    
-    // If no field definition, create a basic one from the key
-    if (!fieldDef) {
-      // Skip if we don't want to show fields without definitions
-      continue;
-    }
-    
-    // Evaluate dependency-based visibility
-    const depState = getFieldState(fieldDef);
-    if (!depState.visible && depState.visible !== undefined) {
-      continue; // Skip hidden fields
+    // Extract value for nested field paths
+    let displayValue;
+    if (fieldDef.key && fieldDef.key.includes('.')) {
+      displayValue = fieldDef.key.split('.').reduce((obj, k) => obj?.[k], props.record);
+    } else {
+      displayValue = props.record[fieldDef.key] || props.record[keyLower];
     }
     
     // Filter empty fields if toggle is off
     if (!showEmptyFields.value) {
-      const isEmpty = value === null || 
-                     value === undefined || 
-                     value === '' || 
-                     (Array.isArray(value) && value.length === 0);
+      const isEmpty = displayValue === null || 
+                     displayValue === undefined || 
+                     displayValue === '' || 
+                     (Array.isArray(displayValue) && displayValue.length === 0);
       if (isEmpty) continue;
     }
     
     // Apply search filter
     if (detailsSearch.value) {
       const searchLower = detailsSearch.value.toLowerCase();
-      const fieldName = (fieldDef.label || fieldDef.key || key).toLowerCase();
-      const fieldValue = String(value || '').toLowerCase();
+      const fieldName = (fieldDef.label || fieldDef.key).toLowerCase();
+      const fieldValue = String(displayValue || '').toLowerCase();
       
       if (!fieldName.includes(searchLower) && !fieldValue.includes(searchLower)) {
         continue;
       }
     }
     
-    // Format createdBy value if it's an ObjectId string - convert to object format for display
-    let displayValue = value;
-    if (keyLower === 'createdby' && typeof value === 'string' && value.length === 24 && /^[0-9a-fA-F]{24}$/.test(value)) {
-      // It's an ObjectId string - we can't resolve it here, but we'll let the template handle it
-      // The backend should populate it, so this is just a fallback
-      displayValue = value;
-    }
-    
-    fieldsWithDefs.push({
+    // Always visible for tenant fields (no dependency checks)
+    processed.push({
       field: fieldDef,
       key: fieldDef.key,
       value: displayValue,
-      dependencyState: depState
+      dependencyState: { visible: true, readonly: false } // Always visible and editable
     });
+    
+    console.log('✅ Added tenant field:', fieldDef.key, 'value:', displayValue);
   }
   
-  // Sort by field order if available
-  fieldsWithDefs.sort((a, b) => {
+  console.log('🔍 Total tenant fields found:', processed.length);
+  
+  // Sort by field order
+  processed.sort((a, b) => {
     const orderA = a.field.order ?? Number.MAX_SAFE_INTEGER;
     const orderB = b.field.order ?? Number.MAX_SAFE_INTEGER;
     return orderA - orderB;
   });
   
-  return fieldsWithDefs;
+  return processed;
 });
 
 // Helper functions for user display
@@ -2715,7 +2923,7 @@ watch(() => props.record, async (newRecord, oldRecord) => {
     
     const savedTab = loadActiveTab();
     // Validate that the saved tab still exists
-    const isValidTab = fixedTabs.some(t => t.id === savedTab);
+    const isValidTab = fixedTabs.value.some(t => t.id === savedTab);
     if (isValidTab && savedTab !== activeTab.value) {
       activeTab.value = savedTab;
     }
@@ -2742,7 +2950,7 @@ onMounted(async () => {
   // Load saved tab if record is already loaded
   if (props.record && (props.record._id || props.record.id)) {
     const savedTab = loadActiveTab();
-    const isValidTab = fixedTabs.some(t => t.id === savedTab);
+    const isValidTab = fixedTabs.value.some(t => t.id === savedTab);
     if (isValidTab && savedTab !== 'summary') {
       activeTab.value = savedTab;
     }
@@ -2750,7 +2958,7 @@ onMounted(async () => {
   
   // Validate current tab
   const currentTab = activeTab.value;
-  const isValidTab = fixedTabs.some(t => t.id === currentTab);
+  const isValidTab = fixedTabs.value.some(t => t.id === currentTab);
   if (!isValidTab) {
     activeTab.value = 'summary';
   }

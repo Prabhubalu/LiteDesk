@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env') });
 const ModuleDefinition = require('../models/ModuleDefinition');
-const OrganizationV2 = require('../models/OrganizationV2');
 const Organization = require('../models/Organization');
 
 // Field mappings from JSON - map to actual schema field keys
@@ -41,17 +40,43 @@ const organizationFieldMappings = {
   'dealerLevel': { type: 'Picklist', label: 'Dealer Level', enum: ['Authorized', 'Franchise', 'Retailer'] },
   'terms': { type: 'Rich Text', label: 'Terms' },
   'shippingAddress': { type: 'Text-Area', label: 'Shipping Address' },
-  'logisticsPartner': { type: 'Lookup (Relationship)', label: 'Logistics Partner' }
+  'logisticsPartner': { type: 'Lookup (Relationship)', label: 'Logistics Partner' },
+  
+  // ===== TENANT FIELDS (only visible when isTenant: true) =====
+  'slug': { type: 'Text', label: 'Slug' },
+  'subscription.status': { type: 'Picklist', label: 'Subscription Status', enum: ['trial', 'active', 'expired', 'cancelled'] },
+  'subscription.tier': { type: 'Picklist', label: 'Subscription Tier', enum: ['trial', 'starter', 'professional', 'enterprise'] },
+  'subscription.trialStartDate': { type: 'Date', label: 'Trial Start Date' },
+  'subscription.trialEndDate': { type: 'Date', label: 'Trial End Date' },
+  'subscription.currentPeriodStart': { type: 'Date', label: 'Current Period Start' },
+  'subscription.currentPeriodEnd': { type: 'Date', label: 'Current Period End' },
+  'subscription.autoRenew': { type: 'Checkbox', label: 'Auto Renew' },
+  'limits.maxUsers': { type: 'Integer', label: 'Max Users' },
+  'limits.maxContacts': { type: 'Integer', label: 'Max Contacts' },
+  'limits.maxDeals': { type: 'Integer', label: 'Max Deals' },
+  'limits.maxStorageGB': { type: 'Integer', label: 'Max Storage (GB)' },
+  'enabledModules': { type: 'Multi-Picklist', label: 'Enabled Modules' },
+  'settings.dateFormat': { type: 'Text', label: 'Date Format' },
+  'settings.timeZone': { type: 'Text', label: 'Time Zone' },
+  'settings.currency': { type: 'Text', label: 'Currency' },
+  'settings.logoUrl': { type: 'URL', label: 'Logo URL' },
+  'settings.primaryColor': { type: 'Text', label: 'Primary Color' },
+  'isActive': { type: 'Checkbox', label: 'Is Active' }
 };
 
-// Get OrganizationV2 schema field order
+// Get Organization schema field order
+// Note: Tenant fields should only be shown when isTenant: true
+// CRM fields should only be shown when isTenant: false
 const organizationFieldOrder = [
+  // Shared fields
   'name',
+  'industry',
+  
+  // CRM fields (isTenant: false)
   'types',
   'website',
   'phone',
   'address',
-  'industry',
   'assignedTo',
   'primaryContact',
   'customerStatus',
@@ -81,7 +106,28 @@ const organizationFieldOrder = [
   'terms',
   'shippingAddress',
   'logisticsPartner',
-  'createdBy'  // Move createdBy to the end
+  'createdBy',
+  
+  // Tenant fields (isTenant: true) - add these for tenant orgs
+  'slug',
+  'subscription.status',
+  'subscription.tier',
+  'subscription.trialStartDate',
+  'subscription.trialEndDate',
+  'subscription.currentPeriodStart',
+  'subscription.currentPeriodEnd',
+  'subscription.autoRenew',
+  'limits.maxUsers',
+  'limits.maxContacts',
+  'limits.maxDeals',
+  'limits.maxStorageGB',
+  'enabledModules',
+  'settings.dateFormat',
+  'settings.timeZone',
+  'settings.currency',
+  'settings.logoUrl',
+  'settings.primaryColor',
+  'isActive'
 ];
 
 // Generate field definitions from mappings
@@ -137,6 +183,31 @@ function generateOrganizationFields() {
       field.visibility.detail = true;
     }
 
+    // Tenant fields: Only show when isTenant is true
+    const tenantFields = ['slug', 'subscription.status', 'subscription.tier', 'subscription.trialStartDate', 
+                          'subscription.trialEndDate', 'subscription.currentPeriodStart', 'subscription.currentPeriodEnd',
+                          'subscription.autoRenew', 'limits.maxUsers', 'limits.maxContacts', 'limits.maxDeals',
+                          'limits.maxStorageGB', 'enabledModules', 'settings.dateFormat', 'settings.timeZone',
+                          'settings.currency', 'settings.logoUrl', 'settings.primaryColor', 'isActive'];
+    
+    if (tenantFields.includes(key)) {
+      // Mark tenant fields with a flag so frontend can filter
+      field.isTenantField = true;
+      // These should not show in CRM organization lists/tables
+      field.visibility.list = false; // Tenant fields typically not in CRM tables
+      field.visibility.detail = true; // But can be shown in detail view if isTenant: true
+      // Remove any dependencies - tenant fields should always be visible when isTenant is true
+      field.dependencies = [];
+      field.picklistDependencies = [];
+    }
+
+    // CRM fields: Should not show for tenant orgs
+    const crmOnlyFields = ['types', 'createdBy', 'assignedTo', 'primaryContact', 'customerStatus', 'partnerStatus', 
+                          'vendorStatus', 'activityLogs'];
+    if (crmOnlyFields.includes(key)) {
+      field.isCRMField = true;
+    }
+
     // Set lookup target module for relationship fields
     if (mapping.type === 'Lookup (Relationship)') {
       field.lookupSettings = {
@@ -171,14 +242,30 @@ async function updateOrganizationsModuleFields(organizationId = null) {
       console.log('Connected to MongoDB');
     }
 
-    // Get organizations to process (specific one or all)
+    // Get organizations to process (specific one or all tenant organizations)
+    // Note: This script updates module definitions for tenant organizations, not CRM organizations
     let organizations;
     if (organizationId) {
-      organizations = await Organization.find({ _id: organizationId });
-      console.log(`Found 1 organization (filtered by ID)`);
+      organizations = await Organization.find({ _id: organizationId, isTenant: true });
+      console.log(`Found ${organizations.length} tenant organization(s) (filtered by ID)`);
     } else {
-      organizations = await Organization.find({});
-      console.log(`Found ${organizations.length} organizations`);
+      organizations = await Organization.find({ isTenant: true });
+      console.log(`Found ${organizations.length} tenant organization(s)`);
+    }
+
+    // If no tenant organizations found, try to find any organization (for default setup)
+    if (organizations.length === 0) {
+      console.log('\n⚠️  No tenant organizations found. Checking for any organizations...');
+      const allOrgs = await Organization.find({}).limit(1);
+      if (allOrgs.length > 0) {
+        console.log(`   Found ${allOrgs.length} organization(s). Will create module definition for first one as default.`);
+        organizations = allOrgs;
+      } else {
+        console.log('   No organizations found in database. Module definition will not be created.');
+        console.log('   Please create at least one organization first.');
+        await mongoose.connection.close();
+        return;
+      }
     }
 
     // Generate field definitions

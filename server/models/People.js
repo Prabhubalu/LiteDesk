@@ -29,7 +29,7 @@ const PeopleSchema = new Schema({
   phone: { type: String, trim: true },
   mobile: { type: String, trim: true },
 
-  organization: { type: Schema.Types.ObjectId, ref: 'OrganizationV2' }, // CRM Organization (company), not tenant Organization
+  organization: { type: Schema.Types.ObjectId, ref: 'Organization' }, // CRM Organization (company), not tenant Organization
 
   tags: [{ type: String, trim: true }],
   do_not_contact: { type: Boolean, default: false },

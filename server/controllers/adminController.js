@@ -1,6 +1,5 @@
 const People = require('../models/People');
 const Organization = require('../models/Organization');
-const OrganizationV2 = require('../models/OrganizationV2');
 
 // @desc    Get all contacts across all organizations (Admin only)
 // @route   GET /api/admin/contacts/all
@@ -128,14 +127,17 @@ const getAllOrganizations = async (req, res) => {
         const skip = (page - 1) * limit;
         
         const query = {};
+        const andConditions = [];
         
         // Search
         if (req.query.search) {
             const searchRegex = new RegExp(req.query.search, 'i');
-            query.$or = [
-                { name: searchRegex },
-                { industry: searchRegex }
-            ];
+            andConditions.push({
+                $or: [
+                    { name: searchRegex },
+                    { industry: searchRegex }
+                ]
+            });
         }
         
         // Filter by industry
@@ -153,22 +155,37 @@ const getAllOrganizations = async (req, res) => {
             query.isActive = req.query.status === 'active';
         }
         
+        // Show all organizations by default (both CRM and tenant)
+        // Only filter out tenant organizations if explicitly requested
+        // Note: You can add a query param ?excludeTenants=true to hide tenant orgs
+        if (req.query.excludeTenants === 'true') {
+            andConditions.push({
+                $or: [
+                    { isTenant: false },
+                    { isTenant: { $exists: false } }
+                ]
+            });
+        }
+        
+        // Combine all conditions
+        if (andConditions.length > 0) {
+            query.$and = andConditions;
+        }
+        
         // Sorting
         const sortBy = req.query.sortBy || 'createdAt';
         const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1;
         const sort = { [sortBy]: sortOrder };
         
-        // Fetch from OrganizationV2 (where new organizations are created)
-        // Note: Search might not work perfectly for V2 fields, but basic queries should work
         // Note: Not using .lean() here to ensure populate() works correctly (matches People controller pattern)
-        const organizations = await OrganizationV2.find(query)
+        const organizations = await Organization.find(query)
             .populate('createdBy', 'firstName lastName email avatar username')
             .populate('assignedTo', 'firstName lastName email avatar username')
             .sort(sort)
             .limit(limit)
             .skip(skip);
         
-        const total = await OrganizationV2.countDocuments(query);
+        const total = await Organization.countDocuments(query);
         
         // Get contact counts for each organization
         const orgsWithCounts = await Promise.all(
@@ -326,14 +343,13 @@ const updateContactById = async (req, res) => {
 // @access  Private (Admin/Owner only)
 const getOrganizationById = async (req, res) => {
     try {
-        // Try OrganizationV2 first (where new organizations are created)
-        // Note: Using .lean() after populate() should work, but if it doesn't, remove .lean()
-        let organization = await OrganizationV2.findById(req.params.id)
+        // Try CRM organization first
+        let organization = await Organization.findOne({ _id: req.params.id, isTenant: false })
             .populate('createdBy', 'firstName lastName email avatar username')
             .populate('assignedTo', 'firstName lastName email avatar username')
             .lean();
         
-        // If not found in V2, try legacy Organization
+        // If not found, try tenant organization (fallback)
         if (!organization) {
             organization = await Organization.findById(req.params.id).lean();
         }
@@ -392,9 +408,9 @@ const getOrganizationById = async (req, res) => {
 // @access  Private (Admin/Owner only)
 const updateOrganizationById = async (req, res) => {
     try {
-        // Try to find and update in OrganizationV2 first
-        let organization = await OrganizationV2.findByIdAndUpdate(
-            req.params.id,
+        // Try CRM organization first
+        let organization = await Organization.findOneAndUpdate(
+            { _id: req.params.id, isTenant: false },
             req.body,
             { new: true, runValidators: true }
         )
@@ -402,12 +418,14 @@ const updateOrganizationById = async (req, res) => {
         .populate('assignedTo', 'firstName lastName email avatar username');
         
         if (!organization) {
-            // Try legacy Organization
+            // Try tenant organization (fallback)
             organization = await Organization.findByIdAndUpdate(
                 req.params.id,
                 req.body,
                 { new: true, runValidators: true }
-            );
+            )
+            .populate('createdBy', 'firstName lastName email avatar username')
+            .populate('assignedTo', 'firstName lastName email avatar username');
             
             if (!organization) {
                 return res.status(404).json({
@@ -524,11 +542,11 @@ const addContactActivityLog = async (req, res) => {
 // @access  Private (Admin/Owner only)
 const getOrganizationActivityLogs = async (req, res) => {
     try {
-        // Try OrganizationV2 first
-        let org = await OrganizationV2.findById(req.params.id).select('activityLogs').lean();
+        // Try CRM organization first
+        let org = await Organization.findOne({ _id: req.params.id, isTenant: false }).select('activityLogs').lean();
         
         if (!org) {
-            // Try legacy Organization (though it might not have activityLogs)
+            // Try tenant organization (fallback)
             org = await Organization.findById(req.params.id).select('activityLogs').lean();
         }
         
@@ -572,9 +590,9 @@ const addOrganizationActivityLog = async (req, res) => {
             });
         }
         
-        // Try OrganizationV2 first
-        let org = await OrganizationV2.findByIdAndUpdate(
-            req.params.id,
+        // Try CRM organization first
+        let org = await Organization.findOneAndUpdate(
+            { _id: req.params.id, isTenant: false },
             {
                 $push: {
                     activityLogs: {
@@ -590,10 +608,29 @@ const addOrganizationActivityLog = async (req, res) => {
         );
         
         if (!org) {
-            return res.status(404).json({
-                success: false,
-                message: 'Organization not found'
-            });
+            // Try tenant organization (fallback)
+            org = await Organization.findByIdAndUpdate(
+                req.params.id,
+                {
+                    $push: {
+                        activityLogs: {
+                            user: user,
+                            userId: req.user?._id || null,
+                            action: action,
+                            details: details || null,
+                            timestamp: new Date()
+                        }
+                    }
+                },
+                { new: true, runValidators: true }
+            );
+            
+            if (!org) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Organization not found'
+                });
+            }
         }
         
         // Return the newly added log
@@ -647,11 +684,11 @@ const deleteContactById = async (req, res) => {
 // @access  Private (Admin/Owner only)
 const deleteOrganizationById = async (req, res) => {
     try {
-        // Try OrganizationV2 first
-        let org = await OrganizationV2.findByIdAndDelete(req.params.id);
+        // Try CRM organization first
+        let org = await Organization.findOneAndDelete({ _id: req.params.id, isTenant: false });
         
         if (!org) {
-            // Try legacy Organization
+            // Try tenant organization (fallback - but tenants shouldn't be deleted this way)
             org = await Organization.findByIdAndDelete(req.params.id);
         }
         
