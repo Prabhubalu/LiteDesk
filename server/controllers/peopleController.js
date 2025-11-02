@@ -27,7 +27,77 @@ exports.create = async (req, res) => {
     const record = await People.create(body);
     res.status(201).json({ success: true, data: record });
   } catch (error) {
-    res.status(400).json({ success: false, message: 'Error creating record', error: error.message });
+    console.error('Error creating people record:', error);
+    console.error('Error name:', error.name);
+    console.error('Error errors:', error.errors);
+    console.error('Error message:', error.message);
+    
+    // Handle Mongoose validation errors - check both error.name and error.errors
+    if (error.name === 'ValidationError' && error.errors) {
+      const validationErrors = {};
+      for (const field in error.errors) {
+        validationErrors[field] = error.errors[field].message;
+      }
+      
+      console.log('Returning validation errors:', validationErrors);
+      
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Validation failed. Please check the fields below.',
+        errors: validationErrors
+      });
+    }
+    
+    // Parse error message for validation errors (format: "People validation failed: type: Path `type` is required.")
+    // This happens when Mongoose validation fails but error.name is not 'ValidationError'
+    if (error.message && error.message.includes('validation failed')) {
+      const validationErrors = {};
+      
+      // Pattern 1: "field: Path `field` is required."
+      const requiredPattern = /(\w+):\s*Path\s+`(\w+)`\s+is\s+required\.?/gi;
+      let match;
+      while ((match = requiredPattern.exec(error.message)) !== null) {
+        const fieldName = match[1] || match[2];
+        validationErrors[fieldName] = `${fieldName} is required`;
+      }
+      
+      // Pattern 2: "field: error message" (general format)
+      if (Object.keys(validationErrors).length === 0) {
+        const parts = error.message.split(/validation failed:\s*/i);
+        if (parts.length > 1) {
+          const errorPart = parts[1];
+          const fieldMatches = errorPart.match(/(\w+):\s*(.+?)(?:,|$)/g);
+          if (fieldMatches) {
+            fieldMatches.forEach(fieldMatch => {
+              const fieldParts = fieldMatch.match(/(\w+):\s*(.+)/);
+              if (fieldParts) {
+                const fieldName = fieldParts[1];
+                let errorMsg = fieldParts[2].trim();
+                // Clean up common Mongoose error phrases
+                errorMsg = errorMsg.replace(/^Path\s+`\w+`\s+/, '');
+                validationErrors[fieldName] = errorMsg;
+              }
+            });
+          }
+        }
+      }
+      
+      if (Object.keys(validationErrors).length > 0) {
+        console.log('Parsed validation errors from message:', validationErrors);
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Validation failed. Please check the fields below.',
+          errors: validationErrors
+        });
+      }
+    }
+    
+    // Handle other errors - return the actual error message
+    res.status(400).json({ 
+      success: false, 
+      message: 'Error creating record',
+      error: error.message
+    });
   }
 };
 

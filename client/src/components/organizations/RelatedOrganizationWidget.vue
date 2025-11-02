@@ -4,11 +4,11 @@
       <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Related Organizations</h3>
       <button
         v-if="!organization"
-        @click="$emit('link-organization')"
-        class="p-1 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded transition-colors"
-        title="Link Organization"
+        @click="$emit('create-organization')"
+        class="rounded-md bg-white dark:bg-gray-800 px-2 py-1.5 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        title="Add Organization"
       >
-        <svg class="w-4 h-4 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-4 h-4 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
       </button>
@@ -51,10 +51,10 @@
       </svg>
       <p class="text-sm text-gray-500 dark:text-gray-400">No organization linked</p>
       <button
-        @click="$emit('link-organization')"
-        class="mt-2 text-xs text-brand-600 dark:text-brand-400 hover:underline"
+        @click="$emit('create-organization')"
+        class="mt-2 rounded-md bg-white dark:bg-gray-800 px-3 py-1.5 text-xs font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
       >
-        Link organization
+        Add organization
       </button>
     </div>
   </div>
@@ -75,7 +75,7 @@ const props = defineProps({
   }
 });
 
-defineEmits(['view-organization', 'link-organization', 'unlink-organization']);
+defineEmits(['view-organization', 'create-organization', 'link-organization', 'unlink-organization']);
 
 // Get key fields from module definition
 const keyFields = computed(() => {

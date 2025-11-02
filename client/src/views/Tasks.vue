@@ -255,7 +255,16 @@
     </DataTable>
 
     <!-- Task Form Modal -->
-    <TaskFormModal 
+    <CreateRecordDrawer 
+      :isOpen="showFormModal"
+      moduleKey="tasks"
+      :record="editingTask"
+      @close="closeFormModal"
+      @saved="handleTaskSave"
+    />
+
+    <!-- Task Form Modal (replaced) -->
+    <!-- <TaskFormModal 
       v-if="showFormModal"
       :task="editingTask"
       @close="closeFormModal"
@@ -388,7 +397,7 @@ import apiClient from '../utils/apiClient';
 import DataTable from '../components/common/DataTable.vue';
 import BadgeCell from '../components/common/table/BadgeCell.vue';
 import DateCell from '../components/common/table/DateCell.vue';
-import TaskFormModal from '../components/tasks/TaskFormModal.vue';
+import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import TaskDetailModal from '../components/tasks/TaskDetailModal.vue';
 import CSVImportModal from '../components/import/CSVImportModal.vue';
 import ModuleActions from '@/components/common/ModuleActions.vue';

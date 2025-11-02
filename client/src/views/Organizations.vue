@@ -370,10 +370,11 @@
       </Transition>
     </Teleport>
 
-    <!-- Organization Form Modal -->
-    <OrganizationFormModal
-      v-if="showFormModal"
-      :organization="editingOrganization"
+    <!-- Create/Edit Drawer -->
+    <CreateRecordDrawer 
+      :isOpen="showFormModal"
+      moduleKey="organizations"
+      :record="editingOrganization"
       @close="closeFormModal"
       @saved="handleOrganizationSaved"
     />
@@ -391,7 +392,7 @@ import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import DateCell from '@/components/common/table/DateCell.vue';
 import ModuleActions from '@/components/common/ModuleActions.vue';
 import RowActions from '@/components/common/RowActions.vue';
-import OrganizationFormModal from '@/components/organizations/OrganizationFormModal.vue';
+import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 
 const router = useRouter();
 const route = useRoute();

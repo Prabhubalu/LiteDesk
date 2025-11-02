@@ -518,7 +518,7 @@
                       <!-- Populated user object -->
                       <div v-if="fieldData.value.avatar" class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
                         <img :src="fieldData.value.avatar" :alt="getUserDisplayName(fieldData.value)" class="w-full h-full object-cover" />
-                      </div>
+            </div>
                       <div v-else class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
                         {{ getUserInitials(fieldData.value) }}
                       </div>
@@ -925,6 +925,17 @@
       </div>
     </div>
   </div>
+
+  <!-- Create Record Drawer -->
+  <CreateRecordDrawer
+    :isOpen="showCreateDrawer"
+    :moduleKey="createDrawerModuleKey"
+    :initialData="createDrawerInitialData"
+    :title="getCreateDrawerTitle()"
+    :description="getCreateDrawerDescription()"
+    @close="handleCreateDrawerClose"
+    @saved="handleCreateDrawerSaved"
+  />
 </template>
 
 <script setup>
@@ -933,7 +944,6 @@ import { Menu, MenuButton, MenuItem, MenuItems, Listbox, ListboxButton, ListboxO
 import { GridStack } from 'gridstack';
 import 'gridstack/dist/gridstack.min.css';
 import RelatedContactsWidget from '@/components/organizations/RelatedContactsWidget.vue';
-import RelatedUsersWidget from '@/components/organizations/RelatedUsersWidget.vue';
 import RelatedDealsWidget from '@/components/deals/RelatedDealsWidget.vue';
 import RelatedTasksWidget from '@/components/tasks/RelatedTasksWidget.vue';
 import RelatedEventsWidget from '@/components/events/RelatedEventsWidget.vue';
@@ -941,6 +951,7 @@ import RelatedOrganizationWidget from '@/components/organizations/RelatedOrganiz
 import OrganizationMetricsWidget from '@/components/organizations/OrganizationMetricsWidget.vue';
 import LifecycleStageWidget from '@/components/common/LifecycleStageWidget.vue';
 import KeyFieldsWidget from '@/components/common/KeyFieldsWidget.vue';
+import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import apiClient from '@/utils/apiClient';
 import { useAuthStore } from '@/stores/auth';
 import { useTabs } from '@/composables/useTabs';
@@ -1089,6 +1100,11 @@ const showWidgetModal = ref(false);
 const showRelationModal = ref(false);
 const newTag = ref('');
 const tags = ref([]);
+
+// Create drawer state
+const showCreateDrawer = ref(false);
+const createDrawerModuleKey = ref('');
+const createDrawerInitialData = ref({});
 
 // Fixed tabs - add Tenant Details tab if viewing tenant organization
 const fixedTabs = computed(() => {
@@ -1995,11 +2011,10 @@ const loadDefaultWidgets = () => {
   if (props.recordType === 'organizations') {
     defaultWidgets = [
       { type: 'related-contacts', x: 0, y: 0, w: 6, h: 4 },
-      { type: 'related-users', x: 6, y: 0, w: 6, h: 4 },
-      { type: 'related-deals', x: 0, y: 4, w: 6, h: 4 },
-      { type: 'metrics', x: 6, y: 4, w: 6, h: 4 },
-      { type: 'lifecycle-stage', x: 0, y: 8, w: 4, h: 3 },
-      { type: 'key-fields', x: 4, y: 8, w: 8, h: 3 }
+      { type: 'related-deals', x: 6, y: 0, w: 6, h: 4 },
+      { type: 'metrics', x: 0, y: 4, w: 6, h: 4 },
+      { type: 'lifecycle-stage', x: 6, y: 4, w: 6, h: 3 },
+      { type: 'key-fields', x: 0, y: 7, w: 12, h: 3 }
     ];
   } else {
     // Default widgets for other record types
@@ -2036,7 +2051,7 @@ const addWidgetToGrid = (widgetType, x = 0, y = 0, w = 4, h = 3) => {
   if (!gridStack || !gridStackContainer.value) return;
   
   // Ensure record is available before creating widgets that need it
-  if ((widgetType === 'related-contacts' || widgetType === 'related-users' || widgetType === 'related-deals' || widgetType === 'related-tasks' || widgetType === 'related-events') && !props.record?._id) {
+  if ((widgetType === 'related-contacts' || widgetType === 'related-deals' || widgetType === 'related-tasks' || widgetType === 'related-events') && !props.record?._id) {
     console.warn(`Cannot create ${widgetType} widget: record._id not available`);
     return;
   }
@@ -2091,15 +2106,14 @@ const createWidgetElement = (widgetType) => {
         componentProps.limit = 5;
         componentProps.moduleDefinition = allModuleDefinitions.value['people'];
         break;
-      case 'related-users':
-        Component = RelatedUsersWidget;
-        componentProps.organizationId = props.record.legacyOrganizationId || props.record._id;
-        componentProps.limit = 5;
-        componentProps.moduleDefinition = allModuleDefinitions.value['users'];
-        break;
       case 'related-deals':
         Component = RelatedDealsWidget;
-        componentProps.organizationId = props.record.legacyOrganizationId || props.record._id;
+        // For organizations, use accountId to link deals to the organization record
+        if (props.recordType === 'organizations') {
+          componentProps.accountId = props.record._id;
+        } else {
+          componentProps.organizationId = props.record.legacyOrganizationId || props.record._id;
+        }
         componentProps.limit = 5;
         componentProps.moduleDefinition = allModuleDefinitions.value['deals'];
         break;
@@ -2214,7 +2228,10 @@ const createWidgetElement = (widgetType) => {
     };
     
     const wrapperComponent = {
-      setup() {
+      setup(_, { expose }) {
+        // Store reference to child component instance
+        const childComponentRef = ref(null);
+        
         // Pass props directly - widgets will watch for changes
         const handleUpdate = (data) => {
           // Handle lifecycle stage updates
@@ -2223,7 +2240,17 @@ const createWidgetElement = (widgetType) => {
           }
         };
         
+        // Expose refresh method that calls the child component's refresh
+        expose({
+          refresh: () => {
+            if (childComponentRef.value && typeof childComponentRef.value.refresh === 'function') {
+              childComponentRef.value.refresh();
+            }
+          }
+        });
+        
         return () => h(Component, {
+          ref: childComponentRef,
           ...componentProps,
           // Pass reactive record from props if lifecycle-stage widget
           record: widgetType === 'lifecycle-stage' ? props.record : componentProps.record,
@@ -2237,11 +2264,12 @@ const createWidgetElement = (widgetType) => {
           onViewOrganization: handleViewOrganization,
           onViewTask: handleViewTask,
           onViewEvent: handleViewEvent,
-          onCreateContact: () => {},
-          onCreateUser: () => {},
-          onCreateDeal: () => {},
-          onCreateTask: () => {},
-          onCreateEvent: () => {},
+          onCreateContact: () => handleCreateRecord('people'),
+          onCreateUser: () => handleCreateRecord('users'),
+          onCreateDeal: () => handleCreateRecord('deals'),
+          onCreateTask: () => handleCreateRecord('tasks'),
+          onCreateEvent: () => handleCreateRecord('events'),
+          onCreateOrganization: () => handleCreateRecord('organizations'),
           onUpdate: handleUpdate
         });
       }
@@ -2808,6 +2836,104 @@ const handleDelete = () => {
 
 const handleAddRelation = (relationData) => {
   emit('addRelation', relationData);
+};
+
+const handleCreateRecord = (moduleKey) => {
+  const initialData = {};
+  
+  // Pre-fill form based on current record context
+  if (props.record && props.record._id) {
+    if (props.recordType === 'organizations') {
+      // If creating from organization context
+      if (moduleKey === 'people') {
+        initialData.organization = props.record._id;
+      } else if (moduleKey === 'deals') {
+        initialData.accountId = props.record._id;
+      } else if (moduleKey === 'tasks' || moduleKey === 'events') {
+        initialData.relatedTo = {
+          type: 'organization',
+          id: props.record._id
+        };
+      }
+    } else if (props.recordType === 'people') {
+      // If creating from people/contact context
+      if (moduleKey === 'deals') {
+        initialData.contactId = props.record._id;
+      } else if (moduleKey === 'tasks' || moduleKey === 'events') {
+        initialData.relatedTo = {
+          type: 'contact',
+          id: props.record._id
+        };
+      }
+    }
+  }
+  
+  createDrawerModuleKey.value = moduleKey;
+  createDrawerInitialData.value = initialData;
+  showCreateDrawer.value = true;
+};
+
+const handleCreateDrawerSaved = (newRecord) => {
+  // Refresh widgets to show the new record
+  refreshAllWidgets();
+  
+  // Don't open the new record in a tab - just refresh the widget
+  // The drawer will close automatically via the closeDrawer function
+};
+
+const handleCreateDrawerClose = () => {
+  showCreateDrawer.value = false;
+  createDrawerModuleKey.value = '';
+  createDrawerInitialData.value = {};
+};
+
+const refreshAllWidgets = () => {
+  if (!gridStack) return;
+  
+  const widgets = gridStack.getGridItems();
+  widgets.forEach(item => {
+    const widgetType = item.getAttribute('data-widget-type');
+    if (widgetType) {
+      // Find the Vue app instance and call refresh if available
+      const widgetAppsEntry = Array.from(widgetApps.entries()).find(([el]) => el === item);
+      if (widgetAppsEntry) {
+        const [, { app }] = widgetAppsEntry;
+        // Try to access the exposed refresh method from the wrapper component
+        try {
+          const rootComponent = app._instance;
+          if (rootComponent?.exposed && typeof rootComponent.exposed.refresh === 'function') {
+            rootComponent.exposed.refresh();
+          }
+        } catch (error) {
+          console.warn('Error refreshing widget:', widgetType, error);
+        }
+      }
+    }
+  });
+};
+
+const getCreateDrawerTitle = () => {
+  const titles = {
+    'people': 'New Contact',
+    'organizations': 'New Organization',
+    'deals': 'New Deal',
+    'tasks': 'New Task',
+    'events': 'New Event',
+    'users': 'New User'
+  };
+  return titles[createDrawerModuleKey.value] || 'Create Record';
+};
+
+const getCreateDrawerDescription = () => {
+  const descriptions = {
+    'people': 'Add a new contact to your CRM.',
+    'organizations': 'Add a new organization to your CRM.',
+    'deals': 'Create a new deal opportunity.',
+    'tasks': 'Create a new task.',
+    'events': 'Schedule a new event.',
+    'users': 'Add a new user to your organization.'
+  };
+  return descriptions[createDrawerModuleKey.value] || 'Fill in the information below to create a new record.';
 };
 
 const handleOpenRelatedRecord = async (relatedRecord) => {

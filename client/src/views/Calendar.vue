@@ -120,10 +120,11 @@
       </div>
     </div>
 
-    <!-- Event Form Modal -->
-    <EventFormModal
-      :is-open="showEventModal"
-      :event="editingEvent"
+    <!-- Event Form Drawer -->
+    <CreateRecordDrawer
+      :isOpen="showEventModal"
+      moduleKey="events"
+      :record="editingEvent"
       @close="closeEventModal"
       @saved="handleEventSaved"
     />
@@ -139,7 +140,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction';
 import apiClient from '@/utils/apiClient';
-import EventFormModal from '@/components/events/EventFormModal.vue';
+import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import { useTabs } from '@/composables/useTabs';
 
 const router = useRouter();

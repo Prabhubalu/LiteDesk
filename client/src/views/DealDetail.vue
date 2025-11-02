@@ -324,18 +324,20 @@
       </div>
     </div>
 
-    <!-- Edit Modal -->
-    <DealFormModal 
-      v-if="showEditModal"
-      :deal="deal"
+    <!-- Edit Drawer -->
+    <CreateRecordDrawer 
+      :isOpen="showEditModal"
+      moduleKey="deals"
+      :record="deal"
       @close="showEditModal = false"
       @saved="handleDealUpdated"
     />
 
-    <!-- Event Form Modal -->
-    <EventFormModal
-      :is-open="showEventModal"
-      :event="eventToEdit"
+    <!-- Event Form Drawer -->
+    <CreateRecordDrawer
+      :isOpen="showEventModal"
+      moduleKey="events"
+      :record="eventToEdit"
       @close="showEventModal = false"
       @saved="handleEventSaved"
     />
@@ -347,9 +349,8 @@ import { ref, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
-import DealFormModal from '@/components/deals/DealFormModal.vue';
+import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import RelatedEventsWidget from '@/components/events/RelatedEventsWidget.vue';
-import EventFormModal from '@/components/events/EventFormModal.vue';
 
 const route = useRoute();
 const router = useRouter();

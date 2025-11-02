@@ -387,10 +387,11 @@
       </Transition>
     </Teleport>
 
-    <!-- Create/Edit Modal -->
-    <ContactFormModal 
-      v-if="showFormModal"
-      :contact="editingContact"
+    <!-- Create/Edit Drawer -->
+    <CreateRecordDrawer 
+      :isOpen="showFormModal"
+      moduleKey="people"
+      :record="editingContact"
       @close="closeFormModal"
       @saved="handleContactSaved"
     />
@@ -415,7 +416,7 @@ import apiClient from '@/utils/apiClient';
 import DataTable from '@/components/common/DataTable.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import DateCell from '@/components/common/table/DateCell.vue';
-import ContactFormModal from '@/components/contacts/ContactFormModal.vue';
+import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import CSVImportModal from '@/components/import/CSVImportModal.vue';
 import ModuleActions from '@/components/common/ModuleActions.vue';
 import RowActions from '@/components/common/RowActions.vue';

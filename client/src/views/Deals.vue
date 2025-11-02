@@ -547,10 +547,11 @@
       <!-- Pagination (commented out - handled by DataTable) -->
     </div>
 
-    <!-- Create/Edit Modal -->
-    <DealFormModal 
-      v-if="showFormModal"
-      :deal="editingDeal"
+    <!-- Create/Edit Drawer -->
+    <CreateRecordDrawer 
+      :isOpen="showFormModal"
+      moduleKey="deals"
+      :record="editingDeal"
       @close="closeFormModal"
       @saved="handleDealSaved"
     />
@@ -574,7 +575,7 @@ import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
 import DataTable from '@/components/common/DataTable.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
-import DealFormModal from '@/components/deals/DealFormModal.vue';
+import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import CSVImportModal from '@/components/import/CSVImportModal.vue';
 import ModuleActions from '@/components/common/ModuleActions.vue';
 import RowActions from '@/components/common/RowActions.vue';
