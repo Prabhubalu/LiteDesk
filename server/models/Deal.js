@@ -65,7 +65,7 @@ const DealSchema = new Schema({
     },
     accountId: {
         type: Schema.Types.ObjectId,
-        ref: 'Account'
+        ref: 'Organization'
     },
     ownerId: {
         type: Schema.Types.ObjectId,

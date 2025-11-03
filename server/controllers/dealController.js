@@ -1,5 +1,6 @@
 const Deal = require('../models/Deal');
 const People = require('../models/People');
+const mongoose = require('mongoose');
 
 // @desc    Create new deal
 // @route   POST /api/deals
@@ -64,7 +65,12 @@ exports.getDeals = async (req, res) => {
             query.contactId = req.query.contactId;
         }
         if (req.query.accountId) {
-            query.accountId = req.query.accountId;
+            // Convert accountId to ObjectId if it's a valid ObjectId string
+            if (mongoose.Types.ObjectId.isValid(req.query.accountId)) {
+                query.accountId = new mongoose.Types.ObjectId(req.query.accountId);
+            } else {
+                query.accountId = req.query.accountId;
+            }
         }
         
         // Search functionality

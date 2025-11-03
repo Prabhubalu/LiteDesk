@@ -56,14 +56,14 @@ usePermissionSync(2);
   <!-- Authenticated layout -->
   <div v-if="isAuthenticated">
     <!-- Shell-less pages (e.g., Settings) -->
-    <div v-if="hideShell" class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div v-if="hideShell" class="min-h-screen bg-gray-100/70 dark:bg-gray-900">
       <div class="flex-1 overflow-y-hidden overflow-x-hidden">
         <RouterView />
       </div>
     </div>
 
     <!-- Default shell with Sidebar/Tabbar -->
-    <div v-else class="min-h-screen bg-gray-50 dark:bg-gray-900 flex overflow-x-hidden">
+    <div v-else class="min-h-screen bg-gray-100/70 dark:bg-gray-900 flex overflow-x-hidden">
     <!-- Sidebar Navigation - v-model binds collapsed state -->
     <Nav v-model="sidebarCollapsed" />
     
@@ -78,7 +78,7 @@ usePermissionSync(2);
       <TabBar class="hidden md:block" />
       
       <!-- Content wrapper with padding -->
-      <div class="flex-1 p-8 lg:p-12 overflow-y-auto overflow-x-hidden mt-16 md:mt-28 lg:mt-12">
+      <div class="flex-1 p-4 lg:p-6 overflow-y-auto overflow-x-hidden mt-16 md:mt-30 lg:mt-14">
         <!-- Keep-alive caches component instances to prevent remounting on tab switch -->
         <RouterView v-slot="{ Component }">
           <keep-alive :max="10">

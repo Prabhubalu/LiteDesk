@@ -16,6 +16,8 @@
       :type="getInputType(field)"
       :value="value"
       @input="updateValue($event.target.value)"
+      @blur="$emit('blur')"
+      @keydown.enter="$event.target.blur()"
       :placeholder="field.placeholder || `Enter ${field.label || field.key}`"
       :required="isRequired"
       :disabled="isReadOnly"
@@ -34,6 +36,8 @@
       :name="field.key"
       :value="value"
       @input="updateValue($event.target.value)"
+      @blur="$emit('blur')"
+      @keydown.enter.ctrl="$event.target.blur()"
       :placeholder="field.placeholder || `Enter ${field.label || field.key}`"
       :required="isRequired"
       :disabled="isReadOnly"
@@ -50,6 +54,8 @@
       type="email"
       :value="value"
       @input="updateValue($event.target.value)"
+      @blur="$emit('blur')"
+      @keydown.enter="$event.target.blur()"
       :placeholder="field.placeholder || `email@example.com`"
       :required="isRequired"
       :disabled="isReadOnly"
@@ -64,6 +70,8 @@
       type="tel"
       :value="value"
       @input="updateValue($event.target.value)"
+      @blur="$emit('blur')"
+      @keydown.enter="$event.target.blur()"
       :placeholder="field.placeholder || `+1 (555) 123-4567`"
       :required="isRequired"
       :disabled="isReadOnly"
@@ -78,6 +86,8 @@
       type="number"
       :value="value"
       @input="updateValue($event.target.value)"
+      @blur="$emit('blur')"
+      @keydown.enter="$event.target.blur()"
       :placeholder="field.placeholder || `Enter ${field.label || field.key}`"
       :required="isRequired"
       :disabled="isReadOnly"
@@ -95,6 +105,8 @@
       type="date"
       :value="formatDateForInput(value)"
       @input="updateValue($event.target.value)"
+      @blur="$emit('blur')"
+      @keydown.enter="$event.target.blur()"
       :required="isRequired"
       :disabled="isReadOnly"
       class="block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
@@ -108,6 +120,8 @@
       type="datetime-local"
       :value="formatDateTimeForInput(value)"
       @input="updateValue($event.target.value)"
+      @blur="$emit('blur')"
+      @keydown.enter="$event.target.blur()"
       :required="isRequired"
       :disabled="isReadOnly"
       class="block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
@@ -115,7 +129,7 @@
     
     <!-- Picklist (using Headless UI Combobox with search input inside dropdown) -->
     <div v-else-if="field.dataType === 'Picklist'" class="mt-2 relative">
-      <Combobox :model-value="value || ''" @update:model-value="updateValue" :disabled="isReadOnly" nullable>
+      <Combobox :model-value="value || ''" @update:model-value="handlePicklistChange" :disabled="isReadOnly" nullable>
         <div class="relative">
           <ComboboxButton
             @click="handlePicklistButtonClick"
@@ -208,7 +222,7 @@
     
     <!-- Radio Button (using Headless UI Listbox) -->
     <div v-else-if="field.dataType === 'Radio Button'" class="mt-2 relative">
-      <Listbox :model-value="value || ''" @update:model-value="updateValue" :disabled="isReadOnly">
+      <Listbox :model-value="value || ''" @update:model-value="handleRadioChange" :disabled="isReadOnly">
         <div class="relative">
           <ListboxButton
             :class="[
@@ -318,7 +332,7 @@
       >
         <div
           v-if="showMultiOptions && !isReadOnly"
-          v-click-outside="() => showMultiOptions = false"
+          v-click-outside="() => { showMultiOptions = false; emit('blur'); }"
           @click.stop
           class="absolute z-20 mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10 max-h-60 overflow-auto"
         >
@@ -369,6 +383,7 @@
         type="checkbox"
         :checked="value"
         @change="updateValue($event.target.checked)"
+        @blur="$emit('blur')"
         :required="isRequired"
         :disabled="isReadOnly"
         class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500"
@@ -383,7 +398,7 @@
     
     <!-- Lookup (Relationship) - with searchable Combobox and modal browse button -->
     <div v-else-if="field.dataType === 'Lookup (Relationship)'" class="mt-2 relative">
-      <Combobox :model-value="normalizedLookupValue || ''" @update:model-value="updateValue" :disabled="isReadOnly" nullable>
+      <Combobox :model-value="normalizedLookupValue || ''" @update:model-value="handleLookupChange" :disabled="isReadOnly" nullable>
         <div class="relative">
           <ComboboxButton
             @click="handleLookupButtonClick"
@@ -573,6 +588,8 @@
       type="url"
       :value="value"
       @input="updateValue($event.target.value)"
+      @blur="$emit('blur')"
+      @keydown.enter="$event.target.blur()"
       :placeholder="field.placeholder || `https://example.com`"
       :required="isRequired"
       :disabled="isReadOnly"
@@ -674,7 +691,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['update:value', 'validation-error']);
+const emit = defineEmits(['update:value', 'validation-error', 'blur']);
 
 const authStore = useAuthStore();
 const lookupOptions = ref([]);
@@ -840,6 +857,27 @@ const updateValue = (newValue) => {
   lookupSearchQuery.value = '';
 };
 
+// Handler for picklist changes (emits blur immediately since selection is complete)
+const handlePicklistChange = (newValue) => {
+  updateValue(newValue);
+  // Emit blur immediately after selection for dropdown fields
+  emit('blur');
+};
+
+// Handler for radio button changes (emits blur immediately since selection is complete)
+const handleRadioChange = (newValue) => {
+  updateValue(newValue);
+  // Emit blur immediately after selection for radio buttons
+  emit('blur');
+};
+
+// Handler for lookup changes (emits blur immediately since selection is complete)
+const handleLookupChange = (newValue) => {
+  updateValue(newValue);
+  // Emit blur immediately after selection for lookup fields
+  emit('blur');
+};
+
 // Focus functions for auto-focusing search inputs when Combobox opens
 const focusPicklistSearch = () => {
   // Multiple attempts to ensure focus works
@@ -997,6 +1035,7 @@ const toggleMultiSelect = (option) => {
   }
   
   emit('update:value', current);
+  // Note: blur will be emitted when dropdown closes (v-click-outside)
 };
 
 const getMultiSelectDisplayText = () => {
@@ -1019,6 +1058,8 @@ const removeMultiSelect = (option) => {
   if (index > -1) {
     current.splice(index, 1);
     emit('update:value', current);
+    // Emit blur immediately for tag removal (user interaction is complete)
+    emit('blur');
   }
 };
 
