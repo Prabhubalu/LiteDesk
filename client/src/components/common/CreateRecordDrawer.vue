@@ -1,13 +1,13 @@
 <template>
   <TransitionRoot as="template" :show="isOpen">
-    <Dialog class="relative z-50" @close="closeDrawer">
+    <Dialog class="relative z-50" @close="handleDialogClose">
       <!-- Background overlay -->
       <TransitionChild
         as="template"
-        enter="ease-out duration-400"
+        enter="ease-out duration-200"
         enter-from="opacity-0"
         enter-to="opacity-100"
-        leave="ease-in duration-400"
+        leave="ease-in duration-200"
         leave-from="opacity-100"
         leave-to="opacity-0"
       >
@@ -19,10 +19,10 @@
           <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
             <TransitionChild 
               as="template" 
-              enter="transform transition ease-in-out duration-500 sm:duration-700" 
+              enter="transform transition ease-in-out duration-300 sm:duration-300" 
               enter-from="translate-x-full" 
               enter-to="translate-x-0" 
-              leave="transform transition ease-in-out duration-500 sm:duration-700" 
+              leave="transform transition ease-in-out duration-300 sm:duration-300" 
               leave-from="translate-x-0" 
               leave-to="translate-x-full"
             >
@@ -169,6 +169,45 @@ const formData = ref({ ...props.initialData });
 const errors = ref({});
 const saving = ref(false);
 const moduleDefinition = ref(null);
+const initialSnapshot = ref({});
+
+// Keys that may be auto-populated by components (not user edits)
+const ignoredDirtyKeys = new Set(['assignedTo']);
+
+// Deep equality check with ability to ignore specific keys
+const deepEqual = (a, b, path = []) => {
+  if (a === b) return true;
+  // Handle Date objects
+  if (a instanceof Date && b instanceof Date) return a.getTime() === b.getTime();
+  // Handle arrays
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      if (!deepEqual(a[i], b[i], path.concat(String(i)))) return false;
+    }
+    return true;
+  }
+  // Handle objects
+  if (a && b && typeof a === 'object' && typeof b === 'object') {
+    const aKeys = Object.keys(a);
+    const bKeys = Object.keys(b);
+    if (aKeys.length !== bKeys.length) return false;
+    for (const key of aKeys) {
+      if (!Object.prototype.hasOwnProperty.call(b, key)) return false;
+      // Ignore known auto-populated keys
+      if (ignoredDirtyKeys.has(key)) continue;
+      if (!deepEqual(a[key], b[key], path.concat(key))) return false;
+    }
+    return true;
+  }
+  // Fallback for primitives/mismatch types
+  return false;
+};
+
+// Determine if any field value actually changed from initial snapshot
+const isDirty = computed(() => {
+  return !deepEqual(formData.value || {}, initialSnapshot.value || {});
+});
 
 const closeDrawer = () => {
   if (!saving.value) {
@@ -179,6 +218,15 @@ const closeDrawer = () => {
       errors.value = {};
     }, 300);
   }
+};
+
+// Handle dialog close (triggered by Esc or backdrop click)
+const handleDialogClose = () => {
+  // Allow closing if module not initialized yet (opening state) or form is clean
+  if (moduleDefinition.value && isDirty.value) {
+    return; // Prevent closing if form has changes
+  }
+  closeDrawer();
 };
 
 const updateFormData = (data) => {
@@ -248,6 +296,8 @@ const onFormReady = (module) => {
   if (module) {
     moduleDefinition.value = module;
     initializeForm(module);
+    // Capture initial snapshot after initialization
+    initialSnapshot.value = JSON.parse(JSON.stringify(formData.value || {}));
   }
 };
 
@@ -332,6 +382,27 @@ const handleSubmit = async () => {
     delete submitData._id;
     delete submitData.__v;
     
+    // Handle nested object conflicts (e.g., 'settings' and 'settings.primaryColor')
+    // Remove parent keys if nested dot-notation keys exist to avoid Mongoose conflicts
+    const keysToRemove = [];
+    const nestedKeys = Object.keys(submitData).filter(key => key.includes('.'));
+    
+    // For each nested key (e.g., 'settings.primaryColor'), check if parent exists
+    for (const nestedKey of nestedKeys) {
+      const parentKey = nestedKey.split('.')[0];
+      if (submitData[parentKey] && typeof submitData[parentKey] === 'object') {
+        // Parent object exists and we have nested keys - remove parent to avoid conflict
+        if (!keysToRemove.includes(parentKey)) {
+          keysToRemove.push(parentKey);
+        }
+      }
+    }
+    
+    // Remove conflicting parent keys
+    for (const key of keysToRemove) {
+      delete submitData[key];
+    }
+    
     // Handle organization field - ensure it's an ObjectId string, not an object
     if (submitData.organization && typeof submitData.organization === 'object') {
       submitData.organization = submitData.organization._id || submitData.organization;
@@ -349,6 +420,12 @@ const handleSubmit = async () => {
       submitData.organization = null;
     }
     
+    // Remove slug field for CRM organizations (not needed - only tenants use slugs)
+    // The backend pre-save hook only generates slugs for tenant organizations
+    if (props.moduleKey === 'organizations') {
+      delete submitData.slug;
+    }
+    
     // Determine API endpoint based on module key
     // Note: apiClient already prepends /api, so we don't include it here
     let endpoint = '';
@@ -362,6 +439,11 @@ const handleSubmit = async () => {
     };
     
     endpoint = moduleEndpointMap[props.moduleKey] || `/${props.moduleKey}`;
+    
+    // Remove legacyOrganizationId if it's null to avoid unique index conflicts
+    if (props.moduleKey === 'organizations' && (submitData.legacyOrganizationId === null || submitData.legacyOrganizationId === undefined)) {
+      delete submitData.legacyOrganizationId;
+    }
     
     let response;
     if (isEditing.value && props.record?._id) {
@@ -493,6 +575,8 @@ const handleSubmit = async () => {
 watch(() => props.isOpen, (isOpen) => {
   if (isOpen) {
     errors.value = {};
+    // Capture an initial snapshot immediately on open to avoid race with module load
+    initialSnapshot.value = JSON.parse(JSON.stringify(formData.value || {}));
     // Form will be initialized by onFormReady when module loads
   } else {
     // Reset when closed

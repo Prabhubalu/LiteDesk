@@ -1,9 +1,5 @@
 <template>
-  <div class="flex flex-col h-full w-full">
-    <div class="flex items-center justify-between mb-3">
-      <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Lifecycle Stage</h3>
-    </div>
-
+  <CardWidget title="Lifecycle Stage">
     <!-- Type and Age Info -->
     <div class="flex items-center gap-3 mb-4 text-sm">
       <div class="flex items-center gap-2">
@@ -59,11 +55,12 @@
         ></div>
       </div>
     </div>
-  </div>
+  </CardWidget>
 </template>
 
 <script setup>
 import { computed } from 'vue';
+import CardWidget from '@/components/common/CardWidget.vue';
 
 const props = defineProps({
   record: {

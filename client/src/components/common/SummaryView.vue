@@ -204,17 +204,58 @@
               </Menu>
 
               <!-- Add Relation Dropdown (Desktop only) -->
+              <Menu as="div" class="relative hidden lg:block">
+                <MenuButton class="inline-flex items-center px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium text-sm transition-colors border border-gray-200 dark:border-gray-600">
+                    <PlusIcon class="w-4 h-4 mr-2" />
+                    Add Relation
+                  <ChevronDownIcon class="ml-2 h-4 w-4" aria-hidden="true" />
+                </MenuButton>
+                <Transition
+                  enter-active-class="transition ease-out duration-100"
+                  enter-from-class="transform opacity-0 scale-95"
+                  enter-to-class="transform opacity-100 scale-100"
+                  leave-active-class="transition ease-in duration-75"
+                  leave-from-class="transform opacity-100 scale-100"
+                  leave-to-class="transform opacity-0 scale-95"
+                >
+                  <MenuItems class="absolute right-0 mt-2 w-56 origin-top-right rounded-lg shadow-xl py-1 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 z-50">
+                    <template v-for="relationship in availableRelationships" :key="relationship.moduleKey">
+                      <MenuItem v-slot="{ active }" as="template">
+                        <div :class="[
+                          'px-4 py-2',
+                          active ? 'bg-gray-50 dark:bg-gray-700/50' : ''
+                        ]">
+                          <div class="flex items-center justify-between mb-1">
+                            <span class="text-sm font-medium text-gray-900 dark:text-white">{{ relationship.label }}</span>
+                          </div>
+                          <div class="flex items-center gap-2 mt-1">
               <button
-                @click="showRelationModal = true"
-                class="hidden lg:inline-flex px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors"
+                              @click.stop="handleCreateRecord(relationship.moduleKey)"
+                              class="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
-                + Add Relation
+                              <PlusIcon class="w-3.5 h-3.5" />
+                              Add
               </button>
+                            <button
+                              @click.stop="handleLinkRecords(relationship.moduleKey)"
+                              class="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                            >
+                              <LinkIcon class="w-3.5 h-3.5" />
+                              Link
+                            </button>
+                          </div>
+                        </div>
+                      </MenuItem>
+                      <div v-if="relationship !== availableRelationships[availableRelationships.length - 1]" class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                    </template>
+                  </MenuItems>
+                </Transition>
+              </Menu>
 
               <!-- Record Edit Button (Desktop only) -->
               <button
-                @click="$emit('edit')"
-                class="hidden lg:inline-flex px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors items-center"
+                @click="openEditDrawer"
+                class="hidden lg:inline-flex px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors items-center border border-gray-200 dark:border-gray-600"
               >
                 <PencilSquareIcon class="w-4 h-4 mr-2" />
                 Edit
@@ -222,7 +263,7 @@
 
               <!-- More Dropdown -->
               <Menu as="div" class="relative">
-                <MenuButton class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                <MenuButton class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors border border-gray-200 dark:border-gray-600">
                   <EllipsisVerticalIcon class="w-5 h-5" />
                 </MenuButton>
 
@@ -238,7 +279,7 @@
                     <!-- Edit (Mobile/Tablet only) -->
                     <MenuItem v-slot="{ active }" class="lg:hidden">
                       <button
-                        @click="$emit('edit')"
+                        @click="openEditDrawer"
                         :class="[
                           'w-full text-left px-4 py-2 text-sm transition-colors duration-150 flex items-center gap-2',
                           active ? 'bg-gray-100 dark:bg-gray-700' : '',
@@ -250,22 +291,42 @@
                       </button>
                     </MenuItem>
                     
-                    <!-- Add Relation (Mobile/Tablet only) -->
-                    <MenuItem v-slot="{ active }" class="lg:hidden">
+                    <!-- Add Relation Submenu (Mobile/Tablet only) -->
+                    <template v-if="availableRelationships.length > 0">
+                      <div class="lg:hidden border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                      <template v-for="relationship in availableRelationships" :key="relationship.moduleKey">
+                        <div class="lg:hidden">
+                          <MenuItem v-slot="{ active }" as="template">
+                            <div :class="[
+                              'px-4 py-2',
+                              active ? 'bg-gray-50 dark:bg-gray-700/50' : ''
+                            ]">
+                              <div class="flex items-center justify-between mb-1">
+                                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ relationship.label }}</span>
+                              </div>
+                              <div class="flex items-center gap-2 mt-1">
                       <button
-                        @click="showRelationModal = true"
-                        :class="[
-                          'w-full text-left px-4 py-2 text-sm transition-colors duration-150',
-                          active ? 'bg-gray-100 dark:bg-gray-700' : '',
-                          'text-gray-700 dark:text-gray-300'
-                        ]"
-                      >
-                        + Add Relation
+                                  @click.stop="handleCreateRecord(relationship.moduleKey)"
+                                  class="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                >
+                                  <PlusIcon class="w-3.5 h-3.5" />
+                                  Add
                       </button>
+                                <button
+                                  @click.stop="handleLinkRecords(relationship.moduleKey)"
+                                  class="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                >
+                                  <LinkIcon class="w-3.5 h-3.5" />
+                                  Link
+                                </button>
+                              </div>
+                            </div>
                     </MenuItem>
-
-                    <!-- Divider (Mobile/Tablet only) -->
+                        </div>
+                        <div v-if="relationship !== availableRelationships[availableRelationships.length - 1]" class="lg:hidden border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                      </template>
                     <div class="lg:hidden border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                    </template>
 
                     <!-- Delete Record -->
                     <MenuItem v-slot="{ active }">
@@ -314,9 +375,9 @@
       <!-- Tab Content -->
       <div :class="tabContentPadding">
         <!-- Summary Tab with GridStack Dashboard -->
-        <div v-if="activeTab === 'summary'">
+        <div v-if="activeTab === 'summary'" class="">
           <!-- GridStack Container -->
-          <div ref="gridStackContainer" class="grid-stack">
+          <div ref="gridStackContainer" class="grid-stack bg-gray-100/70 dark:bg-gray-900 sm:p-3">
             <!-- Widgets will be rendered here by GridStack -->
           </div>
 
@@ -364,7 +425,7 @@
           </div>
 
           <!-- Tenant Fields Block -->
-          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
             <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Tenant Fields</h3>
               <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Subscription, limits, and organization settings</p>
@@ -385,6 +446,7 @@
                   :field="fieldData.field"
                   :value="fieldData.value"
                   @update:value="updateField(fieldData.key, $event)"
+                  @blur="saveFieldOnBlur(fieldData.key)"
                   :errors="{}"
                   :dependency-state="fieldData.dependencyState"
                 />
@@ -495,7 +557,7 @@
                 </div>
               </div>
           <!-- CRM Fields Block -->
-          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
             <!-- Fields Grid using DynamicFormField -->
             <div :class="detailsGridClass" :style="detailsGridStyle">
               <div 
@@ -543,6 +605,7 @@
                   :field="fieldData.field"
                   :value="fieldData.value"
                   @update:value="updateField(fieldData.key, $event)"
+                  @blur="saveFieldOnBlur(fieldData.key)"
                   :errors="{}"
                   :dependency-state="fieldData.dependencyState"
                 />
@@ -561,7 +624,7 @@
 
         <!-- Updates/Timeline Tab -->
         <div v-else-if="activeTab === 'updates'" class="space-y-4">
-          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
             <!-- Filters -->
             <div class="mb-6 flex justify-end">
               <Menu as="div" class="relative">
@@ -814,7 +877,30 @@
                               {{ ' ' }}
                               <span class="whitespace-nowrap text-gray-500 dark:text-gray-400">{{ activityItem.date }}</span>
                             </div>
-                            <div v-if="activityItem.comment && activityItem.comment !== activityItem.action" class="mt-1 text-sm text-gray-700 dark:text-gray-300">
+                            <!-- Display multiple changes as a list -->
+                            <div v-if="activityItem.multipleChanges && activityItem.multipleChanges.length > 0" class="mt-2 space-y-1">
+                              <div 
+                                v-for="(change, changeIdx) in activityItem.multipleChanges" 
+                                :key="changeIdx"
+                                class="text-sm text-gray-700 dark:text-gray-300 pl-4 border-l-2 border-gray-200 dark:border-gray-600"
+                              >
+                                <span class="font-medium text-gray-900 dark:text-white">{{ change.field }}</span>
+                                <span v-if="change.action === 'set'">
+                                  : set to "<span class="font-medium">{{ change.newValue }}</span>"
+                                </span>
+                                <span v-else-if="change.action === 'changed'">
+                                  : changed from "<span class="font-medium">{{ change.oldValue }}</span>" to "<span class="font-medium">{{ change.newValue }}</span>"
+                                </span>
+                                <span v-else-if="change.action === 'cleared'">
+                                  : cleared (was "<span class="font-medium">{{ change.oldValue }}</span>")
+                                </span>
+                                <span v-else-if="change.description">
+                                  : {{ change.description }}
+                                </span>
+                              </div>
+                            </div>
+                            <!-- Single change comment (fallback) -->
+                            <div v-else-if="activityItem.comment && activityItem.comment !== activityItem.action" class="mt-1 text-sm text-gray-700 dark:text-gray-300">
                               <p>{{ activityItem.comment }}</p>
                             </div>
                           </div>
@@ -864,39 +950,135 @@
     </div>
 
     <!-- Widget Management Modal -->
-    <div v-if="showWidgetModal" class="fixed inset-0 z-50 overflow-y-auto">
-      <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="showWidgetModal = false"></div>
-        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
-          <div class="px-6 py-4">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Manage Widgets</h3>
-            <div class="grid grid-cols-2 gap-4 mb-6">
+    <!-- Add Widget Drawer -->
+    <TransitionRoot as="template" :show="showWidgetModal">
+      <Dialog class="relative z-50" @close="showWidgetModal = false">
+        <!-- Background overlay -->
+        <TransitionChild
+          as="template"
+          enter="ease-out duration-200"
+          enter-from="opacity-0"
+          enter-to="opacity-100"
+          leave="ease-in duration-200"
+          leave-from="opacity-100"
+          leave-to="opacity-0"
+        >
+          <div class="fixed inset-0 bg-gray-500/75 dark:bg-black/75" />
+        </TransitionChild>
+
+        <div class="fixed inset-0 overflow-hidden">
+          <div class="absolute inset-0 overflow-hidden">
+            <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
+              <TransitionChild 
+                as="template" 
+                enter="transform transition ease-in-out duration-300 sm:duration-300" 
+                enter-from="translate-x-full" 
+                enter-to="translate-x-0" 
+                leave="transform transition ease-in-out duration-300 sm:duration-300" 
+                leave-from="translate-x-0" 
+                leave-to="translate-x-full"
+              >
+                <DialogPanel class="pointer-events-auto w-screen max-w-2xl">
+                  <div class="relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800 shadow-xl">
+                    <!-- Header -->
+                    <div class="bg-indigo-700 dark:bg-indigo-800 px-4 py-6 sm:px-6">
+                      <div class="flex items-center justify-between">
+                        <DialogTitle class="text-base font-semibold text-white">Add Widget</DialogTitle>
+                        <div class="ml-3 flex h-7 items-center">
               <button
+                            type="button" 
+                            class="relative rounded-md text-indigo-200 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" 
+                            @click="showWidgetModal = false"
+                          >
+                            <span class="absolute -inset-2.5"></span>
+                            <span class="sr-only">Close panel</span>
+                            <XMarkIcon class="size-6" aria-hidden="true" />
+                          </button>
+                        </div>
+                      </div>
+                      <div class="mt-1">
+                        <p class="text-sm text-indigo-300">Select a widget to add to your dashboard</p>
+                      </div>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="flex-1 overflow-y-auto p-6">
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div
                 v-for="widget in availableWidgets"
                 :key="widget.type"
-                @click="addWidget(widget.type)"
-                class="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-left"
-              >
-                <div class="flex items-center space-x-3">
-                  <div class="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
+                          :class="[
+                            'p-4 border rounded-lg text-left transition-colors relative',
+                            isWidgetAdded(widget.type) 
+                              ? 'border-gray-300 dark:border-gray-500 bg-gray-50 dark:bg-gray-700/50' 
+                              : 'border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                          ]"
+                        >
+                          <div class="flex items-start justify-between gap-3">
+                            <div class="flex items-center space-x-3 flex-1 min-w-0">
+                              <div class="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
                     <LinkIcon class="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                   </div>
-                  <div>
+                              <div class="min-w-0 flex-1">
                     <h4 class="text-sm font-medium text-gray-900 dark:text-white">{{ widget.name }}</h4>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ widget.description }}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ widget.description }}</p>
                   </div>
                 </div>
+                            <div class="flex-shrink-0">
+                              <button
+                                v-if="isWidgetAdded(widget.type)"
+                                @click="removeWidget(widget.type)"
+                                class="px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 border border-red-200 dark:border-red-800 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                              >
+                                Remove
+                              </button>
+                              <button
+                                v-else
+                                @click="addWidget(widget.type)"
+                                class="px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 border border-indigo-200 dark:border-indigo-800 rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+                              >
+                                Add
               </button>
             </div>
           </div>
-          <div class="px-6 py-3 bg-gray-50 dark:bg-gray-700 flex justify-end space-x-3">
-            <button @click="showWidgetModal = false" class="px-4 py-2 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-500 font-medium">
-              Close
-            </button>
-          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="flex shrink-0 justify-between items-center gap-3 px-4 py-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+                      <button 
+                        type="button" 
+                        :disabled="!hasLayoutChanges"
+                        :class="[
+                          'rounded-md px-3 py-2 text-sm font-semibold transition-colors',
+                          hasLayoutChanges
+                            ? 'bg-red-600 text-white hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed'
+                            : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                        ]"
+                        @click="resetToDefaultLayout"
+                        title="Reset widget layout to default order"
+                      >
+                        Reset to Default
+                      </button>
+                      <div class="flex gap-3">
+                        <button 
+                          type="button" 
+                          class="rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700" 
+                          @click="showWidgetModal = false"
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </div>
         </div>
+                </DialogPanel>
+              </TransitionChild>
       </div>
     </div>
+        </div>
+      </Dialog>
+    </TransitionRoot>
 
     <!-- Tag Modal -->
     <div v-if="showTagModal" class="fixed inset-0 z-50 overflow-y-auto">
@@ -931,16 +1113,93 @@
     :isOpen="showCreateDrawer"
     :moduleKey="createDrawerModuleKey"
     :initialData="createDrawerInitialData"
+    :record="createDrawerRecord"
     :title="getCreateDrawerTitle()"
     :description="getCreateDrawerDescription()"
     @close="handleCreateDrawerClose"
     @saved="handleCreateDrawerSaved"
   />
+  
+  <!-- Link Records Drawer -->
+  <LinkRecordsDrawer
+    :isOpen="showLinkDrawer"
+    :moduleKey="linkDrawerModuleKey"
+    :multiple="true"
+    :title="getLinkDrawerTitle()"
+    :context="linkDrawerContext"
+    @close="handleLinkDrawerClose"
+    @linked="handleLinkDrawerLinked"
+  />
+
+  <!-- Reset Layout Confirmation Modal -->
+  <TransitionRoot as="template" :show="showResetConfirmModal">
+    <Dialog class="relative z-50" @close="showResetConfirmModal = false">
+      <TransitionChild
+        as="template"
+        enter="ease-out duration-300"
+        enter-from="opacity-0"
+        enter-to="opacity-100"
+        leave="ease-in duration-200"
+        leave-from="opacity-100"
+        leave-to="opacity-0"
+      >
+        <div class="fixed inset-0 bg-black/40 z-[45] transition-opacity" />
+      </TransitionChild>
+
+      <div class="fixed inset-0 z-[50] overflow-y-auto">
+        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+          <TransitionChild
+            as="template"
+            enter="ease-out duration-300"
+            enter-from="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            enter-to="opacity-100 translate-y-0 sm:scale-100"
+            leave="ease-in duration-200"
+            leave-from="opacity-100 translate-y-0 sm:scale-100"
+            leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+          >
+            <DialogPanel class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+              <div class="sm:flex sm:items-start">
+                <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 sm:mx-0 sm:h-10 sm:w-10">
+                  <ExclamationTriangleIcon class="h-6 w-6 text-red-600 dark:text-red-400" aria-hidden="true" />
+                </div>
+                <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                  <DialogTitle as="h3" class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                    Reset Widget Layout
+                  </DialogTitle>
+                  <div class="mt-2">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                      Are you sure you want to reset the widget layout to default? This will remove all customizations including widget positions, sizes, and any widgets you've added or removed.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  class="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
+                  @click="confirmResetLayout"
+                >
+                  Reset to Default
+                </button>
+                <button
+                  type="button"
+                  class="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 sm:mt-0 sm:w-auto"
+                  @click="showResetConfirmModal = false"
+                >
+                  Cancel
+                </button>
+              </div>
+            </DialogPanel>
+          </TransitionChild>
+        </div>
+      </div>
+    </Dialog>
+  </TransitionRoot>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch, createApp, h } from 'vue';
-import { Menu, MenuButton, MenuItem, MenuItems, Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue';
+import { Menu, MenuButton, MenuItem, MenuItems, Listbox, ListboxButton, ListboxOptions, ListboxOption, Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { GridStack } from 'gridstack';
 import 'gridstack/dist/gridstack.min.css';
 import RelatedContactsWidget from '@/components/organizations/RelatedContactsWidget.vue';
@@ -952,6 +1211,7 @@ import OrganizationMetricsWidget from '@/components/organizations/OrganizationMe
 import LifecycleStageWidget from '@/components/common/LifecycleStageWidget.vue';
 import KeyFieldsWidget from '@/components/common/KeyFieldsWidget.vue';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
+import LinkRecordsDrawer from '@/components/common/LinkRecordsDrawer.vue';
 import apiClient from '@/utils/apiClient';
 import { useAuthStore } from '@/stores/auth';
 import { useTabs } from '@/composables/useTabs';
@@ -974,7 +1234,8 @@ import {
   FunnelIcon,
   ChevronDownIcon,
   ChevronUpDownIcon,
-  CheckIcon
+  CheckIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/vue/24/outline';
 import { HeartIcon as HeartIconSolid, TagIcon as TagIconSolid, ChatBubbleLeftEllipsisIcon } from '@heroicons/vue/24/solid';
 
@@ -1003,7 +1264,7 @@ const props = defineProps({
 });
 
 // Emits
-const emit = defineEmits(['close', 'update', 'edit', 'delete', 'addRelation', 'openRelatedRecord']);
+const emit = defineEmits(['close', 'update', 'edit', 'delete', 'addRelation', 'openRelatedRecord', 'recordUpdated']);
 
 // Get openTab from useTabs
 const { openTab } = useTabs();
@@ -1014,6 +1275,12 @@ const authStore = useAuthStore();
 
 // Force recompute trigger (similar to TabBar viewportWidth)
 const recomputeTrigger = ref(0);
+const widgetListUpdateTrigger = ref(0); // Trigger to force drawer re-render when widgets change
+const layoutChangeTrigger = ref(0); // Trigger to detect layout changes for reset button
+
+// Track pending field changes (field -> { originalValue, currentValue })
+// Only save and log when field loses focus (blur)
+const pendingFieldChanges = ref({});
 
 // Viewport width for responsive calculations
 const viewportWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1920);
@@ -1054,8 +1321,8 @@ const getStorageKey = () => {
 
 // Get storage key for widget layout
 const getLayoutStorageKey = () => {
-  const recordId = props.record?._id || props.record?.id || 'default';
-  return `summaryview-layout-${props.recordType}-${recordId}`;
+  // Store layout per module (recordType) instead of per record
+  return `summaryview-layout-${props.recordType}`;
 };
 
 // Get storage key for activity logs
@@ -1097,7 +1364,7 @@ const activeTab = ref('summary');
 const isFollowing = ref(false);
 const showTagModal = ref(false);
 const showWidgetModal = ref(false);
-const showRelationModal = ref(false);
+const showResetConfirmModal = ref(false);
 const newTag = ref('');
 const tags = ref([]);
 
@@ -1105,6 +1372,35 @@ const tags = ref([]);
 const showCreateDrawer = ref(false);
 const createDrawerModuleKey = ref('');
 const createDrawerInitialData = ref({});
+const createDrawerRecord = ref(null);
+
+// Link drawer state
+const showLinkDrawer = ref(false);
+const linkDrawerModuleKey = ref('');
+const linkDrawerContext = ref({});
+
+// Available relationships based on record type
+const availableRelationships = computed(() => {
+  const relationships = [];
+  
+  if (props.recordType === 'organizations') {
+    relationships.push(
+      { moduleKey: 'people', label: 'Contact' },
+      { moduleKey: 'deals', label: 'Deal' },
+      { moduleKey: 'tasks', label: 'Task' },
+      { moduleKey: 'events', label: 'Event' }
+    );
+  } else if (props.recordType === 'people') {
+    relationships.push(
+      { moduleKey: 'organizations', label: 'Organization' },
+      { moduleKey: 'deals', label: 'Deal' },
+      { moduleKey: 'tasks', label: 'Task' },
+      { moduleKey: 'events', label: 'Event' }
+    );
+  }
+  
+  return relationships;
+});
 
 // Fixed tabs - add Tenant Details tab if viewing tenant organization
 const fixedTabs = computed(() => {
@@ -1463,11 +1759,28 @@ const loadActivityLogs = async () => {
     // Try API first
     const response = await apiClient.get(endpoint);
     if (response.success && response.data) {
-      // Convert ISO strings back to Date objects
-      timelineUpdates.value = response.data.map(log => ({
+      // Convert ISO strings back to Date objects and create a map by unique identifier
+      const logsFromAPI = response.data.map(log => ({
         ...log,
         timestamp: new Date(log.timestamp)
       }));
+      
+      // Create unique key for each log (timestamp + action + user)
+      // This helps prevent duplicates when merging
+      const createLogKey = (log) => {
+        const timestamp = log.timestamp instanceof Date ? log.timestamp.getTime() : new Date(log.timestamp).getTime();
+        return `${timestamp}_${log.action}_${log.user}`;
+      };
+      
+      // Merge with existing logs, avoiding duplicates
+      const existingLogKeys = new Set(timelineUpdates.value.map(createLogKey));
+      const newLogs = logsFromAPI.filter(log => !existingLogKeys.has(createLogKey(log)));
+      
+      // Combine existing and new logs, then sort by timestamp
+      timelineUpdates.value = [...timelineUpdates.value, ...newLogs]
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+        .slice(0, 100); // Limit to 100 most recent
+      
       return;
     }
   } catch (apiError) {
@@ -1493,12 +1806,12 @@ const loadActivityLogs = async () => {
 
 // Save activity log to API (with localStorage fallback)
 const saveActivityLogToAPI = async (logEntry) => {
-  if (!props.record?._id && !props.record?.id) return;
+  if (!props.record?._id && !props.record?.id) return false;
   
   const recordId = props.record._id || props.record.id;
   const endpoint = getActivityLogsEndpoint(recordId);
   
-  if (!endpoint) return;
+  if (!endpoint) return false;
   
   try {
     // Convert Date to ISO string for API
@@ -1508,27 +1821,35 @@ const saveActivityLogToAPI = async (logEntry) => {
       details: logEntry.details || null
     };
     
-    await apiClient.post(endpoint, payload);
-    return true;
+    const response = await apiClient.post(endpoint, payload);
+    
+    // Check if the API call was successful
+    if (response && response.success) {
+      return true;
+    } else {
+      console.warn('Activity log API returned non-success response:', response);
+      // Fall through to localStorage fallback
+    }
   } catch (apiError) {
     console.warn('Error saving activity log to API, saving to localStorage:', apiError);
-    
-    // Fallback to localStorage
-    try {
-      const logsToSave = timelineUpdates.value.map(log => ({
-        ...log,
-        timestamp: log.timestamp instanceof Date ? log.timestamp.toISOString() : log.timestamp
-      }));
-      localStorage.setItem(getActivityLogsStorageKey(), JSON.stringify(logsToSave));
-    } catch (e) {
-      console.error('Error saving activity logs to localStorage:', e);
-    }
+  }
+  
+  // Fallback to localStorage
+  try {
+    const logsToSave = timelineUpdates.value.map(log => ({
+      ...log,
+      timestamp: log.timestamp instanceof Date ? log.timestamp.toISOString() : log.timestamp
+    }));
+    localStorage.setItem(getActivityLogsStorageKey(), JSON.stringify(logsToSave));
+    return false; // Indicate we used localStorage fallback
+  } catch (e) {
+    console.error('Error saving activity logs to localStorage:', e);
     return false;
   }
 };
 
 // Add activity log entry
-const addActivityLog = async (action, details = null) => {
+const addActivityLog = async (action, details = null, skipReload = false) => {
   const update = {
     user: getCurrentUserName(),
     action: action,
@@ -1536,15 +1857,26 @@ const addActivityLog = async (action, details = null) => {
     timestamp: new Date()
   };
   
-  timelineUpdates.value.unshift(update); // Add to beginning for newest first
+  // Save to API first (with localStorage fallback)
+  const saved = await saveActivityLogToAPI(update);
   
-  // Optional: Limit to last 100 updates to prevent memory issues
-  if (timelineUpdates.value.length > 100) {
-    timelineUpdates.value = timelineUpdates.value.slice(0, 100);
+  // If saved successfully to API, reload logs to get server timestamp (unless skipReload is true)
+  // Otherwise, add to local timeline immediately (for localStorage fallback)
+  if (saved) {
+    // Only reload if not skipping (for batch operations)
+    if (!skipReload) {
+      // Reload from API to get the server-generated timestamp and ensure consistency
+      await loadActivityLogs();
+    }
+  } else {
+    // Add to local timeline if saved to localStorage
+    timelineUpdates.value.unshift(update); // Add to beginning for newest first
+    
+    // Optional: Limit to last 100 updates to prevent memory issues
+    if (timelineUpdates.value.length > 100) {
+      timelineUpdates.value = timelineUpdates.value.slice(0, 100);
+    }
   }
-  
-  // Save to API (with localStorage fallback)
-  await saveActivityLogToAPI(update);
 };
 
 // Computed property for sorted timeline (newest first - already sorted since we unshift)
@@ -1631,9 +1963,72 @@ const activityItems = computed(() => {
       }
     }
     // Check for field changes (e.g., "set First Name to "John"" or "changed First Name from "Old" to "New"")
-    else if (lowerAction.includes('changed') || lowerAction.includes('set')) {
+    else if (lowerAction.includes('changed') || lowerAction.includes('set') || lowerAction.includes('updated')) {
       type = 'assignment';
       
+      // Check if this is a multiple changes entry with details
+      if (update.details && typeof update.details === 'object' && update.details.type === 'multiple_changes' && Array.isArray(update.details.changes)) {
+        // Multiple changes - parse each change
+        actionText = 'updated';
+        fieldName = `${update.details.changes.length} field${update.details.changes.length > 1 ? 's' : ''}`;
+        // Store the changes array for display
+        const changesList = update.details.changes.map(change => {
+          // Parse each change action
+          const setMatch = change.match(/set\s+([^"]+?)\s+to\s+"([^"]*)"/i);
+          const changeMatch = change.match(/changed\s+([^"]+?)\s+from\s+"([^"]*)"\s+to\s+"([^"]*)"/i);
+          const clearMatch = change.match(/cleared\s+([^"(\s]+)\s*\(was\s+"([^"]*)"\)/i);
+          
+          if (setMatch) {
+            return {
+              field: formatFieldName(setMatch[1].trim()),
+              action: 'set',
+              newValue: setMatch[2],
+              oldValue: null
+            };
+          } else if (changeMatch) {
+            return {
+              field: formatFieldName(changeMatch[1].trim()),
+              action: 'changed',
+              oldValue: changeMatch[2] || 'empty',
+              newValue: changeMatch[3]
+            };
+          } else if (clearMatch) {
+            return {
+              field: formatFieldName(clearMatch[1].trim()),
+              action: 'cleared',
+              oldValue: clearMatch[2],
+              newValue: null
+            };
+          } else {
+            return {
+              field: 'Unknown',
+              action: 'changed',
+              description: change
+            };
+          }
+        });
+        
+        // Create comment with all changes listed
+        comment = `Updated ${update.details.changes.length} field${update.details.changes.length > 1 ? 's' : ''}`;
+        
+        // Store parsed changes for rendering
+        return {
+          id: `activity-${update.timestamp?.getTime() || index}`,
+          type,
+          person: {
+            name: update.user || 'System',
+            href: '#'
+          },
+          comment,
+          action: actionText,
+          fieldName,
+          tags,
+          date: formatDate(update.timestamp),
+          multipleChanges: changesList // Store parsed changes for display
+        };
+      }
+      
+      // Single change - parse normally
       // Try to extract field name and values
       const setMatch = action.match(/set\s+([^"]+?)\s+to\s+"([^"]*)"/i);
       const changeMatch = action.match(/changed\s+([^"]+?)\s+from\s+"([^"]*)"\s+to\s+"([^"]*)"/i);
@@ -1649,10 +2044,10 @@ const activityItems = computed(() => {
         comment = `Changed ${fieldName} from "${oldVal}" to "${changeMatch[3]}"`;
       } else {
         // Fallback: try to extract just the field name
-        const fieldMatch = action.match(/(?:changed|set)\s+([^\s]+)/i);
+        const fieldMatch = action.match(/(?:changed|set|updated)\s+([^\s]+)/i);
         if (fieldMatch) {
           fieldName = formatFieldName(fieldMatch[1]);
-          actionText = lowerAction.includes('set') ? 'set' : 'changed';
+          actionText = lowerAction.includes('set') ? 'set' : (lowerAction.includes('updated') ? 'updated' : 'changed');
         }
       }
     }
@@ -1701,39 +2096,144 @@ const activityItems = computed(() => {
   });
 });
 
-// Available widgets
-const availableWidgets = [
-  {
-    type: 'related-records',
-    name: 'Related Records',
-    description: 'Show related contacts, deals, etc.',
-  },
-  {
-    type: 'activity-stream',
-    name: 'Activity Stream',
-    description: 'Recent activities and interactions',
-  },
-  {
-    type: 'lifecycle-stage',
-    name: 'Lifecycle Stage',
-    description: 'Current stage and progression',
-  },
-  {
-    type: 'metrics',
-    name: 'Metrics',
-    description: 'Key performance indicators',
-  },
-  {
-    type: 'touchpoints',
-    name: 'Touchpoints',
-    description: 'Communication history',
-  },
+// Available widgets - dynamic based on record type
+const availableWidgets = computed(() => {
+  const widgets = [];
+  
+  // Relationship widgets based on record type
+  if (props.recordType === 'organizations') {
+    // Organizations can have related contacts and deals
+    widgets.push(
+      {
+        type: 'related-contacts',
+        name: 'Related Contacts',
+        description: 'Show contacts associated with this organization',
+      },
+      {
+        type: 'related-deals',
+        name: 'Related Deals',
+        description: 'Show deals linked to this organization',
+      }
+    );
+  } else if (props.recordType === 'people') {
+    // People can have related organization, deals, tasks, and events
+    widgets.push(
+      {
+        type: 'related-organization',
+        name: 'Related Organization',
+        description: 'Show the organization linked to this contact',
+      },
+      {
+        type: 'related-deals',
+        name: 'Related Deals',
+        description: 'Show deals associated with this contact',
+      },
+      {
+        type: 'related-tasks',
+        name: 'Related Tasks',
+        description: 'Show tasks linked to this contact',
+      },
+      {
+        type: 'related-events',
+        name: 'Related Events',
+        description: 'Show events associated with this contact',
+      }
+    );
+  } else if (props.recordType === 'deals') {
+    // Deals can have related contacts and organizations
+    widgets.push(
+      {
+        type: 'related-contacts',
+        name: 'Related Contacts',
+        description: 'Show contacts associated with this deal',
+      },
+      {
+        type: 'related-organization',
+        name: 'Related Organization',
+        description: 'Show the organization linked to this deal',
+      },
+      {
+        type: 'related-tasks',
+        name: 'Related Tasks',
+        description: 'Show tasks linked to this deal',
+      },
+      {
+        type: 'related-events',
+        name: 'Related Events',
+        description: 'Show events associated with this deal',
+      }
+    );
+  } else if (props.recordType === 'tasks') {
+    // Tasks can have related contacts, deals, organizations, and events
+    widgets.push(
+      {
+        type: 'related-contacts',
+        name: 'Related Contacts',
+        description: 'Show contacts associated with this task',
+      },
+      {
+        type: 'related-organization',
+        name: 'Related Organization',
+        description: 'Show the organization linked to this task',
+      },
+      {
+        type: 'related-deals',
+        name: 'Related Deals',
+        description: 'Show deals linked to this task',
+      },
+      {
+        type: 'related-events',
+        name: 'Related Events',
+        description: 'Show events associated with this task',
+      }
+    );
+  } else if (props.recordType === 'events') {
+    // Events can have related contacts, deals, organizations, and tasks
+    widgets.push(
+      {
+        type: 'related-contacts',
+        name: 'Related Contacts',
+        description: 'Show contacts associated with this event',
+      },
+      {
+        type: 'related-organization',
+        name: 'Related Organization',
+        description: 'Show the organization linked to this event',
+      },
+      {
+        type: 'related-deals',
+        name: 'Related Deals',
+        description: 'Show deals linked to this event',
+      },
+      {
+        type: 'related-tasks',
+        name: 'Related Tasks',
+        description: 'Show tasks associated with this event',
+      }
+    );
+  }
+  
+  // Common widgets available for all record types
+  widgets.push(
   {
     type: 'key-fields',
     name: 'Key Fields',
     description: 'Important record fields',
-  }
-];
+    },
+    {
+      type: 'lifecycle-stage',
+      name: 'Lifecycle Stage',
+      description: 'Current stage and progression',
+    },
+    {
+      type: 'metrics',
+      name: 'Metrics',
+      description: 'Key performance indicators',
+    }
+  );
+  
+  return widgets;
+});
 
 // Initialize GridStack
 const initializeGridStack = async () => {
@@ -1769,10 +2269,14 @@ const initializeGridStack = async () => {
     gridStack = GridStack.init({
       column: 12,
       cellHeight: 70,
-      margin: '16px',
+      marginRight: '0.8rem',
+      marginLeft: '0rem',
+      marginTop: '0rem',
+      marginBottom: '0.8rem',
       animate: true,
       disableResize: false,
       disableDrag: false,
+      resizable: { handles: 'all' },
       columnOpts: {
         breakpoints: [
           { w: 600, c: 1 },  // Mobile: 1 column (< 600px)
@@ -1788,33 +2292,27 @@ const initializeGridStack = async () => {
       clearTimeout(saveTimeout);
       saveTimeout = setTimeout(() => {
         saveLayoutState();
+        // Trigger layout change detection update
+        layoutChangeTrigger.value++;
       }, 500); // Wait 500ms after last change before saving
     };
     
     gridStack.on('change', (event, items) => {
+      layoutChangeTrigger.value++; // Trigger reactive update
       debouncedSave();
     });
     
     gridStack.on('added', () => {
+      layoutChangeTrigger.value++; // Trigger reactive update
       debouncedSave();
     });
     
     gridStack.on('removed', () => {
+      layoutChangeTrigger.value++; // Trigger reactive update
       debouncedSave();
     });
     
-    // Ensure CSS variables are set for margins
-    if (gridStackContainer.value) {
-      gridStackContainer.value.style.setProperty('--gs-item-margin-top', '8px');
-      gridStackContainer.value.style.setProperty('--gs-item-margin-bottom', '8px');
-      gridStackContainer.value.style.setProperty('--gs-item-margin-left', '8px');
-      gridStackContainer.value.style.setProperty('--gs-item-margin-right', '8px');
-      
-      // Also update GridStack margin directly if supported
-      if (gridStack && typeof gridStack.opts === 'function') {
-        gridStack.opts({ margin: 8 });
-      }
-    }
+    // No custom CSS vars needed; GridStack 'margin' option handles gutters
 
     // Load default widgets after a short delay to ensure GridStack is ready
     setTimeout(async () => {
@@ -1841,14 +2339,43 @@ const initializeGridStack = async () => {
         
         // Check if there are any widgets already (by checking GridStack items)
         const existingWidgets = gridStack.getGridItems();
-        if (existingWidgets.length === 0) {
+        
+        // Clean up any deprecated 'related-records' widgets that might exist
+        const deprecatedWidgets = existingWidgets.filter(item => 
+          item.getAttribute('data-widget-type') === 'related-records'
+        );
+        if (deprecatedWidgets.length > 0) {
+          console.log(`Removing ${deprecatedWidgets.length} deprecated 'related-records' widget(s)`);
+          deprecatedWidgets.forEach(widget => {
+            try {
+              gridStack.removeWidget(widget, false);
+            } catch (e) {
+              console.warn('Error removing deprecated widget:', e);
+              // Try direct DOM removal as fallback
+              if (widget.parentNode) {
+                widget.remove();
+              }
+            }
+          });
+          await nextTick();
+          gridStack.compact();
+          // Save layout after removing deprecated widgets
+          saveLayoutState();
+        }
+        
+        if (existingWidgets.length === 0 || (existingWidgets.length === deprecatedWidgets.length)) {
           // Try to load saved layout first
           const savedLayout = await loadSavedLayout();
+          console.log('Initializing GridStack - savedLayout:', savedLayout ? savedLayout.map(w => w.type) : 'null');
           if (savedLayout && savedLayout.length > 0) {
+            console.log('Loading saved widgets:', savedLayout.map(w => w.type));
             loadSavedWidgets(savedLayout);
           } else {
+            console.log('No saved layout found, loading default widgets');
             loadDefaultWidgets();
           }
+        } else {
+          console.log('GridStack already has widgets, skipping initialization');
         }
       } catch (err) {
         console.error('Error checking GridStack items:', err);
@@ -1894,7 +2421,8 @@ const destroyGridStack = () => {
 
 // Save layout state to backend API
 const saveLayoutState = async () => {
-  if (!gridStack || !gridStackContainer.value || !props.record?._id) return;
+  // No longer require record._id - layout is saved per module
+  if (!gridStack || !gridStackContainer.value || !props.recordType) return;
   
   try {
     // Get all grid items with their elements
@@ -1917,61 +2445,178 @@ const saveLayoutState = async () => {
         h,
         type: widgetType || null
       };
-    }).filter(item => item.type); // Only save widgets with valid types
+    }).filter(item => {
+      // Filter out invalid types and deprecated 'related-records' widget
+      if (!item.type) return false;
+      if (item.type === 'related-records') {
+        console.log('Filtering out deprecated widget type from saved layout: related-records');
+        return false;
+      }
+      return true;
+    });
+    
+    // Debug: Log what we're saving
+    console.log('Saving widget layout:', layoutData, 'Widget types:', layoutData.map(w => w.type));
+    
+    // Always save to localStorage first (immediate persistence)
+    localStorage.setItem(getLayoutStorageKey(), JSON.stringify(layoutData));
+    console.log('Widget layout saved to localStorage:', layoutData.map(w => w.type));
     
     // Save to backend API (silently fail - don't log errors for 404s)
+    // Note: Backend requires recordId, but we use "module" for module-level layouts
     try {
       await apiClient.post('/user-preferences/widget-layout', {
         recordType: props.recordType,
-        recordId: props.record._id,
+        recordId: 'module', // "module" indicates module-level layout (not per-record)
         widgets: layoutData
       });
+      console.log('Widget layout saved to API successfully');
     } catch (apiError) {
       // Only log if it's not a 404 (backend route might not be available yet)
       if (!apiError.is404 && apiError.status !== 404) {
         console.error('Error saving layout to API:', apiError);
       }
-      // Always fallback to localStorage if API fails
-      localStorage.setItem(getLayoutStorageKey(), JSON.stringify(layoutData));
+      // localStorage already saved above, so we're good
     }
   } catch (error) {
     console.error('Error saving layout state:', error);
   }
 };
 
+// Reset widget layouts for all modules (clears saved layouts)
+const resetAllWidgetLayouts = async () => {
+  const recordTypes = ['people', 'organizations', 'deals', 'tasks', 'events'];
+  
+  // Clear localStorage for all record types
+  recordTypes.forEach(recordType => {
+    const key = `summaryview-layout-${recordType}`;
+    localStorage.removeItem(key);
+    console.log(`Cleared localStorage layout for ${recordType}`);
+  });
+  
+  // Try to clear from backend API for all record types
+  for (const recordType of recordTypes) {
+    try {
+      await apiClient.delete('/user-preferences/widget-layout', {
+        params: {
+          recordType: recordType,
+          recordId: 'module'
+        }
+      });
+      console.log(`Cleared API layout for ${recordType}`);
+    } catch (error) {
+      // Silently fail - backend might not support DELETE or might not exist
+      console.log(`Could not clear API layout for ${recordType} (may not exist)`);
+    }
+  }
+  
+  console.log('All widget layouts have been reset');
+};
+
+// Check if saved layout follows the new default order (Key Fields, Lifecycle Stage, Metrics in first row)
+// Only reset if it's genuinely an old layout format, not user customizations
+const shouldResetLayout = (savedLayout) => {
+  if (!savedLayout || savedLayout.length === 0) return false;
+  
+  // Check if first widget is 'key-fields' - if not, it's an old layout format
+  // This is the main indicator of old vs new format
+  const firstWidget = savedLayout[0];
+  if (firstWidget && firstWidget.type !== 'key-fields') {
+    console.log('Detected old widget layout format (first widget is not key-fields) - will reset to new default order');
+    return true;
+  }
+  
+  // Check if the layout has the deprecated 'related-records' widget
+  // This indicates it's from before we split it into specific relationship widgets
+  const hasRelatedRecords = savedLayout.some(w => w.type === 'related-records');
+  if (hasRelatedRecords) {
+    console.log('Detected deprecated related-records widget - will reset to new format');
+    return true;
+  }
+  
+  // Don't reset if user has customized positions/sizes - those are valid saved layouts
+  // Only reset if it's genuinely missing key widgets or has old format indicators
+  
+  return false;
+};
+
 // Load saved layout from backend API or localStorage (fallback)
 const loadSavedLayout = async () => {
-  if (!props.record?._id) return null;
+  // No longer require record._id - layout is loaded per module
+  if (!props.recordType) return null;
   
   try {
-    // Try to load from backend API first
+    // Prioritize localStorage first (it's more up-to-date and immediate)
+    const saved = localStorage.getItem(getLayoutStorageKey());
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      console.log('Loaded layout from localStorage:', parsed.map(w => w.type));
+      
+      // Check if layout needs to be reset (old format)
+      if (shouldResetLayout(parsed)) {
+        console.log('Resetting to new default widget order');
+        // Clear the old layout
+        localStorage.removeItem(getLayoutStorageKey());
+        // Try to clear from backend too
+        try {
+          await apiClient.delete('/user-preferences/widget-layout', {
+            params: {
+              recordType: props.recordType,
+              recordId: 'module'
+            }
+          });
+        } catch (error) {
+          // Ignore errors
+        }
+        // Return null to trigger default layout
+        return null;
+      }
+      
+      return parsed;
+    }
+    
+    // Try to load from backend API as fallback
+    // Note: Backend requires recordId, but we use "module" for module-level layouts
     try {
       const response = await apiClient.get('/user-preferences/widget-layout', {
         params: {
           recordType: props.recordType,
-          recordId: props.record._id
+          recordId: 'module' // "module" indicates module-level layout (not per-record)
         }
       });
       
-      if (response.success && response.data) {
+      if (response.success && response.data && Array.isArray(response.data)) {
+        console.log('Loaded layout from API:', response.data.map(w => w.type));
+        
+        // Check if layout needs to be reset (old format)
+        if (shouldResetLayout(response.data)) {
+          console.log('Resetting to new default widget order');
+          // Clear the old layout
+          localStorage.removeItem(getLayoutStorageKey());
+          // Try to clear from backend too
+          try {
+            await apiClient.delete('/user-preferences/widget-layout', {
+              params: {
+                recordType: props.recordType,
+                recordId: 'module'
+              }
+            });
+          } catch (error) {
+            // Ignore errors
+          }
+          // Return null to trigger default layout
+          return null;
+        }
+        
+        // Also save to localStorage for faster access next time
+        localStorage.setItem(getLayoutStorageKey(), JSON.stringify(response.data));
         return response.data;
       }
     } catch (apiError) {
       // Only log if it's not a 404 (backend route might not be available yet)
       if (!apiError.is404 && apiError.status !== 404) {
-        console.warn('Error loading layout from API, trying localStorage:', apiError);
+        console.warn('Error loading layout from API:', apiError);
       }
-      // Fallback to localStorage
-      const saved = localStorage.getItem(getLayoutStorageKey());
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    }
-    
-    // Try localStorage as fallback
-    const saved = localStorage.getItem(getLayoutStorageKey());
-    if (saved) {
-      return JSON.parse(saved);
     }
   } catch (error) {
     console.error('Error loading saved layout:', error);
@@ -1983,9 +2628,19 @@ const loadSavedLayout = async () => {
 const loadSavedWidgets = (savedLayout) => {
   if (!gridStack) return;
   
+  // Valid widget types - filter out deprecated types like 'related-records'
+  const validWidgetTypes = [
+    'related-contacts', 'related-deals', 'related-tasks', 'related-events', 
+    'related-organization', 'lifecycle-stage', 'key-fields', 'metrics'
+  ];
+  
   savedLayout.forEach(widgetData => {
-    if (widgetData.type) {
+    // Only load valid widget types, skip deprecated ones like 'related-records'
+    if (widgetData.type && validWidgetTypes.includes(widgetData.type)) {
       addWidgetToGrid(widgetData.type, widgetData.x, widgetData.y, widgetData.w, widgetData.h);
+    } else if (widgetData.type === 'related-records') {
+      // Skip deprecated 'related-records' widget - it's been replaced by specific relationship widgets
+      console.log('Skipping deprecated widget type: related-records');
     }
   });
   
@@ -2006,26 +2661,71 @@ const loadDefaultWidgets = () => {
   if (!gridStack) return;
 
   // Default widgets based on record type
+  // First row: Key Fields, Lifecycle Stage, and Metrics (all in one row)
+  // Then followed by related widgets
   let defaultWidgets = [];
+  let yPosition = 0;
   
+  // First row: Key Fields (25%), Lifecycle Stage (50%), Metrics (25%)
+  // Key Fields: 3 columns (25%), Lifecycle Stage: 6 columns (50%), Metrics: 3 columns (25%)
+  defaultWidgets.push(
+    { type: 'key-fields', x: 0, y: yPosition, w: 3, h: 4 },
+    { type: 'lifecycle-stage', x: 3, y: yPosition, w: 6, h: 4 },
+    { type: 'metrics', x: 9, y: yPosition, w: 3, h: 4 }
+  );
+  yPosition += 4;
+  
+  // Then add related widgets based on record type
   if (props.recordType === 'organizations') {
-    defaultWidgets = [
-      { type: 'related-contacts', x: 0, y: 0, w: 6, h: 4 },
-      { type: 'related-deals', x: 6, y: 0, w: 6, h: 4 },
-      { type: 'metrics', x: 0, y: 4, w: 6, h: 4 },
-      { type: 'lifecycle-stage', x: 6, y: 4, w: 6, h: 3 },
-      { type: 'key-fields', x: 0, y: 7, w: 12, h: 3 }
-    ];
-  } else {
-    // Default widgets for other record types
-    defaultWidgets = [
-      { type: 'related-organization', x: 0, y: 0, w: 6, h: 4 },
-      { type: 'related-deals', x: 6, y: 0, w: 6, h: 4 },
-      { type: 'related-tasks', x: 0, y: 4, w: 6, h: 4 },
-      { type: 'related-events', x: 6, y: 4, w: 6, h: 4 },
-      { type: 'lifecycle-stage', x: 0, y: 8, w: 6, h: 4 },
-      { type: 'key-fields', x: 6, y: 8, w: 6, h: 4 }
-    ];
+    // Organizations: Related Contacts, Related Deals
+    defaultWidgets.push(
+      { type: 'related-contacts', x: 0, y: yPosition, w: 6, h: 4 },
+      { type: 'related-deals', x: 6, y: yPosition, w: 6, h: 4 }
+    );
+  } else if (props.recordType === 'people') {
+    // People: Related Organization, Related Deals, Related Tasks, Related Events
+    defaultWidgets.push(
+      { type: 'related-organization', x: 0, y: yPosition, w: 6, h: 4 },
+      { type: 'related-deals', x: 6, y: yPosition, w: 6, h: 4 }
+    );
+    yPosition += 4;
+    defaultWidgets.push(
+      { type: 'related-tasks', x: 0, y: yPosition, w: 6, h: 4 },
+      { type: 'related-events', x: 6, y: yPosition, w: 6, h: 4 }
+    );
+  } else if (props.recordType === 'deals') {
+    // Deals: Related Contacts, Related Organization, Related Tasks, Related Events
+    defaultWidgets.push(
+      { type: 'related-contacts', x: 0, y: yPosition, w: 6, h: 4 },
+      { type: 'related-organization', x: 6, y: yPosition, w: 6, h: 4 }
+    );
+    yPosition += 4;
+    defaultWidgets.push(
+      { type: 'related-tasks', x: 0, y: yPosition, w: 6, h: 4 },
+      { type: 'related-events', x: 6, y: yPosition, w: 6, h: 4 }
+    );
+  } else if (props.recordType === 'tasks') {
+    // Tasks: Related Contacts, Related Organization, Related Deals, Related Events
+    defaultWidgets.push(
+      { type: 'related-contacts', x: 0, y: yPosition, w: 6, h: 4 },
+      { type: 'related-organization', x: 6, y: yPosition, w: 6, h: 4 }
+    );
+    yPosition += 4;
+    defaultWidgets.push(
+      { type: 'related-deals', x: 0, y: yPosition, w: 6, h: 4 },
+      { type: 'related-events', x: 6, y: yPosition, w: 6, h: 4 }
+    );
+  } else if (props.recordType === 'events') {
+    // Events: Related Contacts, Related Organization, Related Deals, Related Tasks
+    defaultWidgets.push(
+      { type: 'related-contacts', x: 0, y: yPosition, w: 6, h: 4 },
+      { type: 'related-organization', x: 6, y: yPosition, w: 6, h: 4 }
+    );
+    yPosition += 4;
+    defaultWidgets.push(
+      { type: 'related-deals', x: 0, y: yPosition, w: 6, h: 4 },
+      { type: 'related-tasks', x: 6, y: yPosition, w: 6, h: 4 }
+    );
   }
 
   defaultWidgets.forEach(widget => {
@@ -2058,20 +2758,37 @@ const addWidgetToGrid = (widgetType, x = 0, y = 0, w = 4, h = 3) => {
 
   const widgetElement = createWidgetElement(widgetType);
   
+  // Create proper GridStack item structure to ensure margins/gutters render
+  const itemEl = document.createElement('div');
+  itemEl.className = 'grid-stack-item';
+  // Let GridStack's margin control the gutter
+  itemEl.style.margin = '';
+  itemEl.style.padding = '0';
   // Store widget type as data attribute for persistence
-  widgetElement.setAttribute('data-widget-type', widgetType);
-  
+  itemEl.setAttribute('data-widget-type', widgetType);
   // Set GridStack attributes before appending
-  widgetElement.setAttribute('gs-x', x);
-  widgetElement.setAttribute('gs-y', y);
-  widgetElement.setAttribute('gs-w', w);
-  widgetElement.setAttribute('gs-h', h);
-  
-  // Append element to grid container
-  gridStackContainer.value.appendChild(widgetElement);
+  itemEl.setAttribute('gs-x', x);
+  itemEl.setAttribute('gs-y', y);
+  itemEl.setAttribute('gs-w', w);
+  itemEl.setAttribute('gs-h', h);
+
+  // Inner content wrapper per GridStack spec
+  const contentEl = document.createElement('div');
+  contentEl.className = 'grid-stack-item-content';
+  // Make content start/end exactly with the grid item bounds
+  contentEl.style.padding = '0';
+  contentEl.style.height = '100%';
+  contentEl.style.width = '100%';
+  contentEl.style.overflow = 'hidden';
+  contentEl.appendChild(widgetElement);
+
+  itemEl.appendChild(contentEl);
+
+  // Append item to grid container
+  gridStackContainer.value.appendChild(itemEl);
   
   // Convert to GridStack widget using makeWidget()
-  const widget = gridStack.makeWidget(widgetElement);
+  const widget = gridStack.makeWidget(itemEl);
   
   // Update GridStack layout
   gridStack.compact();
@@ -2086,13 +2803,14 @@ const widgetApps = new Map();
 const createWidgetElement = (widgetType) => {
   // Create container div with card styling - this becomes the widget card
   const container = document.createElement('div');
-  container.className = 'bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700';
+  container.className = 'bg-white dark:bg-gray-800 rounded-xl border border-gray-200/70 dark:border-gray-700/70 p-3 sm:p-4';
   container.style.boxSizing = 'border-box';
   container.style.height = '100%';
   container.style.display = 'flex';
   container.style.flexDirection = 'column';
   container.style.alignItems = 'flex-start';
   container.style.justifyContent = 'flex-start';
+  container.style.overflow = 'auto';
   
   // Determine which Vue component to use based on widget type and record type
   let Component = null;
@@ -2168,7 +2886,19 @@ const createWidgetElement = (widgetType) => {
         break;
       case 'related-organization':
         Component = RelatedOrganizationWidget;
-        componentProps.organization = props.record.organization;
+        // Handle organization field - it might be an object (populated) or just an ID
+        const orgField = props.record.organization;
+        if (orgField && typeof orgField === 'object' && orgField._id) {
+          // Already populated object
+          componentProps.organization = orgField;
+        } else if (orgField && typeof orgField === 'string') {
+          // Just an ID - we'll need to fetch it, but for now pass null
+          // The widget will show empty state, and user can link an organization
+          componentProps.organization = null;
+        } else {
+          // null or undefined
+          componentProps.organization = null;
+        }
         componentProps.moduleDefinition = allModuleDefinitions.value['organizations'];
         break;
       case 'related-deals':
@@ -2226,6 +2956,112 @@ const createWidgetElement = (widgetType) => {
     const handleViewEvent = (id) => {
       handleOpenRelatedRecord({ type: 'events', id });
     };
+    const handleLinkContacts = () => {
+      handleLinkRecords('people');
+    };
+    const handleLinkUsers = () => {
+      handleLinkRecords('users');
+    };
+    const handleLinkDeals = () => {
+      handleLinkRecords('deals');
+    };
+    const handleLinkTasks = () => {
+      handleLinkRecords('tasks');
+    };
+    const handleLinkEvents = () => {
+      handleLinkRecords('events');
+    };
+    const handleLinkOrganizations = () => {
+      handleLinkRecords('organizations');
+    };
+
+    // Unlink / Delete handlers
+    const handleUnlinkContact = async (id) => {
+      try {
+        await apiClient.put(`/people/${id}`, { organization: null });
+        // Use nextTick to ensure DOM is updated before refreshing
+        await nextTick();
+        refreshAllWidgets();
+      } catch (e) {
+        console.error('Error unlinking contact:', e);
+      }
+    };
+    const handleDeleteContact = async (id) => {
+      try {
+        await apiClient.delete(`/people/${id}`);
+      } catch (e) {}
+      refreshAllWidgets();
+    };
+    const handleUnlinkDeal = async (id) => {
+      try {
+        if (props.recordType === 'organizations') {
+          await apiClient.put(`/deals/${id}`, { accountId: null });
+        } else if (props.recordType === 'people') {
+          await apiClient.put(`/deals/${id}`, { contactId: null });
+        }
+        await nextTick();
+        refreshAllWidgets();
+      } catch (e) {
+        console.error('Error unlinking deal:', e);
+      }
+    };
+    const handleDeleteDeal = async (id) => {
+      try {
+        await apiClient.delete(`/deals/${id}`);
+      } catch (e) {}
+      refreshAllWidgets();
+    };
+    const handleUnlinkTask = async (id) => {
+      try {
+        if (props.recordType === 'organizations') {
+          await apiClient.put(`/tasks/${id}`, { organizationId: null });
+        } else if (props.recordType === 'people') {
+          await apiClient.put(`/tasks/${id}`, { contactId: null });
+        }
+        await nextTick();
+        refreshAllWidgets();
+      } catch (e) {
+        console.error('Error unlinking task:', e);
+      }
+    };
+    const handleDeleteTask = async (id) => {
+      try {
+        await apiClient.delete(`/tasks/${id}`);
+      } catch (e) {}
+      refreshAllWidgets();
+    };
+    const handleUnlinkEvent = async (id) => {
+      try {
+        await apiClient.put(`/events/${id}`, { relatedType: null, relatedId: null });
+        await nextTick();
+        refreshAllWidgets();
+      } catch (e) {
+        console.error('Error unlinking event:', e);
+      }
+    };
+    const handleDeleteEvent = async (id) => {
+      try {
+        await apiClient.delete(`/events/${id}`);
+      } catch (e) {}
+      refreshAllWidgets();
+    };
+    const handleUnlinkOrganization = async (id) => {
+      try {
+        if (props.recordType === 'people') {
+          await apiClient.put(`/people/${props.record._id}`, { organization: null });
+        }
+        await nextTick();
+        refreshAllWidgets();
+      } catch (e) {
+        console.error('Error unlinking organization:', e);
+      }
+    };
+    const handleDeleteOrganization = async (id) => {
+      try {
+        await apiClient.delete(`/v2/organization/${id}`);
+      } catch (e) {}
+      refreshAllWidgets();
+    };
     
     const wrapperComponent = {
       setup(_, { expose }) {
@@ -2233,10 +3069,25 @@ const createWidgetElement = (widgetType) => {
         const childComponentRef = ref(null);
         
         // Pass props directly - widgets will watch for changes
-        const handleUpdate = (data) => {
-          // Handle lifecycle stage updates
+        const handleUpdate = async (data) => {
+          // Handle lifecycle stage updates - save immediately (no blur needed)
           if (data.field && data.value !== undefined) {
-            updateField(data.field, data.value);
+            // Update local state immediately for UI responsiveness
+            if (props.record) {
+              props.record[data.field] = data.value;
+            }
+            
+            // Save immediately by emitting update event to parent
+            // This will trigger the backend save and activity logging
+            emit('update', {
+              field: data.field,
+              value: data.value,
+              onSuccess: async () => {
+                // Log activity for lifecycle stage change
+                const fieldName = formatFieldName(data.field);
+                await addActivityLog(`changed ${fieldName} to "${data.value}"`);
+              }
+            });
           }
         };
         
@@ -2257,19 +3108,50 @@ const createWidgetElement = (widgetType) => {
           recordType: widgetType === 'lifecycle-stage' ? props.recordType : componentProps.recordType,
           moduleDefinition: widgetType === 'lifecycle-stage' ? moduleDefinition.value : componentProps.moduleDefinition,
           // Pass reactive organization from props if related-organization widget
-          organization: widgetType === 'related-organization' ? props.record.organization : componentProps.organization,
+          // Handle organization field - it might be an object (populated) or just an ID
+          organization: widgetType === 'related-organization' ? (() => {
+            const orgField = props.record?.organization;
+            if (orgField && typeof orgField === 'object' && orgField._id) {
+              // Already populated object
+              return orgField;
+            } else if (orgField && typeof orgField === 'string') {
+              // Just an ID - pass null for now, widget will show empty state
+              // TODO: Could fetch organization here if needed
+              return null;
+            } else {
+              // null or undefined
+              return null;
+            }
+          })() : componentProps.organization,
           onViewContact: handleViewContact,
           onViewUser: handleViewUser,
           onViewDeal: handleViewDeal,
           onViewOrganization: handleViewOrganization,
           onViewTask: handleViewTask,
           onViewEvent: handleViewEvent,
+          onLinkContacts: handleLinkContacts,
+          onLinkUser: handleLinkUsers,
+          onLinkDeals: handleLinkDeals,
+          onLinkTasks: handleLinkTasks,
+          onLinkEvents: handleLinkEvents,
+          onLinkOrganizations: handleLinkOrganizations,
+          // Unlink/Delete events from widgets
+          onUnlinkContacts: handleUnlinkContact,
+          onDeleteContact: handleDeleteContact,
+          onUnlinkDeal: handleUnlinkDeal,
+          onDeleteDeal: handleDeleteDeal,
+          onUnlinkTask: handleUnlinkTask,
+          onDeleteTask: handleDeleteTask,
+          onUnlinkEvent: handleUnlinkEvent,
+          onDeleteEvent: handleDeleteEvent,
+          onUnlinkOrganization: handleUnlinkOrganization,
+          onDeleteOrganization: handleDeleteOrganization,
           onCreateContact: () => handleCreateRecord('people'),
           onCreateUser: () => handleCreateRecord('users'),
           onCreateDeal: () => handleCreateRecord('deals'),
           onCreateTask: () => handleCreateRecord('tasks'),
           onCreateEvent: () => handleCreateRecord('events'),
-          onCreateOrganization: () => handleCreateRecord('organizations'),
+          // Organization creation is disabled (no v2). Do not expose create action.
           onUpdate: handleUpdate
         });
       }
@@ -2288,16 +3170,10 @@ const createWidgetElement = (widgetType) => {
 // Get widget content based on type
 const getWidgetContent = (widgetType) => {
   switch (widgetType) {
-    case 'related-records':
-      return '<p>No related records found.</p>';
-    case 'activity-stream':
-      return '<p>No recent activity.</p>';
     case 'lifecycle-stage':
       return `<p>Status: ${props.record?.status || 'Active'}</p>`;
     case 'metrics':
       return '<p>No metrics available.</p>';
-    case 'touchpoints':
-      return '<p>No touchpoints recorded.</p>';
     case 'key-fields':
       return '<p>Key fields will be displayed here.</p>';
     default:
@@ -2306,8 +3182,455 @@ const getWidgetContent = (widgetType) => {
 };
 
 // Add widget
-const addWidget = (widgetType) => {
-  addWidgetToGrid(widgetType);
+// Get currently added widget types (reactive)
+const addedWidgetTypes = computed(() => {
+  // Access the trigger to make this computed reactive
+  // This forces Vue to track this dependency
+  widgetListUpdateTrigger.value;
+  
+  if (!gridStack) return [];
+  
+  // Get current widgets from GridStack
+  // This will be re-evaluated whenever widgetListUpdateTrigger changes
+  const widgets = gridStack.getGridItems();
+  const types = widgets
+    .map(item => {
+      const type = item.getAttribute('data-widget-type');
+      return type;
+    })
+    .filter(Boolean);
+  
+  // Return a new array to ensure reference equality triggers updates
+  return [...types];
+});
+
+// Check if a widget is already added
+const isWidgetAdded = (widgetType) => {
+  return addedWidgetTypes.value.includes(widgetType);
+};
+
+// Get the default widget layout for the current record type
+const getDefaultWidgetLayout = () => {
+  let defaultWidgets = [];
+  let yPosition = 0;
+  
+  // First row: Key Fields (25%), Lifecycle Stage (50%), Metrics (25%)
+  // Key Fields: 3 columns (25%), Lifecycle Stage: 6 columns (50%), Metrics: 3 columns (25%)
+  defaultWidgets.push(
+    { type: 'key-fields', x: 0, y: yPosition, w: 3, h: 4 },
+    { type: 'lifecycle-stage', x: 3, y: yPosition, w: 6, h: 4 },
+    { type: 'metrics', x: 9, y: yPosition, w: 3, h: 4 }
+  );
+  yPosition += 4;
+  
+  // Then add related widgets based on record type
+  if (props.recordType === 'organizations') {
+    defaultWidgets.push(
+      { type: 'related-contacts', x: 0, y: yPosition, w: 6, h: 4 },
+      { type: 'related-deals', x: 6, y: yPosition, w: 6, h: 4 }
+    );
+  } else if (props.recordType === 'people') {
+    defaultWidgets.push(
+      { type: 'related-organization', x: 0, y: yPosition, w: 6, h: 4 },
+      { type: 'related-deals', x: 6, y: yPosition, w: 6, h: 4 }
+    );
+    yPosition += 4;
+    defaultWidgets.push(
+      { type: 'related-tasks', x: 0, y: yPosition, w: 6, h: 4 },
+      { type: 'related-events', x: 6, y: yPosition, w: 6, h: 4 }
+    );
+  } else if (props.recordType === 'deals') {
+    defaultWidgets.push(
+      { type: 'related-contacts', x: 0, y: yPosition, w: 6, h: 4 },
+      { type: 'related-organization', x: 6, y: yPosition, w: 6, h: 4 }
+    );
+    yPosition += 4;
+    defaultWidgets.push(
+      { type: 'related-tasks', x: 0, y: yPosition, w: 6, h: 4 },
+      { type: 'related-events', x: 6, y: yPosition, w: 6, h: 4 }
+    );
+  } else if (props.recordType === 'tasks') {
+    defaultWidgets.push(
+      { type: 'related-contacts', x: 0, y: yPosition, w: 6, h: 4 },
+      { type: 'related-organization', x: 6, y: yPosition, w: 6, h: 4 }
+    );
+    yPosition += 4;
+    defaultWidgets.push(
+      { type: 'related-deals', x: 0, y: yPosition, w: 6, h: 4 },
+      { type: 'related-events', x: 6, y: yPosition, w: 6, h: 4 }
+    );
+  } else if (props.recordType === 'events') {
+    defaultWidgets.push(
+      { type: 'related-contacts', x: 0, y: yPosition, w: 6, h: 4 },
+      { type: 'related-organization', x: 6, y: yPosition, w: 6, h: 4 }
+    );
+    yPosition += 4;
+    defaultWidgets.push(
+      { type: 'related-deals', x: 0, y: yPosition, w: 6, h: 4 },
+      { type: 'related-tasks', x: 6, y: yPosition, w: 6, h: 4 }
+    );
+  }
+  
+  return defaultWidgets;
+};
+
+// Check if current layout differs from default layout
+const hasLayoutChanges = computed(() => {
+  // Access the trigger to make this computed reactive to layout changes
+  layoutChangeTrigger.value;
+  widgetListUpdateTrigger.value;
+  
+  if (!gridStack) return false;
+  
+  const currentWidgets = gridStack.getGridItems();
+  const currentLayout = currentWidgets.map(widget => {
+    const type = widget.getAttribute('data-widget-type');
+    const x = parseInt(widget.getAttribute('gs-x')) || 0;
+    const y = parseInt(widget.getAttribute('gs-y')) || 0;
+    const w = parseInt(widget.getAttribute('gs-w')) || 4;
+    const h = parseInt(widget.getAttribute('gs-h')) || 3;
+    return { type, x, y, w, h };
+  }).filter(w => w.type).sort((a, b) => {
+    // Sort by y first, then by x
+    if (a.y !== b.y) return a.y - b.y;
+    return a.x - b.x;
+  });
+  
+  const defaultLayout = getDefaultWidgetLayout().sort((a, b) => {
+    if (a.y !== b.y) return a.y - b.y;
+    return a.x - b.x;
+  });
+  
+  // Compare layouts
+  if (currentLayout.length !== defaultLayout.length) return true;
+  
+  // Check if each widget matches the default position and size
+  for (let i = 0; i < currentLayout.length; i++) {
+    const current = currentLayout[i];
+    const defaultWidget = defaultLayout.find(d => d.type === current.type);
+    
+    if (!defaultWidget) return true; // Widget not in default layout
+    if (current.x !== defaultWidget.x || current.y !== defaultWidget.y || 
+        current.w !== defaultWidget.w || current.h !== defaultWidget.h) {
+      return true; // Position or size differs
+    }
+  }
+  
+  return false;
+});
+
+// Open reset confirmation modal
+const resetToDefaultLayout = () => {
+  if (!gridStack) return;
+  showResetConfirmModal.value = true;
+};
+
+// Confirm and perform reset layout
+const confirmResetLayout = async () => {
+  showResetConfirmModal.value = false;
+  
+  if (!gridStack) return;
+  
+  try {
+    // Remove all existing widgets
+    const existingWidgets = gridStack.getGridItems();
+    existingWidgets.forEach(widget => {
+      try {
+        gridStack.removeWidget(widget, false);
+      } catch (e) {
+        // Fallback: remove from DOM
+        if (widget.parentNode) {
+          widget.remove();
+        }
+      }
+    });
+    
+    await nextTick();
+    gridStack.compact();
+    
+    // Clear the saved layout from localStorage and API
+    // This ensures the page loads fresh defaults on reload
+    const storageKey = getLayoutStorageKey();
+    localStorage.removeItem(storageKey);
+    
+    // Try to clear from API as well
+    try {
+      await apiClient.delete('/user-preferences/widget-layout', {
+        params: {
+          recordType: props.recordType,
+          recordId: 'module'
+        }
+      });
+    } catch (error) {
+      // Ignore errors - API might not support DELETE or might not exist
+      console.log('Could not clear API layout (may not exist)');
+    }
+    
+    // Close the widget drawer if open
+    showWidgetModal.value = false;
+    
+    // Wait a moment for cleanup to complete
+    await nextTick();
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
+    // Reload the page to show the new default layout
+    // This ensures a clean state and proper loading of default widgets
+    window.location.reload();
+  } catch (error) {
+    console.error('Error resetting layout to default:', error);
+    alert('Failed to reset layout. Please try again.');
+  }
+};
+
+// Remove widget from grid
+const removeWidget = async (widgetType) => {
+  if (!gridStack) return;
+  
+  const widgets = gridStack.getGridItems();
+  const widgetToRemove = widgets.find(item => 
+    item.getAttribute('data-widget-type') === widgetType
+  );
+  
+  if (widgetToRemove) {
+    // Find and unmount the Vue app if it exists
+    const contentEl = widgetToRemove.querySelector('.grid-stack-item-content');
+    const container = contentEl?.firstElementChild;
+    if (container) {
+      const widgetAppsEntry = widgetApps.get(container);
+      if (widgetAppsEntry?.app) {
+        try {
+          widgetAppsEntry.app.unmount();
+          widgetApps.delete(container);
+        } catch (e) {
+          console.error('Error unmounting widget app:', e);
+        }
+      }
+    }
+    
+    // Remove from GridStack - try multiple approaches
+    try {
+      // Method 1: Use GridStack's removeWidget method
+      gridStack.removeWidget(widgetToRemove, false);
+    } catch (e) {
+      console.warn('removeWidget failed, trying direct DOM removal:', e);
+      // Method 2: Remove directly from DOM if GridStack method fails
+      if (widgetToRemove && widgetToRemove.parentNode) {
+        widgetToRemove.remove();
+        // Force GridStack to update
+        await nextTick();
+        gridStack.compact();
+      }
+    }
+    
+    // Wait for GridStack to fully process the removal
+    await nextTick();
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Verify the widget is actually removed
+    const remainingWidgets = gridStack.getGridItems();
+    let stillExists = remainingWidgets.some(item => 
+      item.getAttribute('data-widget-type') === widgetType
+    );
+    
+    // If still exists, try direct DOM removal
+    if (stillExists) {
+      console.warn('Widget still exists after GridStack removal, trying direct DOM removal');
+      const widgetToRemoveDirect = remainingWidgets.find(item => 
+        item.getAttribute('data-widget-type') === widgetType
+      );
+      
+      if (widgetToRemoveDirect && widgetToRemoveDirect.parentNode) {
+        // Remove from DOM directly
+        widgetToRemoveDirect.remove();
+        // Force GridStack to update
+        await nextTick();
+        gridStack.compact();
+        await nextTick();
+        
+        // Verify again
+        const finalWidgets = gridStack.getGridItems();
+        stillExists = finalWidgets.some(item => 
+          item.getAttribute('data-widget-type') === widgetType
+        );
+      }
+    }
+    
+    if (stillExists) {
+      console.error('Failed to remove widget - it still exists in the grid');
+      // Don't return - continue anyway and save what we have
+      // The widget might be in a weird state, but we should still save the layout
+    }
+    
+    // Force Vue to re-render the drawer by triggering a reactive update
+    // This will make the button change from "Remove" to "Add"
+    // Increment the trigger to force computed property re-evaluation
+    widgetListUpdateTrigger.value = widgetListUpdateTrigger.value + 1;
+    
+    // Wait for Vue to process the reactive update
+    await nextTick();
+    await nextTick(); // Double tick to ensure all updates propagate
+    
+    // Get fresh widget list to ensure we're saving the correct state
+    const currentWidgets = gridStack.getGridItems();
+    const currentTypes = currentWidgets
+      .map(item => item.getAttribute('data-widget-type'))
+      .filter(Boolean);
+    
+    // Double-check that removed widget is NOT in the list
+    if (currentTypes.includes(widgetType)) {
+      console.error('ERROR: Removed widget still in grid items!', currentTypes);
+      return; // Don't save if widget is still there
+    }
+    
+    console.log('Current widgets after removal:', currentTypes);
+    console.log('Removed widget type:', widgetType);
+    console.log('✓ Removed widget confirmed NOT in list');
+    
+    // Force save immediately (don't wait for debounced save)
+    await saveLayoutState();
+    layoutChangeTrigger.value++; // Trigger layout change detection
+    
+    // Verify what was saved
+    await nextTick();
+    const savedLayout = localStorage.getItem(getLayoutStorageKey());
+    if (savedLayout) {
+      const parsed = JSON.parse(savedLayout);
+      const savedTypes = parsed.map(w => w.type);
+      console.log('Saved widget types:', savedTypes);
+      if (savedTypes.includes(widgetType)) {
+        console.error('ERROR: Removed widget found in saved layout!');
+      } else {
+        console.log('✓ Removed widget confirmed NOT in saved layout');
+      }
+    } else {
+      console.warn('No saved layout found in localStorage');
+    }
+    
+    // Refresh remaining widgets to ensure they're up to date
+    await nextTick();
+    refreshAllWidgets();
+  }
+};
+
+const addWidget = async (widgetType) => {
+  // Don't add if already added
+  if (isWidgetAdded(widgetType)) {
+    return;
+  }
+  
+  if (!gridStack) {
+    console.warn('GridStack not initialized, cannot add widget');
+    return;
+  }
+  
+  // Find the bottom-most widget position (highest y + h value)
+  const existingWidgets = gridStack.getGridItems();
+  let bottomY = 0;
+  
+  if (existingWidgets.length > 0) {
+    // Find the maximum bottom position (y + h) of all existing widgets
+    existingWidgets.forEach(widget => {
+      const y = parseInt(widget.getAttribute('gs-y')) || 0;
+      const h = parseInt(widget.getAttribute('gs-h')) || 3;
+      const bottom = y + h;
+      if (bottom > bottomY) {
+        bottomY = bottom;
+      }
+    });
+  }
+  
+  // Default widget size
+  const defaultW = 6;
+  const defaultH = 4;
+  
+  // Check if there's space on the current row (bottomY)
+  // Find widgets on the bottom row
+  const widgetsOnBottomRow = existingWidgets.filter(widget => {
+    const y = parseInt(widget.getAttribute('gs-y')) || 0;
+    const h = parseInt(widget.getAttribute('gs-h')) || 3;
+    return (y + h) === bottomY;
+  });
+  
+  // Calculate position for new widget
+  let x = 0;
+  let y = bottomY;
+  
+  // If there's a widget on the left side (x=0) of the bottom row, place new widget on the right (x=6)
+  const hasLeftWidget = widgetsOnBottomRow.some(widget => {
+    const widgetX = parseInt(widget.getAttribute('gs-x')) || 0;
+    return widgetX === 0;
+  });
+  
+  if (hasLeftWidget && widgetsOnBottomRow.length === 1) {
+    // Place on the right side of the existing widget
+    x = 6;
+  } else {
+    // Place on a new row
+    y = bottomY;
+    x = 0;
+  }
+  
+  // Add widget at calculated position
+  const newWidget = addWidgetToGrid(widgetType, x, y, defaultW, defaultH);
+  
+  // Wait for widget to be added to grid
+  await nextTick();
+  
+  // Auto-scroll to the newly added widget
+  if (newWidget) {
+    await nextTick();
+    // Use smooth scroll to bring the widget into view
+    setTimeout(() => {
+      // Find the nearest scrollable parent or use window
+      let scrollableParent = null;
+      let element = newWidget.parentElement;
+      
+      // Traverse up to find a scrollable container
+      while (element && element !== document.body) {
+        const style = window.getComputedStyle(element);
+        const overflowY = style.overflowY;
+        const hasScroll = element.scrollHeight > element.clientHeight;
+        
+        if ((overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay') && hasScroll) {
+          scrollableParent = element;
+          break;
+        }
+        element = element.parentElement;
+      }
+      
+      // Use scrollIntoView with smooth behavior
+      if (newWidget.scrollIntoView) {
+        newWidget.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center', // Center the widget in viewport
+          inline: 'nearest' 
+        });
+      } else if (scrollableParent) {
+        // Fallback: scroll the scrollable parent
+        const widgetRect = newWidget.getBoundingClientRect();
+        const parentRect = scrollableParent.getBoundingClientRect();
+        const scrollTop = scrollableParent.scrollTop + (widgetRect.top - parentRect.top) - (scrollableParent.clientHeight / 2);
+        scrollableParent.scrollTo({ top: scrollTop, behavior: 'smooth' });
+      } else {
+        // Final fallback: use window scroll
+        const widgetRect = newWidget.getBoundingClientRect();
+        const scrollTop = window.scrollY + widgetRect.top - (window.innerHeight / 2);
+        window.scrollTo({ top: scrollTop, behavior: 'smooth' });
+      }
+    }, 150); // Slightly longer delay to ensure widget is fully rendered
+  }
+  
+  // Update trigger to reflect the change in the drawer (if still open)
+  widgetListUpdateTrigger.value++;
+  layoutChangeTrigger.value++; // Trigger layout change detection
+  
+  // Save layout state
+  await saveLayoutState();
+  
+  // Refresh all widgets including the newly added one
+  await nextTick();
+  refreshAllWidgets();
+  
   showWidgetModal.value = false;
 };
 
@@ -2372,10 +3695,9 @@ const normalizeValue = (val) => {
   return String(val).trim();
 };
 
-// Update field (auto-saves on blur)
+// Update field value (for immediate UI updates during typing - no save, no log)
 const updateField = (field, value) => {
   const oldValue = props.record ? props.record[field] : null;
-  const fieldName = formatFieldName(field);
   
   // Normalize values for comparison
   const normalizedOldValue = normalizeValue(oldValue);
@@ -2383,22 +3705,72 @@ const updateField = (field, value) => {
   
   // Only proceed if value actually changed
   if (normalizedOldValue === normalizedNewValue) {
-    return; // No change, don't update or log
+    // Clear pending change if value reverted to original
+    if (pendingFieldChanges.value[field]) {
+      delete pendingFieldChanges.value[field];
+    }
+    return; // No change, don't update
   }
   
-  emit('update', { field, value });
+  // Update local state immediately for UI responsiveness
   if (props.record) {
     props.record[field] = value;
   }
   
-  // Log activity only if value changed
-  let action = '';
-  if (normalizedOldValue === '') {
-    action = `set ${fieldName} to "${value}"`;
+  // Track pending change (store original value if this is the first change)
+  if (!pendingFieldChanges.value[field]) {
+    pendingFieldChanges.value[field] = {
+      originalValue: oldValue,
+      currentValue: value
+    };
   } else {
-    action = `changed ${fieldName} from "${oldValue}" to "${value}"`;
+    // Update current value
+    pendingFieldChanges.value[field].currentValue = value;
   }
-  addActivityLog(action);
+};
+
+// Save field and log activity (called on blur)
+const saveFieldOnBlur = async (field) => {
+  const pendingChange = pendingFieldChanges.value[field];
+  
+  // If no pending change, nothing to save
+  if (!pendingChange) {
+    return;
+  }
+  
+  const fieldName = formatFieldName(field);
+  const { originalValue, currentValue } = pendingChange;
+  
+  // Normalize values for final comparison
+  const normalizedOldValue = normalizeValue(originalValue);
+  const normalizedNewValue = normalizeValue(currentValue);
+  
+  // If values are the same, don't save
+  if (normalizedOldValue === normalizedNewValue) {
+    delete pendingFieldChanges.value[field];
+    return;
+  }
+  
+  // Clear pending change before saving (to prevent double-save if blur fires multiple times)
+  delete pendingFieldChanges.value[field];
+  
+  // Emit update event with a callback to handle post-update activity logging
+  // The parent should call this callback after successful backend save
+  emit('update', { 
+    field, 
+    value: currentValue,
+    onSuccess: async () => {
+      // Log activity only if value changed
+      let action = '';
+      if (normalizedOldValue === '' || normalizedOldValue === null || normalizedOldValue === undefined) {
+        action = `set ${fieldName} to "${currentValue}"`;
+      } else {
+        action = `changed ${fieldName} from "${originalValue}" to "${currentValue}"`;
+      }
+      // addActivityLog will reload activity logs after successful save
+      await addActivityLog(action);
+    }
+  });
 };
 
 // Discard field changes (revert to original value)
@@ -2846,7 +4218,11 @@ const handleCreateRecord = (moduleKey) => {
     if (props.recordType === 'organizations') {
       // If creating from organization context
       if (moduleKey === 'people') {
-        initialData.organization = props.record._id;
+        // Pass populated object so lookup shows name immediately
+        initialData.organization = {
+          _id: props.record._id,
+          name: props.record.name || ''
+        };
       } else if (moduleKey === 'deals') {
         initialData.accountId = props.record._id;
       } else if (moduleKey === 'tasks' || moduleKey === 'events') {
@@ -2870,21 +4246,320 @@ const handleCreateRecord = (moduleKey) => {
   
   createDrawerModuleKey.value = moduleKey;
   createDrawerInitialData.value = initialData;
+  createDrawerRecord.value = null;
   showCreateDrawer.value = true;
 };
 
-const handleCreateDrawerSaved = (newRecord) => {
-  // Refresh widgets to show the new record
-  refreshAllWidgets();
+const handleCreateDrawerSaved = async (newRecord) => {
+  // If editing an existing record, detect changes and log them
+  if (createDrawerRecord.value && newRecord) {
+    const oldRecord = createDrawerRecord.value;
+    
+    // System fields to exclude from comparison
+    const systemFields = ['_id', 'id', '__v', 'createdAt', 'updatedAt', 'createdBy', 'organizationId', 'organizationid', 'activityLogs', 'avatar'];
+    
+    // Computed/virtual fields that shouldn't be compared (these are widgets/related data)
+    const computedFields = ['relatedtasks', 'relateddeals', 'relatedcontacts', 'relatedevents', 'relatedorganizations', 'relatedtasks', 'relateddeals'];
+    
+    // Get list of actual editable fields from module definition
+    const editableFieldKeys = new Set();
+    if (moduleDefinition.value?.fields) {
+      for (const field of moduleDefinition.value.fields) {
+        if (field.key) {
+          editableFieldKeys.add(field.key.toLowerCase());
+        }
+      }
+    }
+    
+    // Helper to check if field should be compared
+    const shouldCompareField = (key) => {
+      const keyLower = key.toLowerCase();
+      
+      // Skip system fields
+      if (systemFields.includes(keyLower)) {
+        return false;
+      }
+      
+      // Skip computed/virtual fields
+      if (computedFields.includes(keyLower)) {
+        return false;
+      }
+      
+      // Skip fields that start with "related" (relationship widgets)
+      if (keyLower.startsWith('related')) {
+        return false;
+      }
+      
+      // Only compare fields that are in the module definition (actual editable fields)
+      // If we have module definition, use it; otherwise compare all non-system fields
+      if (editableFieldKeys.size > 0) {
+        return editableFieldKeys.has(keyLower);
+      }
+      
+      // Fallback: compare all non-system, non-computed fields
+      return true;
+    };
+    
+    // Helper to extract value for comparison (handle populated objects and arrays)
+    const extractValue = (value) => {
+      // Handle arrays - compare length and content
+      if (Array.isArray(value)) {
+        return value.length === 0 ? null : JSON.stringify(value.sort());
+      }
+      
+      // Handle populated relationship objects
+      if (value && typeof value === 'object' && !(value instanceof Date)) {
+        if (value._id) return value._id;
+        if (value.name) return value.name;
+        if (value.firstName && value.lastName) return `${value.firstName} ${value.lastName}`;
+        if (value.first_name && value.last_name) return `${value.first_name} ${value.last_name}`;
+        if (value.title) return value.title;
+      }
+      
+      return value;
+    };
+    
+    // Helper to extract display value for activity logs (gets human-readable names)
+    const extractDisplayValue = (value, fieldKey) => {
+      // If null/undefined, return empty string
+      if (value === null || value === undefined) {
+        return '';
+      }
+      
+      // Handle arrays
+      if (Array.isArray(value)) {
+        return value.length === 0 ? '' : value.map(v => extractDisplayValue(v, fieldKey)).join(', ');
+      }
+      
+      // Handle populated relationship objects
+      if (value && typeof value === 'object' && !(value instanceof Date)) {
+        // For User objects (accountmanager, ownerId, assignedTo, etc.)
+        if (value.firstName && value.lastName) {
+          return `${value.firstName} ${value.lastName}`;
+        }
+        if (value.first_name && value.last_name) {
+          return `${value.first_name} ${value.last_name}`;
+        }
+        if (value.username) {
+          return value.username;
+        }
+        if (value.name) {
+          return value.name;
+        }
+        if (value.title) {
+          return value.title;
+        }
+        // If it's an object with _id but no name fields, it might be a populated reference
+        // Return the ID as fallback (shouldn't happen if properly populated)
+        if (value._id) {
+          return String(value._id);
+        }
+      }
+      
+      // If it's a string that looks like an ObjectId (24 hex characters)
+      if (typeof value === 'string' && /^[0-9a-fA-F]{24}$/.test(value)) {
+        // This is likely an ObjectId that wasn't populated
+        // Try to get the field definition to see if we can determine the type
+        const fieldDef = moduleDefinition.value?.fields?.find(f => 
+          f.key?.toLowerCase() === fieldKey?.toLowerCase()
+        );
+        
+        // If it's a lookup/relationship field, we can't fetch it now, so return a placeholder
+        if (fieldDef && (fieldDef.dataType === 'Lookup (Relationship)' || fieldDef.dataType === 'Lookup')) {
+          return '[User]'; // Generic placeholder for unpopulated User fields
+        }
+        
+        return value; // Return the ID as-is
+      }
+      
+      return String(value);
+    };
+    
+    // Detect changed fields and create activity logs
+    const changedFields = [];
+    
+    // Get keys from both records, but prioritize keys from module definition
+    const keysToCheck = editableFieldKeys.size > 0 
+      ? Array.from(editableFieldKeys)
+      : new Set([...Object.keys(oldRecord || {}), ...Object.keys(newRecord || {})]);
+    
+    for (const key of keysToCheck) {
+      // Skip if shouldn't compare
+      if (!shouldCompareField(key)) {
+        continue;
+      }
+      
+      // Get actual key name (case-insensitive lookup)
+      const actualKey = Object.keys(oldRecord || {}).find(k => k.toLowerCase() === key.toLowerCase()) ||
+                       Object.keys(newRecord || {}).find(k => k.toLowerCase() === key.toLowerCase()) ||
+                       key;
+      
+      // Get raw values (before extraction)
+      const rawOldValue = oldRecord[actualKey];
+      const rawNewValue = newRecord[actualKey];
+      
+      // Special handling for "name" field which might be computed
+      // For people records, name might be computed from first_name + last_name
+      // If name field doesn't exist in both records, skip it (it's computed, not editable)
+      if (actualKey.toLowerCase() === 'name') {
+        // If name doesn't exist in module definition as editable, skip it
+        // Or if it's missing in newRecord but exists in oldRecord (computed), skip it
+        if (rawOldValue && !rawNewValue && (newRecord.first_name || newRecord.last_name)) {
+          // Name exists in old but not new - this is likely a computed field
+          // Compare first_name and last_name instead
+          const oldName = `${oldRecord.first_name || ''} ${oldRecord.last_name || ''}`.trim();
+          const newName = `${newRecord.first_name || ''} ${newRecord.last_name || ''}`.trim();
+          if (oldName !== newName) {
+            const fieldName = formatFieldName('name');
+            changedFields.push(`changed ${fieldName} from "${oldName}" to "${newName}"`);
+          }
+          continue; // Skip the name field comparison since we handled it above
+        }
+        // If name doesn't exist in either, skip it
+        if (!rawOldValue && !rawNewValue) {
+          continue;
+        }
+      }
+      
+      const oldValue = extractValue(rawOldValue);
+      const newValue = extractValue(rawNewValue);
+      
+      // Normalize values for comparison
+      const normalizedOldValue = normalizeValue(oldValue);
+      const normalizedNewValue = normalizeValue(newValue);
+      
+      // If values changed, track it
+      if (normalizedOldValue !== normalizedNewValue) {
+        const fieldName = formatFieldName(actualKey);
+        let action = '';
+        
+        // Get display values for the log message (use helper to get proper names for relationship fields)
+        const displayOldValue = extractDisplayValue(rawOldValue, actualKey).substring(0, 100);
+        const displayNewValue = extractDisplayValue(rawNewValue, actualKey).substring(0, 100);
+        
+        if (normalizedOldValue === '' || normalizedOldValue === null || normalizedOldValue === undefined) {
+          // Field was empty/null, now has a value
+          action = `set ${fieldName} to "${displayNewValue}"`;
+        } else if (normalizedNewValue === '' || normalizedNewValue === null || normalizedNewValue === undefined) {
+          // Field had a value, now is empty/null
+          action = `cleared ${fieldName} (was "${displayOldValue}")`;
+        } else {
+          // Field value changed
+          action = `changed ${fieldName} from "${displayOldValue}" to "${displayNewValue}"`;
+        }
+        
+        changedFields.push(action);
+      }
+    }
+    
+    // Create a single activity log entry for all changes from the edit drawer
+    if (changedFields.length > 0) {
+      // Combine all changes into a single log entry
+      let action = '';
+      let details = null;
+      
+      if (changedFields.length === 1) {
+        // Single change - use the action directly
+        action = changedFields[0];
+      } else {
+        // Multiple changes - create a summary action and store all changes in details
+        const fieldNames = changedFields.map(field => {
+          // Extract field name from action (e.g., "changed Name from X to Y" -> "Name")
+          const match = field.match(/^(set|changed|cleared)\s+([^"(\s]+)/i);
+          return match ? match[2] : 'field';
+        });
+        
+        // Create a summary message
+        action = `updated ${changedFields.length} field${changedFields.length > 1 ? 's' : ''}`;
+        
+        // Store all individual field changes in details for display
+        details = {
+          type: 'multiple_changes',
+          changes: changedFields
+        };
+      }
+      
+      // Save single activity log entry with details
+      await addActivityLog(action, details);
+    }
+    
+    // Emit the updated record so parent can update its local state
+    emit('recordUpdated', newRecord);
+    // Also refresh widgets to show any related data updates
+    refreshAllWidgets();
+  } else {
+    // For new records, just refresh widgets
+    refreshAllWidgets();
+  }
   
-  // Don't open the new record in a tab - just refresh the widget
   // The drawer will close automatically via the closeDrawer function
+};
+
+const handleLinkRecords = (moduleKey) => {
+  // Build context based on current record
+  const context = {};
+  if (props.record && props.record._id) {
+    if (props.recordType === 'organizations') {
+      context.organizationId = props.record._id;
+      context.relatedType = 'organization';
+    } else if (props.recordType === 'people') {
+      context.contactId = props.record._id;
+      context.relatedType = 'contact';
+    }
+  }
+  linkDrawerModuleKey.value = moduleKey;
+  linkDrawerContext.value = context;
+  showLinkDrawer.value = true;
+};
+
+const handleLinkDrawerClose = () => {
+  showLinkDrawer.value = false;
+  linkDrawerModuleKey.value = '';
+  linkDrawerContext.value = {};
+};
+
+const handleLinkDrawerLinked = async ({ moduleKey, ids, context }) => {
+  // Perform linking via API based on context
+  try {
+    // Example linking rules
+    if (context.organizationId && moduleKey === 'people') {
+      // Link contacts to organization by updating each contact's organization field
+      await Promise.all(
+        ids.map((contactId) => apiClient.put(`/people/${contactId}`, { organization: context.organizationId }))
+      );
+    } else if (context.organizationId && moduleKey === 'deals') {
+      await apiClient.post('/deals/link', { accountId: context.organizationId, dealIds: ids });
+    } else if (context.contactId && moduleKey === 'deals') {
+      await apiClient.post('/deals/link', { contactId: context.contactId, dealIds: ids });
+    } else if (context.contactId && moduleKey === 'tasks') {
+      await apiClient.post('/tasks/link', { contactId: context.contactId, taskIds: ids });
+    } else if (context.organizationId && moduleKey === 'tasks') {
+      await apiClient.post('/tasks/link', { organizationId: context.organizationId, taskIds: ids });
+    } else if (moduleKey === 'events') {
+      await apiClient.post('/events/link', { relatedType: context.relatedType === 'organization' ? 'Organization' : 'Contact', relatedId: context.organizationId || context.contactId, eventIds: ids });
+    } else if (context.contactId && moduleKey === 'organizations') {
+      // Link organization to contact by setting the contact's organization
+      if (ids[0]) {
+        await apiClient.put(`/people/${context.contactId}`, { organization: ids[0] });
+      }
+    }
+  } catch (e) {
+    // Silently ignore for now
+  }
+  // Refresh widgets
+  refreshAllWidgets();
+};
+
+const getLinkDrawerTitle = () => {
+  const map = { people: 'Link Contacts', deals: 'Link Deals', tasks: 'Link Tasks', events: 'Link Events', organizations: 'Link Organization', users: 'Link Users' };
+  return map[linkDrawerModuleKey.value] || 'Link Records';
 };
 
 const handleCreateDrawerClose = () => {
   showCreateDrawer.value = false;
   createDrawerModuleKey.value = '';
   createDrawerInitialData.value = {};
+  createDrawerRecord.value = null;
 };
 
 const refreshAllWidgets = () => {
@@ -2894,10 +4569,16 @@ const refreshAllWidgets = () => {
   widgets.forEach(item => {
     const widgetType = item.getAttribute('data-widget-type');
     if (widgetType) {
+      // Find the container element inside the grid item (container is stored in widgetApps)
+      // The structure is: grid-stack-item > grid-stack-item-content > container
+      const contentEl = item.querySelector('.grid-stack-item-content');
+      const container = contentEl?.firstElementChild;
+      
+      if (container) {
       // Find the Vue app instance and call refresh if available
-      const widgetAppsEntry = Array.from(widgetApps.entries()).find(([el]) => el === item);
+        const widgetAppsEntry = widgetApps.get(container);
       if (widgetAppsEntry) {
-        const [, { app }] = widgetAppsEntry;
+          const { app } = widgetAppsEntry;
         // Try to access the exposed refresh method from the wrapper component
         try {
           const rootComponent = app._instance;
@@ -2906,6 +4587,7 @@ const refreshAllWidgets = () => {
           }
         } catch (error) {
           console.warn('Error refreshing widget:', widgetType, error);
+          }
         }
       }
     }
@@ -2913,6 +4595,7 @@ const refreshAllWidgets = () => {
 };
 
 const getCreateDrawerTitle = () => {
+  if (createDrawerRecord.value) return null; // let drawer compute edit title
   const titles = {
     'people': 'New Contact',
     'organizations': 'New Organization',
@@ -2925,6 +4608,7 @@ const getCreateDrawerTitle = () => {
 };
 
 const getCreateDrawerDescription = () => {
+  if (createDrawerRecord.value) return null; // let drawer compute edit description
   const descriptions = {
     'people': 'Add a new contact to your CRM.',
     'organizations': 'Add a new organization to your CRM.',
@@ -2934,6 +4618,14 @@ const getCreateDrawerDescription = () => {
     'users': 'Add a new user to your organization.'
   };
   return descriptions[createDrawerModuleKey.value] || 'Fill in the information below to create a new record.';
+};
+
+const openEditDrawer = () => {
+  if (!props.record || !props.recordType) return;
+  createDrawerModuleKey.value = props.recordType;
+  createDrawerInitialData.value = {};
+  createDrawerRecord.value = props.record;
+  showCreateDrawer.value = true;
 };
 
 const handleOpenRelatedRecord = async (relatedRecord) => {
@@ -3058,6 +4750,18 @@ watch(() => props.record, async (newRecord, oldRecord) => {
 
 // Lifecycle hooks
 onMounted(async () => {
+  // Check if we need to do a one-time reset of all widget layouts
+  // This is a one-time migration to apply the new default widget ordering
+  // Version v5: Reset all records to new default layout (Key Fields 25%, Lifecycle Stage 50%, Metrics 25%)
+  const resetFlag = localStorage.getItem('widget-layout-reset-v5');
+  if (!resetFlag) {
+    console.log('Performing one-time widget layout reset for all records to apply new default ordering (25%-50%-25% first row layout)...');
+    await resetAllWidgetLayouts();
+    // Set flag to prevent resetting again
+    localStorage.setItem('widget-layout-reset-v5', 'true');
+    console.log('Widget layouts reset complete for all records. New default order (25%-50%-25% first row layout) will be applied.');
+  }
+  
   // Fetch module definition for field mapping
   await fetchModuleDefinition();
   
@@ -3102,6 +4806,11 @@ onUnmounted(() => {
   window.removeEventListener('sidebar-toggle', handleSidebarToggle);
   window.removeEventListener('resize', handleResize);
   destroyGridStack();
+});
+
+// Expose methods for parent components
+defineExpose({
+  reloadActivityLogs: loadActivityLogs
 });
 
 </script>

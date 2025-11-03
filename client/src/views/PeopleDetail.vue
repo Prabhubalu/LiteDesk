@@ -10,6 +10,7 @@
     @delete="showDeleteModal = true"
     @add-relation="handleAddRelation"
     @open-related-record="handleOpenRelatedRecord"
+    @record-updated="handleRecordUpdated"
     ref="summaryViewRef"
   />
 
@@ -144,6 +145,11 @@ const handleUpdate = async (updateData) => {
     await apiClient.put(endpoint, {
       [updateData.field]: updateData.value
     });
+    
+    // Call onSuccess callback if provided (for activity logging)
+    if (updateData.onSuccess) {
+      await updateData.onSuccess();
+    }
   } catch (err) {
     console.error('Error updating person:', err);
     // Revert on error
@@ -229,6 +235,17 @@ const handleAddRelation = (relationData) => {
 
 const handleOpenRelatedRecord = (relatedRecord) => {
   console.log('Open related record:', relatedRecord);
+};
+
+const handleRecordUpdated = (updatedRecord) => {
+  // Update local state with the updated record
+  if (updatedRecord && person.value) {
+    // Merge the updated record data into the existing person object
+    person.value = { ...person.value, ...updatedRecord };
+  } else if (updatedRecord) {
+    // If person is null, set it to the updated record
+    person.value = updatedRecord;
+  }
 };
 
 onMounted(() => {

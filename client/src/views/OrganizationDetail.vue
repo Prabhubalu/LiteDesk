@@ -11,6 +11,7 @@
     @delete="showDeleteModal = true"
     @add-relation="handleAddRelation"
     @open-related-record="handleOpenRelatedRecord"
+    @record-updated="handleRecordUpdated"
     ref="summaryViewRef"
   />
 
@@ -130,6 +131,11 @@ const handleUpdate = async (updateData) => {
     await apiClient.put(`/admin/organizations/${route.params.id}`, {
       [updateData.field]: updateData.value
     });
+    
+    // Call onSuccess callback if provided (for activity logging)
+    if (updateData.onSuccess) {
+      await updateData.onSuccess();
+    }
   } catch (err) {
     console.error('Error updating organization:', err);
     // Revert on error
@@ -215,6 +221,17 @@ const handleOpenRelatedRecord = (relatedRecord) => {
   // We don't need to call addDynamicTab here since handleOpenRelatedRecord
   // in SummaryView already does it
   // Just log for debugging
+};
+
+const handleRecordUpdated = (updatedRecord) => {
+  // Update local state with the updated record
+  if (updatedRecord && organization.value) {
+    // Merge the updated record data into the existing organization object
+    organization.value = { ...organization.value, ...updatedRecord };
+  } else if (updatedRecord) {
+    // If organization is null, set it to the updated record
+    organization.value = updatedRecord;
+  }
 };
 
 onMounted(() => {

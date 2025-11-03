@@ -22,22 +22,61 @@
 .grid-stack-item {
   /* background: transparent !important; */
   box-sizing: border-box !important;
-  padding: 1rem !important;
+  padding: 0 !important;
 }
 
 .grid-stack-item-content {
   /* background: transparent !important; */
-  border: none !important;
-  overflow: visible !important;
-  padding: 0 !important;
+  position: absolute;
+  inset: 0;            /* top:0; right:0; bottom:0; left:0 */
+  padding: 0;
+  margin: 0;
+  height: auto !important;
+  width: auto !important;
+}
+
+/* Responsive hover visibility for widget header actions */
+@media (min-width: 1024px) {
+  .ld-card-group .ld-hover-actions {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 150ms ease-in-out;
+  }
+  .ld-card-group:hover .ld-hover-actions {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* Show record "more" menu on hover for desktop only */
+@media (min-width: 1024px) {
+  .ld-record-more {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 150ms ease-in-out;
+  }
+  
+  /* Show on hover of the specific record card only */
+  .ld-record-card:hover .ld-record-more {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* Always show on mobile/tablet */
+@media (max-width: 1023px) {
+  .ld-record-more {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
 }
 
 /* Ensure GridStack margins are visible */
 .grid-stack {
-  --gs-item-margin-top: 16px !important;
+  /* --gs-item-margin-top: 16px !important;
   --gs-item-margin-bottom: 16px !important;
   --gs-item-margin-left: 16px !important;
-  --gs-item-margin-right: 16px !important;
+  --gs-item-margin-right: 16px !important; */
 }
 
 /* Prevent GridStack resize handles from appearing above fixed headers */
@@ -45,6 +84,24 @@
 .grid-stack-item > .ui-resizable-handle {
   z-index: 1 !important;
 }
+
+/* Position resize handles to align with visible content edges */
+/* .grid-stack-item { --gs-content-pad: 0px; }
+.grid-stack-item > .ui-resizable-handle { background: transparent !important; }
+.grid-stack-item > .ui-resizable-handle { background-image: none !important; border: none !important; outline: none !important; }
+.grid-stack-item > .ui-resizable-se,
+.grid-stack-item > .ui-resizable-sw,
+.grid-stack-item > .ui-resizable-ne,
+.grid-stack-item > .ui-resizable-nw { background-image: none !important; }
+/* Ensure no pseudo-element icons render on handles */
+.grid-stack-item > .ui-resizable-handle::before,
+.grid-stack-item > .ui-resizable-handle::after { content: none !important; background: none !important; box-shadow: none !important; }
+/* Completely hide handle visuals even on hover while retaining hit areas */
+.grid-stack-item > .ui-resizable-handle { opacity: 0 !important; }
+.grid-stack-item:hover > .ui-resizable-handle { opacity: 0 !important; }
+/* Hide any jQuery UI icon classes that might render */
+.grid-stack-item > .ui-resizable-handle .ui-icon,
+.grid-stack-item > .ui-resizable-handle .ui-icon-gripsmall-diagonal-se { display: none !important; background: none !important; }
 
 
 /* FullCalendar Styles - Reset and Mac-style tabs */
