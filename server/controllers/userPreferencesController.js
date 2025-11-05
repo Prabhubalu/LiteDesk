@@ -95,3 +95,52 @@ exports.getWidgetLayout = async (req, res) => {
     }
 };
 
+// --- Save metrics config for a module (recordType) ---
+exports.saveMetricsConfig = async (req, res) => {
+    try {
+        const { recordType, metrics } = req.body;
+        const { organizationId, _id: userId } = req.user;
+
+        if (!recordType || !Array.isArray(metrics)) {
+            return res.status(400).json({ success: false, message: 'Missing required fields: recordType, metrics' });
+        }
+
+        let preferences = await UserPreferences.findOne({ organizationId, userId });
+        if (!preferences) {
+            preferences = await UserPreferences.create({ organizationId, userId, widgetLayouts: new Map(), metricsConfigs: new Map() });
+        }
+
+        if (!preferences.metricsConfigs) preferences.metricsConfigs = new Map();
+        preferences.metricsConfigs.set(recordType, metrics);
+
+        await preferences.save();
+        res.json({ success: true, message: 'Metrics config saved successfully' });
+    } catch (error) {
+        console.error('Save metrics config error:', error);
+        res.status(500).json({ success: false, message: 'Server error saving metrics config' });
+    }
+};
+
+// --- Get metrics config for a module (recordType) ---
+exports.getMetricsConfig = async (req, res) => {
+    try {
+        const { recordType } = req.query;
+        const { organizationId, _id: userId } = req.user;
+
+        if (!recordType) {
+            return res.status(400).json({ success: false, message: 'Missing required field: recordType' });
+        }
+
+        const preferences = await UserPreferences.findOne({ organizationId, userId });
+        if (!preferences || !preferences.metricsConfigs) {
+            return res.json({ success: true, data: null });
+        }
+
+        const cfg = preferences.metricsConfigs.get(recordType) || null;
+        res.json({ success: true, data: cfg });
+    } catch (error) {
+        console.error('Get metrics config error:', error);
+        res.status(500).json({ success: false, message: 'Server error fetching metrics config' });
+    }
+};
+

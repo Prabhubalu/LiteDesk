@@ -48,6 +48,23 @@ const UserPreferencesSchema = new mongoose.Schema({
             widgets: [WidgetLayoutSchema]
         },
         default: new Map()
+    },
+    
+    // Metrics configurations per module (recordType)
+    // Key: recordType (e.g., 'people', 'organizations') → value: array of metric configs
+    metricsConfigs: {
+        type: Map,
+        of: [
+            new mongoose.Schema({
+                id: { type: String, required: true },
+                label: { type: String, required: true },
+                source: { type: String, enum: ['record', 'stats'], default: 'record' },
+                field: { type: String, default: '' },
+                agg: { type: String, enum: ['value', 'sum', 'avg', 'count', 'days_since', 'ai_score'], default: 'value' },
+                icon: { type: String, default: '' }
+            }, { _id: false })
+        ],
+        default: new Map()
     }
 }, {
     timestamps: true

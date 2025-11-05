@@ -4,7 +4,9 @@ const { protect } = require('../middleware/authMiddleware');
 const { organizationIsolation } = require('../middleware/organizationMiddleware');
 const {
     saveWidgetLayout,
-    getWidgetLayout
+    getWidgetLayout,
+    saveMetricsConfig,
+    getMetricsConfig
 } = require('../controllers/userPreferencesController');
 
 // Apply auth and organization middleware to all routes
@@ -14,6 +16,10 @@ router.use(organizationIsolation);
 // Widget Layout Routes
 router.post('/widget-layout', saveWidgetLayout);
 router.get('/widget-layout', getWidgetLayout);
+
+// Metrics Config Routes
+router.post('/metrics-config', saveMetricsConfig);
+router.get('/metrics-config', getMetricsConfig);
 
 module.exports = router;
 

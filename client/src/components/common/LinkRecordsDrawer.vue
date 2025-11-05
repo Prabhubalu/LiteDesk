@@ -92,6 +92,7 @@ import { ref, watch, computed } from 'vue';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import apiClient from '@/utils/apiClient';
+import { useAuthStore } from '@/stores/auth';
 
 const props = defineProps({
   isOpen: { type: Boolean, default: false },
@@ -110,6 +111,10 @@ const searchQuery = ref('');
 const selectedIds = ref(new Set());
 const prelinkedIds = ref(new Set());
 let searchDebounce = null;
+
+// Auth role
+const authStore = useAuthStore();
+const isAdmin = computed(() => authStore.isOwner || authStore.userRole === 'admin');
 
 const deltaSelectedIds = computed(() => {
   const out = new Set();
@@ -153,7 +158,9 @@ const handleDialogClose = () => {
 };
 
 const endpointForModule = (moduleKey) => {
-  if (moduleKey === 'organizations' || moduleKey === 'organization') return '/v2/organization';
+  if (moduleKey === 'organizations' || moduleKey === 'organization') {
+    return isAdmin.value ? '/admin/organizations/all' : '/v2/organization';
+  }
   return `/${moduleKey}`;
 };
 
@@ -228,7 +235,12 @@ const fetchItems = async () => {
     const endpoint = endpointForModule(props.moduleKey);
     const res = await apiClient.get(endpoint, { params });
     if (res.success) {
-      items.value = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+      let rows = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+      // Non-admin organizations endpoint returns a single organization object
+      if ((props.moduleKey === 'organizations' || props.moduleKey === 'organization') && !isAdmin.value && !Array.isArray(res.data) && res.data && res.data._id) {
+        rows = [res.data];
+      }
+      items.value = rows;
     } else {
       items.value = Array.isArray(res) ? res : [];
     }
