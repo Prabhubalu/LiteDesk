@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <div class="min-h-screen bg-gray-100/50 dark:bg-gray-900">
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center min-h-screen">
       <div class="text-center">
@@ -1219,9 +1219,9 @@ import RelatedDealsWidget from '@/components/deals/RelatedDealsWidget.vue';
 import RelatedTasksWidget from '@/components/tasks/RelatedTasksWidget.vue';
 import RelatedEventsWidget from '@/components/events/RelatedEventsWidget.vue';
 import RelatedOrganizationWidget from '@/components/organizations/RelatedOrganizationWidget.vue';
-import OrganizationMetricsWidget from '@/components/organizations/OrganizationMetricsWidget.vue';
-import LifecycleStageWidget from '@/components/common/LifecycleStageWidget.vue';
-import KeyFieldsWidget from '@/components/common/KeyFieldsWidget.vue';
+import MetricsWidget from '@/components/common/metrics/MetricsWidget.vue';
+import LifecycleStageWidget from '@/components/common/metrics/LifecycleStageWidget.vue';
+import KeyFieldsWidget from '@/components/common/metrics/KeyFieldsWidget.vue';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import LinkRecordsDrawer from '@/components/common/LinkRecordsDrawer.vue';
 import apiClient from '@/utils/apiClient';
@@ -2871,8 +2871,11 @@ const createWidgetElement = (widgetType) => {
         componentProps.moduleDefinition = allModuleDefinitions.value['events'];
         break;
       case 'metrics':
-        Component = OrganizationMetricsWidget;
+        Component = MetricsWidget;
         componentProps.stats = props.stats || {};
+        componentProps.record = props.record;
+        componentProps.recordType = props.recordType;
+        componentProps.moduleDefinition = moduleDefinition.value;
         break;
       case 'lifecycle-stage':
         Component = LifecycleStageWidget;
@@ -2892,10 +2895,17 @@ const createWidgetElement = (widgetType) => {
         return container;
     }
   } else if (props.record?._id) {
-    // For other record types, support lifecycle-stage and related-organization widgets
+    // For other record types, support lifecycle-stage, metrics, and related-organization widgets
     switch (widgetType) {
       case 'lifecycle-stage':
         Component = LifecycleStageWidget;
+        componentProps.record = props.record;
+        componentProps.recordType = props.recordType;
+        componentProps.moduleDefinition = moduleDefinition.value;
+        break;
+      case 'metrics':
+        Component = MetricsWidget;
+        componentProps.stats = props.stats || {};
         componentProps.record = props.record;
         componentProps.recordType = props.recordType;
         componentProps.moduleDefinition = moduleDefinition.value;
@@ -3071,6 +3081,35 @@ const createWidgetElement = (widgetType) => {
       try {
         if (props.recordType === 'people') {
           await apiClient.put(`/people/${props.record._id}`, { organization: null });
+          if (props.record) props.record.organization = null;
+        } else if (props.recordType === 'deals') {
+          // Deals link to organizations via accountId
+          await apiClient.put(`/deals/${props.record._id}`, { accountId: null });
+          if (props.record) props.record.accountId = null;
+        } else if (props.recordType === 'tasks') {
+          // Tasks link to organizations via organizationId
+          await apiClient.put(`/tasks/${props.record._id}`, { organizationId: null });
+          if (props.record) props.record.organizationId = null;
+        } else if (props.recordType === 'events') {
+          // Events link generically via relatedType/relatedId
+          await apiClient.put(`/events/${props.record._id}`, { relatedType: null, relatedId: null });
+          if (props.record) { props.record.relatedType = null; props.record.relatedId = null; }
+        }
+        // Fetch the fresh record and notify parent so props update flows down to widgets
+        try {
+          let endpoint = '';
+          if (props.recordType === 'people') endpoint = `/people/${props.record._id}`;
+          else if (props.recordType === 'deals') endpoint = `/deals/${props.record._id}`;
+          else if (props.recordType === 'tasks') endpoint = `/tasks/${props.record._id}`;
+          else if (props.recordType === 'events') endpoint = `/events/${props.record._id}`;
+          if (endpoint) {
+            const res = await apiClient.get(endpoint);
+            if (res && res.success && res.data) {
+              emit('recordUpdated', res.data);
+            }
+          }
+        } catch (fetchErr) {
+          // Non-blocking; UI will still refresh widgets
         }
         await nextTick();
         refreshAllWidgets();

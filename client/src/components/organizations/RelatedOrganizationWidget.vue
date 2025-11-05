@@ -1,5 +1,5 @@
 <template>
-  <CardWidget title="Related Organizations" class="ld-card-group">
+  <CardWidget :key="refreshKey" title="Related Organizations" class="ld-card-group">
     <template #actions>
       <button
         @click="$emit('link-organizations')"
@@ -70,7 +70,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue';
 import { EllipsisVerticalIcon, TrashIcon } from '@heroicons/vue/24/outline';
 import { getKeyFields, getFieldValue } from '@/utils/fieldDisplay';
@@ -90,6 +90,14 @@ const props = defineProps({
 });
 
 defineEmits(['view-organization', 'link-organization', 'unlink-organization', 'link-organizations', 'delete-organization']);
+
+// Expose a refresh hook so parent can force a rerender after external mutations
+const refreshKey = ref(0);
+defineExpose({
+  refresh: () => {
+    refreshKey.value += 1;
+  }
+});
 
 // Get key fields from module definition
 const keyFields = computed(() => {
