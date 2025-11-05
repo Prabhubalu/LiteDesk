@@ -13,9 +13,9 @@
       <div v-if="organization" class="space-y-3">
       <div class="ld-record-card p-3 mb-3 bg-gray-50 dark:bg-gray-900 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
         <div class="flex items-start gap-3">
-          <!-- Left icon -->
+          <!-- Left avatar -->
           <div class="shrink-0 mt-0.5">
-            <BuildingOfficeIcon class="w-6 h-6 text-gray-500 dark:text-gray-400" />
+            <Avatar :record="organization" size="md" />
           </div>
           <!-- Content -->
           <div class="min-w-0 flex-1" @click="$emit('view-organization', organization._id)">
@@ -76,6 +76,7 @@ import { EllipsisVerticalIcon, TrashIcon } from '@heroicons/vue/24/outline';
 import { getKeyFields, getFieldValue } from '@/utils/fieldDisplay';
 import { PlusIcon, BuildingOfficeIcon, LinkIcon } from '@heroicons/vue/24/outline';
 import CardWidget from '@/components/common/CardWidget.vue';
+import Avatar from '@/components/common/Avatar.vue';
 
 const props = defineProps({
   organization: {

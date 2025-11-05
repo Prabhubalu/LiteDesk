@@ -482,14 +482,25 @@
               <!-- Right Side: Toggle and Manage Button -->
               <div class="flex items-center gap-3">
                 <!-- Show empty fields toggle (Desktop only) -->
-                <label class="hidden lg:flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    v-model="showEmptyFields"
-                    class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
-                  />
+                <div class="hidden lg:flex items-center gap-2">
                   <span class="text-sm text-gray-700 dark:text-gray-300">Show empty fields</span>
-                </label>
+                  <Switch
+                    v-model="showEmptyFields"
+                    :class="[
+                      showEmptyFields ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-600',
+                      'relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
+                    ]"
+                  >
+                    <span class="sr-only">Show empty fields</span>
+                    <span
+                      aria-hidden="true"
+                      :class="[
+                        showEmptyFields ? 'translate-x-4' : 'translate-x-0',
+                        'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition'
+                      ]"
+                    />
+                  </Switch>
+                </div>
                 
                 <!-- Manage Fields Button (Desktop only) -->
                 <div v-if="hasManageFieldsPermission" class="hidden lg:block">
@@ -497,6 +508,7 @@
                     module="settings"
                     action="edit"
                     variant="secondary"
+                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                     icon="cog"
                     @click="goToManageFields"
                   >
@@ -521,20 +533,26 @@
                     <MenuItems class="absolute right-0 mt-2 w-48 rounded-lg shadow-xl py-1 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 z-50">
                       <!-- Show empty fields toggle -->
                       <MenuItem v-slot="{ active }" as="template">
-                        <label 
-                          :class="[
-                            'flex items-center gap-2 px-4 py-2 cursor-pointer',
-                            active ? 'bg-gray-100 dark:bg-gray-700' : ''
-                          ]"
-                        >
-                  <input
-                            type="checkbox"
-                            v-model="showEmptyFields"
-                            class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
-                            @click.stop
-                          />
+                        <div :class="['flex items-center justify-between gap-3 px-4 py-2', active ? 'bg-gray-100 dark:bg-gray-700' : '']">
                           <span class="text-sm text-gray-700 dark:text-gray-300">Show empty fields</span>
-                        </label>
+                          <Switch
+                            v-model="showEmptyFields"
+                            :class="[
+                              showEmptyFields ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-600',
+                              'relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
+                            ]"
+                            @click.stop
+                          >
+                            <span class="sr-only">Show empty fields</span>
+                            <span
+                              aria-hidden="true"
+                              :class="[
+                                showEmptyFields ? 'translate-x-4' : 'translate-x-0',
+                                'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition'
+                              ]"
+                            />
+                          </Switch>
+                        </div>
                       </MenuItem>
                       
                       <!-- Manage Fields (only if user has permission) -->
@@ -854,7 +872,30 @@
                             <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{{ activityItem.date }}</p>
               </div>
                           <div class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                            <p>{{ activityItem.comment }}</p>
+                            <p>
+                              {{ activityItem.displayComment || activityItem.comment }}
+                              <template v-if="activityItem.linkItems && activityItem.linkItems.length === 1">
+                                {{ ' ' }}
+                                <a
+                                  :href="activityItem.linkItems[0].href"
+                                  @click.prevent="handleActivityLinkClick(activityItem.linkItems[0])"
+                                  class="text-indigo-600 dark:text-indigo-400 hover:underline truncate max-w-xs cursor-pointer"
+                                >
+                                  {{ activityItem.linkItems[0].text }}
+                                </a>
+                              </template>
+                            </p>
+                            <div v-if="activityItem.linkItems && activityItem.linkItems.length > 1" class="mt-2 flex flex-wrap gap-2">
+                              <a 
+                                v-for="(li, liIdx) in activityItem.linkItems" 
+                                :key="liIdx" 
+                                :href="li.href" 
+                                @click.prevent="handleActivityLinkClick(li)"
+                                class="text-indigo-600 dark:text-indigo-400 hover:underline truncate max-w-xs cursor-pointer"
+                              >
+                                {{ li.text }}
+                              </a>
+                            </div>
                           </div>
                         </div>
                       </template>
@@ -1211,7 +1252,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch, createApp, h } from 'vue';
-import { Menu, MenuButton, MenuItem, MenuItems, Listbox, ListboxButton, ListboxOptions, ListboxOption, Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
+import { Menu, MenuButton, MenuItem, MenuItems, Listbox, ListboxButton, ListboxOptions, ListboxOption, Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot, Switch } from '@headlessui/vue';
 import { GridStack } from 'gridstack';
 import 'gridstack/dist/gridstack.min.css';
 import RelatedContactsWidget from '@/components/organizations/RelatedContactsWidget.vue';
@@ -1901,12 +1942,86 @@ const addActivityLog = async (action, details = null, skipReload = false) => {
   }
 };
 
+function getPathForModule(moduleKey, id) {
+  if (!moduleKey || !id) return '';
+  switch ((moduleKey || '').toString()) {
+    case 'people':
+    case 'contacts':
+      return `/people/${id}`;
+    case 'deals':
+      return `/deals/${id}`;
+    case 'tasks':
+      return `/tasks`; // no per-task view route defined
+    case 'events':
+      return `/events/${id}`;
+    case 'organizations':
+    case 'organization':
+      return `/organizations/${id}`;
+    default:
+      return '';
+  }
+}
+
+// Helper: get record detail endpoint
+function getDetailEndpoint(moduleKey, id) {
+  const key = (moduleKey || '').toString();
+  switch (key) {
+    case 'people':
+    case 'contacts':
+      return `/people/${id}`;
+    case 'deals':
+      return `/deals/${id}`;
+    case 'tasks':
+      return `/tasks/${id}`;
+    case 'events':
+      return `/events/${id}`;
+    case 'organizations':
+    case 'organization':
+      return `/v2/organization/${id}`;
+    default:
+      return '';
+  }
+}
+
+// Helper: derive display name from a record object
+function getRecordDisplayName(rec) {
+  return rec?.name || rec?.title || `${rec?.first_name || ''} ${rec?.last_name || ''}`.trim() || rec?.email || rec?._id;
+}
+
+// Helper: fetch records by ids for activity links
+async function fetchRecordsByIds(moduleKey, ids) {
+  const out = [];
+  for (const id of ids || []) {
+    const ep = getDetailEndpoint(moduleKey, id);
+    if (!ep) continue;
+    try {
+      const res = await apiClient.get(ep);
+      const rec = res?.data || res;
+      if (rec) out.push({ id, name: getRecordDisplayName(rec), module: moduleKey });
+    } catch {
+      out.push({ id, name: id, module: moduleKey });
+    }
+  }
+  return out;
+}
+
 // Computed property for sorted timeline (newest first - already sorted since we unshift)
 const sortedTimelineUpdates = computed(() => {
   return [...timelineUpdates.value].sort((a, b) => {
     return new Date(b.timestamp) - new Date(a.timestamp);
   });
 });
+
+// Open activity link in tab bar (reuse if already open)
+function handleActivityLinkClick(li) {
+  if (!li?.href) return;
+  try {
+    openTab(li.href, { title: li.text });
+  } catch {
+    // Fallback to router navigation
+    router.push(li.href);
+  }
+}
 
 // Get unique users from activity
 const uniqueActivityUsers = computed(() => {
@@ -2073,11 +2188,31 @@ const activityItems = computed(() => {
         }
       }
     }
-    // Everything else is a comment (follow, viewed, created, etc.)
+    // Everything else is a comment (follow, viewed, created, linked, unlinked, etc.)
     else {
       comment = action;
     }
     
+    // Build link items if provided in details
+    let linkItems = [];
+    if (update.details && typeof update.details === 'object' && (update.details.type === 'link' || update.details.type === 'unlink')) {
+      const entries = Array.isArray(update.details.items) ? update.details.items : [];
+      linkItems = entries.map((it) => ({
+        text: it.name || it.title || it.id,
+        href: getPathForModule(it.module || update.details.moduleKey, it.id)
+      })).filter(li => !!li.href);
+    }
+
+    // Remove duplicate name suffix from comment when rendering single inline link
+    let displayComment = comment;
+    if (linkItems.length === 1 && typeof comment === 'string') {
+      const nm = linkItems[0]?.text;
+      const suff = nm ? ` - ${nm}` : '';
+      if (suff && comment.endsWith(suff)) {
+        displayComment = comment.slice(0, -suff.length);
+      }
+    }
+
     return {
       id: `activity-${update.timestamp?.getTime() || index}`,
       type,
@@ -2086,10 +2221,12 @@ const activityItems = computed(() => {
         href: '#'
       },
       comment,
+      displayComment,
       action: actionText,
       fieldName,
       tags,
-      date: formatDate(update.timestamp)
+      date: formatDate(update.timestamp),
+      linkItems
     };
   });
   
@@ -3010,7 +3147,11 @@ const createWidgetElement = (widgetType) => {
     // Unlink / Delete handlers
     const handleUnlinkContact = async (id) => {
       try {
+        let items = [];
+        try { items = await fetchRecordsByIds('people', [id]); } catch {}
         await apiClient.put(`/people/${id}`, { organization: null });
+        const suffixContact = items[0]?.name ? ` - ${items[0].name}` : '';
+        try { await addActivityLog(`unlinked contact${suffixContact}`, { type: 'unlink', moduleKey: 'people', items }); } catch {}
         // Use nextTick to ensure DOM is updated before refreshing
         await nextTick();
         refreshAllWidgets();
@@ -3026,11 +3167,15 @@ const createWidgetElement = (widgetType) => {
     };
     const handleUnlinkDeal = async (id) => {
       try {
+        let items = [];
+        try { items = await fetchRecordsByIds('deals', [id]); } catch {}
         if (props.recordType === 'organizations') {
           await apiClient.put(`/deals/${id}`, { accountId: null });
         } else if (props.recordType === 'people') {
           await apiClient.put(`/deals/${id}`, { contactId: null });
         }
+        const suffixDeal = items[0]?.name ? ` - ${items[0].name}` : '';
+        try { await addActivityLog(`unlinked deal${suffixDeal}`, { type: 'unlink', moduleKey: 'deals', items }); } catch {}
         await nextTick();
         refreshAllWidgets();
       } catch (e) {
@@ -3045,11 +3190,15 @@ const createWidgetElement = (widgetType) => {
     };
     const handleUnlinkTask = async (id) => {
       try {
+        let items = [];
+        try { items = await fetchRecordsByIds('tasks', [id]); } catch {}
         if (props.recordType === 'organizations') {
           await apiClient.put(`/tasks/${id}`, { organizationId: null });
         } else if (props.recordType === 'people') {
           await apiClient.put(`/tasks/${id}`, { contactId: null });
         }
+        const suffixTask = items[0]?.name ? ` - ${items[0].name}` : '';
+        try { await addActivityLog(`unlinked task${suffixTask}`, { type: 'unlink', moduleKey: 'tasks', items }); } catch {}
         await nextTick();
         refreshAllWidgets();
       } catch (e) {
@@ -3064,7 +3213,11 @@ const createWidgetElement = (widgetType) => {
     };
     const handleUnlinkEvent = async (id) => {
       try {
+        let items = [];
+        try { items = await fetchRecordsByIds('events', [id]); } catch {}
         await apiClient.put(`/events/${id}`, { relatedType: null, relatedId: null });
+        const suffixEvent = items[0]?.name ? ` - ${items[0].name}` : '';
+        try { await addActivityLog(`unlinked event${suffixEvent}`, { type: 'unlink', moduleKey: 'events', items }); } catch {}
         await nextTick();
         refreshAllWidgets();
       } catch (e) {
@@ -3079,6 +3232,8 @@ const createWidgetElement = (widgetType) => {
     };
     const handleUnlinkOrganization = async (id) => {
       try {
+        let items = [];
+        try { items = await fetchRecordsByIds('organizations', [id]); } catch {}
         if (props.recordType === 'people') {
           await apiClient.put(`/people/${props.record._id}`, { organization: null });
           if (props.record) props.record.organization = null;
@@ -3095,6 +3250,8 @@ const createWidgetElement = (widgetType) => {
           await apiClient.put(`/events/${props.record._id}`, { relatedType: null, relatedId: null });
           if (props.record) { props.record.relatedType = null; props.record.relatedId = null; }
         }
+        const suffixOrg = items[0]?.name ? ` - ${items[0].name}` : '';
+        try { await addActivityLog(`unlinked organization${suffixOrg}`, { type: 'unlink', moduleKey: 'organizations', items }); } catch {}
         // Fetch the fresh record and notify parent so props update flows down to widgets
         try {
           let endpoint = '';
@@ -4623,7 +4780,13 @@ const handleCreateDrawerSaved = async (newRecord) => {
     // Also refresh widgets to show any related data updates
     refreshAllWidgets();
   } else {
-    // For new records, just refresh widgets
+    // For new records created via the drawer, log creation
+    try {
+      const createdType = (createDrawerModuleKey.value || 'record').replace(/s$/, '');
+      const createdName = newRecord?.name || newRecord?.title || newRecord?._id;
+      await addActivityLog(`created ${createdType} "${createdName}"`, { type: 'created', moduleKey: createDrawerModuleKey.value, recordId: newRecord?._id });
+    } catch {}
+    // Just refresh widgets
     refreshAllWidgets();
   }
   
@@ -4681,7 +4844,29 @@ const handleLinkDrawerLinked = async ({ moduleKey, ids, context }) => {
   } catch (e) {
     // Silently ignore for now
   }
-  // Refresh widgets
+  // Log linking activity with item names and links
+  try {
+    const labelMap = { people: 'contact', deals: 'deal', tasks: 'task', events: 'event', organizations: 'organization', users: 'user' };
+    const label = labelMap[moduleKey] || moduleKey;
+    const count = ids?.length || 0;
+    if (count > 0) {
+      const items = await fetchRecordsByIds(moduleKey, ids);
+      const actionSuffix = count === 1 && items[0]?.name ? ` - ${items[0].name}` : '';
+      await addActivityLog(`linked ${count} ${label}${count > 1 ? 's' : ''}${actionSuffix}`, { type: 'link', moduleKey, items });
+    }
+  } catch {}
+  // After linking, fetch the updated record and notify parent so UI updates immediately
+  try {
+    if (context.contactId) {
+      const res = await apiClient.get(`/people/${context.contactId}`);
+      if (res?.success && res.data) {
+        emit('recordUpdated', res.data);
+      }
+    } else if (context.organizationId) {
+      // If needed, support organization record refresh in the future
+    }
+  } catch {}
+  // Refresh widgets to re-render any internal state
   refreshAllWidgets();
 };
 
