@@ -1,13 +1,15 @@
 <template>
   <div class="p-6 h-full flex flex-col overflow-hidden">
-    <div class="mb-4 flex items-center gap-3">
+    <div class="mb-4 flex items-center justify-between gap-3">
       <template v-if="selectedModuleId">
-        <button @click="clearSelection" class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5" title="Back to modules">
-          <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12.78 15.22a.75.75 0 01-1.06 0l-4.5-4.5a.75.75 0 010-1.06l4.5-4.5a.75.75 0 111.06 1.06L8.56 10l4.22 4.22a.75.75 0 010 1.06z" clip-rule="evenodd"/></svg>
-        </button>
-        <div>
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ selectedModule?.name }}</h2>
-          <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Configure fields, relationships and quick create</p>
+        <div class="flex items-center gap-3">
+          <button @click="clearSelection" class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5" title="Back to modules">
+            <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12.78 15.22a.75.75 0 01-1.06 0l-4.5-4.5a.75.75 0 010-1.06l4.5-4.5a.75.75 0 111.06 1.06L8.56 10l4.22 4.22a.75.75 0 010 1.06z" clip-rule="evenodd"/></svg>
+          </button>
+          <div>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ selectedModule?.name }}</h2>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Configure fields, relationships and quick create</p>
+          </div>
         </div>
       </template>
       <template v-else>
@@ -15,16 +17,17 @@
           <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Modules & Fields</h2>
           <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Manage modules and configure fields</p>
         </div>
+        <button @click="openCreateModal" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 text-sm font-medium transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Create Module
+        </button>
       </template>
     </div>
 
     <!-- If no module selected: show previous grid listing -->
     <div v-if="!selectedModuleId" class="flex-1 overflow-y-auto">
-      <div class="flex items-center gap-2 mb-4">
-        <input v-model="newModuleName" placeholder="Module name (e.g., Assets)" class="px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm text-gray-900 dark:text-white flex-1" />
-        <input v-model="newModuleKey" placeholder="Key (e.g., assets)" class="px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm text-gray-900 dark:text-white w-48" />
-        <button @click="createModule" class="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 text-sm font-medium">Create Module</button>
-      </div>
       <div v-if="loading" class="flex items-center justify-center py-12">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600"></div>
       </div>
@@ -72,12 +75,21 @@
       <div v-if="activeTopTab === 'fields'" class="flex-1 overflow-hidden flex gap-4">
       <!-- Left: Fields list -->
       <aside class="w-96 flex-none bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
-        <div class="p-3 border-b border-gray-200 dark:border-white/10 flex items-center justify-between">
-          <div class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{{ selectedModule?.name }}</div>
+        <div class="p-3 border-b border-gray-200 dark:border-white/10 flex items-center justify-between gap-2">
+          <div class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate flex-1 min-w-0">{{ selectedModule?.name }}</div>
+          <button 
+            v-if="selectedModule" 
+            @click="openAddField" 
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 text-xs font-medium transition-colors flex-shrink-0 whitespace-nowrap"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Add Custom Field</span>
+          </button>
         </div>
         <div class="p-2 border-b border-gray-200 dark:border-white/10 flex items-center justify-between">
           <div class="text-xs text-gray-500 dark:text-gray-400">Fields</div>
-          <button v-if="selectedModule?.type === 'custom'" @click="openAddField" class="px-2 py-1 bg-gray-100 dark:bg-white/10 rounded text-xs">Add</button>
         </div>
         <div class="p-2 border-b border-gray-200 dark:border-white/10 space-y-2">
           <input v-model="fieldSearch" placeholder="Search fields" class="w-full px-2 py-1 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs" />
@@ -171,6 +183,7 @@
                   <p v-if="currentField.dataType === 'Auto-Number'" class="mt-1 text-xs text-gray-500 dark:text-gray-400">Auto-Number fields cannot have custom keys</p>
                   <p v-if="isSystemField(currentField)" class="mt-1 text-xs text-gray-500 dark:text-gray-400">System fields cannot have their keys modified</p>
                   <p v-if="isCoreField(currentField, selectedModule?.key) && !isSystemField(currentField)" class="mt-1 text-xs text-gray-500 dark:text-gray-400">Core fields cannot have their keys modified</p>
+                  <p v-if="!isSystemField(currentField) && !isCoreField(currentField, selectedModule?.key) && currentField.dataType !== 'Auto-Number'" class="mt-1 text-xs text-gray-500 dark:text-gray-400">Auto-generated from label, duplicates are automatically handled</p>
                 </div>
                 <div>
                   <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Type</label>
@@ -547,6 +560,7 @@
                             <option value="readonly">Read-only</option>
                             <option value="required">Required</option>
                             <option value="picklist">Picklist Options Filter</option>
+                            <option value="popup">Popup Modal</option>
                           </select>
                         </div>
                       </div>
@@ -666,6 +680,32 @@
                         <p class="text-xs text-gray-500 dark:text-gray-400">
                           Picklist filter is only available for Picklist or Multi-Picklist field types.
                         </p>
+                      </div>
+
+                      <!-- Popup-specific settings -->
+                      <div v-if="d.type === 'popup'" class="border-t border-gray-200 dark:border-white/10 pt-3">
+                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-2">Fields to Show in Popup</label>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                          Select which fields should be displayed in the popup modal when the condition is met.
+                        </p>
+                        <div v-if="!editFields || editFields.length === 0" class="text-xs text-gray-500 dark:text-gray-400 py-2">
+                          No fields available. Please add fields to this module first.
+                        </div>
+                        <div v-else class="space-y-2 max-h-60 overflow-y-auto">
+                          <div v-for="f in editFields" :key="f.key" class="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              :id="`popup-field-${di}-${f.key}`"
+                              :checked="isPopupFieldSelected(di, f.key)"
+                              @change="togglePopupField(di, f.key)"
+                              class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500"
+                            />
+                            <label :for="`popup-field-${di}-${f.key}`" class="text-sm text-gray-700 dark:text-gray-300 cursor-pointer flex items-center gap-2">
+                              <span>{{ f.label || f.key }}</span>
+                              <span class="text-xs text-gray-500 dark:text-gray-400">({{ f.dataType }})</span>
+                            </label>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -953,13 +993,14 @@
         </div>
 
         <div class="p-4" v-else>
-          <div class="mb-3 flex items-center justify-between">
+          <!-- Quick Create Mode Toggle - Advanced mode hidden for now -->
+          <!-- <div class="mb-3 flex items-center justify-between">
             <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">Quick Create Mode</div>
             <div class="inline-flex rounded-lg border border-gray-200 dark:border-white/10 overflow-hidden text-sm">
               <button @click="quickMode = 'simple'" :class="quickMode === 'simple' ? 'bg-brand-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'" class="px-3 py-1.5">Simple</button>
               <button @click="quickMode = 'advanced'" :class="quickMode === 'advanced' ? 'bg-brand-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'" class="px-3 py-1.5">Advanced</button>
             </div>
-          </div>
+          </div> -->
           <div class="flex gap-4">
             <!-- Left: Field palette (drag to rows/columns) -->
             <aside class="w-96 flex-none bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -968,7 +1009,7 @@
               </div>
               <div class="p-2 max-h-[60vh] overflow-y-auto">
                 <!-- Simple mode: checkboxes -->
-                <ul v-if="quickMode === 'simple'" class="space-y-1">
+                <ul class="space-y-1">
                   <li
                     v-for="f in editFields"
                     :key="f.key"
@@ -981,25 +1022,15 @@
                     <span class="text-sm text-gray-800 dark:text-gray-200 truncate">{{ f.label || f.key }}</span>
                   </li>
                 </ul>
-                <!-- Advanced mode: drag items -->
-                <ul v-else class="space-y-1">
-                  <li v-for="f in editFields" :key="f.key" class="px-3 py-2 rounded hover:bg-gray-50 dark:hover:bg-white/5 cursor-grab select-none flex items-center gap-2"
-                      draggable="true" @dragstart="onFieldDragStart(f.key)"
-                      :class="isFieldUsedInLayout(f.key) ? 'opacity-50' : ''">
-                    <svg class="w-3.5 h-3.5 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path d="M7 2a1 1 0 011 1v2a1 1 0 11-2 0V3a1 1 0 011-1zm5 0a1 1 0 011 1v2a1 1 0 11-2 0V3a1 1 0 011-1zM7 8a1 1 0 011 1v2a1 1 0 11-2 0V9a1 1 0 011-1zm5 0a1 1 0 011 1v2a1 1 0 11-2 0V9a1 1 0 011-1zM7 14a1 1 0 011 1v2a1 1 0 11-2 0v-2a1 1 0 011-1zm5 0a1 1 0 011 1v2a1 1 0 11-2 0v-2a1 1 0 011-1z"/></svg>
-                    <span class="text-sm text-gray-800 dark:text-gray-200 truncate">{{ f.label || f.key }}</span>
-                  </li>
-                </ul>
               </div>
               <div class="p-3 border-t border-gray-200 dark:border-white/10">
-                <div class="text-xs text-gray-500 dark:text-gray-400" v-if="quickMode === 'advanced'">Drag fields into columns to include them in the form.</div>
-                <div class="text-xs text-gray-500 dark:text-gray-400" v-else>Select fields to include in Quick Create.</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">Select fields to include in Quick Create.</div>
               </div>
             </aside>
-            <!-- Right: Simple list OR Builder -->
+            <!-- Right: Simple list -->
             <section class="flex-1 min-w-0 space-y-6">
               <!-- Simple mode rendering -->
-              <div v-if="quickMode === 'simple'" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+              <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                 <div class="p-3 border-b border-gray-200 dark:border-white/10 flex items-center justify-between">
                   <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">Selected Fields (ordered)</div>
                 </div>
@@ -1011,8 +1042,8 @@
                 </div>
               </div>
 
-              <!-- Advanced builder -->
-              <div v-else class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+              <!-- Advanced builder - Hidden for now -->
+              <!-- <div v-else class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                 <div class="p-3 border-b border-gray-200 dark:border-white/10 flex items-center justify-between">
                   <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">Visual Builder (Rows / Columns)</div>
                   <div class="flex items-center gap-2">
@@ -1072,7 +1103,7 @@
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> -->
             </section>
           </div>
         </div>
@@ -1105,6 +1136,14 @@
         </div>
       </div>
     </div>
+
+    <!-- Module Form Modal -->
+    <ModuleFormModal
+      v-if="showFormModal"
+      :module="editingModule"
+      @close="closeFormModal"
+      @saved="handleModuleSaved"
+    />
   </div>
 </template>
 
@@ -1112,15 +1151,16 @@
 import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import ModuleFormModal from './ModuleFormModal.vue';
 
 const authStore = useAuthStore();
 const route = useRoute();
 const router = useRouter();
 const modules = ref([]);
 const loading = ref(false);
-const newModuleName = ref('');
-const newModuleKey = ref('');
 const selectedModuleId = ref(null);
+const showFormModal = ref(false);
+const editingModule = ref(null);
 const editFields = ref([]);
 const selectedFieldIdx = ref(0);
 const optionsBuffer = ref('');
@@ -1172,7 +1212,7 @@ const moduleEnabled = ref(true);
 const relationships = ref([]);
 const quickCreateSelected = ref(new Set());
 const quickLayout = ref({ version: 1, rows: [] });
-const quickMode = ref('advanced');
+const quickMode = ref('simple'); // Advanced mode hidden for now
 const showPreview = ref(false);
 const originalSnapshot = ref('');
 const quickOriginalSnapshot = ref('');
@@ -1460,14 +1500,9 @@ const fetchModules = async () => {
         moduleEnabled.value = initialMod.enabled !== false;
         relationships.value = JSON.parse(JSON.stringify(initialMod.relationships || []));
         quickLayout.value = JSON.parse(JSON.stringify(initialMod.quickCreateLayout || { version: 1, rows: [] }));
-        // Initialize quick mode: from URL if present; otherwise infer from layout
-        const qMode = typeof route.query.quickMode === 'string' ? route.query.quickMode : null;
-        if (qMode === 'simple' || qMode === 'advanced') {
-          quickMode.value = qMode;
-        } else {
-          quickMode.value = (quickLayout.value?.rows?.length || 0) > 0 ? 'advanced' : 'simple';
-          router.replace({ query: { ...route.query, quickMode: quickMode.value } });
-        }
+        // Initialize quick mode: always use simple (advanced mode hidden for now)
+        quickMode.value = 'simple';
+        router.replace({ query: { ...route.query, quickMode: quickMode.value } });
         // Choose selection source based on mode: advanced -> layout, simple -> quickCreate
         const layoutKeysInit = extractLayoutKeys(quickLayout.value);
         let quickKeysInit = initialMod.quickCreate || [];
@@ -1478,7 +1513,7 @@ const fetchModules = async () => {
             if (Array.isArray(cached) && cached.length) quickKeysInit = cached;
           } catch (e) {}
         }
-        const useLayout = (quickMode.value === 'advanced' && layoutKeysInit.length > 0);
+        const useLayout = false; // Advanced mode hidden for now // (quickMode.value === 'advanced' && layoutKeysInit.length > 0);
         const baseKeys = useLayout ? layoutKeysInit : quickKeysInit;
         // Always include required fields in Simple mode
         const requiredKeys = editFields.value.filter(f => !!f.required && !!f.key).map(f => f.key);
@@ -1513,16 +1548,13 @@ const fetchModules = async () => {
             moduleEnabled.value = storedMod.enabled !== false;
             relationships.value = JSON.parse(JSON.stringify(storedMod.relationships || []));
             quickLayout.value = JSON.parse(JSON.stringify(storedMod.quickCreateLayout || { version: 1, rows: [] }));
-            // initialize quick mode if missing
-            const qMode = typeof route.query.quickMode === 'string' ? route.query.quickMode : null;
-            if (qMode === 'simple' || qMode === 'advanced') quickMode.value = qMode; else {
-              quickMode.value = (quickLayout.value?.rows?.length || 0) > 0 ? 'advanced' : 'simple';
-              router.replace({ query: { ...route.query, quickMode: quickMode.value } });
-            }
+            // initialize quick mode: always use simple (advanced mode hidden for now)
+            quickMode.value = 'simple';
+            router.replace({ query: { ...route.query, quickMode: quickMode.value } });
             // now derive selection based on mode
             const layoutKeysInit = extractLayoutKeys(quickLayout.value);
             const quickKeysInit = storedMod.quickCreate || [];
-            const useLayout = (quickMode.value === 'advanced' && layoutKeysInit.length > 0);
+            const useLayout = false; // Advanced mode hidden for now // (quickMode.value === 'advanced' && layoutKeysInit.length > 0);
             const baseKeys = useLayout ? layoutKeysInit : quickKeysInit;
             const requiredKeys = editFields.value.filter(f => !!f.required && !!f.key).map(f => f.key);
             const combined = quickMode.value === 'simple' ? Array.from(new Set([...baseKeys, ...requiredKeys])) : baseKeys;
@@ -1573,14 +1605,9 @@ const selectModule = (mod, preferFieldKey = null) => {
   moduleEnabled.value = mod.enabled !== false;
   relationships.value = JSON.parse(JSON.stringify(mod.relationships || []));
   quickLayout.value = JSON.parse(JSON.stringify(mod.quickCreateLayout || { version: 1, rows: [] }));
-  // keep quickMode from URL if present; else infer from layout
-  const qMode = typeof route.query.quickMode === 'string' ? route.query.quickMode : null;
-  if (qMode === 'simple' || qMode === 'advanced') {
-    quickMode.value = qMode;
-  } else {
-    quickMode.value = (quickLayout.value?.rows?.length || 0) > 0 ? 'advanced' : 'simple';
-    router.replace({ query: { ...route.query, quickMode: quickMode.value } });
-  }
+  // always use simple mode (advanced mode hidden for now)
+  quickMode.value = 'simple';
+  router.replace({ query: { ...route.query, quickMode: quickMode.value } });
   // Choose selection source based on mode: advanced -> layout, simple -> quickCreate
   const layoutKeys = extractLayoutKeys(quickLayout.value);
   let quickKeys = mod.quickCreate || [];
@@ -1590,7 +1617,7 @@ const selectModule = (mod, preferFieldKey = null) => {
       if (Array.isArray(cached) && cached.length) quickKeys = cached;
     } catch (e) {}
   }
-  const useLayout = (quickMode.value === 'advanced' && layoutKeys.length > 0);
+  const useLayout = false; // Advanced mode hidden for now // (quickMode.value === 'advanced' && layoutKeys.length > 0);
   const baseKeys = useLayout ? layoutKeys : quickKeys;
   const requiredKeys = editFields.value.filter(f => !!f.required && !!f.key).map(f => f.key);
   const combined = quickMode.value === 'simple' ? Array.from(new Set([...baseKeys, ...requiredKeys])) : baseKeys;
@@ -1606,23 +1633,23 @@ const selectModule = (mod, preferFieldKey = null) => {
   }, 1000);
 };
 
-const createModule = async () => {
-  if (!newModuleName.value || !newModuleKey.value) return alert('Name and key are required');
-  try {
-    const res = await fetch('/api/modules', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authStore.user?.token}` },
-      body: JSON.stringify({ name: newModuleName.value, key: newModuleKey.value })
-    });
-    const data = await res.json();
-    if (!res.ok || !data.success) return alert(data.message || 'Failed to create module');
-    newModuleName.value = '';
-    newModuleKey.value = '';
-    await fetchModules();
-    const created = data.data;
-    selectModule(created);
-  } catch (e) {
-    console.error('Create module failed', e);
+const openCreateModal = () => {
+  editingModule.value = null;
+  showFormModal.value = true;
+};
+
+const closeFormModal = () => {
+  showFormModal.value = false;
+  editingModule.value = null;
+};
+
+const handleModuleSaved = async (savedModule) => {
+  closeFormModal();
+  await fetchModules();
+  // Find the module from the refreshed list and select it
+  const module = modules.value.find(m => m._id === savedModule._id);
+  if (module) {
+    selectModule(module);
   }
 };
 
@@ -1640,9 +1667,12 @@ const deleteModule = async (mod) => {
 };
 
 const openAddField = () => {
-  editFields.value.push({ key: '', label: '', dataType: 'Text', required: false, options: [], defaultValue: null, index: false, visibility: { list: true, detail: true }, order: editFields.value.length });
+  const newField = { key: '', label: '', dataType: 'Text', required: false, options: [], defaultValue: null, index: false, visibility: { list: true, detail: true }, order: editFields.value.length };
+  editFields.value.push(newField);
   selectedFieldIdx.value = editFields.value.length - 1;
   syncOptionsBuffer();
+  // Clear manual edit flag for new field
+  fieldKeyManuallyEdited.value.delete(selectedFieldIdx.value);
 };
 
 const moveField = (idx, delta) => {
@@ -1758,6 +1788,71 @@ const currentField = computed(() => editFields.value[selectedFieldIdx.value]);
 const currentFieldTitle = computed(() => currentField.value?.label || currentField.value?.key || 'Field');
 const otherFields = computed(() => editFields.value.filter((_, i) => i !== selectedFieldIdx.value));
 
+// Track if user manually edited field key to prevent auto-generation
+const fieldKeyManuallyEdited = ref(new Set());
+const isAutoGeneratingFieldKey = ref(false);
+
+// Generate base key from label
+const generateFieldBaseKey = (label) => {
+  if (!label) return '';
+  return label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
+    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+};
+
+// Check if field key exists and generate unique key
+const generateUniqueFieldKey = (baseKey, currentFieldIdx) => {
+  if (!baseKey) return '';
+  
+  // Get all existing field keys except the current field
+  const existingKeys = editFields.value
+    .map((f, idx) => idx !== currentFieldIdx ? f.key?.toLowerCase() : null)
+    .filter(Boolean);
+  
+  let candidateKey = baseKey;
+  let counter = 1;
+  
+  // Check if base key exists
+  while (existingKeys.includes(candidateKey)) {
+    candidateKey = `${baseKey}-${counter}`;
+    counter++;
+    // Prevent infinite loop
+    if (counter > 1000) break;
+  }
+  
+  return candidateKey;
+};
+
+// Auto-generate field key from label
+const autoGenerateFieldKey = () => {
+  if (!currentField.value) return;
+  
+  const fieldIdx = selectedFieldIdx.value;
+  
+  // Skip if key was manually edited or if field is system/core/auto-number
+  if (
+    fieldKeyManuallyEdited.value.has(fieldIdx) ||
+    isSystemField(currentField.value) ||
+    isCoreField(currentField.value, selectedModule.value?.key) ||
+    currentField.value.dataType === 'Auto-Number' ||
+    !currentField.value.label
+  ) {
+    return;
+  }
+  
+  isAutoGeneratingFieldKey.value = true;
+  const baseKey = generateFieldBaseKey(currentField.value.label);
+  if (baseKey) {
+    const uniqueKey = generateUniqueFieldKey(baseKey, fieldIdx);
+    currentField.value.key = uniqueKey;
+  }
+  // Use nextTick to ensure the watch doesn't fire during auto-generation
+  setTimeout(() => {
+    isAutoGeneratingFieldKey.value = false;
+  }, 0);
+};
+
 // Key field validation
 const keyFieldCount = computed(() => editFields.value.filter(f => f.keyField === true).length);
 const canMarkAsKeyField = computed(() => {
@@ -1783,6 +1878,31 @@ watch(() => currentField.value?.dataType, (newType) => {
 watch(() => selectedFieldIdx.value, () => {
   if (currentField.value) {
     loadFieldSettings();
+    // Reset manual edit flag when switching fields
+    fieldKeyManuallyEdited.value.delete(selectedFieldIdx.value);
+  }
+});
+
+// Watch field label to auto-generate key
+watch(() => currentField.value?.label, () => {
+  if (currentField.value) {
+    autoGenerateFieldKey();
+  }
+});
+
+// Watch field key to detect manual edits
+watch(() => currentField.value?.key, (newKey, oldKey) => {
+  if (!currentField.value || isAutoGeneratingFieldKey.value) return;
+  
+  const fieldIdx = selectedFieldIdx.value;
+  const expectedKey = generateFieldBaseKey(currentField.value.label);
+  
+  // If user manually edits the key to something different from auto-generated, mark as manually edited
+  if (newKey && newKey !== expectedKey && !newKey.startsWith(expectedKey)) {
+    fieldKeyManuallyEdited.value.add(fieldIdx);
+  } else if (newKey === expectedKey || newKey?.startsWith(expectedKey)) {
+    // If it matches the expected pattern, remove from manual edits
+    fieldKeyManuallyEdited.value.delete(fieldIdx);
   }
 });
 
@@ -1927,7 +2047,7 @@ async function autoSaveQuickCreate() {
       
       const payload = {
         quickCreate: quickCreateArray,
-        quickCreateLayout: quickMode.value === 'advanced' ? quickLayout.value : { version: 1, rows: [] }
+        quickCreateLayout: { version: 1, rows: [] } // Advanced mode hidden for now // quickMode.value === 'advanced' ? quickLayout.value : { version: 1, rows: [] }
       };
       
       console.log('Auto-saving Quick Create:', {
@@ -1992,10 +2112,11 @@ async function autoSaveQuickCreate() {
 
 // Watch for layout changes in advanced mode (span, widget, props changes)
 watch(() => quickLayout.value, () => {
-  if (quickMode.value === 'advanced' && selectedModule.value) {
-    console.log('Layout changed, triggering auto-save');
-    autoSaveQuickCreate();
-  }
+  // Advanced mode hidden for now - auto-save disabled
+  // if (quickMode.value === 'advanced' && selectedModule.value) {
+  //   console.log('Layout changed, triggering auto-save');
+  //   autoSaveQuickCreate();
+  // }
 }, { deep: true });
 
 // Watch for quickCreateSelected changes in simple mode
@@ -2362,6 +2483,26 @@ function isPicklistOptionSelected(di, option) {
 }
 
 // Toggle a picklist option selection
+function isPopupFieldSelected(di, fieldKey) {
+  const dep = currentField.value.dependencies?.[di];
+  if (!dep) return false;
+  if (!dep.popupFields) dep.popupFields = [];
+  return dep.popupFields.includes(fieldKey);
+}
+
+function togglePopupField(di, fieldKey) {
+  const dep = currentField.value.dependencies?.[di];
+  if (!dep) return;
+  if (!dep.popupFields) dep.popupFields = [];
+  
+  const index = dep.popupFields.indexOf(fieldKey);
+  if (index > -1) {
+    dep.popupFields.splice(index, 1);
+  } else {
+    dep.popupFields.push(fieldKey);
+  }
+}
+
 function togglePicklistOption(di, option) {
   const dep = currentField.value.dependencies?.[di];
   if (!dep) return;

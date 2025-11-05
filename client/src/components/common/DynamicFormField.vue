@@ -607,16 +607,11 @@
       class="block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-800 px-3 py-2 text-gray-500 dark:text-gray-400 text-base outline-1 -outline-offset-1 outline-gray-300/20 sm:text-sm/6 cursor-not-allowed"
     />
     
-    <!-- Error message and help text container (always reserves space to prevent jittering) -->
+    <!-- Error message container (always reserves space to prevent jittering) -->
     <div class="mt-1 min-h-[1.5rem]">
       <!-- Error message (prioritize validation errors, then prop errors) -->
       <p v-if="localValidationError || errors[field.key]" class="text-sm text-red-600 dark:text-red-400 transition-opacity duration-200">
         {{ localValidationError || errors[field.key] }}
-      </p>
-      
-      <!-- Help text (only show if no errors) -->
-      <p v-else-if="field.placeholder" class="text-xs text-gray-500 dark:text-gray-400 transition-opacity duration-200">
-        {{ field.placeholder }}
       </p>
     </div>
   </div>

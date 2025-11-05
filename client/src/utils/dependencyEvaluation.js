@@ -164,11 +164,27 @@ export function getFieldDependencyState(field, formData, allFields = []) {
     }
   }
 
+  // Check for popup dependencies
+  let popupTrigger = null;
+  for (const dep of field.dependencies) {
+    if (dep.type === 'popup') {
+      const conditionMet = evaluateDependency(dep, formData, allFields);
+      if (conditionMet && dep.popupFields && Array.isArray(dep.popupFields) && dep.popupFields.length > 0) {
+        popupTrigger = {
+          dependencyName: dep.name || '',
+          fields: dep.popupFields
+        };
+        break; // Use first matching popup dependency
+      }
+    }
+  }
+
   return {
     visible,
     readonly,
     required,
-    allowedOptions
+    allowedOptions,
+    popupTrigger
   };
 }
 
