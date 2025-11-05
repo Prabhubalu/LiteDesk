@@ -1,5 +1,5 @@
 <template>
-  <div class="flex gap-4">
+  <div class="flex flex-wrap gap-2 sm:gap-3 md:gap-4">
     <!-- Import Button -->
     <PermissionButton
       v-if="showImport"
@@ -9,7 +9,7 @@
       icon="import"
       @click="$emit('import')"
     >
-      Import
+      <span class="hidden sm:inline">Import</span>
     </PermissionButton>
 
     <!-- Export Button -->
@@ -21,7 +21,7 @@
       icon="export"
       @click="$emit('export')"
     >
-      Export
+      <span class="hidden sm:inline">Export</span>
     </PermissionButton>
 
     <!-- Create Button -->
@@ -32,7 +32,8 @@
       icon="plus"
       @click="$emit('create')"
     >
-      {{ createLabel }}
+      <span class="sm:hidden">{{ createLabel.replace(/^New\s+/, '') }}</span>
+      <span class="hidden sm:inline">{{ createLabel }}</span>
     </PermissionButton>
   </div>
 </template>
