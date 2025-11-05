@@ -190,7 +190,11 @@ exports.listModules = async (req, res) => {
             updatedAt: null
         }));
 
-        const custom = await ModuleDefinition.find({ organizationId: req.user.organizationId }).lean();
+        // Exclude 'groups' from modules list (it's a settings feature, not a module)
+        const custom = await ModuleDefinition.find({ 
+            organizationId: req.user.organizationId,
+            key: { $ne: 'groups' } // Exclude groups
+        }).lean();
         const customByKey = new Map(custom.map(m => [m.key, m]));
 
         // Merge: system base + stored overrides for same key (both custom and system-typed docs are stored in ModuleDefinition)
@@ -323,7 +327,11 @@ exports.createModule = async (req, res) => {
 exports.deleteModule = async (req, res) => {
     try {
         const { id } = req.params;
-        const mod = await ModuleDefinition.findOne({ _id: id, organizationId: req.user.organizationId });
+        const mod = await ModuleDefinition.findOne({ 
+            _id: id, 
+            organizationId: req.user.organizationId,
+            key: { $ne: 'groups' } // Exclude groups
+        });
         if (!mod) return res.status(404).json({ success: false, message: 'Module not found' });
         if (mod.type === 'system') return res.status(403).json({ success: false, message: 'Cannot delete system module' });
         await mod.deleteOne();
@@ -336,7 +344,11 @@ exports.deleteModule = async (req, res) => {
 exports.updateModule = async (req, res) => {
     try {
         const { id } = req.params;
-        const mod = await ModuleDefinition.findOne({ _id: id, organizationId: req.user.organizationId });
+        const mod = await ModuleDefinition.findOne({ 
+            _id: id, 
+            organizationId: req.user.organizationId,
+            key: { $ne: 'groups' } // Exclude groups
+        });
         if (!mod) return res.status(404).json({ success: false, message: 'Module not found' });
 
         const { name, enabled, fields, relationships, quickCreate, quickCreateLayout } = req.body;

@@ -110,6 +110,18 @@ const routes = [
     name: 'organization-detail',
     component: () => import('@/views/OrganizationDetail.vue'),
     meta: { requiresAuth: true, requiresPermission: { module: 'organizations', action: 'view' } }
+  },
+  {
+    path: '/groups',
+    name: 'groups',
+    component: () => import('@/views/Groups.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/groups/:id',
+    name: 'group-detail',
+    component: () => import('@/views/GroupDetail.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 

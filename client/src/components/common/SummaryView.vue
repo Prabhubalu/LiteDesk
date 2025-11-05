@@ -1195,6 +1195,18 @@
       </div>
     </Dialog>
   </TransitionRoot>
+
+  <!-- Dependency Popup Modal -->
+  <DependencyPopupModal
+    :is-open="showPopupModal"
+    :title="popupModalConfig.title"
+    :description="popupModalConfig.description"
+    :fields="popupModalConfig.fields"
+    :initial-data="props.record || {}"
+    :all-fields="moduleDefinition?.fields || []"
+    @close="closePopupModal"
+    @save="handlePopupSave"
+  />
 </template>
 
 <script setup>
@@ -1217,7 +1229,8 @@ import { useAuthStore } from '@/stores/auth';
 import { useTabs } from '@/composables/useTabs';
 import PermissionButton from '@/components/common/PermissionButton.vue';
 import DynamicFormField from '@/components/common/DynamicFormField.vue';
-import { getFieldDependencyState } from '@/utils/dependencyEvaluation';
+import DependencyPopupModal from '@/components/common/DependencyPopupModal.vue';
+import { getFieldDependencyState, evaluateDependency } from '@/utils/dependencyEvaluation';
 import { useRouter } from 'vue-router';
 import {
   MagnifyingGlassIcon,
@@ -1421,6 +1434,15 @@ const fixedTabs = computed(() => {
 // Module definitions
 const moduleDefinition = ref(null);
 const allModuleDefinitions = ref({});
+
+// Popup modal state
+const showPopupModal = ref(false);
+const popupModalConfig = ref({
+  title: '',
+  description: '',
+  fields: []
+});
+const processedPopupTriggers = ref(new Set()); // Track processed popup triggers to avoid duplicates
 
 // Field values tracking for discard functionality
 const originalFieldValues = ref({});
@@ -3727,6 +3749,76 @@ const updateField = (field, value) => {
     // Update current value
     pendingFieldChanges.value[field].currentValue = value;
   }
+  
+  // Check for popup triggers after field update
+  setTimeout(() => {
+    checkForPopupTriggers();
+  }, 100);
+};
+
+// Check for popup triggers across all fields
+const checkForPopupTriggers = () => {
+  if (!moduleDefinition.value?.fields || showPopupModal.value) return; // Don't check if modal is already open
+  
+  const allFields = moduleDefinition.value.fields;
+  const currentFormData = props.record || {};
+  
+  // Check each field for popup dependencies
+  for (const field of allFields) {
+    if (!field.dependencies || !Array.isArray(field.dependencies)) continue;
+    
+    // Check each dependency of this field
+    for (const dep of field.dependencies) {
+      if (dep.type === 'popup' && dep.popupFields && Array.isArray(dep.popupFields) && dep.popupFields.length > 0) {
+        // Evaluate if dependency conditions are met
+        const conditionMet = evaluateDependency(dep, currentFormData, allFields);
+        
+        if (conditionMet) {
+          const triggerKey = `${field.key}-${dep.name || 'popup'}-${dep.popupFields.join(',')}`;
+          
+          // Only show popup once per trigger (unless form data was reset)
+          if (!processedPopupTriggers.value.has(triggerKey)) {
+            // Get the fields to show in the popup
+            const popupFields = allFields.filter(f => 
+              dep.popupFields.includes(f.key)
+            );
+            
+            if (popupFields.length > 0) {
+              // Mark this trigger as processed
+              processedPopupTriggers.value.add(triggerKey);
+              
+              // Show the popup
+              popupModalConfig.value = {
+                title: dep.name || 'Update Fields',
+                description: `Please update the following fields:`,
+                fields: popupFields
+              };
+              showPopupModal.value = true;
+              return; // Exit after showing one popup
+            }
+          }
+        }
+      }
+    }
+  }
+};
+
+const closePopupModal = () => {
+  showPopupModal.value = false;
+};
+
+const handlePopupSave = (updatedData) => {
+  // Update the record with the values from the popup
+  if (props.record) {
+    Object.keys(updatedData).forEach(key => {
+      props.record[key] = updatedData[key];
+      // Trigger save for each updated field
+      updateField(key, updatedData[key]);
+    });
+    // Emit update event to notify parent
+    emit('recordUpdated', props.record);
+  }
+  closePopupModal();
 };
 
 // Save field and log activity (called on blur)
@@ -3820,6 +3912,10 @@ const fetchModuleDefinition = async () => {
     const module = modules.find(m => m.key === props.recordType);
     if (module) {
       moduleDefinition.value = module;
+      // Check for popup triggers after module loads
+      setTimeout(() => {
+        checkForPopupTriggers();
+      }, 100);
     }
   } catch (error) {
     console.error('Error fetching module definition:', error);
@@ -4711,6 +4807,18 @@ watch(activeTab, (newTab, oldTab) => {
 });
 
 // Watch for record changes to reload saved tab and log initial load
+// Watch for record changes to check popup triggers
+watch(() => props.record, (newRecord) => {
+  if (newRecord && moduleDefinition.value) {
+    // Reset processed triggers when record changes
+    processedPopupTriggers.value.clear();
+    // Check for popup triggers after a short delay
+    setTimeout(() => {
+      checkForPopupTriggers();
+    }, 100);
+  }
+}, { deep: true });
+
 watch(() => props.record, async (newRecord, oldRecord) => {
   if (newRecord && (newRecord._id || newRecord.id)) {
     const recordId = newRecord._id || newRecord.id;
