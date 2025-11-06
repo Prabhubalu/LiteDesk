@@ -421,17 +421,9 @@ class InstanceProvisioner {
         requests: { cpu: '250m', memory: '512Mi' },
         limits: { cpu: '500m', memory: '1Gi' }
       },
-      starter: {
-        requests: { cpu: '500m', memory: '1Gi' },
-        limits: { cpu: '1000m', memory: '2Gi' }
-      },
-      professional: {
+      paid: {
         requests: { cpu: '1000m', memory: '2Gi' },
         limits: { cpu: '2000m', memory: '4Gi' }
-      },
-      enterprise: {
-        requests: { cpu: '2000m', memory: '4Gi' },
-        limits: { cpu: '4000m', memory: '8Gi' }
       }
     };
     

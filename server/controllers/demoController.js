@@ -4,6 +4,7 @@ const People = require('../models/People');
 const User = require('../models/User');
 const Role = require('../models/Role');
 const bcrypt = require('bcrypt');
+const mongoose = require('mongoose');
 const updatePeopleModuleFields = require('../scripts/updatePeopleModuleFields');
 const updateOrganizationsModuleFields = require('../scripts/updateOrganizationsModuleFields');
 
@@ -31,8 +32,8 @@ exports.submitDemoRequest = async (req, res) => {
             });
         }
         
-        // Step 1: Create Organization (tenant) for the prospect company
-        // This is needed for module definitions, roles, and multi-tenancy
+        // Step 1: Create Organization for the prospect company
+        // Single organization table handles both tenant and CRM fields
         console.log('📋 Creating organization for:', companyName);
         
         // Generate unique slug to avoid conflicts
@@ -49,11 +50,14 @@ exports.submitDemoRequest = async (req, res) => {
             counter++;
         }
         
+        // Create single organization with both tenant and CRM fields
         const organization = await Organization.create({
             name: companyName,
             slug: slug,
             industry: industry,
-            isActive: true, // Active for tracking
+            isActive: true,
+            
+            // Tenant fields (ready for when they convert)
             subscription: {
                 tier: 'trial',
                 status: 'trial', // In trial until they convert
@@ -61,33 +65,26 @@ exports.submitDemoRequest = async (req, res) => {
                 trialEndDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000) // 15 days
             },
             limits: {
-                maxUsers: 5,
-                maxContacts: 100,
-                maxStorageGB: 1,
-                maxApiRequests: 1000
+                maxUsers: -1, // Unlimited - let users explore the product
+                maxContacts: -1, // Unlimited
+                maxDeals: -1, // Unlimited
+                maxStorageGB: -1 // Unlimited
             },
             settings: {
                 timeZone: 'UTC',
                 currency: 'USD'
             },
-            enabledModules: ['contacts', 'deals'] // Limited modules for prospects
+            enabledModules: ['contacts', 'deals'], // Limited modules for prospects
+            
+            // CRM fields (for tracking as prospect)
+            types: [], // Empty types for prospects
+            customerStatus: 'Prospect', // CRM status field
+            
+            // Flag: Not a tenant yet (will be set to true on conversion)
+            isTenant: false
         });
         
         console.log('✅ Organization created:', organization._id, organization.name, 'slug:', slug);
-        
-        // Step 1.5: Create CRM organization record linked to the tenant organization
-        console.log('📋 Creating CRM organization record...');
-        const organizationV2 = await Organization.create({
-            legacyOrganizationId: organization._id,
-            name: companyName,
-            industry: industry,
-            types: [], // Empty types for prospects
-            customerStatus: 'Prospect', // CRM status field
-            isTenant: false, // Mark as CRM organization
-            // Note: No tenant fields here - those are only in InstanceRegistry after conversion
-        });
-        
-        console.log('✅ CRM Organization created:', organizationV2._id);
         
         // Step 1.5: Create Default Roles for the organization
         console.log('🔐 Creating default roles...');
@@ -132,8 +129,8 @@ exports.submitDemoRequest = async (req, res) => {
         
         console.log('👤 Creating person for:', contactName);
         const person = await People.create({
-            organizationId: organization._id,  // Tenant organization
-            organization: organizationV2._id,  // CRM organization link
+            organizationId: organization._id,  // Organization reference
+            organization: organization._id,  // CRM organization link (same organization)
             createdBy: masterAdmin._id,
             assignedTo: masterAdmin._id,
             type: 'Lead',
@@ -315,48 +312,231 @@ exports.convertToOrganization = async (req, res) => {
             });
         }
         
-        console.log('🔄 Converting demo request to INSTANCE:', demoRequest.email);
+        console.log('🔄 Converting demo request to ORGANIZATION:', demoRequest.email);
         
-        // Import the Instance Provisioner
-        const InstanceProvisioner = require('../services/provisioning/instanceProvisioner');
-        console.log('✅ InstanceProvisioner imported successfully');
+        // Get the organization
+        console.log('📋 Step 1: Fetching organization...');
+        const organization = await Organization.findById(demoRequest.organizationId);
+        if (!organization) {
+            return res.status(404).json({ 
+                success: false,
+                message: 'Organization not found for this demo request' 
+            });
+        }
+        console.log('✅ Organization found:', organization.name);
         
-        const provisioner = new InstanceProvisioner();
-        console.log('✅ InstanceProvisioner instantiated successfully');
+        // Validate subscription tier (only 'trial' or 'paid' allowed)
+        const validTiers = ['trial', 'paid'];
+        const tier = validTiers.includes(subscriptionTier) ? subscriptionTier : 'trial';
+        console.log('✅ Subscription tier:', tier);
         
-        // Start provisioning in background (async)
-        // This returns immediately and provisioning continues in background
-        provisioner.provisionInstance({
-            companyName: demoRequest.companyName,
-            industry: demoRequest.industry,
-            ownerEmail: demoRequest.email,
-            ownerName: demoRequest.contactName,
-            ownerPassword: password,
-            ownerPhone: demoRequest.phone,
-            subscriptionTier: subscriptionTier,
-            demoRequestId: demoRequest._id,
-            createdBy: req.user._id
-        }).then(result => {
-            console.log('✅ Instance provisioning completed:', result.subdomain);
-        }).catch(error => {
-            console.error('❌ Instance provisioning failed:', error.message);
-            console.error('❌ Stack trace:', error.stack);
-        });
+        // Generate database name from organization slug or ID
+        const dbName = organization.slug 
+            ? `litedesk_${organization.slug.replace(/-/g, '_')}`
+            : `litedesk_${organization._id.toString().replace(/[^a-zA-Z0-9]/g, '_')}`;
         
-        // Update demo request immediately
+        console.log('📦 Step 2: Creating dedicated database:', dbName);
+        
+        // Import database connection manager
+        const dbConnectionManager = require('../utils/databaseConnectionManager');
+        
+        // Create organization database
+        try {
+            await dbConnectionManager.createOrganizationDatabase(dbName);
+            console.log('✅ Database created:', dbName);
+        } catch (dbError) {
+            console.error('❌ Database creation failed:', dbError.message);
+            console.error('❌ Database error stack:', dbError.stack);
+            // Continue anyway - database might already exist
+        }
+        
+        console.log('📦 Step 3: Getting organization database connection...');
+        // Get organization database connection
+        const orgDbConnection = await dbConnectionManager.getOrganizationConnection(dbName);
+        console.log('✅ Organization database connection established');
+        
+        // Build connection string for storage (use baseMongoUri from connection manager)
+        if (!dbConnectionManager.baseMongoUri) {
+            // Ensure baseMongoUri is set
+            await dbConnectionManager.initializeMasterConnection();
+        }
+        const baseUri = dbConnectionManager.baseMongoUri;
+        if (!baseUri) {
+            throw new Error('Failed to get base MongoDB URI. Please ensure MONGO_URI is set in .env');
+        }
+        const connectionString = `${baseUri}/${dbName}`;
+        console.log('✅ Connection string built:', connectionString);
+        
+        console.log('📦 Step 4: Updating organization with database info...');
+        
+        // Get modules for the subscription tier (exclude admin-only modules)
+        const OrganizationModel = require('../models/Organization');
+        const tempOrg = new OrganizationModel();
+        const tierModules = tempOrg.getModulesForTier(tier);
+        
+        // Remove admin-only modules (demo_requests, instances, etc.)
+        const adminModules = ['demo_requests', 'instances', 'users', 'settings'];
+        const allowedModules = tierModules.filter(module => !adminModules.includes(module));
+        
+        // Update organization with database info and mark as tenant
+        await Organization.findByIdAndUpdate(
+            demoRequest.organizationId,
+            {
+                isTenant: true, // Mark as tenant organization
+                customerStatus: 'Active', // Update CRM status
+                // Update subscription tier and status
+                'subscription.tier': tier,
+                'subscription.status': tier === 'trial' ? 'trial' : 'active',
+                // Store database configuration
+                'database.name': dbName,
+                'database.connectionString': connectionString,
+                'database.createdAt': new Date(),
+                'database.initialized': true,
+                // Update enabled modules (exclude admin-only modules)
+                enabledModules: allowedModules
+            }
+        );
+        console.log('✅ Organization marked as tenant with database:', dbName);
+        console.log('✅ Enabled modules:', allowedModules.join(', '));
+        
+        // Create owner user in the organization's database
+        console.log('👤 Step 5: Creating owner user in organization database...');
+        
+        // Import User model for organization database
+        // Check if model already exists on this connection
+        let OrgUser;
+        if (orgDbConnection.models.User) {
+            OrgUser = orgDbConnection.models.User;
+            console.log('✅ Using existing User model on organization connection');
+        } else {
+            console.log('📋 Creating User model for organization database...');
+            // Get schema definition from the compiled User model
+            const UserModel = require('../models/User');
+            const originalSchema = UserModel.schema;
+            
+            console.log('📋 Schema definition retrieved, creating new schema instance...');
+            // Create a new schema instance from the schema definition object
+            // Mongoose doesn't have clone(), so we need to create from the definition
+            const UserSchema = new mongoose.Schema(originalSchema.obj, originalSchema.options);
+            
+            // Copy methods from original schema
+            if (originalSchema.methods) {
+                Object.keys(originalSchema.methods).forEach(methodName => {
+                    UserSchema.methods[methodName] = originalSchema.methods[methodName];
+                });
+                console.log(`✅ Copied ${Object.keys(originalSchema.methods).length} methods`);
+            }
+            
+            // Copy statics from original schema
+            if (originalSchema.statics) {
+                Object.keys(originalSchema.statics).forEach(staticName => {
+                    UserSchema.statics[staticName] = originalSchema.statics[staticName];
+                });
+                console.log(`✅ Copied ${Object.keys(originalSchema.statics).length} statics`);
+            }
+            
+            // Copy indexes from original schema
+            if (originalSchema._indexes && originalSchema._indexes.length > 0) {
+                originalSchema._indexes.forEach(index => {
+                    UserSchema.index(index[0], index[1]);
+                });
+                console.log(`✅ Copied ${originalSchema._indexes.length} indexes`);
+            }
+            
+            // Register the model with the organization database connection
+            OrgUser = orgDbConnection.model('User', UserSchema);
+            console.log('✅ Created User model on organization connection');
+        }
+        
+        // Extract first and last name (used in both org and master DB)
+        const nameParts = demoRequest.contactName ? demoRequest.contactName.split(' ') : [];
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+        
+        // Check if user already exists
+        const existingUser = await OrgUser.findOne({ email: demoRequest.email.toLowerCase() });
+        
+        if (existingUser) {
+            console.log('⚠️  User already exists in organization database');
+            // Update existing user
+            existingUser.organizationId = demoRequest.organizationId;
+            existingUser.role = 'owner';
+            existingUser.isOwner = true;
+            existingUser.status = 'active';
+            existingUser.setPermissionsByRole('owner');
+            await existingUser.save();
+            console.log('✅ Existing user updated as owner');
+        } else {
+            // Hash password
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(password, salt);
+            
+            // Create owner user in organization database
+            const ownerUser = await OrgUser.create({
+                organizationId: demoRequest.organizationId,
+                username: demoRequest.email.split('@')[0] || demoRequest.contactName?.toLowerCase().replace(/\s+/g, '') || 'user',
+                email: demoRequest.email.toLowerCase(),
+                password: hashedPassword,
+                firstName: firstName,
+                lastName: lastName,
+                phoneNumber: demoRequest.phone || '',
+                role: 'owner',
+                isOwner: true,
+                status: 'active'
+            });
+            
+            // Set owner permissions
+            ownerUser.setPermissionsByRole('owner');
+            await ownerUser.save();
+            
+            console.log('✅ Owner user created in organization database:', ownerUser.email);
+        }
+        
+        // Also create user in master database for login lookup (with minimal info)
+        console.log('👤 Step 6: Creating user reference in master database for login...');
+        const MasterUser = require('../models/User');
+        const masterUserExists = await MasterUser.findOne({ email: demoRequest.email.toLowerCase() });
+        
+        if (!masterUserExists) {
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(password, salt);
+            
+            await MasterUser.create({
+                organizationId: demoRequest.organizationId,
+                username: demoRequest.email.split('@')[0] || 'user',
+                email: demoRequest.email.toLowerCase(),
+                password: hashedPassword,
+                firstName: firstName,
+                lastName: lastName,
+                phoneNumber: demoRequest.phone || '',
+                role: 'owner',
+                isOwner: true,
+                status: 'active'
+            });
+            console.log('✅ User reference created in master database');
+        } else {
+            console.log('⚠️  User already exists in master database');
+        }
+        
+        // Update demo request
         demoRequest.status = 'converted';
         demoRequest.convertedAt = new Date();
         await demoRequest.save();
         
-        // Return immediately - provisioning continues in background
+        // Return success response
         res.json({
             success: true,
-            message: 'Instance provisioning started. This will take 5-10 minutes.',
+            message: 'Organization converted successfully. Dedicated database created.',
             data: {
                 demoRequestId: demoRequest._id,
-                status: 'provisioning',
-                estimatedTime: '5-10 minutes',
-                note: 'You will receive an email when the instance is ready'
+                organizationId: demoRequest.organizationId,
+                databaseName: dbName,
+                status: 'converted',
+                loginCredentials: {
+                    email: demoRequest.email,
+                    password: 'Use the password you provided during conversion'
+                },
+                note: 'User can now login to access their organization'
             }
         });
         
@@ -364,11 +544,23 @@ exports.convertToOrganization = async (req, res) => {
         console.error('❌ Conversion error:', error);
         console.error('❌ Error message:', error.message);
         console.error('❌ Stack trace:', error.stack);
-        res.status(500).json({ 
+        console.error('❌ Error details:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
+        
+        // Return detailed error in development
+        const errorResponse = {
             success: false,
             message: 'Error converting demo request',
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
+            error: error.message,
+            stack: error.stack,
+            name: error.name
+        };
+        
+        // Add additional error details if available
+        if (error.code) errorResponse.code = error.code;
+        if (error.keyPattern) errorResponse.keyPattern = error.keyPattern;
+        if (error.keyValue) errorResponse.keyValue = error.keyValue;
+        
+        res.status(500).json(errorResponse);
     }
 };
 

@@ -10,25 +10,25 @@ const {
     deleteInstance
 } = require('../controllers/instanceController');
 const { protect } = require('../middleware/authMiddleware');
-const { requireAdmin, requireOwner } = require('../middleware/permissionMiddleware');
+const { requireAdmin, requireOwner, requireMasterOrganization } = require('../middleware/permissionMiddleware');
 
 // All routes require authentication and owner/admin role
 router.use(protect);
 
-// Get all instances (with filters)
-router.get('/', requireAdmin(), getAllInstances);
+// Get all instances (with filters) - Master organization only
+router.get('/', requireAdmin(), requireMasterOrganization(), getAllInstances);
 
-// Get analytics
-router.get('/analytics', requireAdmin(), getInstanceAnalytics);
+// Get analytics - Master organization only
+router.get('/analytics', requireAdmin(), requireMasterOrganization(), getInstanceAnalytics);
 
-// Get single instance details
-router.get('/:id', requireAdmin(), getInstanceDetails);
+// Get single instance details - Master organization only
+router.get('/:id', requireAdmin(), requireMasterOrganization(), getInstanceDetails);
 
-// Update instance status
-router.patch('/:id/status', requireAdmin(), updateInstanceStatus);
+// Update instance status - Master organization only
+router.patch('/:id/status', requireAdmin(), requireMasterOrganization(), updateInstanceStatus);
 
-// Update instance subscription
-router.patch('/:id/subscription', requireAdmin(), updateInstanceSubscription);
+// Update instance subscription - Master organization only
+router.patch('/:id/subscription', requireAdmin(), requireMasterOrganization(), updateInstanceSubscription);
 
 // Update instance health (typically called by monitoring service)
 router.patch('/:id/health', updateInstanceHealth);

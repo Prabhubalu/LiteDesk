@@ -34,13 +34,13 @@ const routes = [
     path: '/demo-requests',
     name: 'demo-requests',
     component: () => import('@/views/DemoRequests.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresMasterOrganization: true }
   },
   {
     path: '/instances',
     name: 'instances',
     component: () => import('@/views/InstanceManagement.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresMasterOrganization: true }
   },
   {
     path: '/people',
@@ -150,6 +150,14 @@ router.beforeEach((to, from, next) => {
   // Redirect authenticated users from landing page
   if (to.name === 'landing' && authStore.isAuthenticated) {
     console.log('Redirecting: Already authenticated')
+    next({ name: 'dashboard' })
+    return
+  }
+  
+  // Check if route requires master organization
+  if (to.meta.requiresMasterOrganization && !authStore.isMasterOrganization) {
+    console.log('Blocked: Master organization required')
+    alert('This feature is only available to the application owner.')
     next({ name: 'dashboard' })
     return
   }

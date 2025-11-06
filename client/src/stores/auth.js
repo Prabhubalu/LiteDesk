@@ -26,6 +26,7 @@ export const useAuthStore = defineStore('auth', {
         isTrialActive: (state) => state.organization?.subscription?.status === 'trial',
         subscriptionTier: (state) => state.organization?.subscription?.tier || 'trial',
         enabledModules: (state) => state.organization?.enabledModules || [],
+        isMasterOrganization: (state) => state.organization?.name === 'LiteDesk Master',
     },
     actions: {
         setUser(userData) {
