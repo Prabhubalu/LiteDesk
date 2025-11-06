@@ -28,7 +28,7 @@ const OrganizationSchema = new mongoose.Schema({
         },
         tier: { 
             type: String, 
-            enum: ['trial', 'starter', 'professional', 'enterprise'],
+            enum: ['trial', 'paid'],
             default: 'trial'
         },
         trialStartDate: { 
@@ -104,6 +104,23 @@ const OrganizationSchema = new mongoose.Schema({
     isActive: { 
         type: Boolean, 
         default: true 
+    },
+    
+    // Database Configuration (for dedicated database per organization)
+    database: {
+        name: {
+            type: String,
+            // Format: litedesk_{slug} or litedesk_{organizationId}
+        },
+        connectionString: {
+            type: String,
+            // Full MongoDB connection string to organization's database
+        },
+        createdAt: Date,
+        initialized: {
+            type: Boolean,
+            default: false
+        }
     },
     
     // ===== CRM FIELDS (from OrganizationV2) =====
@@ -296,27 +313,15 @@ OrganizationSchema.methods.updateLimitsForTier = function(tier) {
     
     const tierLimits = {
         trial: {
-            maxUsers: 3,
-            maxContacts: 100,
-            maxDeals: 50,
-            maxStorageGB: 1
+            maxUsers: -1, // Unlimited - let users explore the product
+            maxContacts: -1, // Unlimited
+            maxDeals: -1, // Unlimited
+            maxStorageGB: -1 // Unlimited
         },
-        starter: {
-            maxUsers: 5,
-            maxContacts: 1000,
-            maxDeals: 500,
-            maxStorageGB: 10
-        },
-        professional: {
-            maxUsers: 25,
-            maxContacts: 10000,
-            maxDeals: 5000,
-            maxStorageGB: 100
-        },
-        enterprise: {
-            maxUsers: -1,
-            maxContacts: -1,
-            maxDeals: -1,
+        paid: {
+            maxUsers: -1, // Unlimited
+            maxContacts: -1, // Unlimited
+            maxDeals: -1, // Unlimited
             maxStorageGB: 1000
         }
     };
@@ -331,9 +336,7 @@ OrganizationSchema.methods.getModulesForTier = function(tier) {
     
     const tierModules = {
         trial: ['contacts', 'deals', 'tasks', 'events'],
-        starter: ['contacts', 'organizations', 'deals', 'tasks', 'events', 'items'],
-        professional: ['contacts', 'organizations', 'deals', 'projects', 'tasks', 'events', 'items', 'documents', 'transactions', 'forms', 'processes'],
-        enterprise: ['contacts', 'organizations', 'deals', 'projects', 'tasks', 'events', 'items', 'documents', 'transactions', 'forms', 'processes', 'reports']
+        paid: ['contacts', 'organizations', 'deals', 'projects', 'tasks', 'events', 'items', 'documents', 'transactions', 'forms', 'processes', 'reports']
     };
     
     return tierModules[tier] || tierModules.trial;

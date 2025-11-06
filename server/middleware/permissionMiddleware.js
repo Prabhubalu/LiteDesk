@@ -98,6 +98,46 @@ const requireAdmin = () => {
 };
 
 /**
+ * Check if user is from the master organization (application owner)
+ * Only master organization users can access platform management features
+ * like demo requests, instances, etc.
+ */
+const requireMasterOrganization = () => {
+    return async (req, res, next) => {
+        try {
+            const user = req.user;
+            
+            if (!user) {
+                return res.status(401).json({ message: 'Authentication required' });
+            }
+
+            // Get organization details
+            const Organization = require('../models/Organization');
+            const organization = await Organization.findById(user.organizationId);
+            
+            if (!organization) {
+                return res.status(404).json({ message: 'Organization not found' });
+            }
+
+            // Check if this is the master organization
+            const isMasterOrg = organization.name === 'LiteDesk Master';
+            
+            if (!isMasterOrg) {
+                return res.status(403).json({ 
+                    message: 'This feature is only available to the application owner',
+                    code: 'MASTER_ORGANIZATION_REQUIRED'
+                });
+            }
+
+            next();
+        } catch (error) {
+            console.error('Master organization check error:', error);
+            res.status(500).json({ message: 'Server error during organization verification' });
+        }
+    };
+};
+
+/**
  * Check if user is the owner
  */
 const requireOwner = () => {
@@ -176,6 +216,7 @@ module.exports = {
     requireRole,
     requireAdmin,
     requireOwner,
+    requireMasterOrganization,
     canManageUsers,
     canManageBilling,
     canManageRoles,

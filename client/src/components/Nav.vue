@@ -149,8 +149,9 @@ const navigation = computed(() => {
   }
   
   
-  // Admin-only links for Owners/Admins
-  if (authStore.isOwner || authStore.userRole === 'admin') {
+  // Admin-only links for Master Organization (LiteDesk Master) only
+  // Only application owner can see demo requests and instances
+  if (authStore.isMasterOrganization && (authStore.isOwner || authStore.userRole === 'admin')) {
     nav.push({ 
       name: 'Demo Requests', 
       href: '/demo-requests', 

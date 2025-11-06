@@ -116,10 +116,23 @@ if (!MONGO_URI) {
   process.exit(1);
 }
 
-mongoose.connect(MONGO_URI)
-  .then(() => {
-    console.log('✅ MongoDB connected successfully.');
-    console.log(`📊 Database: ${MONGO_URI.includes('localhost') ? 'Local MongoDB' : 'MongoDB Atlas'}`);
+// Connect to master database (for Organizations, Users, DemoRequests)
+const baseUri = MONGO_URI.split('/').slice(0, -1).join('/');
+const masterDbName = 'litedesk_master';
+const masterUri = `${baseUri}/${masterDbName}`;
+
+mongoose.connect(masterUri)
+  .then(async () => {
+    console.log('✅ Master database connected successfully.');
+    console.log(`📊 Database: ${masterDbName}`);
+    console.log(`📊 Connection: ${MONGO_URI.includes('localhost') ? 'Local MongoDB' : 'MongoDB Atlas'}`);
+    
+    // Initialize database connection manager
+    const dbConnectionManager = require('./utils/databaseConnectionManager');
+    // Set base URI for organization database connections
+    dbConnectionManager.baseMongoUri = baseUri;
+    await dbConnectionManager.initializeMasterConnection();
+    console.log('✅ Database connection manager initialized');
     
     // 2. Start Monitoring Services (if enabled)
     if (process.env.ENABLE_HEALTH_CHECKER !== 'false') {

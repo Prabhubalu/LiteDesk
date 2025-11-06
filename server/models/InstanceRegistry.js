@@ -78,7 +78,7 @@ const InstanceRegistrySchema = new mongoose.Schema({
   subscription: {
     tier: {
       type: String,
-      enum: ['trial', 'starter', 'professional', 'enterprise'],
+      enum: ['trial', 'paid'],
       default: 'trial'
     },
     status: {

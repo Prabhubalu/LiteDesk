@@ -47,9 +47,13 @@ async function createDefaultAdmin() {
 
         console.log('🔗 Connecting to MongoDB...');
         
-        // Connect to MongoDB
-        await mongoose.connect(MONGO_URI);
-        console.log('✅ Connected to MongoDB');
+        // Connect to master database (litedesk_master)
+        const baseUri = MONGO_URI.split('/').slice(0, -1).join('/');
+        const masterDbName = 'litedesk_master';
+        const masterUri = `${baseUri}/${masterDbName}`;
+        
+        await mongoose.connect(masterUri);
+        console.log(`✅ Connected to MongoDB master database: ${masterDbName}`);
 
         // Check if admin already exists
         const existingAdmin = await User.findOne({ email: DEFAULT_ADMIN.email });
@@ -69,7 +73,7 @@ async function createDefaultAdmin() {
             isActive: true,
             subscription: {
                 status: 'active',
-                tier: 'enterprise',
+                tier: 'paid', // Updated to match new subscription tiers
                 trialStartDate: new Date(),
                 trialEndDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year
             },

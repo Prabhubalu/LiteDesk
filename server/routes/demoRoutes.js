@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
-const { requireAdmin } = require('../middleware/permissionMiddleware');
+const { requireAdmin, requireMasterOrganization } = require('../middleware/permissionMiddleware');
 const {
     submitDemoRequest,
     getDemoRequests,
@@ -15,13 +15,14 @@ const {
 // --- Public Routes ---
 router.post('/request', submitDemoRequest);
 
-// --- Protected Routes (Admin/Owner Only) ---
-router.get('/requests', protect, requireAdmin(), getDemoRequests);
-router.get('/requests/stats', protect, requireAdmin(), getStats);
-router.get('/requests/:id', protect, requireAdmin(), getDemoRequest);
-router.patch('/requests/:id', protect, requireAdmin(), updateDemoRequest);
-router.post('/requests/:id/convert', protect, requireAdmin(), convertToOrganization);
-router.delete('/requests/:id', protect, requireAdmin(), deleteDemoRequest);
+// --- Protected Routes (Master Organization Only) ---
+// Only application owner (LiteDesk Master organization) can access these
+router.get('/requests', protect, requireAdmin(), requireMasterOrganization(), getDemoRequests);
+router.get('/requests/stats', protect, requireAdmin(), requireMasterOrganization(), getStats);
+router.get('/requests/:id', protect, requireAdmin(), requireMasterOrganization(), getDemoRequest);
+router.patch('/requests/:id', protect, requireAdmin(), requireMasterOrganization(), updateDemoRequest);
+router.post('/requests/:id/convert', protect, requireAdmin(), requireMasterOrganization(), convertToOrganization);
+router.delete('/requests/:id', protect, requireAdmin(), requireMasterOrganization(), deleteDemoRequest);
 
 module.exports = router;
 

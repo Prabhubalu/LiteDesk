@@ -197,9 +197,9 @@ exports.loginUser = async (req, res) => {
     try {
         console.log('\n🔐 Login attempt for:', email);
         
-        // 1. Find User by Email
+        // 1. Find User by Email (check master database first)
         const user = await User.findOne({ email: email.toLowerCase() })
-            .populate('organizationId', 'name industry subscription limits enabledModules settings isActive')
+            .populate('organizationId', 'name industry subscription limits enabledModules settings isActive database')
             .populate('roleId', 'name description color icon level permissions');
 
         if (!user) {
@@ -210,19 +210,76 @@ exports.loginUser = async (req, res) => {
         console.log('✅ User found:', user.email);
         console.log('   Organization populated?', !!user.organizationId);
         console.log('   Organization ID:', user.organizationId?._id || 'NOT POPULATED');
-        console.log('   Role populated?', !!user.roleId);
-        console.log('   Role:', user.roleId?.name || user.role);
+        console.log('   Organization has dedicated DB?', !!(user.organizationId?.database?.name));
+        
+        // If organization has dedicated database, get user from there
+        let orgUser = user;
+        if (user.organizationId?.database?.name && user.organizationId.database.initialized) {
+            try {
+                console.log('📊 Attempting to get user from organization database:', user.organizationId.database.name);
+                const dbConnectionManager = require('../utils/databaseConnectionManager');
+                const orgDbConnection = await dbConnectionManager.getOrganizationConnection(user.organizationId.database.name);
+                
+                // Get or create User model for organization database
+                let OrgUser;
+                if (orgDbConnection.models.User) {
+                    OrgUser = orgDbConnection.models.User;
+                    console.log('✅ Using existing User model on organization connection');
+                } else {
+                    console.log('📋 Creating User model for organization database...');
+                    const UserModel = require('../models/User');
+                    const originalSchema = UserModel.schema;
+                    
+                    // Create a new schema instance from the schema definition
+                    const UserSchema = new mongoose.Schema(originalSchema.obj, originalSchema.options);
+                    
+                    // Copy methods and statics
+                    if (originalSchema.methods) {
+                        Object.keys(originalSchema.methods).forEach(methodName => {
+                            UserSchema.methods[methodName] = originalSchema.methods[methodName];
+                        });
+                    }
+                    if (originalSchema.statics) {
+                        Object.keys(originalSchema.statics).forEach(staticName => {
+                            UserSchema.statics[staticName] = originalSchema.statics[staticName];
+                        });
+                    }
+                    
+                    OrgUser = orgDbConnection.model('User', UserSchema);
+                    console.log('✅ Created User model on organization connection');
+                }
+                
+                const orgDbUser = await OrgUser.findOne({ email: email.toLowerCase() })
+                    .populate('roleId', 'name description color icon level permissions');
+                
+                if (orgDbUser) {
+                    orgUser = orgDbUser;
+                    console.log('✅ User found in organization database');
+                } else {
+                    console.log('⚠️  User not found in organization database, using master DB user');
+                }
+            } catch (orgDbError) {
+                console.error('❌ Error accessing organization database:', orgDbError.message);
+                console.error('❌ Falling back to master database user');
+                // Continue with master database user
+                orgUser = user;
+            }
+        }
+        
+        console.log('   Role populated?', !!orgUser.roleId);
+        console.log('   Role:', orgUser.roleId?.name || orgUser.role);
 
-        // 2. Check password
-        const isPasswordMatch = await bcrypt.compare(password, user.password);
+        // 2. Check password (use orgUser if available, otherwise master user)
+        const passwordToCheck = orgUser.password || user.password;
+        const isPasswordMatch = await bcrypt.compare(password, passwordToCheck);
         
         if (!isPasswordMatch) {
             return res.status(401).json({ message: 'Invalid credentials.' });
         }
 
         // 3. Check if user is active
-        if (user.status !== 'active') {
-            console.log('❌ User status not active:', user.status);
+        if (orgUser.status !== 'active') {
+            console.log('❌ User status not active:', orgUser.status);
             return res.status(403).json({ 
                 message: 'Your account has been suspended. Please contact your administrator.',
                 code: 'ACCOUNT_SUSPENDED'
@@ -250,90 +307,96 @@ exports.loginUser = async (req, res) => {
         }
         console.log('✅ Organization is active');
 
-        // 6. Update last login
-        user.lastLogin = new Date();
-        await user.save();
+        // 6. Update last login (in both databases if applicable)
+        orgUser.lastLogin = new Date();
+        await orgUser.save();
+        
+        if (orgUser !== user) {
+            user.lastLogin = new Date();
+            await user.save();
+        }
 
         console.log('✅ Login successful for:', email);
 
-        // 7. Sync permissions from roleId if available
-        if (user.roleId && user.roleId.permissions) {
-            console.log('🔄 Syncing permissions from role:', user.roleId.name);
-            user.permissions = {
+        // 7. Sync permissions from roleId if available (use orgUser)
+        if (orgUser.roleId && orgUser.roleId.permissions) {
+            console.log('🔄 Syncing permissions from role:', orgUser.roleId.name);
+            orgUser.permissions = {
                 contacts: {
-                    view: user.roleId.permissions.contacts?.read || false,
-                    create: user.roleId.permissions.contacts?.create || false,
-                    edit: user.roleId.permissions.contacts?.update || false,
-                    delete: user.roleId.permissions.contacts?.delete || false,
-                    viewAll: user.roleId.permissions.contacts?.viewAll || false,
-                    exportData: user.roleId.permissions.contacts?.export || false
+                    view: orgUser.roleId.permissions.contacts?.read || false,
+                    create: orgUser.roleId.permissions.contacts?.create || false,
+                    edit: orgUser.roleId.permissions.contacts?.update || false,
+                    delete: orgUser.roleId.permissions.contacts?.delete || false,
+                    viewAll: orgUser.roleId.permissions.contacts?.viewAll || false,
+                    exportData: orgUser.roleId.permissions.contacts?.export || false
                 },
                 organizations: {
-                    view: user.roleId.permissions.organizations?.read || false,
-                    create: user.roleId.permissions.organizations?.create || false,
-                    edit: user.roleId.permissions.organizations?.update || false,
-                    delete: user.roleId.permissions.organizations?.delete || false,
-                    viewAll: user.roleId.permissions.organizations?.viewAll || false,
-                    exportData: user.roleId.permissions.organizations?.export || false
+                    view: orgUser.roleId.permissions.organizations?.read || false,
+                    create: orgUser.roleId.permissions.organizations?.create || false,
+                    edit: orgUser.roleId.permissions.organizations?.update || false,
+                    delete: orgUser.roleId.permissions.organizations?.delete || false,
+                    viewAll: orgUser.roleId.permissions.organizations?.viewAll || false,
+                    exportData: orgUser.roleId.permissions.organizations?.export || false
                 },
                 deals: {
-                    view: user.roleId.permissions.deals?.read || false,
-                    create: user.roleId.permissions.deals?.create || false,
-                    edit: user.roleId.permissions.deals?.update || false,
-                    delete: user.roleId.permissions.deals?.delete || false,
-                    viewAll: user.roleId.permissions.deals?.viewAll || false,
-                    exportData: user.roleId.permissions.deals?.export || false
+                    view: orgUser.roleId.permissions.deals?.read || false,
+                    create: orgUser.roleId.permissions.deals?.create || false,
+                    edit: orgUser.roleId.permissions.deals?.update || false,
+                    delete: orgUser.roleId.permissions.deals?.delete || false,
+                    viewAll: orgUser.roleId.permissions.deals?.viewAll || false,
+                    exportData: orgUser.roleId.permissions.deals?.export || false
                 },
                 projects: {
-                    view: user.roleId.permissions.deals?.read || false,
-                    create: user.roleId.permissions.deals?.create || false,
-                    edit: user.roleId.permissions.deals?.update || false,
-                    delete: user.roleId.permissions.deals?.delete || false,
-                    viewAll: user.roleId.permissions.deals?.viewAll || false
+                    view: orgUser.roleId.permissions.deals?.read || false,
+                    create: orgUser.roleId.permissions.deals?.create || false,
+                    edit: orgUser.roleId.permissions.deals?.update || false,
+                    delete: orgUser.roleId.permissions.deals?.delete || false,
+                    viewAll: orgUser.roleId.permissions.deals?.viewAll || false
                 },
                 tasks: {
-                    view: user.roleId.permissions.tasks?.read || false,
-                    create: user.roleId.permissions.tasks?.create || false,
-                    edit: user.roleId.permissions.tasks?.update || false,
-                    delete: user.roleId.permissions.tasks?.delete || false,
-                    viewAll: user.roleId.permissions.tasks?.viewAll || false
+                    view: orgUser.roleId.permissions.tasks?.read || false,
+                    create: orgUser.roleId.permissions.tasks?.create || false,
+                    edit: orgUser.roleId.permissions.tasks?.update || false,
+                    delete: orgUser.roleId.permissions.tasks?.delete || false,
+                    viewAll: orgUser.roleId.permissions.tasks?.viewAll || false
                 },
                 events: {
-                    view: user.roleId.permissions.events?.read || false,
-                    create: user.roleId.permissions.events?.create || false,
-                    edit: user.roleId.permissions.events?.update || false,
-                    delete: user.roleId.permissions.events?.delete || false,
-                    viewAll: user.roleId.permissions.events?.viewAll || false
+                    view: orgUser.roleId.permissions.events?.read || false,
+                    create: orgUser.roleId.permissions.events?.create || false,
+                    edit: orgUser.roleId.permissions.events?.update || false,
+                    delete: orgUser.roleId.permissions.events?.delete || false,
+                    viewAll: orgUser.roleId.permissions.events?.viewAll || false
                 },
                 imports: {
-                    view: user.roleId.permissions.contacts?.import || user.roleId.permissions.deals?.import || false,
-                    create: user.roleId.permissions.contacts?.import || user.roleId.permissions.deals?.import || false,
+                    view: orgUser.roleId.permissions.contacts?.import || orgUser.roleId.permissions.deals?.import || false,
+                    create: orgUser.roleId.permissions.contacts?.import || orgUser.roleId.permissions.deals?.import || false,
                     delete: false
                 },
                 settings: {
-                    manageUsers: user.roleId.permissions.settings?.manageUsers || false,
-                    manageBilling: user.roleId.permissions.settings?.manageBilling || false,
+                    manageUsers: orgUser.roleId.permissions.settings?.manageUsers || false,
+                    manageBilling: orgUser.roleId.permissions.settings?.manageBilling || false,
                     manageIntegrations: false,
                     customizeFields: false
                 },
                 reports: {
-                    viewStandard: user.roleId.permissions.reports?.read || false,
-                    viewCustom: user.roleId.permissions.reports?.read || false,
-                    createCustom: user.roleId.permissions.reports?.create || false,
-                    exportReports: user.roleId.permissions.reports?.export || false
+                    viewStandard: orgUser.roleId.permissions.reports?.read || false,
+                    viewCustom: orgUser.roleId.permissions.reports?.read || false,
+                    createCustom: orgUser.roleId.permissions.reports?.create || false,
+                    exportReports: orgUser.roleId.permissions.reports?.export || false
                 }
             };
+            await orgUser.save();
             console.log('✅ Permissions synced from role');
         }
 
-        // 8. Respond with Token and Organization Info
+        // 8. Respond with Token and Organization Info (use orgUser data)
         res.json({
-            _id: user._id,
-            username: user.username,
-            email: user.email,
-            role: user.role,
-            isOwner: user.isOwner,
-            permissions: user.permissions,
+            _id: orgUser._id,
+            username: orgUser.username,
+            email: orgUser.email,
+            role: orgUser.role,
+            isOwner: orgUser.isOwner,
+            permissions: orgUser.permissions,
             organization: {
                 _id: user.organizationId._id,
                 name: user.organizationId.name,
@@ -341,13 +404,27 @@ exports.loginUser = async (req, res) => {
                 subscription: user.organizationId.subscription,
                 limits: user.organizationId.limits,
                 enabledModules: user.organizationId.enabledModules,
-                settings: user.organizationId.settings
+                settings: user.organizationId.settings,
+                database: user.organizationId.database ? {
+                    name: user.organizationId.database.name,
+                    initialized: user.organizationId.database.initialized
+                } : null
             },
-            token: generateToken(user._id),
+            token: generateToken(orgUser._id),
         });
         
     } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ message: 'Server error during login.' });
+        console.error('❌ Login error:', error);
+        console.error('❌ Error message:', error.message);
+        console.error('❌ Error stack:', error.stack);
+        console.error('❌ Error details:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
+        
+        // Return detailed error in development
+        res.status(500).json({ 
+            message: 'Server error during login.',
+            error: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+            name: error.name
+        });
     }
 };
