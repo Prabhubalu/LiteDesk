@@ -185,7 +185,7 @@
                       as="template"
                     >
                       <button
-                        @click="updateField(field.key, typeof option === 'string' ? option : option.value)"
+                        @click="handleHeaderFieldChange(field.key, typeof option === 'string' ? option : option.value)"
                         :class="[
                           'w-full text-left px-4 py-2 text-sm transition-colors duration-150 flex items-center justify-between',
                           active ? 'bg-gray-100 dark:bg-gray-700' : '',
@@ -1251,7 +1251,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick, watch, createApp, h } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick, watch, createApp, h, toRef } from 'vue';
 import { Menu, MenuButton, MenuItem, MenuItems, Listbox, ListboxButton, ListboxOptions, ListboxOption, Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot, Switch } from '@headlessui/vue';
 import { GridStack } from 'gridstack';
 import 'gridstack/dist/gridstack.min.css';
@@ -1319,6 +1319,10 @@ const props = defineProps({
 
 // Emits
 const emit = defineEmits(['close', 'update', 'edit', 'delete', 'addRelation', 'openRelatedRecord', 'recordUpdated']);
+
+// Create a reactive reference to the record prop to ensure reactivity
+// This ensures that computed properties that depend on record fields update properly
+const record = toRef(props, 'record');
 
 // Get openTab from useTabs
 const { openTab } = useTabs();
@@ -1484,6 +1488,10 @@ const popupModalConfig = ref({
   fields: []
 });
 const processedPopupTriggers = ref(new Set()); // Track processed popup triggers to avoid duplicates
+const isInitialLoad = ref(true); // Track if this is the initial load to prevent popups on page reload
+const hasEvaluatedPopupsForCurrentState = ref(false); // Track if we've already evaluated popups for current record state
+const userInitiatedFieldChange = ref(false); // Track if the popup check was triggered by a user field change
+const componentInitialized = ref(false); // Track if component is fully initialized
 
 // Field values tracking for discard functionality
 const originalFieldValues = ref({});
@@ -2148,12 +2156,19 @@ const activityItems = computed(() => {
         // Create comment with all changes listed
         comment = `Updated ${update.details.changes.length} field${update.details.changes.length > 1 ? 's' : ''}`;
         
+        // Handle ObjectId strings in user field (fallback if backend didn't resolve it)
+        let userName = update.user || 'System';
+        if (typeof userName === 'string' && /^[0-9a-fA-F]{24}$/.test(userName)) {
+          // If user field is an ObjectId string, use a fallback
+          userName = 'Unknown User';
+        }
+        
         // Store parsed changes for rendering
         return {
           id: `activity-${update.timestamp?.getTime() || index}`,
           type,
           person: {
-            name: update.user || 'System',
+            name: userName,
             href: '#'
           },
           comment,
@@ -2193,6 +2208,13 @@ const activityItems = computed(() => {
       comment = action;
     }
     
+    // Handle ObjectId strings in user field (fallback if backend didn't resolve it)
+    let userName = update.user || 'System';
+    if (typeof userName === 'string' && /^[0-9a-fA-F]{24}$/.test(userName)) {
+      // If user field is an ObjectId string, use a fallback
+      userName = 'Unknown User';
+    }
+    
     // Build link items if provided in details
     let linkItems = [];
     if (update.details && typeof update.details === 'object' && (update.details.type === 'link' || update.details.type === 'unlink')) {
@@ -2217,7 +2239,7 @@ const activityItems = computed(() => {
       id: `activity-${update.timestamp?.getTime() || index}`,
       type,
       person: {
-        name: update.user || 'System',
+        name: userName,
         href: '#'
       },
       comment,
@@ -2653,21 +2675,26 @@ const resetAllWidgetLayouts = async () => {
     console.log(`Cleared localStorage layout for ${recordType}`);
   });
   
-  // Try to clear from backend API for all record types
+  // Note: Backend API endpoint for widget layouts may not exist yet
+  // Widget layouts are currently stored in localStorage only
+  // If you implement the backend endpoint later, uncomment this code:
+  /*
   for (const recordType of recordTypes) {
     try {
       await apiClient.delete('/user-preferences/widget-layout', {
         params: {
-          recordType: recordType,
-          recordId: 'module'
+          recordType: recordType
         }
       });
       console.log(`Cleared API layout for ${recordType}`);
     } catch (error) {
-      // Silently fail - backend might not support DELETE or might not exist
-      console.log(`Could not clear API layout for ${recordType} (may not exist)`);
+      // Silently fail - endpoint may not exist
+      if (error.response?.status !== 404) {
+        console.log(`Could not clear API layout for ${recordType}:`, error.message);
+      }
     }
   }
+  */
   
   console.log('All widget layouts have been reset');
 };
@@ -3303,7 +3330,8 @@ const createWidgetElement = (widgetType) => {
               onSuccess: async () => {
                 // Log activity for lifecycle stage change
                 const fieldName = formatFieldName(data.field);
-                await addActivityLog(`changed ${fieldName} to "${data.value}"`);
+                const displayValue = formatValueForActivityLog(data.value, data.field);
+                await addActivityLog(`changed ${fieldName} to "${displayValue}"`);
               }
             });
           }
@@ -3913,6 +3941,155 @@ const normalizeValue = (val) => {
   return String(val).trim();
 };
 
+// Format field value for display in activity logs
+const formatValueForActivityLog = (value, fieldKey = null) => {
+  if (value === null || value === undefined || value === '') return '';
+  
+  // First, check if the record has a populated version of this field
+  // (e.g., if value is an ObjectId string, check if record[fieldKey] is populated)
+  if (fieldKey && props.record && typeof value === 'string' && /^[0-9a-fA-F]{24}$/.test(value)) {
+    // Helper to find field value case-insensitively
+    const getFieldValue = (record, fieldName) => {
+      if (!record) return null;
+      
+      // Map common UI field names to database field names
+      const fieldMap = {
+        'assigned to': 'assignedTo',
+        'assignedto': 'assignedTo',
+        'lead owner': 'lead_owner',
+        'leadowner': 'lead_owner',
+        'created by': 'createdBy',
+        'createdby': 'createdBy'
+      };
+      
+      const normalizedFieldName = fieldName.toLowerCase().replace(/\s+/g, '');
+      const dbFieldName = fieldMap[normalizedFieldName] || fieldName;
+      
+      // Try exact match first (database field name)
+      if (record[dbFieldName] !== undefined) return record[dbFieldName];
+      if (record[fieldName] !== undefined) return record[fieldName];
+      
+      // Try case-insensitive match
+      const fieldKey = Object.keys(record).find(k => 
+        k.toLowerCase() === dbFieldName.toLowerCase() || 
+        k.toLowerCase() === fieldName.toLowerCase() ||
+        k.toLowerCase().replace(/\s+/g, '') === normalizedFieldName
+      );
+      return fieldKey ? record[fieldKey] : null;
+    };
+    
+    const recordValue = getFieldValue(props.record, fieldKey);
+    // If record has a populated object, use that instead
+    if (recordValue && typeof recordValue === 'object' && !Array.isArray(recordValue)) {
+      // Recursively call with the populated object
+      return formatValueForActivityLog(recordValue, fieldKey);
+    }
+  }
+  
+  // Handle arrays
+  if (Array.isArray(value)) {
+    if (value.length === 0) return '';
+    // Format array items
+    return value.map(item => formatValueForActivityLog(item, fieldKey)).join(', ');
+  }
+  
+  // Handle objects (especially lookup fields)
+  if (typeof value === 'object') {
+    // Check if it's a populated lookup field with user info
+    if (value.firstName || value.lastName) {
+      const firstName = value.firstName || '';
+      const lastName = value.lastName || '';
+      const fullName = `${firstName} ${lastName}`.trim();
+      if (fullName) return fullName;
+    }
+    
+    // Check for first_name/last_name (snake_case)
+    if (value.first_name || value.last_name) {
+      const firstName = value.first_name || '';
+      const lastName = value.last_name || '';
+      const fullName = `${firstName} ${lastName}`.trim();
+      if (fullName) return fullName;
+    }
+    
+    // Check for name field (organizations, deals, etc.)
+    if (value.name) return value.name;
+    
+    // Check for title field
+    if (value.title) return value.title;
+    
+    // Check for username field
+    if (value.username) return value.username;
+    
+    // Check for email field
+    if (value.email) return value.email;
+    
+    // Check if it's an ObjectId (has _id but no other display fields)
+    if (value._id) {
+      // If it's a 24-character hex string (ObjectId), try to get field definition
+      const idStr = String(value._id);
+      if (/^[0-9a-fA-F]{24}$/.test(idStr)) {
+        // Check if this is a lookup field - if so, we can't resolve it without an API call
+        const fieldDef = getFieldDefinition(fieldKey);
+        if (fieldDef && (fieldDef.dataType === 'Lookup (Relationship)' || fieldDef.dataType === 'Lookup')) {
+          return '[User]'; // Better placeholder for lookup fields
+        }
+        return '[User ID]';
+      }
+      return idStr;
+    }
+    
+    // Fallback: try to extract a meaningful value
+    return '[Object]';
+  }
+  
+  // Handle strings - check if it's an ObjectId
+  if (typeof value === 'string') {
+    if (/^[0-9a-fA-F]{24}$/.test(value)) {
+      // Before returning placeholder, try one more time to get populated value from record
+      if (fieldKey && props.record) {
+        // Helper to find field value case-insensitively
+        const getFieldValue = (record, fieldName) => {
+          if (!record) return null;
+          const fieldMap = {
+            'assigned to': 'assignedTo',
+            'assignedto': 'assignedTo',
+            'lead owner': 'lead_owner',
+            'leadowner': 'lead_owner',
+            'created by': 'createdBy',
+            'createdby': 'createdBy'
+          };
+          const normalizedFieldName = fieldName.toLowerCase().replace(/\s+/g, '');
+          const dbFieldName = fieldMap[normalizedFieldName] || fieldName;
+          if (record[dbFieldName] !== undefined) return record[dbFieldName];
+          if (record[fieldName] !== undefined) return record[fieldName];
+          const foundKey = Object.keys(record).find(k => 
+            k.toLowerCase() === dbFieldName.toLowerCase() || 
+            k.toLowerCase() === fieldName.toLowerCase() ||
+            k.toLowerCase().replace(/\s+/g, '') === normalizedFieldName
+          );
+          return foundKey ? record[foundKey] : null;
+        };
+        
+        const populatedValue = getFieldValue(props.record, fieldKey);
+        if (populatedValue && typeof populatedValue === 'object' && !Array.isArray(populatedValue)) {
+          // We found a populated object! Format it
+          return formatValueForActivityLog(populatedValue, fieldKey);
+        }
+      }
+      
+      // Check if this is a lookup field - if so, we can't resolve it without an API call
+      const fieldDef = getFieldDefinition(fieldKey);
+      if (fieldDef && (fieldDef.dataType === 'Lookup (Relationship)' || fieldDef.dataType === 'Lookup')) {
+        return '[User]'; // Better placeholder for lookup fields
+      }
+      return '[User ID]';
+    }
+    return value.trim();
+  }
+  
+  return String(value);
+};
+
 // Update field value (for immediate UI updates during typing - no save, no log)
 const updateField = (field, value) => {
   const oldValue = props.record ? props.record[field] : null;
@@ -3946,6 +4123,188 @@ const updateField = (field, value) => {
     pendingFieldChanges.value[field].currentValue = value;
   }
   
+  // Mark that we're no longer in initial load - field values are being changed
+  isInitialLoad.value = false;
+  // Reset popup evaluation flag so we check again after this change
+  hasEvaluatedPopupsForCurrentState.value = false;
+  // Mark that this is a user-initiated field change (not a render/initialization)
+  userInitiatedFieldChange.value = true;
+  
+  // Check for popup triggers after field update
+  setTimeout(() => {
+    checkForPopupTriggers();
+  }, 100);
+};
+
+// Handle field changes from header dropdowns - save immediately
+const handleHeaderFieldChange = (field, value) => {
+  console.log('📝 handleHeaderFieldChange called:', { field, value, valueType: typeof value });
+  const oldValue = props.record ? props.record[field] : null;
+  
+  // Normalize values for comparison
+  const normalizedOldValue = normalizeValue(oldValue);
+  const normalizedNewValue = normalizeValue(value);
+  
+  // Only proceed if value actually changed
+  if (normalizedOldValue === normalizedNewValue) {
+    return; // No change, don't update
+  }
+  
+  // Format values for display in activity log BEFORE updating the record
+  // (so we can use populated objects if they exist)
+  const displayOldValue = formatValueForActivityLog(oldValue, field);
+  
+  // For the new value, check if it's an ObjectId and if we have a populated version in the record
+  // (this happens when selecting from a dropdown - the value is an ObjectId but the record might have the populated object)
+  let displayNewValue = formatValueForActivityLog(value, field);
+  
+  // If new value is an ObjectId string, check if we can find the populated object in the record
+  // (sometimes the record gets updated with populated data before we format)
+  if (typeof value === 'string' && /^[0-9a-fA-F]{24}$/.test(value) && props.record) {
+    // Check if there's a populated version somewhere in the record
+    // Some fields might be stored with different casing
+    const fieldKeys = Object.keys(props.record);
+    const matchingKey = fieldKeys.find(k => k.toLowerCase() === field.toLowerCase());
+    if (matchingKey) {
+      const recordFieldValue = props.record[matchingKey];
+      if (recordFieldValue && typeof recordFieldValue === 'object' && !Array.isArray(recordFieldValue)) {
+        // Check if this object's _id matches the value
+        if (recordFieldValue._id && String(recordFieldValue._id) === value) {
+          displayNewValue = formatValueForActivityLog(recordFieldValue, field);
+        }
+      }
+    }
+  }
+  
+  // Update local state immediately for UI responsiveness
+  if (props.record) {
+    props.record[field] = value;
+  }
+  
+  // For header field changes (lifecycle/status fields), save immediately
+  // Emit update event so parent can update its record and save to backend
+  const fieldName = formatFieldName(field);
+  
+  emit('update', {
+    field,
+    value,
+    onSuccess: async (updatedRecord = null) => {
+      // Wait a tick to ensure Vue reactivity has updated props.record
+      await nextTick();
+      
+      // Format values again AFTER the record is updated with populated fields from the backend
+      // This ensures we use the populated objects instead of ObjectIds
+      const finalOldValue = oldValue; // Keep original oldValue (before update)
+      
+      // Try to get the populated value from the updated record (passed as parameter or from props.record)
+      // Handle case-insensitive field matching and field name variations
+      let finalNewValue = value;
+      
+      // Helper to find field value case-insensitively and handle field name variations
+      const getFieldValue = (record, fieldName) => {
+        if (!record) return null;
+        
+        // Map common UI field names to database field names
+        const fieldMap = {
+          'assigned to': 'assignedTo',
+          'assignedto': 'assignedTo',
+          'lead owner': 'lead_owner',
+          'leadowner': 'lead_owner',
+          'created by': 'createdBy',
+          'createdby': 'createdBy'
+        };
+        
+        const normalizedFieldName = fieldName.toLowerCase().replace(/\s+/g, '');
+        const dbFieldName = fieldMap[normalizedFieldName] || fieldName;
+        
+        // Try exact match first (database field name)
+        if (record[dbFieldName] !== undefined) return record[dbFieldName];
+        if (record[fieldName] !== undefined) return record[fieldName];
+        
+        // Try case-insensitive match
+        const fieldKey = Object.keys(record).find(k => 
+          k.toLowerCase() === dbFieldName.toLowerCase() || 
+          k.toLowerCase() === fieldName.toLowerCase() ||
+          k.toLowerCase().replace(/\s+/g, '') === normalizedFieldName
+        );
+        return fieldKey ? record[fieldKey] : null;
+      };
+      
+      // Prioritize updatedRecord (from backend response) over props.record
+      const updatedValue = updatedRecord ? getFieldValue(updatedRecord, field) : null;
+      const recordValue = props.record ? getFieldValue(props.record, field) : null;
+      
+      // Debug: Log what we're getting (temporary - remove after fixing)
+      console.log('🔍 Activity log formatting debug:', {
+        field,
+        fieldType: typeof field,
+        value,
+        valueType: typeof value,
+        isValueObjectId: typeof value === 'string' && /^[0-9a-fA-F]{24}$/.test(value),
+        hasUpdatedRecord: !!updatedRecord,
+        updatedRecordKeys: updatedRecord ? Object.keys(updatedRecord).filter(k => k.toLowerCase().includes('assign') || k.toLowerCase().includes('lead')).slice(0, 5) : null,
+        updatedValue,
+        updatedValueType: updatedValue ? typeof updatedValue : null,
+        updatedValueIsObject: updatedValue ? (typeof updatedValue === 'object' && !Array.isArray(updatedValue)) : null,
+        hasPropsRecord: !!props.record,
+        recordValue,
+        recordValueType: recordValue ? typeof recordValue : null,
+        recordValueIsObject: recordValue ? (typeof recordValue === 'object' && !Array.isArray(recordValue)) : null
+      });
+      
+      // Prefer populated object over ObjectId string
+      if (updatedValue !== null && updatedValue !== undefined) {
+        // If it's an object (populated), use it
+        if (typeof updatedValue === 'object' && !Array.isArray(updatedValue) && updatedValue !== null) {
+          console.log('✅ Using populated updatedValue:', updatedValue);
+          finalNewValue = updatedValue;
+        } else if (typeof updatedValue === 'string' && !/^[0-9a-fA-F]{24}$/.test(updatedValue)) {
+          // It's a regular string value, use it
+          finalNewValue = updatedValue;
+        } else {
+          // It's an ObjectId, try to find populated version from props.record
+          if (recordValue && typeof recordValue === 'object' && !Array.isArray(recordValue)) {
+            console.log('✅ Using populated recordValue:', recordValue);
+            finalNewValue = recordValue;
+          } else {
+            console.warn('⚠️ No populated value found, using ObjectId:', updatedValue);
+            finalNewValue = updatedValue;
+          }
+        }
+      } else if (recordValue !== null && recordValue !== undefined) {
+        // If it's an object (populated), use it
+        if (typeof recordValue === 'object' && !Array.isArray(recordValue) && recordValue !== null) {
+          console.log('✅ Using populated recordValue (fallback):', recordValue);
+          finalNewValue = recordValue;
+        } else {
+          finalNewValue = recordValue;
+        }
+      } else {
+        console.warn('⚠️ No value found in updatedRecord or props.record, using original value');
+      }
+      
+      // Format with the updated record context
+      const finalDisplayOldValue = formatValueForActivityLog(finalOldValue, field);
+      const finalDisplayNewValue = formatValueForActivityLog(finalNewValue, field);
+      
+      // Log activity for field change
+      let action = '';
+      if (normalizedOldValue === '' || normalizedOldValue === null || normalizedOldValue === undefined) {
+        action = `set ${fieldName} to "${finalDisplayNewValue}"`;
+      } else {
+        action = `changed ${fieldName} from "${finalDisplayOldValue}" to "${finalDisplayNewValue}"`;
+      }
+      await addActivityLog(action);
+    }
+  });
+  
+  // Mark that we're no longer in initial load - field values are being changed
+  isInitialLoad.value = false;
+  // Reset popup evaluation flag so we check again after this change
+  hasEvaluatedPopupsForCurrentState.value = false;
+  // Mark that this is a user-initiated field change (not a render/initialization)
+  userInitiatedFieldChange.value = true;
+  
   // Check for popup triggers after field update
   setTimeout(() => {
     checkForPopupTriggers();
@@ -3954,7 +4313,38 @@ const updateField = (field, value) => {
 
 // Check for popup triggers across all fields
 const checkForPopupTriggers = () => {
-  if (!moduleDefinition.value?.fields || showPopupModal.value) return; // Don't check if modal is already open
+  // Don't check if modal is already open
+  if (!moduleDefinition.value?.fields || showPopupModal.value) return;
+  
+  // Don't check if component hasn't been fully initialized yet
+  if (!componentInitialized.value) {
+    return;
+  }
+  
+  // Skip popup check on initial load - only show popups when values actually change
+  if (isInitialLoad.value) {
+    return;
+  }
+  
+  // Only check popups when user explicitly changes a field value via updateField()
+  // This prevents popups from appearing when switching tabs or when Vue re-renders
+  if (!userInitiatedFieldChange.value) {
+    return;
+  }
+  
+  // Store the flag value before resetting (we need it for the final check)
+  const wasUserInitiated = userInitiatedFieldChange.value;
+  
+  // Reset the flag after checking
+  userInitiatedFieldChange.value = false;
+  
+  // If we've already evaluated popups for this record state, don't check again
+  if (hasEvaluatedPopupsForCurrentState.value) {
+    return;
+  }
+  
+  // Mark that we're evaluating popups for this state
+  hasEvaluatedPopupsForCurrentState.value = true;
   
   const allFields = moduleDefinition.value.fields;
   const currentFormData = props.record || {};
@@ -3983,6 +4373,17 @@ const checkForPopupTriggers = () => {
               // Mark this trigger as processed
               processedPopupTriggers.value.add(triggerKey);
               
+              // Final safeguard: Only show popup if this was triggered by user action
+              // This prevents any edge cases where popups might appear during initialization
+              if (!wasUserInitiated || isInitialLoad.value) {
+                console.warn('Popup trigger blocked: not user-initiated or still in initial load', {
+                  wasUserInitiated,
+                  isInitialLoad: isInitialLoad.value,
+                  componentInitialized: componentInitialized.value
+                });
+                return;
+              }
+              
               // Show the popup
               popupModalConfig.value = {
                 title: dep.name || 'Update Fields',
@@ -4003,26 +4404,108 @@ const closePopupModal = () => {
   showPopupModal.value = false;
 };
 
-const handlePopupSave = (updatedData) => {
+const handlePopupSave = async (updatedData) => {
   // Update the record with the values from the popup
-  if (props.record) {
-    Object.keys(updatedData).forEach(key => {
-      props.record[key] = updatedData[key];
-      // Trigger save for each updated field
-      updateField(key, updatedData[key]);
-    });
-    // Emit update event to notify parent
-    emit('recordUpdated', props.record);
+  if (props.record && props.record._id) {
+    try {
+      // Determine the API endpoint based on recordType
+      const recordId = props.record._id;
+      const isAdmin = authStore.isOwner || authStore.userRole === 'admin';
+      
+      let endpoint = '';
+      if (props.recordType === 'people') {
+        endpoint = isAdmin 
+          ? `/admin/contacts/${recordId}`
+          : `/people/${recordId}`;
+      } else {
+        // For other record types, construct endpoint from recordType
+        const moduleKey = props.recordType === 'organizations' ? 'organizations' 
+          : props.recordType === 'deals' ? 'deals'
+          : props.recordType === 'tasks' ? 'tasks'
+          : props.recordType === 'events' ? 'events'
+          : props.recordType;
+        endpoint = `/${moduleKey}/${recordId}`;
+      }
+      
+      // Store old values before updating for activity logging
+      const oldValues = {};
+      for (const [key, value] of Object.entries(updatedData)) {
+        oldValues[key] = props.record[key] !== undefined ? props.record[key] : null;
+      }
+      
+      // Update local state immediately for UI responsiveness
+      for (const [key, value] of Object.entries(updatedData)) {
+        props.record[key] = value;
+      }
+      
+      // Save all fields to backend in a single API call
+      const response = await apiClient.put(endpoint, updatedData);
+      
+      // Update local state with the response (which has populated fields)
+      if (response.success && response.data && props.record) {
+        // Update the record with the populated data from the server
+        Object.assign(props.record, response.data);
+      }
+      
+      // Log activity for each field change
+      // Format values AFTER the record is updated with populated fields from the backend
+      for (const [key, value] of Object.entries(updatedData)) {
+        const oldValue = oldValues[key];
+        const fieldName = formatFieldName(key);
+        let action = '';
+        const normalizedOldValue = normalizeValue(oldValue);
+        const normalizedNewValue = normalizeValue(value);
+        
+        // Format values for display in activity log
+        // Use the updated record value (which may be populated) instead of the raw value
+        const finalOldValue = oldValue; // Keep original oldValue (before update)
+        const finalNewValue = props.record ? props.record[key] : value; // Use updated record value (may be populated)
+        
+        const displayOldValue = formatValueForActivityLog(finalOldValue, key);
+        const displayNewValue = formatValueForActivityLog(finalNewValue, key);
+        
+        if (normalizedOldValue === '' || normalizedOldValue === null || normalizedOldValue === undefined) {
+          action = `set ${fieldName} to "${displayNewValue}"`;
+        } else if (normalizedOldValue !== normalizedNewValue) {
+          action = `changed ${fieldName} from "${displayOldValue}" to "${displayNewValue}"`;
+        }
+        
+        if (action) {
+          await addActivityLog(action);
+        }
+      }
+      
+      // Emit recordUpdated event to notify parent
+      emit('recordUpdated', props.record);
+      
+      // Also emit individual update events for each field to maintain consistency
+      // (some parent components might listen to these)
+      for (const [key, value] of Object.entries(updatedData)) {
+        emit('update', {
+          field: key,
+          value: value
+        });
+      }
+    } catch (err) {
+      console.error('Error saving dependency popup fields:', err);
+      // Revert local changes on error
+      // Note: We'd need to store original values to properly revert
+      // For now, just show an error - the parent component should handle refresh
+      alert('Failed to save field updates. Please try again.');
+      return;
+    }
   }
   closePopupModal();
 };
 
 // Save field and log activity (called on blur)
 const saveFieldOnBlur = async (field) => {
+  console.log('📝 saveFieldOnBlur called for field:', field);
   const pendingChange = pendingFieldChanges.value[field];
   
   // If no pending change, nothing to save
   if (!pendingChange) {
+    console.log('   No pending change for field:', field);
     return;
   }
   
@@ -4047,14 +4530,156 @@ const saveFieldOnBlur = async (field) => {
   emit('update', { 
     field, 
     value: currentValue,
-    onSuccess: async () => {
+    onSuccess: async (updatedRecord = null) => {
+      console.log('✅ onSuccess callback called for saveFieldOnBlur:', { field, updatedRecord: !!updatedRecord, hasPropsRecord: !!props.record });
+      
+      // Wait a tick to ensure Vue reactivity has updated props.record
+      await nextTick();
+      
       // Log activity only if value changed
+      // Format values again AFTER the record is updated with populated fields from the backend
+      // This ensures we use the populated objects instead of ObjectIds
+      const finalOriginalValue = originalValue; // Keep original value (before update)
+      
+      // Helper to find field value case-insensitively and handle field name variations
+      const getFieldValue = (record, fieldName) => {
+        if (!record) return null;
+        
+        // Map common UI field names to database field names
+        const fieldMap = {
+          'assigned to': 'assignedTo',
+          'assignedto': 'assignedTo',
+          'lead owner': 'lead_owner',
+          'leadowner': 'lead_owner',
+          'created by': 'createdBy',
+          'createdby': 'createdBy'
+        };
+        
+        const normalizedFieldName = fieldName.toLowerCase().replace(/\s+/g, '');
+        const dbFieldName = fieldMap[normalizedFieldName] || fieldName;
+        
+        // Try exact match first (database field name)
+        if (record[dbFieldName] !== undefined) return record[dbFieldName];
+        if (record[fieldName] !== undefined) return record[fieldName];
+        
+        // Try case-insensitive match
+        const fieldKey = Object.keys(record).find(k => 
+          k.toLowerCase() === dbFieldName.toLowerCase() || 
+          k.toLowerCase() === fieldName.toLowerCase() ||
+          k.toLowerCase().replace(/\s+/g, '') === normalizedFieldName
+        );
+        return fieldKey ? record[fieldKey] : null;
+      };
+      
+      // Try to get the populated value from updatedRecord (from backend) or props.record
+      let finalCurrentValue = currentValue;
+      const updatedValue = updatedRecord ? getFieldValue(updatedRecord, field) : null;
+      const recordValue = props.record ? getFieldValue(props.record, field) : null;
+      
+      console.log('🔍 Activity log formatting (saveFieldOnBlur):', {
+        field,
+        currentValue,
+        currentValueType: typeof currentValue,
+        isCurrentValueObjectId: typeof currentValue === 'string' && /^[0-9a-fA-F]{24}$/.test(currentValue),
+        hasUpdatedRecord: !!updatedRecord,
+        updatedRecordKeys: updatedRecord ? Object.keys(updatedRecord).filter(k => k.toLowerCase().includes('assign')).slice(0, 5) : null,
+        updatedValue,
+        updatedValueType: updatedValue ? typeof updatedValue : null,
+        updatedValueIsObject: updatedValue ? (typeof updatedValue === 'object' && !Array.isArray(updatedValue)) : null,
+        hasPropsRecord: !!props.record,
+        recordValue,
+        recordValueType: recordValue ? typeof recordValue : null,
+        recordValueIsObject: recordValue ? (typeof recordValue === 'object' && !Array.isArray(recordValue)) : null
+      });
+      
+      // Prefer populated object over ObjectId string
+      if (updatedValue !== null && updatedValue !== undefined) {
+        // If it's an object (populated), use it
+        if (typeof updatedValue === 'object' && !Array.isArray(updatedValue) && updatedValue !== null) {
+          console.log('✅ Using populated updatedValue:', updatedValue);
+          finalCurrentValue = updatedValue;
+        } else if (typeof updatedValue === 'string' && !/^[0-9a-fA-F]{24}$/.test(updatedValue)) {
+          // It's a regular string value, use it
+          finalCurrentValue = updatedValue;
+        } else {
+          // It's an ObjectId, try to find populated version from props.record
+          if (recordValue && typeof recordValue === 'object' && !Array.isArray(recordValue)) {
+            console.log('✅ Using populated recordValue (fallback):', recordValue);
+            finalCurrentValue = recordValue;
+          } else {
+            console.warn('⚠️ No populated value found, using ObjectId:', updatedValue);
+            finalCurrentValue = updatedValue;
+          }
+        }
+      } else if (recordValue !== null && recordValue !== undefined) {
+        // If it's an object (populated), use it
+        if (typeof recordValue === 'object' && !Array.isArray(recordValue) && recordValue !== null) {
+          console.log('✅ Using populated recordValue:', recordValue);
+          finalCurrentValue = recordValue;
+        } else {
+          finalCurrentValue = recordValue;
+        }
+      } else {
+        console.warn('⚠️ No value found in updatedRecord or props.record for field:', field);
+      }
+      
+      // Format with the updated record context
+      // Before formatting, double-check that we're using the populated object
+      // If finalCurrentValue is still an ObjectId string, try once more to get the populated version
+      if (typeof finalCurrentValue === 'string' && /^[0-9a-fA-F]{24}$/.test(finalCurrentValue)) {
+        // Still an ObjectId, try to get populated version from props.record one more time
+        const getFieldValue = (record, fieldName) => {
+          if (!record) return null;
+          const fieldMap = {
+            'assigned to': 'assignedTo',
+            'assignedto': 'assignedTo',
+            'lead owner': 'lead_owner',
+            'leadowner': 'lead_owner'
+          };
+          const normalizedFieldName = fieldName.toLowerCase().replace(/\s+/g, '');
+          const dbFieldName = fieldMap[normalizedFieldName] || fieldName;
+          if (record[dbFieldName] !== undefined) return record[dbFieldName];
+          if (record[fieldName] !== undefined) return record[fieldName];
+          const fieldKey = Object.keys(record).find(k => 
+            k.toLowerCase() === dbFieldName.toLowerCase() || 
+            k.toLowerCase() === fieldName.toLowerCase()
+          );
+          return fieldKey ? record[fieldKey] : null;
+        };
+        
+        const lastChanceValue = props.record ? getFieldValue(props.record, field) : null;
+        if (lastChanceValue && typeof lastChanceValue === 'object' && !Array.isArray(lastChanceValue)) {
+          console.log('🔄 Last chance: Found populated value in props.record:', lastChanceValue);
+          finalCurrentValue = lastChanceValue;
+        } else if (updatedRecord) {
+          const lastChanceUpdated = getFieldValue(updatedRecord, field);
+          if (lastChanceUpdated && typeof lastChanceUpdated === 'object' && !Array.isArray(lastChanceUpdated)) {
+            console.log('🔄 Last chance: Found populated value in updatedRecord:', lastChanceUpdated);
+            finalCurrentValue = lastChanceUpdated;
+          }
+        }
+      }
+      
+      const displayOriginalValue = formatValueForActivityLog(finalOriginalValue, field);
+      const displayCurrentValue = formatValueForActivityLog(finalCurrentValue, field);
+      
+      console.log('📝 Final formatted values:', {
+        displayOriginalValue,
+        displayCurrentValue,
+        finalCurrentValue,
+        finalCurrentValueType: typeof finalCurrentValue,
+        isFinalCurrentValueObject: typeof finalCurrentValue === 'object' && !Array.isArray(finalCurrentValue)
+      });
+      
       let action = '';
       if (normalizedOldValue === '' || normalizedOldValue === null || normalizedOldValue === undefined) {
-        action = `set ${fieldName} to "${currentValue}"`;
+        action = `set ${fieldName} to "${displayCurrentValue}"`;
       } else {
-        action = `changed ${fieldName} from "${originalValue}" to "${currentValue}"`;
+        action = `changed ${fieldName} from "${displayOriginalValue}" to "${displayCurrentValue}"`;
       }
+      
+      console.log('📝 Activity log action:', action);
+      
       // addActivityLog will reload activity logs after successful save
       await addActivityLog(action);
     }
@@ -4108,10 +4733,8 @@ const fetchModuleDefinition = async () => {
     const module = modules.find(m => m.key === props.recordType);
     if (module) {
       moduleDefinition.value = module;
-      // Check for popup triggers after module loads
-      setTimeout(() => {
-        checkForPopupTriggers();
-      }, 100);
+      // Don't check for popup triggers when module loads - only check when field values change
+      // Popups should only appear when user actively changes field values, not on tab switches or initial loads
     }
   } catch (error) {
     console.error('Error fetching module definition:', error);
@@ -4191,47 +4814,48 @@ const getPicklistOptions = (key) => {
 
 // Get lifecycle and status fields for display in header
 const getLifecycleStatusFields = computed(() => {
-  if (!moduleDefinition.value?.fields || !props.record) return [];
+  if (!moduleDefinition.value?.fields || !record.value) return [];
   
   const statusFields = [];
-  const record = props.record;
+  // Use record.value (reactive ref) to ensure reactivity
+  const currentRecord = record.value;
   
   // For People module, show type + lead_status/contact_status
   if (props.recordType === 'people') {
-    // Type field
+    // Type field - use record.value.type for reactivity
     const typeField = getFieldDefinition('type');
     if (typeField) {
       statusFields.push({
         key: 'type',
         label: 'Type',
-        value: record.type,
+        value: record.value?.type, // Use reactive ref
         options: typeField.options || [],
         fieldDef: typeField
       });
     }
     
-    // Lead status (if type is Lead)
-    if (record.type === 'Lead') {
+    // Lead status (if type is Lead) - use record.value.type for condition check
+    if (record.value?.type === 'Lead') {
       const leadStatusField = getFieldDefinition('lead_status');
       if (leadStatusField) {
         statusFields.push({
           key: 'lead_status',
           label: 'Lead Status',
-          value: record.lead_status,
+          value: record.value?.lead_status, // Use reactive ref
           options: leadStatusField.options || [],
           fieldDef: leadStatusField
         });
       }
     }
     
-    // Contact status (if type is Contact)
-    if (record.type === 'Contact') {
+    // Contact status (if type is Contact) - use record.value.type for condition check
+    if (record.value?.type === 'Contact') {
       const contactStatusField = getFieldDefinition('contact_status');
       if (contactStatusField) {
         statusFields.push({
           key: 'contact_status',
           label: 'Contact Status',
-          value: record.contact_status,
+          value: record.value?.contact_status, // Use reactive ref
           options: contactStatusField.options || [],
           fieldDef: contactStatusField
         });
@@ -4241,15 +4865,15 @@ const getLifecycleStatusFields = computed(() => {
     // For Organizations module, show types + relevant status fields
     // Note: types is a Multi-Picklist (array), so we'll show it as a display field and show status fields
     // Show relevant status fields based on types
-    if (Array.isArray(record.types) && record.types.length > 0) {
+    if (Array.isArray(record.value?.types) && record.value.types.length > 0) {
       // Customer status (if Customer is in types)
-      if (record.types.includes('Customer')) {
+      if (record.value.types.includes('Customer')) {
         const customerStatusField = getFieldDefinition('customerStatus');
         if (customerStatusField) {
           statusFields.push({
             key: 'customerStatus',
             label: 'Customer Status',
-            value: record.customerStatus,
+            value: record.value?.customerStatus, // Use reactive ref
             options: customerStatusField.options || [],
             fieldDef: customerStatusField
           });
@@ -4257,13 +4881,13 @@ const getLifecycleStatusFields = computed(() => {
       }
       
       // Partner status (if Partner is in types)
-      if (record.types.includes('Partner')) {
+      if (record.value.types.includes('Partner')) {
         const partnerStatusField = getFieldDefinition('partnerStatus');
         if (partnerStatusField) {
           statusFields.push({
             key: 'partnerStatus',
             label: 'Partner Status',
-            value: record.partnerStatus,
+            value: record.value?.partnerStatus, // Use reactive ref
             options: partnerStatusField.options || [],
             fieldDef: partnerStatusField
           });
@@ -4271,13 +4895,13 @@ const getLifecycleStatusFields = computed(() => {
       }
       
       // Vendor status (if Vendor is in types)
-      if (record.types.includes('Vendor')) {
+      if (record.value.types.includes('Vendor')) {
         const vendorStatusField = getFieldDefinition('vendorStatus');
         if (vendorStatusField) {
           statusFields.push({
             key: 'vendorStatus',
             label: 'Vendor Status',
-            value: record.vendorStatus,
+            value: record.value?.vendorStatus, // Use reactive ref
             options: vendorStatusField.options || [],
             fieldDef: vendorStatusField
           });
@@ -4293,7 +4917,7 @@ const getLifecycleStatusFields = computed(() => {
       statusFields.push({
         key: 'lifecycle_stage',
         label: 'Lifecycle Stage',
-        value: record.lifecycle_stage,
+        value: record.value?.lifecycle_stage, // Use reactive ref
         options: lifecycleField.options || [],
         fieldDef: lifecycleField
       });
@@ -4303,7 +4927,7 @@ const getLifecycleStatusFields = computed(() => {
       statusFields.push({
         key: 'status',
         label: 'Status',
-        value: record.status,
+        value: record.value?.status, // Use reactive ref
         options: statusField.options || [],
         fieldDef: statusField
       });
@@ -5032,14 +5656,24 @@ watch(activeTab, (newTab, oldTab) => {
 
 // Watch for record changes to reload saved tab and log initial load
 // Watch for record changes to check popup triggers
-watch(() => props.record, (newRecord) => {
+watch(() => props.record, (newRecord, oldRecord) => {
   if (newRecord && moduleDefinition.value) {
-    // Reset processed triggers when record changes
-    processedPopupTriggers.value.clear();
-    // Check for popup triggers after a short delay
-    setTimeout(() => {
-      checkForPopupTriggers();
-    }, 100);
+    // Only reset processed triggers if this is a different record (by ID)
+    const newRecordId = newRecord._id || newRecord.id;
+    const oldRecordId = oldRecord?._id || oldRecord?.id;
+    
+    if (newRecordId !== oldRecordId) {
+      // Record ID changed - this is a different record
+      processedPopupTriggers.value.clear();
+      isInitialLoad.value = true;
+      hasEvaluatedPopupsForCurrentState.value = false;
+      userInitiatedFieldChange.value = false;
+      // Component is already initialized, but we reset flags for new record
+    }
+    
+    // Don't check for popups when record prop changes - only check when field values are explicitly changed
+    // This prevents popups from appearing on tab switches or when the record object is re-referenced
+    // Popups should only appear when user actively changes field values via updateField()
   }
 }, { deep: true });
 
@@ -5052,9 +5686,17 @@ watch(() => props.record, async (newRecord, oldRecord) => {
     if (oldRecordId !== recordId) {
       timelineUpdates.value = [];
       loggedRecordIds.value.clear();
+      // Reset initial load flag when switching to a different record
+      isInitialLoad.value = true;
+      hasEvaluatedPopupsForCurrentState.value = false;
+      userInitiatedFieldChange.value = false;
       await loadActivityLogs();
     } else if (!oldRecordId) {
       // First load - load existing logs from API
+      // Keep isInitialLoad as true on first load
+      isInitialLoad.value = true;
+      hasEvaluatedPopupsForCurrentState.value = false;
+      userInitiatedFieldChange.value = false;
       await loadActivityLogs();
     }
     
@@ -5124,6 +5766,12 @@ onMounted(async () => {
   if (!isValidTab) {
     activeTab.value = 'summary';
   }
+  
+  // Mark component as initialized after a short delay to ensure all watchers have run
+  // This prevents popups from triggering during initial render
+  setTimeout(() => {
+    componentInitialized.value = true;
+  }, 500);
   
   if (activeTab.value === 'summary') {
     // Use setTimeout to ensure DOM is fully rendered

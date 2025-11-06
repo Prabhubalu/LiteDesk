@@ -176,7 +176,8 @@ exports.listModules = async (req, res) => {
             { key: 'tasks', name: 'Tasks' },
             { key: 'events', name: 'Events' },
             { key: 'imports', name: 'Imports' },
-            { key: 'reports', name: 'Reports' }
+            { key: 'reports', name: 'Reports' },
+            { key: 'users', name: 'Users' } // For lookup targets (assignedTo, lead_owner, createdBy)
         ].map(m => ({
             _id: `system:${m.key}`,
             organizationId: req.user.organizationId,
@@ -184,7 +185,7 @@ exports.listModules = async (req, res) => {
             name: m.name,
             type: 'system',
             enabled: true,
-            fields: getBaseFieldsForKey(m.key),
+            fields: m.key === 'users' ? [] : getBaseFieldsForKey(m.key), // Users module has no fields for lookup purposes
             fieldCount: 0,
             createdAt: null,
             updatedAt: null
@@ -262,7 +263,8 @@ exports.listModules = async (req, res) => {
                 tasks: Task,
                 events: Event,
                 imports: ImportHistory,
-                reports: null // no direct model
+                reports: null, // no direct model
+                users: null // Users module is for lookup targets only, no fields needed
             };
             const uniqueCount = (fields) => {
                 if (!Array.isArray(fields)) return 0;

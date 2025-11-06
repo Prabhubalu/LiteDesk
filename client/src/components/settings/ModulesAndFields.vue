@@ -32,7 +32,7 @@
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600"></div>
       </div>
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div v-for="mod in modules" :key="mod._id" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 cursor-pointer" @click="selectModule(mod)">
+        <div v-for="mod in displayModules" :key="mod._id" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 cursor-pointer" @click="selectModule(mod)">
           <div class="flex items-start justify-between">
             <div>
               <p class="text-xs uppercase tracking-wider" :class="mod.type === 'system' ? 'text-purple-600 dark:text-purple-300' : 'text-gray-500 dark:text-gray-400'">{{ mod.type }}</p>
@@ -1163,6 +1163,8 @@ const showFormModal = ref(false);
 const editingModule = ref(null);
 const editFields = ref([]);
 const selectedFieldIdx = ref(0);
+// Filter modules for display - exclude 'users' from main list (it's only for lookups)
+const displayModules = computed(() => modules.value.filter(m => m.key !== 'users'));
 const optionsBuffer = ref('');
 const allowedValuesBuffers = ref({});
 const fieldTypes = [
@@ -1241,6 +1243,13 @@ const showTenantFields = ref(false); // Hide tenant fields by default
 
 const filteredFields = computed(() => {
   let fields = editFields.value;
+  
+  // Filter out system fields that should never appear in the UI
+  fields = fields.filter(f => {
+    const keyLower = (f.key || '').toLowerCase();
+    // Exclude activityLogs - it's a system field managed internally
+    return keyLower !== 'activitylogs';
+  });
   
   // Filter out tenant fields by default (unless showTenantFields is checked)
   // Only apply this filter for organizations module
