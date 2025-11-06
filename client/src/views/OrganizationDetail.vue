@@ -128,13 +128,20 @@ const handleUpdate = async (updateData) => {
     }
     
     // Persist to server
-    await apiClient.put(`/admin/organizations/${route.params.id}`, {
+    const response = await apiClient.put(`/admin/organizations/${route.params.id}`, {
       [updateData.field]: updateData.value
     });
     
+    // Update local state with the response (which has populated fields)
+    if (response.success && response.data && organization.value) {
+      // Update the organization record with the populated data from the server
+      Object.assign(organization.value, response.data);
+    }
+    
     // Call onSuccess callback if provided (for activity logging)
+    // Pass the updated record so it can use populated fields for formatting
     if (updateData.onSuccess) {
-      await updateData.onSuccess();
+      await updateData.onSuccess(response.success ? response.data : null);
     }
   } catch (err) {
     console.error('Error updating organization:', err);

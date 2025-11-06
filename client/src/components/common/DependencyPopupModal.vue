@@ -107,22 +107,59 @@ const loading = ref(false);
 const formData = ref({});
 const errors = ref({});
 
+// Helper function to get field value from record data (handles case-insensitive and populated fields)
+const getFieldValue = (field, recordData) => {
+  if (!recordData || !field || !field.key) {
+    return field?.defaultValue !== undefined ? field.defaultValue : null;
+  }
+  
+  const fieldKey = field.key;
+  const fieldKeyLower = fieldKey.toLowerCase();
+  
+  // Try exact match first
+  let value = recordData[fieldKey];
+  
+  // If not found, try case-insensitive match
+  if (value === undefined) {
+    const keys = Object.keys(recordData);
+    const matchingKey = keys.find(k => k.toLowerCase() === fieldKeyLower);
+    if (matchingKey) {
+      value = recordData[matchingKey];
+    }
+  }
+  
+  // Handle populated lookup fields (objects with _id)
+  if (value !== undefined && value !== null && typeof value === 'object' && !Array.isArray(value)) {
+    // If it's a populated field, extract the _id
+    if (value._id) {
+      value = value._id;
+    }
+  }
+  
+  // Handle arrays - keep them as-is (for Multi-Picklist, etc.)
+  // Arrays should already be in the correct format
+  
+  // If still no value, use default
+  if (value === undefined || value === null) {
+    value = field.defaultValue !== undefined ? field.defaultValue : null;
+  }
+  
+  return value;
+};
+
 // Initialize form data when modal opens or fields change
 watch([() => props.isOpen, () => props.fields, () => props.initialData], () => {
   if (props.isOpen && props.fields.length > 0) {
-    // Initialize form data with current values
+    // Initialize form data with current values from the record
     const initial = {};
     props.fields.forEach(field => {
-      initial[field.key] = props.initialData[field.key] !== undefined 
-        ? props.initialData[field.key] 
-        : field.defaultValue !== undefined 
-          ? field.defaultValue 
-          : null;
+      // Get value from initialData, handling case-insensitive keys and populated fields
+      initial[field.key] = getFieldValue(field, props.initialData || {});
     });
     formData.value = { ...initial };
     errors.value = {};
   }
-}, { immediate: true });
+}, { immediate: true, deep: true });
 
 const updateField = (fieldKey, value) => {
   formData.value[fieldKey] = value;

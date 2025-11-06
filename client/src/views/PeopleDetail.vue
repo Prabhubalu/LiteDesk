@@ -95,9 +95,15 @@ const deleting = ref(false);
 // Computed property to format person data for SummaryView
 const formattedPerson = computed(() => {
   if (!person.value) return null;
+  // Explicitly reference fields to ensure reactivity tracking
+  // This ensures Vue tracks changes to nested properties like type, lead_status, etc.
   return {
     ...person.value,
-    name: `${person.value.first_name || ''} ${person.value.last_name || ''}`.trim() || person.value.email || 'Person'
+    name: `${person.value.first_name || ''} ${person.value.last_name || ''}`.trim() || person.value.email || 'Person',
+    // Explicitly include fields that might be changed from header dropdowns to ensure reactivity
+    type: person.value.type,
+    lead_status: person.value.lead_status,
+    contact_status: person.value.contact_status
   };
 });
 
@@ -142,13 +148,34 @@ const handleUpdate = async (updateData) => {
     }
     
     // Persist to server
-    await apiClient.put(endpoint, {
+    const response = await apiClient.put(endpoint, {
       [updateData.field]: updateData.value
     });
     
+    // Debug: Check what the backend returned
+    if (response.success && response.data) {
+      console.log('🔍 Backend response data:', {
+        field: updateData.field,
+        fieldValue: response.data[updateData.field],
+        fieldValueType: typeof response.data[updateData.field],
+        isFieldValueObject: response.data[updateData.field] && typeof response.data[updateData.field] === 'object' && !Array.isArray(response.data[updateData.field]),
+        assignedToValue: response.data.assignedTo,
+        assignedToType: typeof response.data.assignedTo,
+        assignedToIsObject: response.data.assignedTo && typeof response.data.assignedTo === 'object' && !Array.isArray(response.data.assignedTo),
+        allKeys: Object.keys(response.data).slice(0, 10)
+      });
+    }
+    
+    // Update local state with the response (which has populated fields)
+    if (response.success && response.data && person.value) {
+      // Update the person record with the populated data from the server
+      Object.assign(person.value, response.data);
+    }
+    
     // Call onSuccess callback if provided (for activity logging)
+    // Pass the updated record so it can use populated fields for formatting
     if (updateData.onSuccess) {
-      await updateData.onSuccess();
+      await updateData.onSuccess(response.success ? response.data : null);
     }
   } catch (err) {
     console.error('Error updating person:', err);

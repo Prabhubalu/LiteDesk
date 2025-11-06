@@ -194,6 +194,7 @@ async function updatePeopleModuleFields(organizationId = null) {
     // Exclude system fields and legacy fields that shouldn't appear in module definitions
     const excluded = new Set([
       '_id', '__v', 'createdAt', 'updatedAt', 
+      'activityLogs', // System field - activity logs are managed internally
       'legacyContactId', // Legacy migration field
       'account_id', // Legacy field - use 'organization' instead
       'owner_id' // Legacy field - use 'assignedTo' instead

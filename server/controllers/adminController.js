@@ -323,10 +323,17 @@ const updateContactById = async (req, res) => {
             });
         }
         
+        // Re-fetch with populated fields to ensure populate works correctly
+        const populatedContact = await People.findById(contact._id)
+            .populate('assignedTo', 'firstName lastName email avatar')
+            .populate('lead_owner', 'firstName lastName email avatar username')
+            .populate('organization', 'name')
+            .populate('createdBy', 'firstName lastName email avatar username');
+        
         res.status(200).json({
             success: true,
             message: 'Contact updated successfully',
-            data: contact
+            data: populatedContact
         });
     } catch (error) {
         console.error('Update contact by ID error:', error);
@@ -413,9 +420,7 @@ const updateOrganizationById = async (req, res) => {
             { _id: req.params.id, isTenant: false },
             req.body,
             { new: true, runValidators: true }
-        )
-        .populate('createdBy', 'firstName lastName email avatar username')
-        .populate('assignedTo', 'firstName lastName email avatar username');
+        );
         
         if (!organization) {
             // Try tenant organization (fallback)
@@ -423,9 +428,7 @@ const updateOrganizationById = async (req, res) => {
                 req.params.id,
                 req.body,
                 { new: true, runValidators: true }
-            )
-            .populate('createdBy', 'firstName lastName email avatar username')
-            .populate('assignedTo', 'firstName lastName email avatar username');
+            );
             
             if (!organization) {
                 return res.status(404).json({
@@ -435,10 +438,15 @@ const updateOrganizationById = async (req, res) => {
             }
         }
         
+        // Re-fetch with populated fields to ensure populate works correctly
+        const populatedOrganization = await Organization.findById(organization._id)
+            .populate('createdBy', 'firstName lastName email avatar username')
+            .populate('assignedTo', 'firstName lastName email avatar username');
+        
         res.status(200).json({
             success: true,
             message: 'Organization updated successfully',
-            data: organization
+            data: populatedOrganization
         });
     } catch (error) {
         console.error('Update organization by ID error:', error);
@@ -469,9 +477,51 @@ const getContactActivityLogs = async (req, res) => {
             new Date(b.timestamp) - new Date(a.timestamp)
         );
         
+        // Enrich logs with user information from userId
+        const User = require('../models/User');
+        const userIds = [...new Set(logs.map(log => log.userId).filter(id => id))];
+        
+        let usersMap = {};
+        if (userIds.length > 0) {
+            const users = await User.find({ _id: { $in: userIds } })
+                .select('firstName lastName username email')
+                .lean();
+            
+            usersMap = users.reduce((acc, user) => {
+                acc[user._id.toString()] = user;
+                return acc;
+            }, {});
+        }
+        
+        // Enrich logs with user information
+        const enrichedLogs = logs.map(log => {
+            const enrichedLog = { ...log.toObject ? log.toObject() : log };
+            
+            // If user field is an ObjectId string, try to resolve it from userId
+            if (log.userId && usersMap[log.userId.toString()]) {
+                const user = usersMap[log.userId.toString()];
+                const firstName = user.firstName || '';
+                const lastName = user.lastName || '';
+                const fullName = `${firstName} ${lastName}`.trim();
+                
+                // If user field looks like an ObjectId (24 hex chars), replace it with username
+                if (typeof enrichedLog.user === 'string' && /^[0-9a-fA-F]{24}$/.test(enrichedLog.user)) {
+                    enrichedLog.user = fullName || user.username || user.email || 'Unknown User';
+                } else if (!enrichedLog.user || enrichedLog.user === '') {
+                    // If user field is empty, use the resolved user info
+                    enrichedLog.user = fullName || user.username || user.email || 'Unknown User';
+                }
+            } else if (typeof enrichedLog.user === 'string' && /^[0-9a-fA-F]{24}$/.test(enrichedLog.user)) {
+                // If user field is an ObjectId but we couldn't resolve it, use a fallback
+                enrichedLog.user = 'Unknown User';
+            }
+            
+            return enrichedLog;
+        });
+        
         res.status(200).json({
             success: true,
-            data: logs
+            data: enrichedLogs
         });
     } catch (error) {
         console.error('Get contact activity logs error:', error);
@@ -562,9 +612,51 @@ const getOrganizationActivityLogs = async (req, res) => {
             new Date(b.timestamp) - new Date(a.timestamp)
         );
         
+        // Enrich logs with user information from userId
+        const User = require('../models/User');
+        const userIds = [...new Set(logs.map(log => log.userId).filter(id => id))];
+        
+        let usersMap = {};
+        if (userIds.length > 0) {
+            const users = await User.find({ _id: { $in: userIds } })
+                .select('firstName lastName username email')
+                .lean();
+            
+            usersMap = users.reduce((acc, user) => {
+                acc[user._id.toString()] = user;
+                return acc;
+            }, {});
+        }
+        
+        // Enrich logs with user information
+        const enrichedLogs = logs.map(log => {
+            const enrichedLog = { ...log };
+            
+            // If user field is an ObjectId string, try to resolve it from userId
+            if (log.userId && usersMap[log.userId.toString()]) {
+                const user = usersMap[log.userId.toString()];
+                const firstName = user.firstName || '';
+                const lastName = user.lastName || '';
+                const fullName = `${firstName} ${lastName}`.trim();
+                
+                // If user field looks like an ObjectId (24 hex chars), replace it with username
+                if (typeof enrichedLog.user === 'string' && /^[0-9a-fA-F]{24}$/.test(enrichedLog.user)) {
+                    enrichedLog.user = fullName || user.username || user.email || 'Unknown User';
+                } else if (!enrichedLog.user || enrichedLog.user === '') {
+                    // If user field is empty, use the resolved user info
+                    enrichedLog.user = fullName || user.username || user.email || 'Unknown User';
+                }
+            } else if (typeof enrichedLog.user === 'string' && /^[0-9a-fA-F]{24}$/.test(enrichedLog.user)) {
+                // If user field is an ObjectId but we couldn't resolve it, use a fallback
+                enrichedLog.user = 'Unknown User';
+            }
+            
+            return enrichedLog;
+        });
+        
         res.status(200).json({
             success: true,
-            data: logs
+            data: enrichedLogs
         });
     } catch (error) {
         console.error('Get organization activity logs error:', error);
