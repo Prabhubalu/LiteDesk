@@ -75,7 +75,7 @@
         </div>
         <div>
           <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.activeDeals || 0 }}</p>
-          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active Deals</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Open Deals</p>
         </div>
       </div>
 
@@ -265,9 +265,10 @@
             class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer text-sm"
           >
             <option value="">All Status</option>
-            <option value="Active">Active</option>
+            <option value="Open">Open</option>
             <option value="Won">Won</option>
             <option value="Lost">Lost</option>
+            <option value="Stalled">Stalled</option>
           </select>
 
           <select 
@@ -351,10 +352,10 @@
           <BadgeCell 
             :value="value" 
             :variant-map="{
-              'Lead': 'warning',
-              'Qualified': 'info',
+              'Qualification': 'info',
               'Proposal': 'primary',
               'Negotiation': 'warning',
+              'Contract Sent': 'info',
               'Closed Won': 'success',
               'Closed Lost': 'danger'
             }"
@@ -664,7 +665,7 @@ const visibleColumns = ref([
   { key: 'priority', label: 'Priority', visible: true }
 ]);
 
-const stages = ['Lead', 'Qualified', 'Proposal', 'Negotiation', 'Closed Won', 'Closed Lost'];
+const stages = ['Qualification', 'Proposal', 'Negotiation', 'Contract Sent', 'Closed Won', 'Closed Lost'];
 
 // Mass Actions
 // Use bulk actions composable with permissions
@@ -698,6 +699,7 @@ const pagination = ref({
 const statistics = ref({
   totalDeals: 0,
   activeDeals: 0,
+  stalledDeals: 0,
   wonDeals: 0,
   lostDeals: 0,
   totalValue: 0,
@@ -1030,10 +1032,10 @@ const getInitials = (user) => {
 
 const getStageClass = (stage) => {
   const classes = {
-    'Lead': 'lead',
-    'Qualified': 'qualified',
+    'Qualification': 'qualification',
     'Proposal': 'proposal',
     'Negotiation': 'negotiation',
+    'Contract Sent': 'contract-sent',
     'Closed Won': 'won',
     'Closed Lost': 'lost'
   };

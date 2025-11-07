@@ -731,13 +731,13 @@
         <div class="p-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between">
           <div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {{ activeTopTab === 'details' ? 'Module Details' : activeTopTab === 'relationships' ? 'Relationships' : 'Quick Create' }}
+              {{ currentTopTabLabel }}
             </h3>
             <p class="text-xs text-gray-500 dark:text-gray-400">Module: {{ selectedModule?.name }} • Key: {{ selectedModule?.key }}</p>
           </div>
           <div class="flex items-center gap-2">
             <button 
-              v-if="(activeTopTab === 'details' || activeTopTab === 'relationships') && isDirty" 
+              v-if="(['details', 'relationships', 'pipeline'].includes(activeTopTab) && isDirty)"
               @click="saveModule" 
               :disabled="isSaving"
               class="px-4 py-2 bg-brand-600 hover:bg-brand-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm hover:shadow-md"
@@ -992,6 +992,513 @@
           </div>
         </div>
 
+        <div class="p-6 h-full" v-else-if="activeTopTab === 'pipeline'">
+          <div class="h-full flex flex-col lg:flex-row gap-4">
+            <aside class="w-full lg:w-80 flex-none bg-white dark:bg-gray-900/60 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
+              <div class="p-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between">
+                <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">Pipelines</div>
+                <button @click="addPipeline" class="px-3 py-1.5 text-xs font-medium bg-brand-600 hover:bg-brand-700 text-white rounded-lg transition-colors shadow-sm hover:shadow">
+                  Add
+                </button>
+              </div>
+              <div class="flex-1 overflow-y-auto divide-y divide-gray-200 dark:divide-gray-800">
+                <div
+                  v-for="(pipeline, index) in pipelineSettings"
+                  :key="pipeline.key || index"
+                  :class="[
+                    'p-4 cursor-pointer transition-colors',
+                    selectedPipelineKey === pipeline.key
+                      ? 'bg-brand-50 dark:bg-brand-900/20'
+                      : 'hover:bg-gray-50 dark:hover:bg-white/5'
+                  ]"
+                  @click="selectedPipelineKey = pipeline.key"
+                >
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <span class="w-2.5 h-2.5 rounded-full border border-white shadow" :style="{ backgroundColor: pipeline.color || DEFAULT_PIPELINE_COLOR }"></span>
+                      <div class="min-w-0">
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ pipeline.name }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ pipeline.stages?.length || 0 }} stage{{ (pipeline.stages?.length || 0) === 1 ? '' : 's' }}</p>
+                      </div>
+                    </div>
+                    <span v-if="pipeline.isDefault" class="text-xs font-medium text-brand-600 dark:text-brand-300">Default</span>
+                  </div>
+                  <div class="flex items-center gap-2 mt-3">
+                    <label class="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                      <input
+                        type="radio"
+                        name="default-pipeline"
+                        class="text-brand-600 border-gray-300 dark:border-gray-600 focus:ring-brand-500"
+                        :checked="pipeline.isDefault"
+                        @change.stop="setDefaultPipeline(pipeline.key)"
+                      />
+                      Default
+                    </label>
+                    <div class="ml-auto flex items-center gap-1">
+                      <button
+                        class="p-1 rounded text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
+                        :disabled="index === 0"
+                        :class="{ 'opacity-40 cursor-not-allowed': index === 0 }"
+                        @click.stop="movePipeline(pipeline.key, -1)"
+                        title="Move up"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                          <path fill-rule="evenodd" d="M10 4a.75.75 0 01.53.22l4.5 4.5a.75.75 0 11-1.06 1.06L10 5.81 6.03 9.78a.75.75 0 11-1.06-1.06l4.5-4.5A.75.75 0 0110 4z" clip-rule="evenodd" />
+                          <path d="M5.25 15.25a.75.75 0 01.75-.75h8a.75.75 0 010 1.5h-8a.75.75 0 01-.75-.75z" />
+                        </svg>
+                      </button>
+                      <button
+                        class="p-1 rounded text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
+                        :disabled="index === pipelineSettings.length - 1"
+                        :class="{ 'opacity-40 cursor-not-allowed': index === pipelineSettings.length - 1 }"
+                        @click.stop="movePipeline(pipeline.key, 1)"
+                        title="Move down"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                          <path fill-rule="evenodd" d="M10 16a.75.75 0 01-.53-.22l-4.5-4.5a.75.75 0 011.06-1.06L10 14.19l3.97-3.97a.75.75 0 111.06 1.06l-4.5 4.5A.75.75 0 0110 16z" clip-rule="evenodd" />
+                          <path d="M5.25 4.75a.75.75 0 01.75-.75h8a.75.75 0 010 1.5h-8a.75.75 0 01-.75-.75z" />
+                        </svg>
+                      </button>
+                      <button
+                        class="p-1 rounded text-red-500 hover:text-red-600 transition-colors"
+                        @click.stop="removePipeline(pipeline.key)"
+                        title="Remove pipeline"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                          <path fill-rule="evenodd" d="M8.75 3a.75.75 0 00-.75.75V5H5.5a.75.75 0 000 1.5h.538l.599 9.27A1.75 1.75 0 008.382 17.5h3.236a1.75 1.75 0 001.745-1.73l.599-9.27h.538a.75.75 0 000-1.5H12v-1.25A.75.75 0 0011.25 3h-2.5zM9.5 6.5v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0zm-2 0v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0z" clip-rule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div v-if="!pipelineSettings.length" class="p-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                  No pipelines yet.
+                </div>
+              </div>
+            </aside>
+            <section class="flex-1 min-w-0 bg-white dark:bg-gray-900/60 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
+              <div v-if="currentPipeline" class="flex-1 flex flex-col gap-6 p-4 overflow-hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Pipeline Name</label>
+                    <input v-model="currentPipeline.name" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm" />
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Color</label>
+                    <div class="flex items-center gap-3">
+                      <input type="color" v-model="currentPipeline.color" class="w-14 h-10 border border-gray-300 dark:border-gray-600 rounded focus:outline-none" />
+                      <span class="text-xs text-gray-500 dark:text-gray-400">Used for visual indicators in the UI.</span>
+                    </div>
+                  </div>
+                  <div class="md:col-span-2 flex items-center gap-3">
+                    <span v-if="currentPipeline.isDefault" class="px-2 py-0.5 text-xs font-medium bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 rounded">Default pipeline</span>
+                    <button
+                      v-else
+                      @click="setDefaultPipeline(currentPipeline.key)"
+                      class="px-3 py-1.5 text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-white/20 transition-colors"
+                    >
+                      Set as default
+                    </button>
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Description (optional)</label>
+                    <textarea v-model="currentPipeline.description" rows="2" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm"></textarea>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h4 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Stages</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Configure the stages available in this pipeline.</p>
+                  </div>
+                  <button @click="addStageToPipeline(currentPipeline)" class="px-3 py-1.5 text-xs font-medium bg-brand-600 hover:bg-brand-700 text-white rounded-lg transition-colors shadow-sm hover:shadow">
+                    Add Stage
+                  </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto pr-1 space-y-3">
+                  <div
+                    v-for="(stage, stageIndex) in currentPipeline.stages"
+                    :key="stage.key || stageIndex"
+                    v-if="ensureStageStructure(stage)"
+                    class="border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900/50 p-4"
+                  >
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">Stage {{ stageIndex + 1 }}</span>
+                      </div>
+                      <div class="flex items-center gap-1">
+                        <button
+                          class="p-1 rounded text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
+                          :disabled="stageIndex === 0"
+                          :class="{ 'opacity-40 cursor-not-allowed': stageIndex === 0 }"
+                          @click="moveStage(currentPipeline, stageIndex, -1)"
+                          title="Move up"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                            <path fill-rule="evenodd" d="M10 4a.75.75 0 01.53.22l4.5 4.5a.75.75 0 11-1.06 1.06L10 5.81 6.03 9.78a.75.75 0 11-1.06-1.06l4.5-4.5A.75.75 0 0110 4z" clip-rule="evenodd" />
+                            <path d="M5.25 15.25a.75.75 0 01.75-.75h8a.75.75 0 010 1.5h-8a.75.75 0 01-.75-.75z" />
+                          </svg>
+                        </button>
+                        <button
+                          class="p-1 rounded text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
+                          :disabled="stageIndex === currentPipeline.stages.length - 1"
+                          :class="{ 'opacity-40 cursor-not-allowed': stageIndex === currentPipeline.stages.length - 1 }"
+                          @click="moveStage(currentPipeline, stageIndex, 1)"
+                          title="Move down"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                            <path fill-rule="evenodd" d="M10 16a.75.75 0 01-.53-.22l-4.5-4.5a.75.75 0 011.06-1.06L10 14.19l3.97-3.97a.75.75 0 111.06 1.06l-4.5 4.5A.75.75 0 0110 16z" clip-rule="evenodd" />
+                            <path d="M5.25 4.75a.75.75 0 01.75-.75h8a.75.75 0 010 1.5h-8a.75.75 0 01-.75-.75z" />
+                          </svg>
+                        </button>
+                        <button
+                          class="p-1 rounded text-red-500 hover:text-red-600 transition-colors"
+                          @click="removeStageFromPipeline(currentPipeline, stageIndex)"
+                          title="Remove stage"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                            <path fill-rule="evenodd" d="M8.75 3a.75.75 0 00-.75.75V5H5.5a.75.75 0 000 1.5h.538l.599 9.27A1.75 1.75 0 008.382 17.5h3.236a1.75 1.75 0 001.745-1.73l.599-9.27h.538a.75.75 0 000-1.5H12v-1.25A.75.75 0 0011.25 3h-2.5zM9.5 6.5v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0zm-2 0v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0z" clip-rule="evenodd" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+                      <div>
+                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Stage Name</label>
+                        <input v-model="stage.name" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm" />
+                      </div>
+                      <div>
+                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Probability (%)</label>
+                        <input type="number" min="0" max="100" v-model.number="stage.probability" @change="clampStageProbability(stage)" @blur="clampStageProbability(stage)" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm" />
+                      </div>
+                      <div>
+                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Status</label>
+                        <select v-model="stage.status" @change="onStageStatusChange(stage)" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm">
+                          <option v-for="option in pipelineStageStatusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="mt-3">
+                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Description (optional)</label>
+                      <textarea v-model="stage.description" rows="2" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm"></textarea>
+                    </div>
+                    <div class="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                      <div class="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <h5 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Stage Playbook</h5>
+                          <p class="text-xs text-gray-500 dark:text-gray-400">Guide your team with recommended actions and exit criteria for this stage.</p>
+                        </div>
+                        <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
+                          <input type="checkbox" v-model="stage.playbook.enabled" @change="handlePlaybookToggle(stage)" class="rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500" />
+                          Enable playbook
+                        </label>
+                      </div>
+
+                      <div v-if="stage.playbook.enabled" class="mt-4 space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div>
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Playbook Mode</label>
+                            <select v-model="stage.playbook.mode" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm">
+                              <option v-for="option in PLAYBOOK_MODE_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Exit Criteria</label>
+                            <select v-model="stage.playbook.exitCriteria.type" @change="onPlaybookExitCriteriaChange(stage)" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm">
+                              <option v-for="option in PLAYBOOK_EXIT_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer"> 
+                              <input type="checkbox" v-model="stage.playbook.autoAdvance" @change="onPlaybookAutoAdvanceChange(stage)" class="rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500" />
+                              Auto-move to next stage when criteria met
+                            </label>
+                            <p class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">If enabled, the deal will advance automatically once the exit criteria are satisfied.</p>
+                          </div>
+                          <div v-if="stage.playbook.autoAdvance" class="flex flex-col">
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Next Stage</label>
+                            <select v-model="stage.playbook.exitCriteria.nextStageKey" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm">
+                              <option value="">Select stage...</option>
+                              <option v-for="option in getNextStageOptions(currentPipeline, stage)" :key="option.value" :value="option.value">{{ option.label }}</option>
+                            </select>
+                          </div>
+                          <div v-if="stage.playbook.exitCriteria.type === 'custom'" class="md:col-span-2">
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Custom Trigger Description</label>
+                            <textarea v-model="stage.playbook.exitCriteria.customDescription" rows="2" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm" placeholder="Describe the conditions that should move this deal to the next stage"></textarea>
+                          </div>
+                          <div class="md:col-span-2">
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Internal Notes (optional)</label>
+                            <textarea v-model="stage.playbook.notes" rows="2" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm" placeholder="Provide additional guidance for your team"></textarea>
+                          </div>
+                        </div>
+
+                        <div class="border border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4">
+                          <div class="flex items-center justify-between mb-3">
+                            <div>
+                              <h6 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Stage Actions</h6>
+                              <p class="text-xs text-gray-500 dark:text-gray-400">Define the activities your team should complete while in this stage.</p>
+                            </div>
+                            <button @click="addPlaybookAction(stage)" class="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium bg-brand-600 hover:bg-brand-700 text-white rounded-lg shadow-sm hover:shadow">
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                              Add Action
+                            </button>
+                          </div>
+
+                          <div v-if="!stage.playbook.actions.length" class="rounded-lg border border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 px-4 py-8 text-center text-xs text-gray-500 dark:text-gray-400">
+                            No actions defined yet. Click "Add Action" to build a guided checklist.
+                          </div>
+
+                          <div v-else class="space-y-3">
+                            <div
+                              v-for="(action, actionIndex) in stage.playbook.actions"
+                              :key="action.key || actionIndex"
+                              class="bg-white dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700 rounded-lg p-4"
+                            >
+                              <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-2">
+                                  <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Action {{ actionIndex + 1 }}</span>
+                                  <span class="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">{{ getPlaybookActionTypeLabel(action.actionType) }}</span>
+                                  <span v-if="action.required" class="text-[11px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">Required</span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                  <button
+                                    class="p-1 rounded text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
+                                    :disabled="actionIndex === 0"
+                                    :class="{ 'opacity-40 cursor-not-allowed': actionIndex === 0 }"
+                                    @click="movePlaybookAction(stage, actionIndex, -1)"
+                                    title="Move up"
+                                  >
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                                      <path fill-rule="evenodd" d="M10 4a.75.75 0 01.53.22l4.5 4.5a.75.75 0 11-1.06 1.06L10 5.81 6.03 9.78a.75.75 0 11-1.06-1.06l4.5-4.5A.75.75 0 0110 4z" clip-rule="evenodd" />
+                                      <path d="M5.25 15.25a.75.75 0 01.75-.75h8a.75.75 0 010 1.5h-8a.75.75 0 01-.75-.75z" />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    class="p-1 rounded text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
+                                    :disabled="actionIndex === stage.playbook.actions.length - 1"
+                                    :class="{ 'opacity-40 cursor-not-allowed': actionIndex === stage.playbook.actions.length - 1 }"
+                                    @click="movePlaybookAction(stage, actionIndex, 1)"
+                                    title="Move down"
+                                  >
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                                      <path fill-rule="evenodd" d="M10 16a.75.75 0 01-.53-.22l-4.5-4.5a.75.75 0 011.06-1.06L10 14.19l3.97-3.97a.75.75 0 111.06 1.06l-4.5 4.5A.75.75 0 0110 16z" clip-rule="evenodd" />
+                                      <path d="M5.25 4.75a.75.75 0 01.75-.75h8a.75.75 0 010 1.5h-8a.75.75 0 01-.75-.75z" />
+                                    </svg>
+                                  </button>
+                                  <button @click="removePlaybookAction(stage, actionIndex)" class="p-1 rounded text-red-500 hover:text-red-600 transition-colors" title="Remove action">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                                      <path fill-rule="evenodd" d="M8.75 3a.75.75 0 00-.75.75V5H5.5a.75.75 0 000 1.5h.538l.599 9.27A1.75 1.75 0 008.382 17.5h3.236a1.75 1.75 0 001.745-1.73l.599-9.27h.538a.75.75 0 000-1.5H12v-1.25A.75.75 0 0011.25 3h-2.5zM9.5 6.5v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0zm-2 0v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0z" clip-rule="evenodd" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              </div>
+
+                              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                                <div>
+                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Title</label>
+                                  <input v-model="action.title" @change="refreshPlaybookActionKey(stage, action)" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm" placeholder="e.g., Confirm budget or Send proposal" />
+                                </div>
+                                <div>
+                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Action Type</label>
+                                  <select v-model="action.actionType" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm">
+                                    <option v-for="option in PLAYBOOK_ACTION_TYPES" :key="option.value" :value="option.value">{{ option.label }}</option>
+                                  </select>
+                                </div>
+                                <div>
+                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Due (days after stage entry)</label>
+                                  <input type="number" min="0" v-model.number="action.dueInDays" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm" />
+                                </div>
+                                <div>
+                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Assignment</label>
+                                  <select v-model="action.assignment.type" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm">
+                                    <option v-for="option in PLAYBOOK_ASSIGNMENT_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
+                                  </select>
+                                  <input
+                                    v-if="['specific_user', 'role', 'team'].includes(action.assignment.type)"
+                                    v-model="action.assignment.targetName"
+                                    class="mt-2 w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm"
+                                    placeholder="Specify {{ action.assignment.type.replace('_', ' ') }}"
+                                  />
+                                </div>
+                              </div>
+
+                              <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                  <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
+                                    <input type="checkbox" v-model="action.required" class="rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500" />
+                                    Required to complete stage
+                                  </label>
+                                </div>
+                                <div>
+                                  <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
+                                    <input type="checkbox" v-model="action.autoCreate" class="rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500" />
+                                    Auto-create when stage starts
+                                  </label>
+                                </div>
+                              </div>
+
+                              <div class="mt-4 border border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50/50 dark:bg-white/5">
+                                <div class="flex items-center justify-between">
+                                  <div>
+                                    <h6 class="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">Trigger Conditions</h6>
+                                    <p class="text-[11px] text-gray-500 dark:text-gray-400">Control when this activity becomes active.</p>
+                                  </div>
+                                </div>
+                                <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                  <div>
+                                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Trigger Type</label>
+                                    <select v-model="action.trigger.type" @change="handleTriggerTypeChange(action)" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm">
+                                      <option v-for="option in PLAYBOOK_TRIGGER_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
+                                    </select>
+                                  </div>
+                                  <div v-if="action.trigger.type === 'after_action'">
+                                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">After Completing</label>
+                                    <select v-model="action.trigger.sourceActionKey" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm">
+                                      <option value="">Select action...</option>
+                                      <option v-for="opt in getActionOptions(stage, action)" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                                    </select>
+                                  </div>
+                                  <div v-if="action.trigger.type === 'time_delay'" class="flex items-center gap-2">
+                                    <div class="flex-1">
+                                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Delay Amount</label>
+                                      <input type="number" min="0" v-model.number="action.trigger.delay.amount" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm" />
+                                    </div>
+                                    <div>
+                                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Unit</label>
+                                      <select v-model="action.trigger.delay.unit" class="px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm">
+                                        <option v-for="unit in PLAYBOOK_DELAY_UNIT_OPTIONS" :key="unit.value" :value="unit.value">{{ unit.label }}</option>
+                                      </select>
+                                    </div>
+                                  </div>
+                                  <div class="md:col-span-2">
+                                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Trigger Notes (optional)</label>
+                                    <textarea v-model="action.trigger.description" rows="2" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm" placeholder="Describe any additional trigger logic"></textarea>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div class="mt-4 border border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50/50 dark:bg-white/5">
+                                <div class="flex items-center justify-between">
+                                  <div>
+                                    <h6 class="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">Alerts & Notifications</h6>
+                                    <p class="text-[11px] text-gray-500 dark:text-gray-400">Keep owners informed about pending or overdue work.</p>
+                                  </div>
+                                  <button @click="addActionAlert(stage, action)" class="inline-flex items-center gap-1 px-2 py-1.5 text-[11px] font-medium bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-300 rounded-md hover:bg-brand-100 dark:hover:bg-brand-900/30">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                                    Add Alert
+                                  </button>
+                                </div>
+                                <div v-if="!action.alerts.length" class="mt-3 text-[11px] text-gray-500 dark:text-gray-400">No alerts configured.</div>
+                                <div v-else class="mt-3 space-y-3">
+                                  <div v-for="(alert, alertIndex) in action.alerts" :key="`${action.key}-alert-${alertIndex}`" class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white dark:bg-gray-900/60">
+                                    <div class="flex items-center justify-between">
+                                      <span class="text-xs font-medium text-gray-600 dark:text-gray-300">Alert {{ alertIndex + 1 }}</span>
+                                      <button @click="removeActionAlert(stage, action, alertIndex)" class="text-xs text-red-500 hover:text-red-600">Remove</button>
+                                    </div>
+                                    <div class="mt-2 grid grid-cols-1 md:grid-cols-3 gap-3">
+                                      <div>
+                                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Type</label>
+                                        <select v-model="alert.type" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm">
+                                          <option v-for="opt in PLAYBOOK_ALERT_TYPE_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                                        </select>
+                                      </div>
+                                      <div>
+                                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Offset</label>
+                                        <div class="flex items-center gap-2">
+                                          <input type="number" min="0" v-model.number="alert.offset.amount" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm" />
+                                          <select v-model="alert.offset.unit" class="px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm">
+                                            <option v-for="opt in PLAYBOOK_DELAY_UNIT_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                                          </select>
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Recipients</label>
+                                        <input :value="alert.recipients?.join(', ') || ''" @input="alert.recipients = $event.target.value.split(',').map(v => v.trim()).filter(Boolean)" placeholder="owner, team" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm" />
+                                      </div>
+                                    </div>
+                                    <div class="mt-2">
+                                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Message (optional)</label>
+                                      <textarea v-model="alert.message" rows="2" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm"></textarea>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div class="mt-4 border border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50/50 dark:bg-white/5">
+                                <div class="flex items-center justify-between">
+                                  <div>
+                                    <h6 class="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">Documents & Resources</h6>
+                                    <p class="text-[11px] text-gray-500 dark:text-gray-400">Attach playbooks, templates, or forms for quick access.</p>
+                                  </div>
+                                  <button @click="addActionResource(stage, action)" class="inline-flex items-center gap-1 px-2 py-1.5 text-[11px] font-medium bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-300 rounded-md hover:bg-brand-100 dark:hover:bg-brand-900/30">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                                    Add Resource
+                                  </button>
+                                </div>
+                                <div v-if="!action.resources.length" class="mt-3 text-[11px] text-gray-500 dark:text-gray-400">No resources linked.</div>
+                                <div v-else class="mt-3 space-y-3">
+                                  <div v-for="(res, resIndex) in action.resources" :key="`${action.key}-resource-${resIndex}`" class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white dark:bg-gray-900/60">
+                                    <div class="flex items-center justify-between">
+                                      <span class="text-xs font-medium text-gray-600 dark:text-gray-300">Resource {{ resIndex + 1 }}</span>
+                                      <button @click="removeActionResource(stage, action, resIndex)" class="text-xs text-red-500 hover:text-red-600">Remove</button>
+                                    </div>
+                                    <div class="mt-2 grid grid-cols-1 md:grid-cols-3 gap-3">
+                                      <div>
+                                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Name</label>
+                                        <input v-model="res.name" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm" placeholder="e.g., Quote template" />
+                                      </div>
+                                      <div>
+                                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Type</label>
+                                        <select v-model="res.type" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm">
+                                          <option v-for="opt in PLAYBOOK_RESOURCE_TYPES" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                                        </select>
+                                      </div>
+                                      <div>
+                                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">URL (optional)</label>
+                                        <input v-model="res.url" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm" placeholder="https://" />
+                                      </div>
+                                    </div>
+                                    <div class="mt-2">
+                                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Description</label>
+                                      <textarea v-model="res.description" rows="2" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm"></textarea>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div class="mt-3">
+                                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Dependencies</label>
+                                <select multiple v-model="action.dependencies" @change="cleanupPlaybookDependencies(stage)" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm h-24">
+                                  <option v-for="otherAction in stage.playbook.actions" :key="otherAction.key" :value="otherAction.key" :disabled="otherAction.key === action.key">
+                                    {{ otherAction.title }}
+                                  </option>
+                                </select>
+                                <p class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">Select other actions that must be completed first.</p>
+                              </div>
+
+                              <div class="mt-3">
+                                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Instructions / Notes</label>
+                                <textarea v-model="action.description" rows="2" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm" placeholder="Provide context or templates for this action"></textarea>
+                              </div>
+                            </div>
+                          </div>
+                  </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="flex-1 flex items-center justify-center text-sm text-gray-500 dark:text-gray-400">
+                <div class="text-center space-y-3">
+                  <p>No pipeline selected.</p>
+                  <button @click="addPipeline" class="px-4 py-2 text-sm font-medium bg-brand-600 hover:bg-brand-700 text-white rounded-lg transition-colors">Create Pipeline</button>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+
         <div class="p-4" v-else>
           <!-- Quick Create Mode Toggle - Advanced mode hidden for now -->
           <!-- <div class="mb-3 flex items-center justify-between">
@@ -1191,12 +1698,35 @@ const fieldTypes = [
 const selectedModule = computed(() => modules.value.find(m => m._id === selectedModuleId.value));
 const dragStartIdx = ref(null);
 const dragOverIdx = ref(null);
-const topTabs = [
+const baseTopTabs = [
   { id: 'details', name: 'Module details' },
   { id: 'fields', name: 'Field Configurations' },
   { id: 'relationships', name: 'Relationships' },
   { id: 'quick', name: 'Quick Create' }
 ];
+const TOP_TAB_IDS_BASE = ['details', 'fields', 'relationships', 'quick'];
+function getAllowedTopTabs(moduleKey) {
+  if (moduleKey === 'deals') {
+    return [...TOP_TAB_IDS_BASE, 'pipeline'];
+  }
+  return [...TOP_TAB_IDS_BASE];
+}
+const topTabs = computed(() => {
+  const moduleKey = selectedModule.value?.key;
+  const tabs = [...baseTopTabs];
+  if (moduleKey === 'deals') {
+    tabs.push({ id: 'pipeline', name: 'Pipeline Settings' });
+  }
+  return tabs;
+});
+const tabTitleMap = {
+  details: 'Module Details',
+  fields: 'Field Configurations',
+  relationships: 'Relationships',
+  quick: 'Quick Create',
+  pipeline: 'Pipeline Settings'
+};
+const currentTopTabLabel = computed(() => tabTitleMap[activeTopTab.value] || 'Module Details');
 // Initialize activeTopTab from URL or localStorage, default to 'fields'
 const getInitialTab = () => {
   // First check URL query
@@ -1228,6 +1758,774 @@ const colSpanClasses = [
   'col-span-1','col-span-2','col-span-3','col-span-4','col-span-5','col-span-6',
   'col-span-7','col-span-8','col-span-9','col-span-10','col-span-11','col-span-12'
 ];
+
+const pipelineSettings = ref([]);
+const selectedPipelineKey = ref('');
+const pipelineStageStatusOptions = [
+  { value: 'open', label: 'Open' },
+  { value: 'won', label: 'Won (Closed)' },
+  { value: 'lost', label: 'Lost (Closed)' },
+  { value: 'stalled', label: 'Stalled' }
+];
+const DEFAULT_PIPELINE_COLOR = '#2563EB';
+const DEFAULT_STAGE_DEFINITIONS = [
+  { name: 'Qualification', probability: 25, status: 'open' },
+  { name: 'Proposal', probability: 50, status: 'open' },
+  { name: 'Negotiation', probability: 70, status: 'open' },
+  { name: 'Contract Sent', probability: 85, status: 'open' },
+  { name: 'Closed Won', probability: 100, status: 'won' },
+  { name: 'Closed Lost', probability: 0, status: 'lost' }
+];
+
+const PLAYBOOK_ACTION_TYPES = [
+  { value: 'task', label: 'Task' },
+  { value: 'call', label: 'Call' },
+  { value: 'meeting', label: 'Meeting' },
+  { value: 'email', label: 'Email' },
+  { value: 'event', label: 'Event' },
+  { value: 'document', label: 'Document Upload' },
+  { value: 'approval', label: 'Approval' },
+  { value: 'alert', label: 'Alert / Reminder' },
+  { value: 'other', label: 'Other' }
+];
+
+const PLAYBOOK_MODE_OPTIONS = [
+  { value: 'sequential', label: 'Sequential (guided steps)' },
+  { value: 'non_sequential', label: 'Flexible (complete in any order)' }
+];
+
+const PLAYBOOK_EXIT_OPTIONS = [
+  { value: 'manual', label: 'Manual: team decides when to move' },
+  { value: 'all_actions_completed', label: 'Automatic when all actions complete' },
+  { value: 'any_action_completed', label: 'Automatic when any action completes' },
+  { value: 'custom', label: 'Custom conditions' }
+];
+
+const PLAYBOOK_TRIGGER_OPTIONS = [
+  { value: 'stage_entry', label: 'On stage entry' },
+  { value: 'after_action', label: 'After another action completes' },
+  { value: 'time_delay', label: 'After a time delay' },
+  { value: 'custom', label: 'Custom conditions' }
+];
+
+const PLAYBOOK_ALERT_TYPE_OPTIONS = [
+  { value: 'in_app', label: 'In-app' },
+  { value: 'email', label: 'Email' },
+  { value: 'sms', label: 'SMS' }
+];
+
+const PLAYBOOK_DELAY_UNIT_OPTIONS = [
+  { value: 'minutes', label: 'Minutes' },
+  { value: 'hours', label: 'Hours' },
+  { value: 'days', label: 'Days' }
+];
+
+const PLAYBOOK_RESOURCE_TYPES = [
+  { value: 'document', label: 'Document' },
+  { value: 'link', label: 'Link' },
+  { value: 'form', label: 'Form' },
+  { value: 'template', label: 'Template' },
+  { value: 'other', label: 'Other' }
+];
+
+const PLAYBOOK_ASSIGNMENT_OPTIONS = [
+  { value: 'deal_owner', label: 'Deal Owner' },
+  { value: 'stage_owner', label: 'Stage Owner' },
+  { value: 'role', label: 'Role' },
+  { value: 'team', label: 'Team' },
+  { value: 'specific_user', label: 'Specific User' }
+];
+
+function slugify(value = '') {
+  return String(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    || `item-${Date.now()}`;
+}
+
+function normalizePlaybookAssignment(assignment = {}) {
+  const type = PLAYBOOK_ASSIGNMENT_OPTIONS.some(opt => opt.value === assignment.type)
+    ? assignment.type
+    : 'deal_owner';
+  return {
+    type,
+    targetId: assignment.targetId || null,
+    targetType: assignment.targetType || '',
+    targetName: assignment.targetName || ''
+  };
+}
+
+function normalizeActionTrigger(trigger = {}) {
+  const type = PLAYBOOK_TRIGGER_OPTIONS.some(opt => opt.value === trigger.type)
+    ? trigger.type
+    : 'stage_entry';
+  let delay = null;
+  if (trigger.delay && typeof trigger.delay === 'object') {
+    const amount = Math.max(0, Number(trigger.delay.amount) || 0);
+    const unit = PLAYBOOK_DELAY_UNIT_OPTIONS.some(opt => opt.value === trigger.delay.unit)
+      ? trigger.delay.unit
+      : 'days';
+    delay = { amount, unit };
+  }
+  const conditions = Array.isArray(trigger.conditions)
+    ? trigger.conditions.map(condition => ({
+        field: condition.field || '',
+        operator: condition.operator || 'equals',
+        value: condition.value
+      }))
+    : [];
+  return {
+    type,
+    sourceActionKey: trigger.sourceActionKey ? slugify(trigger.sourceActionKey) : '',
+    delay,
+    conditions,
+    description: trigger.description || ''
+  };
+}
+
+function normalizeActionAlerts(alerts = []) {
+  if (!Array.isArray(alerts)) return [];
+  return alerts.map(alert => {
+    const type = PLAYBOOK_ALERT_TYPE_OPTIONS.some(opt => opt.value === alert.type)
+      ? alert.type
+      : 'in_app';
+    let offset = null;
+    if (alert.offset && typeof alert.offset === 'object') {
+      const amount = Math.max(0, Number(alert.offset.amount) || 0);
+      const unit = PLAYBOOK_DELAY_UNIT_OPTIONS.some(opt => opt.value === alert.offset.unit)
+        ? alert.offset.unit
+        : 'hours';
+      offset = { amount, unit };
+    }
+    const recipients = Array.isArray(alert.recipients)
+      ? alert.recipients.map(r => String(r || '').trim()).filter(Boolean)
+      : [];
+    return {
+      type,
+      offset,
+      recipients,
+      message: alert.message || ''
+    };
+  });
+}
+
+function normalizeActionResources(resources = []) {
+  if (!Array.isArray(resources)) return [];
+  return resources.map(resource => ({
+    name: resource?.name || '',
+    type: PLAYBOOK_RESOURCE_TYPES.some(opt => opt.value === resource?.type) ? resource.type : 'document',
+    url: resource?.url || '',
+    description: resource?.description || ''
+  }));
+}
+
+function createStagePlaybook(stageKey, stageName, status = 'open', source = null) {
+  const baseExitType = (status === 'won' || status === 'lost') ? 'manual' : 'all_actions_completed';
+  const exitCriteria = source?.exitCriteria || {};
+  const normalizedExitType = PLAYBOOK_EXIT_OPTIONS.some(opt => opt.value === exitCriteria.type)
+    ? exitCriteria.type
+    : baseExitType;
+
+  const actionsSource = Array.isArray(source?.actions) ? source.actions : [];
+  const actionKeys = new Set();
+  const actions = actionsSource.map((action, index) => {
+    const title = (action.title || `Action ${index + 1}`).trim();
+    let key = action.key ? slugify(action.key) : slugify(`${stageKey}-${title}-${index}`);
+    while (actionKeys.has(key)) {
+      key = `${key}-${index}`;
+    }
+    actionKeys.add(key);
+    return {
+      key,
+      title,
+      description: action.description || '',
+      actionType: PLAYBOOK_ACTION_TYPES.some(opt => opt.value === action.actionType) ? action.actionType : 'task',
+      dueInDays: Math.max(0, Number(action.dueInDays) || 0),
+      assignment: normalizePlaybookAssignment(action.assignment),
+      required: action.required !== false,
+      dependencies: Array.isArray(action.dependencies) ? action.dependencies.filter(Boolean) : [],
+      autoCreate: action.autoCreate !== false,
+      trigger: normalizeActionTrigger(action.trigger),
+      alerts: normalizeActionAlerts(action.alerts),
+      resources: normalizeActionResources(action.resources),
+      metadata: typeof action.metadata === 'object' && action.metadata !== null ? { ...action.metadata } : {}
+    };
+  });
+
+  // Remove dependencies that no longer exist after normalization
+  const validKeys = new Set(actions.map(action => action.key));
+  actions.forEach(action => {
+    action.dependencies = action.dependencies.filter(dep => validKeys.has(dep) && dep !== action.key);
+  });
+
+  return {
+    enabled: source?.enabled === true,
+    mode: PLAYBOOK_MODE_OPTIONS.some(opt => opt.value === source?.mode) ? source.mode : 'sequential',
+    autoAdvance: source?.autoAdvance === true,
+    notes: source?.notes || '',
+    actions,
+    exitCriteria: {
+      type: normalizedExitType,
+      customDescription: exitCriteria.customDescription || '',
+      nextStageKey: exitCriteria.nextStageKey ? slugify(exitCriteria.nextStageKey) : '',
+      conditions: Array.isArray(exitCriteria.conditions)
+        ? exitCriteria.conditions.map(condition => ({
+            field: condition.field || '',
+            operator: condition.operator || 'equals',
+            value: condition.value
+          }))
+        : []
+    }
+  };
+}
+
+function buildStageFromDefinition(def, pipelineKey, order) {
+  const name = (def.name || `Stage ${order + 1}`).trim();
+  const status = ['open', 'won', 'lost', 'stalled'].includes(def.status) ? def.status : 'open';
+  let probability = typeof def.probability === 'number' ? def.probability : 0;
+  if (status === 'won') probability = 100;
+  if (status === 'lost') probability = 0;
+  probability = Math.min(100, Math.max(0, Number(probability) || 0));
+  const key = slugify(`${pipelineKey}-${name}-${order}`) || `${pipelineKey}-stage-${order + 1}`;
+  return {
+    key,
+    name,
+    description: def.description || '',
+    probability,
+    status,
+    order,
+    isClosedWon: status === 'won',
+    isClosedLost: status === 'lost',
+    playbook: createStagePlaybook(key, name, status, def.playbook || null)
+  };
+}
+
+function createDefaultPipeline(name = 'Default Pipeline', { isDefault = false } = {}) {
+  const pipelineKey = slugify(name) || `pipeline-${Date.now()}`;
+  const stages = DEFAULT_STAGE_DEFINITIONS.map((def, index) => buildStageFromDefinition(def, pipelineKey, index));
+  return {
+    key: pipelineKey,
+    name,
+    description: '',
+    color: DEFAULT_PIPELINE_COLOR,
+    isDefault,
+    order: 0,
+    stages
+  };
+}
+
+function getDefaultPipelineSettingsLocal() {
+  return [createDefaultPipeline('Default Pipeline', { isDefault: true })];
+}
+
+function normalizePipelineSettings(settings = []) {
+  const source = Array.isArray(settings) && settings.length ? settings : getDefaultPipelineSettingsLocal();
+  const normalized = source.map((pipeline, pipelineIndex) => {
+    const name = (pipeline.name || `Pipeline ${pipelineIndex + 1}`).trim();
+    let key = pipeline.key ? slugify(pipeline.key) : slugify(name);
+    if (!key) key = `pipeline-${pipelineIndex + 1}`;
+    const color = pipeline.color || DEFAULT_PIPELINE_COLOR;
+    const description = pipeline.description || '';
+    const stagesSource = Array.isArray(pipeline.stages) && pipeline.stages.length ? pipeline.stages : DEFAULT_STAGE_DEFINITIONS;
+    const stages = stagesSource.map((stage, stageIndex) => {
+      const stageName = (stage.name || DEFAULT_STAGE_DEFINITIONS[stageIndex]?.name || `Stage ${stageIndex + 1}`).trim();
+      let stageKeyRaw = stage.key ? slugify(stage.key) : slugify(`${key}-${stageName}`);
+      if (!stageKeyRaw) stageKeyRaw = `${key}-stage-${stageIndex + 1}`;
+      const status = ['open', 'won', 'lost', 'stalled'].includes(stage.status) ? stage.status : (DEFAULT_STAGE_DEFINITIONS[stageIndex]?.status || 'open');
+      let probability = typeof stage.probability === 'number' ? stage.probability : (DEFAULT_STAGE_DEFINITIONS[stageIndex]?.probability ?? 0);
+      if (status === 'won') probability = 100;
+      if (status === 'lost') probability = 0;
+      probability = Math.min(100, Math.max(0, Number(probability) || 0));
+      const stageKey = stageKeyRaw;
+      return {
+        key: stageKey,
+        name: stageName,
+        description: stage.description || '',
+        probability,
+        status,
+        order: stageIndex,
+        isClosedWon: status === 'won',
+        isClosedLost: status === 'lost',
+        playbook: createStagePlaybook(stageKey, stageName, status, stage.playbook || null)
+      };
+    });
+    return {
+      key,
+      name,
+      description,
+      color,
+      isDefault: pipeline.isDefault === true,
+      order: pipelineIndex,
+      stages
+    };
+  });
+
+  if (!normalized.length) {
+    return normalizePipelineSettings(getDefaultPipelineSettingsLocal());
+  }
+
+  const seenKeys = new Set();
+  normalized.forEach((pipeline, index) => {
+    let baseKey = pipeline.key;
+    while (seenKeys.has(pipeline.key)) {
+      pipeline.key = `${baseKey}-${index}`;
+    }
+    seenKeys.add(pipeline.key);
+    pipeline.order = index;
+  });
+
+  let defaultFound = false;
+  normalized.forEach((pipeline, index) => {
+    if (pipeline.isDefault && !defaultFound) {
+      defaultFound = true;
+    } else if (pipeline.isDefault && defaultFound) {
+      pipeline.isDefault = false;
+    }
+    pipeline.order = index;
+  });
+  if (!defaultFound) {
+    normalized[0].isDefault = true;
+  }
+
+  normalized.forEach(pipeline => {
+    const stageKeys = new Set();
+    pipeline.stages = pipeline.stages.map((stage, stageIndex) => {
+      let baseKey = stage.key;
+      while (stageKeys.has(baseKey)) {
+        baseKey = `${stage.key}-${stageIndex}`;
+      }
+      stageKeys.add(baseKey);
+      const status = ['open', 'won', 'lost', 'stalled'].includes(stage.status) ? stage.status : 'open';
+      let probability = Math.min(100, Math.max(0, Number(stage.probability) || 0));
+      if (status === 'won') probability = 100;
+      if (status === 'lost') probability = 0;
+      return {
+        key: baseKey,
+        name: (stage.name || `Stage ${stageIndex + 1}`).trim(),
+        description: stage.description || '',
+        probability,
+        status,
+        order: stageIndex,
+        isClosedWon: status === 'won',
+        isClosedLost: status === 'lost'
+      };
+    });
+  });
+
+  return normalized;
+}
+
+const pipelineTabEnabled = computed(() => selectedModule.value?.key === 'deals');
+const currentPipeline = computed(() => {
+  if (!pipelineTabEnabled.value) return null;
+  return pipelineSettings.value.find(p => p.key === selectedPipelineKey.value) || pipelineSettings.value[0] || null;
+});
+
+function ensurePipelineSelection() {
+  if (!pipelineTabEnabled.value || pipelineSettings.value.length === 0) {
+    selectedPipelineKey.value = '';
+    return;
+  }
+  if (!pipelineSettings.value.some(p => p.key === selectedPipelineKey.value)) {
+    selectedPipelineKey.value = pipelineSettings.value[0].key;
+  }
+}
+
+function hydratePipelineSettingsFromModule(mod) {
+  if (!mod || mod.key !== 'deals') {
+    pipelineSettings.value = [];
+    selectedPipelineKey.value = '';
+    return;
+  }
+
+  const raw = Array.isArray(mod.pipelineSettings)
+    ? JSON.parse(JSON.stringify(mod.pipelineSettings))
+    : [];
+
+  const normalized = normalizePipelineSettings(raw).map(pipeline => {
+    const stages = Array.isArray(pipeline.stages) ? pipeline.stages : [];
+    const hydratedStages = stages.map((stage, index) => {
+      const stageClone = { ...stage, order: index };
+      ensureStageStructure(stageClone);
+      return stageClone;
+    });
+
+    const finalStages = hydratedStages.length
+      ? hydratedStages
+      : DEFAULT_STAGE_DEFINITIONS.map((def, index) => {
+          const stageFromDefault = buildStageFromDefinition(def, pipeline.key, index);
+          ensureStageStructure(stageFromDefault);
+          return stageFromDefault;
+        });
+
+    return {
+      ...pipeline,
+      stages: finalStages
+    };
+  });
+
+  pipelineSettings.value = normalized;
+  ensurePipelineSelection();
+}
+
+function refreshPipelineOrders() {
+  pipelineSettings.value.forEach((pipeline, index) => {
+    pipeline.order = index;
+    pipeline.stages.forEach((stage, stageIndex) => {
+      stage.order = stageIndex;
+    });
+  });
+}
+
+function addPipeline() {
+  const count = pipelineSettings.value.length;
+  const name = count === 0 ? 'Default Pipeline' : `Pipeline ${count + 1}`;
+  const isDefault = count === 0 && !pipelineSettings.value.some(p => p.isDefault);
+  const pipeline = createDefaultPipeline(name, { isDefault });
+  pipeline.order = count;
+  pipelineSettings.value.push(pipeline);
+  selectedPipelineKey.value = pipeline.key;
+  ensurePipelineSelection();
+}
+
+function removePipeline(pipelineKey) {
+  if (pipelineSettings.value.length <= 1) {
+    alert('At least one pipeline is required.');
+    return;
+  }
+  const index = pipelineSettings.value.findIndex(p => p.key === pipelineKey);
+  if (index === -1) return;
+  const [removed] = pipelineSettings.value.splice(index, 1);
+  if (removed?.isDefault && pipelineSettings.value.length) {
+    pipelineSettings.value[0].isDefault = true;
+  }
+  refreshPipelineOrders();
+  ensurePipelineSelection();
+}
+
+function movePipeline(pipelineKey, direction) {
+  const index = pipelineSettings.value.findIndex(p => p.key === pipelineKey);
+  if (index === -1) return;
+  const newIndex = index + direction;
+  if (newIndex < 0 || newIndex >= pipelineSettings.value.length) return;
+  const [pipeline] = pipelineSettings.value.splice(index, 1);
+  pipelineSettings.value.splice(newIndex, 0, pipeline);
+  refreshPipelineOrders();
+}
+
+function setDefaultPipeline(pipelineKey) {
+  pipelineSettings.value.forEach(p => {
+    p.isDefault = (p.key === pipelineKey);
+  });
+}
+
+function addStageToPipeline(pipeline) {
+  if (!pipeline) return;
+  const stageIndex = pipeline.stages.length;
+  const baseDef = { name: `Stage ${stageIndex + 1}`, probability: 0, status: 'open' };
+  const newStage = buildStageFromDefinition(baseDef, pipeline.key, stageIndex);
+  ensureStageStructure(newStage);
+  if (!newStage.playbook.actions.length) {
+    newStage.playbook.actions.push({
+      key: slugify(`${newStage.key}-action-1`),
+      title: 'New activity',
+      description: '',
+      actionType: 'task',
+      dueInDays: 0,
+      assignment: normalizePlaybookAssignment({ type: 'deal_owner' }),
+      required: true,
+      dependencies: [],
+      autoCreate: true,
+      trigger: normalizeActionTrigger({ type: 'stage_entry' }),
+      alerts: [],
+      resources: [],
+      metadata: {}
+    });
+  }
+  pipeline.stages.push(newStage);
+}
+
+function removeStageFromPipeline(pipeline, stageIndex) {
+  if (!pipeline) return;
+  if (pipeline.stages.length <= 1) {
+    alert('A pipeline must contain at least one stage.');
+    return;
+  }
+  pipeline.stages.splice(stageIndex, 1);
+  pipeline.stages.forEach((stage, idx) => (stage.order = idx));
+}
+
+function moveStage(pipeline, stageIndex, direction) {
+  if (!pipeline) return;
+  const newIndex = stageIndex + direction;
+  if (newIndex < 0 || newIndex >= pipeline.stages.length) return;
+  const [stage] = pipeline.stages.splice(stageIndex, 1);
+  pipeline.stages.splice(newIndex, 0, stage);
+  pipeline.stages.forEach((s, idx) => (s.order = idx));
+}
+
+function ensureStagePlaybook(stage) {
+  if (!stage) return;
+  if (!stage.playbook || typeof stage.playbook !== 'object') {
+    stage.playbook = createStagePlaybook(stage.key, stage.name, stage.status);
+  }
+  if (!Array.isArray(stage.playbook.actions)) {
+    stage.playbook.actions = [];
+  }
+  if (!stage.playbook.exitCriteria) {
+    stage.playbook.exitCriteria = {
+      type: stage.status === 'won' || stage.status === 'lost' ? 'manual' : 'all_actions_completed',
+      customDescription: '',
+      nextStageKey: '',
+      conditions: []
+    };
+  }
+  stage.playbook.actions = stage.playbook.actions.map((action, index) => {
+    const key = action?.key || slugify(`${stage.key}-action-${index}`);
+    const title = action?.title || `Action ${index + 1}`;
+    const actionType = PLAYBOOK_ACTION_TYPES.some(opt => opt.value === action?.actionType) ? action.actionType : 'task';
+    const trigger = normalizeActionTrigger(action?.trigger || {});
+    if (trigger.type === 'time_delay' && !trigger.delay) {
+      trigger.delay = { amount: 0, unit: 'hours' };
+    }
+    const alerts = normalizeActionAlerts(action?.alerts || []).map(alert => {
+      if (!alert.offset) {
+        alert.offset = { amount: 0, unit: 'hours' };
+      }
+      return alert;
+    });
+    const resources = normalizeActionResources(action?.resources || []);
+    return {
+      key,
+      title,
+      description: action?.description || '',
+      actionType,
+      dueInDays: Math.max(0, Number(action?.dueInDays) || 0),
+      assignment: normalizePlaybookAssignment(action?.assignment || {}),
+      required: action?.required !== false,
+      dependencies: Array.isArray(action?.dependencies) ? action.dependencies.filter(Boolean) : [],
+      autoCreate: action?.autoCreate !== false,
+      trigger,
+      alerts,
+      resources,
+      metadata: typeof action?.metadata === 'object' && action.metadata !== null ? { ...action.metadata } : {}
+    };
+  });
+}
+
+function ensureStageStructure(stage) {
+  if (!stage || typeof stage !== 'object') {
+    return false;
+  }
+  ensureStagePlaybook(stage);
+  return true;
+}
+
+function handlePlaybookToggle(stage) {
+  ensureStagePlaybook(stage);
+  if (!stage.playbook.enabled) {
+    stage.playbook.autoAdvance = false;
+    stage.playbook.exitCriteria.nextStageKey = '';
+  }
+}
+
+function onPlaybookExitCriteriaChange(stage) {
+  ensureStagePlaybook(stage);
+  if (stage.playbook.exitCriteria.type === 'manual') {
+    stage.playbook.autoAdvance = false;
+    stage.playbook.exitCriteria.nextStageKey = '';
+  }
+}
+
+function onPlaybookAutoAdvanceChange(stage) {
+  ensureStagePlaybook(stage);
+  if (!stage.playbook.autoAdvance) {
+    stage.playbook.exitCriteria.nextStageKey = '';
+  } else if (stage.playbook.exitCriteria.type === 'manual') {
+    stage.playbook.exitCriteria.type = 'all_actions_completed';
+  }
+}
+
+function getNextStageOptions(pipeline, currentStage) {
+  if (!pipeline || !currentStage) return [];
+  return pipeline.stages
+    .filter(stage => stage.key !== currentStage.key)
+    .map(stage => ({ value: stage.key, label: stage.name }));
+}
+
+function addPlaybookAction(stage) {
+  ensureStagePlaybook(stage);
+  const index = stage.playbook.actions.length;
+  const title = `Action ${index + 1}`;
+  let key = slugify(`${stage.key}-${title}-${Date.now()}`);
+  const existingKeys = new Set(stage.playbook.actions.map(action => action.key));
+  while (existingKeys.has(key)) {
+    key = `${key}-${Math.floor(Math.random() * 1000)}`;
+  }
+  stage.playbook.actions.push({
+    key,
+    title,
+    description: '',
+    actionType: 'task',
+    dueInDays: 0,
+    assignment: {
+      type: 'deal_owner',
+      targetId: null,
+      targetType: '',
+      targetName: ''
+    },
+    required: true,
+    dependencies: [],
+    autoCreate: true,
+    trigger: normalizeActionTrigger({ type: 'stage_entry' }),
+    alerts: [],
+    resources: [],
+    metadata: {}
+  });
+}
+
+function removePlaybookAction(stage, actionIndex) {
+  ensureStagePlaybook(stage);
+  if (actionIndex < 0 || actionIndex >= stage.playbook.actions.length) return;
+  const [removed] = stage.playbook.actions.splice(actionIndex, 1);
+  if (removed?.key) {
+    stage.playbook.actions.forEach(action => {
+      action.dependencies = action.dependencies.filter(dep => dep !== removed.key);
+    });
+  }
+}
+
+function movePlaybookAction(stage, actionIndex, direction) {
+  ensureStagePlaybook(stage);
+  const newIndex = actionIndex + direction;
+  if (newIndex < 0 || newIndex >= stage.playbook.actions.length) return;
+  const [action] = stage.playbook.actions.splice(actionIndex, 1);
+  stage.playbook.actions.splice(newIndex, 0, action);
+}
+
+function refreshPlaybookActionKey(stage, action) {
+  ensureStagePlaybook(stage);
+  if (!action || !action.title) return;
+  const currentKey = action.key;
+  const slugBase = slugify(`${stage.key}-${action.title}`);
+  if (!slugBase) return;
+  const otherKeys = new Set(stage.playbook.actions.filter(a => a !== action).map(a => a.key));
+  let candidate = slugBase;
+  let counter = 1;
+  while (otherKeys.has(candidate)) {
+    candidate = `${slugBase}-${counter++}`;
+  }
+  if (candidate !== currentKey) {
+    stage.playbook.actions.forEach(a => {
+      a.dependencies = a.dependencies.map(dep => (dep === currentKey ? candidate : dep));
+    });
+    action.key = candidate;
+  }
+}
+
+function cleanupPlaybookDependencies(stage) {
+  ensureStagePlaybook(stage);
+  const validKeys = new Set(stage.playbook.actions.map(action => action.key));
+  stage.playbook.actions.forEach(action => {
+    action.dependencies = action.dependencies.filter(dep => dep !== action.key && validKeys.has(dep));
+  });
+}
+
+function getPlaybookActionTypeLabel(actionType) {
+  const option = PLAYBOOK_ACTION_TYPES.find(opt => opt.value === actionType);
+  return option ? option.label : 'Task';
+}
+
+function getActionOptions(stage, currentAction) {
+  if (!stage || !Array.isArray(stage.playbook?.actions)) return [];
+  return stage.playbook.actions
+    .filter(action => action.key !== currentAction.key)
+    .map(action => ({ value: action.key, label: action.title }));
+}
+
+function handleTriggerTypeChange(action) {
+  if (!action) return;
+  if (!action.trigger || typeof action.trigger !== 'object') {
+    action.trigger = normalizeActionTrigger({});
+  }
+  const normalized = normalizeActionTrigger(action.trigger);
+  Object.assign(action.trigger, normalized);
+  if (action.trigger.type === 'after_action') {
+    action.trigger.sourceActionKey = action.trigger.sourceActionKey || '';
+  } else {
+    action.trigger.sourceActionKey = '';
+  }
+  if (action.trigger.type === 'time_delay') {
+    if (!action.trigger.delay) {
+      action.trigger.delay = { amount: 0, unit: 'hours' };
+    }
+  } else {
+    action.trigger.delay = null;
+  }
+  if (action.trigger.type !== 'custom') {
+    action.trigger.conditions = [];
+  }
+}
+
+function addActionAlert(stage, action) {
+  ensureStagePlaybook(stage);
+  if (!Array.isArray(action.alerts)) {
+    action.alerts = [];
+  }
+  action.alerts.push({
+    type: 'in_app',
+    offset: { amount: 0, unit: 'hours' },
+    recipients: [],
+    message: ''
+  });
+}
+
+function removeActionAlert(stage, action, alertIndex) {
+  if (!Array.isArray(action.alerts)) return;
+  action.alerts.splice(alertIndex, 1);
+}
+
+function addActionResource(stage, action) {
+  ensureStagePlaybook(stage);
+  if (!Array.isArray(action.resources)) {
+    action.resources = [];
+  }
+  action.resources.push({
+    name: '',
+    type: 'document',
+    url: '',
+    description: ''
+  });
+}
+
+function removeActionResource(stage, action, resourceIndex) {
+  if (!Array.isArray(action.resources)) return;
+  action.resources.splice(resourceIndex, 1);
+}
+
+function onStageStatusChange(stage) {
+  if (!stage) return;
+  if (stage.status === 'won') {
+    stage.probability = 100;
+    stage.isClosedWon = true;
+    stage.isClosedLost = false;
+  } else if (stage.status === 'lost') {
+    stage.probability = 0;
+    stage.isClosedLost = true;
+    stage.isClosedWon = false;
+  } else {
+    stage.isClosedWon = false;
+    stage.isClosedLost = false;
+  }
+}
+
+function clampStageProbability(stage) {
+  if (!stage) return;
+  stage.probability = Math.min(100, Math.max(0, Number(stage.probability) || 0));
+  if (stage.status === 'won') stage.probability = 100;
+  if (stage.status === 'lost') stage.probability = 0;
+}
 function spanClass(span) {
   const n = Math.min(12, Math.max(1, Number(span) || 12));
   return colSpanClasses[n - 1];
@@ -1509,6 +2807,7 @@ const fetchModules = async () => {
         moduleEnabled.value = initialMod.enabled !== false;
         relationships.value = JSON.parse(JSON.stringify(initialMod.relationships || []));
         quickLayout.value = JSON.parse(JSON.stringify(initialMod.quickCreateLayout || { version: 1, rows: [] }));
+        hydratePipelineSettingsFromModule(initialMod);
         // Initialize quick mode: always use simple (advanced mode hidden for now)
         quickMode.value = 'simple';
         router.replace({ query: { ...route.query, quickMode: quickMode.value } });
@@ -1557,6 +2856,7 @@ const fetchModules = async () => {
             moduleEnabled.value = storedMod.enabled !== false;
             relationships.value = JSON.parse(JSON.stringify(storedMod.relationships || []));
             quickLayout.value = JSON.parse(JSON.stringify(storedMod.quickCreateLayout || { version: 1, rows: [] }));
+            hydratePipelineSettingsFromModule(storedMod);
             // initialize quick mode: always use simple (advanced mode hidden for now)
             quickMode.value = 'simple';
             router.replace({ query: { ...route.query, quickMode: quickMode.value } });
@@ -1598,12 +2898,13 @@ const selectModule = (mod, preferFieldKey = null) => {
   fieldSearch.value = '';
   syncOptionsBuffer();
   // Restore tab from localStorage when selecting module (before updating URL)
+  const allowedTabs = getAllowedTopTabs(mod.key);
   const storedTab = localStorage.getItem(`litedesk-modfields-tab-${mod.key}`);
-  if (storedTab && ['details', 'fields', 'relationships', 'quick'].includes(storedTab)) {
+  if (storedTab && allowedTabs.includes(storedTab)) {
     console.log('Restoring tab from localStorage when selecting module:', storedTab, 'for module:', mod.key);
     activeTopTab.value = storedTab;
-  } else {
-    console.log('No stored tab found for module:', mod.key, 'using current:', activeTopTab.value);
+  } else if (!allowedTabs.includes(activeTopTab.value)) {
+    activeTopTab.value = allowedTabs[0] || 'fields';
   }
   const selKey = editFields.value[selectedFieldIdx.value]?.key || '';
   router.replace({ query: { ...route.query, module: mod.key, field: selKey, mode: activeTopTab.value, subtab: activeSubTab.value } });
@@ -1617,6 +2918,7 @@ const selectModule = (mod, preferFieldKey = null) => {
   // always use simple mode (advanced mode hidden for now)
   quickMode.value = 'simple';
   router.replace({ query: { ...route.query, quickMode: quickMode.value } });
+  hydratePipelineSettingsFromModule(mod);
   // Choose selection source based on mode: advanced -> layout, simple -> quickCreate
   const layoutKeys = extractLayoutKeys(quickLayout.value);
   let quickKeys = mod.quickCreate || [];
@@ -1740,6 +3042,9 @@ const saveModule = async () => {
       name: moduleNameEdit.value,
       enabled: moduleEnabled.value
     };
+    if (mod.key === 'deals') {
+      payload.pipelineSettings = normalizePipelineSettings(pipelineSettings.value);
+    }
     console.log('Saving module with relationships:', {
       relationshipsCount: relationships.value.length,
       relationships: relationships.value
@@ -2706,7 +4011,10 @@ function getSnapshot() {
     quickCreate: Array.from(quickCreateSelected.value),
     quickCreateLayout: quickLayout.value,
     name: moduleNameEdit.value,
-    enabled: moduleEnabled.value
+    enabled: moduleEnabled.value,
+    pipelineSettings: selectedModule.value?.key === 'deals'
+      ? normalizePipelineSettings(pipelineSettings.value)
+      : []
   };
   return JSON.stringify(payload);
 }
@@ -2774,6 +4082,14 @@ onMounted(fetchModules);
 watch(activeTopTab, (v, oldValue) => {
   const mod = selectedModule.value;
   if (!mod) return;
+  const allowedTabs = getAllowedTopTabs(mod.key);
+  if (!allowedTabs.includes(v)) {
+    const fallback = allowedTabs.includes(oldValue) ? oldValue : (allowedTabs[0] || 'fields');
+    if (fallback !== v) {
+      activeTopTab.value = fallback;
+    }
+    return;
+  }
   // Only update if value actually changed (avoid infinite loops during initialization)
   if (v !== oldValue && oldValue !== undefined) {
     console.log('Tab changed:', { from: oldValue, to: v, module: mod.key });

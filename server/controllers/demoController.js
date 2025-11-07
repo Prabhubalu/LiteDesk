@@ -7,6 +7,7 @@ const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const updatePeopleModuleFields = require('../scripts/updatePeopleModuleFields');
 const updateOrganizationsModuleFields = require('../scripts/updateOrganizationsModuleFields');
+const updateDealsModuleFields = require('../scripts/updateDealsModuleFields');
 
 // --- Submit Demo Request (Public) ---
 exports.submitDemoRequest = async (req, res) => {
@@ -112,6 +113,13 @@ exports.submitDemoRequest = async (req, res) => {
         } catch (moduleError) {
             console.warn('⚠️  Failed to initialize Organizations module:', moduleError.message);
             // Continue even if module initialization fails - can be run manually later
+        }
+
+        try {
+            await updateDealsModuleFields(organization._id);
+            console.log('✅ Deals module definition initialized with new standardized fields');
+        } catch (moduleError) {
+            console.warn('⚠️  Failed to initialize Deals module:', moduleError.message);
         }
         
         // Step 2: Create People for the requester
@@ -398,6 +406,13 @@ exports.convertToOrganization = async (req, res) => {
         );
         console.log('✅ Organization marked as tenant with database:', dbName);
         console.log('✅ Enabled modules:', allowedModules.join(', '));
+
+        try {
+            await updateDealsModuleFields(organization._id);
+            console.log('✅ Deals module definition refreshed after conversion');
+        } catch (moduleError) {
+            console.warn('⚠️  Failed to refresh Deals module during conversion:', moduleError.message);
+        }
         
         // Create owner user in the organization's database
         console.log('👤 Step 5: Creating owner user in organization database...');

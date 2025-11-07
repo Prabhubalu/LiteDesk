@@ -261,7 +261,7 @@ function defaultMetricsForContext() {
     }
     const base = [
       { id: 'total_deals_value', label: 'Total Deals Value', source: 'stats', field: 'totalDealsValue', agg: 'sum', icon: '$' },
-      { id: 'active_deals_count', label: 'Active Deals', source: 'stats', field: 'activeDealsCount', agg: 'count', icon: '#' },
+      { id: 'active_deals_count', label: 'Open Deals', source: 'stats', field: 'activeDealsCount', agg: 'count', icon: '#' },
       { id: 'last_contacted', label: 'Last Contacted', source: 'record', field: 'last_contacted_at', agg: 'value', icon: 'L' },
       { id: 'ltv', label: 'LTV', source: 'stats', field: 'ltv', agg: 'sum', icon: '$' }
     ];
@@ -270,7 +270,7 @@ function defaultMetricsForContext() {
   }
   if (type === 'organizations') {
     return [
-      { id: 'total_active_deals', label: 'Total Active Deals', source: 'stats', field: 'activeDealsCount', agg: 'count', icon: '#' },
+      { id: 'total_active_deals', label: 'Total Open Deals', source: 'stats', field: 'activeDealsCount', agg: 'count', icon: '#' },
       { id: 'open_invoices_value', label: 'Open Invoices', source: 'stats', field: 'openInvoicesValue', agg: 'sum', icon: '$' },
       { id: 'active_tickets', label: 'Active Tickets', source: 'stats', field: 'activeTickets', agg: 'count', icon: '#' },
       { id: 'account_manager', label: 'Account Manager', source: 'record', field: 'accountManagerName', agg: 'value', icon: 'AM' }

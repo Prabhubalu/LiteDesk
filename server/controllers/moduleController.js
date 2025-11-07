@@ -86,6 +86,33 @@ function getFieldDataType(key, fieldName, path) {
         'logisticsPartner': 'Lookup (Relationship)'
     };
     
+    const dealFieldMappings = {
+        'name': 'Text',
+        'amount': 'Currency',
+        'currency': 'Picklist',
+        'pipeline': 'Picklist',
+        'stage': 'Picklist',
+        'type': 'Picklist',
+        'ownerId': 'Lookup (Relationship)',
+        'accountId': 'Lookup (Relationship)',
+        'contactId': 'Lookup (Relationship)',
+        'lineItems': 'Rich Text',
+        'probability': 'Decimal',
+        'expectedCloseDate': 'Date',
+        'actualCloseDate': 'Date',
+        'source': 'Picklist',
+        'nextStep': 'Text-Area',
+        'status': 'Picklist',
+        'lostReason': 'Text-Area',
+        'tags': 'Multi-Picklist',
+        'priority': 'Picklist',
+        'description': 'Rich Text',
+        'createdBy': 'Lookup (Relationship)',
+        'modifiedBy': 'Lookup (Relationship)',
+        'createdAt': 'Date-Time',
+        'updatedAt': 'Date-Time'
+    };
+    
     // Check if this is a People module field with specific mapping
     if (key === 'people' && peopleFieldMappings[fieldName]) {
         return peopleFieldMappings[fieldName];
@@ -94,6 +121,10 @@ function getFieldDataType(key, fieldName, path) {
     // Check if this is an Organizations module field with specific mapping
     if (key === 'organizations' && organizationFieldMappings[fieldName]) {
         return organizationFieldMappings[fieldName];
+    }
+    
+    if (key === 'deals' && dealFieldMappings[fieldName]) {
+        return dealFieldMappings[fieldName];
     }
     
     // Fall back to inference based on schema type
@@ -166,6 +197,459 @@ function getBaseFieldsForKey(key) {
     }
 }
 
+const PLAYBOOK_ACTION_TYPES = new Set(['task', 'event', 'alert', 'document', 'call', 'meeting', 'email', 'approval', 'other']);
+const PLAYBOOK_TRIGGER_TYPES = new Set(['stage_entry', 'after_action', 'time_delay', 'custom']);
+const PLAYBOOK_ALERT_TYPES = new Set(['in_app', 'email', 'sms']);
+const PLAYBOOK_RESOURCE_TYPES = new Set(['document', 'link', 'form', 'template', 'other']);
+const PLAYBOOK_DELAY_UNITS = new Set(['minutes', 'hours', 'days']);
+
+const DEFAULT_STAGE_PLAYBOOKS = {
+    qualification: (stageKey) => ({
+        enabled: true,
+        mode: 'sequential',
+        autoAdvance: false,
+        notes: 'Ensure the opportunity is a good fit before investing more time.',
+        actions: [
+            {
+                key: `${stageKey}-research-account`,
+                title: 'Research account background',
+                description: 'Review company profile, industry insights and existing CRM notes.',
+                actionType: 'task',
+                dueInDays: 0,
+                assignment: { type: 'deal_owner', targetId: null, targetType: '', targetName: '' },
+                required: true,
+                dependencies: [],
+                autoCreate: true,
+                metadata: {}
+            },
+            {
+                key: `${stageKey}-discovery-call`,
+                title: 'Schedule discovery call',
+                description: 'Coordinate a call to validate goals, pain points, budget and timeline.',
+                actionType: 'event',
+                dueInDays: 2,
+                assignment: { type: 'deal_owner', targetId: null, targetType: '', targetName: '' },
+                required: true,
+                dependencies: [`${stageKey}-research-account`],
+                autoCreate: true,
+                metadata: {}
+            }
+        ],
+        exitCriteria: {
+            type: 'all_actions_completed',
+            customDescription: '',
+            nextStageKey: '',
+            conditions: []
+        }
+    }),
+    proposal: (stageKey) => ({
+        enabled: true,
+        mode: 'sequential',
+        autoAdvance: false,
+        notes: 'Tailor the proposal to the agreed requirements and highlight the value proposition.',
+        actions: [
+            {
+                key: `${stageKey}-draft-solution`,
+                title: 'Draft solution outline',
+                description: 'Align internally on scope, deliverables, pricing and implementation approach.',
+                actionType: 'task',
+                dueInDays: 1,
+                assignment: { type: 'team', targetId: null, targetType: '', targetName: 'Solutions' },
+                required: true,
+                dependencies: [],
+                autoCreate: true,
+                metadata: {}
+            },
+            {
+                key: `${stageKey}-create-proposal`,
+                title: 'Create proposal deck',
+                description: 'Prepare proposal with executive summary, solution details, pricing and ROI.',
+                actionType: 'document',
+                dueInDays: 3,
+                assignment: { type: 'deal_owner', targetId: null, targetType: '', targetName: '' },
+                required: true,
+                dependencies: [`${stageKey}-draft-solution`],
+                autoCreate: true,
+                metadata: {}
+            }
+        ],
+        exitCriteria: {
+            type: 'all_actions_completed',
+            customDescription: '',
+            nextStageKey: '',
+            conditions: []
+        }
+    }),
+    negotiation: (stageKey) => ({
+        enabled: true,
+        mode: 'sequential',
+        autoAdvance: false,
+        notes: 'Stay aligned with the prospect and stakeholders on final terms.',
+        actions: [
+            {
+                key: `${stageKey}-review-feedback`,
+                title: 'Review prospect feedback',
+                description: 'Document requested changes and loop in stakeholders as needed.',
+                actionType: 'task',
+                dueInDays: 1,
+                assignment: { type: 'deal_owner', targetId: null, targetType: '', targetName: '' },
+                required: true,
+                dependencies: [],
+                autoCreate: true,
+                metadata: {}
+            },
+            {
+                key: `${stageKey}-schedule-alignment`,
+                title: 'Schedule alignment call',
+                description: 'Set up meeting to finalize terms, pricing adjustments and contract language.',
+                actionType: 'event',
+                dueInDays: 2,
+                assignment: { type: 'deal_owner', targetId: null, targetType: '', targetName: '' },
+                required: true,
+                dependencies: [`${stageKey}-review-feedback`],
+                autoCreate: true,
+                metadata: {}
+            }
+        ],
+        exitCriteria: {
+            type: 'all_actions_completed',
+            customDescription: '',
+            nextStageKey: '',
+            conditions: []
+        }
+    }),
+    'contract sent': (stageKey) => ({
+        enabled: true,
+        mode: 'sequential',
+        autoAdvance: false,
+        notes: 'Ensure the buyer has everything required to sign quickly.',
+        actions: [
+            {
+                key: `${stageKey}-prep-signature`,
+                title: 'Prepare contract for signature',
+                description: 'Populate contract in e-sign platform and confirm legal terms and pricing.',
+                actionType: 'document',
+                dueInDays: 0,
+                assignment: { type: 'deal_owner', targetId: null, targetType: '', targetName: '' },
+                required: true,
+                dependencies: [],
+                autoCreate: true,
+                metadata: {}
+            },
+            {
+                key: `${stageKey}-confirm-timeline`,
+                title: 'Confirm signing timeline',
+                description: 'Touch base with the buyer to confirm target signing date and blockers.',
+                actionType: 'alert',
+                dueInDays: 1,
+                assignment: { type: 'deal_owner', targetId: null, targetType: '', targetName: '' },
+                required: false,
+                dependencies: [`${stageKey}-prep-signature`],
+                autoCreate: true,
+                metadata: {}
+            }
+        ],
+        exitCriteria: {
+            type: 'all_actions_completed',
+            customDescription: '',
+            nextStageKey: '',
+            conditions: []
+        }
+    }),
+    'closed won': (stageKey) => ({
+        enabled: true,
+        mode: 'sequential',
+        autoAdvance: false,
+        notes: 'Capture handoff details to ensure a smooth implementation.',
+        actions: [
+            {
+                key: `${stageKey}-handoff`,
+                title: 'Schedule handoff meeting',
+                description: 'Introduce customer success, review goals and timeline.',
+                actionType: 'event',
+                dueInDays: 1,
+                assignment: { type: 'team', targetId: null, targetType: '', targetName: 'Customer Success' },
+                required: true,
+                dependencies: [],
+                autoCreate: true,
+                metadata: {}
+            },
+            {
+                key: `${stageKey}-celebrate`,
+                title: 'Announce win internally',
+                description: 'Update internal channels with win announcement and key insights.',
+                actionType: 'alert',
+                dueInDays: 0,
+                assignment: { type: 'deal_owner', targetId: null, targetType: '', targetName: '' },
+                required: false,
+                dependencies: [`${stageKey}-handoff`],
+                autoCreate: true,
+                metadata: {}
+            }
+        ],
+        exitCriteria: {
+            type: 'manual',
+            customDescription: 'Implementation team confirms onboarding is complete.',
+            nextStageKey: '',
+            conditions: []
+        }
+    }),
+    'closed lost': (stageKey) => ({
+        enabled: true,
+        mode: 'sequential',
+        autoAdvance: false,
+        notes: 'Capture lost reason for future analysis and re-engagement.',
+        actions: [
+            {
+                key: `${stageKey}-log-reason`,
+                title: 'Log loss reason',
+                description: 'Document reason codes and supporting notes in CRM.',
+                actionType: 'task',
+                dueInDays: 0,
+                assignment: { type: 'deal_owner', targetId: null, targetType: '', targetName: '' },
+                required: true,
+                dependencies: [],
+                autoCreate: true,
+                metadata: {}
+            },
+            {
+                key: `${stageKey}-nurture-plan`,
+                title: 'Plan nurture follow-up',
+                description: 'Identify future check-in date or nurture sequence to stay in touch.',
+                actionType: 'task',
+                dueInDays: 7,
+                assignment: { type: 'deal_owner', targetId: null, targetType: '', targetName: '' },
+                required: false,
+                dependencies: [`${stageKey}-log-reason`],
+                autoCreate: true,
+                metadata: {}
+            }
+        ],
+        exitCriteria: {
+            type: 'manual',
+            customDescription: 'Sales manager reviews and acknowledges learnings.',
+            nextStageKey: '',
+            conditions: []
+        }
+    })
+};
+
+function slugify(value = '', fallback = '') {
+    const slug = String(value)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    return slug || fallback;
+}
+
+function buildStagePlaybook(stageKey, stageName, status = 'open', source = null) {
+    const templateBuilder = DEFAULT_STAGE_PLAYBOOKS[(stageName || '').toLowerCase()];
+    const resolvedSource = (source && typeof source === 'object')
+        ? source
+        : (templateBuilder ? templateBuilder(stageKey) : null);
+    const baseExitType = (status === 'won' || status === 'lost') ? 'manual' : 'all_actions_completed';
+    const exitCriteria = resolvedSource?.exitCriteria || {};
+    const exitType = ['manual', 'all_actions_completed', 'any_action_completed', 'custom'].includes(exitCriteria.type)
+        ? exitCriteria.type
+        : baseExitType;
+
+    const actionsSource = Array.isArray(resolvedSource?.actions) ? resolvedSource.actions : [];
+    const seenKeys = new Set();
+    const actions = actionsSource.map((action, index) => {
+        const title = action.title ? String(action.title).trim() : `Action ${index + 1}`;
+        let key = slugify(action.key || `${stageKey}-${title}-${index}`, `${stageKey}-action-${index + 1}`);
+        while (seenKeys.has(key)) {
+            key = `${key}-${index}`;
+        }
+        seenKeys.add(key);
+        return {
+            key,
+            title,
+            description: action.description || '',
+            actionType: PLAYBOOK_ACTION_TYPES.has(action.actionType) ? action.actionType : 'task',
+            dueInDays: Math.max(0, Number(action.dueInDays) || 0),
+            assignment: {
+                type: ['deal_owner', 'stage_owner', 'specific_user', 'role', 'team'].includes(action?.assignment?.type)
+                    ? action.assignment.type
+                    : 'deal_owner',
+                targetId: action?.assignment?.targetId || null,
+                targetType: action?.assignment?.targetType || '',
+                targetName: action?.assignment?.targetName || ''
+            },
+            required: action.required !== false,
+            dependencies: Array.isArray(action.dependencies) ? action.dependencies.filter(Boolean) : [],
+            autoCreate: action.autoCreate !== false,
+            trigger: normalizeActionTrigger(action.trigger),
+            alerts: normalizeActionAlerts(action.alerts),
+            resources: normalizeActionResources(action.resources),
+            metadata: (action.metadata && typeof action.metadata === 'object') ? action.metadata : {}
+        };
+    });
+
+    const validKeys = new Set(actions.map(action => action.key));
+    actions.forEach(action => {
+        action.dependencies = action.dependencies.filter(dep => dep !== action.key && validKeys.has(dep));
+    });
+
+    return {
+        enabled: resolvedSource?.enabled === true,
+        mode: ['sequential', 'non_sequential'].includes(resolvedSource?.mode) ? resolvedSource.mode : 'sequential',
+        autoAdvance: resolvedSource?.autoAdvance === true,
+        notes: resolvedSource?.notes || '',
+        actions,
+        exitCriteria: {
+            type: exitType,
+            customDescription: exitCriteria.customDescription || '',
+            nextStageKey: exitCriteria.nextStageKey ? slugify(exitCriteria.nextStageKey) : '',
+            conditions: Array.isArray(exitCriteria.conditions) ? exitCriteria.conditions.map(condition => ({
+                field: condition.field || '',
+                operator: condition.operator || 'equals',
+                value: condition.value
+            })) : []
+        }
+    };
+}
+
+function normalizeActionTrigger(trigger) {
+    const type = PLAYBOOK_TRIGGER_TYPES.has(trigger?.type) ? trigger.type : 'stage_entry';
+    const sourceActionKey = trigger?.sourceActionKey ? slugify(trigger.sourceActionKey) : '';
+    let delay = null;
+    if (trigger?.delay && typeof trigger.delay === 'object') {
+        const amount = Math.max(0, Number(trigger.delay.amount) || 0);
+        const unit = PLAYBOOK_DELAY_UNITS.has(trigger.delay.unit) ? trigger.delay.unit : 'days';
+        delay = { amount, unit };
+    }
+    const conditions = Array.isArray(trigger?.conditions)
+        ? trigger.conditions.map(condition => ({
+            field: condition.field || '',
+            operator: condition.operator || 'equals',
+            value: condition.value
+        }))
+        : [];
+    return {
+        type,
+        sourceActionKey,
+        delay,
+        conditions,
+        description: trigger?.description || ''
+    };
+}
+
+function normalizeActionAlerts(alerts) {
+    if (!Array.isArray(alerts)) return [];
+    return alerts.map(alert => {
+        const type = PLAYBOOK_ALERT_TYPES.has(alert?.type) ? alert.type : 'in_app';
+        let offset = null;
+        if (alert?.offset && typeof alert.offset === 'object') {
+            const amount = Math.max(0, Number(alert.offset.amount) || 0);
+            const unit = PLAYBOOK_DELAY_UNITS.has(alert.offset.unit) ? alert.offset.unit : 'hours';
+            offset = { amount, unit };
+        }
+        const recipients = Array.isArray(alert?.recipients)
+            ? alert.recipients.map(r => String(r || '').trim()).filter(Boolean)
+            : [];
+        return {
+            type,
+            offset,
+            recipients,
+            message: alert?.message || ''
+        };
+    });
+}
+
+function normalizeActionResources(resources) {
+    if (!Array.isArray(resources)) return [];
+    return resources.map(resource => ({
+        name: resource?.name || '',
+        type: PLAYBOOK_RESOURCE_TYPES.has(resource?.type) ? resource.type : 'document',
+        url: resource?.url || '',
+        description: resource?.description || ''
+    }));
+}
+
+function buildPipelineStage(name, { order = 0, probability = 0, status = 'open', playbook = null } = {}) {
+    const normalizedStatus = ['open', 'won', 'lost', 'stalled'].includes(status) ? status : 'open';
+    const normalizedProbability = typeof probability === 'number'
+        ? Math.min(100, Math.max(0, probability))
+        : (normalizedStatus === 'won' ? 100 : normalizedStatus === 'lost' ? 0 : 0);
+    const key = slugify(name || `stage-${order + 1}`, `stage-${order + 1}`);
+    return {
+        key,
+        name: name || `Stage ${order + 1}`,
+        description: '',
+        probability: normalizedStatus === 'won' ? 100 : normalizedStatus === 'lost' ? 0 : normalizedProbability,
+        status: normalizedStatus,
+        order,
+        isClosedWon: normalizedStatus === 'won',
+        isClosedLost: normalizedStatus === 'lost',
+        playbook: buildStagePlaybook(key, name || `Stage ${order + 1}`, normalizedStatus, playbook)
+    };
+}
+
+function getDefaultPipelineSettings() {
+    const now = new Date();
+    return [{
+        key: 'default_pipeline',
+        name: 'Default Pipeline',
+        description: 'Standard sales pipeline',
+        color: '#2563EB',
+        isDefault: true,
+        order: 0,
+        createdAt: now,
+        updatedAt: now,
+        stages: [
+            buildPipelineStage('Qualification', { order: 0, probability: 25, status: 'open' }),
+            buildPipelineStage('Proposal', { order: 1, probability: 50, status: 'open' }),
+            buildPipelineStage('Negotiation', { order: 2, probability: 70, status: 'open' }),
+            buildPipelineStage('Contract Sent', { order: 3, probability: 85, status: 'open' }),
+            buildPipelineStage('Closed Won', { order: 4, probability: 100, status: 'won' }),
+            buildPipelineStage('Closed Lost', { order: 5, probability: 0, status: 'lost' })
+        ]
+    }];
+}
+
+function normalizePipelineSettings(pipelines = []) {
+    const source = Array.isArray(pipelines) ? pipelines : [];
+    return source.map((pipeline, index) => {
+        const name = pipeline.name || `Pipeline ${index + 1}`;
+        const key = slugify(pipeline.key || name, `pipeline-${index + 1}`);
+        const stagesSource = Array.isArray(pipeline.stages) ? pipeline.stages : [];
+        const stages = stagesSource.map((stage, stageIndex) => {
+            const stageName = stage.name || `Stage ${stageIndex + 1}`;
+            const status = ['open', 'won', 'lost', 'stalled'].includes(stage.status) ? stage.status : 'open';
+            const keyCandidate = slugify(stage.key || `${key}-${stageName}`, `${key}-stage-${stageIndex + 1}`);
+            const probability = status === 'won'
+                ? 100
+                : status === 'lost'
+                    ? 0
+                    : Math.min(100, Math.max(0, Number(stage.probability) || 0));
+            return {
+                key: keyCandidate,
+                name: stageName,
+                description: stage.description || '',
+                probability,
+                status,
+                order: stageIndex,
+                isClosedWon: status === 'won',
+                isClosedLost: status === 'lost',
+                playbook: buildStagePlaybook(keyCandidate, stageName, status, stage.playbook)
+            };
+        });
+
+        return {
+            key,
+            name,
+            description: pipeline.description || '',
+            color: pipeline.color || '#2563EB',
+            isDefault: pipeline.isDefault === true,
+            order: index,
+            createdAt: pipeline.createdAt || new Date(),
+            updatedAt: pipeline.updatedAt || new Date(),
+            stages
+        };
+    });
+}
+
 exports.listModules = async (req, res) => {
     try {
         // Static system modules (always present)
@@ -188,7 +672,8 @@ exports.listModules = async (req, res) => {
             fields: m.key === 'users' ? [] : getBaseFieldsForKey(m.key), // Users module has no fields for lookup purposes
             fieldCount: 0,
             createdAt: null,
-            updatedAt: null
+            updatedAt: null,
+            pipelineSettings: m.key === 'deals' ? getDefaultPipelineSettings() : []
         }));
 
         // Exclude 'groups' from modules list (it's a settings feature, not a module)
@@ -213,6 +698,15 @@ exports.listModules = async (req, res) => {
                     }
                 }
                 // Include quickCreate and quickCreateLayout from override if present
+                let pipelineSettings = Array.isArray(override.pipelineSettings)
+                    ? JSON.parse(JSON.stringify(override.pipelineSettings))
+                    : JSON.parse(JSON.stringify(sys.pipelineSettings || []));
+                if (sys.key === 'deals') {
+                    if (pipelineSettings.length === 0) {
+                        pipelineSettings = getDefaultPipelineSettings();
+                    }
+                    pipelineSettings = normalizePipelineSettings(pipelineSettings);
+                }
                 merged.push({ 
                     ...sys, 
                     fields: saved,
@@ -220,7 +714,8 @@ exports.listModules = async (req, res) => {
                     quickCreateLayout: override.quickCreateLayout || { version: 1, rows: [] },
                     relationships: override.relationships || [],
                     name: override.name || sys.name,
-                    enabled: override.enabled !== undefined ? override.enabled : sys.enabled
+                    enabled: override.enabled !== undefined ? override.enabled : sys.enabled,
+                    pipelineSettings
                 });
                 customByKey.delete(sys.key);
             } else {
@@ -231,7 +726,10 @@ exports.listModules = async (req, res) => {
                     fields: withOrder,
                     quickCreate: [],
                     quickCreateLayout: { version: 1, rows: [] },
-                    relationships: []
+                    relationships: [],
+                    pipelineSettings: sys.key === 'deals'
+                        ? normalizePipelineSettings(JSON.parse(JSON.stringify(sys.pipelineSettings || [])))
+                        : JSON.parse(JSON.stringify(sys.pipelineSettings || []))
                 });
             }
         }
@@ -244,7 +742,8 @@ exports.listModules = async (req, res) => {
                 fields,
                 quickCreate: m.quickCreate || [],
                 quickCreateLayout: m.quickCreateLayout || { version: 1, rows: [] },
-                relationships: m.relationships || []
+                relationships: m.relationships || [],
+                pipelineSettings: Array.isArray(m.pipelineSettings) ? m.pipelineSettings : []
             });
         }
 
@@ -353,7 +852,7 @@ exports.updateModule = async (req, res) => {
         });
         if (!mod) return res.status(404).json({ success: false, message: 'Module not found' });
 
-        const { name, enabled, fields, relationships, quickCreate, quickCreateLayout } = req.body;
+        const { name, enabled, fields, relationships, quickCreate, quickCreateLayout, pipelineSettings } = req.body;
         
         console.log('🔵 updateModule called:', {
             moduleId: id,
@@ -410,6 +909,15 @@ exports.updateModule = async (req, res) => {
         // Mark as modified to ensure Mongoose saves these fields
         if (quickCreate !== undefined) mod.markModified('quickCreate');
         if (quickCreateLayout !== undefined) mod.markModified('quickCreateLayout');
+
+        if (pipelineSettings !== undefined) {
+            let newPipelineSettings = Array.isArray(pipelineSettings) ? pipelineSettings : [];
+            if (mod.key === 'deals') {
+                newPipelineSettings = normalizePipelineSettings(newPipelineSettings);
+            }
+            mod.set('pipelineSettings', newPipelineSettings);
+            mod.markModified('pipelineSettings');
+        }
         
         await mod.save();
         
@@ -436,6 +944,10 @@ exports.updateModule = async (req, res) => {
         responseData.relationships = saved?.relationships || [];
         responseData.quickCreate = saved?.quickCreate || [];
         responseData.quickCreateLayout = saved?.quickCreateLayout || { version: 1, rows: [] };
+        responseData.pipelineSettings = saved?.pipelineSettings || [];
+        if (mod.key === 'deals') {
+            responseData.pipelineSettings = normalizePipelineSettings(responseData.pipelineSettings);
+        }
         
         // Final check - ensure responseData has the fields before sending
         if (!('relationships' in responseData) || responseData.relationships === undefined) {
@@ -478,7 +990,7 @@ exports.updateSystemModule = async (req, res) => {
         const { key } = req.params;
         const systemKeys = new Set(['people','organizations','deals','tasks','events','imports','reports']);
         if (!systemKeys.has(key)) return res.status(400).json({ success: false, message: 'Invalid system module key' });
-        const { fields, enabled, name, relationships, quickCreate, quickCreateLayout } = req.body;
+        const { fields, enabled, name, relationships, quickCreate, quickCreateLayout, pipelineSettings } = req.body;
         
         console.log('🔵 updateSystemModule called:', {
             moduleKey: key,
@@ -501,6 +1013,12 @@ exports.updateSystemModule = async (req, res) => {
         if (enabled !== undefined) updateObj.enabled = !!enabled;
         if (Array.isArray(fields)) updateObj.fields = fields;
         if (Array.isArray(relationships)) updateObj.relationships = relationships;
+        if (pipelineSettings !== undefined) {
+            const pipelineValue = Array.isArray(pipelineSettings) ? pipelineSettings : [];
+            updateObj.pipelineSettings = key === 'deals'
+                ? normalizePipelineSettings(pipelineValue)
+                : pipelineValue;
+        }
         
         // Always update quickCreate if provided (even if empty array)
         if (quickCreate !== undefined) {
@@ -565,11 +1083,11 @@ exports.updateSystemModule = async (req, res) => {
         const criticalFields = {};
         const otherFields = {};
         
-        Object.keys(cleanUpdateObj).forEach(key => {
-            if (key === 'quickCreate' || key === 'quickCreateLayout' || key === 'fields' || key === 'relationships') {
-                criticalFields[key] = cleanUpdateObj[key];
+        Object.keys(cleanUpdateObj).forEach(objKey => {
+            if (objKey === 'quickCreate' || objKey === 'quickCreateLayout' || objKey === 'fields' || objKey === 'relationships' || objKey === 'pipelineSettings') {
+                criticalFields[objKey] = cleanUpdateObj[objKey];
             } else {
-                otherFields[key] = cleanUpdateObj[key];
+                otherFields[objKey] = cleanUpdateObj[objKey];
             }
         });
         
@@ -610,7 +1128,8 @@ exports.updateSystemModule = async (req, res) => {
                 fields: Object.keys(criticalFields),
                 relationshipsCount: criticalFields.relationships?.length || 0,
                 quickCreate: criticalFields.quickCreate?.length || 0,
-                fieldsCount: criticalFields.fields?.length || 0
+                fieldsCount: criticalFields.fields?.length || 0,
+                pipelineSettingsCount: criticalFields.pipelineSettings?.length || 0
             });
             
             if (directUpdateResult.matchedCount === 0) {
@@ -667,6 +1186,7 @@ exports.updateSystemModule = async (req, res) => {
         console.log('🔍 Raw MongoDB relationships:', verifiedRaw?.relationships, 'length:', verifiedRaw?.relationships?.length || 0);
         console.log('🔍 Raw MongoDB quickCreate:', verifiedRaw?.quickCreate);
         console.log('🔍 Raw MongoDB fields count:', verifiedRaw?.fields?.length || 0);
+        console.log('🔍 Raw MongoDB pipelineSettings count:', verifiedRaw?.pipelineSettings?.length || 0);
         
         // Also verify with Mongoose to compare
         const verified = await ModuleDefinition.findOne({ 
@@ -713,6 +1233,9 @@ exports.updateSystemModule = async (req, res) => {
         // Ensure verified includes relationships from sourceDoc
         if (verified && sourceDoc?.relationships) {
             verified.relationships = sourceDoc.relationships;
+        }
+        if (verified && sourceDoc?.pipelineSettings) {
+            verified.pipelineSettings = sourceDoc.pipelineSettings;
         }
         
         // Verify critical fields were saved correctly
@@ -774,6 +1297,22 @@ exports.updateSystemModule = async (req, res) => {
             }
         }
         
+        if (criticalFields.pipelineSettings) {
+            const savedPipelines = sourceDoc?.pipelineSettings || [];
+            const savedCount = Array.isArray(savedPipelines) ? savedPipelines.length : 0;
+            const expectedCount = Array.isArray(criticalFields.pipelineSettings) ? criticalFields.pipelineSettings.length : 0;
+            if (savedCount !== expectedCount) {
+                console.error('🚨 CRITICAL: pipelineSettings still not saved correctly!', {
+                    expected: expectedCount,
+                    saved: savedCount
+                });
+            } else {
+                console.log('✅ pipelineSettings verified successfully:', {
+                    count: savedCount
+                });
+            }
+        }
+        
         // Update doc and verified from sourceDoc for response
         if (sourceDoc) {
             if (criticalFields.quickCreate) {
@@ -787,6 +1326,10 @@ exports.updateSystemModule = async (req, res) => {
             if (criticalFields.fields) {
                 doc.fields = sourceDoc.fields;
                 verified.fields = sourceDoc.fields;
+            }
+            if (criticalFields.pipelineSettings) {
+                doc.pipelineSettings = sourceDoc.pipelineSettings;
+                verified.pipelineSettings = sourceDoc.pipelineSettings;
             }
         }
         
@@ -824,6 +1367,7 @@ exports.updateSystemModule = async (req, res) => {
         let relationshipsValue = verified?.relationships;
         let quickCreateValue = verified?.quickCreate;
         let quickCreateLayoutValue = verified?.quickCreateLayout;
+        let pipelineSettingsValue = verified?.pipelineSettings;
         
         // If verified doesn't have it, check updateObj (what we tried to save)
         if (!relationshipsValue && updateObj.relationships) {
@@ -837,6 +1381,10 @@ exports.updateSystemModule = async (req, res) => {
         if (!quickCreateLayoutValue && updateObj.quickCreateLayout) {
             console.warn('⚠️  quickCreateLayout not found in saved doc, using updateObj value');
             quickCreateLayoutValue = updateObj.quickCreateLayout;
+        }
+        if (!pipelineSettingsValue && updateObj.pipelineSettings) {
+            console.warn('⚠️  pipelineSettings not found in saved doc, using updateObj value');
+            pipelineSettingsValue = updateObj.pipelineSettings;
         }
         
         console.log('🔍 Source document check:', {
@@ -876,6 +1424,10 @@ exports.updateSystemModule = async (req, res) => {
         // Always set these in responseData
         responseData.quickCreate = finalQuickCreate;
         responseData.quickCreateLayout = finalQuickCreateLayout;
+        responseData.pipelineSettings = Array.isArray(pipelineSettingsValue) ? pipelineSettingsValue : [];
+        if (key === 'deals') {
+            responseData.pipelineSettings = normalizePipelineSettings(responseData.pipelineSettings);
+        }
         
         console.log('📤 Sending response (FINAL):', {
             hasQuickCreate: 'quickCreate' in responseData,
@@ -908,6 +1460,9 @@ exports.updateSystemModule = async (req, res) => {
             relationships: finalRelationships,
             quickCreate: finalQuickCreate,
             quickCreateLayout: finalQuickCreateLayout,
+            pipelineSettings: key === 'deals'
+                ? normalizePipelineSettings(responseData.pipelineSettings)
+                : (Array.isArray(responseData.pipelineSettings) ? responseData.pipelineSettings : []),
             createdAt: responseData.createdAt || doc.createdAt,
             updatedAt: responseData.updatedAt || doc.updatedAt
         };
