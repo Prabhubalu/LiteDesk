@@ -1077,6 +1077,33 @@
               </div>
             </aside>
             <section class="flex-1 min-w-0 bg-white dark:bg-gray-900/60 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
+              <div class="p-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">
+                    {{ currentPipeline?.name || 'Select a pipeline' }}
+                  </p>
+                  <p v-if="currentPipeline" class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ currentPipeline.stages?.length || 0 }} stage{{ (currentPipeline.stages?.length || 0) === 1 ? '' : 's' }} ·
+                    {{ currentPipeline.isDefault ? 'Default pipeline' : 'Custom pipeline' }}
+                  </p>
+                </div>
+                <button
+                  @click="saveModule"
+                  :disabled="isSaving || !isDirty"
+                  class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-colors"
+                  :class="[
+                    isSaving || !isDirty
+                      ? 'bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-400 cursor-not-allowed'
+                      : 'bg-brand-600 hover:bg-brand-700 text-white shadow-sm hover:shadow'
+                  ]"
+                >
+                  <svg v-if="isSaving" class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>{{ isSaving ? 'Saving…' : 'Save Pipelines' }}</span>
+                </button>
+              </div>
               <div v-if="currentPipeline" class="flex-1 flex flex-col gap-6 p-4 overflow-hidden">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -1120,7 +1147,6 @@
                   <div
                     v-for="(stage, stageIndex) in currentPipeline.stages"
                     :key="stage.key || stageIndex"
-                    v-if="ensureStageStructure(stage)"
                     class="border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900/50 p-4"
                   >
                     <div class="flex items-center justify-between">
@@ -1494,6 +1520,9 @@
                   <p>No pipeline selected.</p>
                   <button @click="addPipeline" class="px-4 py-2 text-sm font-medium bg-brand-600 hover:bg-brand-700 text-white rounded-lg transition-colors">Create Pipeline</button>
                 </div>
+              </div>
+              <div v-if="!currentPipeline" class="flex-1 flex items-center justify-center p-6 text-sm text-gray-500 dark:text-gray-400">
+                Select a pipeline on the left to edit its details.
               </div>
             </section>
           </div>
@@ -2119,7 +2148,17 @@ function normalizePipelineSettings(settings = []) {
 const pipelineTabEnabled = computed(() => selectedModule.value?.key === 'deals');
 const currentPipeline = computed(() => {
   if (!pipelineTabEnabled.value) return null;
-  return pipelineSettings.value.find(p => p.key === selectedPipelineKey.value) || pipelineSettings.value[0] || null;
+  let pipeline = null;
+
+  if (selectedPipelineKey.value) {
+    pipeline = pipelineSettings.value.find(p => p.key === selectedPipelineKey.value) || null;
+  }
+
+  if (!pipeline && pipelineSettings.value.length) {
+    pipeline = pipelineSettings.value[0];
+  }
+
+  return pipeline || null;
 });
 
 function ensurePipelineSelection() {
@@ -2159,6 +2198,12 @@ function hydratePipelineSettingsFromModule(mod) {
           return stageFromDefault;
         });
 
+    try {
+      console.log('[Pipeline Hydrate] pipeline', pipeline.name, 'stages:', finalStages.map(stage => stage?.name || `Stage ${stage?.order ?? -1}`));
+    } catch (e) {
+      console.log('[Pipeline Hydrate] pipeline', pipeline.name, 'stages count:', finalStages.length);
+    }
+
     return {
       ...pipeline,
       stages: finalStages
@@ -2168,6 +2213,7 @@ function hydratePipelineSettingsFromModule(mod) {
   pipelineSettings.value = normalized;
   ensurePipelineSelection();
 }
+
 
 function refreshPipelineOrders() {
   pipelineSettings.value.forEach((pipeline, index) => {
@@ -2943,6 +2989,17 @@ const selectModule = (mod, preferFieldKey = null) => {
     console.log('Quick Create initialization complete, auto-save enabled');
   }, 1000);
 };
+
+watch(pipelineSettings, () => {
+  if (!pipelineTabEnabled.value) return;
+  ensurePipelineSelection();
+});
+
+watch(activeTopTab, (tab) => {
+  if (tab !== 'pipeline') return;
+  if (!pipelineTabEnabled.value) return;
+  ensurePipelineSelection();
+});
 
 const openCreateModal = () => {
   editingModule.value = null;
