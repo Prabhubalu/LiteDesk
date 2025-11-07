@@ -1,5 +1,131 @@
 const mongoose = require('mongoose');
 
+const PlaybookConditionSchema = new mongoose.Schema({
+    field: { type: String, trim: true, default: '' },
+    operator: {
+        type: String,
+        enum: ['equals', 'not_equals', 'in', 'not_in', 'exists', 'gt', 'gte', 'lt', 'lte', 'contains'],
+        default: 'equals'
+    },
+    value: { type: mongoose.Schema.Types.Mixed }
+}, { _id: false });
+
+const PlaybookAssignmentSchema = new mongoose.Schema({
+    type: {
+        type: String,
+        enum: ['deal_owner', 'stage_owner', 'specific_user', 'role', 'team'],
+        default: 'deal_owner'
+    },
+    targetId: { type: mongoose.Schema.Types.ObjectId, default: null },
+    targetType: { type: String, trim: true, default: '' },
+    targetName: { type: String, trim: true, default: '' }
+}, { _id: false });
+
+const PlaybookTriggerSchema = new mongoose.Schema({
+    type: {
+        type: String,
+        enum: ['stage_entry', 'after_action', 'time_delay', 'custom'],
+        default: 'stage_entry'
+    },
+    sourceActionKey: { type: String, trim: true, lowercase: true, default: '' },
+    delay: {
+        type: new mongoose.Schema({
+            amount: { type: Number, min: 0, default: 0 },
+            unit: { type: String, enum: ['minutes', 'hours', 'days'], default: 'days' }
+        }, { _id: false }),
+        default: null
+    },
+    conditions: { type: [PlaybookConditionSchema], default: [] },
+    description: { type: String, trim: true, default: '' }
+}, { _id: false });
+
+const PlaybookAlertSchema = new mongoose.Schema({
+    type: { type: String, enum: ['in_app', 'email', 'sms'], default: 'in_app' },
+    offset: {
+        type: new mongoose.Schema({
+            amount: { type: Number, min: 0, default: 0 },
+            unit: { type: String, enum: ['minutes', 'hours', 'days'], default: 'hours' }
+        }, { _id: false }),
+        default: null
+    },
+    recipients: { type: [String], default: [] },
+    message: { type: String, trim: true, default: '' }
+}, { _id: false });
+
+const PlaybookResourceSchema = new mongoose.Schema({
+    name: { type: String, trim: true, default: '' },
+    type: { type: String, enum: ['document', 'link', 'form', 'template', 'other'], default: 'document' },
+    url: { type: String, trim: true, default: '' },
+    description: { type: String, trim: true, default: '' }
+}, { _id: false });
+
+const PlaybookActionSchema = new mongoose.Schema({
+    key: { type: String, trim: true, lowercase: true },
+    title: { type: String, required: true, trim: true },
+    description: { type: String, trim: true, default: '' },
+    actionType: {
+        type: String,
+        enum: ['task', 'event', 'alert', 'document', 'call', 'meeting', 'email', 'approval', 'other'],
+        default: 'task'
+    },
+    dueInDays: { type: Number, min: 0, default: 0 },
+    assignment: { type: PlaybookAssignmentSchema, default: () => ({ type: 'deal_owner' }) },
+    required: { type: Boolean, default: true },
+    dependencies: { type: [String], default: [] },
+    autoCreate: { type: Boolean, default: true },
+    trigger: { type: PlaybookTriggerSchema, default: () => ({ type: 'stage_entry', conditions: [] }) },
+    alerts: { type: [PlaybookAlertSchema], default: [] },
+    resources: { type: [PlaybookResourceSchema], default: [] },
+    metadata: { type: mongoose.Schema.Types.Mixed, default: {} }
+}, { _id: false });
+
+const PlaybookExitCriteriaSchema = new mongoose.Schema({
+    type: {
+        type: String,
+        enum: ['manual', 'all_actions_completed', 'any_action_completed', 'custom'],
+        default: 'manual'
+    },
+    customDescription: { type: String, trim: true, default: '' },
+    nextStageKey: { type: String, trim: true, lowercase: true, default: '' },
+    conditions: { type: [PlaybookConditionSchema], default: [] }
+}, { _id: false });
+
+const StagePlaybookSchema = new mongoose.Schema({
+    enabled: { type: Boolean, default: false },
+    mode: { type: String, enum: ['sequential', 'non_sequential'], default: 'sequential' },
+    autoAdvance: { type: Boolean, default: false },
+    notes: { type: String, trim: true, default: '' },
+    actions: { type: [PlaybookActionSchema], default: [] },
+    exitCriteria: { type: PlaybookExitCriteriaSchema, default: () => ({ type: 'manual', conditions: [] }) }
+}, { _id: false });
+
+const PipelineStageSchema = new mongoose.Schema({
+    key: { type: String, trim: true, lowercase: true },
+    name: { type: String, required: true, trim: true },
+    description: { type: String, trim: true, default: '' },
+    probability: { type: Number, min: 0, max: 100, default: 0 },
+    status: { type: String, enum: ['open', 'won', 'lost', 'stalled'], default: 'open' },
+    order: { type: Number, default: 0 },
+    isClosedWon: { type: Boolean, default: false },
+    isClosedLost: { type: Boolean, default: false },
+    playbook: { type: StagePlaybookSchema, default: () => ({}) }
+}, { _id: false });
+
+const PipelineSchema = new mongoose.Schema({
+    key: { type: String, required: true, trim: true, lowercase: true },
+    name: { type: String, required: true, trim: true },
+    description: { type: String, trim: true, default: '' },
+    color: { type: String, trim: true, default: '#2563EB' },
+    isDefault: { type: Boolean, default: false },
+    order: { type: Number, default: 0 },
+    stages: {
+        type: [PipelineStageSchema],
+        default: []
+    },
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now }
+}, { _id: false });
+
 const ModuleDefinitionSchema = new mongoose.Schema({
     organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', required: true, index: true },
     key: { type: String, required: true, trim: true, lowercase: true },
@@ -157,6 +283,10 @@ const ModuleDefinitionSchema = new mongoose.Schema({
                 }
             }, { _id: false })
         ],
+        default: []
+    },
+    pipelineSettings: {
+        type: [PipelineSchema],
         default: []
     }
 }, {

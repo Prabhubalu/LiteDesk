@@ -18,6 +18,7 @@ const Role = require('../models/Role');
 const ModuleDefinition = require('../models/ModuleDefinition');
 const updatePeopleModuleFields = require('./updatePeopleModuleFields');
 const updateOrganizationsModuleFields = require('./updateOrganizationsModuleFields');
+const updateDealsModuleFields = require('./updateDealsModuleFields');
 
 async function testDemoFlow() {
     console.log('🧪 Testing Demo Request Flow (KEEPING DATA)\n');
@@ -90,6 +91,10 @@ async function testDemoFlow() {
         console.log('\n🔍 Step 5: Initializing Organizations module...');
         await updateOrganizationsModuleFields(organization._id);
         console.log('✅ Organizations module initialized');
+
+        console.log('\n🔍 Step 5.5: Initializing Deals module...');
+        await updateDealsModuleFields(organization._id);
+        console.log('✅ Deals module initialized');
         
         // Step 6: Create People (Lead)
         console.log('\n👤 Step 6: Creating People (Lead)...');

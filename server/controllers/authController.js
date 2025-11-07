@@ -4,6 +4,7 @@ const Role = require('../models/Role');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const updatePeopleModuleFields = require('../scripts/updatePeopleModuleFields');
+const updateDealsModuleFields = require('../scripts/updateDealsModuleFields');
 
 // --- Helper Function: Generate Token ---
 const generateToken = (id) => {
@@ -102,6 +103,12 @@ exports.registerUser = async (req, res) => {
         } catch (moduleError) {
             console.warn('⚠️  Failed to initialize People module:', moduleError.message);
             // Continue even if module initialization fails - can be run manually later
+        }
+        try {
+            await updateDealsModuleFields(organization._id);
+            console.log('✅ Deals module definition initialized with standardized fields');
+        } catch (moduleError) {
+            console.warn('⚠️  Failed to initialize Deals module:', moduleError.message);
         }
         console.log('\n');
 

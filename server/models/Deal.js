@@ -30,20 +30,25 @@ const DealSchema = new Schema({
         default: 'USD',
         trim: true
     },
+    pipeline: {
+        type: String,
+        trim: true,
+        default: 'Default Pipeline'
+    },
     
     // 📊 SALES PIPELINE
     // **********************************
     stage: {
         type: String,
-        enum: ['Lead', 'Qualified', 'Proposal', 'Negotiation', 'Closed Won', 'Closed Lost'],
-        default: 'Lead',
+        enum: ['Qualification', 'Proposal', 'Negotiation', 'Contract Sent', 'Closed Won', 'Closed Lost', 'Lead', 'Qualified'],
+        default: 'Qualification',
         required: true
     },
     probability: {
         type: Number,
         min: 0,
         max: 100,
-        default: 10 // Percentage probability of closing
+        default: 25 // Percentage probability of closing
     },
     
     // 📅 TIMING
@@ -82,20 +87,25 @@ const DealSchema = new Schema({
     },
     type: {
         type: String,
-        enum: ['New Business', 'Existing Business', 'Renewal', 'Upsell', null],
+        enum: ['New Business', 'Existing Customer', 'Existing Business', 'Upsell', 'Renewal', 'Cross-Sell', null],
         default: null
     },
     source: {
         type: String,
         trim: true // e.g., 'Website', 'Referral', 'Cold Call'
     },
+    nextStep: {
+        type: String,
+        trim: true,
+        default: ''
+    },
     
     // 💾 METADATA
     // **********************************
     status: {
         type: String,
-        enum: ['Active', 'Won', 'Lost', 'Abandoned'],
-        default: 'Active'
+        enum: ['Open', 'Won', 'Lost', 'Stalled', 'Active', 'Abandoned'],
+        default: 'Open'
     },
     lostReason: {
         type: String,
@@ -130,6 +140,10 @@ const DealSchema = new Schema({
         createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
         createdAt: { type: Date, default: Date.now }
     }],
+    lineItems: {
+        type: Schema.Types.Mixed,
+        default: []
+    },
     
     // 🔧 CUSTOM FIELDS
     // **********************************
@@ -138,6 +152,17 @@ const DealSchema = new Schema({
         default: {} 
     },
     
+    createdBy: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
+    },
+    modifiedBy: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
+    }
+
 }, {
     timestamps: true // Automatically handles 'createdAt' and 'updatedAt'
 });
@@ -155,14 +180,14 @@ DealSchema.virtual('weightedValue').get(function() {
 
 // Method to check if deal is overdue
 DealSchema.methods.isOverdue = function() {
-    if (this.status !== 'Active') return false;
+    if (this.status !== 'Open') return false;
     if (!this.expectedCloseDate) return false;
     return new Date() > this.expectedCloseDate;
 };
 
 // Method to advance stage
 DealSchema.methods.advanceStage = async function(userId) {
-    const stages = ['Lead', 'Qualified', 'Proposal', 'Negotiation', 'Closed Won'];
+    const stages = ['Qualification', 'Proposal', 'Negotiation', 'Contract Sent', 'Closed Won'];
     const currentIndex = stages.indexOf(this.stage);
     
     if (currentIndex < stages.length - 1) {
@@ -177,7 +202,7 @@ DealSchema.methods.advanceStage = async function(userId) {
         this.stage = newStage;
         
         // Update probability based on stage
-        const probabilities = { 'Lead': 10, 'Qualified': 25, 'Proposal': 50, 'Negotiation': 75, 'Closed Won': 100 };
+        const probabilities = { 'Qualification': 25, 'Proposal': 50, 'Negotiation': 70, 'Contract Sent': 85, 'Closed Won': 100 };
         this.probability = probabilities[newStage];
         
         if (newStage === 'Closed Won') {
@@ -193,6 +218,23 @@ DealSchema.methods.advanceStage = async function(userId) {
 
 // Pre-save middleware to update stage history
 DealSchema.pre('save', function(next) {
+    // Normalize legacy values to new taxonomy
+    if (this.stage === 'Lead') {
+        this.stage = 'Qualification';
+    } else if (this.stage === 'Qualified') {
+        this.stage = 'Proposal';
+    }
+
+    if (this.status === 'Active') {
+        this.status = 'Open';
+    } else if (this.status === 'Abandoned') {
+        this.status = 'Stalled';
+    }
+
+    if (this.type === 'Existing Business') {
+        this.type = 'Existing Customer';
+    }
+
     if (this.isModified('stage') && !this.isNew) {
         // Add to stage history if stage changed
         const lastHistory = this.stageHistory[this.stageHistory.length - 1];
@@ -205,10 +247,10 @@ DealSchema.pre('save', function(next) {
     }
     
     // Auto-update status based on stage
-    if (this.stage === 'Closed Won' && this.status === 'Active') {
+    if (this.stage === 'Closed Won' && this.status === 'Open') {
         this.status = 'Won';
         this.actualCloseDate = this.actualCloseDate || new Date();
-    } else if (this.stage === 'Closed Lost' && this.status === 'Active') {
+    } else if (this.stage === 'Closed Lost' && this.status === 'Open') {
         this.status = 'Lost';
         this.actualCloseDate = this.actualCloseDate || new Date();
     }
@@ -219,7 +261,7 @@ DealSchema.pre('save', function(next) {
 // Static method to get pipeline summary
 DealSchema.statics.getPipelineSummary = async function(organizationId) {
     return await this.aggregate([
-        { $match: { organizationId: mongoose.Types.ObjectId(organizationId), status: 'Active' } },
+        { $match: { organizationId: mongoose.Types.ObjectId(organizationId), status: { $in: ['Open', 'Active'] } } },
         {
             $group: {
                 _id: '$stage',

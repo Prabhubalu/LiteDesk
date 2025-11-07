@@ -68,10 +68,10 @@
                 required
                 class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all cursor-pointer"
               >
-                <option value="Lead">Lead</option>
-                <option value="Qualified">Qualified</option>
+                <option value="Qualification">Qualification</option>
                 <option value="Proposal">Proposal</option>
                 <option value="Negotiation">Negotiation</option>
+                <option value="Contract Sent">Contract Sent</option>
                 <option value="Closed Won">Closed Won</option>
                 <option value="Closed Lost">Closed Lost</option>
               </select>
@@ -107,9 +107,10 @@
               >
                 <option value="">Select Type</option>
                 <option value="New Business">New Business</option>
-                <option value="Existing Business">Existing Business</option>
-                <option value="Renewal">Renewal</option>
+                <option value="Existing Customer">Existing Customer</option>
                 <option value="Upsell">Upsell</option>
+                <option value="Renewal">Renewal</option>
+                <option value="Cross-Sell">Cross-Sell</option>
               </select>
             </div>
 
@@ -257,8 +258,8 @@ const form = ref({
   name: '',
   amount: 0,
   expectedCloseDate: '',
-  stage: 'Lead',
-  probability: 10,
+  stage: 'Qualification',
+  probability: 25,
   type: '',
   priority: 'Medium',
   source: '',
@@ -279,10 +280,10 @@ watch(tagsString, (newValue) => {
 // Auto-update probability based on stage
 watch(() => form.value.stage, (newStage) => {
   const probabilities = {
-    'Lead': 10,
-    'Qualified': 25,
+    'Qualification': 25,
     'Proposal': 50,
-    'Negotiation': 75,
+    'Negotiation': 70,
+    'Contract Sent': 85,
     'Closed Won': 100,
     'Closed Lost': 0
   };

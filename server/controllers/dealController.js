@@ -7,11 +7,23 @@ const mongoose = require('mongoose');
 // @access  Private
 exports.createDeal = async (req, res) => {
     try {
-        const newDeal = await Deal.create({
+        const payload = {
             ...req.body,
             organizationId: req.user.organizationId,
-            ownerId: req.body.ownerId || req.user._id
-        });
+            ownerId: req.body.ownerId || req.user._id,
+            createdBy: req.user._id,
+            modifiedBy: req.user._id
+        };
+
+        if (!payload.pipeline) {
+            payload.pipeline = 'Default Pipeline';
+        }
+
+        if (!payload.status) {
+            payload.status = 'Open';
+        }
+
+        const newDeal = await Deal.create(payload);
         
         const deal = await Deal.findById(newDeal._id)
             .populate('contactId', 'first_name last_name email')
@@ -117,7 +129,10 @@ exports.getDeals = async (req, res) => {
                     _id: null,
                     totalDeals: { $sum: 1 },
                     activeDeals: {
-                        $sum: { $cond: [{ $eq: ['$status', 'Active'] }, 1, 0] }
+                        $sum: { $cond: [{ $in: ['$status', ['Open', 'Active']] }, 1, 0] }
+                    },
+                    stalledDeals: {
+                        $sum: { $cond: [{ $in: ['$status', ['Stalled', 'Abandoned']] }, 1, 0] }
                     },
                     wonDeals: {
                         $sum: { $cond: [{ $eq: ['$status', 'Won'] }, 1, 0] }
@@ -130,7 +145,7 @@ exports.getDeals = async (req, res) => {
                         $sum: { $cond: [{ $eq: ['$status', 'Won'] }, '$amount', 0] }
                     },
                     pipelineValue: {
-                        $sum: { $cond: [{ $eq: ['$status', 'Active'] }, '$amount', 0] }
+                        $sum: { $cond: [{ $in: ['$status', ['Open', 'Active']] }, '$amount', 0] }
                     }
                 }
             }
@@ -148,6 +163,7 @@ exports.getDeals = async (req, res) => {
             statistics: stats[0] || {
                 totalDeals: 0,
                 activeDeals: 0,
+                stalledDeals: 0,
                 wonDeals: 0,
                 lostDeals: 0,
                 totalValue: 0,
@@ -208,6 +224,7 @@ exports.updateDeal = async (req, res) => {
     try {
         // Prevent changing organizationId
         delete req.body.organizationId;
+        req.body.modifiedBy = req.user._id;
         
         const updatedDeal = await Deal.findOneAndUpdate(
             { 
@@ -300,7 +317,8 @@ exports.addNote = async (req, res) => {
                     }
                 },
                 $set: {
-                    lastActivityDate: new Date()
+                    lastActivityDate: new Date(),
+                    modifiedBy: req.user._id
                 }
             },
             { new: true, runValidators: true }
@@ -339,7 +357,7 @@ exports.getPipelineSummary = async (req, res) => {
             { 
                 $match: { 
                     organizationId: req.user.organizationId,
-                    status: 'Active'
+                    status: { $in: ['Open', 'Active'] }
                 } 
             },
             {
@@ -417,14 +435,15 @@ exports.updateStage = async (req, res) => {
         
         // Auto-update probability based on stage
         const probabilities = { 
-            'Lead': 10, 
-            'Qualified': 25, 
-            'Proposal': 50, 
-            'Negotiation': 75, 
+            'Qualification': 25,
+            'Proposal': 50,
+            'Negotiation': 70,
+            'Contract Sent': 85,
             'Closed Won': 100,
             'Closed Lost': 0
         };
         deal.probability = probabilities[stage];
+        deal.modifiedBy = req.user._id;
         
         await deal.save();
         

@@ -414,10 +414,10 @@ const getDealAge = () => {
 
 const getStageClass = (stage) => {
   const classes = {
-    'Lead': 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300',
-    'Qualified': 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300',
-    'Proposal': 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300',
-    'Negotiation': 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300',
+    'Qualification': 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300',
+    'Proposal': 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300',
+    'Negotiation': 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300',
+    'Contract Sent': 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300',
     'Closed Won': 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
     'Closed Lost': 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
   };
@@ -426,10 +426,10 @@ const getStageClass = (stage) => {
 
 const getStatusClass = (status) => {
   const classes = {
-    'Active': 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
+    'Open': 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
     'Won': 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300',
     'Lost': 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300',
-    'Cancelled': 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
+    'Stalled': 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
   };
   return classes[status] || 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
 };
