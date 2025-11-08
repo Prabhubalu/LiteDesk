@@ -11,10 +11,18 @@
             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Configure fields, relationships and quick create</p>
           </div>
         </div>
+        <div class="flex items-center gap-2">
+          <button @click="openCreateModal" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 text-sm font-medium transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Create Module
+          </button>
+        </div>
       </template>
       <template v-else>
         <div>
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Modules & Fields</h2>
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Modules &amp; Fields</h2>
           <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Manage modules and configure fields</p>
         </div>
         <button @click="openCreateModal" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 text-sm font-medium transition-colors">
@@ -35,7 +43,16 @@
         <div v-for="mod in displayModules" :key="mod._id" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 cursor-pointer" @click="selectModule(mod)">
           <div class="flex items-start justify-between">
             <div>
-              <p class="text-xs uppercase tracking-wider" :class="mod.type === 'system' ? 'text-purple-600 dark:text-purple-300' : 'text-gray-500 dark:text-gray-400'">{{ mod.type }}</p>
+              <p
+                :class="[
+                  'text-xs uppercase tracking-wider',
+                  mod.type === 'system'
+                    ? 'text-purple-600 dark:text-purple-300'
+                    : 'text-gray-500 dark:text-gray-400'
+                ]"
+              >
+                {{ mod.type }}
+              </p>
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ mod.name }}</h3>
               <p class="text-sm text-gray-500 dark:text-gray-400">key: {{ mod.key }}</p>
             </div>
@@ -68,6 +85,12 @@
               {{ tab.name }}
             </button>
           </nav>
+        </div>
+        <div class="flex items-center justify-between py-3">
+          <div class="text-sm text-gray-500 dark:text-gray-400">
+            <span v-if="activeTopTab === 'pipeline'">Manage pipeline stages, order, and statuses.</span>
+            <span v-else-if="activeTopTab === 'playbooks'">Configure playbooks for each pipeline stage.</span>
+          </div>
         </div>
       </div>
 
@@ -1076,7 +1099,7 @@
                 </div>
               </div>
             </aside>
-            <section class="flex-1 min-w-0 bg-white dark:bg-gray-900/60 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
+            <section class="flex-1 min-w-0 bg-white dark:bg-gray-900/60 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-y-auto flex flex-col">
               <div class="p-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between gap-3">
                 <div class="min-w-0">
                   <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">
@@ -1104,7 +1127,7 @@
                   <span>{{ isSaving ? 'Saving…' : 'Save Pipelines' }}</span>
                 </button>
               </div>
-              <div v-if="currentPipeline" class="flex-1 flex flex-col gap-6 p-4 overflow-hidden">
+              <div v-if="currentPipeline" class="p-4 space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Pipeline Name</label>
@@ -1127,57 +1150,41 @@
                       Set as default
                     </button>
                   </div>
-                  <div class="md:col-span-2">
-                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Description (optional)</label>
-                    <textarea v-model="currentPipeline.description" rows="2" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm"></textarea>
-                  </div>
                 </div>
 
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between gap-3">
                   <div>
                     <h4 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Stages</h4>
                     <p class="text-xs text-gray-500 dark:text-gray-400">Configure the stages available in this pipeline.</p>
                   </div>
+                  <div class="flex items-center gap-2">
                   <button @click="addStageToPipeline(currentPipeline)" class="px-3 py-1.5 text-xs font-medium bg-brand-600 hover:bg-brand-700 text-white rounded-lg transition-colors shadow-sm hover:shadow">
                     Add Stage
                   </button>
+                  </div>
                 </div>
 
-                <div class="flex-1 overflow-y-auto pr-1 space-y-3">
+                <div class="pr-1 space-y-3 pb-16" @dragover.prevent="onStageListDragOver(currentPipeline.key)" @drop.prevent="onStageListDrop(currentPipeline.key)">
                   <div
                     v-for="(stage, stageIndex) in currentPipeline.stages"
                     :key="stage.key || stageIndex"
-                    class="border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900/50 p-4"
-                  >
+                    class="border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900/50 p-4 transition-shadow"
+                    draggable="true"
+                    @dragstart="onStageDragStart(currentPipeline.key, stageIndex, $event)"
+                    @dragover.prevent="onStageDragOver(currentPipeline.key, stageIndex)"
+                    @drop.prevent="onStageDrop(currentPipeline.key, stageIndex)"
+                    @dragend="resetStageDrag"
+                    :class="[
+                      stageDragOver.pipelineKey === currentPipeline.key && stageDragOver.index === stageIndex
+                         ? 'ring-2 ring-brand-500/60 dark:ring-brand-400/70'
+                         : ''
+                     ]"
+                   >
                     <div class="flex items-center justify-between">
                       <div class="flex items-center gap-2">
                         <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">Stage {{ stageIndex + 1 }}</span>
                       </div>
                       <div class="flex items-center gap-1">
-                        <button
-                          class="p-1 rounded text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
-                          :disabled="stageIndex === 0"
-                          :class="{ 'opacity-40 cursor-not-allowed': stageIndex === 0 }"
-                          @click="moveStage(currentPipeline, stageIndex, -1)"
-                          title="Move up"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-                            <path fill-rule="evenodd" d="M10 4a.75.75 0 01.53.22l4.5 4.5a.75.75 0 11-1.06 1.06L10 5.81 6.03 9.78a.75.75 0 11-1.06-1.06l4.5-4.5A.75.75 0 0110 4z" clip-rule="evenodd" />
-                            <path d="M5.25 15.25a.75.75 0 01.75-.75h8a.75.75 0 010 1.5h-8a.75.75 0 01-.75-.75z" />
-                          </svg>
-                        </button>
-                        <button
-                          class="p-1 rounded text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
-                          :disabled="stageIndex === currentPipeline.stages.length - 1"
-                          :class="{ 'opacity-40 cursor-not-allowed': stageIndex === currentPipeline.stages.length - 1 }"
-                          @click="moveStage(currentPipeline, stageIndex, 1)"
-                          title="Move down"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-                            <path fill-rule="evenodd" d="M10 16a.75.75 0 01-.53-.22l-4.5-4.5a.75.75 0 011.06-1.06L10 14.19l3.97-3.97a.75.75 0 111.06 1.06l-4.5 4.5A.75.75 0 0110 16z" clip-rule="evenodd" />
-                            <path d="M5.25 4.75a.75.75 0 01.75-.75h8a.75.75 0 010 1.5h-8a.75.75 0 01-.75-.75z" />
-                          </svg>
-                        </button>
                         <button
                           class="p-1 rounded text-red-500 hover:text-red-600 transition-colors"
                           @click="removeStageFromPipeline(currentPipeline, stageIndex)"
@@ -1205,313 +1212,14 @@
                         </select>
                       </div>
                     </div>
-                    <div class="mt-3">
-                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Description (optional)</label>
-                      <textarea v-model="stage.description" rows="2" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm"></textarea>
-                    </div>
-                    <div class="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
-                      <div class="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                          <h5 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Stage Playbook</h5>
-                          <p class="text-xs text-gray-500 dark:text-gray-400">Guide your team with recommended actions and exit criteria for this stage.</p>
-                        </div>
-                        <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
-                          <input type="checkbox" v-model="stage.playbook.enabled" @change="handlePlaybookToggle(stage)" class="rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500" />
-                          Enable playbook
-                        </label>
-                      </div>
-
-                      <div v-if="stage.playbook.enabled" class="mt-4 space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          <div>
-                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Playbook Mode</label>
-                            <select v-model="stage.playbook.mode" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm">
-                              <option v-for="option in PLAYBOOK_MODE_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Exit Criteria</label>
-                            <select v-model="stage.playbook.exitCriteria.type" @change="onPlaybookExitCriteriaChange(stage)" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm">
-                              <option v-for="option in PLAYBOOK_EXIT_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer"> 
-                              <input type="checkbox" v-model="stage.playbook.autoAdvance" @change="onPlaybookAutoAdvanceChange(stage)" class="rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500" />
-                              Auto-move to next stage when criteria met
-                            </label>
-                            <p class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">If enabled, the deal will advance automatically once the exit criteria are satisfied.</p>
-                          </div>
-                          <div v-if="stage.playbook.autoAdvance" class="flex flex-col">
-                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Next Stage</label>
-                            <select v-model="stage.playbook.exitCriteria.nextStageKey" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm">
-                              <option value="">Select stage...</option>
-                              <option v-for="option in getNextStageOptions(currentPipeline, stage)" :key="option.value" :value="option.value">{{ option.label }}</option>
-                            </select>
-                          </div>
-                          <div v-if="stage.playbook.exitCriteria.type === 'custom'" class="md:col-span-2">
-                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Custom Trigger Description</label>
-                            <textarea v-model="stage.playbook.exitCriteria.customDescription" rows="2" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm" placeholder="Describe the conditions that should move this deal to the next stage"></textarea>
-                          </div>
-                          <div class="md:col-span-2">
-                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Internal Notes (optional)</label>
-                            <textarea v-model="stage.playbook.notes" rows="2" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm" placeholder="Provide additional guidance for your team"></textarea>
-                          </div>
-                        </div>
-
-                        <div class="border border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4">
-                          <div class="flex items-center justify-between mb-3">
-                            <div>
-                              <h6 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Stage Actions</h6>
-                              <p class="text-xs text-gray-500 dark:text-gray-400">Define the activities your team should complete while in this stage.</p>
-                            </div>
-                            <button @click="addPlaybookAction(stage)" class="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium bg-brand-600 hover:bg-brand-700 text-white rounded-lg shadow-sm hover:shadow">
-                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                              Add Action
-                            </button>
-                          </div>
-
-                          <div v-if="!stage.playbook.actions.length" class="rounded-lg border border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 px-4 py-8 text-center text-xs text-gray-500 dark:text-gray-400">
-                            No actions defined yet. Click "Add Action" to build a guided checklist.
-                          </div>
-
-                          <div v-else class="space-y-3">
-                            <div
-                              v-for="(action, actionIndex) in stage.playbook.actions"
-                              :key="action.key || actionIndex"
-                              class="bg-white dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700 rounded-lg p-4"
-                            >
-                              <div class="flex items-center justify-between gap-2">
-                                <div class="flex items-center gap-2">
-                                  <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Action {{ actionIndex + 1 }}</span>
-                                  <span class="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">{{ getPlaybookActionTypeLabel(action.actionType) }}</span>
-                                  <span v-if="action.required" class="text-[11px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">Required</span>
-                                </div>
-                                <div class="flex items-center gap-1">
-                                  <button
-                                    class="p-1 rounded text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
-                                    :disabled="actionIndex === 0"
-                                    :class="{ 'opacity-40 cursor-not-allowed': actionIndex === 0 }"
-                                    @click="movePlaybookAction(stage, actionIndex, -1)"
-                                    title="Move up"
-                                  >
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-                                      <path fill-rule="evenodd" d="M10 4a.75.75 0 01.53.22l4.5 4.5a.75.75 0 11-1.06 1.06L10 5.81 6.03 9.78a.75.75 0 11-1.06-1.06l4.5-4.5A.75.75 0 0110 4z" clip-rule="evenodd" />
-                                      <path d="M5.25 15.25a.75.75 0 01.75-.75h8a.75.75 0 010 1.5h-8a.75.75 0 01-.75-.75z" />
-                                    </svg>
-                                  </button>
-                                  <button
-                                    class="p-1 rounded text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
-                                    :disabled="actionIndex === stage.playbook.actions.length - 1"
-                                    :class="{ 'opacity-40 cursor-not-allowed': actionIndex === stage.playbook.actions.length - 1 }"
-                                    @click="movePlaybookAction(stage, actionIndex, 1)"
-                                    title="Move down"
-                                  >
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-                                      <path fill-rule="evenodd" d="M10 16a.75.75 0 01-.53-.22l-4.5-4.5a.75.75 0 011.06-1.06L10 14.19l3.97-3.97a.75.75 0 111.06 1.06l-4.5 4.5A.75.75 0 0110 16z" clip-rule="evenodd" />
-                                      <path d="M5.25 4.75a.75.75 0 01.75-.75h8a.75.75 0 010 1.5h-8a.75.75 0 01-.75-.75z" />
-                                    </svg>
-                                  </button>
-                                  <button @click="removePlaybookAction(stage, actionIndex)" class="p-1 rounded text-red-500 hover:text-red-600 transition-colors" title="Remove action">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-                                      <path fill-rule="evenodd" d="M8.75 3a.75.75 0 00-.75.75V5H5.5a.75.75 0 000 1.5h.538l.599 9.27A1.75 1.75 0 008.382 17.5h3.236a1.75 1.75 0 001.745-1.73l.599-9.27h.538a.75.75 0 000-1.5H12v-1.25A.75.75 0 0011.25 3h-2.5zM9.5 6.5v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0zm-2 0v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0z" clip-rule="evenodd" />
-                                    </svg>
-                                  </button>
-                                </div>
-                              </div>
-
-                              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                                <div>
-                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Title</label>
-                                  <input v-model="action.title" @change="refreshPlaybookActionKey(stage, action)" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm" placeholder="e.g., Confirm budget or Send proposal" />
-                                </div>
-                                <div>
-                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Action Type</label>
-                                  <select v-model="action.actionType" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm">
-                                    <option v-for="option in PLAYBOOK_ACTION_TYPES" :key="option.value" :value="option.value">{{ option.label }}</option>
-                                  </select>
-                                </div>
-                                <div>
-                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Due (days after stage entry)</label>
-                                  <input type="number" min="0" v-model.number="action.dueInDays" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm" />
-                                </div>
-                                <div>
-                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Assignment</label>
-                                  <select v-model="action.assignment.type" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm">
-                                    <option v-for="option in PLAYBOOK_ASSIGNMENT_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
-                                  </select>
-                                  <input
-                                    v-if="['specific_user', 'role', 'team'].includes(action.assignment.type)"
-                                    v-model="action.assignment.targetName"
-                                    class="mt-2 w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm"
-                                    placeholder="Specify {{ action.assignment.type.replace('_', ' ') }}"
-                                  />
-                                </div>
-                              </div>
-
-                              <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <div>
-                                  <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
-                                    <input type="checkbox" v-model="action.required" class="rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500" />
-                                    Required to complete stage
-                                  </label>
-                                </div>
-                                <div>
-                                  <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
-                                    <input type="checkbox" v-model="action.autoCreate" class="rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500" />
-                                    Auto-create when stage starts
-                                  </label>
-                                </div>
-                              </div>
-
-                              <div class="mt-4 border border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50/50 dark:bg-white/5">
-                                <div class="flex items-center justify-between">
-                                  <div>
-                                    <h6 class="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">Trigger Conditions</h6>
-                                    <p class="text-[11px] text-gray-500 dark:text-gray-400">Control when this activity becomes active.</p>
-                                  </div>
-                                </div>
-                                <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
-                                  <div>
-                                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Trigger Type</label>
-                                    <select v-model="action.trigger.type" @change="handleTriggerTypeChange(action)" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm">
-                                      <option v-for="option in PLAYBOOK_TRIGGER_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
-                                    </select>
-                                  </div>
-                                  <div v-if="action.trigger.type === 'after_action'">
-                                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">After Completing</label>
-                                    <select v-model="action.trigger.sourceActionKey" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm">
-                                      <option value="">Select action...</option>
-                                      <option v-for="opt in getActionOptions(stage, action)" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-                                    </select>
-                                  </div>
-                                  <div v-if="action.trigger.type === 'time_delay'" class="flex items-center gap-2">
-                                    <div class="flex-1">
-                                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Delay Amount</label>
-                                      <input type="number" min="0" v-model.number="action.trigger.delay.amount" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm" />
-                                    </div>
-                                    <div>
-                                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Unit</label>
-                                      <select v-model="action.trigger.delay.unit" class="px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm">
-                                        <option v-for="unit in PLAYBOOK_DELAY_UNIT_OPTIONS" :key="unit.value" :value="unit.value">{{ unit.label }}</option>
-                                      </select>
-                                    </div>
-                                  </div>
-                                  <div class="md:col-span-2">
-                                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Trigger Notes (optional)</label>
-                                    <textarea v-model="action.trigger.description" rows="2" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm" placeholder="Describe any additional trigger logic"></textarea>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div class="mt-4 border border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50/50 dark:bg-white/5">
-                                <div class="flex items-center justify-between">
-                                  <div>
-                                    <h6 class="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">Alerts & Notifications</h6>
-                                    <p class="text-[11px] text-gray-500 dark:text-gray-400">Keep owners informed about pending or overdue work.</p>
-                                  </div>
-                                  <button @click="addActionAlert(stage, action)" class="inline-flex items-center gap-1 px-2 py-1.5 text-[11px] font-medium bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-300 rounded-md hover:bg-brand-100 dark:hover:bg-brand-900/30">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                                    Add Alert
-                                  </button>
-                                </div>
-                                <div v-if="!action.alerts.length" class="mt-3 text-[11px] text-gray-500 dark:text-gray-400">No alerts configured.</div>
-                                <div v-else class="mt-3 space-y-3">
-                                  <div v-for="(alert, alertIndex) in action.alerts" :key="`${action.key}-alert-${alertIndex}`" class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white dark:bg-gray-900/60">
-                                    <div class="flex items-center justify-between">
-                                      <span class="text-xs font-medium text-gray-600 dark:text-gray-300">Alert {{ alertIndex + 1 }}</span>
-                                      <button @click="removeActionAlert(stage, action, alertIndex)" class="text-xs text-red-500 hover:text-red-600">Remove</button>
-                                    </div>
-                                    <div class="mt-2 grid grid-cols-1 md:grid-cols-3 gap-3">
-                                      <div>
-                                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Type</label>
-                                        <select v-model="alert.type" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm">
-                                          <option v-for="opt in PLAYBOOK_ALERT_TYPE_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-                                        </select>
-                                      </div>
-                                      <div>
-                                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Offset</label>
-                                        <div class="flex items-center gap-2">
-                                          <input type="number" min="0" v-model.number="alert.offset.amount" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm" />
-                                          <select v-model="alert.offset.unit" class="px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm">
-                                            <option v-for="opt in PLAYBOOK_DELAY_UNIT_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-                                          </select>
-                                        </div>
-                                      </div>
-                                      <div>
-                                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Recipients</label>
-                                        <input :value="alert.recipients?.join(', ') || ''" @input="alert.recipients = $event.target.value.split(',').map(v => v.trim()).filter(Boolean)" placeholder="owner, team" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm" />
-                                      </div>
-                                    </div>
-                                    <div class="mt-2">
-                                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Message (optional)</label>
-                                      <textarea v-model="alert.message" rows="2" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm"></textarea>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div class="mt-4 border border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50/50 dark:bg-white/5">
-                                <div class="flex items-center justify-between">
-                                  <div>
-                                    <h6 class="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">Documents & Resources</h6>
-                                    <p class="text-[11px] text-gray-500 dark:text-gray-400">Attach playbooks, templates, or forms for quick access.</p>
-                                  </div>
-                                  <button @click="addActionResource(stage, action)" class="inline-flex items-center gap-1 px-2 py-1.5 text-[11px] font-medium bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-300 rounded-md hover:bg-brand-100 dark:hover:bg-brand-900/30">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                                    Add Resource
-                                  </button>
-                                </div>
-                                <div v-if="!action.resources.length" class="mt-3 text-[11px] text-gray-500 dark:text-gray-400">No resources linked.</div>
-                                <div v-else class="mt-3 space-y-3">
-                                  <div v-for="(res, resIndex) in action.resources" :key="`${action.key}-resource-${resIndex}`" class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white dark:bg-gray-900/60">
-                                    <div class="flex items-center justify-between">
-                                      <span class="text-xs font-medium text-gray-600 dark:text-gray-300">Resource {{ resIndex + 1 }}</span>
-                                      <button @click="removeActionResource(stage, action, resIndex)" class="text-xs text-red-500 hover:text-red-600">Remove</button>
-                                    </div>
-                                    <div class="mt-2 grid grid-cols-1 md:grid-cols-3 gap-3">
-                                      <div>
-                                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Name</label>
-                                        <input v-model="res.name" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm" placeholder="e.g., Quote template" />
-                                      </div>
-                                      <div>
-                                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Type</label>
-                                        <select v-model="res.type" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm">
-                                          <option v-for="opt in PLAYBOOK_RESOURCE_TYPES" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-                                        </select>
-                                      </div>
-                                      <div>
-                                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">URL (optional)</label>
-                                        <input v-model="res.url" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm" placeholder="https://" />
-                                      </div>
-                                    </div>
-                                    <div class="mt-2">
-                                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Description</label>
-                                      <textarea v-model="res.description" rows="2" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-sm"></textarea>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div class="mt-3">
-                                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Dependencies</label>
-                                <select multiple v-model="action.dependencies" @change="cleanupPlaybookDependencies(stage)" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm h-24">
-                                  <option v-for="otherAction in stage.playbook.actions" :key="otherAction.key" :value="otherAction.key" :disabled="otherAction.key === action.key">
-                                    {{ otherAction.title }}
-                                  </option>
-                                </select>
-                                <p class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">Select other actions that must be completed first.</p>
-                              </div>
-
-                              <div class="mt-3">
-                                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Instructions / Notes</label>
-                                <textarea v-model="action.description" rows="2" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm" placeholder="Provide context or templates for this action"></textarea>
-                              </div>
-                            </div>
-                          </div>
                   </div>
-                      </div>
-                    </div>
+                  <div
+                    class="border border-dashed border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50/40 dark:bg-white/5 text-center text-xs text-gray-500 dark:text-gray-400 py-4 transition-colors"
+                    :class="stageDragOver.pipelineKey === currentPipeline.key && stageDragOver.index === currentPipeline.stages.length ? 'border-brand-400 text-brand-600 dark:text-brand-300' : ''"
+                    @dragover.prevent="onStageDragOver(currentPipeline.key, currentPipeline.stages.length)"
+                    @drop.prevent="onStageDrop(currentPipeline.key, currentPipeline.stages.length)"
+                  >
+                    Drop here to move stage to the end
                   </div>
                 </div>
               </div>
@@ -1528,13 +1236,329 @@
           </div>
         </div>
 
+        <div class="p-4" v-else-if="activeTopTab === 'playbooks'">
+          <div class="h-full flex flex-col lg:flex-row gap-4">
+            <aside class="w-full lg:w-80 flex-none bg-white dark:bg-gray-900/60 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
+              <div class="p-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between">
+                <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">Pipelines</div>
+                <button @click="addPipeline" class="px-3 py-1.5 text-xs font-medium bg-brand-600 hover:bg-brand-700 text-white rounded-lg transition-colors shadow-sm hover:shadow">
+                  Add
+                </button>
+              </div>
+              <div class="flex-1 overflow-y-auto divide-y divide-gray-200 dark:divide-gray-800">
+                <div
+                  v-for="(pipeline, index) in pipelineSettings"
+                  :key="pipeline.key || index"
+                  :class="[
+                    'p-4 cursor-pointer transition-colors',
+                    selectedPipelineKey === pipeline.key
+                      ? 'bg-brand-50 dark:bg-brand-900/20'
+                      : 'hover:bg-gray-50 dark:hover:bg-white/5'
+                  ]"
+                  @click="selectedPipelineKey = pipeline.key"
+                >
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <span class="w-2.5 h-2.5 rounded-full border border-white shadow" :style="{ backgroundColor: pipeline.color || DEFAULT_PIPELINE_COLOR }"></span>
+                      <div class="min-w-0">
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ pipeline.name }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ pipeline.stages?.length || 0 }} stage{{ (pipeline.stages?.length || 0) === 1 ? '' : 's' }}</p>
+                      </div>
+                    </div>
+                    <span v-if="pipeline.isDefault" class="text-xs font-medium text-brand-600 dark:text-brand-300">Default</span>
+                  </div>
+                  <div class="flex items-center gap-2 mt-3">
+                    <label class="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                      <input
+                        type="radio"
+                        name="default-playbook-pipeline"
+                        class="text-brand-600 border-gray-300 dark:border-gray-600 focus:ring-brand-500"
+                        :checked="pipeline.isDefault"
+                        @change.stop="setDefaultPipeline(pipeline.key)"
+                      />
+                      Default
+                    </label>
+                    <div class="ml-auto flex items-center gap-1">
+                      <button
+                        class="p-1 rounded text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
+                        :disabled="index === 0"
+                        :class="{ 'opacity-40 cursor-not-allowed': index === 0 }"
+                        @click.stop="movePipeline(pipeline.key, -1)"
+                        title="Move up"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                          <path fill-rule="evenodd" d="M10 4a.75.75 0 01.53.22l4.5 4.5a.75.75 0 11-1.06 1.06L10 5.81 6.03 9.78a.75.75 0 11-1.06-1.06l4.5-4.5A.75.75 0 0110 4z" clip-rule="evenodd" />
+                          <path d="M5.25 15.25a.75.75 0 01.75-.75h8a.75.75 0 010 1.5h-8a.75.75 0 01-.75-.75z" />
+                        </svg>
+                      </button>
+                      <button
+                        class="p-1 rounded text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
+                        :disabled="index === pipelineSettings.length - 1"
+                        :class="{ 'opacity-40 cursor-not-allowed': index === pipelineSettings.length - 1 }"
+                        @click.stop="movePipeline(pipeline.key, 1)"
+                        title="Move down"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                          <path fill-rule="evenodd" d="M10 16a.75.75 0 01-.53-.22l-4.5-4.5a.75.75 0 011.06-1.06L10 14.19l3.97-3.97a.75.75 0 111.06 1.06l-4.5 4.5A.75.75 0 0110 16z" clip-rule="evenodd" />
+                          <path d="M5.25 4.75a.75.75 0 01.75-.75h8a.75.75 0 010 1.5h-8a.75.75 0 01-.75-.75z" />
+                        </svg>
+                      </button>
+                      <button
+                        class="p-1 rounded text-red-500 hover:text-red-600 transition-colors"
+                        @click.stop="removePipeline(pipeline.key)"
+                        title="Remove pipeline"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                          <path fill-rule="evenodd" d="M8.75 3a.75.75 0 00-.75.75V5H5.5a.75.75 0 000 1.5h.538l.599 9.27A1.75 1.75 0 008.382 17.5h3.236a1.75 1.75 0 001.745-1.73l.599-9.27h.538a.75.75 0 000-1.5H12v-1.25A.75.75 0 0011.25 3h-2.5zM9.5 6.5v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0zm-2 0v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0z" clip-rule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div v-if="!pipelineSettings.length" class="p-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                  No pipelines yet.
+                </div>
+              </div>
+            </aside>
+            <section class="flex-1 min-w-0 bg-white dark:bg-gray-900/60 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
+              <div class="p-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">
+                    {{ currentPipeline?.name || 'Select a pipeline' }}
+                  </p>
+                  <p v-if="currentPipeline" class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ currentPipeline.stages?.length || 0 }} stage{{ (currentPipeline.stages?.length || 0) === 1 ? '' : 's' }} ·
+                    {{ currentPipeline.isDefault ? 'Default pipeline' : 'Custom pipeline' }}
+                  </p>
+                </div>
+              </div>
+              <div v-if="currentPipeline" class="flex-1 flex flex-col gap-6 p-4 overflow-hidden">
+                <div>
+                  <h4 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Stage Playbooks</h4>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Define guidance and automation for each stage in this pipeline.</p>
+                </div>
+                <div class="flex-1 overflow-x-auto pb-6">
+                  <div class="flex items-start gap-4 min-w-full">
+                    <div
+                      v-for="(stage, stageIndex) in currentPipeline.stages"
+                      :key="stage.key || stageIndex"
+                      class="w-[28rem] flex-shrink-0"
+                    >
+                      <div class="h-full flex flex-col rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 shadow-sm">
+                        <div class="p-4 border-b border-gray-200 dark:border-white/10 space-y-3">
+                          <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                              <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">
+                                {{ stage.name || `Stage ${stageIndex + 1}` }}
+                              </p>
+                              <p class="text-xs text-gray-500 dark:text-gray-400">
+                                Probability: {{ stage.probability ?? 0 }}% · Status: {{ stage.status || 'open' }}
+                              </p>
+                            </div>
+                            <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer flex-shrink-0">
+                              <input
+                                type="checkbox"
+                                v-model="stage.playbook.enabled"
+                                @change="handlePlaybookToggle(stage)"
+                                class="rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500"
+                              />
+                              <span>Enable</span>
+                            </label>
+                          </div>
+                          <button
+                            type="button"
+                            class="inline-flex items-center gap-2 text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+                            @click="toggleStageSettings(stage.key)"
+                          >
+                            <svg
+                              :class="[
+                                'w-4 h-4 transition-transform duration-200',
+                                isStageSettingsOpen(stage) ? 'rotate-180' : ''
+                              ]"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                            <span>Stage settings</span>
+                          </button>
+                          <transition name="fade">
+                            <div
+                              v-if="isStageSettingsOpen(stage)"
+                              class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 p-4 space-y-4"
+                            >
+                              <div class="grid grid-cols-1 gap-3">
+                                <div>
+                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Playbook Mode</label>
+                                  <select v-model="stage.playbook.mode" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm">
+                                    <option v-for="option in PLAYBOOK_MODE_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
+                                  </select>
+                                </div>
+                                <div>
+                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Exit Criteria</label>
+                                  <select v-model="stage.playbook.exitCriteria.type" @change="onPlaybookExitCriteriaChange(stage)" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm">
+                                    <option v-for="option in PLAYBOOK_EXIT_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
+                                  </select>
+                                </div>
+                                <div>
+                                  <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
+                                    <input type="checkbox" v-model="stage.playbook.autoAdvance" @change="onPlaybookAutoAdvanceChange(stage)" class="rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500" />
+                                    Auto-move to next stage when criteria met
+                                  </label>
+                                  <p class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">Automatically progress when conditions are satisfied.</p>
+                                </div>
+                                <div v-if="stage.playbook.autoAdvance">
+                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Next Stage</label>
+                                  <select v-model="stage.playbook.exitCriteria.nextStageKey" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm">
+                                    <option value="">Select stage...</option>
+                                    <option v-for="option in getNextStageOptions(currentPipeline, stage)" :key="option.value" :value="option.value">{{ option.label }}</option>
+                                  </select>
+                                </div>
+                                <div v-if="stage.playbook.exitCriteria.type === 'custom'">
+                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Custom Trigger Description</label>
+                                  <textarea v-model="stage.playbook.exitCriteria.customDescription" rows="2" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm" placeholder="Describe the conditions that should move this deal to the next stage"></textarea>
+                                </div>
+                                <div>
+                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Internal Notes (optional)</label>
+                                  <textarea v-model="stage.playbook.notes" rows="2" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm" placeholder="Provide additional guidance for your team"></textarea>
+                                </div>
+                              </div>
+                            </div>
+                          </transition>
+                        </div>
+                        <div class="flex-1 flex flex-col gap-4 p-4">
+                          <div class="flex items-start justify-between gap-3">
+                            <div>
+                              <h6 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Activities</h6>
+                              <p class="text-xs text-gray-500 dark:text-gray-400">Add and orchestrate the work your team completes in this stage.</p>
+                            </div>
+                            <button
+                              class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-brand-600 hover:bg-brand-700 text-white rounded-lg transition-colors shadow-sm hover:shadow"
+                              @click="addPlaybookAction(stage)"
+                              :disabled="!stage.playbook.enabled"
+                              :class="!stage.playbook.enabled ? 'opacity-50 cursor-not-allowed' : ''"
+                            >
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                              </svg>
+                              Add Activity
+                            </button>
+                          </div>
+                          <div v-if="!stage.playbook.enabled" class="flex-1 rounded-lg border border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 p-4 text-xs text-gray-500 dark:text-gray-400">
+                            Enable this playbook to manage activities for the stage.
+                          </div>
+                          <div v-else class="flex-1 flex flex-col gap-3 overflow-y-auto pr-1">
+                            <div v-if="!stage.playbook.actions.length" class="flex-1 rounded-lg border border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 px-4 py-8 text-center text-xs text-gray-500 dark:text-gray-400">
+                              No activities yet. Click "Add Activity" to build a guided checklist.
+                            </div>
+                            <div v-else class="space-y-3">
+                              <div
+                                v-for="(action, actionIndex) in stage.playbook.actions"
+                                :key="action.key || actionIndex"
+                                class="group border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900/70 p-4 shadow-sm hover:border-brand-500/70 hover:shadow transition-colors cursor-pointer"
+                                @click="openActionModal(stage, actionIndex)"
+                              >
+                                <div class="flex items-start justify-between gap-2">
+                                  <div class="min-w-0">
+                                    <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                      {{ action.title || `Action ${actionIndex + 1}` }}
+                                    </p>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                      {{ getPlaybookActionTypeLabel(action.actionType) }}
+                                      <span v-if="action.dueInDays !== null && action.dueInDays !== undefined" class="ml-1">• Due in {{ action.dueInDays }} day{{ action.dueInDays === 1 ? '' : 's' }}</span>
+                                    </p>
+                                  </div>
+                                  <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                      class="p-1 rounded text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-200 transition-colors"
+                                      :disabled="actionIndex === 0"
+                                      :class="{ 'opacity-40 cursor-not-allowed': actionIndex === 0 }"
+                                      @click.stop="movePlaybookAction(stage, actionIndex, -1)"
+                                      title="Move up"
+                                    >
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                                        <path fill-rule="evenodd" d="M10 4a.75.75 0 01.53.22l4.5 4.5a.75.75 0 11-1.06 1.06L10 5.81 6.03 9.78a.75.75 0 11-1.06-1.06l4.5-4.5A.75.75 0 0110 4z" clip-rule="evenodd" />
+                                        <path d="M5.25 15.25a.75.75 0 01.75-.75h8a.75.75 0 010 1.5h-8a.75.75 0 01-.75-.75z" />
+                                      </svg>
+                                    </button>
+                                    <button
+                                      class="p-1 rounded text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-200 transition-colors"
+                                      :disabled="actionIndex === stage.playbook.actions.length - 1"
+                                      :class="{ 'opacity-40 cursor-not-allowed': actionIndex === stage.playbook.actions.length - 1 }"
+                                      @click.stop="movePlaybookAction(stage, actionIndex, 1)"
+                                      title="Move down"
+                                    >
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                                        <path fill-rule="evenodd" d="M10 16a.75.75 0 01-.53-.22l-4.5-4.5a.75.75 0 011.06-1.06L10 14.19l3.97-3.97a.75.75 0 111.06 1.06l-4.5 4.5A.75.75 0 0110 16z" clip-rule="evenodd" />
+                                        <path d="M5.25 4.75a.75.75 0 01.75-.75h8a.75.75 0 010 1.5h-8a.75.75 0 01-.75-.75z" />
+                                      </svg>
+                                    </button>
+                                    <button
+                                      class="p-1 rounded text-red-500 hover:text-red-600 transition-colors"
+                                      @click.stop="removePlaybookAction(stage, actionIndex)"
+                                      title="Remove activity"
+                                    >
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                                        <path fill-rule="evenodd" d="M8.75 3a.75.75 0 00-.75.75V5H5.5a.75.75 0 000 1.5h.538l.599 9.27A1.75 1.75 0 008.382 17.5h3.236a1.75 1.75 0 001.745-1.73l.599-9.27h.538a.75.75 0 000-1.5H12v-1.25A.75.75 0 0011.25 3h-2.5zM9.5 6.5v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0zm-2 0v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0z" clip-rule="evenodd" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                </div>
+                                <div class="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400">
+                                  <span v-if="action.required" class="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">Required</span>
+                                  <span v-if="action.autoCreate" class="px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">Auto-create</span>
+                                  <span v-if="action.dependencies?.length" class="px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300">
+                                    {{ action.dependencies.length }} dependenc{{ action.dependencies.length === 1 ? 'y' : 'ies' }}
+                                  </span>
+                                  <span class="truncate">
+                                    Assigned to {{ getPlaybookAssignmentLabel(action.assignment?.type) }}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-if="!currentPipeline" class="flex-1 flex items-center justify-center p-6 text-sm text-gray-500 dark:text-gray-400">
+                Select a pipeline on the left to configure playbooks.
+              </div>
+            </section>
+          </div>
+        </div>
+
         <div class="p-4" v-else>
           <!-- Quick Create Mode Toggle - Advanced mode hidden for now -->
           <!-- <div class="mb-3 flex items-center justify-between">
             <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">Quick Create Mode</div>
             <div class="inline-flex rounded-lg border border-gray-200 dark:border-white/10 overflow-hidden text-sm">
-              <button @click="quickMode = 'simple'" :class="quickMode === 'simple' ? 'bg-brand-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'" class="px-3 py-1.5">Simple</button>
-              <button @click="quickMode = 'advanced'" :class="quickMode === 'advanced' ? 'bg-brand-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'" class="px-3 py-1.5">Advanced</button>
+              <button
+                @click="quickMode = 'simple'"
+                :class="[
+                  'px-3 py-1.5',
+                  quickMode === 'simple'
+                    ? 'bg-brand-600 text-white'
+                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                ]"
+              >
+                Simple
+              </button>
+              <button
+                @click="quickMode = 'advanced'"
+                :class="[
+                  'px-3 py-1.5',
+                  quickMode === 'advanced'
+                    ? 'bg-brand-600 text-white'
+                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                ]"
+              >
+                Advanced
+              </button>
             </div>
           </div> -->
           <div class="flex gap-4">
@@ -1606,9 +1630,12 @@
                     <div class="grid grid-cols-12 gap-2"
                          @dragover.prevent="onRowDragOver(ri)"
                          @drop.prevent="onRowDrop(ri)">
-                      <div v-for="(col, ci) in row.cols" :key="ci"
-                           :class="[spanClass(col.span), dragColOver.ri===ri && dragColOver.ci===ci ? 'ring-2 ring-brand-500/50' : '' ]"
-                           class="border border-dashed border-gray-300 dark:border-white/10 rounded-lg p-3"
+                    <div v-for="(col, ci) in row.cols" :key="ci"
+                           :class="[
+                             'border border-dashed border-gray-300 dark:border-white/10 rounded-lg p-3',
+                             spanClass(col.span),
+                             dragColOver.ri === ri && dragColOver.ci === ci ? 'ring-2 ring-brand-500/50' : ''
+                           ]"
                            draggable="true"
                            @dragstart="onColDragStart(ri, ci)"
                            @dragover.prevent="onColDragOver(ri, ci)"
@@ -1655,7 +1682,14 @@
         </div>
         <div class="p-6 space-y-3">
           <div v-for="(row, ri) in quickLayout.rows" :key="`pv-${ri}`" class="grid grid-cols-12 gap-3">
-            <div v-for="(col, ci) in row.cols" :key="`pv-${ri}-${ci}`" :class="[spanClass(col.span)]" class="bg-gray-50 dark:bg-white/5 rounded border border-gray-200 dark:border-white/10 px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
+            <div
+              v-for="(col, ci) in row.cols"
+              :key="`pv-${ri}-${ci}`"
+              :class="[
+                'bg-gray-50 dark:bg-white/5 rounded border border-gray-200 dark:border-white/10 px-3 py-2 text-sm text-gray-700 dark:text-gray-300',
+                spanClass(col.span)
+              ]"
+            >
               <template v-if="col.fieldKey">
                 <div class="text-xs font-medium text-gray-800 dark:text-gray-200">{{ displayFieldLabel(col.fieldKey) }}</div>
                 <div class="mt-1">
@@ -1674,6 +1708,362 @@
     </div>
 
     <!-- Module Form Modal -->
+    <transition name="fade">
+      <div
+        v-if="isActionModalOpen && actionModalStage && actionModalAction"
+        class="fixed inset-0 z-[70] flex items-center justify-center px-4 py-8"
+      >
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="closeActionModal"></div>
+        <div class="relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center justify-between border-b border-gray-200 dark:border-white/10 px-6 py-4">
+            <div class="min-w-0">
+              <p class="text-sm font-semibold text-gray-900 dark:text-white">Configure Activity</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                Stage: {{ actionModalStage.name || 'Untitled stage' }} • Activity {{ actionModalActionIndex + 1 }}
+              </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button
+                class="px-3 py-1.5 text-xs font-semibold text-red-600 dark:text-red-300 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                @click="removePlaybookAction(actionModalStage, actionModalActionIndex)"
+                :disabled="actionModalActionIndex < 0"
+              >
+                Delete
+              </button>
+              <button
+                class="px-3 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                @click="closeActionModal"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+          <div class="max-h-[calc(90vh-4.5rem)] overflow-y-auto px-6 py-6 space-y-6">
+            <div class="space-y-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 p-5">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Summary</h3>
+                <span class="text-xs text-gray-500 dark:text-gray-400">Key details about this activity</span>
+              </div>
+              <div class="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Title</label>
+                  <input
+                    v-model="actionModalAction.title"
+                    @change="refreshPlaybookActionKey(actionModalStage, actionModalAction)"
+                    class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
+                    placeholder="e.g., Send proposal"
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Action Type</label>
+                  <select
+                    v-model="actionModalAction.actionType"
+                    class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
+                  >
+                    <option v-for="option in PLAYBOOK_ACTION_TYPES" :key="option.value" :value="option.value">{{ option.label }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Due (days after stage entry)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    v-model.number="actionModalAction.dueInDays"
+                    class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
+                  />
+                  <p class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">Set to 0 if the activity should occur on the same day.</p>
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Assignment</label>
+                  <select
+                    v-model="actionModalAction.assignment.type"
+                    class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
+                  >
+                    <option v-for="option in PLAYBOOK_ASSIGNMENT_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
+                  </select>
+                  <input
+                    v-if="['specific_user', 'role', 'team'].includes(actionModalAction.assignment.type)"
+                    v-model="actionModalAction.assignment.targetName"
+                    class="mt-2 w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
+                    :placeholder="`Specify ${actionModalAction.assignment.type.replace('_', ' ')}`"
+                  />
+                </div>
+              </div>
+              <div class="flex flex-wrap items-center gap-6">
+                <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                  <input type="checkbox" v-model="actionModalAction.required" class="rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500" />
+                  Required to complete stage
+                </label>
+                <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                  <input type="checkbox" v-model="actionModalAction.autoCreate" class="rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500" />
+                  Auto-create when stage starts
+                </label>
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Description</label>
+                <textarea
+                  v-model="actionModalAction.description"
+                  rows="3"
+                  class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
+                  placeholder="Add context or instructions for the team..."
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="space-y-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 p-5">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Trigger & Automation</h3>
+                <span class="text-xs text-gray-500 dark:text-gray-400">When should this activity become active?</span>
+              </div>
+              <div class="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Trigger Type</label>
+                  <select
+                    v-model="actionModalAction.trigger.type"
+                    @change="handleTriggerTypeChange(actionModalAction)"
+                    class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
+                  >
+                    <option v-for="option in PLAYBOOK_TRIGGER_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
+                  </select>
+                </div>
+                <div v-if="actionModalAction.trigger.type === 'after_action'">
+                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Wait for activity</label>
+                  <select
+                    v-model="actionModalAction.trigger.sourceActionKey"
+                    class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
+                  >
+                    <option value="">Select activity...</option>
+                    <option v-for="option in getActionOptions(actionModalStage, actionModalAction)" :key="option.value" :value="option.value">
+                      {{ option.label }}
+                    </option>
+                  </select>
+                  <p class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">The activity will unlock after the selected one is marked complete.</p>
+                </div>
+              </div>
+              <div v-if="actionModalAction.trigger.type === 'time_delay'" class="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Delay amount</label>
+                  <input
+                    type="number"
+                    min="0"
+                    :value="actionModalAction.trigger.delay?.amount ?? 0"
+                    @input="updateTriggerDelayAmount(actionModalAction, $event.target.value)"
+                    class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Delay unit</label>
+                  <select
+                    :value="actionModalAction.trigger.delay?.unit || 'hours'"
+                    @change="updateTriggerDelayUnit(actionModalAction, $event.target.value)"
+                    class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
+                  >
+                    <option v-for="option in PLAYBOOK_DELAY_UNIT_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
+                  </select>
+                </div>
+              </div>
+              <div v-if="actionModalAction.trigger.type === 'custom'" class="space-y-2">
+                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Custom trigger details</label>
+                <textarea
+                  v-model="actionModalAction.trigger.description"
+                  rows="3"
+                  class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
+                  placeholder="Describe the custom conditions or automations required."
+                ></textarea>
+              </div>
+              <div v-if="actionModalAction.trigger.conditions?.length" class="rounded-lg bg-white/70 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 p-3 text-xs text-gray-600 dark:text-gray-300">
+                <p class="font-medium mb-2">Existing conditions</p>
+                <ul class="space-y-1">
+                  <li v-for="(condition, conditionIndex) in actionModalAction.trigger.conditions" :key="conditionIndex">
+                    • {{ condition.field || 'Field' }} {{ condition.operator || 'equals' }} {{ condition.value ?? '—' }}
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="space-y-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 p-5">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Dependencies</h3>
+                <span class="text-xs text-gray-500 dark:text-gray-400">Control the order activities unlock</span>
+              </div>
+              <div v-if="getActionOptions(actionModalStage, actionModalAction).length" class="space-y-2">
+                <label
+                  v-for="option in getActionOptions(actionModalStage, actionModalAction)"
+                  :key="option.value"
+                  class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    :checked="actionModalAction.dependencies?.includes(option.value)"
+                    @change="toggleActionDependency(actionModalStage, actionModalAction, option.value, $event.target.checked)"
+                    class="rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500"
+                  />
+                  {{ option.label }}
+                </label>
+              </div>
+              <div v-else class="text-xs text-gray-500 dark:text-gray-400">
+                Add at least one more activity to set dependencies.
+              </div>
+            </div>
+
+            <div class="space-y-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 p-5">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Alerts & Reminders</h3>
+                <button
+                  class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-brand-600 hover:bg-brand-700 text-white rounded-lg transition-colors shadow-sm hover:shadow"
+                  @click="addActionAlert(actionModalStage, actionModalAction)"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                  Add alert
+                </button>
+              </div>
+              <div v-if="!actionModalAction.alerts?.length" class="rounded-lg border border-dashed border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-gray-900/40 px-4 py-6 text-xs text-gray-500 dark:text-gray-400 text-center">
+                No alerts configured. Add reminders to keep owners on track.
+              </div>
+              <div v-else class="space-y-4">
+                <div
+                  v-for="(alert, alertIndex) in actionModalAction.alerts"
+                  :key="alertIndex"
+                  class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 p-4 space-y-4"
+                >
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Alert {{ alertIndex + 1 }}</span>
+                    <button
+                      class="text-xs text-red-600 dark:text-red-300 hover:underline"
+                      @click="removeActionAlert(actionModalStage, actionModalAction, alertIndex)"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                  <div class="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Alert Type</label>
+                      <select
+                        v-model="alert.type"
+                        class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
+                      >
+                        <option v-for="option in PLAYBOOK_ALERT_TYPE_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Send offset</label>
+                      <div class="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="0"
+                          :value="alert.offset?.amount ?? 0"
+                          @input="updateAlertOffsetAmount(alert, $event.target.value)"
+                          class="w-24 px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
+                        />
+                        <select
+                          :value="alert.offset?.unit || 'hours'"
+                          @change="updateAlertOffsetUnit(alert, $event.target.value)"
+                          class="flex-1 px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
+                        >
+                          <option v-for="option in PLAYBOOK_DELAY_UNIT_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Recipients (comma separated emails/usernames)</label>
+                    <input
+                      :value="(alert.recipients || []).join(', ')"
+                      @input="updateAlertRecipients(alert, $event.target.value)"
+                      class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
+                      placeholder="e.g., revenue-ops@company.com, manager@company.com"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Message</label>
+                    <textarea
+                      v-model="alert.message"
+                      rows="2"
+                      class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
+                      placeholder="Reminder content that will be sent to recipients"
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 p-5">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Resources</h3>
+                <button
+                  class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-brand-600 hover:bg-brand-700 text-white rounded-lg transition-colors shadow-sm hover:shadow"
+                  @click="addActionResource(actionModalStage, actionModalAction)"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                  Add resource
+                </button>
+              </div>
+              <div v-if="!actionModalAction.resources?.length" class="rounded-lg border border-dashed border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-gray-900/40 px-4 py-6 text-xs text-gray-500 dark:text-gray-400 text-center">
+                No supporting documents yet. Attach collateral to speed up execution.
+              </div>
+              <div v-else class="space-y-4">
+                <div
+                  v-for="(resource, resourceIndex) in actionModalAction.resources"
+                  :key="resourceIndex"
+                  class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 p-4 space-y-4"
+                >
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Resource {{ resourceIndex + 1 }}</span>
+                    <button
+                      class="text-xs text-red-600 dark:text-red-300 hover:underline"
+                      @click="removeActionResource(actionModalStage, actionModalAction, resourceIndex)"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                  <div class="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Name</label>
+                      <input
+                        v-model="resource.name"
+                        class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
+                        placeholder="e.g., Proposal template"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Type</label>
+                      <select
+                        v-model="resource.type"
+                        class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
+                      >
+                        <option v-for="option in PLAYBOOK_RESOURCE_TYPES" :key="option.value" :value="option.value">{{ option.label }}</option>
+                      </select>
+                    </div>
+                    <div class="md:col-span-2">
+                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">URL or attachment reference</label>
+                      <input
+                        v-model="resource.url"
+                        class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
+                        placeholder="https://..."
+                      />
+                    </div>
+                    <div class="md:col-span-2">
+                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Description</label>
+                      <textarea
+                        v-model="resource.description"
+                        rows="2"
+                        class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
+                        placeholder="What should the team know about this resource?"
+                      ></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+
     <ModuleFormModal
       v-if="showFormModal"
       :module="editingModule"
@@ -1684,7 +2074,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, computed, watch, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import ModuleFormModal from './ModuleFormModal.vue';
@@ -1736,7 +2126,7 @@ const baseTopTabs = [
 const TOP_TAB_IDS_BASE = ['details', 'fields', 'relationships', 'quick'];
 function getAllowedTopTabs(moduleKey) {
   if (moduleKey === 'deals') {
-    return [...TOP_TAB_IDS_BASE, 'pipeline'];
+    return [...TOP_TAB_IDS_BASE, 'pipeline', 'playbooks'];
   }
   return [...TOP_TAB_IDS_BASE];
 }
@@ -1745,6 +2135,7 @@ const topTabs = computed(() => {
   const tabs = [...baseTopTabs];
   if (moduleKey === 'deals') {
     tabs.push({ id: 'pipeline', name: 'Pipeline Settings' });
+    tabs.push({ id: 'playbooks', name: 'Playbook Configuration' });
   }
   return tabs;
 });
@@ -1753,7 +2144,8 @@ const tabTitleMap = {
   fields: 'Field Configurations',
   relationships: 'Relationships',
   quick: 'Quick Create',
-  pipeline: 'Pipeline Settings'
+  pipeline: 'Pipeline Settings',
+  playbooks: 'Playbook Configuration'
 };
 const currentTopTabLabel = computed(() => tabTitleMap[activeTopTab.value] || 'Module Details');
 // Initialize activeTopTab from URL or localStorage, default to 'fields'
@@ -1790,6 +2182,12 @@ const colSpanClasses = [
 
 const pipelineSettings = ref([]);
 const selectedPipelineKey = ref('');
+const stageSettingsExpanded = ref({});
+const actionModalState = reactive({
+  open: false,
+  stageKey: '',
+  actionIndex: null
+});
 const pipelineStageStatusOptions = [
   { value: 'open', label: 'Open' },
   { value: 'won', label: 'Won (Closed)' },
@@ -2161,6 +2559,27 @@ const currentPipeline = computed(() => {
   return pipeline || null;
 });
 
+const actionModalStage = computed(() => {
+  if (!actionModalState.open) return null;
+  const pipeline = currentPipeline.value;
+  if (!pipeline || !Array.isArray(pipeline.stages)) return null;
+  return pipeline.stages.find(stage => stage.key === actionModalState.stageKey) || null;
+});
+
+const actionModalAction = computed(() => {
+  const stage = actionModalStage.value;
+  if (!stage || !Array.isArray(stage.playbook?.actions)) return null;
+  const index = actionModalState.actionIndex;
+  if (typeof index !== 'number' || index < 0) return null;
+  return stage.playbook.actions[index] || null;
+});
+
+const actionModalActionIndex = computed(() =>
+  typeof actionModalState.actionIndex === 'number' ? actionModalState.actionIndex : -1
+);
+
+const isActionModalOpen = computed(() => !!(actionModalState.open && actionModalStage.value && actionModalAction.value));
+
 function ensurePipelineSelection() {
   if (!pipelineTabEnabled.value || pipelineSettings.value.length === 0) {
     selectedPipelineKey.value = '';
@@ -2311,6 +2730,37 @@ function moveStage(pipeline, stageIndex, direction) {
   pipeline.stages.forEach((s, idx) => (s.order = idx));
 }
 
+function isStageSettingsOpen(stage) {
+  if (!stage) return false;
+  return !!stageSettingsExpanded.value[stage.key];
+}
+
+function toggleStageSettings(stageKey) {
+  if (!stageKey) return;
+  stageSettingsExpanded.value = {
+    ...stageSettingsExpanded.value,
+    [stageKey]: !stageSettingsExpanded.value[stageKey]
+  };
+}
+
+function openActionModal(stage, actionIndex = 0) {
+  if (!stage) return;
+  ensureStagePlaybook(stage);
+  const clampedIndex = Math.min(
+    Math.max(0, typeof actionIndex === 'number' ? actionIndex : 0),
+    stage.playbook.actions.length - 1
+  );
+  actionModalState.open = true;
+  actionModalState.stageKey = stage.key;
+  actionModalState.actionIndex = clampedIndex;
+}
+
+function closeActionModal() {
+  actionModalState.open = false;
+  actionModalState.stageKey = '';
+  actionModalState.actionIndex = null;
+}
+
 function ensureStagePlaybook(stage) {
   if (!stage) return;
   if (!stage.playbook || typeof stage.playbook !== 'object') {
@@ -2429,6 +2879,7 @@ function addPlaybookAction(stage) {
     resources: [],
     metadata: {}
   });
+  openActionModal(stage, stage.playbook.actions.length - 1);
 }
 
 function removePlaybookAction(stage, actionIndex) {
@@ -2440,6 +2891,13 @@ function removePlaybookAction(stage, actionIndex) {
       action.dependencies = action.dependencies.filter(dep => dep !== removed.key);
     });
   }
+  if (actionModalState.open && stage.key === actionModalState.stageKey) {
+    if (actionModalState.actionIndex === actionIndex) {
+      closeActionModal();
+    } else if (typeof actionModalState.actionIndex === 'number' && actionModalState.actionIndex > actionIndex) {
+      actionModalState.actionIndex = Math.max(0, actionModalState.actionIndex - 1);
+    }
+  }
 }
 
 function movePlaybookAction(stage, actionIndex, direction) {
@@ -2448,6 +2906,10 @@ function movePlaybookAction(stage, actionIndex, direction) {
   if (newIndex < 0 || newIndex >= stage.playbook.actions.length) return;
   const [action] = stage.playbook.actions.splice(actionIndex, 1);
   stage.playbook.actions.splice(newIndex, 0, action);
+  if (actionModalState.open && stage.key === actionModalState.stageKey && action?.key) {
+    const updatedIndex = stage.playbook.actions.findIndex(a => a.key === action.key);
+    actionModalState.actionIndex = updatedIndex;
+  }
 }
 
 function refreshPlaybookActionKey(stage, action) {
@@ -2483,11 +2945,31 @@ function getPlaybookActionTypeLabel(actionType) {
   return option ? option.label : 'Task';
 }
 
+function getPlaybookAssignmentLabel(type) {
+  const option = PLAYBOOK_ASSIGNMENT_OPTIONS.find(opt => opt.value === type);
+  return option ? option.label : 'Deal Owner';
+}
+
 function getActionOptions(stage, currentAction) {
   if (!stage || !Array.isArray(stage.playbook?.actions)) return [];
   return stage.playbook.actions
     .filter(action => action.key !== currentAction.key)
     .map(action => ({ value: action.key, label: action.title }));
+}
+
+function toggleActionDependency(stage, action, dependencyKey, checked) {
+  ensureStagePlaybook(stage);
+  if (!action || !dependencyKey) return;
+  if (!Array.isArray(action.dependencies)) {
+    action.dependencies = [];
+  }
+  if (checked) {
+    if (!action.dependencies.includes(dependencyKey)) {
+      action.dependencies.push(dependencyKey);
+    }
+  } else {
+    action.dependencies = action.dependencies.filter(dep => dep !== dependencyKey);
+  }
 }
 
 function handleTriggerTypeChange(action) {
@@ -2514,6 +2996,27 @@ function handleTriggerTypeChange(action) {
   }
 }
 
+function ensureTriggerDelay(action) {
+  if (!action) return;
+  if (!action.trigger || typeof action.trigger !== 'object') {
+    action.trigger = normalizeActionTrigger({});
+  }
+  if (!action.trigger.delay || typeof action.trigger.delay !== 'object') {
+    action.trigger.delay = { amount: 0, unit: 'hours' };
+  }
+}
+
+function updateTriggerDelayAmount(action, value) {
+  ensureTriggerDelay(action);
+  action.trigger.delay.amount = Math.max(0, Number(value) || 0);
+}
+
+function updateTriggerDelayUnit(action, unit) {
+  ensureTriggerDelay(action);
+  const fallback = PLAYBOOK_DELAY_UNIT_OPTIONS[0]?.value || 'hours';
+  action.trigger.delay.unit = PLAYBOOK_DELAY_UNIT_OPTIONS.some(opt => opt.value === unit) ? unit : fallback;
+}
+
 function addActionAlert(stage, action) {
   ensureStagePlaybook(stage);
   if (!Array.isArray(action.alerts)) {
@@ -2530,6 +3033,33 @@ function addActionAlert(stage, action) {
 function removeActionAlert(stage, action, alertIndex) {
   if (!Array.isArray(action.alerts)) return;
   action.alerts.splice(alertIndex, 1);
+}
+
+function ensureAlertOffset(alert) {
+  if (!alert) return;
+  if (!alert.offset || typeof alert.offset !== 'object') {
+    alert.offset = { amount: 0, unit: 'hours' };
+  }
+}
+
+function updateAlertOffsetAmount(alert, value) {
+  ensureAlertOffset(alert);
+  alert.offset.amount = Math.max(0, Number(value) || 0);
+}
+
+function updateAlertOffsetUnit(alert, unit) {
+  ensureAlertOffset(alert);
+  const fallback = PLAYBOOK_DELAY_UNIT_OPTIONS[0]?.value || 'hours';
+  alert.offset.unit = PLAYBOOK_DELAY_UNIT_OPTIONS.some(opt => opt.value === unit) ? unit : fallback;
+}
+
+function updateAlertRecipients(alert, value) {
+  if (!alert) return;
+  const recipients = String(value || '')
+    .split(',')
+    .map(r => r.trim())
+    .filter(Boolean);
+  alert.recipients = recipients;
 }
 
 function addActionResource(stage, action) {
@@ -2996,7 +3526,7 @@ watch(pipelineSettings, () => {
 });
 
 watch(activeTopTab, (tab) => {
-  if (tab !== 'pipeline') return;
+  if (!['pipeline', 'playbooks'].includes(tab)) return;
   if (!pipelineTabEnabled.value) return;
   ensurePipelineSelection();
 });
@@ -3517,8 +4047,7 @@ function toggleQuickCreate(key, checked) {
 }
 
 function toggleQuickRow(field) {
-  if (!field || !field.key) return;
-  if (field.required) return; // cannot toggle required
+  if (!field || !field.key) return; // cannot toggle required
   const has = quickCreateSelected.value.has(field.key);
   toggleQuickCreate(field.key, !has);
   // toggleQuickCreate already calls autoSaveQuickCreate
@@ -4163,11 +4692,98 @@ watch(activeSubTab, (v) => {
 });
 
 // Persist quick mode to URL
+watch(selectedPipelineKey, () => {
+  stageSettingsExpanded.value = {};
+});
+
+watch(currentPipeline, (pipeline) => {
+  stageSettingsExpanded.value = {};
+  if (!actionModalState.open) return;
+  const stage = actionModalStage.value;
+  const action = actionModalAction.value;
+  if (!pipeline || !stage || !action) {
+    closeActionModal();
+  }
+});
+
+watch([actionModalStage, actionModalAction], ([stage, action]) => {
+  if (!actionModalState.open) return;
+  if (!stage || !action) {
+    closeActionModal();
+  }
+});
+
 watch(quickMode, (v) => {
   const mod = selectedModule.value;
   if (!mod) return;
   router.replace({ query: { ...route.query, quickMode: v } });
 });
+
+const stageDragSource = ref({ pipelineKey: '', index: null });
+const stageDragOver = ref({ pipelineKey: '', index: null });
+
+function resetStageDrag() {
+  stageDragSource.value = { pipelineKey: '', index: null };
+  stageDragOver.value = { pipelineKey: '', index: null };
+}
+
+function onStageDragStart(pipelineKey, stageIndex, event) {
+  stageDragSource.value = { pipelineKey, index: stageIndex };
+  stageDragOver.value = { pipelineKey, index: stageIndex };
+  if (event?.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', `${pipelineKey}:${stageIndex}`);
+  }
+}
+
+function onStageDragOver(pipelineKey, stageIndex) {
+  if (stageDragSource.value.pipelineKey !== pipelineKey) return;
+  stageDragOver.value = { pipelineKey, index: stageIndex };
+}
+
+function onStageDrop(pipelineKey, stageIndex) {
+  const source = stageDragSource.value;
+  if (source.pipelineKey !== pipelineKey || source.index === null) {
+    resetStageDrag();
+    return;
+  }
+  const pipeline = pipelineSettings.value.find(p => p.key === pipelineKey);
+  if (!pipeline) {
+    resetStageDrag();
+    return;
+  }
+  let from = source.index;
+  let to = stageIndex;
+  if (to > pipeline.stages.length) to = pipeline.stages.length;
+  if (from === to) {
+    resetStageDrag();
+    return;
+  }
+  const [stage] = pipeline.stages.splice(from, 1);
+  if (to > pipeline.stages.length) {
+    to = pipeline.stages.length;
+  }
+  if (from < to) {
+    to -= 1;
+  }
+  pipeline.stages.splice(to, 0, stage);
+  pipeline.stages.forEach((s, idx) => (s.order = idx));
+  resetStageDrag();
+}
+
+function onStageListDragOver(pipelineKey) {
+  if (stageDragSource.value.pipelineKey !== pipelineKey) return;
+  stageDragOver.value = { pipelineKey, index: pipelineSettings.value.find(p => p.key === pipelineKey)?.stages.length ?? 0 };
+}
+
+function onStageListDrop(pipelineKey) {
+  const pipeline = pipelineSettings.value.find(p => p.key === pipelineKey);
+  if (!pipeline) {
+    resetStageDrag();
+    return;
+  }
+  onStageDrop(pipelineKey, pipeline.stages.length);
+}
 </script>
 
 
