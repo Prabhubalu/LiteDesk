@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted, inject } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import { useTabs } from '@/composables/useTabs';
 import { XMarkIcon } from '@heroicons/vue/20/solid';
 
@@ -7,6 +7,8 @@ const { tabs, activeTabId, switchToTab, closeTab, closeOtherTabs, closeAllTabs }
 
 // Get sidebar state from parent (App.vue passes it via provide/inject or we calculate it)
 const viewportWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1920);
+const tabBarRef = ref(null);
+const DEFAULT_TOP_OFFSET = 64;
 
 // Calculate the actual available width for TabBar
 // Account for sidebar width (either 256px expanded or 80px collapsed)
@@ -44,6 +46,20 @@ const tabBarLeft = computed(() => {
   const sidebarCollapsed = localStorage.getItem('litedesk-sidebar-collapsed') === 'true';
   return sidebarCollapsed ? '80px' : '256px';
 });
+
+const updateTabBarOffset = () => {
+  const el = tabBarRef.value;
+
+  if (!(el instanceof HTMLElement) || getComputedStyle(el).display === 'none') {
+    document.documentElement.style.removeProperty('--tabbar-offset');
+    return;
+  }
+
+  const rect = el.getBoundingClientRect();
+  const offset = Math.max(DEFAULT_TOP_OFFSET, Math.round(rect.bottom));
+
+  document.documentElement.style.setProperty('--tabbar-offset', `${offset}px`);
+};
 
 // Drag and drop state
 const draggedTabId = ref(null);
@@ -166,6 +182,7 @@ const handleClickOutside = () => {
 // Update viewport width on resize
 const handleResize = () => {
   viewportWidth.value = window.innerWidth;
+  updateTabBarOffset();
 };
 
 // Listen for sidebar toggle custom event
@@ -177,6 +194,9 @@ const handleSidebarToggle = (e) => {
   viewportWidth.value = currentWidth + 1;
   setTimeout(() => {
     viewportWidth.value = currentWidth;
+    nextTick(() => {
+      updateTabBarOffset();
+    });
   }, 0);
 };
 
@@ -188,17 +208,22 @@ onMounted(() => {
   // Set initial viewport width
   viewportWidth.value = window.innerWidth;
   console.log('📐 TabBar mounted');
+  nextTick(() => {
+    updateTabBarOffset();
+  });
 });
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
   window.removeEventListener('resize', handleResize);
   window.removeEventListener('sidebar-toggle', handleSidebarToggle);
+  document.documentElement.style.removeProperty('--tabbar-offset');
 });
 </script>
 
 <template>
   <div 
+    ref="tabBarRef"
     class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 fixed top-16 left-0 right-0 lg:top-0 lg:left-auto lg:right-auto z-30 overflow-x-hidden transition-all duration-300 ease-in-out"
     :style="{ 
       width: tabBarWidth + 'px',

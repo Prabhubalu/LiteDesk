@@ -47,10 +47,14 @@ async function createDefaultAdmin() {
 
         console.log('🔗 Connecting to MongoDB...');
         
-        // Connect to master database (litedesk_master)
-        const baseUri = MONGO_URI.split('/').slice(0, -1).join('/');
+// Preserve any query string (e.g., authSource)
+const [uriWithoutQuery, queryPart] = MONGO_URI.split('?');
+const connectionQuery = queryPart ? `?${queryPart}` : '';
+
+// Connect to master database (litedesk_master)
+const baseUri = uriWithoutQuery.split('/').slice(0, -1).join('/');
         const masterDbName = 'litedesk_master';
-        const masterUri = `${baseUri}/${masterDbName}`;
+const masterUri = `${baseUri}/${masterDbName}${connectionQuery}`;
         
         await mongoose.connect(masterUri);
         console.log(`✅ Connected to MongoDB master database: ${masterDbName}`);

@@ -7,7 +7,7 @@ import LandingPage from '@/views/LandingPage.vue'
 import Dashboard from '@/views/Dashboard.vue'
 import Nav from '@/components/Nav.vue';
 import TabBar from '@/components/TabBar.vue';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 
 const authStore = useAuthStore();
@@ -22,6 +22,12 @@ const { colorMode } = useColorMode();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 const hideShell = computed(() => !!route.meta.hideShell);
 
+const DEFAULT_CONTENT_OFFSET = 0;
+const EXTRA_OFFSET_LIGHT = '2rem';
+const EXTRA_OFFSET_LARGE = '2rem';
+const contentWrapperRef = ref(null);
+const tableStickyOffset = ref(`calc(${DEFAULT_CONTENT_OFFSET}px + ${EXTRA_OFFSET_LIGHT})`);
+
 // Sidebar collapsed state - Load from localStorage, default to false
 const sidebarCollapsed = ref(
   localStorage.getItem('litedesk-sidebar-collapsed') === 'true'
@@ -30,7 +36,44 @@ const sidebarCollapsed = ref(
 // Save sidebar state to localStorage whenever it changes
 watch(sidebarCollapsed, (newValue) => {
   localStorage.setItem('litedesk-sidebar-collapsed', newValue.toString());
+  queueContentOffsetUpdate();
 });
+
+const updateContentOffset = () => {
+  const el = contentWrapperRef.value;
+
+  if (!(el instanceof HTMLElement)) {
+    tableStickyOffset.value = `calc(${DEFAULT_CONTENT_OFFSET}px + ${EXTRA_OFFSET_LIGHT})`;
+    return;
+  }
+
+  const rect = el.getBoundingClientRect();
+  const baseOffset = Math.max(DEFAULT_CONTENT_OFFSET, Math.round(rect.top));
+  const extraSpacing = window.innerWidth >= 1024 ? EXTRA_OFFSET_LARGE : EXTRA_OFFSET_LIGHT;
+
+  tableStickyOffset.value = `calc(${baseOffset}px + ${extraSpacing})`;
+};
+
+const queueContentOffsetUpdate = () => {
+  nextTick(() => {
+    requestAnimationFrame(updateContentOffset);
+  });
+};
+
+watch(
+  () => route.fullPath,
+  () => {
+    queueContentOffsetUpdate();
+  }
+);
+
+watch(hideShell, () => {
+  queueContentOffsetUpdate();
+});
+
+const handleResize = () => {
+  updateContentOffset();
+};
 
 // Refresh permissions on app mount (page refresh)
 onMounted(async () => {
@@ -46,6 +89,13 @@ onMounted(async () => {
     // 2. Page refresh will restore tabs from localStorage
     // 3. Adding a guard here creates circular loops with openTab() calling router.replace()
   }
+
+  queueContentOffsetUpdate();
+  window.addEventListener('resize', handleResize, { passive: true });
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize);
 });
 
 // Enable automatic permission sync every 2 minutes for real-time updates
@@ -78,7 +128,11 @@ usePermissionSync(2);
       <TabBar class="hidden md:block" />
       
       <!-- Content wrapper with padding -->
-      <div class="flex-1 p-4 lg:p-6 overflow-y-auto overflow-x-hidden mt-16 md:mt-30 lg:mt-14">
+      <div
+        ref="contentWrapperRef"
+        class="flex-1 p-4 lg:p-6 overflow-y-auto overflow-x-hidden mt-16 md:mt-30 lg:mt-14"
+        :style="{ '--table-sticky-offset': tableStickyOffset }"
+      >
         <!-- Keep-alive caches component instances to prevent remounting on tab switch -->
         <RouterView v-slot="{ Component }">
           <keep-alive :max="10">

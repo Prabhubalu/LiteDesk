@@ -45,7 +45,7 @@ const routes = [
   {
     path: '/people',
     name: 'people',
-    component: () => import('@/views/Contacts.vue'),
+    component: () => import('@/views/People.vue'),
     meta: { requiresAuth: true, requiresPermission: { module: 'people', action: 'view' } }
   },
   {

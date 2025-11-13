@@ -1,3 +1,7 @@
+:root {
+  --tabbar-offset: 64px;
+}
+
 @import 'tailwindcss';
 @import 'gridstack/dist/gridstack.min.css';
 
@@ -11,6 +15,12 @@
 /* Ensure dark mode only applies when dark class is present */
 .dark {
   color-scheme: dark;
+}
+
+/* Set dark mode background to gray-900 */
+html.dark,
+html.dark body {
+  background-color: #111827 !important; /* gray-900 */
 }
 
 /* GridStack Styles */
@@ -83,6 +93,22 @@
 .ui-resizable-handle,
 .grid-stack-item > .ui-resizable-handle {
   z-index: 1 !important;
+}
+
+/* Dark mode border color for sticky column border - match header border-bottom */
+.dark .table-scroll-container thead th.sticky-column-border::before,
+.dark .table-scroll-container tbody td.sticky-column-border::after {
+  background-color: rgb(55 65 81) !important; /* gray-700 - same as dark:border-gray-700 */
+  box-shadow: 2px 0 4px -1px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Ensure selected sticky rows have solid backgrounds in dark mode */
+.dark .table-scroll-container tbody tr.bg-indigo-950,
+.dark .table-scroll-container tbody tr.bg-indigo-950 td,
+.dark .table-scroll-container tbody tr.bg-indigo-950 td.sticky,
+.dark .table-scroll-container tbody tr.bg-indigo-950 td[class*="sticky-column"] {
+  background-color: rgb(19 24 38) !important; /* indigo-950 - solid background, no opacity */
+  background-image: none !important; /* Remove any gradient backgrounds */
 }
 
 /* Position resize handles to align with visible content edges */

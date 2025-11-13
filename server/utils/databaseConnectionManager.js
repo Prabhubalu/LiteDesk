@@ -16,6 +16,7 @@ class DatabaseConnectionManager {
     // Base MongoDB URI (without database name)
     this.baseMongoUri = null;
     this.masterDbName = 'litedesk_master';
+    this.connectionQuery = '';
   }
   
   /**
@@ -35,7 +36,9 @@ class DatabaseConnectionManager {
       const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI;
       if (MONGO_URI) {
         // Extract base URI (without database name)
-        const uriParts = MONGO_URI.split('/');
+        const [uriWithoutQuery, queryPart] = MONGO_URI.split('?');
+        this.connectionQuery = queryPart ? `?${queryPart}` : '';
+        const uriParts = uriWithoutQuery.split('/');
         this.baseMongoUri = uriParts.slice(0, -1).join('/'); // Everything except last part
       } else {
         // Fallback: try to extract from mongoose connection
@@ -45,12 +48,15 @@ class DatabaseConnectionManager {
           const client = mongoose.connection.client;
           if (client && client.s && client.s.url) {
             const fullUri = client.s.url;
-            this.baseMongoUri = fullUri.split('/').slice(0, -1).join('/');
+            const [uriWithoutQuery, queryPart] = fullUri.split('?');
+            this.connectionQuery = queryPart ? `?${queryPart}` : '';
+            this.baseMongoUri = uriWithoutQuery.split('/').slice(0, -1).join('/');
           } else {
             // Last resort: construct from host/port
             const host = mongoose.connection.host || 'localhost';
             const port = mongoose.connection.port || 27017;
             this.baseMongoUri = `mongodb://${host}:${port}`;
+            this.connectionQuery = '';
           }
         } else {
           throw new Error('MongoDB connection not established. Please ensure MONGO_URI is set in .env');
@@ -89,7 +95,10 @@ class DatabaseConnectionManager {
         throw new Error('Failed to get baseMongoUri. Please ensure MONGO_URI is set in .env');
       }
       
-      const orgUri = `${this.baseMongoUri}/${databaseName}`;
+      let orgUri = `${this.baseMongoUri}/${databaseName}`;
+      if (this.connectionQuery) {
+        orgUri += this.connectionQuery;
+      }
       console.log(`🔌 Connecting to organization database: ${orgUri}`);
       
       const connection = await mongoose.createConnection(orgUri, {

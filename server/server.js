@@ -1,5 +1,6 @@
 // server.js
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -13,6 +14,9 @@ const PORT = process.env.PORT || 5000;
 // Smart MongoDB URI selection (handles both MONGO_URI and MONGODB_URI)
 const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI || 
                   (isProduction ? process.env.MONGO_URI_PRODUCTION : process.env.MONGO_URI_LOCAL);
+
+const [mongoUriWithoutQuery, mongoUriQueryPart] = MONGO_URI ? MONGO_URI.split('?') : [null, null];
+const mongoQueryString = mongoUriQueryPart ? `?${mongoUriQueryPart}` : '';
 
 // Smart CORS configuration
 const allowedOrigins = process.env.CORS_ORIGINS 
@@ -109,7 +113,7 @@ console.log('🧪 Feature Flags:', {
   FEATURE_DUAL_WRITE_ORG: process.env.FEATURE_DUAL_WRITE_ORG
 });
 
-if (!MONGO_URI) {
+if (!MONGO_URI || !mongoUriWithoutQuery) {
   console.error('❌ FATAL ERROR: MONGO_URI is not defined in environment variables!');
   console.error('📝 Please check your .env file and ensure MONGO_URI or MONGODB_URI is set.');
   console.error(`   Expected for ${isProduction ? 'PRODUCTION' : 'DEVELOPMENT'} mode`);
@@ -117,9 +121,9 @@ if (!MONGO_URI) {
 }
 
 // Connect to master database (for Organizations, Users, DemoRequests)
-const baseUri = MONGO_URI.split('/').slice(0, -1).join('/');
+const baseUri = mongoUriWithoutQuery.split('/').slice(0, -1).join('/');
 const masterDbName = 'litedesk_master';
-const masterUri = `${baseUri}/${masterDbName}`;
+const masterUri = `${baseUri}/${masterDbName}${mongoQueryString}`;
 
 mongoose.connect(masterUri)
   .then(async () => {
@@ -131,6 +135,7 @@ mongoose.connect(masterUri)
     const dbConnectionManager = require('./utils/databaseConnectionManager');
     // Set base URI for organization database connections
     dbConnectionManager.baseMongoUri = baseUri;
+    dbConnectionManager.connectionQuery = mongoQueryString;
     await dbConnectionManager.initializeMasterConnection();
     console.log('✅ Database connection manager initialized');
     

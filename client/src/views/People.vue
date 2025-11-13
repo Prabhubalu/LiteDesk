@@ -16,6 +16,8 @@
         { name: 'Customers', key: 'customerContacts', formatter: 'number' },
         { name: 'Active This Month', key: 'activeThisMonth', formatter: 'number' }
       ]"
+      :sort-field="sortField"
+      :sort-order="sortOrder"
       :pagination="{ currentPage: pagination.currentPage, totalPages: pagination.totalPages, totalRecords: pagination.totalContacts, limit: pagination.limit }"
       :filter-config="[
         {
@@ -67,10 +69,22 @@
       <!-- Custom Name Cell -->
       <template #cell-name="{ row }">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-indigo-700 text-white flex items-center justify-center font-semibold flex-shrink-0 mt-0">
-            {{ getInitials(row) }}
+          <Avatar
+            :user="{
+              firstName: row.first_name,
+              lastName: row.last_name,
+              avatar: row.avatar || row.image
+            }"
+            size="md"
+          />
+          <div class="min-w-0">
+            <div class="font-semibold text-gray-900 dark:text-white truncate">
+              {{ row.first_name }} {{ row.last_name }}
+            </div>
+            <div v-if="row.email" class="text-sm text-gray-500 dark:text-gray-400 truncate">
+              {{ row.email }}
+            </div>
           </div>
-          <span class="font-semibold text-gray-900 dark:text-white">{{ row.first_name }} {{ row.last_name }}</span>
         </div>
       </template>
 
@@ -122,38 +136,98 @@
 
       <!-- Custom Owner Cell -->
       <template #cell-owner_id="{ row }">
-        <span class="text-sm text-gray-700 dark:text-gray-300">{{ row.owner_id?.firstName || 'Unassigned' }}</span>
+        <div v-if="row.owner_id" class="flex items-center gap-2">
+          <Avatar
+            :user="{
+              firstName: row.owner_id.firstName || row.owner_id.first_name,
+              lastName: row.owner_id.lastName || row.owner_id.last_name,
+              email: row.owner_id.email,
+              avatar: row.owner_id.avatar
+            }"
+            size="sm"
+          />
+          <span class="text-sm text-gray-700 dark:text-gray-300">
+            {{ getUserDisplayName(row.owner_id) }}
+          </span>
+        </div>
+        <span v-else class="text-sm text-gray-500 dark:text-gray-400">Unassigned</span>
       </template>
 
       <!-- Custom Assigned To Cell -->
       <template #cell-assignedTo="{ row }">
         <div v-if="row.assignedTo" class="flex items-center gap-2">
-          <div v-if="row.assignedTo.avatar" class="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
-            <img :src="row.assignedTo.avatar" :alt="getUserDisplayName(row.assignedTo)" class="w-full h-full object-cover" />
-          </div>
-          <div v-else class="w-6 h-6 rounded-full bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
-            {{ getUserInitials(row.assignedTo) }}
-          </div>
+          <Avatar
+            :user="{
+              firstName: row.assignedTo.firstName || row.assignedTo.first_name,
+              lastName: row.assignedTo.lastName || row.assignedTo.last_name,
+              email: row.assignedTo.email,
+              avatar: row.assignedTo.avatar
+            }"
+            size="sm"
+          />
           <span class="text-sm text-gray-700 dark:text-gray-300">{{ getUserDisplayName(row.assignedTo) }}</span>
         </div>
         <span v-else class="text-sm text-gray-500 dark:text-gray-400">Unassigned</span>
       </template>
 
+      <!-- Custom Account Manager Cell (camelCase) -->
+      <template #cell-accountManager="{ row }">
+        <div v-if="row.accountManager && typeof row.accountManager === 'object'" class="flex items-center gap-2">
+          <Avatar
+            :user="{
+              firstName: row.accountManager.firstName || row.accountManager.first_name || row.accountManager.name,
+              lastName: row.accountManager.lastName || row.accountManager.last_name,
+              email: row.accountManager.email,
+              avatar: row.accountManager.avatar
+            }"
+            size="sm"
+          />
+          <span class="text-sm text-gray-700 dark:text-gray-300">
+            {{ getUserDisplayName(row.accountManager) }}
+          </span>
+        </div>
+        <span v-else class="text-sm text-gray-500 dark:text-gray-400">
+          {{ typeof row.accountManager === 'string' ? row.accountManager : 'Unassigned' }}
+        </span>
+      </template>
+
+      <!-- Custom Account Manager Cell (snake_case) -->
+      <template #cell-account_manager="{ row }">
+        <div v-if="row.account_manager && typeof row.account_manager === 'object'" class="flex items-center gap-2">
+          <Avatar
+            :user="{
+              firstName: row.account_manager.firstName || row.account_manager.first_name || row.account_manager.name,
+              lastName: row.account_manager.lastName || row.account_manager.last_name,
+              email: row.account_manager.email,
+              avatar: row.account_manager.avatar
+            }"
+            size="sm"
+          />
+          <span class="text-sm text-gray-700 dark:text-gray-300">
+            {{ getUserDisplayName(row.account_manager) }}
+          </span>
+        </div>
+        <span v-else class="text-sm text-gray-500 dark:text-gray-400">
+          {{ typeof row.account_manager === 'string' ? row.account_manager : 'Unassigned' }}
+        </span>
+      </template>
+
       <!-- Custom Created By Cell -->
       <template #cell-createdBy="{ row }">
         <div v-if="row.createdBy" class="flex items-center gap-2">
-          <template v-if="typeof row.createdBy === 'object'">
-            <div v-if="row.createdBy.avatar" class="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
-              <img :src="row.createdBy.avatar" :alt="getUserDisplayName(row.createdBy)" class="w-full h-full object-cover" />
-            </div>
-            <div v-else class="w-6 h-6 rounded-full bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
-              {{ getUserInitials(row.createdBy) }}
-            </div>
-            <span class="text-sm text-gray-700 dark:text-gray-300">{{ getUserDisplayName(row.createdBy) }}</span>
-          </template>
-          <template v-else>
-            <span class="text-sm text-gray-500 dark:text-gray-400">{{ row.createdBy }}</span>
-          </template>
+          <Avatar
+            v-if="typeof row.createdBy === 'object'"
+            :user="{
+              firstName: row.createdBy.firstName || row.createdBy.first_name,
+              lastName: row.createdBy.lastName || row.createdBy.last_name,
+              email: row.createdBy.email,
+              avatar: row.createdBy.avatar
+            }"
+            size="sm"
+          />
+          <span class="text-sm text-gray-700 dark:text-gray-300">
+            {{ getUserDisplayName(row.createdBy) }}
+          </span>
         </div>
         <span v-else class="text-sm text-gray-500 dark:text-gray-400">-</span>
       </template>
@@ -218,6 +292,7 @@ import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import DateCell from '@/components/common/table/DateCell.vue';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import CSVImportModal from '@/components/import/CSVImportModal.vue';
+import Avatar from '@/components/common/Avatar.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -245,6 +320,113 @@ const filters = reactive({
   status: '',
   owner_id: ''
 });
+
+const usersById = ref({});
+const usersLoaded = ref(false);
+
+const upsertUsers = (users) => {
+  if (!Array.isArray(users)) return;
+  const map = { ...usersById.value };
+  for (const user of users) {
+    if (!user || typeof user !== 'object') continue;
+    const id = user._id || user.id;
+    if (!id) continue;
+    map[id] = { ...user, _id: id };
+  }
+  usersById.value = map;
+};
+
+const loadUsers = async () => {
+  if (usersLoaded.value && Object.keys(usersById.value).length > 0) {
+    return;
+  }
+
+  try {
+    const response = await apiClient.get('/users/list');
+
+    let users = [];
+    if (Array.isArray(response)) {
+      users = response;
+    } else if (Array.isArray(response?.data)) {
+      users = response.data;
+    } else if (response?.success && Array.isArray(response?.data)) {
+      users = response.data;
+    } else if (response?.data && Array.isArray(response.data.users)) {
+      users = response.data.users;
+    } else if (response?.data && Array.isArray(response.data.data)) {
+      users = response.data.data;
+    }
+
+    if (users.length > 0) {
+      upsertUsers(users);
+    }
+  } catch (error) {
+    console.error('Error loading users for People list:', error);
+  } finally {
+    usersLoaded.value = true;
+  }
+};
+
+const resolveUserValue = (value) => {
+  if (!value) return value;
+
+  if (typeof value === 'string') {
+    return usersById.value[value] || value;
+  }
+
+  if (typeof value === 'object' && !Array.isArray(value)) {
+    if (value.firstName || value.first_name || value.email || value.name) {
+      return value;
+    }
+
+    if (value._id && usersById.value[value._id]) {
+      return { ...usersById.value[value._id], ...value };
+    }
+
+    return value;
+  }
+
+  return value;
+};
+
+const userFieldKeys = [
+  'owner_id',
+  'owner',
+  'assignedTo',
+  'assigned_to',
+  'createdBy',
+  'created_by',
+  'accountManager',
+  'account_manager',
+  'accountmanager'
+];
+
+const normalizeContactRecord = (record) => {
+  if (!record || typeof record !== 'object') return record;
+
+  const normalized = { ...record };
+
+  userFieldKeys.forEach((key) => {
+    if (!(key in normalized)) return;
+    const resolved = resolveUserValue(normalized[key]);
+    normalized[key] = resolved;
+
+    if (key === 'accountManager' && typeof resolved === 'object' && resolved) {
+      normalized.account_manager = resolved;
+    }
+
+    if (key === 'account_manager' && typeof resolved === 'object' && resolved) {
+      normalized.accountManager = resolved;
+    }
+  });
+
+  return normalized;
+};
+
+const normalizeContactsArray = (records = []) => {
+  if (!Array.isArray(records)) return [];
+  return records.map((record) => normalizeContactRecord(record));
+};
 
 const pagination = ref({
   currentPage: 1,
@@ -293,6 +475,7 @@ const tableColumns = computed(() => {
         key: 'name', 
         label: 'Name', 
         sortable: true,
+        sortKey: 'first_name',
         sortValue: (row) => `${row.first_name || ''} ${row.last_name || ''}`.trim()
       }
     ];
@@ -303,13 +486,20 @@ const tableColumns = computed(() => {
       key: 'name', 
       label: 'Name', 
       sortable: true,
+      sortKey: 'first_name',
       sortValue: (row) => `${row.first_name || ''} ${row.last_name || ''}`.trim(),
       minWidth: '180px'
     },
   ];
   
   // Always include Organization column
-  baseColumns.push({ key: 'organization', label: 'Organization', sortable: false, minWidth: '180px' });
+  baseColumns.push({
+    key: 'organization',
+    label: 'Organization',
+    sortable: true,
+    sortKey: 'account_id',
+    minWidth: '180px'
+  });
   
   // Append fields from module definition
   const systemFieldKeys = new Set(['organizationid','createdat','updatedat','_id','__v','activitylogs','name','organization']);
@@ -364,6 +554,7 @@ const handleSort = ({ key, order }) => {
     'email': 'email',
     'phone': 'phone',
     'account_id': 'account_id',
+    'organization': 'account_id',
     'lifecycle_stage': 'lifecycle_stage',
     'owner_id': 'owner_id',
     'last_contacted_at': 'last_contacted_at'
@@ -386,8 +577,8 @@ const handleSelect = (selected) => {
 };
 
 const handleBulkAction = (actionId, selectedRows) => {
-  if (actionId === 'delete') {
-    bulkDelete();
+  if (actionId === 'delete' || actionId === 'bulk-delete') {
+    bulkDelete(selectedRows);
   } else if (actionId === 'export') {
     bulkExport();
   }
@@ -410,34 +601,36 @@ const fetchContacts = async () => {
   loading.value = true;
   console.log('🔍 Fetching people...');
   console.log('👤 Is Admin:', isAdmin.value);
-  
+ 
   try {
+    await loadUsers();
+
     const params = new URLSearchParams();
     params.append('page', pagination.value.currentPage);
     params.append('limit', pagination.value.limit);
     params.append('sortBy', sortField.value);
     params.append('sortOrder', sortOrder.value);
-    
+ 
     if (searchQuery.value) params.append('search', searchQuery.value);
     if (filters.lifecycle_stage) params.append('lifecycle_stage', filters.lifecycle_stage);
     if (filters.status) params.append('status', filters.status);
     if (filters.owner_id === 'me') params.append('owner', 'me');
-
+ 
     // Admins/Owners see ALL contacts across organizations
     const endpoint = isAdmin.value
       ? `/admin/contacts/all?${params.toString()}`
       : `/people?${params.toString()}`;
-
+ 
     console.log('🌐 API Endpoint:', endpoint);
-
+ 
     const data = await apiClient(endpoint, {
       method: 'GET'
     });
-
+ 
     console.log('📦 People data:', data);
-    
+     
     if (data.success) {
-      contacts.value = data.data;
+      contacts.value = normalizeContactsArray(data.data);
       // Handle both 'pagination' and 'meta' response formats
       if (data.pagination) {
         pagination.value = data.pagination;
@@ -542,8 +735,6 @@ const handleImportComplete = () => {
 };
 
 const deleteContact = async (contactId) => {
-  if (!confirm('Are you sure you want to delete this contact?')) return;
-  
   try {
     await apiClient(`/people/${contactId}`, {
       method: 'DELETE'
@@ -556,11 +747,13 @@ const deleteContact = async (contactId) => {
 };
 
 
-const bulkDelete = async () => {
-  if (!confirm(`Are you sure you want to delete ${selectedContacts.value.length} contact(s)?`)) return;
-  
+const bulkDelete = async (selectedRows) => {
   try {
-    for (const id of selectedContacts.value) {
+    // Use selectedRows if provided, otherwise fall back to selectedContacts
+    const rowsToDelete = selectedRows || contacts.value.filter(c => selectedContacts.value.includes(c._id));
+    const idsToDelete = rowsToDelete.map(row => row._id || row);
+    
+    for (const id of idsToDelete) {
       await apiClient(`/people/${id}`, { method: 'DELETE' });
     }
     selectedContacts.value = [];
@@ -727,9 +920,28 @@ const getUserInitials = (user) => {
 
 const getUserDisplayName = (user) => {
   if (!user) return 'Unassigned';
-  const firstName = user.firstName || '';
-  const lastName = user.lastName || '';
-  return `${firstName} ${lastName}`.trim() || user.email || 'Unassigned';
+
+  if (typeof user === 'string') {
+    const cached = usersById.value[user];
+    if (cached) {
+      return getUserDisplayName(cached);
+    }
+    return user;
+  }
+
+  const firstName = user.firstName || user.first_name || user.name || '';
+  const lastName = user.lastName || user.last_name || '';
+  const combined = `${firstName} ${lastName}`.trim();
+  if (combined) return combined;
+
+  if (user.email) return user.email;
+  if (user.username) return user.username;
+
+  if (user._id && usersById.value[user._id]) {
+    return getUserDisplayName(usersById.value[user._id]);
+  }
+
+  return 'Unassigned';
 };
 
 const formatDate = (date) => {
@@ -745,6 +957,7 @@ const formatDate = (date) => {
 onMounted(async () => {
   // Fetch module definition first to build columns dynamically
   await fetchModuleDefinition();
+  await loadUsers();
   
   // Load saved sort state from localStorage before fetching
   const savedSort = localStorage.getItem('datatable-contacts-table-sort');
@@ -758,6 +971,7 @@ onMounted(async () => {
         'email': 'email',
         'phone': 'phone',
         'account_id': 'account_id',
+        'organization': 'account_id',
         'lifecycle_stage': 'lifecycle_stage',
         'owner_id': 'owner_id',
         'last_contacted_at': 'last_contacted_at'
