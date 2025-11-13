@@ -136,18 +136,25 @@
       @delete="handleDelete"
       @page-change="changePage"
       @sort="handleSort"
+      :statistics="statistics"
+      :stats-config="statsConfig"
+      :sort-field="sortField"
+      :sort-order="sortOrder"
+      :pagination="pagination.value"
     >
       <!-- Custom Group Name Cell -->
       <template #cell-name="{ row }">
         <div class="flex items-center gap-3">
-          <div 
-            class="w-10 h-10 rounded-lg text-white flex items-center justify-center font-semibold text-sm flex-shrink-0"
-            :style="{ backgroundColor: row.color || '#3B82F6' }"
-          >
-            {{ getInitials(row.name) }}
-          </div>
-          <div class="flex flex-col">
-            <span class="font-semibold text-gray-900 dark:text-white">{{ row.name }}</span>
+          <Avatar
+            :record="{
+              name: row.name,
+              avatar: row.avatar,
+              color: row.color
+            }"
+            size="md"
+          />
+          <div class="flex flex-col min-w-0">
+            <span class="font-semibold text-gray-900 dark:text-white truncate">{{ row.name }}</span>
             <span v-if="row.description" class="text-xs text-gray-500 dark:text-gray-400 truncate max-w-xs">{{ row.description }}</span>
           </div>
         </div>
@@ -247,6 +254,7 @@ import DataTable from '@/components/common/DataTable.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import ModuleActions from '@/components/common/ModuleActions.vue';
 import GroupFormModal from '@/components/groups/GroupFormModal.vue';
+import Avatar from '@/components/common/Avatar.vue';
 
 const router = useRouter();
 
@@ -420,13 +428,11 @@ const handleSelect = (selectedRows) => {
   console.log(`${selectedRows.length} groups selected`);
 };
 
-const handleBulkAction = async ({ action, selectedRows }) => {
+const handleBulkAction = async (actionId, selectedRows) => {
   const groupIds = selectedRows.map(group => group._id);
   
   try {
-    if (action === 'bulk-delete') {
-      if (!confirm(`Delete ${selectedRows.length} groups? This action cannot be undone.`)) return;
-      
+    if (actionId === 'bulk-delete' || actionId === 'delete') {
       await Promise.all(
         groupIds.map(id => apiClient(`/api/groups/${id}`, { method: 'DELETE' }))
       );
@@ -440,8 +446,6 @@ const handleBulkAction = async ({ action, selectedRows }) => {
 };
 
 const handleDelete = async (group) => {
-  if (!confirm(`Are you sure you want to delete "${group.name}"? This action cannot be undone.`)) return;
-  
   try {
     await apiClient(`/api/groups/${group._id}`, {
       method: 'DELETE'

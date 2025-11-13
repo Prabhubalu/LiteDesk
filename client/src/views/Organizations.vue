@@ -16,6 +16,8 @@
         { name: 'On Trial', key: 'trialOrganizations', formatter: 'number' },
         { name: 'Paying Customers', key: 'paidOrganizations', formatter: 'number' }
       ]"
+      :sort-field="sortField"
+      :sort-order="sortOrder"
       :pagination="{ currentPage: pagination.currentPage, totalPages: pagination.totalPages, totalRecords: pagination.totalOrganizations, limit: pagination.limit }"
       :filter-config="[
         {
@@ -70,10 +72,21 @@
       <!-- Custom Organization Cell -->
       <template #cell-name="{ row }">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-cyan-600 text-white flex items-center justify-center font-semibold text-sm flex-shrink-0">
-            {{ getInitials(row.name) }}
+          <Avatar
+            :record="{
+              name: row.name,
+              avatar: row.avatar || row.logo || row.image
+            }"
+            size="md"
+          />
+          <div class="min-w-0">
+            <div class="font-semibold text-gray-900 dark:text-white truncate">
+              {{ row.name }}
+            </div>
+            <div v-if="row.domain" class="text-sm text-gray-500 dark:text-gray-400 truncate">
+              {{ row.domain }}
+            </div>
           </div>
-          <span class="font-semibold text-gray-900 dark:text-white">{{ row.name }}</span>
         </div>
       </template>
 
@@ -119,18 +132,17 @@
       <!-- Custom Created By Cell -->
       <template #cell-createdBy="{ row }">
         <div v-if="row.createdBy" class="flex items-center gap-2">
-          <template v-if="typeof row.createdBy === 'object'">
-            <div v-if="row.createdBy.avatar" class="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
-              <img :src="row.createdBy.avatar" :alt="getUserDisplayName(row.createdBy)" class="w-full h-full object-cover" />
-            </div>
-            <div v-else class="w-6 h-6 rounded-full bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
-              {{ getUserInitials(row.createdBy) }}
-            </div>
-            <span class="text-sm text-gray-700 dark:text-gray-300">{{ getUserDisplayName(row.createdBy) }}</span>
-          </template>
-          <template v-else>
-            <span class="text-sm text-gray-500 dark:text-gray-400">{{ row.createdBy }}</span>
-          </template>
+          <Avatar
+            v-if="typeof row.createdBy === 'object'"
+            :user="{
+              firstName: row.createdBy.firstName || row.createdBy.first_name,
+              lastName: row.createdBy.lastName || row.createdBy.last_name,
+              email: row.createdBy.email,
+              avatar: row.createdBy.avatar
+            }"
+            size="sm"
+          />
+          <span class="text-sm text-gray-700 dark:text-gray-300">{{ getUserDisplayName(row.createdBy) }}</span>
         </div>
         <span v-else class="text-sm text-gray-500 dark:text-gray-400">-</span>
       </template>
@@ -142,12 +154,15 @@
           {{ console.log('🔍 assignedTo cell render:', { row: row?.assignedTo, value, isObject: typeof row?.assignedTo === 'object' }) }}
         </div>
         <div v-if="row.assignedTo && typeof row.assignedTo === 'object' && row.assignedTo !== null && !Array.isArray(row.assignedTo)" class="flex items-center gap-2">
-          <div v-if="row.assignedTo.avatar" class="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
-            <img :src="row.assignedTo.avatar" :alt="getUserDisplayName(row.assignedTo)" class="w-full h-full object-cover" />
-          </div>
-          <div v-else class="w-6 h-6 rounded-full bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
-            {{ getUserInitials(row.assignedTo) }}
-          </div>
+          <Avatar
+            :user="{
+              firstName: row.assignedTo.firstName || row.assignedTo.name || row.assignedTo.first_name,
+              lastName: row.assignedTo.lastName || row.assignedTo.last_name,
+              email: row.assignedTo.email,
+              avatar: row.assignedTo.avatar
+            }"
+            size="sm"
+          />
           <span class="text-sm text-gray-700 dark:text-gray-300">{{ getUserDisplayName(row.assignedTo) }}</span>
         </div>
         <span v-else class="text-sm text-gray-500 dark:text-gray-400">Unassigned</span>
@@ -155,15 +170,55 @@
       <!-- Also support lowercase variant -->
       <template #cell-assignedto="{ row, value }">
         <div v-if="row.assignedTo && typeof row.assignedTo === 'object' && row.assignedTo !== null && !Array.isArray(row.assignedTo)" class="flex items-center gap-2">
-          <div v-if="row.assignedTo.avatar" class="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
-            <img :src="row.assignedTo.avatar" :alt="getUserDisplayName(row.assignedTo)" class="w-full h-full object-cover" />
-          </div>
-          <div v-else class="w-6 h-6 rounded-full bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
-            {{ getUserInitials(row.assignedTo) }}
-          </div>
+          <Avatar
+            :user="{
+              firstName: row.assignedTo.firstName || row.assignedTo.name || row.assignedTo.first_name,
+              lastName: row.assignedTo.lastName || row.assignedTo.last_name,
+              email: row.assignedTo.email,
+              avatar: row.assignedTo.avatar
+            }"
+            size="sm"
+          />
           <span class="text-sm text-gray-700 dark:text-gray-300">{{ getUserDisplayName(row.assignedTo) }}</span>
         </div>
         <span v-else class="text-sm text-gray-500 dark:text-gray-400">Unassigned</span>
+      </template>
+
+      <!-- Custom Account Manager Cells -->
+      <template #cell-accountManager="{ row }">
+        <div v-if="row.accountManager && typeof row.accountManager === 'object'" class="flex items-center gap-2">
+          <Avatar
+            :user="{
+              firstName: row.accountManager.firstName || row.accountManager.first_name || row.accountManager.name,
+              lastName: row.accountManager.lastName || row.accountManager.last_name,
+              email: row.accountManager.email,
+              avatar: row.accountManager.avatar
+            }"
+            size="sm"
+          />
+          <span class="text-sm text-gray-700 dark:text-gray-300">{{ getUserDisplayName(row.accountManager) }}</span>
+        </div>
+        <span v-else class="text-sm text-gray-500 dark:text-gray-400">
+          {{ typeof row.accountManager === 'string' ? getUserDisplayName(row.accountManager) : 'Unassigned' }}
+        </span>
+      </template>
+
+      <template #cell-account_manager="{ row }">
+        <div v-if="row.account_manager && typeof row.account_manager === 'object'" class="flex items-center gap-2">
+          <Avatar
+            :user="{
+              firstName: row.account_manager.firstName || row.account_manager.first_name || row.account_manager.name,
+              lastName: row.account_manager.lastName || row.account_manager.last_name,
+              email: row.account_manager.email,
+              avatar: row.account_manager.avatar
+            }"
+            size="sm"
+          />
+          <span class="text-sm text-gray-700 dark:text-gray-300">{{ getUserDisplayName(row.account_manager) }}</span>
+        </div>
+        <span v-else class="text-sm text-gray-500 dark:text-gray-400">
+          {{ typeof row.account_manager === 'string' ? getUserDisplayName(row.account_manager) : 'Unassigned' }}
+        </span>
       </template>
 
     </ListView>
@@ -189,6 +244,7 @@ import ListView from '@/components/common/ListView.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import DateCell from '@/components/common/table/DateCell.vue';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
+import Avatar from '@/components/common/Avatar.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -220,6 +276,122 @@ const pagination = ref({
   totalOrganizations: 0,
   limit: 20
 });
+
+const usersById = ref({});
+const usersLoaded = ref(false);
+
+const upsertUsers = (users) => {
+  if (!Array.isArray(users)) return;
+  const map = { ...usersById.value };
+
+  for (const user of users) {
+    if (!user || typeof user !== 'object') continue;
+    const id = user._id || user.id;
+    if (!id) continue;
+    map[id] = { ...map[id], ...user, _id: id };
+  }
+
+  usersById.value = map;
+};
+
+const loadUsers = async () => {
+  if (usersLoaded.value && Object.keys(usersById.value).length > 0) {
+    return;
+  }
+
+  try {
+    const response = await apiClient.get('/users/list');
+
+    let users = [];
+    if (Array.isArray(response)) {
+      users = response;
+    } else if (Array.isArray(response?.data)) {
+      users = response.data;
+    } else if (response?.success && Array.isArray(response?.data)) {
+      users = response.data;
+    } else if (response?.data && Array.isArray(response.data.users)) {
+      users = response.data.users;
+    } else if (response?.data && Array.isArray(response.data.data)) {
+      users = response.data.data;
+    }
+
+    if (users.length > 0) {
+      upsertUsers(users);
+    }
+  } catch (error) {
+    console.error('Error loading users for organizations list:', error);
+  } finally {
+    usersLoaded.value = true;
+  }
+};
+
+const resolveUserValue = (value) => {
+  if (!value) return value;
+
+  if (typeof value === 'string') {
+    return usersById.value[value] || value;
+  }
+
+  if (typeof value === 'object' && !Array.isArray(value)) {
+    const id = value._id || value.id;
+    if (id && usersById.value[id]) {
+      const merged = { ...usersById.value[id], ...value, _id: id };
+      upsertUsers([merged]);
+      return merged;
+    }
+
+    if (id) {
+      upsertUsers([value]);
+    }
+
+    if (value.firstName || value.first_name || value.email || value.name) {
+      return value;
+    }
+
+    return value;
+  }
+
+  return value;
+};
+
+const userFieldKeys = [
+  'owner',
+  'owner_id',
+  'assignedTo',
+  'assigned_to',
+  'createdBy',
+  'created_by',
+  'accountManager',
+  'account_manager',
+  'accountmanager'
+];
+
+const normalizeOrganizationRecord = (record) => {
+  if (!record || typeof record !== 'object') return record;
+
+  const normalized = { ...record };
+
+  userFieldKeys.forEach((key) => {
+    if (!(key in normalized)) return;
+    const resolved = resolveUserValue(normalized[key]);
+    normalized[key] = resolved;
+
+    if (key === 'accountManager' && resolved && typeof resolved === 'object') {
+      normalized.account_manager = resolved;
+    }
+
+    if (key === 'account_manager' && resolved && typeof resolved === 'object') {
+      normalized.accountManager = resolved;
+    }
+  });
+
+  return normalized;
+};
+
+const normalizeOrganizationsArray = (records = []) => {
+  if (!Array.isArray(records)) return [];
+  return records.map((record) => normalizeOrganizationRecord(record));
+};
 
 const statistics = ref({
   totalOrganizations: 0,
@@ -321,6 +493,8 @@ const fetchOrganizations = async () => {
   console.log('🔍 Fetching organizations...');
   
   try {
+    await loadUsers();
+
     const params = new URLSearchParams();
     params.append('page', pagination.value.currentPage);
     params.append('limit', pagination.value.limit);
@@ -348,7 +522,23 @@ const fetchOrganizations = async () => {
     }
     
     if (data.success) {
-      organizations.value = data.data;
+      const normalized = normalizeOrganizationsArray(data.data);
+      organizations.value = normalized;
+      const discoveredUsers = [];
+      normalized.forEach((org) => {
+        userFieldKeys.forEach((key) => {
+          const candidate = org[key];
+          if (candidate && typeof candidate === 'object' && !Array.isArray(candidate)) {
+            const id = candidate._id || candidate.id;
+            if (id) {
+              discoveredUsers.push({ ...candidate, _id: id });
+            }
+          }
+        });
+      });
+      if (discoveredUsers.length > 0) {
+        upsertUsers(discoveredUsers);
+      }
       pagination.value = data.pagination;
       
       // Calculate statistics
@@ -429,8 +619,6 @@ const handleOrganizationSaved = (savedOrganization) => {
 };
 
 const deleteOrganization = async (orgId) => {
-  if (!confirm('Are you sure you want to delete this organization? This action cannot be undone.')) return;
-  
   try {
     await apiClient(`/admin/organizations/${orgId}`, {
       method: 'DELETE'
@@ -446,19 +634,17 @@ const handleSelect = (selectedRows) => {
   console.log(`${selectedRows.length} organizations selected`);
 };
 
-const handleBulkAction = async ({ action, selectedRows }) => {
+const handleBulkAction = async (actionId, selectedRows) => {
   const orgIds = selectedRows.map(org => org._id);
   
   try {
-    if (action === 'bulk-delete') {
-      if (!confirm(`Delete ${selectedRows.length} organizations? This action cannot be undone.`)) return;
-      
+    if (actionId === 'bulk-delete' || actionId === 'delete') {
       await Promise.all(orgIds.map(id => 
         apiClient(`/admin/organizations/${id}`, { method: 'DELETE' })
       ));
       fetchOrganizations();
       
-    } else if (action === 'bulk-export') {
+    } else if (actionId === 'bulk-export' || actionId === 'export') {
       exportOrganizationsToCSV(selectedRows);
     }
   } catch (error) {
@@ -654,14 +840,26 @@ const getUserInitials = (user) => {
 
 const getUserDisplayName = (user) => {
   if (!user) return 'Unknown';
-  if (user.firstName && user.lastName) {
-    return `${user.firstName} ${user.lastName}`.trim();
+
+  if (typeof user === 'string') {
+    const cached = usersById.value[user];
+    if (cached) return getUserDisplayName(cached);
+    return user;
   }
-  if (user.first_name && user.last_name) {
-    return `${user.first_name} ${user.last_name}`.trim();
-  }
-  if (user.username) return user.username;
+
+  const firstName = user.firstName || user.first_name || user.name || '';
+  const lastName = user.lastName || user.last_name || '';
+  const combined = `${firstName} ${lastName}`.trim();
+  if (combined) return combined;
+
   if (user.email) return user.email;
+  if (user.username) return user.username;
+
+  const id = user._id || user.id;
+  if (id && usersById.value[id]) {
+    return getUserDisplayName(usersById.value[id]);
+  }
+
   return 'Unknown User';
 };
 
@@ -682,6 +880,7 @@ const formatDate = (date) => {
 onMounted(async () => {
   // Fetch module definition first to build columns dynamically
   await fetchModuleDefinition();
+  await loadUsers();
   
   // Load saved sort state from localStorage before fetching
   const savedSort = localStorage.getItem('datatable-organizations-table-sort');

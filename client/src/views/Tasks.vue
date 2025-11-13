@@ -17,6 +17,8 @@
         { name: 'Completed', key: 'byStatus.completed', formatter: 'number' }
       ]"
       :pagination="{ currentPage: pagination.currentPage, totalPages: pagination.totalPages, totalRecords: pagination.totalTasks, limit: pagination.tasksPerPage }"
+      :sort-field="sortField"
+      :sort-order="sortOrder"
       :filter-config="[
         {
           key: 'status',
@@ -109,10 +111,17 @@
       <!-- Custom Assigned To Cell -->
       <template #cell-assignedTo="{ row }">
         <div v-if="row.assignedTo" class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center text-white text-sm font-medium">
-            {{ row.assignedTo.firstName?.[0] || '?' }}{{ row.assignedTo.lastName?.[0] || '' }}
-          </div>
-          <span class="text-sm text-gray-900 dark:text-white">{{ row.assignedTo.firstName }} {{ row.assignedTo.lastName }}</span>
+          <Avatar
+            :user="{
+              firstName: row.assignedTo.firstName,
+              lastName: row.assignedTo.lastName,
+              avatar: row.assignedTo.avatar
+            }"
+            size="sm"
+          />
+          <span class="text-sm text-gray-900 dark:text-white">
+            {{ row.assignedTo.firstName }} {{ row.assignedTo.lastName }}
+          </span>
         </div>
         <span v-else class="text-sm text-gray-500 dark:text-gray-400">Unassigned</span>
       </template>
@@ -179,6 +188,7 @@ import BadgeCell from '../components/common/table/BadgeCell.vue';
 import DateCell from '../components/common/table/DateCell.vue';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import CSVImportModal from '../components/import/CSVImportModal.vue';
+import Avatar from '@/components/common/Avatar.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -441,7 +451,6 @@ const handleEdit = (task) => {
 
 const handleDelete = async (row) => {
   const taskId = row._id || row;
-  if (!confirm('Are you sure you want to delete this task?')) return;
   
   try {
     await apiClient.delete(`/tasks/${taskId}`);
@@ -458,18 +467,16 @@ const handleSelect = (selectedRows) => {
   console.log(`${selectedRows.length} tasks selected`);
 };
 
-const handleBulkAction = async ({ action, selectedRows }) => {
+const handleBulkAction = async (actionId, selectedRows) => {
   const taskIds = selectedRows.map(task => task._id);
   
   try {
-    if (action === 'bulk-delete') {
-      if (!confirm(`Delete ${selectedRows.length} tasks?`)) return;
-      
+    if (actionId === 'bulk-delete' || actionId === 'delete') {
       await Promise.all(taskIds.map(id => apiClient.delete(`/tasks/${id}`)));
       await fetchTasks();
       await fetchStatistics();
       
-    } else if (action === 'bulk-complete') {
+    } else if (actionId === 'bulk-complete') {
       if (!confirm(`Mark ${selectedRows.length} tasks as complete?`)) return;
       
       await Promise.all(taskIds.map(id => 
@@ -478,7 +485,7 @@ const handleBulkAction = async ({ action, selectedRows }) => {
       await fetchTasks();
       await fetchStatistics();
       
-    } else if (action === 'bulk-export') {
+    } else if (actionId === 'bulk-export' || actionId === 'export') {
       exportTasksToCSV(selectedRows);
     }
   } catch (error) {

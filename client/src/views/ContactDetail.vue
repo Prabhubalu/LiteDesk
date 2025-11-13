@@ -53,8 +53,16 @@
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
             <!-- Avatar & Name -->
             <div class="text-center mb-4">
-              <div class="w-16 h-16 rounded-full bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-white text-xl font-bold mx-auto mb-3">
-                {{ getInitials() }}
+              <div class="flex justify-center mb-3">
+                <Avatar
+                  :user="{
+                    firstName: contact.first_name,
+                    lastName: contact.last_name,
+                    email: contact.email,
+                    avatar: contact.avatar
+                  }"
+                  size="lg"
+                />
               </div>
               <h1 class="text-lg font-bold text-gray-900 dark:text-white mb-0.5">
                 {{ contact.first_name }} {{ contact.last_name }}
@@ -431,9 +439,10 @@ import apiClient from '@/utils/apiClient';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import RelatedEventsWidget from '@/components/events/RelatedEventsWidget.vue';
 import RelatedDealsWidget from '@/components/deals/RelatedDealsWidget.vue';
-import RelatedTasksWidget from '@/components/tasks/RelatedTasksWidget.vue';
+import RelatedTasksWidget from '@/components/tasks/RelatedTasksWidget.vue>';
 import RelatedOrganizationWidget from '@/components/organizations/RelatedOrganizationWidget.vue';
 import { useAuthStore } from '@/stores/auth';
+import Avatar from '@/components/common/Avatar.vue';
 
 const route = useRoute();
 const router = useRouter();

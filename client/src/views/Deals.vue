@@ -336,10 +336,31 @@
         @delete="handleDeleteDeal"
         @page-change="handlePageChange"
         @sort="handleSort"
+        :statistics="statistics"
+        :stats-config="statsConfig"
+        :sort-field="sortField"
+        :sort-order="sortOrder"
+        :pagination="pagination.value"
       >
         <!-- Custom Deal Name Cell -->
         <template #cell-name="{ row }">
-          <span class="font-semibold text-gray-900 dark:text-white">{{ row.name }}</span>
+          <div class="flex items-center gap-3">
+            <Avatar
+              :record="{
+                name: row.name,
+                avatar: row.contactId?.avatar || row.avatar
+              }"
+              size="md"
+            />
+            <div class="min-w-0">
+              <div class="font-semibold text-gray-900 dark:text-white truncate">
+                {{ row.name }}
+              </div>
+              <div v-if="row.account?.name" class="text-sm text-gray-500 dark:text-gray-400 truncate">
+                {{ row.account.name }}
+              </div>
+            </div>
+          </div>
         </template>
 
         <!-- Custom Amount Cell -->
@@ -373,10 +394,17 @@
         <!-- Custom Owner Cell -->
         <template #cell-ownerId="{ row }">
           <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center text-white text-sm font-medium">
-              {{ getInitials(row.ownerId) }}
-            </div>
-            <span>{{ row.ownerId?.firstName }}</span>
+            <Avatar
+              :user="{
+                firstName: row.ownerId?.firstName,
+                lastName: row.ownerId?.lastName,
+                avatar: row.ownerId?.avatar
+              }"
+              size="sm"
+            />
+            <span class="text-sm text-gray-700 dark:text-gray-300">
+              {{ getUserDisplayName(row.ownerId) }}
+            </span>
           </div>
         </template>
 
@@ -635,6 +663,7 @@ import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import CSVImportModal from '@/components/import/CSVImportModal.vue';
 import ModuleActions from '@/components/common/ModuleActions.vue';
 import RowActions from '@/components/common/RowActions.vue';
+import Avatar from '@/components/common/Avatar.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -937,8 +966,6 @@ const handleImportComplete = () => {
 };
 
 const deleteDeal = async (dealId) => {
-  if (!confirm('Are you sure you want to delete this deal?')) return;
-  
   try {
     await apiClient(`/deals/${dealId}`, {
       method: 'DELETE'
@@ -955,19 +982,17 @@ const handleSelect = (selectedRows) => {
   console.log(`${selectedRows.length} deals selected`);
 };
 
-const handleBulkAction = async ({ action, selectedRows }) => {
+const handleBulkAction = async (actionId, selectedRows) => {
   const dealIds = selectedRows.map(deal => deal._id);
   
   try {
-    if (action === 'bulk-delete') {
-      if (!confirm(`Delete ${selectedRows.length} deals?`)) return;
-      
+    if (actionId === 'bulk-delete' || actionId === 'delete') {
       await Promise.all(dealIds.map(id => 
         apiClient(`/deals/${id}`, { method: 'DELETE' })
       ));
       fetchDeals();
       
-    } else if (action === 'bulk-move-stage') {
+    } else if (actionId === 'bulk-move-stage') {
       const stage = prompt(`Move ${selectedRows.length} deals to stage:\n\nOptions: ${stages.join(', ')}`);
       if (!stage || !stages.includes(stage)) return;
       
@@ -976,7 +1001,7 @@ const handleBulkAction = async ({ action, selectedRows }) => {
       ));
       fetchDeals();
       
-    } else if (action === 'bulk-export') {
+    } else if (actionId === 'bulk-export' || actionId === 'export') {
       exportDealsToCSV(selectedRows);
     }
   } catch (error) {
@@ -1023,6 +1048,14 @@ const formatDate = (date) => {
     month: 'short',
     day: 'numeric'
   });
+};
+
+const getUserDisplayName = (user) => {
+  if (!user) return 'Unassigned';
+  const first = user.firstName || '';
+  const last = user.lastName || '';
+  const combined = `${first} ${last}`.trim();
+  return combined || user.email || user.username || 'Unassigned';
 };
 
 const getInitials = (user) => {

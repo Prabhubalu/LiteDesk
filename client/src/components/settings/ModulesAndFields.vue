@@ -2074,7 +2074,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch, reactive } from 'vue';
+  import { ref, onMounted, computed, watch, reactive, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import ModuleFormModal from './ModuleFormModal.vue';
@@ -3406,6 +3406,17 @@ const fetchModules = async () => {
         // capture snapshot after initializing state
         originalSnapshot.value = getSnapshot();
         quickOriginalSnapshot.value = getQuickSnapshot();
+        
+        // Check if we should open add field dialog
+        const action = typeof route.query.action === 'string' ? route.query.action : null;
+        if (action === 'add' && modeKey === 'fields') {
+          // Use nextTick to ensure the component is fully rendered
+          nextTick(() => {
+            openAddField();
+            // Remove action from URL after triggering
+            router.replace({ query: { ...route.query, action: undefined } });
+          });
+        }
       }
       // If no module from URL, use last persisted selection
       if (!initialMod) {

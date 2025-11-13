@@ -293,9 +293,15 @@
             <div class="space-y-2">
               <div v-if="deal.notes && deal.notes.length > 0">
                 <div v-for="(note, index) in deal.notes" :key="index" class="flex gap-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                  <div class="w-7 h-7 rounded-full bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                    {{ note.createdBy?.firstName?.[0] || 'U' }}{{ note.createdBy?.lastName?.[0] || '' }}
-                  </div>
+                  <Avatar
+                    :user="{
+                      firstName: note.createdBy?.firstName,
+                      lastName: note.createdBy?.lastName,
+                      email: note.createdBy?.email,
+                      avatar: note.createdBy?.avatar
+                    }"
+                    size="sm"
+                  />
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-1.5 mb-1">
                       <span class="font-semibold text-gray-900 dark:text-white text-xs">
@@ -351,6 +357,7 @@ import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import RelatedEventsWidget from '@/components/events/RelatedEventsWidget.vue';
+import Avatar from '@/components/common/Avatar.vue';
 
 const route = useRoute();
 const router = useRouter();
