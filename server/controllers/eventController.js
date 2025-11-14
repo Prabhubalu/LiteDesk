@@ -1,51 +1,54 @@
+const mongoose = require('mongoose');
 const Event = require('../models/Event');
 const Deal = require('../models/Deal');
+const People = require('../models/People');
 
 // Get all events (with date range filtering for calendar)
 exports.getEvents = async (req, res) => {
     try {
         const { 
-            startDate, 
-            endDate, 
-            type, 
+            startDateTime, 
+            endDateTime,
+            eventType, 
             status, 
-            priority,
-            category,
             search,
             relatedType,
             relatedId,
             includeRelated = 'false',
             page = 1, 
             limit = 100,
-            sortBy = 'startDate',
+            sortBy = 'startDateTime',
             sortOrder = 'asc'
         } = req.query;
         
         const query = { organizationId: req.user.organizationId };
         
         // Date range filter
-        if (startDate || endDate) {
-            query.startDate = {};
-            if (startDate) query.startDate.$gte = new Date(startDate);
-            if (endDate) query.startDate.$lte = new Date(endDate);
+        if (startDateTime || endDateTime) {
+            query.startDateTime = {};
+            if (startDateTime) query.startDateTime.$gte = new Date(startDateTime);
+            if (endDateTime) query.startDateTime.$lte = new Date(endDateTime);
         }
         
-        // Type filter
-        if (type) query.type = type;
+        // Event type filter
+        if (eventType) {
+            query.eventType = eventType;
+        }
         
         // Status filter
-        if (status) query.status = status;
-        
-        // Priority filter
-        if (priority) query.priority = priority;
-        
-        // Category filter
-        if (category) query.category = category;
+        if (status) {
+            // Normalize status (capitalize first letter)
+            const normalizedStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+            query.status = normalizedStatus;
+        }
         
         // Related record filter with rollup support
         if (relatedType && relatedId) {
-            // If fetching for a Contact and includeRelated is true, also fetch events from related Deals
-            if (relatedType === 'Contact' && includeRelated === 'true') {
+            // Map Person to Contact for database queries
+            const dbRelatedType = relatedType === 'Person' ? 'Contact' : relatedType;
+            
+            // If fetching for a Contact/Person and includeRelated is true, also fetch events from related Deals
+            if ((relatedType === 'Contact' || relatedType === 'Person') && includeRelated === 'true') {
                 // Find all deals related to this contact
                 const relatedDeals = await Deal.find({
                     contactId: relatedId,
@@ -57,26 +60,26 @@ exports.getEvents = async (req, res) => {
                 // Query for events related to the contact OR related to any of the contact's deals
                 query.$or = [
                     {
-                        'relatedTo.type': 'Contact',
-                        'relatedTo.id': relatedId
+                        relatedToType: 'Person',
+                        relatedToId: relatedId
                     },
                     {
-                        'relatedTo.type': 'Deal',
-                        'relatedTo.id': { $in: dealIds }
+                        relatedToType: 'Deal',
+                        relatedToId: { $in: dealIds }
                     }
                 ];
             } else {
                 // Standard query - just the specified related record
-                query['relatedTo.type'] = relatedType;
-                query['relatedTo.id'] = relatedId;
+                query.relatedToType = relatedType;
+                query.relatedToId = relatedId;
             }
         }
         
         // Search filter
         if (search) {
             const searchConditions = [
-                { title: { $regex: search, $options: 'i' } },
-                { description: { $regex: search, $options: 'i' } },
+                { eventName: { $regex: search, $options: 'i' } },
+                { agendaNotes: { $regex: search, $options: 'i' } },
                 { location: { $regex: search, $options: 'i' } }
             ];
             
@@ -96,16 +99,49 @@ exports.getEvents = async (req, res) => {
         const sortOptions = {};
         sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
         
+        // Fetch events without populating relatedToId (since refPath 'Person' doesn't match model 'People')
         const events = await Event.find(query)
-            .populate('organizer', 'firstName lastName email')
+            .populate('eventOwnerId', 'firstName lastName email')
             .populate('attendees.userId', 'firstName lastName email')
-            .populate('relatedTo.id', 'name title first_name last_name')
+            .populate('attendees.personId', 'first_name last_name email')
             .populate('createdBy', 'firstName lastName')
-            .populate('updatedBy', 'firstName lastName')
+            .populate('modifiedBy', 'firstName lastName')
+            .populate('linkedTaskId', 'title description')
             .sort(sortOptions)
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .lean();
+        
+        // Manually populate relatedToId for 'Person' type (maps to 'People' model)
+        // Batch populate for better performance
+        const personIds = events
+            .filter(e => e.relatedToId && e.relatedToType === 'Person')
+            .map(e => e.relatedToId);
+        
+        if (personIds.length > 0) {
+            try {
+                const peopleMap = new Map();
+                const people = await People.find({ _id: { $in: personIds } })
+                    .select('name title first_name last_name')
+                    .lean();
+                
+                people.forEach(person => {
+                    peopleMap.set(person._id.toString(), person);
+                });
+                
+                // Assign populated data back to events
+                events.forEach(event => {
+                    if (event.relatedToId && event.relatedToType === 'Person') {
+                        const personIdStr = event.relatedToId.toString();
+                        if (peopleMap.has(personIdStr)) {
+                            event.relatedToId = peopleMap.get(personIdStr);
+                        }
+                    }
+                });
+            } catch (err) {
+                console.warn('Failed to populate relatedToId for Person type:', err.message);
+            }
+        }
         
         const count = await Event.countDocuments(query);
         
@@ -118,27 +154,55 @@ exports.getEvents = async (req, res) => {
         });
     } catch (error) {
         console.error('Error fetching events:', error);
+        console.error('Error stack:', error.stack);
         res.status(500).json({ 
             success: false,
             message: 'Error fetching events.', 
-            error: error.message 
+            error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
         });
     }
 };
 
-// Get a single event by ID
+// Get a single event by ID (supports both _id and eventId)
 exports.getEventById = async (req, res) => {
     try {
-        const event = await Event.findOne({ 
-            _id: req.params.id, 
-            organizationId: req.user.organizationId 
-        })
-            .populate('organizer', 'firstName lastName email')
+        const query = { organizationId: req.user.organizationId };
+        
+        // Support both MongoDB _id and eventId UUID
+        if (req.params.id.match(/^[0-9a-f]{24}$/i)) {
+            query._id = req.params.id;
+        } else {
+            query.eventId = req.params.id;
+        }
+        
+        let event = await Event.findOne(query)
+            .populate('eventOwnerId', 'firstName lastName email')
             .populate('attendees.userId', 'firstName lastName email')
-            .populate('relatedTo.id', 'name title first_name last_name')
-            .populate('notes.created_by', 'firstName lastName')
+            .populate('attendees.personId', 'first_name last_name email')
             .populate('createdBy', 'firstName lastName')
-            .populate('updatedBy', 'firstName lastName');
+            .populate('modifiedBy', 'firstName lastName')
+            .populate('linkedTaskId', 'title description')
+            .populate('auditHistory.actorUserId', 'firstName lastName email')
+            .lean();
+        
+        // Manually populate relatedToId based on relatedToType
+        // Since refPath uses 'Person' but model is 'People', we need to handle this manually
+        // Only populate if relatedToId exists and relatedToType is 'Person' (which maps to 'People')
+        if (event && event.relatedToId && event.relatedToType === 'Person') {
+            try {
+                const relatedDoc = await People.findById(event.relatedToId)
+                    .select('name title first_name last_name')
+                    .lean();
+                if (relatedDoc) {
+                    event.relatedToId = relatedDoc;
+                }
+            } catch (err) {
+                // If populate fails, leave relatedToId as is
+                console.warn(`Failed to populate relatedToId for event ${event._id}:`, err.message);
+            }
+        }
+        // For other types (Organization, Deal, etc.), Mongoose refPath should work
+        // But if it doesn't, we can add them here if needed
         
         if (!event) {
             return res.status(404).json({ 
@@ -165,43 +229,53 @@ exports.getEventById = async (req, res) => {
 exports.createEvent = async (req, res) => {
     try {
         console.log('Creating event with data:', JSON.stringify(req.body, null, 2));
-        console.log('User info:', {
-            _id: req.user._id,
-            organizationId: req.user.organizationId,
-            email: req.user.email,
-            firstName: req.user.firstName,
-            lastName: req.user.lastName
-        });
         
         const eventData = {
             ...req.body,
             organizationId: req.user.organizationId,
-            organizer: req.user._id,
-            createdBy: req.user._id
+            eventOwnerId: req.body.eventOwnerId || req.user._id,
+            createdBy: req.user._id,
+            modifiedBy: req.user._id
         };
         
-        // If no attendees provided, add organizer as attendee
+        // Normalize status if provided
+        if (eventData.status && typeof eventData.status === 'string') {
+            eventData.status = eventData.status.charAt(0).toUpperCase() + eventData.status.slice(1).toLowerCase();
+        }
+        
+        // Normalize eventType if provided
+        if (eventData.eventType && typeof eventData.eventType === 'string') {
+            eventData.eventType = eventData.eventType.charAt(0).toUpperCase() + eventData.eventType.slice(1);
+        }
+        
+        // Map Person to Contact for relatedToType
+        if (eventData.relatedToType === 'Person') {
+            // Keep as Person in the schema, but we'll handle it in queries
+        }
+        
+        // If no attendees provided, add owner as attendee
         if (!eventData.attendees || eventData.attendees.length === 0) {
             eventData.attendees = [{
                 userId: req.user._id,
                 email: req.user.email || 'no-email@example.com',
                 name: `${req.user.firstName || 'User'} ${req.user.lastName || ''}`.trim(),
-                status: 'accepted',
-                isOrganizer: true
+                status: 'accepted'
             }];
         }
-        
-        console.log('Final event data before save:', JSON.stringify(eventData, null, 2));
         
         const event = new Event(eventData);
         await event.save();
         
-        console.log('Event saved successfully with ID:', event._id);
+        console.log('Event saved successfully with ID:', event._id, 'eventId:', event.eventId);
         
         const populatedEvent = await Event.findById(event._id)
-            .populate('organizer', 'firstName lastName email')
+            .populate('eventOwnerId', 'firstName lastName email')
             .populate('attendees.userId', 'firstName lastName email')
-            .populate('relatedTo.id', 'name title first_name last_name');
+            .populate('attendees.personId', 'first_name last_name email')
+            .populate('relatedToId', 'name title first_name last_name')
+            .populate('linkedTaskId', 'title description')
+            .populate('createdBy', 'firstName lastName')
+            .populate('modifiedBy', 'firstName lastName');
         
         res.status(201).json({
             success: true,
@@ -231,33 +305,78 @@ exports.createEvent = async (req, res) => {
 // Update an event
 exports.updateEvent = async (req, res) => {
     try {
-        // Prevent changing organizationId and createdBy
+        // Prevent changing organizationId, createdBy, createdTime, eventId
         delete req.body.organizationId;
         delete req.body.createdBy;
-        delete req.body.createdAt;
+        delete req.body.createdTime;
         delete req.body._id;
         delete req.body.__v;
+        delete req.body.eventId;
         
-        req.body.updatedBy = req.user._id;
+        // Build query (support both _id and eventId)
+        const query = { organizationId: req.user.organizationId };
+        if (req.params.id.match(/^[0-9a-f]{24}$/i)) {
+            query._id = req.params.id;
+        } else {
+            query.eventId = req.params.id;
+        }
         
-        const updatedEvent = await Event.findOneAndUpdate(
-            { 
-                _id: req.params.id, 
-                organizationId: req.user.organizationId 
-            },
-            req.body,
-            { new: true, runValidators: true }
-        )
-            .populate('organizer', 'firstName lastName email')
-            .populate('attendees.userId', 'firstName lastName email')
-            .populate('relatedTo.id', 'name title first_name last_name');
-        
-        if (!updatedEvent) {
+        // Get current event to track changes for audit
+        const currentEvent = await Event.findOne(query);
+        if (!currentEvent) {
             return res.status(404).json({ 
                 success: false,
                 message: 'Event not found.' 
             });
         }
+        
+        // Normalize status if provided
+        if (req.body.status && typeof req.body.status === 'string') {
+            req.body.status = req.body.status.charAt(0).toUpperCase() + req.body.status.slice(1).toLowerCase();
+        }
+        
+        // Track status changes for audit
+        if (req.body.status && req.body.status !== currentEvent.status) {
+            currentEvent.addAuditEntry('status_changed', req.user._id, currentEvent.status, req.body.status);
+        }
+        
+        // Track reschedule for audit
+        const oldStart = currentEvent.startDateTime;
+        const oldEnd = currentEvent.endDateTime;
+        const newStart = req.body.startDateTime ? new Date(req.body.startDateTime) : null;
+        const newEnd = req.body.endDateTime ? new Date(req.body.endDateTime) : null;
+        
+        if ((newStart && oldStart && newStart.getTime() !== oldStart.getTime()) ||
+            (newEnd && oldEnd && newEnd.getTime() !== oldEnd.getTime())) {
+            currentEvent.addAuditEntry('rescheduled', req.user._id, {
+                startDateTime: oldStart,
+                endDateTime: oldEnd
+            }, {
+                startDateTime: newStart || oldStart,
+                endDateTime: newEnd || oldEnd
+            }, {
+                reason: req.body.rescheduleReason || 'No reason provided'
+            });
+        }
+        
+        // Merge audit history
+        const updateData = {
+            ...req.body,
+            modifiedBy: req.user._id,
+            auditHistory: currentEvent.auditHistory
+        };
+        
+        const updatedEvent = await Event.findOneAndUpdate(
+            query,
+            updateData,
+            { new: true, runValidators: true }
+        )
+            .populate('eventOwnerId', 'firstName lastName email')
+            .populate('attendees.userId', 'firstName lastName email')
+            .populate('attendees.personId', 'first_name last_name email')
+            .populate('relatedToId', 'name title first_name last_name')
+            .populate('linkedTaskId', 'title description')
+            .populate('modifiedBy', 'firstName lastName');
         
         res.status(200).json({
             success: true,
@@ -274,13 +393,19 @@ exports.updateEvent = async (req, res) => {
     }
 };
 
-// Delete an event
+// Delete an event (supports both _id and eventId)
 exports.deleteEvent = async (req, res) => {
     try {
-        const deletedEvent = await Event.findOneAndDelete({ 
-            _id: req.params.id, 
-            organizationId: req.user.organizationId 
-        });
+        const query = { organizationId: req.user.organizationId };
+        
+        // Support both MongoDB _id and eventId UUID
+        if (req.params.id.match(/^[0-9a-f]{24}$/i)) {
+            query._id = req.params.id;
+        } else {
+            query.eventId = req.params.id;
+        }
+        
+        const deletedEvent = await Event.findOneAndDelete(query);
         
         if (!deletedEvent) {
             return res.status(404).json({ 
@@ -315,10 +440,30 @@ exports.bulkDeleteEvents = async (req, res) => {
             });
         }
         
-        const result = await Event.deleteMany({
-            _id: { $in: ids },
-            organizationId: req.user.organizationId
-        });
+        // Support both _id and eventId
+        const mongoIds = ids.filter(id => id.match(/^[0-9a-f]{24}$/i));
+        const eventIds = ids.filter(id => !id.match(/^[0-9a-f]{24}$/i));
+        
+        const query = {
+            organizationId: req.user.organizationId,
+            $or: []
+        };
+        
+        if (mongoIds.length > 0) {
+            query.$or.push({ _id: { $in: mongoIds } });
+        }
+        if (eventIds.length > 0) {
+            query.$or.push({ eventId: { $in: eventIds } });
+        }
+        
+        if (query.$or.length === 0) {
+            return res.status(400).json({ 
+                success: false,
+                message: 'No valid event IDs provided.' 
+            });
+        }
+        
+        const result = await Event.deleteMany(query);
         
         res.status(200).json({
             success: true,
@@ -335,85 +480,58 @@ exports.bulkDeleteEvents = async (req, res) => {
     }
 };
 
-// Add note to event
-exports.addNote = async (req, res) => {
-    try {
-        const { text } = req.body;
-        
-        if (!text || !text.trim()) {
-            return res.status(400).json({ 
-                success: false,
-                message: 'Note text is required.' 
-            });
-        }
-        
-        const event = await Event.findOne({
-            _id: req.params.id,
-            organizationId: req.user.organizationId
-        });
-        
-        if (!event) {
-            return res.status(404).json({ 
-                success: false,
-                message: 'Event not found.' 
-            });
-        }
-        
-        event.notes.push({
-            text: text.trim(),
-            created_by: req.user._id,
-            created_at: new Date()
-        });
-        
-        await event.save();
-        
-        const updatedEvent = await Event.findById(event._id)
-            .populate('notes.created_by', 'firstName lastName');
-        
-        res.status(200).json({
-            success: true,
-            message: 'Note added successfully.',
-            data: updatedEvent
-        });
-    } catch (error) {
-        console.error('Error adding note:', error);
-        res.status(400).json({ 
-            success: false,
-            message: 'Error adding note.', 
-            error: error.message 
-        });
-    }
-};
-
 // Update event status
 exports.updateEventStatus = async (req, res) => {
     try {
-        const { status } = req.body;
+        let { status } = req.body;
         
-        if (!['scheduled', 'completed', 'cancelled', 'rescheduled'].includes(status)) {
+        // Normalize status (capitalize first letter)
+        if (status) {
+            status = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+        }
+        
+        if (!['Scheduled', 'Completed', 'Cancelled', 'Rescheduled'].includes(status)) {
             return res.status(400).json({ 
                 success: false,
-                message: 'Invalid status value.' 
+                message: 'Invalid status value. Must be one of: Scheduled, Completed, Cancelled, Rescheduled.' 
             });
         }
         
-        const updatedEvent = await Event.findOneAndUpdate(
-            { 
-                _id: req.params.id, 
-                organizationId: req.user.organizationId 
-            },
-            { status, updatedBy: req.user._id },
-            { new: true }
-        )
-            .populate('organizer', 'firstName lastName email')
-            .populate('attendees.userId', 'firstName lastName email');
+        // Build query (support both _id and eventId)
+        const query = { organizationId: req.user.organizationId };
+        if (req.params.id.match(/^[0-9a-f]{24}$/i)) {
+            query._id = req.params.id;
+        } else {
+            query.eventId = req.params.id;
+        }
         
-        if (!updatedEvent) {
+        // Get current event to track status change
+        const currentEvent = await Event.findOne(query);
+        if (!currentEvent) {
             return res.status(404).json({ 
                 success: false,
                 message: 'Event not found.' 
             });
         }
+        
+        const oldStatus = currentEvent.status;
+        
+        // Add audit entry
+        currentEvent.addAuditEntry('status_changed', req.user._id, oldStatus, status);
+        
+        const updatedEvent = await Event.findOneAndUpdate(
+            query,
+            { 
+                status, 
+                modifiedBy: req.user._id,
+                auditHistory: currentEvent.auditHistory
+            },
+            { new: true }
+        )
+            .populate('eventOwnerId', 'firstName lastName email')
+            .populate('attendees.userId', 'firstName lastName email')
+            .populate('attendees.personId', 'first_name last_name email')
+            .populate('modifiedBy', 'firstName lastName');
         
         res.status(200).json({
             success: true,
@@ -441,8 +559,8 @@ exports.getEventStats = async (req, res) => {
         // Upcoming events (today onwards)
         const upcomingEvents = await Event.countDocuments({
             organizationId,
-            startDate: { $gte: new Date() },
-            status: 'scheduled'
+            startDateTime: { $gte: new Date() },
+            status: 'Scheduled'
         });
         
         // Today's events
@@ -451,7 +569,7 @@ exports.getEventStats = async (req, res) => {
         const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
         const todayEvents = await Event.countDocuments({
             organizationId,
-            startDate: { $gte: startOfToday, $lte: endOfToday }
+            startDateTime: { $gte: startOfToday, $lte: endOfToday }
         });
         
         // This week's events
@@ -461,13 +579,13 @@ exports.getEventStats = async (req, res) => {
         const endOfWeek = new Date(now.getFullYear(), now.getMonth(), diff + 6, 23, 59, 59);
         const weekEvents = await Event.countDocuments({
             organizationId,
-            startDate: { $gte: startOfWeek, $lte: endOfWeek }
+            startDateTime: { $gte: startOfWeek, $lte: endOfWeek }
         });
         
         // Events by type
         const eventsByType = await Event.aggregate([
             { $match: { organizationId } },
-            { $group: { _id: '$type', count: { $sum: 1 } } }
+            { $group: { _id: '$eventType', count: { $sum: 1 } } }
         ]);
         
         // Events by status
@@ -503,32 +621,108 @@ exports.getEventStats = async (req, res) => {
     }
 };
 
+// Add note to event
+exports.addNote = async (req, res) => {
+    try {
+        const { text } = req.body;
+        
+        if (!text || !text.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Note text is required'
+            });
+        }
+        
+        // Build query (support both _id and eventId)
+        const query = { organizationId: req.user.organizationId };
+        if (req.params.id.match(/^[0-9a-f]{24}$/i)) {
+            query._id = req.params.id;
+        } else {
+            query.eventId = req.params.id;
+        }
+        
+        // Get current event
+        const event = await Event.findOne(query);
+        if (!event) {
+            return res.status(404).json({ 
+                success: false,
+                message: 'Event not found.' 
+            });
+        }
+        
+        // Add note to notes array (backward compatibility) or create it if it doesn't exist
+        if (!event.notes) {
+            event.notes = [];
+        }
+        
+        event.notes.push({
+            text: text.trim(),
+            created_by: req.user._id,
+            created_at: new Date()
+        });
+        
+        // Add audit entry for note addition
+        event.addAuditEntry('note_added', req.user._id, null, null, {
+            noteText: text.trim().substring(0, 100) // Store first 100 chars in metadata
+        });
+        
+        // Update modifiedBy and modifiedTime
+        event.modifiedBy = req.user._id;
+        event.modifiedTime = new Date();
+        
+        await event.save();
+        
+        const populatedEvent = await Event.findById(event._id)
+            .populate('eventOwnerId', 'firstName lastName email')
+            .populate('attendees.userId', 'firstName lastName email')
+            .populate('attendees.personId', 'first_name last_name email')
+            .populate('relatedToId', 'name title first_name last_name')
+            .populate('linkedTaskId', 'title description')
+            .populate('notes.created_by', 'firstName lastName')
+            .populate('modifiedBy', 'firstName lastName');
+        
+        res.status(200).json({
+            success: true,
+            message: 'Note added successfully.',
+            data: populatedEvent
+        });
+    } catch (error) {
+        console.error('Error adding note:', error);
+        res.status(400).json({ 
+            success: false,
+            message: 'Error adding note.', 
+            error: error.message 
+        });
+    }
+};
+
 // Export events to CSV
 exports.exportEvents = async (req, res) => {
     try {
         const events = await Event.find({ 
             organizationId: req.user.organizationId 
         })
-            .populate('organizer', 'firstName lastName email')
-            .sort({ startDate: -1 })
+            .populate('eventOwnerId', 'firstName lastName email')
+            .populate('relatedToId', 'name title first_name last_name')
+            .sort({ startDateTime: -1 })
             .lean();
         
         const csvData = events.map(event => ({
-            title: event.title,
-            description: event.description,
-            startDate: event.startDate,
-            endDate: event.endDate,
-            allDay: event.allDay,
-            location: event.location,
-            meetingUrl: event.meetingUrl,
-            type: event.type,
-            category: event.category,
+            eventId: event.eventId,
+            eventName: event.eventName,
+            eventType: event.eventType,
             status: event.status,
-            priority: event.priority,
-            organizer: event.organizer ? `${event.organizer.firstName} ${event.organizer.lastName}` : '',
+            startDateTime: event.startDateTime,
+            endDateTime: event.endDateTime,
+            location: event.location,
+            agendaNotes: event.agendaNotes,
+            eventOwner: event.eventOwnerId ? 
+                `${event.eventOwnerId.firstName} ${event.eventOwnerId.lastName}` : '',
             attendeesCount: event.attendees?.length || 0,
-            createdAt: event.createdAt,
-            updatedAt: event.updatedAt
+            relatedToType: event.relatedToType,
+            tags: event.tags?.join(', ') || '',
+            createdTime: event.createdTime,
+            modifiedTime: event.modifiedTime
         }));
         
         res.status(200).json({
@@ -544,4 +738,3 @@ exports.exportEvents = async (req, res) => {
         });
     }
 };
-

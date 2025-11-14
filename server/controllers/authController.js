@@ -403,7 +403,8 @@ exports.loginUser = async (req, res) => {
                     manageUsers: orgUser.roleId.permissions.settings?.manageUsers || false,
                     manageBilling: orgUser.roleId.permissions.settings?.manageBilling || false,
                     manageIntegrations: false,
-                    customizeFields: false
+                    customizeFields: orgUser.roleId.permissions.settings?.edit || false,
+                    edit: orgUser.roleId.permissions.settings?.edit || false
                 },
                 reports: {
                     viewStandard: orgUser.roleId.permissions.reports?.read || false,

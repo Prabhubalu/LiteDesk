@@ -579,7 +579,8 @@ exports.getProfile = async (req, res) => {
                     manageUsers: user.roleId.permissions.settings?.manageUsers || false,
                     manageBilling: user.roleId.permissions.settings?.manageBilling || false,
                     manageIntegrations: false,
-                    customizeFields: false
+                    customizeFields: user.roleId.permissions.settings?.edit || false,
+                    edit: user.roleId.permissions.settings?.edit || false
                 },
                 reports: {
                     viewStandard: user.roleId.permissions.reports?.read || false,

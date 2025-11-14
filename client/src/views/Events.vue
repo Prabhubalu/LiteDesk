@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="flex justify-between items-center mb-8">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Calendar</h1>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Events</h1>
         <p class="text-lg text-gray-600 dark:text-gray-400 mt-2">Manage your events and meetings</p>
       </div>
       
@@ -188,20 +188,25 @@ const calendarEvents = computed(() => {
   if (searchQuery.value.trim()) {
     const query = searchQuery.value.toLowerCase();
     filteredEvents = filteredEvents.filter(event => 
-      event.title?.toLowerCase().includes(query) ||
-      event.description?.toLowerCase().includes(query) ||
+      (event.eventName || event.title)?.toLowerCase().includes(query) ||
+      (event.agendaNotes || event.description)?.toLowerCase().includes(query) ||
       event.location?.toLowerCase().includes(query)
     );
   }
 
   // Apply type filter
   if (filters.value.type) {
-    filteredEvents = filteredEvents.filter(event => event.type === filters.value.type);
+    filteredEvents = filteredEvents.filter(event => 
+      (event.eventType || event.type) === filters.value.type
+    );
   }
 
   // Apply status filter
   if (filters.value.status) {
-    filteredEvents = filteredEvents.filter(event => event.status === filters.value.status);
+    filteredEvents = filteredEvents.filter(event => {
+      const eventStatus = event.status?.toLowerCase() || '';
+      return eventStatus === filters.value.status.toLowerCase();
+    });
   }
 
   // Apply time range filter
@@ -210,7 +215,7 @@ const calendarEvents = computed(() => {
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
     filteredEvents = filteredEvents.filter(event => {
-      const eventDate = new Date(event.startDate);
+      const eventDate = new Date(event.startDateTime || event.startDate);
       const eventDateOnly = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
       
       switch (filters.value.timeRange) {
@@ -245,19 +250,21 @@ const calendarEvents = computed(() => {
   }
 
   const convertedEvents = filteredEvents.map(event => ({
-    id: event._id,
-    title: event.title,
-    start: event.startDate,
-    end: event.endDate,
-    backgroundColor: event.color || '#3b82f6',
-    borderColor: event.color || '#3b82f6',
+    id: event.eventId || event._id,
+    title: event.eventName || event.title,
+    start: event.startDateTime || event.startDate,
+    end: event.endDateTime || event.endDate,
+    backgroundColor: '#3b82f6', // Default color
+    borderColor: '#3b82f6',
     textColor: '#ffffff',
     extendedProps: {
-      description: event.description,
+      eventId: event.eventId,
+      agendaNotes: event.agendaNotes || event.description,
       location: event.location,
-      type: event.type,
+      eventType: event.eventType || event.type,
       status: event.status,
       attendees: event.attendees,
+      tags: event.tags,
       originalEvent: event
     }
   }));
@@ -316,7 +323,11 @@ const fetchEvents = async () => {
     
     // Fetch all events (FullCalendar will handle filtering by view)
     const response = await apiClient.get('/events', {
-      params: { limit: 500 }
+      params: { 
+        limit: 500,
+        sortBy: 'startDateTime',
+        sortOrder: 'asc'
+      }
     });
     
     if (response.success) {
@@ -357,9 +368,8 @@ const handleEventClick = (info) => {
 
 const handleDateSelect = (selectInfo) => {
   editingEvent.value = {
-    startDate: selectInfo.startStr,
-    endDate: selectInfo.endStr,
-    allDay: selectInfo.allDay
+    startDateTime: selectInfo.startStr,
+    endDateTime: selectInfo.endStr
   };
   showEventModal.value = true;
   
@@ -378,8 +388,8 @@ const handleEventDrop = async (info) => {
     const eventId = event.id;
     
     await apiClient.put(`/events/${eventId}`, {
-      startDate: event.start.toISOString(),
-      endDate: event.end ? event.end.toISOString() : event.start.toISOString()
+      startDateTime: event.start.toISOString(),
+      endDateTime: event.end ? event.end.toISOString() : event.start.toISOString()
     });
     
     await fetchEvents();
@@ -409,8 +419,8 @@ const handleEventResize = async (info) => {
     const eventId = event.id;
     
     await apiClient.put(`/events/${eventId}`, {
-      startDate: event.start.toISOString(),
-      endDate: event.end ? event.end.toISOString() : event.start.toISOString()
+      startDateTime: event.start.toISOString(),
+      endDateTime: event.end ? event.end.toISOString() : event.start.toISOString()
     });
     
     await fetchEvents();

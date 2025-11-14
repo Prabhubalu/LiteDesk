@@ -76,11 +76,13 @@ const routes = [
     meta: { requiresAuth: true, requiresPermission: { module: 'tasks', action: 'view' } }
   },
   {
-    path: '/calendar',
-    name: 'calendar',
-    component: () => import('@/views/Calendar.vue'),
+    path: '/events',
+    name: 'events',
+    component: () => import('@/views/Events.vue'),
     meta: { requiresAuth: true, requiresPermission: { module: 'events', action: 'view' } }
   },
+  // Backward-compat redirect
+  { path: '/calendar', redirect: { name: 'events' } },
   {
     path: '/events/:id',
     name: 'event-detail',

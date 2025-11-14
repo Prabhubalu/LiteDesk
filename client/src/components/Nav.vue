@@ -128,15 +128,15 @@ const navigation = computed(() => {
     });
   }
   
-  // Calendar/Events - check permission
-  if (authStore.can('events', 'view')) {
-    nav.push({ 
-      name: 'Calendar', 
-      href: '/calendar', 
-      icon: CalendarIcon,
-      current: route.path.startsWith('/calendar')
-    });
-  }
+      // Events - check permission
+      if (authStore.can('events', 'view')) {
+        nav.push({
+          name: 'Events',
+          href: '/events',
+          icon: CalendarIcon,
+          current: route.path.startsWith('/events') || route.path.startsWith('/calendar')
+        });
+      }
   
   // Imports - check permission
   if (authStore.can('imports', 'view')) {

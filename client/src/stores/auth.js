@@ -204,7 +204,8 @@ export const useAuthStore = defineStore('auth', {
                                 manageUsers: !!rolePerms.settings?.manageUsers,
                                 manageBilling: !!rolePerms.settings?.manageBilling,
                                 manageIntegrations: false,
-                                customizeFields: false,
+                                customizeFields: !!rolePerms.settings?.edit,
+                                edit: !!rolePerms.settings?.edit,
                             };
                             const reports = {
                                 viewStandard: !!rolePerms.reports?.read,

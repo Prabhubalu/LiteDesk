@@ -1,7 +1,33 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const { v4: uuidv4 } = require('uuid');
 
+// Audit history entry schema
+const auditHistoryEntrySchema = new Schema({
+  timestamp: { 
+    type: Date, 
+    default: Date.now, 
+    required: true 
+  },
+  actorUserId: { 
+    type: Schema.Types.ObjectId, 
+    ref: 'User', 
+    required: true 
+  },
+  action: { 
+    type: String, 
+    required: true,
+    enum: ['status_changed', 'rescheduled', 'attendee_added', 'attendee_removed', 'attendee_status_changed', 'created', 'updated', 'deleted', 'note_added'] // Picklist
+  },
+  from: Schema.Types.Mixed, // Previous value
+  to: Schema.Types.Mixed,    // New value
+  metadata: Schema.Types.Mixed // Additional context (reason, oldStart, newStart, etc.)
+}, { _id: false });
+
+// Attendee schema - supports both Person (People) and User lookups
 const attendeeSchema = new Schema({
+  // Can be either Person (People) ID or User ID
+  personId: { type: Schema.Types.ObjectId, ref: 'People' },
   userId: { type: Schema.Types.ObjectId, ref: 'User' },
   email: String,
   name: String,
@@ -9,134 +35,120 @@ const attendeeSchema = new Schema({
     type: String, 
     enum: ['pending', 'accepted', 'declined', 'tentative'], 
     default: 'pending' 
-  },
-  isOrganizer: { type: Boolean, default: false }
+  }
 }, { _id: false });
 
 const eventSchema = new Schema({
+  // Primary Key - UUID
+  eventId: {
+    type: String,
+    required: true,
+    unique: true,
+    default: () => uuidv4()
+  },
+  
   // Basic Information
-  title: { 
+  eventName: { 
     type: String, 
     required: true,
-    trim: true
-  },
-  description: { 
-    type: String,
-    default: ''
+    trim: true,
+    maxlength: 255
   },
   
-  // Date & Time
-  startDate: { 
-    type: Date, 
-    required: true 
-  },
-  endDate: { 
-    type: Date, 
-    required: true 
-  },
-  allDay: { 
-    type: Boolean, 
-    default: false 
-  },
-  timezone: {
-    type: String,
-    default: 'UTC'
-  },
-  
-  // Location
-  location: { 
-    type: String,
-    default: ''
-  },
-  meetingUrl: { 
-    type: String,
-    default: ''
-  },
-  
-  // Type & Category
-  type: { 
+  // Type & Status (Picklist fields)
+  eventType: { 
     type: String, 
-    enum: ['meeting', 'call', 'email', 'task', 'deadline', 'follow-up', 'other'],
-    default: 'meeting'
-  },
-  category: {
-    type: String,
-    enum: ['sales', 'support', 'internal', 'external', 'personal', 'other'],
-    default: 'other'
+    enum: ['Meeting', 'Call', 'Site Visit', 'Demo', 'Training', 'Webinar', 'Other'], // Picklist
+    required: true,
+    default: 'Meeting'
   },
   
-  // Status & Priority
   status: { 
     type: String, 
-    enum: ['scheduled', 'completed', 'cancelled', 'rescheduled'],
-    default: 'scheduled'
+    enum: ['Scheduled', 'Completed', 'Cancelled', 'Rescheduled'], // Picklist
+    required: true,
+    default: 'Scheduled'
   },
-  priority: {
+  
+  // Polymorphic Related To
+  relatedToId: {
+    type: Schema.Types.ObjectId,
+    refPath: 'relatedToType'
+  },
+  relatedToType: {
     type: String,
-    enum: ['low', 'medium', 'high', 'urgent'],
-    default: 'medium'
+    enum: ['Person', 'Organization', 'Deal', 'Item'], // Picklist
+    default: null
   },
   
-  // Attendees
-  attendees: [attendeeSchema],
-  
-  // Organizer
-  organizer: { 
+  // Event Owner
+  eventOwnerId: { 
     type: Schema.Types.ObjectId, 
     ref: 'User',
     required: true
   },
   
-  // Related Records
-  relatedTo: {
-    type: { 
-      type: String, 
-      enum: ['Contact', 'Deal', 'Task', 'Organization']
-    },
-    id: { 
-      type: Schema.Types.ObjectId,
-      refPath: 'relatedTo.type'
-    }
+  // Date & Time
+  startDateTime: { 
+    type: Date, 
+    required: true 
+  },
+  endDateTime: { 
+    type: Date, 
+    required: true 
   },
   
-  // Recurring Events
-  isRecurring: {
-    type: Boolean,
-    default: false
+  // Location (can be address or URL)
+  location: { 
+    type: String,
+    maxlength: 1024,
+    default: ''
   },
-  recurrence: {
-    frequency: {
-      type: String,
-      enum: ['daily', 'weekly', 'monthly', 'yearly'],
-    },
-    interval: Number, // Every X days/weeks/months/years
-    endDate: Date,
-    occurrences: Number, // Number of times to repeat
-    daysOfWeek: [Number], // For weekly: 0=Sunday, 1=Monday, etc.
-    dayOfMonth: Number, // For monthly
-  },
-  parentEventId: {
-    type: Schema.Types.ObjectId,
-    ref: 'Event',
+  
+  // Reminder
+  reminderAt: {
+    type: Date,
     default: null
   },
   
-  // Reminders
-  reminders: [{
-    type: {
-      type: String,
-      enum: ['email', 'notification', 'sms'],
-      default: 'notification'
-    },
-    minutesBefore: Number,
-    sent: { type: Boolean, default: false }
+  // Recurrence (stored as JSON)
+  recurrence: {
+    type: Schema.Types.Mixed, // JSON object with rrule, timezone, endCondition
+    default: null
+  },
+  
+  // Attendees (array of Person/User lookups)
+  attendees: [attendeeSchema],
+  
+  // Agenda Notes
+  agendaNotes: { 
+    type: String,
+    maxlength: 5000,
+    default: ''
+  },
+  
+  // Linked Records
+  linkedTaskId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Task',
+    default: null
+  },
+  linkedFormId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Form',
+    default: null
+  },
+  
+  // Tags
+  tags: [{
+    type: String,
+    trim: true
   }],
   
-  // Additional Fields
-  color: {
-    type: String,
-    default: '#3B82F6' // Blue
-  },
+  // Audit History
+  auditHistory: [auditHistoryEntrySchema],
+  
+  // Notes (for user-added notes/comments - backward compatibility)
   notes: [{
     text: { type: String, required: true },
     created_by: { type: Schema.Types.ObjectId, ref: 'User' },
@@ -150,39 +162,100 @@ const eventSchema = new Schema({
     required: true
   },
   
-  // Timestamps
+  // Timestamps (auto-filled)
   createdBy: { 
     type: Schema.Types.ObjectId, 
-    ref: 'User'
+    ref: 'User',
+    required: true
   },
-  updatedBy: { 
+  createdTime: {
+    type: Date,
+    default: Date.now,
+    required: true
+  },
+  modifiedBy: { 
     type: Schema.Types.ObjectId, 
-    ref: 'User'
+    ref: 'User',
+    required: true
+  },
+  modifiedTime: {
+    type: Date,
+    default: Date.now,
+    required: true
   }
 }, { 
-  timestamps: true 
+  timestamps: false // We use createdTime/modifiedTime instead
 });
 
-// Indexes
-eventSchema.index({ organizationId: 1, startDate: 1 });
-eventSchema.index({ organizationId: 1, endDate: 1 });
+// Indexes as per specification
+eventSchema.index({ eventOwnerId: 1, startDateTime: 1 }, { name: 'idx_events_owner_start' });
+eventSchema.index({ relatedToId: 1, relatedToType: 1 }, { name: 'idx_events_relatedTo' });
+eventSchema.index({ organizationId: 1, startDateTime: 1 });
 eventSchema.index({ organizationId: 1, status: 1 });
-eventSchema.index({ organizer: 1 });
 eventSchema.index({ 'attendees.userId': 1 });
-eventSchema.index({ 'relatedTo.type': 1, 'relatedTo.id': 1 });
+eventSchema.index({ 'attendees.personId': 1 });
+eventSchema.index({ linkedTaskId: 1 });
+// eventId is already indexed via unique: true, no need for explicit index
 
 // Virtual for duration
 eventSchema.virtual('duration').get(function() {
-  return this.endDate - this.startDate;
+  if (this.startDateTime && this.endDateTime) {
+    return this.endDateTime - this.startDateTime;
+  }
+  return null;
 });
 
-// Validate end date is after start date
+// Pre-save middleware to update timestamps and add audit entries
 eventSchema.pre('save', function(next) {
-  if (this.endDate <= this.startDate) {
-    next(new Error('End date must be after start date'));
+  const now = new Date();
+  
+  // Set createdTime on new documents
+  if (this.isNew) {
+    this.createdTime = now;
+    this.modifiedTime = now;
+    
+    // Add creation audit entry
+    if (!this.auditHistory) {
+      this.auditHistory = [];
+    }
+    this.auditHistory.push({
+      timestamp: now,
+      actorUserId: this.createdBy,
+      action: 'created',
+      from: null,
+      to: null,
+      metadata: {
+        eventName: this.eventName,
+        eventType: this.eventType,
+        startDateTime: this.startDateTime
+      }
+    });
+  } else {
+    // Update modifiedTime on existing documents
+    this.modifiedTime = now;
   }
+  
+  // Validate end date is after start date
+  if (this.endDateTime && this.startDateTime && this.endDateTime <= this.startDateTime) {
+    return next(new Error('End date must be after start date'));
+  }
+  
   next();
 });
 
-module.exports = mongoose.model('Event', eventSchema);
+// Method to add audit history entry
+eventSchema.methods.addAuditEntry = function(action, actorUserId, from, to, metadata) {
+  if (!this.auditHistory) {
+    this.auditHistory = [];
+  }
+  this.auditHistory.push({
+    timestamp: new Date(),
+    actorUserId: actorUserId,
+    action: action,
+    from: from,
+    to: to,
+    metadata: metadata || {}
+  });
+};
 
+module.exports = mongoose.model('Event', eventSchema);

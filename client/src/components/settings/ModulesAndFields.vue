@@ -760,6 +760,21 @@
           </div>
           <div class="flex items-center gap-2">
             <button 
+              v-if="activeTopTab === 'quick' && quickDirty"
+              @click="saveQuickCreate" 
+              :disabled="isSavingQuickCreate"
+              class="px-4 py-2 bg-brand-600 hover:bg-brand-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm hover:shadow-md"
+            >
+              <svg v-if="!isSavingQuickCreate" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <svg v-else class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              {{ isSavingQuickCreate ? 'Saving...' : 'Save Changes' }}
+            </button>
+            <button 
               v-if="(['details', 'relationships', 'pipeline'].includes(activeTopTab) && isDirty)"
               @click="saveModule" 
               :disabled="isSaving"
@@ -2089,6 +2104,22 @@ const showFormModal = ref(false);
 const editingModule = ref(null);
 const editFields = ref([]);
 const selectedFieldIdx = ref(0);
+
+// System fields that should be excluded from quick create and field configuration
+const systemFieldKeys = [
+  'organizationid', 'createdat', 'updatedat', '_id', '__v', 'createdby',
+  // Events-specific system fields
+  'eventid', 'createdtime', 'modifiedby', 'modifiedtime', 'audithistory'
+];
+
+// Filter system fields from fields array
+const filterSystemFields = (fields) => {
+  if (!Array.isArray(fields)) return fields;
+  return fields.filter(field => {
+    if (!field || !field.key) return true;
+    return !systemFieldKeys.includes(field.key.toLowerCase());
+  });
+};
 // Filter modules for display - exclude 'users' from main list (it's only for lookups)
 const displayModules = computed(() => modules.value.filter(m => m.key !== 'users'));
 const optionsBuffer = ref('');
@@ -2169,7 +2200,6 @@ const quickMode = ref('simple'); // Advanced mode hidden for now
 const showPreview = ref(false);
 const originalSnapshot = ref('');
 const quickOriginalSnapshot = ref('');
-const isInitializingQuickCreate = ref(false);
 const dragColSrc = ref({ ri: null, ci: null });
 const dragColOver = ref({ ri: null, ci: null });
 const dragRowSrc = ref(null);
@@ -3351,7 +3381,7 @@ const fetchModules = async () => {
         selectedModuleId.value = initialMod._id;
         const initial = JSON.parse(JSON.stringify(initialMod.fields || []));
         const sorted = initial.sort((a,b) => (a.order ?? 0) - (b.order ?? 0));
-        editFields.value = uniqueFieldsByKey(sorted);
+        editFields.value = filterSystemFields(uniqueFieldsByKey(sorted));
         // Select field by key if provided
         const idx = fieldKey ? editFields.value.findIndex(f => f.key === fieldKey) : 0;
         selectedFieldIdx.value = Math.max(0, idx);
@@ -3390,7 +3420,28 @@ const fetchModules = async () => {
         // Choose selection source based on mode: advanced -> layout, simple -> quickCreate
         const layoutKeysInit = extractLayoutKeys(quickLayout.value);
         let quickKeysInit = initialMod.quickCreate || [];
-        // fallback to locally stored quick selection if server returns empty
+        
+        // For Events module, use default fields if quickCreate is empty or incomplete
+        // Match field keys to actual field keys in editFields (they might be lowercase)
+        if (initialMod.key === 'events' && (!quickKeysInit || quickKeysInit.length < 5)) {
+          const defaultFieldNames = [
+            'eventName',
+            'eventType',
+            'status',
+            'eventOwnerId',
+            'startDateTime',
+            'endDateTime',
+            'location',
+            'agendaNotes'
+          ];
+          // Find actual field keys from editFields (case-insensitive match)
+          quickKeysInit = defaultFieldNames.map(name => {
+            const field = editFields.value.find(f => f.key && f.key.toLowerCase() === name.toLowerCase());
+            return field ? field.key : name;
+          }).filter(key => key); // Remove any that weren't found
+        }
+        
+        // fallback to locally stored quick selection if server returns empty (for other modules)
         if (!layoutKeysInit.length && !quickKeysInit.length) {
           try {
             const cached = JSON.parse(localStorage.getItem(`litedesk-modfields-quick-${initialMod.key}`) || '[]');
@@ -3399,13 +3450,24 @@ const fetchModules = async () => {
         }
         const useLayout = false; // Advanced mode hidden for now // (quickMode.value === 'advanced' && layoutKeysInit.length > 0);
         const baseKeys = useLayout ? layoutKeysInit : quickKeysInit;
+        // Normalize baseKeys to match actual field keys in editFields (case-insensitive match)
+        const normalizedBaseKeys = baseKeys.map(key => {
+          const field = editFields.value.find(f => f.key && f.key.toLowerCase() === key.toLowerCase());
+          return field ? field.key : key;
+        }).filter(key => key);
         // Always include required fields in Simple mode
         const requiredKeys = editFields.value.filter(f => !!f.required && !!f.key).map(f => f.key);
-        const combined = quickMode.value === 'simple' ? Array.from(new Set([...baseKeys, ...requiredKeys])) : baseKeys;
+        const combined = quickMode.value === 'simple' ? Array.from(new Set([...normalizedBaseKeys, ...requiredKeys])) : normalizedBaseKeys;
         quickCreateSelected.value = new Set(combined);
         // capture snapshot after initializing state
         originalSnapshot.value = getSnapshot();
         quickOriginalSnapshot.value = getQuickSnapshot();
+        
+        // If we used default fields for Events and database doesn't have them, save them
+        // But wait until initialization is complete
+        if (initialMod.key === 'events' && (!initialMod.quickCreate || initialMod.quickCreate.length < 5) && combined.length > 0) {
+          // Default fields are now set, user can save manually
+        }
         
         // Check if we should open add field dialog
         const action = typeof route.query.action === 'string' ? route.query.action : null;
@@ -3427,7 +3489,7 @@ const fetchModules = async () => {
             selectedModuleId.value = storedMod._id;
             const initial = JSON.parse(JSON.stringify(storedMod.fields || []));
             const sorted = initial.sort((a,b) => (a.order ?? 0) - (b.order ?? 0));
-            editFields.value = uniqueFieldsByKey(sorted);
+            editFields.value = filterSystemFields(uniqueFieldsByKey(sorted));
             // try stored field
             const storedFieldKey = localStorage.getItem('litedesk-modfields-field') || '';
             const sidx = storedFieldKey ? editFields.value.findIndex(f => f.key === storedFieldKey) : 0;
@@ -3449,14 +3511,47 @@ const fetchModules = async () => {
             router.replace({ query: { ...route.query, quickMode: quickMode.value } });
             // now derive selection based on mode
             const layoutKeysInit = extractLayoutKeys(quickLayout.value);
-            const quickKeysInit = storedMod.quickCreate || [];
+            let quickKeysInit = storedMod.quickCreate || [];
+            
+            // For Events module, use default fields if quickCreate is empty or incomplete
+            // Match field keys to actual field keys in editFields (they might be lowercase)
+            if (storedMod.key === 'events' && (!quickKeysInit || quickKeysInit.length < 5)) {
+              const defaultFieldNames = [
+                'eventName',
+                'eventType',
+                'status',
+                'eventOwnerId',
+                'startDateTime',
+                'endDateTime',
+                'location',
+                'agendaNotes'
+              ];
+              // Find actual field keys from editFields (case-insensitive match)
+              quickKeysInit = defaultFieldNames.map(name => {
+                const field = editFields.value.find(f => f.key && f.key.toLowerCase() === name.toLowerCase());
+                return field ? field.key : name;
+              }).filter(key => key); // Remove any that weren't found
+            }
+            
             const useLayout = false; // Advanced mode hidden for now // (quickMode.value === 'advanced' && layoutKeysInit.length > 0);
             const baseKeys = useLayout ? layoutKeysInit : quickKeysInit;
+            // Normalize baseKeys to match actual field keys in editFields (case-insensitive match)
+            const normalizedBaseKeys = baseKeys.map(key => {
+              const field = editFields.value.find(f => f.key && f.key.toLowerCase() === key.toLowerCase());
+              return field ? field.key : key;
+            }).filter(key => key);
             const requiredKeys = editFields.value.filter(f => !!f.required && !!f.key).map(f => f.key);
-            const combined = quickMode.value === 'simple' ? Array.from(new Set([...baseKeys, ...requiredKeys])) : baseKeys;
+            const combined = quickMode.value === 'simple' ? Array.from(new Set([...normalizedBaseKeys, ...requiredKeys])) : normalizedBaseKeys;
             quickCreateSelected.value = new Set(combined);
             originalSnapshot.value = getSnapshot();
             quickOriginalSnapshot.value = getQuickSnapshot();
+            
+            // If we used default fields for Events and database doesn't have them, save them
+            // But wait until initialization is complete
+            if (storedMod.key === 'events' && (!storedMod.quickCreate || storedMod.quickCreate.length < 5) && combined.length > 0) {
+              // Save default fields to database after initialization completes
+              // Default fields are now set, user can save manually
+            }
           }
         }
       }
@@ -3469,13 +3564,10 @@ const fetchModules = async () => {
 };
 
 const selectModule = (mod, preferFieldKey = null) => {
-  // Prevent auto-save during initialization
-  isInitializingQuickCreate.value = true;
-  
   selectedModuleId.value = mod._id;
   const initial = JSON.parse(JSON.stringify(mod.fields || []));
   const sorted = initial.sort((a,b) => (a.order ?? 0) - (b.order ?? 0));
-  editFields.value = uniqueFieldsByKey(sorted);
+  editFields.value = filterSystemFields(uniqueFieldsByKey(sorted));
   if (preferFieldKey) {
     const idx = editFields.value.findIndex(f => f.key === preferFieldKey);
     selectedFieldIdx.value = idx >= 0 ? idx : 0;
@@ -3509,6 +3601,28 @@ const selectModule = (mod, preferFieldKey = null) => {
   // Choose selection source based on mode: advanced -> layout, simple -> quickCreate
   const layoutKeys = extractLayoutKeys(quickLayout.value);
   let quickKeys = mod.quickCreate || [];
+  
+  // For Events module, use default fields if quickCreate is empty or incomplete
+  // Match field keys to actual field keys in editFields (they might be lowercase)
+  if (mod.key === 'events' && (!quickKeys || quickKeys.length < 5)) {
+    const defaultFieldNames = [
+      'eventName',
+      'eventType',
+      'status',
+      'eventOwnerId',
+      'startDateTime',
+      'endDateTime',
+      'location',
+      'agendaNotes'
+    ];
+    // Find actual field keys from editFields (case-insensitive match)
+    quickKeys = defaultFieldNames.map(name => {
+      const field = editFields.value.find(f => f.key && f.key.toLowerCase() === name.toLowerCase());
+      return field ? field.key : name;
+    }).filter(key => key); // Remove any that weren't found
+  }
+  
+  // fallback to locally stored quick selection if server returns empty (for other modules)
   if (!layoutKeys.length && !quickKeys.length) {
     try {
       const cached = JSON.parse(localStorage.getItem(`litedesk-modfields-quick-${mod.key}`) || '[]');
@@ -3517,18 +3631,25 @@ const selectModule = (mod, preferFieldKey = null) => {
   }
   const useLayout = false; // Advanced mode hidden for now // (quickMode.value === 'advanced' && layoutKeys.length > 0);
   const baseKeys = useLayout ? layoutKeys : quickKeys;
+  // Normalize baseKeys to match actual field keys in editFields (case-insensitive match)
+  const normalizedBaseKeys = baseKeys.map(key => {
+    const field = editFields.value.find(f => f.key && f.key.toLowerCase() === key.toLowerCase());
+    return field ? field.key : key;
+  }).filter(key => key);
   const requiredKeys = editFields.value.filter(f => !!f.required && !!f.key).map(f => f.key);
-  const combined = quickMode.value === 'simple' ? Array.from(new Set([...baseKeys, ...requiredKeys])) : baseKeys;
+  const combined = quickMode.value === 'simple' ? Array.from(new Set([...normalizedBaseKeys, ...requiredKeys])) : normalizedBaseKeys;
   quickCreateSelected.value = new Set(combined);
   // capture snapshot for selected module
   originalSnapshot.value = getSnapshot();
   quickOriginalSnapshot.value = getQuickSnapshot();
   
-  // Re-enable auto-save after initialization completes
-  setTimeout(() => {
-    isInitializingQuickCreate.value = false;
-    console.log('Quick Create initialization complete, auto-save enabled');
-  }, 1000);
+  // If we used default fields for Events and database doesn't have them, save them
+  // But wait until initialization is complete
+  if (mod.key === 'events' && (!mod.quickCreate || mod.quickCreate.length < 5) && combined.length > 0) {
+    // Save default fields to database after initialization completes
+    // Default fields are now set, user can save manually
+  }
+  
 };
 
 watch(pipelineSettings, () => {
@@ -3617,6 +3738,7 @@ const removeField = (idx) => {
 };
 
 const isSaving = ref(false);
+const isSavingQuickCreate = ref(false);
 const saveModule = async () => {
   const mod = selectedModule.value;
   if (!mod) return;
@@ -3628,8 +3750,8 @@ const saveModule = async () => {
     const deduplicatedFields = uniqueFieldsByKey(editFields.value);
     // Update order after deduplication
     deduplicatedFields.forEach((f, i) => { f.order = i; });
-    // Update editFields to reflect deduplicated version
-    editFields.value = deduplicatedFields;
+    // Update editFields to reflect deduplicated version (filter system fields)
+    editFields.value = filterSystemFields(deduplicatedFields);
     const url = mod.type === 'system' ? `/api/modules/system/${mod.key}` : `/api/modules/${mod._id}`;
     const orderedKeys = orderedQuickCreate.value.map(f => f.key);
     const payload = {
@@ -3919,131 +4041,6 @@ function getModuleName(key) {
   return module ? module.name : key;
 }
 
-const autoSaveTimeout = ref(null);
-
-// Auto-save Quick Create with debounce
-async function autoSaveQuickCreate() {
-  // Don't auto-save during initialization
-  if (isInitializingQuickCreate.value) {
-    console.log('Auto-save skipped: Still initializing');
-    return;
-  }
-  
-  // Clear existing timeout
-  if (autoSaveTimeout.value) {
-    clearTimeout(autoSaveTimeout.value);
-  }
-  
-  // Set new timeout to save after 500ms of inactivity
-  autoSaveTimeout.value = setTimeout(async () => {
-    const mod = selectedModule.value;
-    if (!mod) {
-      console.warn('Auto-save: No module selected');
-      return;
-    }
-    
-    try {
-      const url = mod.type === 'system' ? `/api/modules/system/${mod.key}` : `/api/modules/${mod._id}`;
-      const orderedKeys = orderedQuickCreate.value.map(f => f.key);
-      const quickCreateArray = quickMode.value === 'simple' ? orderedKeys : Array.from(quickCreateSelected.value);
-      
-      console.log('🔍 Auto-save payload generation:', {
-        mode: quickMode.value,
-        orderedQuickCreateLength: orderedQuickCreate.value.length,
-        orderedKeys: orderedKeys,
-        quickCreateSelectedSize: quickCreateSelected.value.size,
-        quickCreateSelectedArray: Array.from(quickCreateSelected.value),
-        quickCreateArray: quickCreateArray,
-        quickLayoutRows: quickLayout.value?.rows?.length || 0
-      });
-      
-      const payload = {
-        quickCreate: quickCreateArray,
-        quickCreateLayout: { version: 1, rows: [] } // Advanced mode hidden for now // quickMode.value === 'advanced' ? quickLayout.value : { version: 1, rows: [] }
-      };
-      
-      console.log('Auto-saving Quick Create:', {
-        module: mod.key,
-        mode: quickMode.value,
-        url: url,
-        payload: payload,
-        payloadQuickCreate: payload.quickCreate,
-        payloadQuickCreateLength: payload.quickCreate?.length || 0,
-        payloadQuickCreateLayout: payload.quickCreateLayout,
-        quickCreateLayoutRows: payload.quickCreateLayout?.rows?.length || 0,
-        payloadString: JSON.stringify(payload)
-      });
-      
-      const res = await fetch(url, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authStore.user?.token}` },
-        body: JSON.stringify(payload)
-      });
-      
-      // Log the raw response text to see what the server actually returned
-      const responseText = await res.clone().text();
-      console.log('📥 Raw server response:', responseText);
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error('Auto-save Quick Create HTTP error:', res.status, errorText);
-        alert(`Failed to save Quick Create: ${errorText.substring(0, 100)}`);
-        return;
-      }
-      
-      const data = await res.json();
-      if (!data.success) {
-        console.error('Auto-save Quick Create failed:', data);
-        alert(`Failed to save Quick Create: ${data.message || 'Unknown error'}`);
-        return;
-      }
-      
-      console.log('✅ Auto-save Quick Create successful:', {
-        dataKeys: Object.keys(data.data || {}),
-        quickCreate: data.data?.quickCreate,
-        quickCreateLength: data.data?.quickCreate?.length || 0,
-        quickCreateType: typeof data.data?.quickCreate,
-        quickCreateIsArray: Array.isArray(data.data?.quickCreate),
-        quickCreateLayout: data.data?.quickCreateLayout,
-        quickCreateLayoutRows: data.data?.quickCreateLayout?.rows?.length || 0,
-        fullData: data.data
-      });
-      
-      // cache selection locally for resilience
-      try {
-        localStorage.setItem(`litedesk-modfields-quick-${mod.key}`, JSON.stringify(payload.quickCreate));
-      } catch (e) {}
-      
-      // Update snapshot after successful save
-      quickOriginalSnapshot.value = getQuickSnapshot();
-    } catch (e) {
-      console.error('Auto-save quick create failed:', e);
-    }
-  }, 500);
-}
-
-// Watch for layout changes in advanced mode (span, widget, props changes)
-watch(() => quickLayout.value, () => {
-  // Advanced mode hidden for now - auto-save disabled
-  // if (quickMode.value === 'advanced' && selectedModule.value) {
-  //   console.log('Layout changed, triggering auto-save');
-  //   autoSaveQuickCreate();
-  // }
-}, { deep: true });
-
-// Watch for quickCreateSelected changes in simple mode
-// Use a computed to convert Set to Array for reactivity
-const quickCreateSelectedArray = computed(() => Array.from(quickCreateSelected.value).sort());
-watch(quickCreateSelectedArray, (newVal, oldVal) => {
-  if (quickMode.value === 'simple' && selectedModule.value) {
-    console.log('Quick Create selection changed:', { 
-      from: oldVal, 
-      to: newVal,
-      length: newVal.length 
-    });
-    autoSaveQuickCreate();
-  }
-});
 
 function toggleQuickCreate(key, checked) {
   const s = quickCreateSelected.value;
@@ -4054,18 +4051,15 @@ function toggleQuickCreate(key, checked) {
     return;
   }
   if (checked) s.add(key); else s.delete(key);
-  // Watcher will handle auto-save for simple mode
 }
 
 function toggleQuickRow(field) {
   if (!field || !field.key) return; // cannot toggle required
   const has = quickCreateSelected.value.has(field.key);
   toggleQuickCreate(field.key, !has);
-  // toggleQuickCreate already calls autoSaveQuickCreate
 }
 function selectAllQuickCreate() {
   quickCreateSelected.value = new Set(editFields.value.map(f => f.key));
-  autoSaveQuickCreate();
 }
 const orderedQuickCreate = computed(() => {
   const seen = new Set();
@@ -4083,21 +4077,17 @@ const orderedQuickCreate = computed(() => {
 
 function addRow() {
   quickLayout.value.rows.push({ cols: [] });
-  autoSaveQuickCreate();
 }
 function removeRow(ri) {
   quickLayout.value.rows.splice(ri, 1);
   rebuildQuickCreateFromLayout();
-  // rebuildQuickCreateFromLayout already calls autoSaveQuickCreate
 }
 function addCol(ri) {
   quickLayout.value.rows[ri].cols.push({ span: 12, fieldKey: '', widget: 'input', props: {} });
-  autoSaveQuickCreate();
 }
 function removeCol(ri, ci) {
   quickLayout.value.rows[ri].cols.splice(ci, 1);
   rebuildQuickCreateFromLayout();
-  // rebuildQuickCreateFromLayout already calls autoSaveQuickCreate
 }
 
 function displayFieldLabel(key) {
@@ -4130,7 +4120,6 @@ function onColumnDrop(ri, ci, event) {
 function clearColumnField(ri, ci) {
   quickLayout.value.rows[ri].cols[ci].fieldKey = '';
   rebuildQuickCreateFromLayout();
-  // rebuildQuickCreateFromLayout already calls autoSaveQuickCreate
 }
 function isFieldUsedInLayout(key) {
   for (const row of quickLayout.value.rows) {
@@ -4148,7 +4137,6 @@ function rebuildQuickCreateFromLayout() {
     }
   }
   quickCreateSelected.value = new Set(keys);
-  // Watcher will handle auto-save
 }
 
 function extractLayoutKeys(layout) {
@@ -4593,7 +4581,6 @@ function onRowDrop(ri) {
   if (from === ri) return;
   const [moved] = quickLayout.value.rows.splice(from, 1);
   quickLayout.value.rows.splice(ri, 0, moved);
-  autoSaveQuickCreate();
 }
 
 // Snapshot helpers to detect unsaved changes
@@ -4629,6 +4616,9 @@ const quickDirty = computed(() => getQuickSnapshot() !== quickOriginalSnapshot.v
 async function saveQuickCreate() {
   const mod = selectedModule.value;
   if (!mod) return;
+  if (isSavingQuickCreate.value) return;
+  
+  isSavingQuickCreate.value = true;
   try {
     const url = mod.type === 'system' ? `/api/modules/system/${mod.key}` : `/api/modules/${mod._id}`;
     const orderedKeys = orderedQuickCreate.value.map(f => f.key);
@@ -4653,7 +4643,8 @@ async function saveQuickCreate() {
     const data = await res.json();
     if (!res.ok || !data.success) {
       console.error('Save Quick Create failed:', data);
-      return alert(data.message || 'Failed to save quick create');
+      alert(data.message || 'Failed to save quick create');
+      return;
     }
     
     console.log('Quick Create saved successfully:', {
@@ -4670,6 +4661,9 @@ async function saveQuickCreate() {
     quickOriginalSnapshot.value = getQuickSnapshot();
   } catch (e) {
     console.error('Save quick create failed', e);
+    alert('Failed to save quick create settings');
+  } finally {
+    isSavingQuickCreate.value = false;
   }
 }
 

@@ -35,7 +35,7 @@
           </div>
           <!-- Content -->
           <div class="min-w-0 flex-1" @click="$emit('view-event', event._id)">
-            <h4 class="text-sm font-medium text-gray-900 dark:text-white truncate mb-1">{{ event.title }}</h4>
+            <h4 class="text-sm font-medium text-gray-900 dark:text-white truncate mb-1">{{ event.eventName || event.title }}</h4>
             <!-- Key Fields -->
             <div v-if="keyFields.length > 0" class="flex flex-wrap gap-x-4 gap-y-1">
               <div
@@ -138,7 +138,7 @@ const fetchEvents = async () => {
       relatedType: props.relatedType,
       relatedId: props.relatedId,
       limit: props.limit,
-      sortBy: 'startDate',
+      sortBy: 'startDateTime',
       sortOrder: 'desc'
     };
     
@@ -168,18 +168,21 @@ const formatTime = (date) => {
 };
 
 const getStatusBadgeClass = (status) => {
+  // Normalize status to lowercase for class lookup
+  const normalizedStatus = status?.toLowerCase() || 'scheduled';
   const classes = {
     scheduled: 'px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded text-xs',
     completed: 'px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded text-xs',
     cancelled: 'px-1.5 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded text-xs',
     rescheduled: 'px-1.5 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded text-xs'
   };
-  return classes[status] || classes.scheduled;
+  return classes[normalizedStatus] || classes.scheduled;
 };
 
 const showRelatedInfo = (event) => {
   // Show related info only if viewing from Contact and event is related to a Deal
-  return props.relatedType === 'Contact' && event.relatedTo?.type === 'Deal';
+  const relatedType = event.relatedToType || event.relatedTo?.type;
+  return props.relatedType === 'Contact' && relatedType === 'Deal';
 };
 
 const getRelatedName = (relatedRecord) => {

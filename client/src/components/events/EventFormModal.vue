@@ -22,76 +22,82 @@
           <div class="space-y-4">
             <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">Basic Information</h3>
             
-            <!-- Title -->
+            <!-- Event Name -->
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Title <span class="text-red-500">*</span>
+                Event Name <span class="text-red-500">*</span>
               </label>
               <input
-                v-model="form.title"
+                v-model="form.eventName"
                 type="text"
                 required
-                placeholder="Enter event title"
+                maxlength="255"
+                placeholder="Enter event name"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
 
-            <!-- Description -->
+            <!-- Agenda Notes -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Agenda Notes</label>
               <textarea
-                v-model="form.description"
+                v-model="form.agendaNotes"
                 rows="3"
-                placeholder="Add event description..."
+                maxlength="5000"
+                placeholder="Add agenda, objectives or notes..."
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               ></textarea>
             </div>
 
-            <!-- Type, Category, Priority -->
-            <div class="grid grid-cols-3 gap-4">
+            <!-- Event Type and Status -->
+            <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Event Type <span class="text-red-500">*</span></label>
                 <select
-                  v-model="form.type"
+                  v-model="form.eventType"
+                  required
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 >
-                  <option value="meeting">Meeting</option>
-                  <option value="call">Call</option>
-                  <option value="email">Email</option>
-                  <option value="task">Task</option>
-                  <option value="deadline">Deadline</option>
-                  <option value="follow-up">Follow-up</option>
-                  <option value="other">Other</option>
+                  <option value="Meeting">Meeting</option>
+                  <option value="Call">Call</option>
+                  <option value="Site Visit">Site Visit</option>
+                  <option value="Demo">Demo</option>
+                  <option value="Training">Training</option>
+                  <option value="Webinar">Webinar</option>
+                  <option value="Other">Other</option>
                 </select>
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status <span class="text-red-500">*</span></label>
                 <select
-                  v-model="form.category"
+                  v-model="form.status"
+                  required
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 >
-                  <option value="sales">Sales</option>
-                  <option value="support">Support</option>
-                  <option value="internal">Internal</option>
-                  <option value="external">External</option>
-                  <option value="personal">Personal</option>
-                  <option value="other">Other</option>
+                  <option value="Scheduled">Scheduled</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                  <option value="Rescheduled">Rescheduled</option>
                 </select>
               </div>
+            </div>
 
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Priority</label>
-                <select
-                  v-model="form.priority"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                  <option value="urgent">Urgent</option>
-                </select>
-              </div>
+            <!-- Event Owner -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Event Owner <span class="text-red-500">*</span>
+              </label>
+              <select
+                v-model="form.eventOwnerId"
+                required
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              >
+                <option value="">Select user...</option>
+                <option v-for="user in users" :key="user._id" :value="user._id">
+                  {{ user.firstName }} {{ user.lastName }} {{ user._id === currentUser._id ? '(Me)' : '' }}
+                </option>
+              </select>
             </div>
           </div>
 
@@ -100,44 +106,31 @@
             <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">Date & Time</h3>
             
             <div class="grid grid-cols-2 gap-4">
-              <!-- Start Date -->
+              <!-- Start Date Time -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Start Date & Time <span class="text-red-500">*</span>
                 </label>
                 <input
-                  v-model="form.startDate"
+                  v-model="form.startDateTime"
                   type="datetime-local"
                   required
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
               </div>
 
-              <!-- End Date -->
+              <!-- End Date Time -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   End Date & Time <span class="text-red-500">*</span>
                 </label>
                 <input
-                  v-model="form.endDate"
+                  v-model="form.endDateTime"
                   type="datetime-local"
                   required
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
               </div>
-            </div>
-
-            <!-- All Day Event -->
-            <div class="flex items-center">
-              <input
-                v-model="form.allDay"
-                type="checkbox"
-                id="allDay"
-                class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-              />
-              <label for="allDay" class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                All day event
-              </label>
             </div>
           </div>
 
@@ -145,26 +138,26 @@
           <div class="space-y-4">
             <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">Location</h3>
             
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Physical Location</label>
-                <input
-                  v-model="form.location"
-                  type="text"
-                  placeholder="e.g., Conference Room A"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Meeting URL</label>
-                <input
-                  v-model="form.meetingUrl"
-                  type="url"
-                  placeholder="https://meet.google.com/..."
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                />
-              </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Location (Address or URL)</label>
+              <input
+                v-model="form.location"
+                type="text"
+                maxlength="1024"
+                placeholder="Physical address or meeting URL"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+            
+            <!-- Reminder -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Reminder</label>
+              <input
+                v-model="form.reminderAt"
+                type="datetime-local"
+                placeholder="Set reminder time"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
             </div>
           </div>
 
@@ -227,22 +220,22 @@
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Record Type</label>
                 <select
-                  v-model="form.relatedType"
-                  @change="form.relatedId = ''"
+                  v-model="form.relatedToType"
+                  @change="form.relatedToId = ''"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 >
                   <option value="">None</option>
-                  <option value="Contact">Contact</option>
-                  <option value="Deal">Deal</option>
-                  <option value="Task">Task</option>
+                  <option value="Person">Person</option>
                   <option value="Organization">Organization</option>
+                  <option value="Deal">Deal</option>
+                  <option value="Item">Item</option>
                 </select>
               </div>
 
-              <div v-if="form.relatedType">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select {{ form.relatedType }}</label>
+              <div v-if="form.relatedToType">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select {{ form.relatedToType === 'Person' ? 'Person' : form.relatedToType }}</label>
                 <select
-                  v-model="form.relatedId"
+                  v-model="form.relatedToId"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 >
                   <option value="">Select...</option>
@@ -254,22 +247,31 @@
             </div>
           </div>
 
-          <!-- Color Picker -->
+          <!-- Tags -->
           <div class="space-y-4">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">Event Color</h3>
-            
-            <div class="flex gap-3">
-              <button
-                v-for="color in colorOptions"
-                :key="color"
-                type="button"
-                @click="form.color = color"
-                :style="{ backgroundColor: color }"
-                :class="[
-                  'w-10 h-10 rounded-lg transition-all',
-                  form.color === color ? 'ring-2 ring-offset-2 ring-gray-900 dark:ring-white scale-110' : 'hover:scale-105'
-                ]"
-              ></button>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">Tags</h3>
+            <div class="flex flex-wrap gap-2">
+              <span
+                v-for="(tag, index) in form.tags"
+                :key="index"
+                class="inline-flex items-center gap-1 px-2 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 rounded text-sm"
+              >
+                {{ tag }}
+                <button
+                  type="button"
+                  @click="form.tags.splice(index, 1)"
+                  class="hover:text-indigo-600 dark:hover:text-indigo-200"
+                >
+                  ×
+                </button>
+              </span>
+              <input
+                v-model="newTag"
+                type="text"
+                placeholder="Add tag..."
+                @keyup.enter="addTag"
+                class="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
             </div>
           </div>
 
@@ -301,9 +303,10 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, onMounted } from 'vue';
 import apiClient from '@/utils/apiClient';
 import dateUtils from '@/utils/dateUtils';
+import { useAuthStore } from '@/stores/auth';
 
 const props = defineProps({
   isOpen: {
@@ -318,9 +321,14 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'saved']);
 
+const authStore = useAuthStore();
+const currentUser = computed(() => authStore.user || {});
+
 const saving = ref(false);
 const newAttendeeEmail = ref('');
+const newTag = ref('');
 const relatedRecords = ref([]);
+const users = ref([]);
 
 const colorOptions = [
   '#3B82F6', // Blue
@@ -334,66 +342,79 @@ const colorOptions = [
 ];
 
 const form = ref({
-  title: '',
-  description: '',
-  startDate: '',
-  endDate: '',
-  allDay: false,
+  eventName: '',
+  agendaNotes: '',
+  eventType: 'Meeting',
+  status: 'Scheduled',
+  eventOwnerId: '',
+  startDateTime: '',
+  endDateTime: '',
   location: '',
-  meetingUrl: '',
-  type: 'meeting',
-  category: 'other',
-  priority: 'medium',
-  status: 'scheduled',
+  reminderAt: '',
   attendees: [],
-  relatedType: '',
-  relatedId: '',
-  color: '#3B82F6'
+  relatedToType: '',
+  relatedToId: '',
+  tags: [],
+  linkedTaskId: '',
+  linkedFormId: ''
 });
 
 const isEditing = computed(() => !!props.event?._id);
 
+// Fetch users when component mounts
+onMounted(() => {
+  fetchUsers();
+});
+
 // Watch for prop changes
 watch(() => props.isOpen, (newVal) => {
+  if (newVal) {
+    // Ensure users are loaded
+    if (users.value.length === 0) {
+      fetchUsers();
+    }
+  }
   if (newVal && props.event?._id) {
-    // Edit mode - populate form with full event data
+    // Edit mode - populate form with full event data (support both old and new field names)
     form.value = {
-      title: props.event.title,
-      description: props.event.description || '',
-      startDate: formatDateForInput(props.event.startDate),
-      endDate: formatDateForInput(props.event.endDate),
-      allDay: props.event.allDay || false,
+      eventName: props.event.eventName || props.event.title || '',
+      agendaNotes: props.event.agendaNotes || props.event.description || '',
+      eventType: props.event.eventType || props.event.type || 'Meeting',
+      status: props.event.status || 'Scheduled',
+      eventOwnerId: props.event.eventOwnerId?._id || props.event.eventOwnerId || currentUser.value._id || '',
+      startDateTime: formatDateForInput(props.event.startDateTime || props.event.startDate),
+      endDateTime: formatDateForInput(props.event.endDateTime || props.event.endDate),
       location: props.event.location || '',
-      meetingUrl: props.event.meetingUrl || '',
-      type: props.event.type || 'meeting',
-      category: props.event.category || 'other',
-      priority: props.event.priority || 'medium',
-      status: props.event.status || 'scheduled',
+      reminderAt: props.event.reminderAt ? formatDateForInput(props.event.reminderAt) : '',
       attendees: props.event.attendees || [],
-      relatedType: props.event.relatedTo?.type || '',
-      relatedId: props.event.relatedTo?.id || '',
-      color: props.event.color || '#3B82F6'
+      relatedToType: props.event.relatedToType || props.event.relatedTo?.type || '',
+      relatedToId: props.event.relatedToId || props.event.relatedTo?.id || '',
+      tags: props.event.tags || [],
+      linkedTaskId: props.event.linkedTaskId || '',
+      linkedFormId: props.event.linkedFormId || ''
     };
+    
+    // Fetch related records if type is specified
+    if (form.value.relatedToType) {
+      fetchRelatedRecords(form.value.relatedToType === 'Person' ? 'Contact' : form.value.relatedToType);
+    }
   } else if (newVal && props.event) {
     // Create mode with pre-filled data (e.g., from related record)
     resetForm();
     // Override with any pre-filled values
-    if (props.event.relatedTo) {
-      form.value.relatedType = props.event.relatedTo.type || '';
-      form.value.relatedId = props.event.relatedTo.id || '';
+    if (props.event.relatedTo || props.event.relatedToType) {
+      form.value.relatedToType = props.event.relatedToType || props.event.relatedTo?.type || '';
+      form.value.relatedToId = props.event.relatedToId || props.event.relatedTo?.id || '';
       // Fetch related records if type is specified
-      if (form.value.relatedType) {
-        fetchRelatedRecords(form.value.relatedType);
+      if (form.value.relatedToType) {
+        fetchRelatedRecords(form.value.relatedToType === 'Person' ? 'Contact' : form.value.relatedToType);
       }
     }
-    if (props.event.startDate) {
-      form.value.startDate = formatDateForInput(props.event.startDate);
+    if (props.event.startDateTime || props.event.startDate) {
+      form.value.startDateTime = formatDateForInput(props.event.startDateTime || props.event.startDate);
     }
-    if (props.event.endDate) {
-      form.value.endDate = formatDateForInput(props.event.endDate);
-    }
-    if (props.event.allDay !== undefined) {
-      form.value.allDay = props.event.allDay;
+    if (props.event.endDateTime || props.event.endDate) {
+      form.value.endDateTime = formatDateForInput(props.event.endDateTime || props.event.endDate);
     }
   } else if (newVal) {
     // Create mode - reset form
@@ -402,9 +423,11 @@ watch(() => props.isOpen, (newVal) => {
 });
 
 // Watch related type changes
-watch(() => form.value.relatedType, async (newType) => {
+watch(() => form.value.relatedToType, async (newType) => {
   if (newType) {
-    await fetchRelatedRecords(newType);
+    // Map Person to Contact for API calls
+    const apiType = newType === 'Person' ? 'Contact' : newType;
+    await fetchRelatedRecords(apiType);
   }
 });
 
@@ -424,23 +447,34 @@ const resetForm = () => {
   const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
   
   form.value = {
-    title: '',
-    description: '',
-    startDate: formatDateForInput(now),
-    endDate: formatDateForInput(oneHourLater),
-    allDay: false,
+    eventName: '',
+    agendaNotes: '',
+    eventType: 'Meeting',
+    status: 'Scheduled',
+    eventOwnerId: currentUser.value._id || '',
+    startDateTime: formatDateForInput(now),
+    endDateTime: formatDateForInput(oneHourLater),
     location: '',
-    meetingUrl: '',
-    type: 'meeting',
-    category: 'other',
-    priority: 'medium',
-    status: 'scheduled',
+    reminderAt: '',
     attendees: [],
-    relatedType: '',
-    relatedId: '',
-    color: '#3B82F6'
+    relatedToType: '',
+    relatedToId: '',
+    tags: [],
+    linkedTaskId: '',
+    linkedFormId: ''
   };
   newAttendeeEmail.value = '';
+  newTag.value = '';
+};
+
+const addTag = () => {
+  if (!newTag.value.trim()) return;
+  if (form.value.tags.includes(newTag.value.trim())) {
+    alert('This tag already exists');
+    return;
+  }
+  form.value.tags.push(newTag.value.trim());
+  newTag.value = '';
 };
 
 const addAttendee = () => {
@@ -464,6 +498,17 @@ const addAttendee = () => {
 
 const removeAttendee = (index) => {
   form.value.attendees.splice(index, 1);
+};
+
+const fetchUsers = async () => {
+  try {
+    const response = await apiClient.get('/users');
+    if (response.success) {
+      users.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('Error fetching users:', error);
+  }
 };
 
 const fetchRelatedRecords = async (type) => {
@@ -509,32 +554,38 @@ const handleSubmit = async () => {
   
   try {
     const payload = {
-      title: form.value.title,
-      description: form.value.description,
-      startDate: new Date(form.value.startDate).toISOString(),
-      endDate: new Date(form.value.endDate).toISOString(),
-      allDay: form.value.allDay,
-      location: form.value.location,
-      meetingUrl: form.value.meetingUrl,
-      type: form.value.type,
-      category: form.value.category,
-      priority: form.value.priority,
+      eventName: form.value.eventName,
+      agendaNotes: form.value.agendaNotes,
+      eventType: form.value.eventType,
       status: form.value.status,
+      eventOwnerId: form.value.eventOwnerId || currentUser.value._id,
+      startDateTime: new Date(form.value.startDateTime).toISOString(),
+      endDateTime: new Date(form.value.endDateTime).toISOString(),
+      location: form.value.location || '',
+      reminderAt: form.value.reminderAt ? new Date(form.value.reminderAt).toISOString() : null,
       attendees: form.value.attendees,
-      color: form.value.color
+      tags: form.value.tags || []
     };
     
     // Add related record if selected
-    if (form.value.relatedType && form.value.relatedId) {
-      payload.relatedTo = {
-        type: form.value.relatedType,
-        id: form.value.relatedId
-      };
+    if (form.value.relatedToType && form.value.relatedToId) {
+      payload.relatedToType = form.value.relatedToType;
+      payload.relatedToId = form.value.relatedToId;
+    }
+    
+    // Add linked records if provided
+    if (form.value.linkedTaskId) {
+      payload.linkedTaskId = form.value.linkedTaskId;
+    }
+    if (form.value.linkedFormId) {
+      payload.linkedFormId = form.value.linkedFormId;
     }
     
     let response;
     if (isEditing.value) {
-      response = await apiClient.put(`/events/${props.event._id}`, payload);
+      // Support both _id and eventId
+      const eventId = props.event.eventId || props.event._id;
+      response = await apiClient.put(`/events/${eventId}`, payload);
     } else {
       response = await apiClient.post('/events', payload);
     }
@@ -585,4 +636,5 @@ const close = () => {
   setTimeout(resetForm, 300); // Reset after transition
 };
 </script>
+
 
