@@ -34,7 +34,15 @@ console.log(`🌐 Allowed Origins: ${allowedOrigins.join(', ')}`);
 // Assuming your final CSS is in a folder named 'public'
 // app.use(express.static(path.join(__dirname, 'public')));
 
-// Middleware
+// ============================================
+// SECURITY MIDDLEWARE (Applied First)
+// ============================================
+
+// Security Headers - Apply to all responses
+const securityHeaders = require('./middleware/securityHeadersMiddleware');
+app.use(securityHeaders);
+
+// CORS Configuration
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
@@ -49,7 +57,18 @@ app.use(cors({
   },
   credentials: true
 }));
-app.use(express.json()); // Allows parsing JSON request bodies
+
+// Body Parsing
+app.use(express.json({ limit: '10mb' })); // Limit request size
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// General API Rate Limiting
+const { apiLimiter } = require('./middleware/rateLimitMiddleware');
+app.use('/api', apiLimiter);
+
+// CSRF Protection (for state-changing operations)
+const csrfProtection = require('./middleware/csrfMiddleware');
+app.use(csrfProtection);
 
 // Routes
 const authRoutes = require('./routes/authRoutes');

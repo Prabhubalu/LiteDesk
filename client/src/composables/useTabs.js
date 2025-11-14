@@ -1,5 +1,5 @@
-import { ref, computed, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, watch, getCurrentInstance } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { 
   HomeIcon,
   UsersIcon,
@@ -17,6 +17,10 @@ import {
 // Tab state management
 const tabs = ref([]);
 const activeTabId = ref(null);
+
+// Flag to track programmatic navigation (to avoid circular loops)
+let isProgrammaticNavigation = false;
+let lastProgrammaticPath = null;
 
 // Icon mapping for serialization/deserialization
 const iconMap = {
@@ -205,17 +209,55 @@ const getTitleForPath = (path, params = {}) => {
 };
 
 export function useTabs() {
-  const router = useRouter();
-
-  // Initialize tabs
-  const initTabs = () => {
-    // Don't initialize tabs on mobile
-    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    if (isMobile) {
-      console.log('📱 Mobile detected, skipping tab initialization');
-      return;
+  // Lazy router/route access - only when in setup context
+  let router = null;
+  let route = null;
+  
+  const getRouter = () => {
+    if (!router) {
+      try {
+        // Check if we're in a setup context by trying to get current instance
+        const instance = getCurrentInstance();
+        if (instance) {
+          router = useRouter();
+        } else {
+          // Not in setup context, try to get router from app context
+          // This happens when called from event handlers
+          return null;
+        }
+      } catch (e) {
+        // Not in setup context, return null
+        return null;
+      }
     }
-    loadTabsFromStorage();
+    return router;
+  };
+  
+  // Navigate using router or fallback to window.location
+  const navigateToPath = (path) => {
+    const currentRouter = getRouter();
+    if (currentRouter) {
+      return currentRouter.push(path).catch((err) => {
+        console.log('⚠️ Navigation error (ignored):', err.message);
+      });
+    } else {
+      // Fallback: use window.location when router is not available
+      console.log('⚠️ Router not available, using window.location for:', path);
+      window.location.href = path;
+      return Promise.resolve();
+    }
+  };
+  
+  const getRoute = () => {
+    if (!route) {
+      try {
+        route = useRoute();
+      } catch (e) {
+        // Not in setup context, return null
+        return null;
+      }
+    }
+    return route;
   };
 
   // Find tab by ID
@@ -226,6 +268,131 @@ export function useTabs() {
   // Find tab by path
   const findTabByPath = (path) => {
     return tabs.value.find(tab => tab.path === path);
+  };
+
+  // Sync active tab with current route (for browser navigation ONLY)
+  const syncTabWithRoute = (path) => {
+    console.log('🔄 syncTabWithRoute called with path:', path);
+    
+    // Skip on mobile
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    if (isMobile) {
+      return;
+    }
+    
+    // Skip if path is login, landing, or settings (no tabs)
+    if (path === '/login' || path === '/' || path.startsWith('/settings')) {
+      console.log('⏭️ Skipping sync for path:', path);
+      return;
+    }
+    
+    // Find existing tab for this path
+    const existingTab = findTabByPath(path);
+    
+    if (existingTab) {
+      // Tab exists, switch to it ONLY if we're not already on it
+      if (activeTabId.value !== existingTab.id) {
+        console.log('🔄 Syncing tab for browser navigation:', existingTab.title, 'from', activeTabId.value, 'to', existingTab.id);
+        activeTabId.value = existingTab.id;
+      } else {
+        console.log('✅ Already on correct tab, no sync needed');
+      }
+    } else {
+      // Tab doesn't exist, create one
+      // This handles cases where user navigates via browser back/forward to a route
+      // that doesn't have a tab yet (e.g., direct URL entry, bookmark, etc.)
+      console.log('✨ Creating tab for browser navigation:', path);
+      const newTab = {
+        id: generateTabId(),
+        title: getTitleForPath(path),
+        path: path,
+        icon: getIconComponent(getIconForPath(path)),
+        closable: true,
+        params: {}
+      };
+      tabs.value.push(newTab);
+      activeTabId.value = newTab.id;
+    }
+  };
+
+  // Initialize tabs (can be called from router guard - no route access)
+  const initTabs = () => {
+    // Don't initialize tabs on mobile
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    if (isMobile) {
+      console.log('📱 Mobile detected, skipping tab initialization');
+      return;
+    }
+    loadTabsFromStorage();
+    // Note: Route syncing is handled by setupRouteWatcher() in App.vue
+  };
+
+  // Setup route watcher (route must be passed from setup context)
+  const setupRouteWatcher = (route) => {
+    if (!route) {
+      console.warn('⚠️ setupRouteWatcher called without route parameter');
+      return;
+    }
+    
+    // Sync active tab with current route on initialization (only if tabs are loaded)
+    // Check if active tab matches current route - if not, sync
+    // But only if we have tabs loaded (not on first load)
+    if (tabs.value.length > 0) {
+      const activeTab = tabs.value.find(tab => tab.id === activeTabId.value);
+      if (activeTab && activeTab.path !== route.path) {
+        console.log('🔄 Initial sync: active tab path', activeTab.path, 'does not match route', route.path);
+        syncTabWithRoute(route.path);
+      } else if (!activeTab) {
+        console.log('🔄 Initial sync: no active tab found, syncing to route', route.path);
+        syncTabWithRoute(route.path);
+      } else {
+        console.log('✅ Initial sync: active tab matches route, no sync needed');
+      }
+    } else {
+      console.log('⏭️ Initial sync: no tabs loaded yet, skipping');
+    }
+    
+    // Watch for route changes (browser navigation)
+    // Only sync tabs when route changes from browser back/forward buttons
+    watch(() => route.path, (newPath, oldPath) => {
+      // Skip if paths are the same
+      if (newPath === oldPath) {
+        return;
+      }
+      
+      // Skip routes that don't use tabs (login, landing, settings)
+      // These routes should be handled by the router, not by tab syncing
+      if (newPath === '/login' || newPath === '/' || newPath.startsWith('/settings')) {
+        console.log('⏭️ Route watcher: skipping tab sync for non-tab route:', newPath);
+        return;
+      }
+      
+      console.log('🔍 Route watcher triggered:', {
+        oldPath,
+        newPath,
+        isProgrammaticNavigation,
+        activeTabId: activeTabId.value,
+        lastProgrammaticPath
+      });
+      
+      // Check if this route change matches a programmatic navigation we just did
+      if (isProgrammaticNavigation || newPath === lastProgrammaticPath) {
+        console.log('🔒 Programmatic navigation detected, skipping route sync');
+        lastProgrammaticPath = null; // Reset after use
+        return;
+      }
+      
+      // Check if active tab already matches this route
+      const currentActiveTab = tabs.value.find(tab => tab.id === activeTabId.value);
+      if (currentActiveTab && currentActiveTab.path === newPath) {
+        console.log('✅ Active tab already matches route, skipping sync');
+        return;
+      }
+      
+      // This must be browser navigation (back/forward button)
+      console.log('🌐 Browser navigation detected - syncing tabs:', oldPath, '→', newPath);
+      syncTabWithRoute(newPath);
+    });
   };
 
   // Get active tab
@@ -242,8 +409,11 @@ export function useTabs() {
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
     if (isMobile) {
       console.log('📱 Mobile detected, navigating without tab creation');
-      router.push(path).catch((err) => {
-        console.log('⚠️ Navigation error (ignored):', err.message);
+      isProgrammaticNavigation = true;
+      navigateToPath(path).then(() => {
+        setTimeout(() => {
+          isProgrammaticNavigation = false;
+        }, 50);
       });
       return null;
     }
@@ -257,9 +427,20 @@ export function useTabs() {
       // If not background mode, focus the tab
       if (!isBackground) {
         activeTabId.value = existingTab.id;
+        // Mark as programmatic navigation to prevent route watcher from syncing
+        isProgrammaticNavigation = true;
+        lastProgrammaticPath = path;
         // Always navigate to ensure the route is loaded
-        router.push(path).catch((err) => {
-          console.log('⚠️ Navigation error (ignored):', err.message);
+        navigateToPath(path).then(() => {
+          setTimeout(() => {
+            isProgrammaticNavigation = false;
+            lastProgrammaticPath = null;
+          }, 100);
+        }).catch(() => {
+          setTimeout(() => {
+            isProgrammaticNavigation = false;
+            lastProgrammaticPath = null;
+          }, 100);
         });
       } else {
         console.log('🔕 Background mode: tab exists but not switching to it');
@@ -283,9 +464,20 @@ export function useTabs() {
     // Only switch to tab and navigate if NOT background mode
     if (!isBackground) {
       activeTabId.value = newTab.id;
+      // Mark as programmatic navigation to prevent route watcher from syncing
+      isProgrammaticNavigation = true;
+      lastProgrammaticPath = path;
       // Always navigate to show the new tab content
-      router.push(path).catch((err) => {
-        console.log('⚠️ Navigation error (ignored):', err.message);
+      navigateToPath(path).then(() => {
+        setTimeout(() => {
+          isProgrammaticNavigation = false;
+          lastProgrammaticPath = null;
+        }, 100);
+      }).catch(() => {
+        setTimeout(() => {
+          isProgrammaticNavigation = false;
+          lastProgrammaticPath = null;
+        }, 100);
       });
       console.log('✅ openTab complete (foreground), activeTabId:', activeTabId.value);
     } else {
@@ -315,9 +507,20 @@ export function useTabs() {
         // Switch to previous tab, or next tab, or first tab
         const newActiveTab = tabs.value[Math.max(0, index - 1)];
         activeTabId.value = newActiveTab.id;
+        // Mark as programmatic navigation
+        isProgrammaticNavigation = true;
+        lastProgrammaticPath = newActiveTab.path;
         // Always navigate to the new tab
-        router.push(newActiveTab.path).catch(() => {
-          // Ignore navigation duplicated errors
+        navigateToPath(newActiveTab.path).then(() => {
+          setTimeout(() => {
+            isProgrammaticNavigation = false;
+            lastProgrammaticPath = null;
+          }, 100);
+        }).catch(() => {
+          setTimeout(() => {
+            isProgrammaticNavigation = false;
+            lastProgrammaticPath = null;
+          }, 100);
         });
       }
     }
@@ -333,9 +536,20 @@ export function useTabs() {
       const keepTab = findTabById(keepTabId);
       if (keepTab) {
         activeTabId.value = keepTabId;
+        // Mark as programmatic navigation
+        isProgrammaticNavigation = true;
+        lastProgrammaticPath = keepTab.path;
         // Always navigate to the kept tab
-        router.push(keepTab.path).catch(() => {
-          // Ignore navigation duplicated errors
+        navigateToPath(keepTab.path).then(() => {
+          setTimeout(() => {
+            isProgrammaticNavigation = false;
+            lastProgrammaticPath = null;
+          }, 100);
+        }).catch(() => {
+          setTimeout(() => {
+            isProgrammaticNavigation = false;
+            lastProgrammaticPath = null;
+          }, 100);
         });
       }
     }
@@ -349,9 +563,20 @@ export function useTabs() {
     if (tabs.value.length > 0) {
       const firstTab = tabs.value[0];
       activeTabId.value = firstTab.id;
+      // Mark as programmatic navigation
+      isProgrammaticNavigation = true;
+      lastProgrammaticPath = firstTab.path;
       // Always navigate to the first tab
-      router.push(firstTab.path).catch(() => {
-        // Ignore navigation duplicated errors
+      navigateToPath(firstTab.path).then(() => {
+        setTimeout(() => {
+          isProgrammaticNavigation = false;
+          lastProgrammaticPath = null;
+        }, 100);
+      }).catch(() => {
+        setTimeout(() => {
+          isProgrammaticNavigation = false;
+          lastProgrammaticPath = null;
+        }, 100);
       });
     }
   };
@@ -362,10 +587,29 @@ export function useTabs() {
     const tab = findTabById(tabId);
     if (tab) {
       console.log('📍 Switching to tab:', tab.title, 'path:', tab.path);
+      
+      // Mark as programmatic navigation FIRST, before any navigation
+      isProgrammaticNavigation = true;
+      lastProgrammaticPath = tab.path; // Track this path
+      
+      // Update active tab ID
       activeTabId.value = tabId;
+      
       // Always navigate to ensure the route is loaded
-      router.push(tab.path).catch((err) => {
+      navigateToPath(tab.path).then(() => {
+        console.log('✅ Navigation complete to:', tab.path);
+        // Reset flag after navigation completes
+        setTimeout(() => {
+          isProgrammaticNavigation = false;
+          lastProgrammaticPath = null;
+        }, 100);
+      }).catch((err) => {
         console.log('⚠️ Navigation error (ignored):', err.message);
+        // Reset flag even on error
+        setTimeout(() => {
+          isProgrammaticNavigation = false;
+          lastProgrammaticPath = null;
+        }, 100);
       });
       console.log('✅ switchToTab complete, activeTabId:', activeTabId.value);
     } else {
@@ -398,6 +642,7 @@ export function useTabs() {
     
     // Methods
     initTabs,
+    setupRouteWatcher,
     openTab,
     closeTab,
     closeOtherTabs,

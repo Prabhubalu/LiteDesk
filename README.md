@@ -4,6 +4,16 @@
 
 LiteDesk is a modern CRM platform built on a unique multi-instance architecture where each customer gets their own isolated application instance with dedicated database, subdomain, and independent scaling.
 
+## 🔒 Security-First Development
+
+**⚠️ CRITICAL: Security is the TOP PRIORITY for all development work**
+
+- 📖 **[Security Guidelines](SECURITY_GUIDELINES.md)** - Comprehensive security best practices
+- ✅ **[Security Checklist](.github/SECURITY_CHECKLIST.md)** - PR security review checklist  
+- 🚀 **[Quick Reference](SECURITY_QUICK_REFERENCE.md)** - Security patterns cheat sheet
+
+**All developers must review security guidelines before writing code.**
+
 ---
 
 ## ✨ Features

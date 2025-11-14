@@ -154,6 +154,13 @@ router.beforeEach((to, from, next) => {
     return
   }
   
+  // Redirect authenticated users from login page (prevents going back to login)
+  if (to.name === 'login' && authStore.isAuthenticated) {
+    console.log('Redirecting: Already authenticated, cannot access login')
+    next({ name: 'dashboard' })
+    return
+  }
+  
   // Check if route requires master organization
   if (to.meta.requiresMasterOrganization && !authStore.isMasterOrganization) {
     console.log('Blocked: Master organization required')

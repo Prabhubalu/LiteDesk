@@ -5,11 +5,16 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const updatePeopleModuleFields = require('../scripts/updatePeopleModuleFields');
 const updateDealsModuleFields = require('../scripts/updateDealsModuleFields');
+const securityLogger = require('../middleware/securityLoggingMiddleware');
 
 // --- Helper Function: Generate Token ---
 const generateToken = (id) => {
-    // Secret key should be stored in .env for production
-    return jwt.sign({ id }, process.env.JWT_SECRET || 'YOUR_SUPER_SECRET', {
+    // SECURITY: JWT_SECRET must be set - fail hard if not configured
+    if (!process.env.JWT_SECRET) {
+        throw new Error('CRITICAL: JWT_SECRET environment variable is not set! Server cannot generate tokens.');
+    }
+    
+    return jwt.sign({ id }, process.env.JWT_SECRET, {
         expiresIn: '1d',
     });
 };
@@ -211,6 +216,13 @@ exports.loginUser = async (req, res) => {
 
         if (!user) {
             console.log('❌ User not found');
+            // Log failed login attempt
+            securityLogger.logAuthEvent('LOGIN_FAILED', {
+                email: email.toLowerCase(),
+                reason: 'USER_NOT_FOUND',
+                ip: req.ip,
+                userAgent: req.get('user-agent')
+            });
             return res.status(401).json({ message: 'Invalid credentials.' });
         }
         
@@ -281,6 +293,14 @@ exports.loginUser = async (req, res) => {
         const isPasswordMatch = await bcrypt.compare(password, passwordToCheck);
         
         if (!isPasswordMatch) {
+            // Log failed login attempt (wrong password)
+            securityLogger.logAuthEvent('LOGIN_FAILED', {
+                email: email.toLowerCase(),
+                userId: user._id,
+                reason: 'INVALID_PASSWORD',
+                ip: req.ip,
+                userAgent: req.get('user-agent')
+            });
             return res.status(401).json({ message: 'Invalid credentials.' });
         }
 
@@ -396,7 +416,17 @@ exports.loginUser = async (req, res) => {
             console.log('✅ Permissions synced from role');
         }
 
-        // 8. Respond with Token and Organization Info (use orgUser data)
+        // 8. Log successful login
+        securityLogger.logAuthEvent('LOGIN_SUCCESS', {
+            email: email.toLowerCase(),
+            userId: orgUser._id,
+            organizationId: user.organizationId._id,
+            ip: req.ip,
+            userAgent: req.get('user-agent'),
+            success: true
+        });
+
+        // 9. Respond with Token and Organization Info (use orgUser data)
         res.json({
             _id: orgUser._id,
             username: orgUser.username,
