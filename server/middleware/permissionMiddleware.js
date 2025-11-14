@@ -30,8 +30,14 @@ const checkPermission = (module, action) => {
             if (normalizedModule === 'settings' && String(user.role || '').toLowerCase() === 'admin') {
                 return next();
             }
+            
             // Check if user has the specific permission
-            const hasPermission = user.permissions?.[normalizedModule]?.[action];
+            let hasPermission = user.permissions?.[normalizedModule]?.[action];
+            
+            // For settings module, also check customizeFields as equivalent to edit
+            if (normalizedModule === 'settings' && action === 'edit' && !hasPermission) {
+                hasPermission = user.permissions?.settings?.customizeFields || false;
+            }
             
             if (!hasPermission) {
                 // Log permission denial

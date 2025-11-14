@@ -113,6 +113,33 @@ function getFieldDataType(key, fieldName, path) {
         'updatedAt': 'Date-Time'
     };
     
+    const eventFieldMappings = {
+        'eventId': 'Auto-Number',
+        'eventName': 'Text',
+        'eventType': 'Picklist',
+        'status': 'Picklist',
+        'relatedToId': 'Lookup (Relationship)',
+        'relatedToType': 'Picklist',
+        'eventOwnerId': 'Lookup (Relationship)', // Label: "Event Owner"
+        'startDateTime': 'Date-Time',
+        'endDateTime': 'Date-Time',
+        'location': 'Text-Area',
+        'reminderAt': 'Date-Time',
+        'recurrence': 'Rich Text',
+        'attendees': 'Multi-Picklist',
+        'agendaNotes': 'Text-Area',
+        'linkedTaskId': 'Lookup (Relationship)',
+        'linkedFormId': 'Lookup (Relationship)',
+        'tags': 'Multi-Picklist',
+        'auditHistory': 'Rich Text',
+        'notes': 'Rich Text',
+        'organizationId': 'Lookup (Relationship)',
+        'createdBy': 'Lookup (Relationship)',
+        'createdTime': 'Date-Time',
+        'modifiedBy': 'Lookup (Relationship)',
+        'modifiedTime': 'Date-Time'
+    };
+    
     // Check if this is a People module field with specific mapping
     if (key === 'people' && peopleFieldMappings[fieldName]) {
         return peopleFieldMappings[fieldName];
@@ -125,6 +152,10 @@ function getFieldDataType(key, fieldName, path) {
     
     if (key === 'deals' && dealFieldMappings[fieldName]) {
         return dealFieldMappings[fieldName];
+    }
+    
+    if (key === 'events' && eventFieldMappings[fieldName]) {
+        return eventFieldMappings[fieldName];
     }
     
     // Fall back to inference based on schema type
@@ -143,14 +174,26 @@ function getBaseFieldsForKey(key) {
         };
         const model = modelByKey[key];
         if (!model) return [];
-        const excluded = new Set(['_id', '__v', 'createdAt', 'updatedAt']);
+        // System fields that should be excluded from forms (auto-generated or system-managed)
+        const excluded = new Set([
+            '_id', 
+            '__v', 
+            'createdAt', 
+            'updatedAt',
+            'eventId',        // Auto-generated UUID
+            'organizationId', // Auto-filled from user context
+            'createdBy',      // Auto-filled from current user
+            'createdTime',    // Auto-filled timestamp
+            'modifiedBy',      // Auto-filled on update
+            'modifiedTime',   // Auto-filled on update
+            'auditHistory'    // System-managed audit trail
+        ]);
         // Access both paths and tree to get enum values reliably
         const schemaTree = model.schema.tree || {};
         return Object.entries(model.schema.paths)
             .filter(([name]) => !excluded.has(name))
             .map(([name, path]) => {
-                const dataType = getFieldDataType(key, name, path);
-                // Extract enum values from Mongoose path and schema tree
+                // Extract enum values from Mongoose path and schema tree FIRST
                 let options = [];
                 // Check schema tree first (original definition)
                 const treeDef = schemaTree[name];
@@ -162,25 +205,69 @@ function getBaseFieldsForKey(key) {
                     if (Array.isArray(enumValues) && enumValues.length > 0) {
                         options = [...enumValues];
                     }
-                    // Special handling for array fields (like tags, interest_products)
-                    if (path.schema && path.schema.paths) {
-                        // This is an array field, check if the array items have enum
-                        const arrayItemPath = path.schema.paths[0] || path.schema.paths['0'];
-                        if (arrayItemPath) {
-                            const arrayEnum = arrayItemPath.enumValues || (arrayItemPath.options && arrayItemPath.options.enum);
-                            if (Array.isArray(arrayEnum) && arrayEnum.length > 0) {
-                                options = [...arrayEnum];
-                            }
+                }
+                
+                // Get data type - if options exist and no explicit mapping, infer Picklist
+                let dataType = getFieldDataType(key, name, path);
+                // Auto-detect Picklist if enum options exist and dataType is still Text
+                if (options.length > 0 && dataType === 'Text' && !eventFieldMappings[name] && !peopleFieldMappings[name] && !organizationFieldMappings[name] && !dealFieldMappings[name]) {
+                    dataType = 'Picklist';
+                }
+                
+                // Special handling for array fields (like tags, interest_products)
+                if (path.schema && path.schema.paths) {
+                    // This is an array field, check if the array items have enum
+                    const arrayItemPath = path.schema.paths[0] || path.schema.paths['0'];
+                    if (arrayItemPath) {
+                        const arrayEnum = arrayItemPath.enumValues || (arrayItemPath.options && arrayItemPath.options.enum);
+                        if (Array.isArray(arrayEnum) && arrayEnum.length > 0) {
+                            options = [...arrayEnum];
                         }
-                        // Also check schema tree for array type
-                        if (treeDef && treeDef[0] && treeDef[0].enum && Array.isArray(treeDef[0].enum)) {
-                            options = [...treeDef[0].enum];
+                    }
+                    // Also check schema tree for array type
+                    if (treeDef && treeDef[0] && treeDef[0].enum && Array.isArray(treeDef[0].enum)) {
+                        options = [...treeDef[0].enum];
+                    }
+                }
+                // Custom label for eventOwnerId
+                let fieldLabel = name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                if (name === 'eventOwnerId') {
+                    fieldLabel = 'Event Owner';
+                }
+                
+                // Add lookupSettings for User lookup fields
+                let lookupSettings = null;
+                if (dataType === 'Lookup (Relationship)') {
+                    // Check if this is a User lookup field
+                    if (name === 'eventOwnerId' || name === 'createdBy' || name === 'modifiedBy' || 
+                        (path.options && path.options.ref === 'User') ||
+                        (path.caster && path.caster.options && path.caster.options.ref === 'User')) {
+                        lookupSettings = {
+                            targetModule: 'users'
+                        };
+                    } else if (path.options && path.options.ref) {
+                        // For other lookup fields, infer targetModule from ref
+                        const ref = path.options.ref;
+                        const moduleMap = {
+                            'User': 'users',
+                            'People': 'people',
+                            'Contact': 'people',
+                            'Organization': 'organizations',
+                            'Deal': 'deals',
+                            'Task': 'tasks',
+                            'Event': 'events'
+                        };
+                        if (moduleMap[ref]) {
+                            lookupSettings = {
+                                targetModule: moduleMap[ref]
+                            };
                         }
                     }
                 }
+                
                 return {
                     key: name,
-                    label: name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+                    label: fieldLabel,
                     dataType: dataType,
                     required: !!path.isRequired,
                     options: options,
@@ -189,7 +276,8 @@ function getBaseFieldsForKey(key) {
                     visibility: { list: true, detail: true },
                     order: 0,
                     validations: [],
-                    dependencies: []
+                    dependencies: [],
+                    lookupSettings: lookupSettings
                 };
             });
     } catch (e) {
@@ -692,8 +780,62 @@ exports.listModules = async (req, res) => {
                 const saved = Array.isArray(override.fields) ? [...override.fields] : [];
                 saved.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
                 const seen = new Set(saved.map(f => f.key));
+                
+                // Create a map of base fields by key for quick lookup (case-insensitive)
+                const baseFieldMap = new Map();
+                const baseFieldMapLower = new Map(); // Case-insensitive lookup
+                for (const f of sys.fields) {
+                    if (f.key) {
+                        baseFieldMap.set(f.key, f);
+                        baseFieldMapLower.set(f.key.toLowerCase(), f);
+                    }
+                }
+                
+                // Update saved fields with base field dataType and options (for system modules, schema is source of truth)
+                // BUT preserve saved labels and lookupSettings
+                for (const savedField of saved) {
+                    if (!savedField.key) continue;
+                    
+                    // Try exact match first, then case-insensitive match
+                    let baseField = baseFieldMap.get(savedField.key);
+                    if (!baseField) {
+                        baseField = baseFieldMapLower.get(savedField.key.toLowerCase());
+                    }
+                    
+                    if (baseField) {
+                        // Normalize field key to match base field key (camelCase)
+                        if (savedField.key.toLowerCase() === baseField.key.toLowerCase() && savedField.key !== baseField.key) {
+                            savedField.key = baseField.key;
+                        }
+                        
+                        // Update dataType from base (schema is source of truth for system modules)
+                        savedField.dataType = baseField.dataType;
+                        // Update options if base has them (for picklists)
+                        if (baseField.options && baseField.options.length > 0) {
+                            savedField.options = baseField.options;
+                        }
+                        // Update required from base (schema is source of truth for system modules)
+                        savedField.required = baseField.required;
+                        // Use base label if it's better (e.g., "Event Owner" vs "Event Owner Id")
+                        if (baseField.label && (
+                            !savedField.label || 
+                            savedField.label.toLowerCase() === 'event owner id' ||
+                            savedField.label.toLowerCase() === 'eventownerid'
+                        )) {
+                            savedField.label = baseField.label;
+                        }
+                        // Always use base lookupSettings if available (base is source of truth for system modules)
+                        if (baseField.lookupSettings) {
+                            savedField.lookupSettings = baseField.lookupSettings;
+                        }
+                    }
+                }
+                
+                // Add any new base fields not in saved (case-insensitive check)
                 for (const baseField of sys.fields) {
-                    if (!seen.has(baseField.key)) {
+                    const baseKeyLower = baseField.key?.toLowerCase();
+                    const alreadyExists = saved.some(f => f.key && f.key.toLowerCase() === baseKeyLower);
+                    if (!alreadyExists) {
                         saved.push({ ...baseField, order: saved.length });
                     }
                 }
@@ -707,10 +849,34 @@ exports.listModules = async (req, res) => {
                     }
                     pipelineSettings = normalizePipelineSettings(pipelineSettings);
                 }
+                // Use override quickCreate if it exists and has sufficient fields, otherwise use default
+                // For Events module, ensure quickCreate has at least the essential fields
+                let finalQuickCreate = override.quickCreate || [];
+                if (sys.key === 'events') {
+                    // Default quickCreate fields for Events module
+                    const defaultEventsQuickCreate = [
+                        'eventName',
+                        'eventType',
+                        'status',
+                        'eventOwnerId',
+                        'startDateTime',
+                        'endDateTime',
+                        'location',
+                        'agendaNotes'
+                    ];
+                    // If quickCreate is empty or incomplete (less than 5 fields), use default
+                    if (!finalQuickCreate || finalQuickCreate.length < 5) {
+                        finalQuickCreate = defaultEventsQuickCreate;
+                    }
+                } else {
+                    // For other modules, use override or empty array
+                    finalQuickCreate = override.quickCreate || sys.quickCreate || [];
+                }
+                
                 merged.push({ 
                     ...sys, 
                     fields: saved,
-                    quickCreate: override.quickCreate || [],
+                    quickCreate: finalQuickCreate,
                     quickCreateLayout: override.quickCreateLayout || { version: 1, rows: [] },
                     relationships: override.relationships || [],
                     name: override.name || sys.name,
@@ -890,7 +1056,8 @@ exports.updateModule = async (req, res) => {
                 to: newQuickCreate,
                 length: newQuickCreate.length
             });
-            mod.set('quickCreate', newQuickCreate);
+            mod.quickCreate = newQuickCreate;
+            mod.markModified('quickCreate');
         }
         
         // Always update quickCreateLayout if provided
@@ -906,8 +1073,7 @@ exports.updateModule = async (req, res) => {
             mod.set('quickCreateLayout', newLayout);
         }
         
-        // Mark as modified to ensure Mongoose saves these fields
-        if (quickCreate !== undefined) mod.markModified('quickCreate');
+        // Mark quickCreateLayout as modified (quickCreate already marked above)
         if (quickCreateLayout !== undefined) mod.markModified('quickCreateLayout');
 
         if (pipelineSettings !== undefined) {
@@ -920,6 +1086,17 @@ exports.updateModule = async (req, res) => {
         }
         
         await mod.save();
+        
+        // Use raw MongoDB update to ensure quickCreate is saved (bypass Mongoose issues)
+        if (quickCreate !== undefined) {
+            const mongoose = require('mongoose');
+            const newQuickCreate = Array.isArray(quickCreate) ? quickCreate : [];
+            await mongoose.connection.db.collection('moduledefinitions').updateOne(
+                { _id: mod._id },
+                { $set: { quickCreate: newQuickCreate } }
+            );
+            console.log('✅ Explicitly saved quickCreate via raw MongoDB:', newQuickCreate);
+        }
         
         // Reload from database to ensure we get the latest data - use lean() for plain object
         const saved = await ModuleDefinition.findById(mod._id).lean();

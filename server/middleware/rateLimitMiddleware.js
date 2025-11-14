@@ -17,6 +17,10 @@ const apiLimiter = rateLimit({
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
     // Skip rate limiting for certain conditions
     skip: (req) => {
+        // Skip rate limiting in development mode
+        if (process.env.NODE_ENV !== 'production') {
+            return true;
+        }
         // Skip for health checks
         return req.path === '/health' || req.path === '/api/health';
     }
@@ -24,14 +28,18 @@ const apiLimiter = rateLimit({
 
 // Strict rate limiter for authentication endpoints
 const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // Limit each IP to 5 login attempts per windowMs
+    windowMs: process.env.NODE_ENV === 'production' ? 15 * 60 * 1000 : 5 * 60 * 1000, // 15 min in prod, 5 min in dev
+    max: process.env.NODE_ENV === 'production' ? 5 : 30, // More lenient in development (30 attempts per 5 minutes)
     message: {
-        error: 'Too many login attempts from this IP, please try again after 15 minutes.',
+        error: 'Too many login attempts from this IP, please try again after a few minutes.',
         code: 'AUTH_RATE_LIMIT_EXCEEDED'
     },
     standardHeaders: true,
     legacyHeaders: false,
+    // Skip rate limiting in development mode
+    skip: (req) => {
+        return process.env.NODE_ENV !== 'production';
+    },
     // Use IP + user identifier for better tracking
     keyGenerator: (req) => {
         return req.ip + (req.body?.email || '');
@@ -48,6 +56,10 @@ const passwordResetLimiter = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false,
+    // Skip rate limiting in development mode
+    skip: (req) => {
+        return process.env.NODE_ENV !== 'production';
+    },
     keyGenerator: (req) => {
         return req.ip + (req.body?.email || '');
     }
@@ -62,7 +74,11 @@ const registrationLimiter = rateLimit({
         code: 'REGISTRATION_LIMIT_EXCEEDED'
     },
     standardHeaders: true,
-    legacyHeaders: false
+    legacyHeaders: false,
+    // Skip rate limiting in development mode
+    skip: (req) => {
+        return process.env.NODE_ENV !== 'production';
+    }
 });
 
 // Strict rate limiter for sensitive operations (delete, update critical data)
@@ -74,7 +90,11 @@ const sensitiveOperationLimiter = rateLimit({
         code: 'SENSITIVE_OPERATION_LIMIT_EXCEEDED'
     },
     standardHeaders: true,
-    legacyHeaders: false
+    legacyHeaders: false,
+    // Skip rate limiting in development mode
+    skip: (req) => {
+        return process.env.NODE_ENV !== 'production';
+    }
 });
 
 module.exports = {

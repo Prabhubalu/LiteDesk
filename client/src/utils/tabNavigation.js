@@ -88,7 +88,8 @@ export function getModuleIcon(path) {
     'organizations': 'building',
     'deals': 'briefcase',
     'tasks': 'check',
-    'calendar': 'calendar',
+    'events': 'calendar',
+    'calendar': 'calendar', // backward compat
     'imports': 'download',
     'items': 'folder',
     'demo-requests': 'book',

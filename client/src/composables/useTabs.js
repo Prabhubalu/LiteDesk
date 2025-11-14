@@ -157,8 +157,8 @@ const getIconForPath = (path) => {
     '/organizations': 'building',
     '/deals': 'briefcase',
     '/tasks': 'check',
-    '/calendar': 'calendar',
     '/events': 'calendar',
+    '/calendar': 'calendar', // backward compat
     '/imports': 'download',
     '/items': 'folder',
     '/demo-requests': 'book',
@@ -178,7 +178,8 @@ const getTitleForPath = (path, params = {}) => {
     '/organizations': 'Organizations',
     '/deals': 'Deals',
     '/tasks': 'Tasks',
-    '/calendar': 'Calendar',
+    '/events': 'Events',
+    '/calendar': 'Events', // backward compat
     '/imports': 'Imports',
     '/items': 'Projects',
     '/demo-requests': 'Demo Requests',

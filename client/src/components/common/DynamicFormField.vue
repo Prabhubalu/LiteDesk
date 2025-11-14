@@ -971,11 +971,32 @@ const formatDateForInput = (dateValue) => {
 const formatDateTimeForInput = (dateValue) => {
   if (!dateValue) return '';
   if (typeof dateValue === 'string') {
-    // Remove milliseconds if present
-    return dateValue.replace(/\.\d{3}Z$/, '');
+    // If it's already in datetime-local format (has 'T'), just clean it up
+    if (dateValue.includes('T')) {
+      // Remove milliseconds and timezone if present
+      return dateValue.replace(/\.\d{3}Z?$/, '').replace(/Z$/, '');
+    }
+    // If it's just a date (yyyy-MM-dd), convert to datetime-local format with default time
+    // Check if it matches date format (yyyy-MM-dd)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+      return `${dateValue}T00:00`;
+    }
+    // Try to parse as Date and format
+    const d = new Date(dateValue);
+    if (!isNaN(d.getTime())) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+    // If we can't parse it, return empty string
+    return '';
   }
   if (dateValue instanceof Date) {
     const d = new Date(dateValue);
+    if (isNaN(d.getTime())) return '';
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');

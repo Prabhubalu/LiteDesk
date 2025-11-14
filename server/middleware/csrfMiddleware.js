@@ -52,7 +52,19 @@ const csrfProtection = (req, res, next) => {
         return next();
     }
     
-    // If no user and no CSRF token, reject
+    // Check if Authorization header exists (JWT token) - this provides CSRF protection
+    // CSRF middleware may run before auth middleware, so check header directly
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        // JWT token in Authorization header provides CSRF protection
+        return next();
+    }
+    
+    // Skip CSRF in development mode
+    if (process.env.NODE_ENV === 'development' || process.env.DISABLE_CSRF === 'true') {
+        return next();
+    }
+    
+    // If no user, no JWT token, and no CSRF token, reject
     if (!csrfToken) {
         return res.status(403).json({
             error: 'CSRF token required',

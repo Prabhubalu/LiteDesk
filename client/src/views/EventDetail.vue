@@ -16,8 +16,8 @@
         </svg>
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Error Loading Event</h2>
         <p class="text-gray-600 dark:text-gray-400 mb-6">{{ error }}</p>
-        <button @click="$router.push('/calendar')" class="px-6 py-3 bg-brand-600 text-white rounded-xl hover:bg-brand-700 font-medium">
-          Back to Calendar
+        <button @click="$router.push('/events')" class="px-6 py-3 bg-brand-600 text-white rounded-xl hover:bg-brand-700 font-medium">
+          Back to Events
         </button>
       </div>
     </div>
@@ -26,11 +26,11 @@
     <div v-else-if="event" class="max-w-7xl mx-auto p-3 sm:p-4 lg:p-6">
       <!-- Header Actions -->
       <div class="flex items-center justify-between mb-4">
-        <button @click="$router.push('/calendar')" class="inline-flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+        <button @click="$router.push('/events')" class="inline-flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          <span class="font-medium">Back to Calendar</span>
+          <span class="font-medium">Back to Events</span>
         </button>
 
         <div class="flex items-center gap-2">
@@ -54,10 +54,12 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
-            <h1 class="text-xl font-bold text-gray-900 dark:text-white mb-2">{{ event.title }}</h1>
+            <h1 class="text-xl font-bold text-gray-900 dark:text-white mb-2">{{ event.eventName || event.title }}</h1>
             <div class="flex items-center gap-2">
               <span :class="getStatusBadgeClass(event.status)">{{ event.status }}</span>
-              <span :class="getPriorityBadgeClass(event.priority)">{{ event.priority }}</span>
+              <span v-if="event.eventType || event.type" class="px-2 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 rounded text-xs font-medium">
+                {{ event.eventType || event.type }}
+              </span>
             </div>
           </div>
 
@@ -70,10 +72,10 @@
               <div class="flex-1">
                 <div class="text-xs text-gray-500 dark:text-gray-400">Time</div>
                 <div class="text-sm font-medium text-gray-900 dark:text-white mt-0.5">
-                  {{ formatDateTime(event.startDate) }}
+                  {{ formatDateTime(event.startDateTime || event.startDate) }}
                 </div>
                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  to {{ formatDateTime(event.endDate) }}
+                  to {{ formatDateTime(event.endDateTime || event.endDate) }}
                 </div>
                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Duration: {{ getDuration() }}
@@ -91,47 +93,44 @@
               </div>
             </div>
 
-            <div v-if="event.meetingUrl" class="flex items-start gap-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+            <div v-if="event.location && event.location.startsWith('http')" class="flex items-start gap-3 pt-3 border-t border-gray-200 dark:border-gray-700">
               <svg class="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
               </svg>
               <div class="flex-1">
                 <div class="text-xs text-gray-500 dark:text-gray-400">Meeting Link</div>
-                <a :href="event.meetingUrl" target="_blank" class="text-sm font-medium text-brand-600 dark:text-brand-400 hover:underline mt-0.5 block truncate">
-                  {{ event.meetingUrl }}
+                <a :href="event.location" target="_blank" class="text-sm font-medium text-brand-600 dark:text-brand-400 hover:underline mt-0.5 block truncate">
+                  {{ event.location }}
                 </a>
               </div>
             </div>
 
-            <div class="flex items-start gap-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+            <div v-if="event.tags && event.tags.length > 0" class="flex items-start gap-3 pt-3 border-t border-gray-200 dark:border-gray-700">
               <svg class="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
               </svg>
               <div class="flex-1">
-                <div class="text-xs text-gray-500 dark:text-gray-400">Type & Category</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">Tags</div>
                 <div class="flex flex-wrap gap-1.5 mt-1">
-                  <span class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded text-xs font-medium">
-                    {{ event.type }}
-                  </span>
-                  <span class="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded text-xs font-medium">
-                    {{ event.category }}
+                  <span v-for="tag in event.tags" :key="tag" class="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 rounded text-xs font-medium">
+                    {{ tag }}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div v-if="event.organizer" class="flex items-start gap-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+            <div v-if="event.eventOwnerId || event.organizer" class="flex items-start gap-3 pt-3 border-t border-gray-200 dark:border-gray-700">
               <svg class="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
               <div class="flex-1">
-                <div class="text-xs text-gray-500 dark:text-gray-400">Organizer</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">Event Owner</div>
                 <div class="flex items-center gap-2 mt-1">
                   <div class="w-6 h-6 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-xs font-medium">
-                    {{ getInitials(event.organizer) }}
+                    {{ getInitials(event.eventOwnerId || event.organizer) }}
                   </div>
                   <div class="text-sm font-medium text-gray-900 dark:text-white">
-                    {{ event.organizer.firstName }} {{ event.organizer.lastName }}
+                    {{ (event.eventOwnerId || event.organizer)?.firstName }} {{ (event.eventOwnerId || event.organizer)?.lastName }}
                   </div>
                 </div>
               </div>
@@ -141,10 +140,10 @@
 
         <!-- Right Columns - Details -->
         <div class="lg:col-span-2 space-y-4">
-          <!-- Description Card -->
-          <div v-if="event.description" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Description</h3>
-            <p class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{{ event.description }}</p>
+          <!-- Agenda Notes Card -->
+          <div v-if="event.agendaNotes || event.description" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Agenda Notes</h3>
+            <p class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{{ event.agendaNotes || event.description }}</p>
           </div>
 
           <!-- Attendees Card -->
@@ -176,15 +175,33 @@
           </div>
 
           <!-- Related Record Card -->
-          <div v-if="event.relatedTo && event.relatedTo.id" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+          <div v-if="(event.relatedToId || event.relatedTo?.id) && (event.relatedToType || event.relatedTo?.type)" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
             <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Related To</h3>
             <div class="flex items-center gap-2">
               <span class="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-xs font-medium">
-                {{ event.relatedTo.type }}
+                {{ event.relatedToType || event.relatedTo?.type }}
               </span>
               <span class="text-sm text-gray-900 dark:text-white font-medium">
-                {{ getRelatedRecordName(event.relatedTo.id) }}
+                {{ getRelatedRecordName(event.relatedToId || event.relatedTo?.id) }}
               </span>
+            </div>
+          </div>
+          
+          <!-- Audit History Card -->
+          <div v-if="event.auditHistory && event.auditHistory.length > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Audit History</h3>
+            <div class="space-y-2">
+              <div v-for="(entry, index) in event.auditHistory" :key="index" class="text-xs text-gray-600 dark:text-gray-400 border-l-2 border-gray-200 dark:border-gray-700 pl-3 py-1">
+                <div class="font-medium text-gray-900 dark:text-white">{{ entry.action.replace('_', ' ').toUpperCase() }}</div>
+                <div v-if="entry.from || entry.to">
+                  <span v-if="entry.from">{{ entry.from }}</span>
+                  <span v-if="entry.from && entry.to"> → </span>
+                  <span v-if="entry.to">{{ entry.to }}</span>
+                </div>
+                <div class="text-gray-500 dark:text-gray-500 mt-0.5">
+                  {{ formatDateTime(entry.timestamp) }}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -293,7 +310,7 @@ const deleteEvent = async () => {
   
   try {
     await apiClient.delete(`/events/${route.params.id}`);
-    router.push('/calendar');
+    router.push('/events');
   } catch (err) {
     console.error('Error deleting event:', err);
     alert('Failed to delete event');
@@ -329,8 +346,8 @@ const formatTimeAgo = (date) => {
 
 const getDuration = () => {
   if (!event.value) return '';
-  const start = new Date(event.value.startDate);
-  const end = new Date(event.value.endDate);
+  const start = new Date(event.value.startDateTime || event.value.startDate);
+  const end = new Date(event.value.endDateTime || event.value.endDate);
   const duration = dateUtils.duration(end, start);
   
   if (duration.asHours() < 1) {
@@ -353,13 +370,15 @@ const getRelatedRecordName = (record) => {
 };
 
 const getStatusBadgeClass = (status) => {
+  // Normalize status to lowercase for class lookup
+  const normalizedStatus = status?.toLowerCase() || 'scheduled';
   const classes = {
     scheduled: 'px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full text-xs font-medium',
     completed: 'px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-xs font-medium',
     cancelled: 'px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded-full text-xs font-medium',
     rescheduled: 'px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-full text-xs font-medium'
   };
-  return classes[status] || classes.scheduled;
+  return classes[normalizedStatus] || classes.scheduled;
 };
 
 const getPriorityBadgeClass = (priority) => {
