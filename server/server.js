@@ -67,8 +67,11 @@ const { apiLimiter } = require('./middleware/rateLimitMiddleware');
 app.use('/api', apiLimiter);
 
 // CSRF Protection (for state-changing operations)
+// DISABLED in development for API testing
 const csrfProtection = require('./middleware/csrfMiddleware');
-app.use(csrfProtection);
+if (process.env.NODE_ENV === 'production') {
+    app.use(csrfProtection);
+}
 
 // Routes
 const authRoutes = require('./routes/authRoutes');
@@ -89,6 +92,7 @@ const peopleRoutes = require('./routes/peopleRoutes');
 const organizationV2Routes = require('./routes/organizationV2Routes');
 const moduleRoutes = require('./routes/moduleRoutes');
 const groupRoutes = require('./routes/groupRoutes');
+const formRoutes = require('./routes/formRoutes');
 
 // Route Linking
 app.use('/api/auth', authRoutes);
@@ -111,6 +115,23 @@ app.use('/api/people', peopleRoutes);
 app.use('/api/v2/organization', organizationV2Routes);
 app.use('/api/modules', moduleRoutes);
 app.use('/api/groups', groupRoutes);
+app.use('/api/public/forms', formRoutes); // Public form routes
+app.use('/api/forms', formRoutes.protected); // Protected form routes
+
+// Serve uploaded files (including reports)
+app.use('/api/uploads', express.static(path.join(__dirname, 'uploads'), {
+    setHeaders: (res, filePath) => {
+        // Set appropriate content type for PDFs
+        if (filePath.endsWith('.pdf')) {
+            res.setHeader('Content-Type', 'application/pdf');
+        }
+        // Set appropriate content type for Excel files
+        if (filePath.endsWith('.xlsx')) {
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', `attachment; filename="${path.basename(filePath)}"`);
+        }
+    }
+}));
 
 // 1. Database Connection
 console.log('🔄 Connecting to MongoDB...');

@@ -104,6 +104,8 @@ exports.getEvents = async (req, res) => {
             .populate('eventOwnerId', 'firstName lastName email')
             .populate('attendees.userId', 'firstName lastName email')
             .populate('attendees.personId', 'first_name last_name email')
+            .populate('linkedFormId', 'name formId formType status')
+            .populate('formAssignment.assignedAuditor', 'firstName lastName email')
             .populate('createdBy', 'firstName lastName')
             .populate('modifiedBy', 'firstName lastName')
             .populate('linkedTaskId', 'title description')
@@ -179,6 +181,9 @@ exports.getEventById = async (req, res) => {
             .populate('eventOwnerId', 'firstName lastName email')
             .populate('attendees.userId', 'firstName lastName email')
             .populate('attendees.personId', 'first_name last_name email')
+            .populate('linkedFormId', 'name formId formType status')
+            .populate('formAssignment.assignedAuditor', 'firstName lastName email')
+            .populate('notes.created_by', 'firstName lastName')
             .populate('createdBy', 'firstName lastName')
             .populate('modifiedBy', 'firstName lastName')
             .populate('linkedTaskId', 'title description')
@@ -275,7 +280,9 @@ exports.createEvent = async (req, res) => {
             .populate('relatedToId', 'name title first_name last_name')
             .populate('linkedTaskId', 'title description')
             .populate('createdBy', 'firstName lastName')
-            .populate('modifiedBy', 'firstName lastName');
+            .populate('modifiedBy', 'firstName lastName')
+            .populate('linkedFormId', 'name formId formType status')
+            .populate('formAssignment.assignedAuditor', 'firstName lastName email');
         
         res.status(201).json({
             success: true,
@@ -376,7 +383,9 @@ exports.updateEvent = async (req, res) => {
             .populate('attendees.personId', 'first_name last_name email')
             .populate('relatedToId', 'name title first_name last_name')
             .populate('linkedTaskId', 'title description')
-            .populate('modifiedBy', 'firstName lastName');
+            .populate('modifiedBy', 'firstName lastName')
+            .populate('linkedFormId', 'name formId formType status')
+            .populate('formAssignment.assignedAuditor', 'firstName lastName email');
         
         res.status(200).json({
             success: true,

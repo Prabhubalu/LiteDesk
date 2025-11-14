@@ -1260,6 +1260,7 @@ import RelatedDealsWidget from '@/components/deals/RelatedDealsWidget.vue';
 import RelatedTasksWidget from '@/components/tasks/RelatedTasksWidget.vue';
 import RelatedEventsWidget from '@/components/events/RelatedEventsWidget.vue';
 import RelatedOrganizationWidget from '@/components/organizations/RelatedOrganizationWidget.vue';
+import OrganizationAuditWidget from '@/components/organizations/OrganizationAuditWidget.vue';
 import MetricsWidget from '@/components/common/metrics/MetricsWidget.vue';
 import LifecycleStageWidget from '@/components/common/metrics/LifecycleStageWidget.vue';
 import KeyFieldsWidget from '@/components/common/metrics/KeyFieldsWidget.vue';
@@ -3033,6 +3034,12 @@ const createWidgetElement = (widgetType) => {
         componentProps.relatedId = props.record._id;
         componentProps.limit = 5;
         componentProps.moduleDefinition = allModuleDefinitions.value['events'];
+        break;
+      case 'audit-history':
+      case 'organization-audits':
+        Component = OrganizationAuditWidget;
+        componentProps.organizationId = props.record._id;
+        componentProps.limit = 5;
         break;
       case 'metrics':
         Component = MetricsWidget;

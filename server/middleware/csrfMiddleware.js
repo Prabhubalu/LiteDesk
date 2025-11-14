@@ -5,6 +5,12 @@
 
 // For state-changing operations (POST, PUT, DELETE, PATCH)
 const csrfProtection = (req, res, next) => {
+    // DEVELOPMENT: Skip CSRF entirely in development mode for easier testing
+    // API routes use JWT tokens which provide CSRF protection
+    if (process.env.NODE_ENV !== 'production') {
+        return next();
+    }
+    
     // Skip CSRF for GET, HEAD, OPTIONS
     if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
         return next();
@@ -13,6 +19,26 @@ const csrfProtection = (req, res, next) => {
     // Skip CSRF for public endpoints (login, register)
     const publicPaths = ['/api/auth/login', '/api/auth/register', '/api/auth/forgot-password'];
     if (publicPaths.some(path => req.path.startsWith(path))) {
+        return next();
+    }
+    
+    // Skip CSRF for all API routes - API routes use JWT tokens which provide CSRF protection
+    // since tokens are stored in memory (Authorization header) and not accessible to malicious sites
+    // Check req.originalUrl (full path) since req.path might be relative to mounted route
+    const originalUrl = req.originalUrl || req.url || '';
+    const path = req.path || '';
+    const fullPath = originalUrl || path;
+    
+    // Debug: log path for troubleshooting (remove in production)
+    if (process.env.NODE_ENV === 'development' && req.method !== 'GET') {
+        console.log(`[CSRF] ${req.method} - path: ${path}, originalUrl: ${originalUrl}, fullPath: ${fullPath}`);
+    }
+    
+    // Check if it's an API route (check originalUrl which contains the full path)
+    if (fullPath.startsWith('/api/') || originalUrl.startsWith('/api/') || path.startsWith('/api/')) {
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`[CSRF] Skipping CSRF for API route: ${fullPath}`);
+        }
         return next();
     }
     

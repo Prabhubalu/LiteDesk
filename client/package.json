@@ -25,9 +25,11 @@
     "@fullcalendar/vue3": "^6.1.19",
     "@headlessui/vue": "^1.7.23",
     "@heroicons/vue": "^2.2.0",
+    "chart.js": "^4.4.0",
     "gridstack": "^12.3.3",
     "pinia": "^2.3.1",
     "vue": "^3.5.22",
+    "vue-chartjs": "^5.3.0",
     "vue-router": "^4.6.3"
   },
   "devDependencies": {
