@@ -4,7 +4,11 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "security:audit": "npm audit",
+    "security:fix": "npm audit fix",
+    "security:check": "npm audit --audit-level=moderate",
+    "security:outdated": "npm outdated"
   },
   "keywords": [],
   "author": "",
@@ -25,6 +29,7 @@
     "mongoose": "^8.19.1",
     "nodemailer": "^6.9.8",
     "redis": "^4.6.12",
-    "yaml": "^2.8.1"
+    "yaml": "^2.8.1",
+    "express-rate-limit": "^7.4.1"
   }
 }

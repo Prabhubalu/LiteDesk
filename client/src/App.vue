@@ -13,7 +13,7 @@ import { useRouter, useRoute } from 'vue-router';
 const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
-const { initTabs } = useTabs();
+const { initTabs, setupRouteWatcher } = useTabs();
 
 // Initialize color mode
 const { colorMode } = useColorMode();
@@ -83,6 +83,9 @@ onMounted(async () => {
     
     // Initialize tabs system
     initTabs();
+    
+    // Setup route watcher for browser navigation (pass route from setup context)
+    setupRouteWatcher(route);
     
     // Note: We don't need a router.beforeEach guard here because:
     // 1. Tab creation is handled by click handlers (Nav.vue, DataTables, etc.)

@@ -3,6 +3,8 @@
  * Checks if user has specific permissions to perform actions
  */
 
+const securityLogger = require('./securityLoggingMiddleware');
+
 /**
  * Check if user has permission to perform an action on a module
  * Usage: checkPermission('contacts', 'create')
@@ -32,6 +34,9 @@ const checkPermission = (module, action) => {
             const hasPermission = user.permissions?.[normalizedModule]?.[action];
             
             if (!hasPermission) {
+                // Log permission denial
+                securityLogger.logPermissionDenial(req, normalizedModule, action);
+                
                 return res.status(403).json({ 
                     message: `You don't have permission to ${action} ${module}`,
                     code: 'INSUFFICIENT_PERMISSIONS',
