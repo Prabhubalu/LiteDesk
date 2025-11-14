@@ -124,6 +124,54 @@ const routes = [
     name: 'group-detail',
     component: () => import('@/views/GroupDetail.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/forms',
+    name: 'forms',
+    component: () => import('@/views/Forms.vue'),
+    meta: { requiresAuth: true, requiresPermission: { module: 'forms', action: 'view' } }
+  },
+  {
+    path: '/forms/builder',
+    name: 'form-builder-new',
+    component: () => import('@/views/FormBuilder.vue'),
+    meta: { requiresAuth: true, requiresPermission: { module: 'forms', action: 'create' } }
+  },
+  {
+    path: '/forms/builder/:id',
+    name: 'form-builder',
+    component: () => import('@/views/FormBuilder.vue'),
+    meta: { requiresAuth: true, requiresPermission: { module: 'forms', action: 'edit' } }
+  },
+  {
+    path: '/forms/public/:slug',
+    name: 'public-form',
+    component: () => import('@/views/PublicFormView.vue'),
+    meta: { requiresAuth: false, hideShell: true } // Public route - render without app shell (sidebar/tabbar)
+  },
+  {
+    path: '/forms/my-audits',
+    name: 'my-audits',
+    component: () => import('@/views/MyAudits.vue'),
+    meta: { requiresAuth: true, requiresPermission: { module: 'forms', action: 'view' } }
+  },
+  {
+    path: '/forms/:id/detail',
+    name: 'form-detail',
+    component: () => import('@/views/FormDetail.vue'),
+    meta: { requiresAuth: true, requiresPermission: { module: 'forms', action: 'view' } }
+  },
+  {
+    path: '/forms/:id/responses',
+    name: 'form-responses',
+    component: () => import('@/views/FormResponses.vue'),
+    meta: { requiresAuth: true, requiresPermission: { module: 'forms', action: 'view' } }
+  },
+  {
+    path: '/forms/:id/responses/:responseId',
+    name: 'form-response-detail',
+    component: () => import('@/views/FormResponseDetail.vue'),
+    meta: { requiresAuth: true, requiresPermission: { module: 'forms', action: 'view' } }
   }
 ]
 

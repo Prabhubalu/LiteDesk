@@ -21,7 +21,8 @@ import {
   RectangleStackIcon,
   ServerIcon,
   ChevronLeftIcon,
-  ChevronRightIcon
+  ChevronRightIcon,
+  ClipboardDocumentIcon
 } from '@heroicons/vue/24/outline'
 
 // Define props and emits
@@ -137,6 +138,23 @@ const navigation = computed(() => {
           current: route.path.startsWith('/events') || route.path.startsWith('/calendar')
         });
       }
+  
+  // Forms - check permission
+  if (authStore.can('forms', 'view')) {
+    nav.push({ 
+      name: 'Forms', 
+      href: '/forms', 
+      icon: ClipboardDocumentIcon,
+      current: route.path.startsWith('/forms') && route.path !== '/forms/my-audits'
+    });
+    // My Audits - for auditors
+    nav.push({ 
+      name: 'My Audits', 
+      href: '/forms/my-audits', 
+      icon: ClipboardDocumentIcon,
+      current: route.path === '/forms/my-audits'
+    });
+  }
   
   // Imports - check permission
   if (authStore.can('imports', 'view')) {

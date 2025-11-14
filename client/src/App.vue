@@ -21,6 +21,7 @@ const { colorMode } = useColorMode();
 // Check authentication status to conditionally show the navigation bar
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 const hideShell = computed(() => !!route.meta.hideShell);
+const isPublicRoute = computed(() => route.meta.requiresAuth === false);
 
 const DEFAULT_CONTENT_OFFSET = 0;
 const EXTRA_OFFSET_LIGHT = '2rem';
@@ -106,8 +107,13 @@ usePermissionSync(2);
 </script>
 
 <template>
+  <!-- Public routes (no shell, no auth required) -->
+  <div v-if="isPublicRoute">
+    <RouterView />
+  </div>
+
   <!-- Authenticated layout -->
-  <div v-if="isAuthenticated">
+  <div v-else-if="isAuthenticated">
     <!-- Shell-less pages (e.g., Settings) -->
     <div v-if="hideShell" class="min-h-screen bg-gray-100/70 dark:bg-gray-900">
       <div class="flex-1 overflow-y-hidden overflow-x-hidden">

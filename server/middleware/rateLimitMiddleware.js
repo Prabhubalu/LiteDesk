@@ -1,9 +1,44 @@
 /**
  * Rate Limiting Middleware
  * Prevents brute force attacks and API abuse
+ * 
+ * DEVELOPMENT BYPASS:
+ * In development mode (NODE_ENV !== 'production'), rate limiting can be bypassed
+ * by sending the header: X-Bypass-Rate-Limit: true or X-Test-Mode: true
+ * 
+ * This is automatically enabled in test scripts but can be disabled by setting:
+ * BYPASS_RATE_LIMIT=false
+ * 
+ * ⚠️  WARNING: This bypass is DISABLED in production mode for security.
  */
 
 const rateLimit = require('express-rate-limit');
+
+const isProduction = process.env.NODE_ENV === 'production';
+const bypassDisabled = process.env.BYPASS_RATE_LIMIT === 'false';
+
+const isHealthCheckPath = (req) => req.path === '/health' || req.path === '/api/health';
+
+const hasBypassHeader = (req) => {
+    const bypassHeader = req.headers['x-bypass-rate-limit'];
+    const testHeader = req.headers['x-test-mode'];
+    return bypassHeader === 'true' || testHeader === 'true';
+};
+
+const shouldBypassRateLimit = (req, { logContext } = {}) => {
+    if (isProduction || bypassDisabled) {
+        return false;
+    }
+
+    if (hasBypassHeader(req)) {
+        if (logContext) {
+            console.warn(`⚠️  [DEV] Rate limiting bypassed for ${logContext}`);
+        }
+        return true;
+    }
+
+    return false;
+};
 
 // General API rate limiter
 const apiLimiter = rateLimit({
@@ -17,12 +52,12 @@ const apiLimiter = rateLimit({
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
     // Skip rate limiting for certain conditions
     skip: (req) => {
-        // Skip rate limiting in development mode
-        if (process.env.NODE_ENV !== 'production') {
+        if (shouldBypassRateLimit(req)) {
             return true;
         }
+
         // Skip for health checks
-        return req.path === '/health' || req.path === '/api/health';
+        return isHealthCheckPath(req);
     }
 });
 
@@ -36,13 +71,18 @@ const authLimiter = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false,
-    // Skip rate limiting in development mode
-    skip: (req) => {
-        return process.env.NODE_ENV !== 'production';
-    },
     // Use IP + user identifier for better tracking
     keyGenerator: (req) => {
         return req.ip + (req.body?.email || '');
+    },
+    // DEVELOPMENT ONLY: Skip rate limiting if bypass header is present
+    skip: (req) => {
+        if (shouldBypassRateLimit(req, { logContext: `auth request from ${req.ip} (${req.body?.email || 'unknown user'})` })) {
+            return true;
+        }
+
+        // Skip for health checks
+        return isHealthCheckPath(req);
     }
 });
 

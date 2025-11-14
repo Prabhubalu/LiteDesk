@@ -104,6 +104,34 @@ const eventSchema = new Schema({
     maxlength: 1024,
     default: ''
   },
+
+  // Form Linking (for Audit/Inspection events)
+  linkedFormId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Form',
+    default: null
+  },
+  formAssignment: {
+    assignedAuditor: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      default: null
+    },
+    assignedAt: {
+      type: Date,
+      default: null
+    },
+    dueDate: {
+      type: Date,
+      default: null
+    }
+  },
+
+  // Recurring Events
+  isRecurring: {
+    type: Boolean,
+    default: false
+  },
   
   // Reminder
   reminderAt: {
@@ -131,11 +159,6 @@ const eventSchema = new Schema({
   linkedTaskId: {
     type: Schema.Types.ObjectId,
     ref: 'Task',
-    default: null
-  },
-  linkedFormId: {
-    type: Schema.Types.ObjectId,
-    ref: 'Form',
     default: null
   },
   
@@ -195,6 +218,8 @@ eventSchema.index({ organizationId: 1, status: 1 });
 eventSchema.index({ 'attendees.userId': 1 });
 eventSchema.index({ 'attendees.personId': 1 });
 eventSchema.index({ linkedTaskId: 1 });
+eventSchema.index({ linkedFormId: 1 });
+eventSchema.index({ 'formAssignment.assignedAuditor': 1 });
 // eventId is already indexed via unique: true, no need for explicit index
 
 // Virtual for duration
