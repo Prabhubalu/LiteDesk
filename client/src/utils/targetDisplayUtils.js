@@ -62,6 +62,33 @@ export function formatPeriodRange(start, end) {
   return `${s} – ${e}`;
 }
 
+/** YYYY-MM-DD in local timezone (avoids UTC shift from toISOString). */
+export function toLocalDateString(date) {
+  const d = date instanceof Date ? date : new Date(date);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+export function getMonthRange(year, monthIndex) {
+  const start = new Date(year, monthIndex, 1);
+  const end = new Date(year, monthIndex + 1, 0);
+  return { start: toLocalDateString(start), end: toLocalDateString(end) };
+}
+
+/** @param quarter 1–4 */
+export function getQuarterRange(year, quarter) {
+  const q = Math.min(4, Math.max(1, quarter));
+  const start = new Date(year, (q - 1) * 3, 1);
+  const end = new Date(year, q * 3, 0);
+  return { start: toLocalDateString(start), end: toLocalDateString(end) };
+}
+
+export function currentCalendarQuarter() {
+  return Math.floor(new Date().getMonth() / 3) + 1;
+}
+
 export function typeIconKey(key) {
   if (key === 'revenue') return 'currency';
   if (key === 'deal_count') return 'deals';

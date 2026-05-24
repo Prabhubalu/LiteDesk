@@ -2099,7 +2099,7 @@
                                   <!-- Search results header -->
                                   <div class="p-2 border-b border-gray-200 dark:border-white/10 flex items-center justify-between">
                                     <span class="text-xs text-gray-600 dark:text-gray-400">
-                                      {{ t('settings.modFieldsOptionCount', { count: getFilteredDependencyOptions(di, ci).length }) }}
+                                      {{ dependencyOptionCountLabel(getFilteredDependencyOptions(di, ci).length) }}
                                     </span>
                                     <div class="flex items-center gap-2">
                                       <button
@@ -2617,13 +2617,7 @@
           </div>
         </div>
 
-        <!-- Status & Types Tab (Organizations module only) -->
-        <!-- 
-          INTENT: This tab configures organization types and status picklists.
-          These are NOT fields - they are app-scoped semantic configurations that control
-          workflow states and business classifications. Changes are persisted to tenant
-          module configuration, not field definitions.
-        -->
+        <!-- Status & Types Tab (Organizations) — tenant policy only (enable/disable). Catalog: Fields tab. -->
         <div class="flex-1 overflow-y-auto" v-else-if="activeTopTab === 'status-types' && isOrganizationsModule">
           <div class="p-6">
             <!-- Header -->
@@ -2638,11 +2632,18 @@
 
             <!-- Organization Types Section -->
             <div class="mb-8">
-              <div class="flex items-center justify-between mb-4">
-                <div>
+              <div class="flex items-center justify-between mb-4 gap-3">
+                <div class="min-w-0">
                   <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">{{ t('settings.modFieldsOrgTypesTitle') }}</h4>
                   <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsOrgTypesDesc') }}</p>
                 </div>
+                <button
+                  type="button"
+                  @click="openOrganizationPicklistInFieldConfig('types')"
+                  class="flex-shrink-0 px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+                >
+                  {{ t('settings.modFieldsEditInFieldConfig') }}
+                </button>
               </div>
               
               <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
@@ -2653,9 +2654,14 @@
                     :key="`${type.value}-${index}`"
                     class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
                   >
-                    <div class="flex items-center gap-3 flex-1">
-                      <div class="cursor-grab select-none text-gray-400 dark:text-gray-500" :title="t('settings.modFieldsTitleDragReorder')">⋮⋮</div>
-                      <div class="flex-1">
+                    <div class="flex items-center gap-3 flex-1 min-w-0">
+                      <span
+                        class="h-3.5 w-3.5 rounded-full flex-shrink-0 ring-1 ring-gray-900/10 dark:ring-white/20"
+                        :style="{ backgroundColor: type.color || '#3B82F6' }"
+                        :title="t('settings.modFieldsColor')"
+                        aria-hidden="true"
+                      />
+                      <div class="flex-1 min-w-0">
                         <div class="text-sm font-medium text-gray-900 dark:text-white">{{ type.label }}</div>
                         <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ type.description || t('settings.modFieldsOrgTypeDefaultDesc') }}</div>
                       </div>
@@ -2663,196 +2669,82 @@
                     <div class="flex items-center gap-3">
                       <HeadlessSwitch
                         :checked="type.enabled"
-                        @change="type.enabled = !type.enabled"
-                        switch-class="w-11 h-6"
+                        @change="setPicklistEnabled(type, $event)"
+                        switch-class="w-9 h-5"
                       />
                     </div>
                   </div>
                   
-                  <div class="text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-700">{{ t('settings.modFieldsOrgTypesFootnote') }}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-700 space-y-1">
+                    <p>{{ t('settings.modFieldsOrgTypesFootnote') }}</p>
+                    <p>{{ t('settings.modFieldsStatusTypesColorHint') }}</p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- Status Picklists Section -->
+            <!-- Status picklists — policy only (values edited under Fields) -->
             <div class="space-y-6">
-              <!-- Customer Status -->
-              <div>
-                <div class="flex items-center justify-between mb-4">
-                  <div class="flex items-center gap-2">
-                    <h4 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.modFieldsCustomerStatus') }}</h4>
-                    <span class="px-2 py-0.5 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">{{ t('settings.modFieldsBadgeSales') }}</span>
+              <div
+                v-for="section in organizationStatusPicklistSections"
+                :key="section.fieldKey"
+              >
+                <div class="flex items-center justify-between mb-4 gap-3">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <h4 class="text-base font-semibold text-gray-900 dark:text-white">{{ t(section.titleKey) }}</h4>
+                    <span
+                      v-if="section.showSalesBadge"
+                      class="px-2 py-0.5 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded flex-shrink-0"
+                    >{{ t('settings.modFieldsBadgeSales') }}</span>
                   </div>
                   <button
-                    @click="addStatusValue('customerStatus')"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+                    type="button"
+                    @click="openOrganizationPicklistInFieldConfig(section.fieldKey)"
+                    class="flex-shrink-0 px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
                   >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>{{ t('settings.modFieldsAddValue') }}</button>
+                    {{ t('settings.modFieldsEditInFieldConfig') }}
+                  </button>
                 </div>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ t('settings.modFieldsStatusForCustomer') }}</p>
-                
-                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-                  <div v-if="statusPicklists.customerStatus.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsNoStatusValues') }}</div>
-                  <div v-else class="space-y-2">
-                    <div
-                      v-for="(status, index) in statusPicklists.customerStatus"
-                      :key="status.value || index"
-                      class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg group"
-                    >
-                      <div class="cursor-grab select-none text-gray-400 dark:text-gray-500" :title="t('settings.modFieldsTitleDragReorder')">⋮⋮</div>
-                      <div class="flex-1 min-w-0">
-                        <input
-                          v-if="status.editing"
-                          v-model="status.editValue"
-                          @blur="saveStatusValue('customerStatus', index)"
-                          @keyup.enter="saveStatusValue('customerStatus', index)"
-                          @keyup.esc="cancelStatusEdit('customerStatus', index)"
-                          class="w-full px-2 py-1 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                          autofocus
-                        />
-                        <span v-else class="text-sm font-medium text-gray-900 dark:text-white">{{ status.label }}</span>
-                      </div>
-                      <div class="flex items-center gap-2">
-                        <HeadlessSwitch
-                          :checked="status.enabled"
-                          @change="status.enabled = !status.enabled"
-                          switch-class="w-9 h-5"
-                        />
-                        <button
-                          @click="startStatusEdit('customerStatus', index)"
-                          class="p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors rounded"
-                          :title="t('settings.modFieldsRename')"
-                        >
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">{{ t('settings.modFieldsCustomerStatusFootnote') }}</div>
-                </div>
-              </div>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ t(section.descriptionKey) }}</p>
 
-              <!-- Partner Status -->
-              <div>
-                <div class="flex items-center justify-between mb-4">
-                  <div class="flex items-center gap-2">
-                    <h4 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.modFieldsPartnerStatus') }}</h4>
-                    <span class="px-2 py-0.5 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">{{ t('settings.modFieldsBadgeSales') }}</span>
-                  </div>
-                  <button
-                    @click="addStatusValue('partnerStatus')"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>{{ t('settings.modFieldsAddValue') }}</button>
-                </div>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ t('settings.modFieldsStatusForPartner') }}</p>
-                
                 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-                  <div v-if="statusPicklists.partnerStatus.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsNoStatusValues') }}</div>
+                  <div
+                    v-if="!statusPicklists[section.fieldKey]?.length"
+                    class="text-center py-8 space-y-3"
+                  >
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsNoStatusValuesCatalog') }}</p>
+                    <button
+                      type="button"
+                      @click="openOrganizationPicklistInFieldConfig(section.fieldKey)"
+                      class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+                    >
+                      {{ t('settings.modFieldsEditInFieldConfig') }}
+                    </button>
+                  </div>
                   <div v-else class="space-y-2">
                     <div
-                      v-for="(status, index) in statusPicklists.partnerStatus"
+                      v-for="(status, index) in statusPicklists[section.fieldKey]"
                       :key="status.value || index"
-                      class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg group"
+                      class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
                     >
-                      <div class="cursor-grab select-none text-gray-400 dark:text-gray-500" :title="t('settings.modFieldsTitleDragReorder')">⋮⋮</div>
-                      <div class="flex-1 min-w-0">
-                        <input
-                          v-if="status.editing"
-                          v-model="status.editValue"
-                          @blur="saveStatusValue('partnerStatus', index)"
-                          @keyup.enter="saveStatusValue('partnerStatus', index)"
-                          @keyup.esc="cancelStatusEdit('partnerStatus', index)"
-                          class="w-full px-2 py-1 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                          autofocus
-                        />
-                        <span v-else class="text-sm font-medium text-gray-900 dark:text-white">{{ status.label }}</span>
-                      </div>
-                      <div class="flex items-center gap-2">
-                        <HeadlessSwitch
-                          :checked="status.enabled"
-                          @change="status.enabled = !status.enabled"
-                          switch-class="w-9 h-5"
-                        />
-                        <button
-                          @click="startStatusEdit('partnerStatus', index)"
-                          class="p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors rounded"
-                          :title="t('settings.modFieldsRename')"
-                        >
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                        </button>
-                      </div>
+                      <span
+                        class="h-3.5 w-3.5 rounded-full flex-shrink-0 ring-1 ring-gray-900/10 dark:ring-white/20"
+                        :style="{ backgroundColor: resolveStatusPicklistColor(status, section.fieldKey) }"
+                        :title="t('settings.modFieldsColor')"
+                        aria-hidden="true"
+                      />
+                      <span class="flex-1 min-w-0 text-sm font-medium text-gray-900 dark:text-white">{{ status.label }}</span>
+                      <HeadlessSwitch
+                        :checked="status.enabled"
+                        @change="setPicklistEnabled(status, $event)"
+                        switch-class="w-9 h-5"
+                      />
                     </div>
                   </div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">{{ t('settings.modFieldsPartnerStatusFootnote') }}</div>
-                </div>
-              </div>
-
-              <!-- Vendor Status -->
-              <div>
-                <div class="flex items-center justify-between mb-4">
-                  <div class="flex items-center gap-2">
-                    <h4 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.modFieldsVendorStatus') }}</h4>
-                    <span class="px-2 py-0.5 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">{{ t('settings.modFieldsBadgeSales') }}</span>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 space-y-1">
+                    <p>{{ t(section.footnoteKey) }}</p>
+                    <p>{{ t('settings.modFieldsStatusTypesColorHint') }}</p>
                   </div>
-                  <button
-                    @click="addStatusValue('vendorStatus')"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>{{ t('settings.modFieldsAddValue') }}</button>
-                </div>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ t('settings.modFieldsStatusForVendor') }}</p>
-                
-                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-                  <div v-if="statusPicklists.vendorStatus.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsNoStatusValues') }}</div>
-                  <div v-else class="space-y-2">
-                    <div
-                      v-for="(status, index) in statusPicklists.vendorStatus"
-                      :key="status.value || index"
-                      class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg group"
-                    >
-                      <div class="cursor-grab select-none text-gray-400 dark:text-gray-500" :title="t('settings.modFieldsTitleDragReorder')">⋮⋮</div>
-                      <div class="flex-1 min-w-0">
-                        <input
-                          v-if="status.editing"
-                          v-model="status.editValue"
-                          @blur="saveStatusValue('vendorStatus', index)"
-                          @keyup.enter="saveStatusValue('vendorStatus', index)"
-                          @keyup.esc="cancelStatusEdit('vendorStatus', index)"
-                          class="w-full px-2 py-1 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                          autofocus
-                        />
-                        <span v-else class="text-sm font-medium text-gray-900 dark:text-white">{{ status.label }}</span>
-                      </div>
-                      <div class="flex items-center gap-2">
-                        <HeadlessSwitch
-                          :checked="status.enabled"
-                          @change="status.enabled = !status.enabled"
-                          switch-class="w-9 h-5"
-                        />
-                        <button
-                          @click="startStatusEdit('vendorStatus', index)"
-                          class="p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors rounded"
-                          :title="t('settings.modFieldsRename')"
-                        >
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">{{ t('settings.modFieldsVendorStatusFootnote') }}</div>
                 </div>
               </div>
             </div>
@@ -2952,8 +2844,8 @@
                     <div class="flex items-center gap-3">
                       <HeadlessSwitch
                         :checked="type.enabled"
-                        @change="type.enabled = !type.enabled"
-                        switch-class="w-11 h-6"
+                        @change="setPicklistEnabled(type, $event)"
+                        switch-class="w-9 h-5"
                       />
                     </div>
                   </div>
@@ -3003,7 +2895,7 @@
                     <div class="flex items-center gap-2">
                       <HeadlessSwitch
                         :checked="status.enabled"
-                        @change="status.enabled = !status.enabled"
+                        @change="setPicklistEnabled(status, $event)"
                         switch-class="w-9 h-5"
                       />
                       <button
@@ -5489,6 +5381,12 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+
+function dependencyOptionCountLabel(count) {
+  return count === 1
+    ? t('settings.modFieldsOptionCountOne', { count })
+    : t('settings.modFieldsOptionCountOther', { count });
+}
 
 const authStore = useAuthStore();
 const route = useRoute();
@@ -8344,6 +8242,36 @@ function openTaskPriorityInFieldConfig() {
   const priorityIdx = editFields.value.findIndex(f => String(f?.key || '').toLowerCase() === 'priority');
   if (priorityIdx >= 0) selectField(priorityIdx);
 }
+
+/** Organizations Status & Types: open Fields tab for catalog edits (types / status picklists). */
+function openOrganizationPicklistInFieldConfig(fieldKey) {
+  activeTopTab.value = 'fields';
+  void nextTick(() => selectFieldByKey(fieldKey));
+}
+
+const organizationStatusPicklistSections = [
+  {
+    fieldKey: 'customerStatus',
+    titleKey: 'settings.modFieldsCustomerStatus',
+    descriptionKey: 'settings.modFieldsStatusForCustomer',
+    footnoteKey: 'settings.modFieldsCustomerStatusFootnote',
+    showSalesBadge: true,
+  },
+  {
+    fieldKey: 'partnerStatus',
+    titleKey: 'settings.modFieldsPartnerStatus',
+    descriptionKey: 'settings.modFieldsStatusForPartner',
+    footnoteKey: 'settings.modFieldsPartnerStatusFootnote',
+    showSalesBadge: true,
+  },
+  {
+    fieldKey: 'vendorStatus',
+    titleKey: 'settings.modFieldsVendorStatus',
+    descriptionKey: 'settings.modFieldsStatusForVendor',
+    footnoteKey: 'settings.modFieldsVendorStatusFootnote',
+    showSalesBadge: true,
+  },
+];
 
 function getDefaultOptionColor(optionValue, field = currentField.value) {
   if (isTaskStatusField(field)) {
@@ -11938,9 +11866,8 @@ async function saveQuickCreate() {
 // ============================================================================
 // Organization Types & Status Picklists (Status & Types tab)
 // ============================================================================
-// INTENT: These are NOT fields - they are app-scoped semantic configurations
-// that control workflow states and business classifications. Changes are
-// persisted to tenant module configuration, not field definitions.
+// Policy layer: enable/disable only. Catalog (add/rename/color/order) is Fields tab.
+// Persisted to tenant module configuration (/organizations/status-types), not field defs.
 // ============================================================================
 
 // Organization Types state
@@ -11953,6 +11880,181 @@ const statusPicklists = ref({
   partnerStatus: [],
   vendorStatus: []
 });
+
+/** Normalize field option / picklist entries (string or { value, label, color }). */
+function normalizePicklistValue(raw) {
+  if (raw == null || raw === '') return '';
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim();
+    if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+      try {
+        return normalizePicklistValue(JSON.parse(trimmed));
+      } catch {
+        /* use raw string */
+      }
+    }
+    return raw;
+  }
+  if (typeof raw === 'object') {
+    if (raw.value != null && raw.value !== raw) {
+      return normalizePicklistValue(raw.value);
+    }
+    if (typeof raw.label === 'string' && raw.label.trim()) {
+      return normalizePicklistValue(raw.label);
+    }
+  }
+  return String(raw);
+}
+
+function normalizePicklistLabel(raw, value) {
+  const resolvedValue = value ?? normalizePicklistValue(raw);
+  if (typeof raw === 'string') return raw;
+  if (raw && typeof raw === 'object' && typeof raw.label === 'string' && raw.label.trim()) {
+    return raw.label;
+  }
+  return resolvedValue;
+}
+
+function normalizePicklistColor(raw, value, fallbackHex = '#3B82F6') {
+  if (raw && typeof raw === 'object' && typeof raw.color === 'string') {
+    const trimmed = raw.color.trim();
+    if (/^#[0-9A-Fa-f]{6}$/i.test(trimmed)) return trimmed;
+  }
+  return fallbackHex;
+}
+
+/** Resolve hex from module field options (Fields tab picklist config). */
+function picklistColorFromField(field, value) {
+  if (!field || value == null || value === '') return null;
+  const options = field.options || field.enum || [];
+  for (const opt of options) {
+    const optValue = normalizePicklistValue(opt);
+    if (optValue !== value) continue;
+    if (typeof opt === 'object' && opt.color) return normalizePicklistColor(opt, value, '#3B82F6');
+    return getDefaultOptionColor(value, field);
+  }
+  return getDefaultOptionColor(value, field);
+}
+
+const organizationsTypesFieldRef = ref(null);
+const statusPicklistFieldsByKey = ref({
+  customerStatus: null,
+  partnerStatus: null,
+  vendorStatus: null,
+});
+
+function mapOrganizationTypeEntry(entry, typesField = organizationsTypesFieldRef.value) {
+  const source =
+    entry && typeof entry === 'object' && ('enabled' in entry || 'value' in entry)
+      ? entry
+      : { value: entry, enabled: true };
+  const value = normalizePicklistValue(source.value ?? entry);
+  const label = normalizePicklistLabel(source, value);
+  const rawForColor = typeof entry === 'object' && entry !== null ? entry : source;
+  const fallback = typesField ? getDefaultOptionColor(value, typesField) : '#3B82F6';
+  const color =
+    normalizePicklistColor(rawForColor, value, picklistColorFromField(typesField, value) || fallback);
+  return {
+    value,
+    label,
+    color,
+    enabled: source.enabled !== undefined ? source.enabled : true,
+    description: label ? `${label} organizations` : '',
+  };
+}
+
+function mapStatusPicklistEntry(entry, statusField = null) {
+  const source =
+    entry && typeof entry === 'object' && ('enabled' in entry || 'value' in entry || 'editing' in entry)
+      ? entry
+      : { value: entry, enabled: true };
+  const value = normalizePicklistValue(source.value ?? entry);
+  const label = normalizePicklistLabel(source, value);
+  const rawForColor = typeof entry === 'object' && entry !== null ? entry : source;
+  const fallback = statusField ? getDefaultOptionColor(value, statusField) : '#6B7280';
+  const color =
+    normalizePicklistColor(rawForColor, value, picklistColorFromField(statusField, value) || fallback);
+  return {
+    value,
+    label,
+    color,
+    enabled: source.enabled !== undefined ? source.enabled : true,
+    editing: false,
+    editValue: label,
+  };
+}
+
+function resolveStatusPicklistColor(status, fieldKey) {
+  const field = statusPicklistFieldsByKey.value[fieldKey];
+  return status.color || picklistColorFromField(field, status.value) || '#6B7280';
+}
+
+/** Append catalog options from Fields that are not yet in tenant policy rows (new values default enabled). */
+function mergeOrganizationTypesWithCatalog(policyRows, typesField) {
+  const options = typesField?.options || typesField?.enum || [];
+  const seen = new Set(policyRows.map((r) => normalizePicklistValue(r.value)).filter(Boolean));
+  const merged = [...policyRows];
+  for (const opt of options) {
+    const value = normalizePicklistValue(opt);
+    if (!value || seen.has(value)) continue;
+    seen.add(value);
+    merged.push(
+      mapOrganizationTypeEntry(
+        typeof opt === 'object' && opt !== null ? { ...opt, enabled: true } : { value: opt, enabled: true },
+        typesField
+      )
+    );
+  }
+  return merged.map((row) => {
+    const color = picklistColorFromField(typesField, row.value);
+    return color ? { ...row, color } : row;
+  });
+}
+
+function mergeStatusPicklistWithCatalog(policyRows, statusField) {
+  const options = statusField?.options || statusField?.enum || [];
+  const seen = new Set(policyRows.map((r) => normalizePicklistValue(r.value)).filter(Boolean));
+  const merged = [...policyRows];
+  for (const opt of options) {
+    const value = normalizePicklistValue(opt);
+    if (!value || seen.has(value)) continue;
+    seen.add(value);
+    merged.push(
+      mapStatusPicklistEntry(
+        typeof opt === 'object' && opt !== null ? { ...opt, enabled: true } : { value: opt, enabled: true },
+        statusField
+      )
+    );
+  }
+  return merged.map((row) => {
+    const color = picklistColorFromField(statusField, row.value);
+    return color ? { ...row, color } : row;
+  });
+}
+
+function serializeOrganizationTypeEntry(entry) {
+  const value = normalizePicklistValue(entry.value);
+  const label = normalizePicklistLabel(entry, value);
+  return {
+    value,
+    label,
+    enabled: entry.enabled !== undefined ? entry.enabled : true,
+  };
+}
+
+function serializeStatusPicklistEntry(entry) {
+  const value = normalizePicklistValue(entry.value);
+  const label = normalizePicklistLabel(entry, value);
+  return {
+    value,
+    label,
+    enabled: entry.enabled !== undefined ? entry.enabled : true,
+  };
+}
+
+function setPicklistEnabled(item, event) {
+  item.enabled = Boolean(event?.target?.checked);
+}
 
 const savingStatusTypes = ref(false);
 const statusTypesOriginalSnapshot = ref('');
@@ -12292,28 +12394,12 @@ const statusTypesDirty = computed(() => {
   
   // Normalize current state to match snapshot structure (only saved fields)
   const current = JSON.stringify({
-    organizationTypes: organizationTypes.value.map(t => ({
-      value: t.value,
-      label: t.label || t.value,
-      enabled: t.enabled !== undefined ? t.enabled : true
-    })),
+    organizationTypes: organizationTypes.value.map(serializeOrganizationTypeEntry),
     statusPicklists: {
-      customerStatus: statusPicklists.value.customerStatus.map(s => ({
-        value: s.value,
-        label: s.label || s.value,
-        enabled: s.enabled !== undefined ? s.enabled : true
-      })),
-      partnerStatus: statusPicklists.value.partnerStatus.map(s => ({
-        value: s.value,
-        label: s.label || s.value,
-        enabled: s.enabled !== undefined ? s.enabled : true
-      })),
-      vendorStatus: statusPicklists.value.vendorStatus.map(s => ({
-        value: s.value,
-        label: s.label || s.value,
-        enabled: s.enabled !== undefined ? s.enabled : true
-      }))
-    }
+      customerStatus: statusPicklists.value.customerStatus.map(serializeStatusPicklistEntry),
+      partnerStatus: statusPicklists.value.partnerStatus.map(serializeStatusPicklistEntry),
+      vendorStatus: statusPicklists.value.vendorStatus.map(serializeStatusPicklistEntry),
+    },
   });
   
   const isDirty = current !== statusTypesOriginalSnapshot.value;
@@ -12421,6 +12507,13 @@ async function fetchStatusTypes() {
     }
     
     if (module) {
+      organizationsTypesFieldRef.value = module.fields?.find((f) => f.key === 'types') ?? null;
+      statusPicklistFieldsByKey.value = {
+        customerStatus: module.fields?.find((f) => f.key === 'customerStatus') ?? null,
+        partnerStatus: module.fields?.find((f) => f.key === 'partnerStatus') ?? null,
+        vendorStatus: module.fields?.find((f) => f.key === 'vendorStatus') ?? null,
+      };
+
       // Debug: Log all fields to see what we're getting
       console.log('[Status Types] Module fields:', module.fields?.map(f => ({ key: f.key, dataType: f.dataType, options: f.options, enum: f.enum, context: f.context })));
       console.log('[Status Types] Total fields:', module.fields?.length);
@@ -12440,17 +12533,15 @@ async function fetchStatusTypes() {
         // Even if array is empty, use it (means user disabled everything)
         // This preserves ALL custom types and their enabled states
         console.log('[Status Types] ✅ TENANT OVERRIDES FOUND - Using tenant overrides for organization types:', tenantOverrides.organizationTypes.length, 'types');
-        const mappedTypes = tenantOverrides.organizationTypes.map(t => ({
-          value: t.value,
-          label: t.label || t.value,
-          enabled: t.enabled !== undefined ? t.enabled : true,
-          description: `${t.value} organizations`
-        }));
+        const mappedTypes = tenantOverrides.organizationTypes.map((t) => mapOrganizationTypeEntry(t));
         console.log('[Status Types] ✅ Mapped organization types with enabled states:', JSON.stringify(mappedTypes.map(t => ({ value: t.value, enabled: t.enabled })), null, 2));
         // CRITICAL: Replace entire array to ensure Vue reactivity and prevent any overwrites
         // CRITICAL: Only update if we're not in the middle of a save operation
         if (!savingStatusTypes.value) {
-          organizationTypes.value = [...mappedTypes];
+          organizationTypes.value = mergeOrganizationTypesWithCatalog(
+            mappedTypes,
+            organizationsTypesFieldRef.value
+          );
           console.log('[Status Types] ✅ Set organizationTypes.value. Current state:', JSON.stringify(organizationTypes.value.map(t => ({ value: t.value, enabled: t.enabled })), null, 2));
         } else {
           console.log('[Status Types] ⚠️ Skipping organizationTypes update - save in progress');
@@ -12467,12 +12558,12 @@ async function fetchStatusTypes() {
         const typesEnum = typesField?.enum || typesField?.options || [];
         if (typesField && typesEnum.length > 0) {
           // Create new array to ensure reactivity
-          const newTypes = typesEnum.map(type => ({
-            value: type,
-            label: type,
-            enabled: true,
-            description: `${type} organizations`
-          }));
+          const newTypes = typesEnum.map((type) =>
+            mapOrganizationTypeEntry(
+              typeof type === 'object' && type !== null ? { ...type, enabled: true } : { value: type, enabled: true },
+              organizationsTypesFieldRef.value
+            )
+          );
           // Replace the entire array to ensure Vue reactivity
           organizationTypes.value = newTypes;
           console.log('[Status Types] Loaded organization types from module defaults:', newTypes.length);
@@ -12486,12 +12577,9 @@ async function fetchStatusTypes() {
           // Fallback: Use hardcoded defaults if field not found
           if (!typesField) {
             console.log('[Status Types] Using hardcoded defaults for organization types');
-            organizationTypes.value = ['Customer', 'Partner', 'Vendor', 'Distributor', 'Dealer'].map(type => ({
-              value: type,
-              label: type,
-              enabled: true,
-              description: `${type} organizations`
-            }));
+            organizationTypes.value = ['Customer', 'Partner', 'Vendor', 'Distributor', 'Dealer'].map((type) =>
+              mapOrganizationTypeEntry({ value: type, enabled: true })
+            );
           }
         }
       }
@@ -12504,18 +12592,18 @@ async function fetchStatusTypes() {
         // Use tenant overrides directly (even if empty array - means user removed all statuses)
         // This includes ALL custom statuses that were added by the user
         console.log('[Status Types] ✅ TENANT OVERRIDES FOUND - Using tenant overrides for customerStatus:', tenantOverrides.statusPicklists.customerStatus.length, 'statuses');
-        const mappedStatuses = tenantOverrides.statusPicklists.customerStatus.map(s => ({
-          value: s.value,
-          label: s.label || s.value,
-          enabled: s.enabled !== undefined ? s.enabled : true,
-          editing: false
-        }));
+        const mappedStatuses = tenantOverrides.statusPicklists.customerStatus.map((s) =>
+          mapStatusPicklistEntry(s, statusPicklistFieldsByKey.value.customerStatus)
+        );
         console.log('[Status Types] ✅ Mapped customerStatus with enabled states:', JSON.stringify(mappedStatuses.map(s => ({ value: s.value, enabled: s.enabled })), null, 2));
         // CRITICAL: Replace entire array to ensure Vue reactivity and preserve all custom values
         // Use spread operator to create new array reference
         // CRITICAL: Only update if we're not in the middle of a save operation
         if (!savingStatusTypes.value) {
-          statusPicklists.value.customerStatus = [...mappedStatuses];
+          statusPicklists.value.customerStatus = mergeStatusPicklistWithCatalog(
+            mappedStatuses,
+            statusPicklistFieldsByKey.value.customerStatus
+          );
           console.log('[Status Types] ✅ Set customerStatus.value. Current state:', JSON.stringify(statusPicklists.value.customerStatus.map(s => ({ value: s.value, enabled: s.enabled })), null, 2));
         } else {
           console.log('[Status Types] ⚠️ Skipping customerStatus update - save in progress');
@@ -12532,12 +12620,12 @@ async function fetchStatusTypes() {
         const customerStatusField = module.fields?.find(f => f.key === 'customerStatus');
         const customerStatusEnum = customerStatusField?.enum || customerStatusField?.options || [];
         if (customerStatusField && customerStatusEnum.length > 0) {
-          const newCustomerStatuses = customerStatusEnum.map(status => ({
-            value: status,
-            label: status,
-            enabled: true,
-            editing: false
-          }));
+          const newCustomerStatuses = customerStatusEnum.map((status) =>
+            mapStatusPicklistEntry(
+              typeof status === 'object' && status !== null ? { ...status, enabled: true } : { value: status, enabled: true },
+              statusPicklistFieldsByKey.value.customerStatus
+            )
+          );
           // Replace the entire array to ensure Vue reactivity
           statusPicklists.value.customerStatus = newCustomerStatuses;
           console.log('[Status Types] Loaded customer status from module defaults:', newCustomerStatuses.length);
@@ -12546,12 +12634,13 @@ async function fetchStatusTypes() {
           // Fallback: Use hardcoded defaults
           if (!customerStatusField) {
             console.log('[Status Types] Using hardcoded defaults for customerStatus');
-            statusPicklists.value.customerStatus = ['Active', 'Prospect', 'Churned', 'Lead Customer'].map(status => ({
-              value: status,
-              label: status,
-              enabled: true,
-              editing: false
-            }));
+            statusPicklists.value.customerStatus = ['Active', 'Prospect', 'Churned', 'Lead Customer'].map(
+              (status) =>
+                mapStatusPicklistEntry(
+                  { value: status, enabled: true },
+                  statusPicklistFieldsByKey.value.customerStatus
+                )
+            );
           }
         }
       }
@@ -12561,18 +12650,18 @@ async function fetchStatusTypes() {
         // Use tenant overrides directly (even if empty array)
         // This includes ALL custom statuses that were added by the user
         console.log('[Status Types] ✅ TENANT OVERRIDES FOUND - Using tenant overrides for partnerStatus:', tenantOverrides.statusPicklists.partnerStatus.length, 'statuses');
-        const mappedStatuses = tenantOverrides.statusPicklists.partnerStatus.map(s => ({
-          value: s.value,
-          label: s.label || s.value,
-          enabled: s.enabled !== undefined ? s.enabled : true,
-          editing: false
-        }));
+        const mappedStatuses = tenantOverrides.statusPicklists.partnerStatus.map((s) =>
+          mapStatusPicklistEntry(s, statusPicklistFieldsByKey.value.partnerStatus)
+        );
         console.log('[Status Types] ✅ Mapped partnerStatus with enabled states:', JSON.stringify(mappedStatuses.map(s => ({ value: s.value, enabled: s.enabled })), null, 2));
         // CRITICAL: Replace entire array to ensure Vue reactivity and preserve all custom values
         // Use spread operator to create new array reference
         // CRITICAL: Only update if we're not in the middle of a save operation
         if (!savingStatusTypes.value) {
-          statusPicklists.value.partnerStatus = [...mappedStatuses];
+          statusPicklists.value.partnerStatus = mergeStatusPicklistWithCatalog(
+            mappedStatuses,
+            statusPicklistFieldsByKey.value.partnerStatus
+          );
           console.log('[Status Types] ✅ Set partnerStatus.value. Current state:', JSON.stringify(statusPicklists.value.partnerStatus.map(s => ({ value: s.value, enabled: s.enabled })), null, 2));
         } else {
           console.log('[Status Types] ⚠️ Skipping partnerStatus update - save in progress');
@@ -12589,12 +12678,12 @@ async function fetchStatusTypes() {
         const partnerStatusField = module.fields?.find(f => f.key === 'partnerStatus');
         const partnerStatusEnum = partnerStatusField?.enum || partnerStatusField?.options || [];
         if (partnerStatusField && partnerStatusEnum.length > 0) {
-          const newPartnerStatuses = partnerStatusEnum.map(status => ({
-            value: status,
-            label: status,
-            enabled: true,
-            editing: false
-          }));
+          const newPartnerStatuses = partnerStatusEnum.map((status) =>
+            mapStatusPicklistEntry(
+              typeof status === 'object' && status !== null ? { ...status, enabled: true } : { value: status, enabled: true },
+              statusPicklistFieldsByKey.value.partnerStatus
+            )
+          );
           // Replace the entire array to ensure Vue reactivity
           statusPicklists.value.partnerStatus = newPartnerStatuses;
           console.log('[Status Types] Loaded partner status from module defaults:', newPartnerStatuses.length);
@@ -12603,12 +12692,12 @@ async function fetchStatusTypes() {
           // Fallback: Use hardcoded defaults
           if (!partnerStatusField) {
             console.log('[Status Types] Using hardcoded defaults for partnerStatus');
-            statusPicklists.value.partnerStatus = ['Active', 'Onboarding', 'Inactive'].map(status => ({
-              value: status,
-              label: status,
-              enabled: true,
-              editing: false
-            }));
+            statusPicklists.value.partnerStatus = ['Active', 'Onboarding', 'Inactive'].map((status) =>
+              mapStatusPicklistEntry(
+                { value: status, enabled: true },
+                statusPicklistFieldsByKey.value.partnerStatus
+              )
+            );
           }
         }
       }
@@ -12618,18 +12707,18 @@ async function fetchStatusTypes() {
         // Use tenant overrides directly (even if empty array)
         // This includes ALL custom statuses that were added by the user
         console.log('[Status Types] ✅ TENANT OVERRIDES FOUND - Using tenant overrides for vendorStatus:', tenantOverrides.statusPicklists.vendorStatus.length, 'statuses');
-        const mappedStatuses = tenantOverrides.statusPicklists.vendorStatus.map(s => ({
-          value: s.value,
-          label: s.label || s.value,
-          enabled: s.enabled !== undefined ? s.enabled : true,
-          editing: false
-        }));
+        const mappedStatuses = tenantOverrides.statusPicklists.vendorStatus.map((s) =>
+          mapStatusPicklistEntry(s, statusPicklistFieldsByKey.value.vendorStatus)
+        );
         console.log('[Status Types] ✅ Mapped vendorStatus with enabled states:', JSON.stringify(mappedStatuses.map(s => ({ value: s.value, enabled: s.enabled })), null, 2));
         // CRITICAL: Replace entire array to ensure Vue reactivity and preserve all custom values
         // Use spread operator to create new array reference
         // CRITICAL: Only update if we're not in the middle of a save operation
         if (!savingStatusTypes.value) {
-          statusPicklists.value.vendorStatus = [...mappedStatuses];
+          statusPicklists.value.vendorStatus = mergeStatusPicklistWithCatalog(
+            mappedStatuses,
+            statusPicklistFieldsByKey.value.vendorStatus
+          );
           console.log('[Status Types] ✅ Set vendorStatus.value. Current state:', JSON.stringify(statusPicklists.value.vendorStatus.map(s => ({ value: s.value, enabled: s.enabled })), null, 2));
         } else {
           console.log('[Status Types] ⚠️ Skipping vendorStatus update - save in progress');
@@ -12646,12 +12735,12 @@ async function fetchStatusTypes() {
         const vendorStatusField = module.fields?.find(f => f.key === 'vendorStatus');
         const vendorStatusEnum = vendorStatusField?.enum || vendorStatusField?.options || [];
         if (vendorStatusField && vendorStatusEnum.length > 0) {
-          const newVendorStatuses = vendorStatusEnum.map(status => ({
-            value: status,
-            label: status,
-            enabled: true,
-            editing: false
-          }));
+          const newVendorStatuses = vendorStatusEnum.map((status) =>
+            mapStatusPicklistEntry(
+              typeof status === 'object' && status !== null ? { ...status, enabled: true } : { value: status, enabled: true },
+              statusPicklistFieldsByKey.value.vendorStatus
+            )
+          );
           // Replace the entire array to ensure Vue reactivity
           statusPicklists.value.vendorStatus = newVendorStatuses;
           console.log('[Status Types] Loaded vendor status from module defaults:', newVendorStatuses.length);
@@ -12660,12 +12749,12 @@ async function fetchStatusTypes() {
           // Fallback: Use hardcoded defaults
           if (!vendorStatusField) {
             console.log('[Status Types] Using hardcoded defaults for vendorStatus');
-            statusPicklists.value.vendorStatus = ['Approved', 'Pending', 'Suspended'].map(status => ({
-              value: status,
-              label: status,
-              enabled: true,
-              editing: false
-            }));
+            statusPicklists.value.vendorStatus = ['Approved', 'Pending', 'Suspended'].map((status) =>
+              mapStatusPicklistEntry(
+                { value: status, enabled: true },
+                statusPicklistFieldsByKey.value.vendorStatus
+              )
+            );
           }
         }
       }
@@ -12673,28 +12762,12 @@ async function fetchStatusTypes() {
       // Save snapshot for dirty checking
       // This snapshot is used to detect changes, so it must match the exact structure we save
       const snapshotData = {
-        organizationTypes: organizationTypes.value.map(t => ({
-          value: t.value,
-          label: t.label || t.value,
-          enabled: t.enabled !== undefined ? t.enabled : true
-        })),
+        organizationTypes: organizationTypes.value.map(serializeOrganizationTypeEntry),
         statusPicklists: {
-          customerStatus: statusPicklists.value.customerStatus.map(s => ({
-            value: s.value,
-            label: s.label || s.value,
-            enabled: s.enabled !== undefined ? s.enabled : true
-          })),
-          partnerStatus: statusPicklists.value.partnerStatus.map(s => ({
-            value: s.value,
-            label: s.label || s.value,
-            enabled: s.enabled !== undefined ? s.enabled : true
-          })),
-          vendorStatus: statusPicklists.value.vendorStatus.map(s => ({
-            value: s.value,
-            label: s.label || s.value,
-            enabled: s.enabled !== undefined ? s.enabled : true
-          }))
-        }
+          customerStatus: statusPicklists.value.customerStatus.map(serializeStatusPicklistEntry),
+          partnerStatus: statusPicklists.value.partnerStatus.map(serializeStatusPicklistEntry),
+          vendorStatus: statusPicklists.value.vendorStatus.map(serializeStatusPicklistEntry),
+        },
       };
       statusTypesOriginalSnapshot.value = JSON.stringify(snapshotData);
       
@@ -12763,63 +12836,33 @@ async function fetchStatusTypes() {
         console.log('[Status Types] Module fetch failed but tenant overrides exist, using tenant overrides');
         // Apply tenant overrides (same logic as above)
         if (tenantOverrides.organizationTypes && Array.isArray(tenantOverrides.organizationTypes)) {
-          organizationTypes.value = tenantOverrides.organizationTypes.map(t => ({
-            value: t.value,
-            label: t.label || t.value,
-            enabled: t.enabled !== undefined ? t.enabled : true,
-            description: `${t.value} organizations`
-          }));
+          organizationTypes.value = tenantOverrides.organizationTypes.map((t) => mapOrganizationTypeEntry(t));
         }
         if (tenantOverrides.statusPicklists) {
           if (tenantOverrides.statusPicklists.customerStatus && Array.isArray(tenantOverrides.statusPicklists.customerStatus)) {
-            statusPicklists.value.customerStatus = tenantOverrides.statusPicklists.customerStatus.map(s => ({
-              value: s.value,
-              label: s.label || s.value,
-              enabled: s.enabled !== undefined ? s.enabled : true,
-              editing: false
-            }));
+            statusPicklists.value.customerStatus = tenantOverrides.statusPicklists.customerStatus.map((s) =>
+              mapStatusPicklistEntry(s, statusPicklistFieldsByKey.value.customerStatus)
+            );
           }
           if (tenantOverrides.statusPicklists.partnerStatus && Array.isArray(tenantOverrides.statusPicklists.partnerStatus)) {
-            statusPicklists.value.partnerStatus = tenantOverrides.statusPicklists.partnerStatus.map(s => ({
-              value: s.value,
-              label: s.label || s.value,
-              enabled: s.enabled !== undefined ? s.enabled : true,
-              editing: false
-            }));
+            statusPicklists.value.partnerStatus = tenantOverrides.statusPicklists.partnerStatus.map((s) =>
+              mapStatusPicklistEntry(s, statusPicklistFieldsByKey.value.partnerStatus)
+            );
           }
           if (tenantOverrides.statusPicklists.vendorStatus && Array.isArray(tenantOverrides.statusPicklists.vendorStatus)) {
-            statusPicklists.value.vendorStatus = tenantOverrides.statusPicklists.vendorStatus.map(s => ({
-              value: s.value,
-              label: s.label || s.value,
-              enabled: s.enabled !== undefined ? s.enabled : true,
-              editing: false
-            }));
+            statusPicklists.value.vendorStatus = tenantOverrides.statusPicklists.vendorStatus.map((s) =>
+              mapStatusPicklistEntry(s, statusPicklistFieldsByKey.value.vendorStatus)
+            );
           }
         }
         // Save snapshot
         const snapshotData = {
-          organizationTypes: organizationTypes.value.map(t => ({
-            value: t.value,
-            label: t.label || t.value,
-            enabled: t.enabled !== undefined ? t.enabled : true
-          })),
+          organizationTypes: organizationTypes.value.map(serializeOrganizationTypeEntry),
           statusPicklists: {
-            customerStatus: statusPicklists.value.customerStatus.map(s => ({
-              value: s.value,
-              label: s.label || s.value,
-              enabled: s.enabled !== undefined ? s.enabled : true
-            })),
-            partnerStatus: statusPicklists.value.partnerStatus.map(s => ({
-              value: s.value,
-              label: s.label || s.value,
-              enabled: s.enabled !== undefined ? s.enabled : true
-            })),
-            vendorStatus: statusPicklists.value.vendorStatus.map(s => ({
-              value: s.value,
-              label: s.label || s.value,
-              enabled: s.enabled !== undefined ? s.enabled : true
-            }))
-          }
+            customerStatus: statusPicklists.value.customerStatus.map(serializeStatusPicklistEntry),
+            partnerStatus: statusPicklists.value.partnerStatus.map(serializeStatusPicklistEntry),
+            vendorStatus: statusPicklists.value.vendorStatus.map(serializeStatusPicklistEntry),
+          },
         };
         statusTypesOriginalSnapshot.value = JSON.stringify(snapshotData);
         setTimeout(() => {
@@ -12828,54 +12871,36 @@ async function fetchStatusTypes() {
       } else {
         // No tenant overrides, use hardcoded defaults
         console.warn('[Status Types] Module response was empty or invalid - using hardcoded defaults');
-        organizationTypes.value = ['Customer', 'Partner', 'Vendor', 'Distributor', 'Dealer'].map(type => ({
-          value: type,
-          label: type,
-          enabled: true,
-          description: `${type} organizations`
-        }));
-        statusPicklists.value.customerStatus = ['Active', 'Prospect', 'Churned', 'Lead Customer'].map(status => ({
-          value: status,
-          label: status,
-          enabled: true,
-          editing: false
-        }));
-        statusPicklists.value.partnerStatus = ['Active', 'Onboarding', 'Inactive'].map(status => ({
-          value: status,
-          label: status,
-          enabled: true,
-          editing: false
-        }));
-        statusPicklists.value.vendorStatus = ['Approved', 'Pending', 'Suspended'].map(status => ({
-          value: status,
-          label: status,
-          enabled: true,
-          editing: false
-        }));
+        organizationTypes.value = ['Customer', 'Partner', 'Vendor', 'Distributor', 'Dealer'].map((type) =>
+          mapOrganizationTypeEntry({ value: type, enabled: true })
+        );
+        statusPicklists.value.customerStatus = ['Active', 'Prospect', 'Churned', 'Lead Customer'].map(
+          (status) =>
+            mapStatusPicklistEntry(
+              { value: status, enabled: true },
+              statusPicklistFieldsByKey.value.customerStatus
+            )
+        );
+        statusPicklists.value.partnerStatus = ['Active', 'Onboarding', 'Inactive'].map((status) =>
+          mapStatusPicklistEntry(
+            { value: status, enabled: true },
+            statusPicklistFieldsByKey.value.partnerStatus
+          )
+        );
+        statusPicklists.value.vendorStatus = ['Approved', 'Pending', 'Suspended'].map((status) =>
+          mapStatusPicklistEntry(
+            { value: status, enabled: true },
+            statusPicklistFieldsByKey.value.vendorStatus
+          )
+        );
         // Save snapshot for dirty checking
         const snapshotData = {
-          organizationTypes: organizationTypes.value.map(t => ({
-            value: t.value,
-            label: t.label || t.value,
-            enabled: t.enabled !== undefined ? t.enabled : true
-          })),
+          organizationTypes: organizationTypes.value.map(serializeOrganizationTypeEntry),
           statusPicklists: {
-            customerStatus: statusPicklists.value.customerStatus.map(s => ({
-              value: s.value,
-              label: s.label || s.value,
-              enabled: s.enabled !== undefined ? s.enabled : true
-            })),
-            partnerStatus: statusPicklists.value.partnerStatus.map(s => ({
-              value: s.value,
-              label: s.label || s.value,
-              enabled: s.enabled !== undefined ? s.enabled : true
-            })),
-            vendorStatus: statusPicklists.value.vendorStatus.map(s => ({
-              value: s.value,
-              label: s.label || s.value,
-              enabled: s.enabled !== undefined ? s.enabled : true
-            }))
-          }
+            customerStatus: statusPicklists.value.customerStatus.map(serializeStatusPicklistEntry),
+            partnerStatus: statusPicklists.value.partnerStatus.map(serializeStatusPicklistEntry),
+            vendorStatus: statusPicklists.value.vendorStatus.map(serializeStatusPicklistEntry),
+          },
         };
         statusTypesOriginalSnapshot.value = JSON.stringify(snapshotData);
         
@@ -12888,60 +12913,18 @@ async function fetchStatusTypes() {
   } catch (err) {
     console.error('[Status Types] Failed to fetch status types:', err);
   } finally {
+    // Ensure display labels are plain strings (module options may be { value, color } objects)
+    if (organizationTypes.value.length > 0) {
+      organizationTypes.value = organizationTypes.value.map((t) => mapOrganizationTypeEntry(t));
+    }
+    for (const key of ['customerStatus', 'partnerStatus', 'vendorStatus']) {
+      if (statusPicklists.value[key]?.length > 0) {
+        statusPicklists.value[key] = statusPicklists.value[key].map((s) =>
+          mapStatusPicklistEntry(s, statusPicklistFieldsByKey.value[key])
+        );
+      }
+    }
     fetchingStatusTypes.value = false;
-  }
-}
-
-// Handle organization type toggle
-function handleTypeToggle(type) {
-  // Dirty checking is handled by computed property
-}
-
-// Handle status value toggle (enable/disable)
-function handleStatusToggle(statusKey, index) {
-  // Dirty checking is handled by computed property
-}
-
-// Add new status value
-function addStatusValue(statusKey) {
-  const newValue = {
-    value: `New Status ${statusPicklists.value[statusKey].length + 1}`,
-    label: `New Status ${statusPicklists.value[statusKey].length + 1}`,
-    enabled: true,
-    editing: true,
-    editValue: ''
-  };
-  statusPicklists.value[statusKey].push(newValue);
-  // Focus will be handled by autofocus on input
-}
-
-// Start editing a status value
-function startStatusEdit(statusKey, index) {
-  const status = statusPicklists.value[statusKey][index];
-  status.editing = true;
-  status.editValue = status.label;
-}
-
-// Save status value edit
-function saveStatusValue(statusKey, index) {
-  const status = statusPicklists.value[statusKey][index];
-  if (status.editValue && status.editValue.trim()) {
-    status.label = status.editValue.trim();
-    status.value = status.editValue.trim(); // Update value as well
-  }
-  status.editing = false;
-  status.editValue = '';
-}
-
-// Cancel status value edit
-function cancelStatusEdit(statusKey, index) {
-  const status = statusPicklists.value[statusKey][index];
-  status.editing = false;
-  status.editValue = '';
-  
-  // If this was a new status being cancelled, remove it
-  if (!status.value || status.value.startsWith('New Status')) {
-    statusPicklists.value[statusKey].splice(index, 1);
   }
 }
 
@@ -12953,28 +12936,12 @@ async function saveStatusTypes() {
   try {
     // Prepare payload for tenant module configuration
     const payload = {
-      organizationTypes: organizationTypes.value.map(t => ({
-        value: t.value,
-        label: t.label || t.value,
-        enabled: t.enabled !== undefined ? t.enabled : true
-      })),
+      organizationTypes: organizationTypes.value.map(serializeOrganizationTypeEntry),
       statusPicklists: {
-        customerStatus: statusPicklists.value.customerStatus.map(s => ({
-          value: s.value,
-          label: s.label || s.value,
-          enabled: s.enabled !== undefined ? s.enabled : true
-        })),
-        partnerStatus: statusPicklists.value.partnerStatus.map(s => ({
-          value: s.value,
-          label: s.label || s.value,
-          enabled: s.enabled !== undefined ? s.enabled : true
-        })),
-        vendorStatus: statusPicklists.value.vendorStatus.map(s => ({
-          value: s.value,
-          label: s.label || s.value,
-          enabled: s.enabled !== undefined ? s.enabled : true
-        }))
-      }
+        customerStatus: statusPicklists.value.customerStatus.map(serializeStatusPicklistEntry),
+        partnerStatus: statusPicklists.value.partnerStatus.map(serializeStatusPicklistEntry),
+        vendorStatus: statusPicklists.value.vendorStatus.map(serializeStatusPicklistEntry),
+      },
     };
     
     console.log('[Status Types] 💾 Payload enabled values:', JSON.stringify({
@@ -12996,29 +12963,32 @@ async function saveStatusTypes() {
       // Normalize the snapshot to match the exact structure used in statusTypesDirty comparison
       // This ensures the snapshot matches what we're comparing against
       const savedData = {
-        organizationTypes: (response.data?.organizationTypes || organizationTypes.value).map(t => ({
-          value: t.value,
-          label: t.label || t.value,
-          enabled: t.enabled !== undefined ? t.enabled : true
-        })),
+        organizationTypes: (response.data?.organizationTypes || organizationTypes.value).map(
+          serializeOrganizationTypeEntry
+        ),
         statusPicklists: {
-          customerStatus: (response.data?.statusPicklists?.customerStatus || statusPicklists.value.customerStatus).map(s => ({
-            value: s.value,
-            label: s.label || s.value,
-            enabled: s.enabled !== undefined ? s.enabled : true
-          })),
-          partnerStatus: (response.data?.statusPicklists?.partnerStatus || statusPicklists.value.partnerStatus).map(s => ({
-            value: s.value,
-            label: s.label || s.value,
-            enabled: s.enabled !== undefined ? s.enabled : true
-          })),
-          vendorStatus: (response.data?.statusPicklists?.vendorStatus || statusPicklists.value.vendorStatus).map(s => ({
-            value: s.value,
-            label: s.label || s.value,
-            enabled: s.enabled !== undefined ? s.enabled : true
-          }))
-        }
+          customerStatus: (
+            response.data?.statusPicklists?.customerStatus || statusPicklists.value.customerStatus
+          ).map(serializeStatusPicklistEntry),
+          partnerStatus: (
+            response.data?.statusPicklists?.partnerStatus || statusPicklists.value.partnerStatus
+          ).map(serializeStatusPicklistEntry),
+          vendorStatus: (
+            response.data?.statusPicklists?.vendorStatus || statusPicklists.value.vendorStatus
+          ).map(serializeStatusPicklistEntry),
+        },
       };
+      // Refresh UI rows with normalized labels (fixes corrupted object values from older saves)
+      organizationTypes.value = organizationTypes.value.map((t) => mapOrganizationTypeEntry(t));
+      statusPicklists.value.customerStatus = statusPicklists.value.customerStatus.map((s) =>
+        mapStatusPicklistEntry(s, statusPicklistFieldsByKey.value.customerStatus)
+      );
+      statusPicklists.value.partnerStatus = statusPicklists.value.partnerStatus.map((s) =>
+        mapStatusPicklistEntry(s, statusPicklistFieldsByKey.value.partnerStatus)
+      );
+      statusPicklists.value.vendorStatus = statusPicklists.value.vendorStatus.map((s) =>
+        mapStatusPicklistEntry(s, statusPicklistFieldsByKey.value.vendorStatus)
+      );
       statusTypesOriginalSnapshot.value = JSON.stringify(savedData);
       lastSaveTimestamp.value = Date.now(); // Mark when we saved to prevent immediate refetch
       console.log('[Status Types] ✅ Save successful, snapshot updated with normalized saved data:', JSON.stringify({

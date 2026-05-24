@@ -111,6 +111,55 @@ function dedupeFieldsByKey(fields) {
   return Array.from(byCanonical.values());
 }
 
+/** Picklists whose option catalog is tenant-managed in ModuleDefinition (not fixed by schema enum). */
+const TENANT_PICKLIST_OPTION_SOURCE_FIELDS = {
+    tasks: new Set(['status', 'priority']),
+    organizations: new Set([
+        'types',
+        'industry',
+        'customerStatus',
+        'customerTier',
+        'partnerStatus',
+        'partnerTier',
+        'partnerType',
+        'vendorStatus',
+        'dealerLevel',
+    ]),
+};
+
+function usesSavedPicklistOptionsAsSourceOfTruth(moduleKey, fieldKey) {
+    const mod = String(moduleKey || '').toLowerCase();
+    const fields = TENANT_PICKLIST_OPTION_SOURCE_FIELDS[mod];
+    if (!fields) return false;
+    return fields.has(String(fieldKey || ''));
+}
+
+function mergeSavedPicklistOptionsWithBase(savedOptions, baseOptions) {
+    const baseOptionByValue = new Map(
+        (Array.isArray(baseOptions) ? baseOptions : [])
+            .map((opt) => {
+                const v = opt && typeof opt === 'object'
+                    ? String(opt.value ?? opt.key ?? '').trim()
+                    : String(opt || '').trim();
+                return v ? [v, opt] : null;
+            })
+            .filter(Boolean)
+    );
+    return (Array.isArray(savedOptions) ? savedOptions : [])
+        .map((opt) => {
+            const value = opt && typeof opt === 'object'
+                ? String(opt.value ?? opt.key ?? '').trim()
+                : String(opt || '').trim();
+            if (!value) return null;
+            const baseMeta = baseOptionByValue.get(value) || null;
+            const merged = baseMeta && typeof baseMeta === 'object'
+                ? { ...baseMeta, ...(opt && typeof opt === 'object' ? opt : {}), value }
+                : (opt && typeof opt === 'object' ? { ...opt, value } : { value });
+            return merged;
+        })
+        .filter(Boolean);
+}
+
 function normalizeMeetingEventTypeLabel(value) {
   return String(value || '').trim() === 'Meeting / Appointment' ? 'Meeting' : value;
 }
@@ -2339,34 +2388,14 @@ exports.listModules = async (req, res) => {
                         savedField.dataType = baseField.dataType;
                         // Update options if base has them (for picklists), but preserve saved option metadata
                         // such as color/label/enabled when values still exist in base schema options.
-                        // For tasks status/priority, saved options are source of truth so org-configured lifecycle values persist.
+                        // For tenant-managed picklists (tasks status/priority, organizations catalog fields),
+                        // saved options are source of truth so org-configured values persist.
                         if (baseField.options && baseField.options.length > 0) {
                             const savedOptions = Array.isArray(savedField.options) ? savedField.options : [];
-                            const isTaskStatusOrPriority = sys.key === 'tasks' && (savedField.key === 'status' || savedField.key === 'priority');
+                            const useSavedOptionsSource = usesSavedPicklistOptionsAsSourceOfTruth(sys.key, savedField.key);
 
-                            if (isTaskStatusOrPriority && savedOptions.length > 0) {
-                                // Use saved options as source of truth; enrich with base metadata for matching values
-                                const baseOptionByValue = new Map(
-                                    (Array.isArray(baseField.options) ? baseField.options : [])
-                                        .map((opt) => {
-                                            const v = opt && typeof opt === 'object'
-                                                ? String(opt.value ?? opt.key ?? '').trim()
-                                                : String(opt || '').trim();
-                                            return v ? [v, opt] : null;
-                                        })
-                                        .filter(Boolean)
-                                );
-                                savedField.options = savedOptions.map((opt) => {
-                                    const value = opt && typeof opt === 'object'
-                                        ? String(opt.value ?? opt.key ?? '').trim()
-                                        : String(opt || '').trim();
-                                    if (!value) return null;
-                                    const baseMeta = baseOptionByValue.get(value) || null;
-                                    const merged = baseMeta && typeof baseMeta === 'object'
-                                        ? { ...baseMeta, ...(opt && typeof opt === 'object' ? opt : {}), value }
-                                        : (opt && typeof opt === 'object' ? { ...opt, value } : { value });
-                                    return merged;
-                                }).filter(Boolean);
+                            if (useSavedOptionsSource && savedOptions.length > 0) {
+                                savedField.options = mergeSavedPicklistOptionsWithBase(savedOptions, baseField.options);
                             } else {
                                 const baseOptionValues = baseField.options
                                     .map((opt) => {

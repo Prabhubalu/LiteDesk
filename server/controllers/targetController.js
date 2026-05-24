@@ -4,6 +4,7 @@ const Target = require('../models/Target');
 const TargetTypeDefinition = require('../models/TargetTypeDefinition');
 const TargetPlatformSettings = require('../models/TargetPlatformSettings');
 const TargetContributionLedger = require('../models/TargetContributionLedger');
+const TargetAssignment = require('../models/TargetAssignment');
 const { assertTargetPermission } = require('../services/targets/targetPermissionUtils');
 const { listTargetTypes, ensureDefaultTargetTypes } = require('../services/targets/targetTypeService');
 const { detectConflicts } = require('../services/targets/targetConflictService');
@@ -12,8 +13,8 @@ const { syncAssignmentsFromDistribution, applyDistributionChange } = require('..
 const { resolveDependencyWarnings } = require('../services/targets/targetDependencyResolver');
 const { buildDefaultRule } = require('../services/targets/contributionRuleRegistry');
 const { emitTargetActivated } = require('../services/targets/targetAutomationEmitter');
-const { recalculateTargetFromLedger } = require('../services/targets/targetAggregator');
-const { recomputeTargetForecast } = require('../services/targets/targetForecastService');
+const { recalculateTargetFromLedger, sumLedgerForTarget, refreshTargetAchievedFromLedger } = require('../services/targets/targetAggregator');
+const { recomputeTargetForecast, getForecastBreakdown } = require('../services/targets/targetForecastService');
 const { getLeaderboard } = require('../services/targets/targetGamificationService');
 const { TARGET_LIFECYCLE } = require('../constants/targetConstants');
 
@@ -26,8 +27,22 @@ function handleError(res, err, fallback) {
   });
 }
 
+function normalizeTargetPeriodBounds(payload) {
+  if (payload.periodStart) {
+    const start = new Date(payload.periodStart);
+    start.setUTCHours(0, 0, 0, 0);
+    payload.periodStart = start;
+  }
+  if (payload.periodEnd) {
+    const end = new Date(payload.periodEnd);
+    end.setUTCHours(23, 59, 59, 999);
+    payload.periodEnd = end;
+  }
+  return payload;
+}
+
 function pickTargetPayload(body) {
-  return {
+  const payload = {
     name: body.name,
     description: body.description,
     targetTypeKey: body.targetTypeKey,
@@ -43,6 +58,15 @@ function pickTargetPayload(body) {
     thresholds: body.thresholds,
     forecastRules: body.forecastRules
   };
+  return normalizeTargetPeriodBounds(payload);
+}
+
+async function reconcileTargetAchieved(target) {
+  if (!target || !['active', 'locked'].includes(target.lifecycleStatus)) return target;
+  const ledgerTotal = await sumLedgerForTarget(target._id);
+  if (Math.abs((Number(target.achievedValue) || 0) - ledgerTotal) < 0.001) return target;
+  const updated = await refreshTargetAchievedFromLedger(target._id);
+  return updated?.toObject ? updated.toObject() : updated || target;
 }
 
 exports.listTargets = async (req, res) => {
@@ -58,7 +82,11 @@ exports.listTargets = async (req, res) => {
       Target.countDocuments(filter)
     ]);
 
-    return res.json({ success: true, data: items, total });
+    const reconciled = await Promise.all(
+      items.map((item) => reconcileTargetAchieved(item))
+    );
+
+    return res.json({ success: true, data: reconciled, total });
   } catch (err) {
     return handleError(res, err, 'Error listing targets');
   }
@@ -71,16 +99,18 @@ exports.getTargetSummary = async (req, res) => {
     const appKey = req.query.appKey ? String(req.query.appKey).toUpperCase() : null;
     const moduleKey = req.query.moduleKey ? String(req.query.moduleKey).toLowerCase() : null;
 
-    const filter = {
+    const assignmentRows = await TargetAssignment.find({
       organizationId: req.user.organizationId,
-      lifecycleStatus: { $in: ['active', 'locked'] },
-      $or: [{ ownerId }, { 'assignments': ownerId }]
-    };
+      userId: ownerId
+    })
+      .select('targetId')
+      .lean();
+    const assignedTargetIds = assignmentRows.map((r) => r.targetId);
 
     let targets = await Target.find({
       organizationId: req.user.organizationId,
       lifecycleStatus: { $in: ['active', 'locked'] },
-      ownerId
+      $or: [{ ownerId }, { _id: { $in: assignedTargetIds } }]
     })
       .sort({ periodEnd: 1 })
       .limit(20)
@@ -113,11 +143,12 @@ exports.getTargetSummary = async (req, res) => {
 exports.getTargetById = async (req, res) => {
   try {
     assertTargetPermission(req.user, 'view');
-    const target = await Target.findOne({
+    let target = await Target.findOne({
       _id: req.params.id,
       organizationId: req.user.organizationId
     }).lean();
     if (!target) return res.status(404).json({ success: false, message: 'Target not found' });
+    target = await reconcileTargetAchieved(target);
     return res.json({ success: true, data: target });
   } catch (err) {
     return handleError(res, err, 'Error loading target');
@@ -278,6 +309,29 @@ exports.closeTarget = async (req, res) => {
   }
 };
 
+exports.getAssignments = async (req, res) => {
+  try {
+    assertTargetPermission(req.user, 'view');
+    const target = await Target.findOne({
+      _id: req.params.id,
+      organizationId: req.user.organizationId
+    }).select('_id').lean();
+    if (!target) return res.status(404).json({ success: false, message: 'Target not found' });
+
+    const items = await TargetAssignment.find({
+      targetId: req.params.id,
+      organizationId: req.user.organizationId
+    })
+      .populate('userId', 'firstName lastName email')
+      .sort({ allocatedValue: -1 })
+      .lean();
+
+    return res.json({ success: true, data: items });
+  } catch (err) {
+    return handleError(res, err, 'Error loading assignments');
+  }
+};
+
 exports.getContributions = async (req, res) => {
   try {
     assertTargetPermission(req.user, 'view');
@@ -299,18 +353,27 @@ exports.getContributions = async (req, res) => {
 exports.getForecast = async (req, res) => {
   try {
     assertTargetPermission(req.user, 'view');
-    const target = await Target.findOne({
+    let target = await Target.findOne({
       _id: req.params.id,
       organizationId: req.user.organizationId
-    });
+    }).lean();
     if (!target) return res.status(404).json({ success: false, message: 'Target not found' });
-    await recomputeTargetForecast(target);
+
+    if (['active', 'locked'].includes(target.lifecycleStatus)) {
+      const refreshed = await refreshTargetAchievedFromLedger(target._id);
+      target = refreshed?.toObject ? refreshed.toObject() : refreshed;
+    }
+    await recomputeTargetForecast(target._id);
+    const latest = await Target.findById(target._id).lean();
+    const breakdown = await getForecastBreakdown(target._id);
+
     return res.json({
       success: true,
       data: {
-        forecastValue: target.forecastValue,
-        achievementProbability: target.achievementProbability,
-        riskLevel: target.riskLevel
+        forecastValue: latest?.forecastValue ?? 0,
+        achievementProbability: latest?.achievementProbability ?? null,
+        riskLevel: latest?.riskLevel ?? null,
+        breakdown
       }
     });
   } catch (err) {
