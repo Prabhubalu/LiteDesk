@@ -12,6 +12,7 @@ globs:
 ## User-visible strings
 
 - Never hardcode English in Vue templates or toasts. Use `useI18n()` → `t('namespace.semanticKey')`.
+- In `.js` / composable `.ts` files: call `useI18n()` inside the exported composable, not at module top level (ESLint `arivuI18n/no-module-scope-use-i18n`).
 - Add keys to `client/src/locales/en/{namespace}.json` (lowerCamelCase, max 3 segments).
 - Reuse `actions.*`, `states.*`, `validation.*` when the phrase already exists.
 
@@ -43,6 +44,6 @@ npm run i18n:check                # CI gate before push
 
 ## CI (automatic)
 
-PRs run `npm run i18n:check` (locale parity, catalog lint, missing `t()` keys) and phase hardcoded-string gates on enforced paths. New surfaces must extend `find-hardcoded.mjs` phase scope or stay at 0 hardcoded strings.
+PRs run `npm run i18n:check` (locale parity, catalog lint, composable `useI18n` scope, missing `t()` keys) and phase hardcoded-string gates on enforced paths. New surfaces must extend `find-hardcoded.mjs` phase scope or stay at 0 hardcoded strings.
 
 See `client/docs/I18N_GUIDELINES.md` and `client/docs/I18N_ROLLOUT.md`.

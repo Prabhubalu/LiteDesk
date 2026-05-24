@@ -13,6 +13,7 @@ Practical guide for adding UI copy, registering a new language, and keeping all 
 | Add UI string | `t('namespace.key')` + edit `src/locales/en/{namespace}.json` |
 | Propagate new keys to all languages | `npm run i18n:sync-keys` |
 | Verify before PR | `npm run i18n:check` |
+| Composable `useI18n()` scope | `npm run i18n:eslint-composables` |
 | Add a new language | `npm run i18n:add-language -- <code> [bcp47-locale]` |
 | Machine-translate one locale | `npm run i18n:translate-locale -- de` |
 | Find hardcoded English in UI | `npm run i18n:find-hardcoded` |
@@ -33,6 +34,20 @@ const { t } = useI18n();
   <button>{{ t('actions.save') }}</button>
   <p>{{ t('people.listStatTotal', { count: total }) }}</p>
 </template>
+```
+
+**Plain `.js` / `.ts` composables** (not Vue SFCs): call `useI18n()` **inside** the exported composable function, never at module top level. ESLint rule `arivuI18n/no-module-scope-use-i18n` enforces this (`npm run i18n:eslint-composables`).
+
+```js
+// ✅
+export function useMyFeature() {
+  const { t } = useI18n();
+  // ...
+}
+
+// ❌ crashes in production when the module is imported
+const { t } = useI18n();
+export function useMyFeature() { /* ... */ }
 ```
 
 **Do not** hardcode user-visible English in components under CI-enforced paths (see `scripts/i18n/find-hardcoded.mjs`).
