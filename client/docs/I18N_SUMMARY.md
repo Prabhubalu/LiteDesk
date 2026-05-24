@@ -119,7 +119,8 @@ Shared namespaces are listed in `src/i18n/constants.ts` (`SHARED_NAMESPACES`).
 
 | Command | Role |
 |---------|------|
-| `npm run i18n:check` | CI: key sync, validate, lint, extract |
+| `npm run i18n:check` | CI: key sync, validate, lint, composable ESLint, extract |
+| `npm run i18n:eslint-composables` | ESLint: no `useI18n()` at module top level in `.js`/`.ts` |
 | `npm run i18n:sync-keys` | Copy new English keys into all locale files |
 | `npm run i18n:sync-keys:check` | CI: fail if any locale missing keys |
 | `npm run i18n:extract:check` | CI: fail if `t()` uses keys not in catalog |

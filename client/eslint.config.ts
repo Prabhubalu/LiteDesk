@@ -2,8 +2,7 @@ import { globalIgnores } from 'eslint/config'
 import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescript'
 import pluginVue from 'eslint-plugin-vue'
 import pluginOxlint from 'eslint-plugin-oxlint'
-import i18nNoHardcodedUiStrings from './eslint/rules/i18n-no-hardcoded-ui-strings.js'
-import i18nNoDirectIntl from './eslint/rules/i18n-no-direct-intl.js'
+import { arivuI18nPlugin } from './eslint/plugins/arivu-i18n.js'
 
 // To allow more languages other than `ts` in `.vue` files, uncomment the following lines:
 // import { configureVueProject } from '@vue/eslint-config-typescript'
@@ -27,13 +26,7 @@ export default defineConfigWithVueTs(
     files: [
       'src/components/ui/**/*.{vue,ts}',
     ],
-    plugins: {
-      arivuI18n: {
-        rules: {
-          'no-hardcoded-ui-strings': i18nNoHardcodedUiStrings,
-        },
-      },
-    },
+    plugins: { arivuI18n: arivuI18nPlugin },
     rules: {
       'arivuI18n/no-hardcoded-ui-strings': 'error',
     },
@@ -94,13 +87,7 @@ export default defineConfigWithVueTs(
       'src/components/settings/RelationshipFormDrawer.vue',
       'src/components/settings/ApplicationDetail.vue',
     ],
-    plugins: {
-      arivuI18n: {
-        rules: {
-          'no-hardcoded-ui-strings': i18nNoHardcodedUiStrings,
-        },
-      },
-    },
+    plugins: { arivuI18n: arivuI18nPlugin },
     rules: {
       'arivuI18n/no-hardcoded-ui-strings': 'error',
     },
@@ -117,15 +104,23 @@ export default defineConfigWithVueTs(
       'src/utils/dateFilterOptions.ts',
       'src/i18n/**',
     ],
-    plugins: {
-      arivuI18n: {
-        rules: {
-          'no-direct-intl': i18nNoDirectIntl,
-        },
-      },
-    },
+    plugins: { arivuI18n: arivuI18nPlugin },
     rules: {
       'arivuI18n/no-direct-intl': 'warn',
+    },
+  },
+
+  {
+    name: 'app/i18n-module-scope',
+    files: [
+      'src/**/*.js',
+      'src/composables/**/*.ts',
+      'src/**/composables/**/*.ts',
+    ],
+    ignores: ['src/i18n/**', '**/*.d.ts'],
+    plugins: { arivuI18n: arivuI18nPlugin },
+    rules: {
+      'arivuI18n/no-module-scope-use-i18n': 'error',
     },
   },
 )

@@ -1,8 +1,5 @@
-import { useI18n } from 'vue-i18n';
-
-const { t } = useI18n();
-
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 const escapeCsvValue = (value) => {
   if (value === null || value === undefined) return '';
@@ -30,6 +27,7 @@ export const useRecordHeaderActions = ({
   deleteRecord,
   onCopySuccess
 }) => {
+  const { t } = useI18n();
   const isFollowing = ref(false);
   const showDeleteModal = ref(false);
   const deleting = ref(false);
