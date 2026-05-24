@@ -1,0 +1,1214 @@
+{
+  "shellErrorTitle": {
+    "message": "حدث خطأ أثناء تحميل السجل",
+    "description": "Record page load error heading"
+  },
+  "shellLoadFailed": {
+    "message": "فشل في تحميل السجل",
+    "description": "Record page load error fallback"
+  },
+  "contextTabsAria": {
+    "message": "علامات تبويب لوحة السياق",
+    "description": "Vertical context tab rail aria label"
+  },
+  "fieldsHeadingSr": {
+    "message": "سجل الحقول",
+    "description": "Screen reader heading for record fields section"
+  },
+  "customFieldsHeadingSr": {
+    "message": "الحقول المخصصة",
+    "description": "Screen reader heading for custom fields section"
+  },
+  "relatedRecordsHeadingSr": {
+    "message": "السجلات ذات الصلة",
+    "description": "Screen reader heading for related records section"
+  },
+  "activityHeadingSr": {
+    "message": "النشاط (الأحدث في الأسفل)",
+    "description": "Activity timeline screen reader heading"
+  },
+  "activityReply": {
+    "message": "رد",
+    "description": "Reply to comment action"
+  },
+  "activityEmpty": {
+    "message": "لا يوجد نشاط بعد.",
+    "description": "Empty activity feed"
+  },
+  "activityCommentPh": {
+    "message": "أكتب تعليق...",
+    "description": "Comment composer placeholder"
+  },
+  "activityAddAttachment": {
+    "message": "إضافة مرفق",
+    "description": "Add attachment button title"
+  },
+  "activityMention": {
+    "message": "يذكر",
+    "description": "Mention button title"
+  },
+  "activityEmoji": {
+    "message": "الرموز التعبيرية",
+    "description": "Emoji picker button title"
+  },
+  "activityCommentBtn": {
+    "message": "تعليق",
+    "description": "Submit comment button"
+  },
+  "activityUpdated": {
+    "message": "محدث",
+    "description": "Default system activity verb"
+  },
+  "activitySystemWithAction": {
+    "message": "{action} هذا السجل",
+    "description": "System activity fallback with action verb"
+  },
+  "tagsTitle": {
+    "message": "العلامات",
+    "description": "Tags popover title"
+  },
+  "tagsNewTag": {
+    "message": "علامة جديدة",
+    "description": "New tag button"
+  },
+  "tagsNoPermission": {
+    "message": "ليس لديك إذن لتحرير العلامات.",
+    "description": "Tags read-only message"
+  },
+  "tagsRemoveFromRecord": {
+    "message": "إزالة من هذا السجل",
+    "description": "Remove tag from record action"
+  },
+  "tagsEditTag": {
+    "message": "تحرير العلامة",
+    "description": "Edit tag action"
+  },
+  "tagsDeleteFromModule": {
+    "message": "حذف العلامة من الوحدة النمطية",
+    "description": "Delete tag from module action"
+  },
+  "tagsSearchHint": {
+    "message": "انقر فوق مربع البحث لعرض العلامات المتاحة.",
+    "description": "Tags search hint"
+  },
+  "tagsNoneYet": {
+    "message": "لم يتم إنشاء علامات حتى الآن في هذه الحالة.",
+    "description": "Empty tags list"
+  },
+  "tagsCreateFirst": {
+    "message": "إنشاء العلامة الأولى",
+    "description": "Create first tag CTA"
+  },
+  "tagsPublic": {
+    "message": "عام",
+    "description": "Public tag badge"
+  },
+  "tagsTagName": {
+    "message": "اسم العلامة",
+    "description": "Tag name field label"
+  },
+  "tagsColor": {
+    "message": "لون",
+    "description": "Tag color field label"
+  },
+  "tagsMakePublic": {
+    "message": "جعل العلامة عامة",
+    "description": "Make tag public checkbox"
+  },
+  "tagsSearchPh": {
+    "message": "بحث أو إنشاء علامة",
+    "description": "Tag search placeholder"
+  },
+  "tagsTagActions": {
+    "message": "إجراءات العلامة",
+    "description": "Tag actions menu aria label"
+  },
+  "tagsNamePh": {
+    "message": "أدخل اسم العلامة",
+    "description": "Tag name input placeholder"
+  },
+  "detailsTitle": {
+    "message": "تفاصيل",
+    "description": "Details section title"
+  },
+  "detailsSelectOption": {
+    "message": "حدد خيارًا",
+    "description": "Empty picklist placeholder"
+  },
+  "detailsLinkRecord": {
+    "message": "انقر لربط السجل",
+    "description": "Empty lookup field placeholder"
+  },
+  "relatedTitle": {
+    "message": "متعلق ب",
+    "description": "Related section title"
+  },
+  "relatedEmpty": {
+    "message": "لا توجد سجلات ذات صلة حتى الآن.",
+    "description": "Empty related list"
+  },
+  "relatedEmptyHint": {
+    "message": "ربط هذا السجل بالعناصر المرتبطة به.",
+    "description": "Empty related hint"
+  },
+  "relatedUnlink": {
+    "message": "إلغاء الارتباط",
+    "description": "Unlink related record"
+  },
+  "relatedActionsAria": {
+    "message": "إجراءات السجل ذات الصلة",
+    "description": "Related record actions menu aria"
+  },
+  "stageHistoryTitle": {
+    "message": "تاريخ المرحلة",
+    "description": "Stage history section title"
+  },
+  "subtasksEditAria": {
+    "message": "تحرير المهمة الفرعية",
+    "description": "Edit subtask button title"
+  },
+  "subtasksDeleteAria": {
+    "message": "حذف المهمة الفرعية",
+    "description": "Delete subtask button title"
+  },
+  "subtasksNamePh": {
+    "message": "اسم المهمة",
+    "description": "New subtask name placeholder"
+  },
+  "subtasksEmpty": {
+    "message": "لا توجد مهام فرعية حتى الآن.",
+    "description": "Empty subtasks list"
+  },
+  "stateHeadingSr": {
+    "message": "حالة السجل",
+    "description": "Record state section screen reader heading"
+  },
+  "descriptionTitle": {
+    "message": "وصف",
+    "description": "Description section default title"
+  },
+  "descriptionEmpty": {
+    "message": "لا يوجد وصف",
+    "description": "Empty description placeholder"
+  },
+  "tabSummary": {
+    "message": "ملخص",
+    "description": "Right pane summary tab"
+  },
+  "tabDetails": {
+    "message": "تفاصيل",
+    "description": "Right pane details tab"
+  },
+  "tabUpdates": {
+    "message": "التحديثات",
+    "description": "Right pane updates tab"
+  },
+  "tabContentFallback": {
+    "message": "{name} المحتوى",
+    "description": "Right pane tab placeholder content"
+  },
+  "sectionActionFallback": {
+    "message": "فعل",
+    "description": "Section stack action button fallback label"
+  },
+  "descriptionAdd": {
+    "message": "أضف الوصف",
+    "description": "Editable empty description CTA"
+  },
+  "descriptionEmptyReadonly": {
+    "message": "لا يوجد وصف بعد.",
+    "description": "Read-only empty description"
+  },
+  "subtasksHeader": {
+    "message": "المهام الفرعية ({completed}/{total})",
+    "description": "Subtasks section header with counts"
+  },
+  "subtasksUntitled": {
+    "message": "مهمة فرعية بلا عنوان",
+    "description": "Subtask without title"
+  },
+  "subtasksViewAll": {
+    "message": "عرض الكل ({count})",
+    "description": "View all subtasks link"
+  },
+  "relatedUntitled": {
+    "message": "بدون عنوان",
+    "description": "Related record without title"
+  },
+  "genericLoading": {
+    "message": "جارٍ التحميل {module}…",
+    "description": "Record page loading message"
+  },
+  "genericErrorTitle": {
+    "message": "حدث خطأ أثناء تحميل {module}",
+    "description": "Record page error title"
+  },
+  "genericNavPrevious": {
+    "message": "السابق {singular}",
+    "description": "Previous record navigation"
+  },
+  "genericNavNext": {
+    "message": "التالي {singular}",
+    "description": "Next record navigation"
+  },
+  "genericTagsAria": {
+    "message": "العلامات",
+    "description": "Tags button aria"
+  },
+  "genericCopyUrl": {
+    "message": "انسخ عنوان URL",
+    "description": "Copy URL button"
+  },
+  "genericMoreActions": {
+    "message": "المزيد من الإجراءات",
+    "description": "More actions menu"
+  },
+  "genericSendEmail": {
+    "message": "إرسال البريد الإلكتروني",
+    "description": "Send email menu action"
+  },
+  "genericBackTo": {
+    "message": "العودة إلى {singular}",
+    "description": "Back from expanded section"
+  },
+  "genericCollapseSection": {
+    "message": "طي القسم",
+    "description": "Collapse section aria"
+  },
+  "genericCollapse": {
+    "message": "ينهار",
+    "description": "Collapse button title"
+  },
+  "genericNoDescInVersion": {
+    "message": "لا يوجد وصف في هذا الإصدار.",
+    "description": "Empty description version"
+  },
+  "genericVersionHistory": {
+    "message": "تاريخ الإصدار",
+    "description": "Description version history title"
+  },
+  "genericCurrentVersion": {
+    "message": "الإصدار الحالي",
+    "description": "Current version label"
+  },
+  "genericVersionRetention": {
+    "message": "يتم تخزين سجل الإصدارات لمدة تصل إلى 365 يومًا.",
+    "description": "Version retention note"
+  },
+  "genericRestoreVersion": {
+    "message": "استعادة هذا الإصدار",
+    "description": "Restore description version"
+  },
+  "genericRestoring": {
+    "message": "جارٍ الاستعادة…",
+    "description": "Restore in progress"
+  },
+  "genericSomeone": {
+    "message": "شخص ما",
+    "description": "Unknown version author"
+  },
+  "genericKeyFields": {
+    "message": "الحقول الرئيسية",
+    "description": "Key fields section heading"
+  },
+  "genericAppParticipation": {
+    "message": "مشاركة التطبيق",
+    "description": "People app participation section"
+  },
+  "genericConvertToContact": {
+    "message": "تحويل إلى جهة اتصال",
+    "description": "Convert lead to contact"
+  },
+  "genericNotInAnyApp": {
+    "message": "هذا الشخص ليس جزءًا من أي تطبيق حتى الآن",
+    "description": "Empty people participation"
+  },
+  "genericAddRecord": {
+    "message": "إضافة سجل",
+    "description": "Add related record button"
+  },
+  "genericLinkRecord": {
+    "message": "سجل الارتباط",
+    "description": "Link record button"
+  },
+  "genericShowEmptyFields": {
+    "message": "إظهار الحقول الفارغة",
+    "description": "Show empty fields toggle"
+  },
+  "genericNoFieldsMatch": {
+    "message": "لا توجد حقول تطابق عامل التصفية الخاص بك.",
+    "description": "Details filter no match"
+  },
+  "genericNoFieldsToShow": {
+    "message": "لا توجد حقول لإظهارها.",
+    "description": "Empty details fields"
+  },
+  "genericNoRecordLoaded": {
+    "message": "لم يتم تحميل أي سجل.",
+    "description": "No record state"
+  },
+  "genericIntegrations": {
+    "message": "التكامل",
+    "description": "Integrations section title"
+  },
+  "genericNoIntegrations": {
+    "message": "لم يتم تكوين أي عمليات تكامل.",
+    "description": "Empty integrations"
+  },
+  "genericFilterFieldsPh": {
+    "message": "تصفية الحقول...",
+    "description": "Details field filter placeholder"
+  },
+  "genericOpenInNewTab": {
+    "message": "افتح في علامة تبويب جديدة",
+    "description": "Open record in new tab"
+  },
+  "genericEditParticipation": {
+    "message": "تحرير المشاركة",
+    "description": "Edit app participation"
+  },
+  "genericAddToApp": {
+    "message": "أضف إلى {app}",
+    "description": "Add person to app"
+  },
+  "genericLinkDrawerAddAndLink": {
+    "message": "إضافة وربط السجلات",
+    "description": "Link drawer title multi"
+  },
+  "genericLinkDrawerLink": {
+    "message": "سجل الارتباط",
+    "description": "Link drawer title single"
+  },
+  "genericReactorUnavailable": {
+    "message": "تفاصيل المفاعل غير متوفرة",
+    "description": "Reactor panel unavailable"
+  },
+  "genericUnlinkFailed": {
+    "message": "حدث خطأ أثناء إلغاء ربط السجل. يرجى المحاولة مرة أخرى.",
+    "description": "Unlink related record error"
+  },
+  "genericThreadAssigned": {
+    "message": "تم تعيين الموضوع",
+    "description": "Thread assign success"
+  },
+  "genericThreadUnassigned": {
+    "message": "تم إلغاء تعيين الموضوع",
+    "description": "Thread unassign success"
+  },
+  "genericThreadAssignFailed": {
+    "message": "فشل في تعيين الموضوع",
+    "description": "Thread assign error"
+  },
+  "genericThreadUnassignFailed": {
+    "message": "فشل إلغاء تعيين سلسلة المحادثات",
+    "description": "Thread unassign error"
+  },
+  "genericTagAdded": {
+    "message": "تمت إضافة العلامة",
+    "description": "Tag add success"
+  },
+  "genericTagAddFailed": {
+    "message": "فشلت إضافة العلامة",
+    "description": "Tag add error"
+  },
+  "genericTagRemoved": {
+    "message": "تمت إزالة العلامة",
+    "description": "Tag remove success"
+  },
+  "genericTagRemoveFailed": {
+    "message": "فشلت إزالة العلامة",
+    "description": "Tag remove error"
+  },
+  "genericThreadMarkedDone": {
+    "message": "تم وضع علامة على الموضوع",
+    "description": "Thread done success"
+  },
+  "genericThreadReopened": {
+    "message": "تم إعادة فتح الموضوع",
+    "description": "Thread reopen success"
+  },
+  "genericThreadStatusFailed": {
+    "message": "فشل تحديث حالة الموضوع",
+    "description": "Thread status error"
+  },
+  "genericConfirmCancelAppt": {
+    "message": "إلغاء هذا الموعد؟ يمكن للضيف الحجز مرة أخرى باستخدام الرابط العام الخاص بك.",
+    "description": "Cancel appointment confirm"
+  },
+  "genericApptCancelled": {
+    "message": "تم إلغاء الموعد",
+    "description": "Appointment cancel success"
+  },
+  "genericApptCancelFailed": {
+    "message": "لا يمكن إلغاء الموعد",
+    "description": "Appointment cancel error"
+  },
+  "genericConfirmCompleteAppt": {
+    "message": "هل تريد وضع علامة على هذا الموعد كمكتمل؟",
+    "description": "Complete appointment confirm"
+  },
+  "genericApptCompleted": {
+    "message": "تم الانتهاء من الموعد",
+    "description": "Appointment complete success"
+  },
+  "genericApptCompleteFailed": {
+    "message": "لا يمكن إكمال الموعد",
+    "description": "Appointment complete error"
+  },
+  "genericConfirmNoShowAppt": {
+    "message": "هل تريد وضع علامة على هذا الموعد باعتباره عدم حضور؟ سيبقى الحدث في التقويم الخاص بك كما هو مخطط له.",
+    "description": "No-show appointment confirm"
+  },
+  "genericApptNoShow": {
+    "message": "تم وضع علامة عدم الحضور",
+    "description": "No-show success"
+  },
+  "genericApptNoShowFailed": {
+    "message": "تعذر وضع علامة عدم الحضور",
+    "description": "No-show error"
+  },
+  "genericApptRescheduled": {
+    "message": "تمت إعادة جدولة الموعد",
+    "description": "Appointment reschedule success"
+  },
+  "genericEmailSent": {
+    "message": "تم إرسال البريد الإلكتروني",
+    "description": "Email send success"
+  },
+  "genericEmailSendFailed": {
+    "message": "فشل في إرسال البريد الإلكتروني",
+    "description": "Email send error"
+  },
+  "genericNotParticipatingIn": {
+    "message": "لم أشارك في {app} حتى الآن",
+    "description": "People not in app context"
+  },
+  "genericDetailsEmptyValuesHint": {
+    "message": "لا توجد حقول ذات قيم. قم بتشغيل \"إظهار الحقول الفارغة\" لرؤية الباقي.",
+    "description": "Details tab empty values hint"
+  },
+  "genericPersonReacted": {
+    "message": "كان رد فعل الشخص",
+    "description": "Single reaction tooltip suffix"
+  },
+  "genericPeopleReacted": {
+    "message": "كان رد فعل الناس",
+    "description": "Multiple reactions tooltip suffix"
+  },
+  "genericTabActivity": {
+    "message": "نشاط",
+    "description": "Right pane activity tab"
+  },
+  "commentComposerDefaultPh": {
+    "message": "اكتب تعليقًا... @أشير إلى المستخدمين أو المجموعات",
+    "description": "Default comment composer placeholder"
+  },
+  "commentAddFile": {
+    "message": "إضافة ملف",
+    "description": "Attach file toolbar button"
+  },
+  "commentMentionTitle": {
+    "message": "منشن لشخص ({atSymbol})",
+    "description": "Mention toolbar button"
+  },
+  "commentAddEmoji": {
+    "message": "أضف الرموز التعبيرية",
+    "description": "Emoji picker toolbar button"
+  },
+  "commentSubmitLabel": {
+    "message": "تعليق",
+    "description": "Submit comment button label"
+  },
+  "commentMentionLoading": {
+    "message": "تحميل…",
+    "description": "Mention dropdown loading"
+  },
+  "commentMentionGroup": {
+    "message": "مجموعة",
+    "description": "Mention item group badge"
+  },
+  "commentMentionEmpty": {
+    "message": "لم يتم العثور على مستخدمين أو مجموعات",
+    "description": "Empty mention search"
+  },
+  "commentRemoveAttachment": {
+    "message": "إزالة {name}",
+    "description": "Remove attachment aria-label"
+  },
+  "editableListboxSearchPh": {
+    "message": "يبحث…",
+    "description": "Inline field listbox search"
+  },
+  "editablePhonePh": {
+    "message": "رقم التليفون",
+    "description": "Phone field edit placeholder"
+  },
+  "editableUnassigned": {
+    "message": "غير معين",
+    "description": "Empty user field value"
+  },
+  "editableSelectOption": {
+    "message": "حدد خيارًا",
+    "description": "Empty select/entity option"
+  },
+  "editableNoMatches": {
+    "message": "لا توجد مباريات.",
+    "description": "Listbox filter empty state"
+  },
+  "editableUnknownUser": {
+    "message": "مستخدم غير معروف",
+    "description": "User option fallback label"
+  },
+  "dealLoading": {
+    "message": "جارٍ تحميل الصفقة…",
+    "description": "Deal record page loading"
+  },
+  "dealErrorTitle": {
+    "message": "حدث خطأ أثناء تحميل الصفقة",
+    "description": "Deal record page error title"
+  },
+  "dealNavPrevious": {
+    "message": "الصفقة السابقة",
+    "description": "Previous deal navigation"
+  },
+  "dealNavNext": {
+    "message": "الصفقة القادمة",
+    "description": "Next deal navigation"
+  },
+  "dealModuleLabel": {
+    "message": "اتفاق",
+    "description": "Deal module singular label"
+  },
+  "dealBackTo": {
+    "message": "العودة إلى التعامل",
+    "description": "Collapse expanded deal section"
+  },
+  "dealEmailContact": {
+    "message": "الاتصال بالبريد الإلكتروني",
+    "description": "Email contact action"
+  },
+  "dealEditAria": {
+    "message": "تحرير الصفقة",
+    "description": "Edit deal action"
+  },
+  "dealVersionRetentionNote": {
+    "message": "سيتم تخزين سجل الإصدارات لمدة تصل إلى 365 يومًا في أوصاف الصفقة.",
+    "description": "Deal description version retention"
+  },
+  "dealWeightedAmount": {
+    "message": "مرجح {amount}",
+    "description": "Deal weighted amount label"
+  },
+  "dealExpectedValuePh": {
+    "message": "القيمة المتوقعة",
+    "description": "Deal amount field placeholder"
+  },
+  "dealProbabilityPh": {
+    "message": "احتمال",
+    "description": "Deal probability placeholder"
+  },
+  "dealCloseDatePh": {
+    "message": "تاريخ الإغلاق",
+    "description": "Deal expected close date placeholder"
+  },
+  "dealStarAria": {
+    "message": "نجم",
+    "description": "Star/follow deal"
+  },
+  "dealUnstarAria": {
+    "message": "إلغاء النجمة",
+    "description": "Unfollow deal"
+  },
+  "dealRelatedRecordsTab": {
+    "message": "السجلات ذات الصلة",
+    "description": "Deal right pane related tab"
+  },
+  "dealDuplicateNotImplemented": {
+    "message": "لم يتم تنفيذ الإجراء المكرر بعد للصفقات.",
+    "description": "Deal duplicate stub alert"
+  },
+  "dealExportNotImplemented": {
+    "message": "لم يتم تنفيذ إجراء التصدير بعد بالنسبة للصفقات.",
+    "description": "Deal export stub alert"
+  },
+  "dealDeleteFailed": {
+    "message": "فشل في حذف الصفقة",
+    "description": "Deal delete error"
+  },
+  "dealCopyUrlFailed": {
+    "message": "فشل نسخ URL",
+    "description": "Deal copy URL error"
+  },
+  "dealCommentAddFailed": {
+    "message": "فشل في إضافة تعليق",
+    "description": "Deal add comment error"
+  },
+  "dealCommentUpdateFailed": {
+    "message": "فشل تحديث التعليق",
+    "description": "Deal edit comment error"
+  },
+  "dealCreateTaskFailed": {
+    "message": "فشل في إنشاء المهمة",
+    "description": "Deal create related task error"
+  },
+  "dealCreateCaseFailed": {
+    "message": "فشل إنشاء الحالة",
+    "description": "Deal create related case error"
+  },
+  "dealAttachedFilesFallback": {
+    "message": "الملف (الملفات) المرفقة",
+    "description": "Comment with attachments only"
+  },
+  "dealUnnamedOrganization": {
+    "message": "منظمة بدون اسم",
+    "description": "Organization picker fallback"
+  },
+  "dealUnnamedPerson": {
+    "message": "لم يذكر اسمه",
+    "description": "Person picker fallback"
+  },
+  "taskLoading": {
+    "message": "جارٍ تحميل المهمة…",
+    "description": "Task record page loading"
+  },
+  "taskErrorTitle": {
+    "message": "حدث خطأ أثناء تحميل المهمة",
+    "description": "Task record page error title"
+  },
+  "taskNavPrevious": {
+    "message": "المهمة السابقة",
+    "description": "Previous task navigation"
+  },
+  "taskNavNext": {
+    "message": "المهمة التالية",
+    "description": "Next task navigation"
+  },
+  "taskModuleLabel": {
+    "message": "مهمة",
+    "description": "Task module singular label"
+  },
+  "taskBackTo": {
+    "message": "العودة إلى المهمة",
+    "description": "Collapse expanded task section"
+  },
+  "taskEditAria": {
+    "message": "تحرير المهمة",
+    "description": "Edit task action"
+  },
+  "taskEmailAssignee": {
+    "message": "البريد الإلكتروني المكلف",
+    "description": "Email task assignee action"
+  },
+  "taskVersionRetentionNote": {
+    "message": "سيتم تخزين سجل الإصدارات لمدة تصل إلى 365 يومًا في أوصاف المهام.",
+    "description": "Task description version retention"
+  },
+  "taskStarAria": {
+    "message": "نجم",
+    "description": "Star/follow task"
+  },
+  "taskUnstarAria": {
+    "message": "إلغاء النجمة",
+    "description": "Unfollow task"
+  },
+  "taskRelatedRecordsTab": {
+    "message": "السجلات ذات الصلة",
+    "description": "Task right pane related tab"
+  },
+  "taskCopyUrlSuccess": {
+    "message": "تم نسخ عنوان URL إلى الحافظة!",
+    "description": "Task copy URL success"
+  },
+  "taskLinkModuleFailed": {
+    "message": "خطأ في ربط {moduleKey}. يرجى المحاولة مرة أخرى.",
+    "description": "Task link related record error"
+  },
+  "taskRelatedGroupProject": {
+    "message": "مشروع",
+    "description": "Related project group heading"
+  },
+  "taskRelatedGroupPeople": {
+    "message": "الناس",
+    "description": "Related people group heading"
+  },
+  "taskRelatedGroupEvents": {
+    "message": "الأحداث",
+    "description": "Related events group heading"
+  },
+  "taskRelatedGroupDeals": {
+    "message": "العروض",
+    "description": "Related deals group heading"
+  },
+  "taskRelatedGroupForms": {
+    "message": "النماذج",
+    "description": "Related forms group heading"
+  },
+  "taskCloseTimestampDetails": {
+    "message": "إغلاق تفاصيل الطابع الزمني",
+    "description": "Close timestamp popover aria"
+  },
+  "activityCloseSearchAria": {
+    "message": "إغلاق البحث",
+    "description": "Close activity search bar"
+  },
+  "activityNotificationsAria": {
+    "message": "إشعارات",
+    "description": "Activity notifications button"
+  },
+  "activityFilterAria": {
+    "message": "أنشطة التصفية",
+    "description": "Activity filter menu button"
+  },
+  "activityFilterHeading": {
+    "message": "أنشطة",
+    "description": "Activity filter menu title"
+  },
+  "activityUnselectAll": {
+    "message": "قم بإلغاء تحديد الكل",
+    "description": "Clear all activity filters"
+  },
+  "activitySelectAll": {
+    "message": "حدد الكل",
+    "description": "Enable all activity filters"
+  },
+  "activityFilterComments": {
+    "message": "تعليقات",
+    "description": "Activity filter: comments"
+  },
+  "activityFilterEmail": {
+    "message": "بريد إلكتروني",
+    "description": "Activity filter: email"
+  },
+  "activityFilterUpdates": {
+    "message": "التحديثات",
+    "description": "Activity filter: updates"
+  },
+  "activityFilterDoneThreads": {
+    "message": "تم الانتهاء من المواضيع",
+    "description": "Activity filter: done threads"
+  },
+  "activityFilterAssignedToMe": {
+    "message": "المخصصة لي",
+    "description": "Activity filter: assigned to me"
+  },
+  "activityFilterTaggedThreads": {
+    "message": "المواضيع الموسومة",
+    "description": "Activity filter: tagged threads"
+  },
+  "activityFilterUntaggedThreads": {
+    "message": "المواضيع غير الموسومة",
+    "description": "Activity filter: untagged threads"
+  },
+  "activitySearchPh": {
+    "message": "يبحث…",
+    "description": "Activity search input placeholder"
+  },
+  "activityClearSearchAria": {
+    "message": "مسح البحث",
+    "description": "Clear activity search"
+  },
+  "activityClearSearchTitle": {
+    "message": "واضح",
+    "description": "Clear search button title"
+  },
+  "activityThreadBy": {
+    "message": "الموضوع بواسطة",
+    "description": "Thread view author prefix"
+  },
+  "activityNothingFound": {
+    "message": "لم يتم العثور على شيء",
+    "description": "No activities match filters"
+  },
+  "activitySelectOneFilter": {
+    "message": "الرجاء تحديد مرشح واحد على الأقل.",
+    "description": "Empty filter state hint"
+  },
+  "activityResetFilters": {
+    "message": "إعادة تعيين المرشحات",
+    "description": "Reset activity filters button"
+  },
+  "activityReplyPh": {
+    "message": "الرد على التعليق…",
+    "description": "Thread reply composer placeholder"
+  },
+  "activityCommentEdited": {
+    "message": "(تحرير)",
+    "description": "Comment edited indicator"
+  },
+  "activityEditCommentAria": {
+    "message": "تحرير التعليق",
+    "description": "Edit comment button aria"
+  },
+  "activityReplyToCommentAria": {
+    "message": "الرد على التعليق",
+    "description": "Reply to comment button aria"
+  },
+  "activityEditCommentPh": {
+    "message": "تعديل التعليق…",
+    "description": "Edit comment composer placeholder"
+  },
+  "notesBlockedContext": {
+    "message": "سياق التطبيق غامض. لا يمكن تحديد الملاحظات التي سيتم عرضها.",
+    "description": "Notes blocked when app context unclear"
+  },
+  "notesAdding": {
+    "message": "جارٍ الإضافة…",
+    "description": "Submit note in progress"
+  },
+  "notesAddNoteBtn": {
+    "message": "أضف ملاحظة",
+    "description": "Submit new note button"
+  },
+  "notesUserFallback": {
+    "message": "مستخدم",
+    "description": "Author name fallback in notes list"
+  },
+  "notesAddANoteAboveToGet": {
+    "message": "أضف ملاحظة أعلاه للبدء.",
+    "description": "Auto-migrated from notes"
+  },
+  "notesNoNotesYet": {
+    "message": "لا توجد ملاحظات حتى الآن.",
+    "description": "Auto-migrated from notes"
+  },
+  "notesWriteANote": {
+    "message": "أكتب ملاحظة...",
+    "description": "Auto-migrated from notes"
+  },
+  "notesAddNote": {
+    "message": "أضف ملاحظة",
+    "description": "Auto-migrated from notes"
+  },
+  "notesCannotLoadNotes": {
+    "message": "لا يمكن تحميل الملاحظات",
+    "description": "Auto-migrated from notes"
+  },
+  "notesErrorLoadingNotes": {
+    "message": "حدث خطأ أثناء تحميل الملاحظات",
+    "description": "Auto-migrated from notes"
+  },
+  "notesLoadingNotes": {
+    "message": "جارٍ تحميل الملاحظات...",
+    "description": "Auto-migrated from notes"
+  },
+  "filesUploadAFileAboveToGet": {
+    "message": "قم بتحميل ملف أعلاه للبدء.",
+    "description": "Auto-migrated from files"
+  },
+  "filesNoFilesUploadedYet": {
+    "message": "لم يتم تحميل أي ملفات حتى الآن.",
+    "description": "Auto-migrated from files"
+  },
+  "filesDownload": {
+    "message": "تحميل",
+    "description": "Auto-migrated from files"
+  },
+  "filesAllowedImagesPdfWordExcelCsv": {
+    "message": "المسموح به: الصور، PDF، Word، Excel، CSV (بحد أقصى 10 ميجابايت)",
+    "description": "Auto-migrated from files"
+  },
+  "filesUploadFile": {
+    "message": "تحميل الملف",
+    "description": "Auto-migrated from files"
+  },
+  "filesCannotLoadFiles": {
+    "message": "لا يمكن تحميل الملفات",
+    "description": "Auto-migrated from files"
+  },
+  "filesErrorLoadingFiles": {
+    "message": "خطأ في تحميل الملفات",
+    "description": "Auto-migrated from files"
+  },
+  "filesLoadingFiles": {
+    "message": "جارٍ تحميل الملفات...",
+    "description": "Auto-migrated from files"
+  },
+  "activityTimelineCannotLoadActivities": {
+    "message": "لا يمكن تحميل الأنشطة",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "activityTimelineErrorLoadingActivities": {
+    "message": "حدث خطأ أثناء تحميل الأنشطة",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "activityTimelineLoadingActivities": {
+    "message": "جارٍ تحميل الأنشطة...",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "taskDescriptionEditorInsertLink": {
+    "message": "أدخل الرابط",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorRemoveLink": {
+    "message": "إزالة الرابط",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorNumberedList": {
+    "message": "قائمة مرقمة",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorBulletList": {
+    "message": "قائمة نقطية",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorStrikethrough": {
+    "message": "يتوسطه خط",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorItalic": {
+    "message": "مائل",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorBold": {
+    "message": "عريض",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading3": {
+    "message": "العنوان 3",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading2": {
+    "message": "العنوان 2",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading1": {
+    "message": "العنوان 1",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "recordDetailThisRecordTypeIsNotConfigured": {
+    "message": "لم يتم تكوين نوع السجل هذا.",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "recordDetailRecordNotFound": {
+    "message": "لم يتم العثور على السجل",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "recordDetailLoading": {
+    "message": "تحميل...",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "relatedRecordsPanelThisRecordRequiresTheFollowingRelationships": {
+    "message": "يتطلب هذا السجل ربط العلاقات التالية:",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelRequiredRelationships": {
+    "message": "العلاقات المطلوبة",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelLinkThisRecordToPeopleOrganizations": {
+    "message": "ربط هذا السجل بالأشخاص أو المؤسسات أو المهام أو الأحداث أو النماذج.",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelNoRelationshipsConfiguredForThisRecord": {
+    "message": "لم يتم تكوين علاقات لنوع السجل هذا.",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelErrorLoadingRelatedRecords": {
+    "message": "حدث خطأ أثناء تحميل السجلات ذات الصلة",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelLoadingRelatedRecords": {
+    "message": "جارٍ تحميل السجلات ذات الصلة...",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsRendererNoRelationshipsConfiguredForThisRecord": {
+    "message": "لم يتم تكوين علاقات لنوع السجل هذا.",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsRendererTheFollowingRequiredRelationshipsMustBe": {
+    "message": "يجب ربط العلاقات المطلوبة التالية قبل الحفظ:",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsRendererRequiredRelationshipsMissing": {
+    "message": "العلاقات المطلوبة مفقودة",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsTabLinkExisting": {
+    "message": "الرابط موجود",
+    "description": "Auto-migrated from relatedRecordsTab"
+  },
+  "relationshipUnlinkConfirmAreYouSureYouWantTo": {
+    "message": "هل أنت متأكد أنك تريد إلغاء الارتباط",
+    "description": "Auto-migrated from relationshipUnlinkConfirm"
+  },
+  "reactionBarReactToComment": {
+    "message": "الرد على التعليق",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarLikeComment": {
+    "message": "مثل التعليق",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarReactToComment2": {
+    "message": "الرد على التعليق",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarLikeComment2": {
+    "message": "مثل التعليق",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "activitySystemRowShowMore": {
+    "message": "عرض المزيد",
+    "description": "Auto-migrated from activitySystemRow"
+  },
+  "approvalHistoryEscalatedToNewApprovers": {
+    "message": "تم التصعيد إلى المعتمدين الجدد",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryProcess": {
+    "message": "عملية:",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryReason": {
+    "message": "سبب:",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryDecidedBy": {
+    "message": "قرر بواسطة:",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryNoApprovalHistoryFound": {
+    "message": "لم يتم العثور على سجل الموافقة",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryApprovalHistory": {
+    "message": "تاريخ الموافقة",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "linkRecordModalLinking": {
+    "message": "ربط...",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "linkRecordModalSelectARecordType": {
+    "message": "حدد نوع السجل...",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "linkRecordModalRecordType": {
+    "message": "نوع السجل",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "recordDetailToastFailedToDeleteRecordPlease": {
+    "message": "فشل في حذف السجل. يرجى المحاولة مرة أخرى.",
+    "description": "Toast from RecordDetail.vue"
+  },
+  "instanceManagementToastInstanceManagementUiComingSoon": {
+    "message": "واجهة المستخدم لإدارة المثيلات ستتوفر قريبًا!",
+    "description": "Toast from InstanceManagement.vue"
+  },
+  "useRecordHeaderActionsToastUrlCopiedToClipboard": {
+    "message": "تم نسخ عنوان URL إلى الحافظة!",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "useRecordHeaderActionsToastErrorExportingRecordPleaseTry": {
+    "message": "خطأ في تصدير السجل. يرجى المحاولة مرة أخرى.",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "useRecordHeaderActionsToastErrorDeletingRecordPleaseTry": {
+    "message": "حدث خطأ أثناء حذف السجل. يرجى المحاولة مرة أخرى.",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "tabPreview": {
+    "message": "معاينة",
+    "description": "Form summary preview tab"
+  },
+  "tabUsage": {
+    "message": "الاستخدام",
+    "description": "Form summary usage tab"
+  },
+  "tabResponses": {
+    "message": "الردود",
+    "description": "Form summary responses tab"
+  },
+  "tabTenantDetails": {
+    "message": "تفاصيل المستأجر",
+    "description": "Organization tenant details tab"
+  },
+  "relatedRecordsTitle": {
+    "message": "السجلات ذات الصلة",
+    "description": "Left column related records section title"
+  },
+  "subtasksTitle": {
+    "message": "المهام الفرعية",
+    "description": "Task record subtasks section title"
+  },
+  "subtasksTitleWithCount": {
+    "message": "المهام الفرعية ({completed}/{total})",
+    "description": "Task subtasks section title with completion counts"
+  },
+  "sectionAddSubtask": {
+    "message": "إضافة مهمة فرعية",
+    "description": "Add subtask action label"
+  },
+  "sectionExpand": {
+    "message": "يوسع",
+    "description": "Expand record section action"
+  },
+  "sectionHistory": {
+    "message": "تاريخ",
+    "description": "Description history action"
+  },
+  "sectionLinkRecord": {
+    "message": "سجل الارتباط",
+    "description": "Link related record action"
+  },
+  "sectionAddRecord": {
+    "message": "إضافة سجل",
+    "description": "Add related record action"
+  },
+  "sectionViewMore": {
+    "message": "عرض المزيد",
+    "description": "Load more subtasks action"
+  },
+  "sectionViewLess": {
+    "message": "عرض أقل",
+    "description": "Collapse field list action"
+  },
+  "sectionViewAll": {
+    "message": "عرض الكل ({count})",
+    "description": "Expand details field list"
+  },
+  "sectionGroupCore": {
+    "message": "جوهر",
+    "description": "Field group label"
+  },
+  "sectionGroupSystem": {
+    "message": "نظام",
+    "description": "Field group label"
+  },
+  "sectionGroupOther": {
+    "message": "آخر",
+    "description": "Field group label"
+  },
+  "sectionCreatedVia": {
+    "message": "تم إنشاؤها عبر",
+    "description": "Record source field label"
+  },
+  "sectionGroupRecord": {
+    "message": "سِجِلّ",
+    "description": "Record metadata group label"
+  },
+  "activitySystemActorSystem": {
+    "message": "نظام",
+    "description": "System actor label in activity feed"
+  },
+  "activitySystemFieldFallback": {
+    "message": "مجال",
+    "description": "Fallback when system event field label is unknown"
+  },
+  "activitySystemChanged": {
+    "message": "تغير",
+    "description": "System field change activity between actor and field"
+  },
+  "activitySystemChangedTo": {
+    "message": "تم التغيير {field} إلى",
+    "description": "Tags/system field change lead-in"
+  },
+  "activitySystemChangedFromTo": {
+    "message": "تم تغيير {field} من \"{from}\" إلى \"{to}\"",
+    "description": "Generic field change summary"
+  },
+  "activityUpdatedRecord": {
+    "message": "تم تحديث هذا السجل",
+    "description": "Generic system activity fallback"
+  }
+}

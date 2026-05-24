@@ -33,13 +33,14 @@
       @close="goToList"
       @saved="handleCreateSaved"
     />
-    <div v-else class="flex items-center justify-center min-h-[40vh] text-gray-500 dark:text-gray-400">
-      Unknown module or route.
-    </div>
+    <div v-else class="flex items-center justify-center min-h-[40vh] text-gray-500 dark:text-gray-400">{{ t('platform.genericModuleUnknownModuleOrRoute') }}</div>
   </div>
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import ModuleList from '@/components/module-list/ModuleList.vue';

@@ -29,6 +29,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, watch } from 'vue';
 import RecordContextTabs from './RecordContextTabs.vue';
 
@@ -52,6 +53,8 @@ const props = defineProps({
     default: null
   }
 });
+
+const { t } = useI18n();
 
 const activeTab = ref(props.defaultTab || (props.tabs.length > 0 ? props.tabs[0].key : null));
 

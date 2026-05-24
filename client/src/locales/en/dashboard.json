@@ -1,0 +1,274 @@
+{
+  "appDashboardTheDashboardForThisAppIs": {
+    "message": "The dashboard for this app is not available.",
+    "description": "Auto-migrated from appDashboard"
+  },
+  "appDashboardDashboardNotFound": {
+    "message": "Dashboard Not Found",
+    "description": "Auto-migrated from appDashboard"
+  },
+  "appDashboardNoDashboardWidgetsConfiguredForThis": {
+    "message": "No dashboard widgets configured for this app yet.",
+    "description": "Auto-migrated from appDashboard"
+  },
+  "appDashboardQuickAccess": {
+    "message": "Quick Access",
+    "description": "Auto-migrated from appDashboard"
+  },
+  "activityAlertsNoCriticalAlertsRightNow": {
+    "message": "No critical alerts right now.",
+    "description": "Auto-migrated from activityAlerts"
+  },
+  "activityAlertsNoEfficiencyConcernsDetected": {
+    "message": "No efficiency concerns detected.",
+    "description": "Auto-migrated from activityAlerts"
+  },
+  "activityAlertsEfficiencyWatch": {
+    "message": "Efficiency watch",
+    "description": "Auto-migrated from activityAlerts"
+  },
+  "activityAlertsNoPipelineCreatedYet": {
+    "message": "No pipeline created yet.",
+    "description": "Auto-migrated from activityAlerts"
+  },
+  "activityAlertsPipelineCreatedRecentWeeks": {
+    "message": "Pipeline created (recent weeks)",
+    "description": "Auto-migrated from activityAlerts"
+  },
+  "activityAlertsNoActivityTrendDataForSelected": {
+    "message": "No activity trend data for selected filters",
+    "description": "Auto-migrated from activityAlerts"
+  },
+  "activityAlertsMeetings": {
+    "message": "Meetings",
+    "description": "Auto-migrated from activityAlerts"
+  },
+  "activityAlertsCalls": {
+    "message": "Calls",
+    "description": "Auto-migrated from activityAlerts"
+  },
+  "activityAlertsConversionRate": {
+    "message": "Conversion Rate",
+    "description": "Auto-migrated from activityAlerts"
+  },
+  "activityAlertsPipelineCreated": {
+    "message": "Pipeline Created",
+    "description": "Auto-migrated from activityAlerts"
+  },
+  "activityAlertsThisMonth": {
+    "message": "This Month",
+    "description": "Auto-migrated from activityAlerts"
+  },
+  "aiInsightsStripGeneratedJustNow": {
+    "message": "Generated just now",
+    "description": "Auto-migrated from aiInsightsStrip"
+  },
+  "aiInsightsStripAiInsights": {
+    "message": "AI Insights",
+    "description": "Auto-migrated from aiInsightsStrip"
+  },
+  "dashboardFiltersAllTypes": {
+    "message": "All types",
+    "description": "Auto-migrated from dashboardFilters"
+  },
+  "dashboardFiltersDealType": {
+    "message": "Deal Type",
+    "description": "Auto-migrated from dashboardFilters"
+  },
+  "dashboardFiltersAllPipelines": {
+    "message": "All pipelines",
+    "description": "Auto-migrated from dashboardFilters"
+  },
+  "dashboardFiltersAllReps": {
+    "message": "All reps",
+    "description": "Auto-migrated from dashboardFilters"
+  },
+  "dashboardFiltersTeamRep": {
+    "message": "Team / Rep",
+    "description": "Auto-migrated from dashboardFilters"
+  },
+  "dashboardHeaderDateRange": {
+    "message": "Date Range",
+    "description": "Auto-migrated from dashboardHeader"
+  },
+  "executiveSnapshotVsPreviousPeriod": {
+    "message": "vs previous period",
+    "description": "Auto-migrated from executiveSnapshot"
+  },
+  "pipelineForecastNoHistoricalForecastAccuracyYet": {
+    "message": "No historical forecast accuracy yet",
+    "description": "Auto-migrated from pipelineForecast"
+  },
+  "pipelineForecastLast3Months": {
+    "message": "Last 3 Months",
+    "description": "Auto-migrated from pipelineForecast"
+  },
+  "pipelineForecastForecastAccuracy": {
+    "message": "Forecast Accuracy",
+    "description": "Auto-migrated from pipelineForecast"
+  },
+  "pipelineForecastForecastVsTarget": {
+    "message": "Forecast vs target",
+    "description": "Auto-migrated from pipelineForecast"
+  },
+  "pipelineForecastNoForecastByMonthDataFor": {
+    "message": "No forecast-by-month data for selected filters",
+    "description": "Auto-migrated from pipelineForecast"
+  },
+  "pipelineForecastCommitBestCasePipelineAndAccuracy": {
+    "message": "Commit, Best Case, Pipeline, and Accuracy",
+    "description": "Auto-migrated from pipelineForecast"
+  },
+  "pipelineForecastForecastOverview": {
+    "message": "Forecast Overview",
+    "description": "Auto-migrated from pipelineForecast"
+  },
+  "pipelineForecastConversion": {
+    "message": "Conversion",
+    "description": "Auto-migrated from pipelineForecast"
+  },
+  "pipelineForecastPipelineHealth": {
+    "message": "Pipeline Health",
+    "description": "Auto-migrated from pipelineForecast"
+  },
+  "repPerformanceLeaderboardWinRate": {
+    "message": "Win Rate",
+    "description": "Auto-migrated from repPerformanceLeaderboard"
+  },
+  "repPerformanceLeaderboardPipelineOwned": {
+    "message": "Pipeline Owned",
+    "description": "Auto-migrated from repPerformanceLeaderboard"
+  },
+  "repPerformanceLeaderboardRevenueClosed": {
+    "message": "Revenue Closed",
+    "description": "Auto-migrated from repPerformanceLeaderboard"
+  },
+  "repPerformanceLeaderboardQuotaAttainment": {
+    "message": "Quota Attainment",
+    "description": "Auto-migrated from repPerformanceLeaderboard"
+  },
+  "repPerformanceLeaderboardRep": {
+    "message": "Rep",
+    "description": "Auto-migrated from repPerformanceLeaderboard"
+  },
+  "repPerformanceLeaderboardRank": {
+    "message": "Rank",
+    "description": "Auto-migrated from repPerformanceLeaderboard"
+  },
+  "repPerformanceLeaderboardViewAllReps": {
+    "message": "View all reps",
+    "description": "Auto-migrated from repPerformanceLeaderboard"
+  },
+  "repPerformanceLeaderboardRepPerformance": {
+    "message": "Rep Performance",
+    "description": "Auto-migrated from repPerformanceLeaderboard"
+  },
+  "dashboardNoRecentActivity": {
+    "message": "No recent activity",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardRecentActivity": {
+    "message": "Recent Activity",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardExportData": {
+    "message": "Export Data",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardSearchPeople": {
+    "message": "Search People",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardImportPeople": {
+    "message": "Import People",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardAddPerson": {
+    "message": "Add Person",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardQuickActions": {
+    "message": "Quick Actions",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardTotalContacts": {
+    "message": "Total Contacts",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardLast90Days": {
+    "message": "Last 90 Days",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardLast30Days": {
+    "message": "Last 30 Days",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardLast7Days": {
+    "message": "Last 7 Days",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardContactGrowth": {
+    "message": "Contact Growth",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardAddYourFirstPerson": {
+    "message": "Add Your First Person",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardNoContactsYet": {
+    "message": "No contacts yet",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardLoadingContacts": {
+    "message": "Loading contacts...",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardViewAll": {
+    "message": "View All",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardRecentContacts": {
+    "message": "Recent Contacts",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardActivitiesToday": {
+    "message": "Activities Today",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardCustomers": {
+    "message": "Customers",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardActiveLeads": {
+    "message": "Active Leads",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardTotalContacts2": {
+    "message": "Total Contacts",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardAddContact": {
+    "message": "Add Contact",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardHeresWhatsHappeningWithYourBusiness": {
+    "message": "Here's what's happening with your business today.",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardUpgradeNow": {
+    "message": "Upgrade Now",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardUpgradeNowToContinueUsingAll": {
+    "message": "Upgrade now to continue using all features",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardYourTrialExpiresIn1Day": {
+    "message": "Your trial expires in 1 day",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardYourTrialExpiresToday": {
+    "message": "Your trial expires today!",
+    "description": "Auto-migrated from dashboard"
+  }
+}

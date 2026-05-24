@@ -1,0 +1,1214 @@
+{
+  "shellErrorTitle": {
+    "message": "रिकॉर्ड लोड करने में त्रुटि",
+    "description": "Record page load error heading"
+  },
+  "shellLoadFailed": {
+    "message": "रिकॉर्ड लोड करने में विफल",
+    "description": "Record page load error fallback"
+  },
+  "contextTabsAria": {
+    "message": "प्रसंग पैनल टैब",
+    "description": "Vertical context tab rail aria label"
+  },
+  "fieldsHeadingSr": {
+    "message": "रिकॉर्ड फ़ील्ड",
+    "description": "Screen reader heading for record fields section"
+  },
+  "customFieldsHeadingSr": {
+    "message": "तटकर क्षेत्र",
+    "description": "Screen reader heading for custom fields section"
+  },
+  "relatedRecordsHeadingSr": {
+    "message": "संबंधित अभिलेख",
+    "description": "Screen reader heading for related records section"
+  },
+  "activityHeadingSr": {
+    "message": "गतिविधि (सबसे नीचे नवीनतम)",
+    "description": "Activity timeline screen reader heading"
+  },
+  "activityReply": {
+    "message": "जवाब",
+    "description": "Reply to comment action"
+  },
+  "activityEmpty": {
+    "message": "अभी तक कोई गतिविधि नहीं.",
+    "description": "Empty activity feed"
+  },
+  "activityCommentPh": {
+    "message": "एक टिप्पणी लिखें...",
+    "description": "Comment composer placeholder"
+  },
+  "activityAddAttachment": {
+    "message": "अय्टाचमेंट जोडे",
+    "description": "Add attachment button title"
+  },
+  "activityMention": {
+    "message": "उल्लेख",
+    "description": "Mention button title"
+  },
+  "activityEmoji": {
+    "message": "इमोजी",
+    "description": "Emoji picker button title"
+  },
+  "activityCommentBtn": {
+    "message": "टिप्पणी",
+    "description": "Submit comment button"
+  },
+  "activityUpdated": {
+    "message": "अद्यतन",
+    "description": "Default system activity verb"
+  },
+  "activitySystemWithAction": {
+    "message": "{action} यह रिकॉर्ड",
+    "description": "System activity fallback with action verb"
+  },
+  "tagsTitle": {
+    "message": "टैग",
+    "description": "Tags popover title"
+  },
+  "tagsNewTag": {
+    "message": "नया टैग",
+    "description": "New tag button"
+  },
+  "tagsNoPermission": {
+    "message": "आपके पास टैग संपादित करने की अनुमति नहीं है.",
+    "description": "Tags read-only message"
+  },
+  "tagsRemoveFromRecord": {
+    "message": "इस रिकॉर्ड से हटाएँ",
+    "description": "Remove tag from record action"
+  },
+  "tagsEditTag": {
+    "message": "टैग संपादित करें",
+    "description": "Edit tag action"
+  },
+  "tagsDeleteFromModule": {
+    "message": "मॉड्यूल से टैग हटाएं",
+    "description": "Delete tag from module action"
+  },
+  "tagsSearchHint": {
+    "message": "उपलब्ध टैग देखने के लिए खोज बॉक्स पर क्लिक करें।",
+    "description": "Tags search hint"
+  },
+  "tagsNoneYet": {
+    "message": "इस उदाहरण में अभी तक कोई टैग नहीं बनाया गया है.",
+    "description": "Empty tags list"
+  },
+  "tagsCreateFirst": {
+    "message": "पहला टैग बनाएं",
+    "description": "Create first tag CTA"
+  },
+  "tagsPublic": {
+    "message": "जनता",
+    "description": "Public tag badge"
+  },
+  "tagsTagName": {
+    "message": "टैग नाम",
+    "description": "Tag name field label"
+  },
+  "tagsColor": {
+    "message": "रंग",
+    "description": "Tag color field label"
+  },
+  "tagsMakePublic": {
+    "message": "टैग को सार्वजनिक करें",
+    "description": "Make tag public checkbox"
+  },
+  "tagsSearchPh": {
+    "message": "टैग खोजें या बनाएं",
+    "description": "Tag search placeholder"
+  },
+  "tagsTagActions": {
+    "message": "क्रियाएँ टैग करें",
+    "description": "Tag actions menu aria label"
+  },
+  "tagsNamePh": {
+    "message": "टैग नाम दर्ज करें",
+    "description": "Tag name input placeholder"
+  },
+  "detailsTitle": {
+    "message": "विवरण",
+    "description": "Details section title"
+  },
+  "detailsSelectOption": {
+    "message": "कोई विकल्प चुनें",
+    "description": "Empty picklist placeholder"
+  },
+  "detailsLinkRecord": {
+    "message": "रिकॉर्ड लिंक करने के लिए क्लिक करें",
+    "description": "Empty lookup field placeholder"
+  },
+  "relatedTitle": {
+    "message": "संबंधित",
+    "description": "Related section title"
+  },
+  "relatedEmpty": {
+    "message": "अभी तक कोई संबंधित रिकॉर्ड नहीं है.",
+    "description": "Empty related list"
+  },
+  "relatedEmptyHint": {
+    "message": "इस रिकॉर्ड को संबंधित आइटम से लिंक करें.",
+    "description": "Empty related hint"
+  },
+  "relatedUnlink": {
+    "message": "अनलिंक",
+    "description": "Unlink related record"
+  },
+  "relatedActionsAria": {
+    "message": "संबंधित रिकॉर्ड क्रियाएं",
+    "description": "Related record actions menu aria"
+  },
+  "stageHistoryTitle": {
+    "message": "स्टेज इतिहास",
+    "description": "Stage history section title"
+  },
+  "subtasksEditAria": {
+    "message": "उपकार्य संपादित करें",
+    "description": "Edit subtask button title"
+  },
+  "subtasksDeleteAria": {
+    "message": "उपकार्य हटाएँ",
+    "description": "Delete subtask button title"
+  },
+  "subtasksNamePh": {
+    "message": "कार्य का नाम",
+    "description": "New subtask name placeholder"
+  },
+  "subtasksEmpty": {
+    "message": "अभी तक कोई उपकार्य नहीं.",
+    "description": "Empty subtasks list"
+  },
+  "stateHeadingSr": {
+    "message": "रिकॉर्ड स्थिति",
+    "description": "Record state section screen reader heading"
+  },
+  "descriptionTitle": {
+    "message": "विवरण",
+    "description": "Description section default title"
+  },
+  "descriptionEmpty": {
+    "message": "कोई विवरण नहीं",
+    "description": "Empty description placeholder"
+  },
+  "tabSummary": {
+    "message": "सारांश",
+    "description": "Right pane summary tab"
+  },
+  "tabDetails": {
+    "message": "विवरण",
+    "description": "Right pane details tab"
+  },
+  "tabUpdates": {
+    "message": "अपडेट",
+    "description": "Right pane updates tab"
+  },
+  "tabContentFallback": {
+    "message": "{name} सामग्री",
+    "description": "Right pane tab placeholder content"
+  },
+  "sectionActionFallback": {
+    "message": "कार्रवाई",
+    "description": "Section stack action button fallback label"
+  },
+  "descriptionAdd": {
+    "message": "विवरण जोड़ें",
+    "description": "Editable empty description CTA"
+  },
+  "descriptionEmptyReadonly": {
+    "message": "अभी तक कोई विवरण नहीं.",
+    "description": "Read-only empty description"
+  },
+  "subtasksHeader": {
+    "message": "उपकार्य ({completed}/{total})",
+    "description": "Subtasks section header with counts"
+  },
+  "subtasksUntitled": {
+    "message": "शीर्षकहीन उपकार्य",
+    "description": "Subtask without title"
+  },
+  "subtasksViewAll": {
+    "message": "सभी देखें ({count})",
+    "description": "View all subtasks link"
+  },
+  "relatedUntitled": {
+    "message": "शीर्षकहीन",
+    "description": "Related record without title"
+  },
+  "genericLoading": {
+    "message": "लोड हो रहा है {module}…",
+    "description": "Record page loading message"
+  },
+  "genericErrorTitle": {
+    "message": "लोड करने में त्रुटि {module}",
+    "description": "Record page error title"
+  },
+  "genericNavPrevious": {
+    "message": "पिछला {singular}",
+    "description": "Previous record navigation"
+  },
+  "genericNavNext": {
+    "message": "अगला {singular}",
+    "description": "Next record navigation"
+  },
+  "genericTagsAria": {
+    "message": "टैग",
+    "description": "Tags button aria"
+  },
+  "genericCopyUrl": {
+    "message": "यूआरएल कॉपी करें",
+    "description": "Copy URL button"
+  },
+  "genericMoreActions": {
+    "message": "अधिक क्रियाएं",
+    "description": "More actions menu"
+  },
+  "genericSendEmail": {
+    "message": "ईमेल भेजें",
+    "description": "Send email menu action"
+  },
+  "genericBackTo": {
+    "message": "{singular} पर वापस जाएँ",
+    "description": "Back from expanded section"
+  },
+  "genericCollapseSection": {
+    "message": "अनुभाग संक्षिप्त करें",
+    "description": "Collapse section aria"
+  },
+  "genericCollapse": {
+    "message": "गिर जाना",
+    "description": "Collapse button title"
+  },
+  "genericNoDescInVersion": {
+    "message": "इस संस्करण में कोई विवरण नहीं.",
+    "description": "Empty description version"
+  },
+  "genericVersionHistory": {
+    "message": "संस्करण इतिहास",
+    "description": "Description version history title"
+  },
+  "genericCurrentVersion": {
+    "message": "वर्तमान संस्करण",
+    "description": "Current version label"
+  },
+  "genericVersionRetention": {
+    "message": "संस्करण इतिहास 365 दिनों तक संग्रहीत किया जाता है।",
+    "description": "Version retention note"
+  },
+  "genericRestoreVersion": {
+    "message": "इस संस्करण को पुनर्स्थापित करें",
+    "description": "Restore description version"
+  },
+  "genericRestoring": {
+    "message": "पुनर्स्थापित किया जा रहा है...",
+    "description": "Restore in progress"
+  },
+  "genericSomeone": {
+    "message": "कोई",
+    "description": "Unknown version author"
+  },
+  "genericKeyFields": {
+    "message": "प्रमुख क्षेत्र",
+    "description": "Key fields section heading"
+  },
+  "genericAppParticipation": {
+    "message": "ऐप भागीदारी",
+    "description": "People app participation section"
+  },
+  "genericConvertToContact": {
+    "message": "संपर्क में कनवर्ट करें",
+    "description": "Convert lead to contact"
+  },
+  "genericNotInAnyApp": {
+    "message": "यह व्यक्ति अभी तक किसी ऐप का हिस्सा नहीं है",
+    "description": "Empty people participation"
+  },
+  "genericAddRecord": {
+    "message": "रिकॉर्ड जोड़ें",
+    "description": "Add related record button"
+  },
+  "genericLinkRecord": {
+    "message": "लिंक रिकॉर्ड",
+    "description": "Link record button"
+  },
+  "genericShowEmptyFields": {
+    "message": "खाली फ़ील्ड दिखाएँ",
+    "description": "Show empty fields toggle"
+  },
+  "genericNoFieldsMatch": {
+    "message": "कोई भी फ़ील्ड आपके फ़िल्टर से मेल नहीं खाता.",
+    "description": "Details filter no match"
+  },
+  "genericNoFieldsToShow": {
+    "message": "दिखाने के लिए कोई फ़ील्ड नहीं.",
+    "description": "Empty details fields"
+  },
+  "genericNoRecordLoaded": {
+    "message": "कोई रिकॉर्ड लोड नहीं हुआ.",
+    "description": "No record state"
+  },
+  "genericIntegrations": {
+    "message": "एकीकरण",
+    "description": "Integrations section title"
+  },
+  "genericNoIntegrations": {
+    "message": "कोई एकीकरण कॉन्फ़िगर नहीं किया गया.",
+    "description": "Empty integrations"
+  },
+  "genericFilterFieldsPh": {
+    "message": "फ़ील्ड फ़िल्टर करें...",
+    "description": "Details field filter placeholder"
+  },
+  "genericOpenInNewTab": {
+    "message": "वेब टेब में खोलें",
+    "description": "Open record in new tab"
+  },
+  "genericEditParticipation": {
+    "message": "भागीदारी संपादित करें",
+    "description": "Edit app participation"
+  },
+  "genericAddToApp": {
+    "message": "{app} में जोड़ें",
+    "description": "Add person to app"
+  },
+  "genericLinkDrawerAddAndLink": {
+    "message": "रिकॉर्ड्स जोड़ें और लिंक करें",
+    "description": "Link drawer title multi"
+  },
+  "genericLinkDrawerLink": {
+    "message": "लिंक रिकॉर्ड",
+    "description": "Link drawer title single"
+  },
+  "genericReactorUnavailable": {
+    "message": "रिएक्टर विवरण उपलब्ध नहीं है",
+    "description": "Reactor panel unavailable"
+  },
+  "genericUnlinkFailed": {
+    "message": "रिकॉर्ड अनलिंक करने में त्रुटि. कृपया पुन: प्रयास करें।",
+    "description": "Unlink related record error"
+  },
+  "genericThreadAssigned": {
+    "message": "थ्रेड असाइन किया गया",
+    "description": "Thread assign success"
+  },
+  "genericThreadUnassigned": {
+    "message": "थ्रेड असाइन किया गया",
+    "description": "Thread unassign success"
+  },
+  "genericThreadAssignFailed": {
+    "message": "थ्रेड आवंटित करने में विफल",
+    "description": "Thread assign error"
+  },
+  "genericThreadUnassignFailed": {
+    "message": "थ्रेड अनअसाइन करने में विफल",
+    "description": "Thread unassign error"
+  },
+  "genericTagAdded": {
+    "message": "टैग जोड़ा गया",
+    "description": "Tag add success"
+  },
+  "genericTagAddFailed": {
+    "message": "टैग जोड़ने में विफल",
+    "description": "Tag add error"
+  },
+  "genericTagRemoved": {
+    "message": "टैग हटा दिया गया",
+    "description": "Tag remove success"
+  },
+  "genericTagRemoveFailed": {
+    "message": "टैग हटाने में विफल",
+    "description": "Tag remove error"
+  },
+  "genericThreadMarkedDone": {
+    "message": "थ्रेड हो गया चिह्नित",
+    "description": "Thread done success"
+  },
+  "genericThreadReopened": {
+    "message": "धागा पुनः खुल गया",
+    "description": "Thread reopen success"
+  },
+  "genericThreadStatusFailed": {
+    "message": "थ्रेड स्थिति अपडेट करने में विफल",
+    "description": "Thread status error"
+  },
+  "genericConfirmCancelAppt": {
+    "message": "यह नियुक्ति रद्द करें? अतिथि आपके सार्वजनिक लिंक का उपयोग करके फिर से बुकिंग कर सकता है।",
+    "description": "Cancel appointment confirm"
+  },
+  "genericApptCancelled": {
+    "message": "नियुक्ति रद्द",
+    "description": "Appointment cancel success"
+  },
+  "genericApptCancelFailed": {
+    "message": "नियुक्ति रद्द नहीं की जा सकी",
+    "description": "Appointment cancel error"
+  },
+  "genericConfirmCompleteAppt": {
+    "message": "इस नियुक्ति को पूर्ण के रूप में चिह्नित करें?",
+    "description": "Complete appointment confirm"
+  },
+  "genericApptCompleted": {
+    "message": "नियुक्ति पूरी हो गई",
+    "description": "Appointment complete success"
+  },
+  "genericApptCompleteFailed": {
+    "message": "नियुक्ति पूरी नहीं हो सकी",
+    "description": "Appointment complete error"
+  },
+  "genericConfirmNoShowAppt": {
+    "message": "इस नियुक्ति को नो-शो के रूप में चिह्नित करें? कार्यक्रम योजना के अनुसार आपके कैलेंडर पर रहेगा।",
+    "description": "No-show appointment confirm"
+  },
+  "genericApptNoShow": {
+    "message": "नो-शो के रूप में चिह्नित",
+    "description": "No-show success"
+  },
+  "genericApptNoShowFailed": {
+    "message": "नो-शो चिह्नित नहीं किया जा सका",
+    "description": "No-show error"
+  },
+  "genericApptRescheduled": {
+    "message": "नियुक्ति पुनर्निर्धारित",
+    "description": "Appointment reschedule success"
+  },
+  "genericEmailSent": {
+    "message": "ईमेल भेजा गया",
+    "description": "Email send success"
+  },
+  "genericEmailSendFailed": {
+    "message": "ईमेल भेजने में विफल",
+    "description": "Email send error"
+  },
+  "genericNotParticipatingIn": {
+    "message": "अभी तक {app} में भाग नहीं ले रहा हूँ",
+    "description": "People not in app context"
+  },
+  "genericDetailsEmptyValuesHint": {
+    "message": "मानों वाला कोई फ़ील्ड नहीं. बाकी देखने के लिए \"खाली फ़ील्ड दिखाएँ\" चालू करें।",
+    "description": "Details tab empty values hint"
+  },
+  "genericPersonReacted": {
+    "message": "व्यक्ति ने प्रतिक्रिया व्यक्त की",
+    "description": "Single reaction tooltip suffix"
+  },
+  "genericPeopleReacted": {
+    "message": "लोगों ने प्रतिक्रिया व्यक्त की",
+    "description": "Multiple reactions tooltip suffix"
+  },
+  "genericTabActivity": {
+    "message": "गतिविधि",
+    "description": "Right pane activity tab"
+  },
+  "commentComposerDefaultPh": {
+    "message": "एक टिप्पणी लिखें... @उपयोगकर्ताओं या समूहों का उल्लेख करें",
+    "description": "Default comment composer placeholder"
+  },
+  "commentAddFile": {
+    "message": "एक फ़ाइल जोड़ें",
+    "description": "Attach file toolbar button"
+  },
+  "commentMentionTitle": {
+    "message": "किसी का उल्लेख करें ({atSymbol})",
+    "description": "Mention toolbar button"
+  },
+  "commentAddEmoji": {
+    "message": "इमोजी जोड़ें",
+    "description": "Emoji picker toolbar button"
+  },
+  "commentSubmitLabel": {
+    "message": "टिप्पणी",
+    "description": "Submit comment button label"
+  },
+  "commentMentionLoading": {
+    "message": "लोड हो रहा है...",
+    "description": "Mention dropdown loading"
+  },
+  "commentMentionGroup": {
+    "message": "समूह",
+    "description": "Mention item group badge"
+  },
+  "commentMentionEmpty": {
+    "message": "कोई उपयोगकर्ता या समूह नहीं मिला",
+    "description": "Empty mention search"
+  },
+  "commentRemoveAttachment": {
+    "message": "{name} हटाएं",
+    "description": "Remove attachment aria-label"
+  },
+  "editableListboxSearchPh": {
+    "message": "खोजना…",
+    "description": "Inline field listbox search"
+  },
+  "editablePhonePh": {
+    "message": "फ़ोन नंबर",
+    "description": "Phone field edit placeholder"
+  },
+  "editableUnassigned": {
+    "message": "सौंपे नहीं गए",
+    "description": "Empty user field value"
+  },
+  "editableSelectOption": {
+    "message": "कोई विकल्प चुनें",
+    "description": "Empty select/entity option"
+  },
+  "editableNoMatches": {
+    "message": "कोई मेल नहीं।",
+    "description": "Listbox filter empty state"
+  },
+  "editableUnknownUser": {
+    "message": "अज्ञात उपयोगकर्ता",
+    "description": "User option fallback label"
+  },
+  "dealLoading": {
+    "message": "डील लोड हो रही है...",
+    "description": "Deal record page loading"
+  },
+  "dealErrorTitle": {
+    "message": "डील लोड करने में त्रुटि",
+    "description": "Deal record page error title"
+  },
+  "dealNavPrevious": {
+    "message": "पिछला सौदा",
+    "description": "Previous deal navigation"
+  },
+  "dealNavNext": {
+    "message": "अगला सौदा",
+    "description": "Next deal navigation"
+  },
+  "dealModuleLabel": {
+    "message": "सौदा",
+    "description": "Deal module singular label"
+  },
+  "dealBackTo": {
+    "message": "सौदे पर वापस जाएँ",
+    "description": "Collapse expanded deal section"
+  },
+  "dealEmailContact": {
+    "message": "ईमेल संपर्क",
+    "description": "Email contact action"
+  },
+  "dealEditAria": {
+    "message": "सौदा संपादित करें",
+    "description": "Edit deal action"
+  },
+  "dealVersionRetentionNote": {
+    "message": "डील विवरण में संस्करण इतिहास 365 दिनों तक संग्रहीत किया जाएगा।",
+    "description": "Deal description version retention"
+  },
+  "dealWeightedAmount": {
+    "message": "भारित {amount}",
+    "description": "Deal weighted amount label"
+  },
+  "dealExpectedValuePh": {
+    "message": "अपेक्षित मूल्य",
+    "description": "Deal amount field placeholder"
+  },
+  "dealProbabilityPh": {
+    "message": "संभावना",
+    "description": "Deal probability placeholder"
+  },
+  "dealCloseDatePh": {
+    "message": "करीबी तारीख",
+    "description": "Deal expected close date placeholder"
+  },
+  "dealStarAria": {
+    "message": "तारा",
+    "description": "Star/follow deal"
+  },
+  "dealUnstarAria": {
+    "message": "अतारांकित",
+    "description": "Unfollow deal"
+  },
+  "dealRelatedRecordsTab": {
+    "message": "संबंधित अभिलेख",
+    "description": "Deal right pane related tab"
+  },
+  "dealDuplicateNotImplemented": {
+    "message": "सौदों के लिए डुप्लिकेट कार्रवाई अभी तक लागू नहीं की गई है।",
+    "description": "Deal duplicate stub alert"
+  },
+  "dealExportNotImplemented": {
+    "message": "सौदों के लिए निर्यात कार्रवाई अभी तक लागू नहीं की गई है।",
+    "description": "Deal export stub alert"
+  },
+  "dealDeleteFailed": {
+    "message": "सौदा हटाने में विफल",
+    "description": "Deal delete error"
+  },
+  "dealCopyUrlFailed": {
+    "message": "यूआरएल कॉपी करने में विफल",
+    "description": "Deal copy URL error"
+  },
+  "dealCommentAddFailed": {
+    "message": "टिप्पणी जोड़ने में विफल",
+    "description": "Deal add comment error"
+  },
+  "dealCommentUpdateFailed": {
+    "message": "टिप्पणी अद्यतन करने में विफल",
+    "description": "Deal edit comment error"
+  },
+  "dealCreateTaskFailed": {
+    "message": "कार्य बनाने में विफल",
+    "description": "Deal create related task error"
+  },
+  "dealCreateCaseFailed": {
+    "message": "मामला बनाने में विफल",
+    "description": "Deal create related case error"
+  },
+  "dealAttachedFilesFallback": {
+    "message": "संलग्न फ़ाइलें",
+    "description": "Comment with attachments only"
+  },
+  "dealUnnamedOrganization": {
+    "message": "अनाम संगठन",
+    "description": "Organization picker fallback"
+  },
+  "dealUnnamedPerson": {
+    "message": "अज्ञात",
+    "description": "Person picker fallback"
+  },
+  "taskLoading": {
+    "message": "कार्य लोड हो रहा है...",
+    "description": "Task record page loading"
+  },
+  "taskErrorTitle": {
+    "message": "कार्य लोड करने में त्रुटि",
+    "description": "Task record page error title"
+  },
+  "taskNavPrevious": {
+    "message": "पिछला कार्य",
+    "description": "Previous task navigation"
+  },
+  "taskNavNext": {
+    "message": "अगला कार्य",
+    "description": "Next task navigation"
+  },
+  "taskModuleLabel": {
+    "message": "काम",
+    "description": "Task module singular label"
+  },
+  "taskBackTo": {
+    "message": "कार्य पर वापस जाएँ",
+    "description": "Collapse expanded task section"
+  },
+  "taskEditAria": {
+    "message": "कार्य संपादित करें",
+    "description": "Edit task action"
+  },
+  "taskEmailAssignee": {
+    "message": "ईमेल समनुदेशिती",
+    "description": "Email task assignee action"
+  },
+  "taskVersionRetentionNote": {
+    "message": "कार्य विवरण में संस्करण इतिहास 365 दिनों तक संग्रहीत किया जाएगा।",
+    "description": "Task description version retention"
+  },
+  "taskStarAria": {
+    "message": "तारा",
+    "description": "Star/follow task"
+  },
+  "taskUnstarAria": {
+    "message": "अतारांकित",
+    "description": "Unfollow task"
+  },
+  "taskRelatedRecordsTab": {
+    "message": "संबंधित अभिलेख",
+    "description": "Task right pane related tab"
+  },
+  "taskCopyUrlSuccess": {
+    "message": "यूआरएल क्लिपबोर्ड पर कॉपी किया गया!",
+    "description": "Task copy URL success"
+  },
+  "taskLinkModuleFailed": {
+    "message": "{moduleKey} को लिंक करने में त्रुटि. कृपया पुन: प्रयास करें।",
+    "description": "Task link related record error"
+  },
+  "taskRelatedGroupProject": {
+    "message": "परियोजना",
+    "description": "Related project group heading"
+  },
+  "taskRelatedGroupPeople": {
+    "message": "लोग",
+    "description": "Related people group heading"
+  },
+  "taskRelatedGroupEvents": {
+    "message": "घटनाएँ",
+    "description": "Related events group heading"
+  },
+  "taskRelatedGroupDeals": {
+    "message": "सौदा",
+    "description": "Related deals group heading"
+  },
+  "taskRelatedGroupForms": {
+    "message": "फार्म",
+    "description": "Related forms group heading"
+  },
+  "taskCloseTimestampDetails": {
+    "message": "टाइमस्टैम्प विवरण बंद करें",
+    "description": "Close timestamp popover aria"
+  },
+  "activityCloseSearchAria": {
+    "message": "खोज बंद करें",
+    "description": "Close activity search bar"
+  },
+  "activityNotificationsAria": {
+    "message": "सूचनाएं",
+    "description": "Activity notifications button"
+  },
+  "activityFilterAria": {
+    "message": "गतिविधियों को फ़िल्टर करें",
+    "description": "Activity filter menu button"
+  },
+  "activityFilterHeading": {
+    "message": "गतिविधियाँ",
+    "description": "Activity filter menu title"
+  },
+  "activityUnselectAll": {
+    "message": "सभी को अचयनित करें",
+    "description": "Clear all activity filters"
+  },
+  "activitySelectAll": {
+    "message": "सबका चयन करें",
+    "description": "Enable all activity filters"
+  },
+  "activityFilterComments": {
+    "message": "टिप्पणियाँ",
+    "description": "Activity filter: comments"
+  },
+  "activityFilterEmail": {
+    "message": "ईमेल",
+    "description": "Activity filter: email"
+  },
+  "activityFilterUpdates": {
+    "message": "अपडेट",
+    "description": "Activity filter: updates"
+  },
+  "activityFilterDoneThreads": {
+    "message": "हो गए धागे",
+    "description": "Activity filter: done threads"
+  },
+  "activityFilterAssignedToMe": {
+    "message": "मुझे सौंपा गया",
+    "description": "Activity filter: assigned to me"
+  },
+  "activityFilterTaggedThreads": {
+    "message": "टैग किए गए धागे",
+    "description": "Activity filter: tagged threads"
+  },
+  "activityFilterUntaggedThreads": {
+    "message": "अचिह्नित धागे",
+    "description": "Activity filter: untagged threads"
+  },
+  "activitySearchPh": {
+    "message": "खोजना…",
+    "description": "Activity search input placeholder"
+  },
+  "activityClearSearchAria": {
+    "message": "स्पष्ट खोज",
+    "description": "Clear activity search"
+  },
+  "activityClearSearchTitle": {
+    "message": "स्पष्ट",
+    "description": "Clear search button title"
+  },
+  "activityThreadBy": {
+    "message": "द्वारा धागा",
+    "description": "Thread view author prefix"
+  },
+  "activityNothingFound": {
+    "message": "कुछ भी नहीं मिला",
+    "description": "No activities match filters"
+  },
+  "activitySelectOneFilter": {
+    "message": "कृपया कम से कम एक फ़िल्टर चुनें.",
+    "description": "Empty filter state hint"
+  },
+  "activityResetFilters": {
+    "message": "फ़िल्टर रीसेट करें",
+    "description": "Reset activity filters button"
+  },
+  "activityReplyPh": {
+    "message": "टिप्पणी का उत्तर दें...",
+    "description": "Thread reply composer placeholder"
+  },
+  "activityCommentEdited": {
+    "message": "(संपादित)",
+    "description": "Comment edited indicator"
+  },
+  "activityEditCommentAria": {
+    "message": "टिप्पणी संपादित करें",
+    "description": "Edit comment button aria"
+  },
+  "activityReplyToCommentAria": {
+    "message": "टिप्पणी का उत्तर दें",
+    "description": "Reply to comment button aria"
+  },
+  "activityEditCommentPh": {
+    "message": "टिप्पणी संपादित करें...",
+    "description": "Edit comment composer placeholder"
+  },
+  "notesBlockedContext": {
+    "message": "ऐप का संदर्भ अस्पष्ट है. यह निर्धारित नहीं कर पा रहा हूँ कि कौन से नोट दिखाएँ।",
+    "description": "Notes blocked when app context unclear"
+  },
+  "notesAdding": {
+    "message": "जोड़ा जा रहा है...",
+    "description": "Submit note in progress"
+  },
+  "notesAddNoteBtn": {
+    "message": "नोट जोड़े",
+    "description": "Submit new note button"
+  },
+  "notesUserFallback": {
+    "message": "उपयोगकर्ता",
+    "description": "Author name fallback in notes list"
+  },
+  "notesAddANoteAboveToGet": {
+    "message": "आरंभ करने के लिए ऊपर एक नोट जोड़ें.",
+    "description": "Auto-migrated from notes"
+  },
+  "notesNoNotesYet": {
+    "message": "अभी तक कोई नोट नहीं.",
+    "description": "Auto-migrated from notes"
+  },
+  "notesWriteANote": {
+    "message": "एक लेख लिखो...",
+    "description": "Auto-migrated from notes"
+  },
+  "notesAddNote": {
+    "message": "नोट जोड़े",
+    "description": "Auto-migrated from notes"
+  },
+  "notesCannotLoadNotes": {
+    "message": "नोट्स लोड नहीं कर सकते",
+    "description": "Auto-migrated from notes"
+  },
+  "notesErrorLoadingNotes": {
+    "message": "नोट्स लोड करने में त्रुटि",
+    "description": "Auto-migrated from notes"
+  },
+  "notesLoadingNotes": {
+    "message": "नोट लोड हो रहे हैं...",
+    "description": "Auto-migrated from notes"
+  },
+  "filesUploadAFileAboveToGet": {
+    "message": "आरंभ करने के लिए ऊपर एक फ़ाइल अपलोड करें।",
+    "description": "Auto-migrated from files"
+  },
+  "filesNoFilesUploadedYet": {
+    "message": "अभी तक कोई फ़ाइल अपलोड नहीं की गई है.",
+    "description": "Auto-migrated from files"
+  },
+  "filesDownload": {
+    "message": "डाउनलोड करना",
+    "description": "Auto-migrated from files"
+  },
+  "filesAllowedImagesPdfWordExcelCsv": {
+    "message": "अनुमति: चित्र, पीडीएफ, वर्ड, एक्सेल, सीएसवी (अधिकतम 10एमबी)",
+    "description": "Auto-migrated from files"
+  },
+  "filesUploadFile": {
+    "message": "फ़ाइल अपलोड करें",
+    "description": "Auto-migrated from files"
+  },
+  "filesCannotLoadFiles": {
+    "message": "फ़ाइलें लोड नहीं हो सकतीं",
+    "description": "Auto-migrated from files"
+  },
+  "filesErrorLoadingFiles": {
+    "message": "फ़ाइलें लोड करने में त्रुटि",
+    "description": "Auto-migrated from files"
+  },
+  "filesLoadingFiles": {
+    "message": "फ़ाइलें लोड हो रही हैं...",
+    "description": "Auto-migrated from files"
+  },
+  "activityTimelineCannotLoadActivities": {
+    "message": "गतिविधियाँ लोड नहीं की जा सकतीं",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "activityTimelineErrorLoadingActivities": {
+    "message": "गतिविधियाँ लोड करने में त्रुटि",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "activityTimelineLoadingActivities": {
+    "message": "गतिविधियाँ लोड हो रही हैं...",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "taskDescriptionEditorInsertLink": {
+    "message": "लिंक डालें",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorRemoveLink": {
+    "message": "लिंक हटाएँ",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorNumberedList": {
+    "message": "क्रमांकित सूची",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorBulletList": {
+    "message": "बुलेट सूची",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorStrikethrough": {
+    "message": "स्ट्राइकथ्रू",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorItalic": {
+    "message": "तिरछा",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorBold": {
+    "message": "बोल्ड",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading3": {
+    "message": "शीर्षक 3",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading2": {
+    "message": "शीर्षक 2",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading1": {
+    "message": "शीर्षक 1",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "recordDetailThisRecordTypeIsNotConfigured": {
+    "message": "यह रिकॉर्ड प्रकार कॉन्फ़िगर नहीं किया गया है.",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "recordDetailRecordNotFound": {
+    "message": "रिकार्ड नहीं मिला",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "recordDetailLoading": {
+    "message": "लोड हो रहा है...",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "relatedRecordsPanelThisRecordRequiresTheFollowingRelationships": {
+    "message": "इस रिकॉर्ड के लिए निम्नलिखित संबंधों को लिंक करना आवश्यक है:",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelRequiredRelationships": {
+    "message": "आवश्यक रिश्ते",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelLinkThisRecordToPeopleOrganizations": {
+    "message": "इस रिकॉर्ड को लोगों, संगठनों, कार्यों, घटनाओं या रूपों से लिंक करें।",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelNoRelationshipsConfiguredForThisRecord": {
+    "message": "इस रिकॉर्ड प्रकार के लिए कोई संबंध कॉन्फ़िगर नहीं किया गया.",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelErrorLoadingRelatedRecords": {
+    "message": "संबंधित रिकॉर्ड लोड करने में त्रुटि",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelLoadingRelatedRecords": {
+    "message": "संबंधित रिकॉर्ड लोड हो रहा है...",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsRendererNoRelationshipsConfiguredForThisRecord": {
+    "message": "इस रिकॉर्ड प्रकार के लिए कोई संबंध कॉन्फ़िगर नहीं किया गया.",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsRendererTheFollowingRequiredRelationshipsMustBe": {
+    "message": "सहेजने से पहले निम्नलिखित आवश्यक संबंधों को लिंक किया जाना चाहिए:",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsRendererRequiredRelationshipsMissing": {
+    "message": "आवश्यक रिश्ते गायब हैं",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsTabLinkExisting": {
+    "message": "लिंक मौजूदा",
+    "description": "Auto-migrated from relatedRecordsTab"
+  },
+  "relationshipUnlinkConfirmAreYouSureYouWantTo": {
+    "message": "क्या आप वाकई अनलिंक करना चाहते हैं?",
+    "description": "Auto-migrated from relationshipUnlinkConfirm"
+  },
+  "reactionBarReactToComment": {
+    "message": "टिप्पणी पर प्रतिक्रिया दें",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarLikeComment": {
+    "message": "लाइक कमेंट",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarReactToComment2": {
+    "message": "टिप्पणी पर प्रतिक्रिया दें",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarLikeComment2": {
+    "message": "लाइक कमेंट",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "activitySystemRowShowMore": {
+    "message": "और दिखाएँ",
+    "description": "Auto-migrated from activitySystemRow"
+  },
+  "approvalHistoryEscalatedToNewApprovers": {
+    "message": "नए अनुमोदकों तक बढ़ा दिया गया",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryProcess": {
+    "message": "प्रक्रिया:",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryReason": {
+    "message": "कारण:",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryDecidedBy": {
+    "message": "द्वारा निर्णय लिया गया:",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryNoApprovalHistoryFound": {
+    "message": "कोई अनुमोदन इतिहास नहीं मिला",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryApprovalHistory": {
+    "message": "अनुमोदन इतिहास",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "linkRecordModalLinking": {
+    "message": "लिंक किया जा रहा है...",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "linkRecordModalSelectARecordType": {
+    "message": "एक रिकॉर्ड प्रकार चुनें...",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "linkRecordModalRecordType": {
+    "message": "रिकॉर्ड प्रकार",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "recordDetailToastFailedToDeleteRecordPlease": {
+    "message": "रिकॉर्ड हटाने में विफल. कृपया पुन: प्रयास करें।",
+    "description": "Toast from RecordDetail.vue"
+  },
+  "instanceManagementToastInstanceManagementUiComingSoon": {
+    "message": "इंस्टेंस प्रबंधन यूआई जल्द ही आ रहा है!",
+    "description": "Toast from InstanceManagement.vue"
+  },
+  "useRecordHeaderActionsToastUrlCopiedToClipboard": {
+    "message": "यूआरएल क्लिपबोर्ड पर कॉपी किया गया!",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "useRecordHeaderActionsToastErrorExportingRecordPleaseTry": {
+    "message": "रिकॉर्ड निर्यात करने में त्रुटि. कृपया पुन: प्रयास करें।",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "useRecordHeaderActionsToastErrorDeletingRecordPleaseTry": {
+    "message": "रिकॉर्ड हटाने में त्रुटि. कृपया पुन: प्रयास करें।",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "tabPreview": {
+    "message": "पूर्व दर्शन",
+    "description": "Form summary preview tab"
+  },
+  "tabUsage": {
+    "message": "प्रयोग",
+    "description": "Form summary usage tab"
+  },
+  "tabResponses": {
+    "message": "जवाब",
+    "description": "Form summary responses tab"
+  },
+  "tabTenantDetails": {
+    "message": "किरायेदार विवरण",
+    "description": "Organization tenant details tab"
+  },
+  "relatedRecordsTitle": {
+    "message": "संबंधित अभिलेख",
+    "description": "Left column related records section title"
+  },
+  "subtasksTitle": {
+    "message": "उप-कार्य",
+    "description": "Task record subtasks section title"
+  },
+  "subtasksTitleWithCount": {
+    "message": "उपकार्य ({completed}/{total})",
+    "description": "Task subtasks section title with completion counts"
+  },
+  "sectionAddSubtask": {
+    "message": "उपकार्य जोड़ें",
+    "description": "Add subtask action label"
+  },
+  "sectionExpand": {
+    "message": "बढ़ाना",
+    "description": "Expand record section action"
+  },
+  "sectionHistory": {
+    "message": "इतिहास",
+    "description": "Description history action"
+  },
+  "sectionLinkRecord": {
+    "message": "लिंक रिकॉर्ड",
+    "description": "Link related record action"
+  },
+  "sectionAddRecord": {
+    "message": "रिकॉर्ड जोड़ें",
+    "description": "Add related record action"
+  },
+  "sectionViewMore": {
+    "message": "और देखें",
+    "description": "Load more subtasks action"
+  },
+  "sectionViewLess": {
+    "message": "कम देखें",
+    "description": "Collapse field list action"
+  },
+  "sectionViewAll": {
+    "message": "सभी देखें ({count})",
+    "description": "Expand details field list"
+  },
+  "sectionGroupCore": {
+    "message": "मुख्य",
+    "description": "Field group label"
+  },
+  "sectionGroupSystem": {
+    "message": "प्रणाली",
+    "description": "Field group label"
+  },
+  "sectionGroupOther": {
+    "message": "अन्य",
+    "description": "Field group label"
+  },
+  "sectionCreatedVia": {
+    "message": "के माध्यम से बनाया गया",
+    "description": "Record source field label"
+  },
+  "sectionGroupRecord": {
+    "message": "अभिलेख",
+    "description": "Record metadata group label"
+  },
+  "activitySystemActorSystem": {
+    "message": "प्रणाली",
+    "description": "System actor label in activity feed"
+  },
+  "activitySystemFieldFallback": {
+    "message": "मैदान",
+    "description": "Fallback when system event field label is unknown"
+  },
+  "activitySystemChanged": {
+    "message": "बदल गया",
+    "description": "System field change activity between actor and field"
+  },
+  "activitySystemChangedTo": {
+    "message": "{field} में बदला गया",
+    "description": "Tags/system field change lead-in"
+  },
+  "activitySystemChangedFromTo": {
+    "message": "{field} को \"{from}\" से \"{to}\" में बदला गया",
+    "description": "Generic field change summary"
+  },
+  "activityUpdatedRecord": {
+    "message": "इस रिकॉर्ड को अपडेट किया गया",
+    "description": "Generic system activity fallback"
+  }
+}

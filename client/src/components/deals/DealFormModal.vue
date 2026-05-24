@@ -9,17 +9,16 @@
       <form @submit.prevent="handleSubmit" class="p-8">
         <!-- Basic Information -->
         <div class="mb-8 pb-8 border-b border-gray-200 dark:border-gray-700 last:border-0">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Deal Information</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">{{ t('deals.dealFormModalDealInformation') }}</h3>
           
           <div class="grid grid-cols-1 gap-6 mb-6">
             <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Deal Name <span class="text-red-600">*</span>
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('deals.dealFormModalDealName') }}<span class="text-red-600">*</span>
               </label>
               <input 
                 v-model="form.name" 
                 type="text" 
-                placeholder="e.g., Acme Corp - CRM Implementation"
+                :placeholder="t('deals.dealFormModalEGAcmeCorpCrmImplementation')"
                 required
                 class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
               />
@@ -28,8 +27,7 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Amount <span class="text-red-600">*</span>
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('settings.assignRulesCondFieldAmount') }}<span class="text-red-600">*</span>
               </label>
               <div class="relative">
                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 dark:text-gray-400 font-medium pointer-events-none">$</span>
@@ -46,8 +44,7 @@
             </div>
 
             <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Expected Close Date <span class="text-red-600">*</span>
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('deals.dealFormModalExpectedCloseDate') }}<span class="text-red-600">*</span>
               </label>
               <input 
                 v-model="form.expectedCloseDate" 
@@ -61,14 +58,12 @@
 
           <!-- Pipeline Selector (if config exists) -->
           <div v-if="pipelines.length > 0" class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Pipeline
-            </label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('settings.assignRulesCondFieldPipeline') }}</label>
             <select 
               v-model="form.pipeline"
               class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all cursor-pointer"
             >
-              <option :value="null">Select pipeline...</option>
+              <option :value="null">{{ t('deals.dealFormModalSelectPipeline') }}</option>
               <option v-for="p in pipelines" :key="String(p.key)" :value="p.key">
                 {{ p.label }}
               </option>
@@ -78,8 +73,7 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Stage: Primary Control (always editable) -->
             <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Stage <span class="text-red-600">*</span>
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('settings.modFieldsStageLabelFallback') }}<span class="text-red-600">*</span>
                 <span class="ml-2 text-xs text-gray-500 dark:text-gray-400 font-normal">(Primary control)</span>
               </label>
               <select 
@@ -98,9 +92,7 @@
                   <option value="" disabled>{{ pipelines.length && !form.pipeline ? 'Select a pipeline first' : 'Configure stages in Settings' }}</option>
                 </template>
               </select>
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Changing stage updates status and probability automatically
-              </p>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('deals.dealFormModalChangingStageUpdatesStatusAndProbability') }}</p>
             </div>
 
             <!-- Probability: Read-only when derivedStatus exists -->
@@ -135,9 +127,7 @@
           
           <!-- Status: Read-only badge when derivedStatus exists -->
           <div v-if="isStatusReadOnly" class="mt-4">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Status
-              <span class="ml-2 text-xs text-gray-500 dark:text-gray-400 italic">(System-owned)</span>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('settings.settingsBhFieldStatus') }}<span class="ml-2 text-xs text-gray-500 dark:text-gray-400 italic">(System-owned)</span>
             </label>
             <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg">
               <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-info-50 dark:bg-info-900/20 text-info-700 dark:text-info-300 border border-info-200 dark:border-info-800">
@@ -149,45 +139,45 @@
 
         <!-- Classification -->
         <div class="mb-8 pb-8 border-b border-gray-200 dark:border-gray-700 last:border-0">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Classification</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">{{ t('deals.dealFormModalClassification') }}</h3>
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Deal Type</label>
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('deals.dealFormModalDealType') }}</label>
               <select 
                 v-model="form.type"
                 class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all cursor-pointer"
               >
-                <option value="">Select Type</option>
-                <option value="New Business">New Business</option>
-                <option value="Existing Customer">Existing Customer</option>
-                <option value="Upsell">Upsell</option>
-                <option value="Renewal">Renewal</option>
-                <option value="Cross-Sell">Cross-Sell</option>
+                <option value="">{{ t('deals.dealFormModalSelectType') }}</option>
+                <option value="New Business">{{ t('deals.dealFormModalNewBusiness') }}</option>
+                <option value="Existing Customer">{{ t('deals.dealFormModalExistingCustomer') }}</option>
+                <option value="Upsell">{{ t('deals.dealFormModalUpsell') }}</option>
+                <option value="Renewal">{{ t('deals.dealFormModalRenewal') }}</option>
+                <option value="Cross-Sell">{{ t('deals.dealFormModalCrossSell') }}</option>
               </select>
             </div>
 
             <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Priority</label>
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('settings.modFieldsPriorityLabel') }}</label>
               <select 
                 v-model="form.priority"
                 class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all cursor-pointer"
               >
-                <option value="Low">Low</option>
-                <option value="Medium">Medium</option>
-                <option value="High">High</option>
-                <option value="Urgent">Urgent</option>
+                <option value="Low">{{ t('settings.helpdeskExecPriorityLow') }}</option>
+                <option value="Medium">{{ t('settings.helpdeskExecPriorityMedium') }}</option>
+                <option value="High">{{ t('settings.helpdeskExecPriorityHigh') }}</option>
+                <option value="Urgent">{{ t('deals.dealFormModalUrgent') }}</option>
               </select>
             </div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="flex flex-col md:col-span-2">
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tags (comma separated)</label>
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('deals.dealFormModalTagsCommaSeparated') }}</label>
               <input 
                 v-model="tagsString" 
                 type="text" 
-                placeholder="enterprise, priority, demo"
+                :placeholder="t('deals.dealFormModalEnterprisePriorityDemo')"
                 class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
               />
             </div>
@@ -196,25 +186,25 @@
 
         <!-- Relationships -->
         <div class="mb-8 pb-8 border-b border-gray-200 dark:border-gray-700 last:border-0">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Relationships</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">{{ t('settings.modFieldsTabRelationships') }}</h3>
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Contact</label>
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('forms.hubLinkedContact') }}</label>
               <select 
                 v-model="form.contactId"
                 class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all cursor-pointer"
               >
-                <option value="">Select Contact</option>
+                <option value="">{{ t('deals.dealFormModalSelectContact') }}</option>
                 <option v-for="contact in contacts" :key="contact._id" :value="contact._id">
                   {{ contact.first_name }} {{ contact.last_name }} ({{ contact.email }})
                 </option>
               </select>
-              <p class="text-xs text-gray-600 dark:text-gray-400 mt-2">Link this deal to a contact</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mt-2">{{ t('deals.dealFormModalLinkThisDealToAContact') }}</p>
             </div>
 
             <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Owner</label>
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('settings.roleUsersOwner') }}</label>
               <select 
                 v-model="form.ownerId"
                 class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all cursor-pointer"
@@ -229,15 +219,15 @@
 
         <!-- Additional Details -->
         <div class="mb-8 pb-8 border-b border-gray-200 dark:border-gray-700 last:border-0">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Additional Details</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">{{ t('deals.dealFormModalAdditionalDetails') }}</h3>
           
           <div class="grid grid-cols-1 gap-6 mb-6">
             <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('settings.coreModDetailDescription') }}</label>
               <textarea 
                 v-model="form.description" 
                 rows="4"
-                placeholder="Add details about this deal, requirements, notes, etc."
+                :placeholder="t('deals.dealFormModalAddDetailsAboutThisDealRequirements')"
                 class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all resize-none"
               ></textarea>
             </div>
@@ -245,7 +235,7 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Next Follow-up Date</label>
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('deals.dealFormModalNextFollowUpDate') }}</label>
               <input 
                 v-model="form.nextFollowUpDate" 
                 type="date"
@@ -262,9 +252,7 @@
             type="button" 
             @click="$emit('close')" 
             class="px-6 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-          >
-            Cancel
-          </button>
+          >{{ t('performance.cancelWizard') }}</button>
           <button 
             type="submit" 
             :disabled="saving" 
@@ -279,6 +267,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, computed, watch, onMounted } from 'vue';
 import apiClient from '@/utils/apiClient';
 import { openDatePicker } from '@/utils/dateUtils';
@@ -290,6 +279,8 @@ const props = defineProps({
     default: null
   }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['close', 'saved']);
 const authStore = useAuthStore();
@@ -458,7 +449,7 @@ const handleSubmit = async () => {
     }
   } catch (error) {
     console.error('Error saving deal:', error);
-    alert(error.message || 'Failed to save deal');
+    alert(error.message || t('deals.dealFormModalToastFailedToSaveDeal'));
   } finally {
     saving.value = false;
   }

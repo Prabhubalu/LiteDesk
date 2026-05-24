@@ -1,48 +1,42 @@
 <template>
   <div class="space-y-6">
-    <!-- Header -->
     <div>
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Security</h2>
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.tabSecurity') }}</h2>
       <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        Configure platform-wide security policies and monitor security activity
+        {{ t('settings.secPageSubtitle') }}
       </p>
     </div>
 
-    <!-- Info Banner -->
     <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
       <div class="flex items-start gap-3">
         <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
         </svg>
         <div>
-          <h3 class="text-sm font-semibold text-blue-800 dark:text-blue-300">Platform-Wide Security</h3>
+          <h3 class="text-sm font-semibold text-blue-800 dark:text-blue-300">{{ t('settings.secBannerTitle') }}</h3>
           <p class="text-sm text-blue-700 dark:text-blue-400 mt-1">
-            These security policies apply across all applications in your organization. Changes take effect immediately for new sessions. Existing sessions may continue with previous rules until they expire.
+            {{ t('settings.secBannerBody') }}
           </p>
         </div>
       </div>
     </div>
 
-    <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center py-12">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
     </div>
 
-    <!-- Error State -->
     <div v-else-if="error" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
       <div class="flex items-center gap-2">
         <svg class="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <p class="text-sm text-red-800 dark:text-red-300">
-          {{ error.message || 'Failed to load security settings' }}
+          {{ error.message || t('settings.secLoadFailed') }}
         </p>
       </div>
     </div>
 
-    <!-- Settings Form -->
     <form v-else @submit.prevent="handleSubmit" class="space-y-6">
-      <!-- Password Policy -->
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
         <div class="flex items-center gap-3 mb-4">
           <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400">
@@ -51,15 +45,15 @@
             </svg>
           </div>
           <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Password Policy</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400">Configure password requirements for all users</p>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.secPasswordPolicy') }}</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.secPasswordPolicyDesc') }}</p>
           </div>
         </div>
         <div class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Minimum Length
+                {{ t('settings.secMinLength') }}
               </label>
               <input
                 v-model.number="form.passwordPolicy.minLength"
@@ -71,7 +65,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Expiration (Days)
+                {{ t('settings.secExpirationDays') }}
               </label>
               <input
                 v-model.number="form.passwordPolicy.expirationDays"
@@ -80,7 +74,7 @@
                 max="365"
                 class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 focus:border-transparent transition-all"
               />
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">0 = no expiration</p>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.secNoExpiration') }}</p>
             </div>
           </div>
           <div class="space-y-3">
@@ -90,8 +84,8 @@
                 checkbox-class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 rounded"
               />
               <div>
-                <span class="text-sm font-medium text-gray-900 dark:text-white">Require Uppercase Letters</span>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Passwords must contain at least one uppercase letter</p>
+                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.secRequireUpper') }}</span>
+                <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.secRequireUpperDesc') }}</p>
               </div>
             </label>
             <label class="flex items-center gap-3 cursor-pointer">
@@ -100,8 +94,8 @@
                 checkbox-class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 rounded"
               />
               <div>
-                <span class="text-sm font-medium text-gray-900 dark:text-white">Require Lowercase Letters</span>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Passwords must contain at least one lowercase letter</p>
+                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.secRequireLower') }}</span>
+                <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.secRequireLowerDesc') }}</p>
               </div>
             </label>
             <label class="flex items-center gap-3 cursor-pointer">
@@ -110,8 +104,8 @@
                 checkbox-class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 rounded"
               />
               <div>
-                <span class="text-sm font-medium text-gray-900 dark:text-white">Require Numbers</span>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Passwords must contain at least one number</p>
+                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.secRequireNumbers') }}</span>
+                <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.secRequireNumbersDesc') }}</p>
               </div>
             </label>
             <label class="flex items-center gap-3 cursor-pointer">
@@ -120,14 +114,14 @@
                 checkbox-class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 rounded"
               />
               <div>
-                <span class="text-sm font-medium text-gray-900 dark:text-white">Require Special Characters</span>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Passwords must contain at least one special character (!@#$%^&*)</p>
+                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.secRequireSpecial') }}</span>
+                <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.secRequireSpecialDesc') }}</p>
               </div>
             </label>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Prevent Password Reuse (Last N Passwords)
+              {{ t('settings.secPreventReuse') }}
             </label>
             <input
               v-model.number="form.passwordPolicy.preventReuse"
@@ -136,12 +130,11 @@
               max="24"
               class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 focus:border-transparent transition-all"
             />
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">0 = no restriction</p>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.secNoRestriction') }}</p>
           </div>
         </div>
       </div>
 
-      <!-- Session Rules -->
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
         <div class="flex items-center gap-3 mb-4">
           <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400">
@@ -150,14 +143,14 @@
             </svg>
           </div>
           <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Session Rules</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400">Control how long users stay logged in</p>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.secSessionRules') }}</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.secSessionRulesDesc') }}</p>
           </div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Session Duration (Hours)
+              {{ t('settings.secSessionDuration') }}
             </label>
             <input
               v-model.number="form.sessionRules.durationHours"
@@ -169,7 +162,7 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Idle Timeout (Minutes)
+              {{ t('settings.secIdleTimeout') }}
             </label>
             <input
               v-model.number="form.sessionRules.idleTimeoutMinutes"
@@ -181,7 +174,7 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Max Concurrent Sessions
+              {{ t('settings.secMaxSessions') }}
             </label>
             <input
               v-model.number="form.sessionRules.maxConcurrentSessions"
@@ -194,7 +187,6 @@
         </div>
       </div>
 
-      <!-- Login Restrictions -->
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
         <div class="flex items-center gap-3 mb-4">
           <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400">
@@ -203,8 +195,8 @@
             </svg>
           </div>
           <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Login Restrictions</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400">Control where and how users can log in</p>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.secLoginRestrictions') }}</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.secLoginRestrictionsDesc') }}</p>
           </div>
         </div>
         <div class="space-y-4">
@@ -215,14 +207,14 @@
                 checkbox-class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 rounded"
               />
               <div>
-                <span class="text-sm font-medium text-gray-900 dark:text-white">Block Failed Login Attempts</span>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Automatically block accounts after multiple failed login attempts</p>
+                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.secBlockFailed') }}</span>
+                <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.secBlockFailedDesc') }}</p>
               </div>
             </label>
             <div v-if="form.loginRestrictions.blockFailedAttempts" class="grid grid-cols-1 md:grid-cols-2 gap-4 ml-8">
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Max Failed Attempts
+                  {{ t('settings.secMaxFailedAttempts') }}
                 </label>
                 <input
                   v-model.number="form.loginRestrictions.maxFailedAttempts"
@@ -234,7 +226,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Lockout Duration (Minutes)
+                  {{ t('settings.secLockoutDuration') }}
                 </label>
                 <input
                   v-model.number="form.loginRestrictions.lockoutDurationMinutes"
@@ -248,34 +240,33 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Allowed IP Addresses (Optional)
+              {{ t('settings.secAllowedIps') }}
             </label>
             <textarea
               v-model="ipWhitelistText"
               @blur="updateIpWhitelist"
               rows="3"
               class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 focus:border-transparent transition-all"
-              placeholder="Enter one IP address per line (e.g., 192.168.1.1)"
+              :placeholder="t('settings.secAllowedIpsPlaceholder')"
             ></textarea>
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Leave empty to allow all IP addresses. Enter one IP per line.</p>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.secAllowedIpsHint') }}</p>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Blocked IP Addresses
+              {{ t('settings.secBlockedIps') }}
             </label>
             <textarea
               v-model="ipBlacklistText"
               @blur="updateIpBlacklist"
               rows="3"
               class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 focus:border-transparent transition-all"
-              placeholder="Enter one IP address per line"
+              :placeholder="t('settings.secBlockedIpsPlaceholder')"
             ></textarea>
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Enter one IP per line to block.</p>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.secBlockedIpsHint') }}</p>
           </div>
         </div>
       </div>
 
-      <!-- Two-Factor Authentication -->
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
         <div class="flex items-center gap-3 mb-4">
           <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400">
@@ -284,8 +275,8 @@
             </svg>
           </div>
           <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Two-Factor Authentication</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400">Add an extra layer of security to user accounts</p>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.secTwoFactor') }}</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.secTwoFactorDesc') }}</p>
           </div>
         </div>
         <div class="space-y-4">
@@ -295,8 +286,8 @@
               checkbox-class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 rounded"
             />
             <div>
-              <span class="text-sm font-medium text-gray-900 dark:text-white">Enable Two-Factor Authentication</span>
-              <p class="text-xs text-gray-500 dark:text-gray-400">Allow users to enable 2FA for their accounts</p>
+              <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.secEnable2fa') }}</span>
+              <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.secEnable2faDesc') }}</p>
             </div>
           </label>
           <label v-if="form.twoFactorAuth.enabled" class="flex items-center gap-3 cursor-pointer">
@@ -305,13 +296,13 @@
               checkbox-class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 rounded"
             />
             <div>
-              <span class="text-sm font-medium text-gray-900 dark:text-white">Require Two-Factor Authentication</span>
-              <p class="text-xs text-gray-500 dark:text-gray-400">All users must enable 2FA to access the platform</p>
+              <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.secRequire2fa') }}</span>
+              <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.secRequire2faDesc') }}</p>
             </div>
           </label>
           <div v-if="form.twoFactorAuth.enabled">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Allowed Methods
+              {{ t('settings.sec2faMethods') }}
             </label>
             <div class="space-y-2">
               <label class="flex items-center gap-3 cursor-pointer">
@@ -320,7 +311,7 @@
                   @change="toggle2FAMethod('totp')"
                   checkbox-class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 rounded"
                 />
-                <span class="text-sm text-gray-900 dark:text-white">TOTP (Authenticator App)</span>
+                <span class="text-sm text-gray-900 dark:text-white">{{ t('settings.sec2faTotp') }}</span>
               </label>
               <label class="flex items-center gap-3 cursor-pointer">
                 <HeadlessCheckbox
@@ -328,7 +319,7 @@
                   @change="toggle2FAMethod('sms')"
                   checkbox-class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 rounded"
                 />
-                <span class="text-sm text-gray-900 dark:text-white">SMS</span>
+                <span class="text-sm text-gray-900 dark:text-white">{{ t('settings.sec2faSms') }}</span>
               </label>
               <label class="flex items-center gap-3 cursor-pointer">
                 <HeadlessCheckbox
@@ -336,14 +327,13 @@
                   @change="toggle2FAMethod('email')"
                   checkbox-class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 rounded"
                 />
-                <span class="text-sm text-gray-900 dark:text-white">Email</span>
+                <span class="text-sm text-gray-900 dark:text-white">{{ t('settings.sec2faEmail') }}</span>
               </label>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Save Button -->
       <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
         <button
           type="button"
@@ -351,15 +341,15 @@
           :disabled="saving"
           class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Reset
+          {{ t('settings.secReset') }}
         </button>
         <button
           type="submit"
           :disabled="saving || !hasChanges"
           class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
         >
-          <span v-if="saving">Saving...</span>
-          <span v-else>Save Security Settings</span>
+          <span v-if="saving">{{ t('states.saving') }}</span>
+          <span v-else>{{ t('settings.secSave') }}</span>
           <svg v-if="saving" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -368,7 +358,6 @@
       </div>
     </form>
 
-    <!-- Security Activity Section (Read-only) -->
     <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-3">
@@ -378,22 +367,22 @@
             </svg>
           </div>
           <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Security Activity</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400">Recent login activity and security events</p>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.secActivity') }}</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.secActivityDesc') }}</p>
           </div>
         </div>
         <button
           @click="fetchSecurityActivity"
           class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
         >
-          Refresh
+          {{ t('settings.secRefresh') }}
         </button>
       </div>
       <div v-if="activityLoading" class="flex items-center justify-center py-8">
         <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
       </div>
       <div v-else-if="securityActivity.length === 0" class="text-center py-8">
-        <p class="text-sm text-gray-500 dark:text-gray-400">No security activity to display</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.secNoActivity') }}</p>
       </div>
       <div v-else class="space-y-2">
         <div
@@ -410,7 +399,7 @@
             ></div>
             <div>
               <p class="text-sm font-medium text-gray-900 dark:text-white">
-                {{ event.type === 'LOGIN_SUCCESS' ? 'Successful Login' : 'Failed Login Attempt' }}
+                {{ event.type === 'LOGIN_SUCCESS' ? t('settings.secLoginSuccess') : t('settings.secLoginFailed') }}
               </p>
               <p class="text-xs text-gray-500 dark:text-gray-400">
                 {{ event.userEmail }} • {{ formatDate(event.timestamp) }}
@@ -429,7 +418,10 @@
 <script setup>
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { ref, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
+
+const { t } = useI18n();
 
 const loading = ref(true);
 const saving = ref(false);
@@ -517,8 +509,7 @@ const fetchSecuritySettings = async () => {
         twoFactorAuth: data.data.twoFactorAuth
       };
       originalForm.value = JSON.parse(JSON.stringify(form.value));
-      
-      // Update IP list text fields
+
       ipWhitelistText.value = form.value.loginRestrictions.ipWhitelist.join('\n');
       ipBlacklistText.value = form.value.loginRestrictions.ipBlacklist.join('\n');
     } else {
@@ -556,20 +547,18 @@ const resetForm = () => {
 };
 
 const handleSubmit = async () => {
-  // Confirm high-risk changes
-  const requiresConfirmation = 
+  const requiresConfirmation =
     form.value.twoFactorAuth.required !== originalForm.value.twoFactorAuth.required ||
     form.value.loginRestrictions.blockFailedAttempts !== originalForm.value.loginRestrictions.blockFailedAttempts;
 
   if (requiresConfirmation) {
-    const confirmed = confirm('You are making changes that affect user access. Are you sure you want to continue?');
+    const confirmed = confirm(t('settings.secConfirmRisk'));
     if (!confirmed) return;
   }
 
   saving.value = true;
   error.value = null;
 
-  // Update IP lists before submitting
   updateIpWhitelist();
   updateIpBlacklist();
 
@@ -586,9 +575,9 @@ const handleSubmit = async () => {
 
     if (data && data.success) {
       originalForm.value = JSON.parse(JSON.stringify(form.value));
-      alert('Security settings updated successfully');
+      alert(t('settings.secSaveSuccess'));
     } else {
-      error.value = new Error(data.message || 'Failed to update security settings');
+      error.value = new Error(data.message || t('settings.secLoadFailed'));
     }
   } catch (err) {
     console.error('Failed to update security settings:', err);
@@ -615,4 +604,3 @@ onMounted(() => {
   fetchSecurityActivity();
 });
 </script>
-

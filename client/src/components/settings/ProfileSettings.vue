@@ -2,9 +2,9 @@
   <div class="relative pb-28">
     <!-- Header -->
     <div class="mb-6">
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Your profile</h2>
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.profileHeading') }}</h2>
       <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        How you appear across the platform and the personal preferences that follow you everywhere
+        {{ t('settings.profileSubtitle') }}
       </p>
     </div>
 
@@ -12,7 +12,7 @@
     <div v-if="loading" class="flex items-center justify-center py-24">
       <div class="flex flex-col items-center gap-3">
         <div class="animate-spin rounded-full h-10 w-10 border-2 border-gray-200 border-t-indigo-600 dark:border-gray-700 dark:border-t-indigo-400"></div>
-        <p class="text-sm text-gray-500 dark:text-gray-400">Loading your profile…</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.profileLoading') }}</p>
       </div>
     </div>
 
@@ -27,8 +27,8 @@
         </svg>
       </div>
       <div>
-        <h3 class="text-sm font-semibold text-red-900 dark:text-red-200">Couldn't load your profile</h3>
-        <p class="text-sm text-red-700 dark:text-red-300 mt-1">{{ error.message || 'Please try again.' }}</p>
+        <h3 class="text-sm font-semibold text-red-900 dark:text-red-200">{{ t('settings.profileLoadFailed') }}</h3>
+        <p class="text-sm text-red-700 dark:text-red-300 mt-1">{{ error.message || t('settings.pleaseTryAgain') }}</p>
         <button
           type="button"
           @click="fetchProfile"
@@ -37,7 +37,7 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          Retry
+          {{ t('actions.retry') }}
         </button>
       </div>
     </div>
@@ -73,7 +73,7 @@
                 @dragover.prevent="isAvatarDragging = true"
                 @dragleave.prevent="isAvatarDragging = false"
                 @drop.prevent="handleAvatarDrop"
-                :title="form.avatar ? 'Change avatar' : 'Upload avatar'"
+                :title="form.avatar ? t('settings.profileChangeAvatar') : t('settings.profileUploadAvatar')"
                 :class="[
                   'relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl shadow-lg ring-1 ring-black/5 dark:ring-white/10 flex items-center justify-center overflow-hidden focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-500/30 transition-transform',
                   isAvatarDragging ? 'scale-[1.03] ring-2 ring-indigo-400' : 'hover:scale-[1.02]'
@@ -82,7 +82,7 @@
                 <img
                   v-if="form.avatar && !avatarBroken"
                   :src="resolvedAvatarUrl"
-                  alt="Your avatar"
+                  :alt="t('settings.profileAvatarAlt')"
                   class="w-full h-full object-cover"
                   @error="avatarBroken = true"
                 />
@@ -110,7 +110,7 @@
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    Change
+                    {{ t('settings.profileChange') }}
                   </span>
                 </span>
               </button>
@@ -125,17 +125,17 @@
               <span
                 class="absolute bottom-1.5 right-1.5 h-3.5 w-3.5 rounded-full ring-2 ring-white dark:ring-gray-800"
                 :class="statusDotClass"
-                :aria-label="`Status: ${statusLabel}`"
+                :aria-label="t('settings.profileStatusAria', { status: statusLabel })"
               />
             </div>
 
             <!-- Identity Summary -->
             <div class="flex-1 min-w-0">
               <p class="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-                Your profile
+                {{ t('settings.profileHeading') }}
               </p>
               <h3 class="mt-1 text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white truncate">
-                {{ fullName || form.username || 'Add your name' }}
+                {{ fullName || form.username || t('settings.profileAddName') }}
               </h3>
               <p class="mt-1 text-sm text-gray-600 dark:text-gray-300 truncate">
                 {{ profile?.email || '—' }}
@@ -150,7 +150,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                   {{ profile.role }}
-                  <span v-if="profile?.isOwner" class="ml-0.5 text-[10px] uppercase tracking-wider text-indigo-700 dark:text-indigo-300">Owner</span>
+                  <span v-if="profile?.isOwner" class="ml-0.5 text-[10px] uppercase tracking-wider text-indigo-700 dark:text-indigo-300">{{ t('settings.profileOwner') }}</span>
                 </span>
                 <span
                   v-if="organizationName"
@@ -168,7 +168,7 @@
                   <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  Joined {{ memberSinceLabel }}
+                  {{ t('settings.profileJoined', { date: memberSinceLabel }) }}
                 </span>
               </div>
 
@@ -183,7 +183,7 @@
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                   </svg>
-                  {{ form.avatar ? 'Change photo' : 'Upload photo' }}
+                  {{ form.avatar ? t('settings.profileChangePhoto') : t('settings.profileUploadPhoto') }}
                 </button>
                 <button
                   v-if="form.avatar"
@@ -195,7 +195,7 @@
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" />
                   </svg>
-                  Remove photo
+                  {{ t('settings.profileRemovePhoto') }}
                 </button>
                 <p v-if="avatarError" class="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -204,7 +204,7 @@
                   {{ avatarError }}
                 </p>
                 <p v-else class="text-xs text-gray-500 dark:text-gray-400">
-                  PNG, JPG, GIF, WEBP or SVG · up to 10MB · square works best
+                  {{ t('settings.profileAvatarHint') }}
                 </p>
               </div>
             </div>
@@ -221,14 +221,14 @@
             </svg>
           </div>
           <div>
-            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Personal information</h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Your name and contact details, visible to teammates</p>
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.profilePersonalInfo') }}</h3>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.profilePersonalInfoDesc') }}</p>
           </div>
         </header>
 
         <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-2">
-            <label for="profile-first-name" class="block text-sm font-medium text-gray-900 dark:text-gray-200">First name</label>
+            <label for="profile-first-name" class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profileFirstName') }}</label>
             <input
               id="profile-first-name"
               v-model="form.firstName"
@@ -236,12 +236,12 @@
               maxlength="60"
               autocomplete="given-name"
               class="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/50 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all outline-none"
-              placeholder="e.g. Alex"
+              :placeholder="t('settings.profileFirstNamePh')"
             />
           </div>
 
           <div class="space-y-2">
-            <label for="profile-last-name" class="block text-sm font-medium text-gray-900 dark:text-gray-200">Last name</label>
+            <label for="profile-last-name" class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profileLastName') }}</label>
             <input
               id="profile-last-name"
               v-model="form.lastName"
@@ -249,12 +249,12 @@
               maxlength="60"
               autocomplete="family-name"
               class="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/50 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all outline-none"
-              placeholder="e.g. Morgan"
+              :placeholder="t('settings.profileLastNamePh')"
             />
           </div>
 
           <div class="space-y-2">
-            <label for="profile-phone" class="block text-sm font-medium text-gray-900 dark:text-gray-200">Phone number</label>
+            <label for="profile-phone" class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profilePhone') }}</label>
             <div class="relative">
               <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -268,16 +268,16 @@
                 autocomplete="tel"
                 maxlength="40"
                 class="w-full pl-9 pr-3.5 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/50 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all outline-none"
-                placeholder="+1 (555) 123-4567"
+                :placeholder="t('settings.profilePhonePh')"
               />
             </div>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Used for sign-in alerts and account recovery.</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.profilePhoneHint') }}</p>
           </div>
 
           <div class="space-y-2">
             <label for="profile-username" class="block text-sm font-medium text-gray-900 dark:text-gray-200">
-              Username
-              <span class="ml-1 text-xs font-normal text-gray-400 dark:text-gray-500">(read-only)</span>
+              {{ t('settings.profileUsername') }}
+              <span class="ml-1 text-xs font-normal text-gray-400 dark:text-gray-500">{{ t('settings.profileReadOnly') }}</span>
             </label>
             <div class="relative">
               <input
@@ -289,9 +289,9 @@
               />
               <button
                 type="button"
-                @click="copyToClipboard(form.username, 'Username')"
+                @click="copyToClipboard(form.username, t('settings.profileUsername'))"
                 class="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-                :title="`Copy ${form.username}`"
+                :title="t('settings.profileCopyUsername', { username: form.username })"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -302,8 +302,8 @@
 
           <div class="space-y-2 md:col-span-2">
             <label for="profile-email" class="block text-sm font-medium text-gray-900 dark:text-gray-200">
-              Email address
-              <span class="ml-1 text-xs font-normal text-gray-400 dark:text-gray-500">(managed by your admin)</span>
+              {{ t('settings.profileEmail') }}
+              <span class="ml-1 text-xs font-normal text-gray-400 dark:text-gray-500">{{ t('settings.profileEmailAdmin') }}</span>
             </label>
             <div class="relative">
               <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500">
@@ -320,7 +320,7 @@
               />
             </div>
             <p class="text-xs text-gray-500 dark:text-gray-400">
-              Your sign-in email can only be changed by an organization admin to keep your account secure.
+              {{ t('settings.profileEmailHint') }}
             </p>
           </div>
         </div>
@@ -335,14 +335,14 @@
             </svg>
           </div>
           <div>
-            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Appearance</h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Personal preferences applied just to your sessions</p>
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.profileAppearance') }}</h3>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.profileAppearanceDesc') }}</p>
           </div>
         </header>
 
         <div class="p-6 space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-3">Theme</label>
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-3">{{ t('settings.profileTheme') }}</label>
             <div class="grid grid-cols-3 gap-3 max-w-xl">
               <button
                 v-for="opt in themeOptions"
@@ -373,7 +373,7 @@
                   <span
                     v-if="colorMode === opt.id"
                     class="text-[10px] font-semibold uppercase tracking-wider text-indigo-700 dark:text-indigo-300"
-                  >Active</span>
+                  >{{ t('settings.profileThemeActive') }}</span>
                 </div>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ opt.description }}</p>
               </button>
@@ -392,8 +392,8 @@
               </svg>
             </div>
             <div>
-              <h3 class="text-base font-semibold text-gray-900 dark:text-white">Sign-in &amp; security</h3>
-              <p class="text-xs text-gray-500 dark:text-gray-400">Change your password and review recent activity</p>
+              <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.profileSignInSecurity') }}</h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.profileSignInSecurityDesc') }}</p>
             </div>
           </div>
           <button
@@ -405,30 +405,30 @@
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0-1.105.895-2 2-2h.5a2.5 2.5 0 010 5H10v3m2-9V4m0 0L9 7m3-3l3 3" />
             </svg>
-            Change password
+            {{ t('settings.profileChangePassword') }}
           </button>
         </header>
 
         <div class="p-6">
           <div v-if="!showPasswordEditor" class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/30 p-4">
-              <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 font-semibold">Password</p>
+              <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 font-semibold">{{ t('settings.profilePasswordLabel') }}</p>
               <p class="mt-1.5 text-sm font-medium text-gray-900 dark:text-white">••••••••••••</p>
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Use a long passphrase you don't reuse anywhere else.</p>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.profilePasswordHint') }}</p>
             </div>
             <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/30 p-4">
-              <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 font-semibold">Last sign-in</p>
-              <p class="mt-1.5 text-sm font-medium text-gray-900 dark:text-white">{{ lastLoginLabel || 'Just now' }}</p>
+              <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 font-semibold">{{ t('settings.profileLastSignIn') }}</p>
+              <p class="mt-1.5 text-sm font-medium text-gray-900 dark:text-white">{{ lastLoginLabel || t('settings.profileJustNow') }}</p>
               <p v-if="lastLoginAbsolute" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ lastLoginAbsolute }}</p>
             </div>
             <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/30 p-4">
-              <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 font-semibold">Account status</p>
+              <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 font-semibold">{{ t('settings.profileAccountStatus') }}</p>
               <p class="mt-1.5 inline-flex items-center gap-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-300 capitalize">
                 <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
-                {{ profile?.status || 'active' }}
+                {{ statusLabel }}
               </p>
               <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {{ profile?.userType ? profile.userType.toLowerCase() + ' user' : 'standard account' }}
+                {{ profile?.userType ? t('settings.profileUserType', { type: profile.userType.toLowerCase() }) : t('settings.profileStandardAccount') }}
               </p>
             </div>
           </div>
@@ -436,14 +436,14 @@
           <!-- Password Editor -->
           <div v-else class="space-y-4 max-w-xl">
             <div class="space-y-2">
-              <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">Current password</label>
+              <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profileCurrentPassword') }}</label>
               <div class="relative">
                 <input
                   v-model="passwordForm.current"
                   :type="passwordVisibility.current ? 'text' : 'password'"
                   autocomplete="current-password"
                   class="w-full px-3.5 py-2.5 pr-10 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 dark:focus:border-indigo-400 outline-none"
-                  placeholder="Enter your current password"
+                  :placeholder="t('settings.profileCurrentPasswordPh')"
                 />
                 <button type="button" @click="passwordVisibility.current = !passwordVisibility.current" class="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                   <svg v-if="passwordVisibility.current" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
@@ -453,14 +453,14 @@
             </div>
 
             <div class="space-y-2">
-              <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">New password</label>
+              <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profileNewPassword') }}</label>
               <div class="relative">
                 <input
                   v-model="passwordForm.next"
                   :type="passwordVisibility.next ? 'text' : 'password'"
                   autocomplete="new-password"
                   class="w-full px-3.5 py-2.5 pr-10 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 dark:focus:border-indigo-400 outline-none"
-                  placeholder="At least 8 characters"
+                  :placeholder="t('settings.profileNewPasswordPh')"
                 />
                 <button type="button" @click="passwordVisibility.next = !passwordVisibility.next" class="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                   <svg v-if="passwordVisibility.next" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
@@ -495,7 +495,7 @@
             </div>
 
             <div class="space-y-2">
-              <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">Confirm new password</label>
+              <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profileConfirmPassword') }}</label>
               <div class="relative">
                 <input
                   v-model="passwordForm.confirm"
@@ -503,7 +503,7 @@
                   autocomplete="new-password"
                   class="w-full px-3.5 py-2.5 pr-10 rounded-lg border bg-white dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/30 outline-none transition-colors"
                   :class="passwordMismatch ? 'border-red-400 dark:border-red-500 focus:border-red-500' : 'border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400'"
-                  placeholder="Re-enter your new password"
+                  :placeholder="t('settings.profileConfirmPasswordPh')"
                 />
                 <button type="button" @click="passwordVisibility.confirm = !passwordVisibility.confirm" class="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                   <svg v-if="passwordVisibility.confirm" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
@@ -511,7 +511,7 @@
                 </button>
               </div>
               <p v-if="passwordMismatch" class="text-xs text-red-600 dark:text-red-400">
-                Passwords don't match yet.
+                {{ t('settings.profilePasswordMismatch') }}
               </p>
             </div>
 
@@ -528,7 +528,7 @@
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                {{ changingPassword ? 'Updating…' : 'Update password' }}
+                {{ changingPassword ? t('settings.profileUpdating') : t('settings.profileUpdatePassword') }}
               </button>
               <button
                 type="button"
@@ -536,7 +536,7 @@
                 :disabled="changingPassword"
                 class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-60"
               >
-                Cancel
+                {{ t('actions.cancel') }}
               </button>
             </div>
           </div>
@@ -552,8 +552,8 @@
             </svg>
           </div>
           <div>
-            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Workspace &amp; access</h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Apps you can use and how your account is provisioned</p>
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.profileWorkspace') }}</h3>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.profileWorkspaceDesc') }}</p>
           </div>
         </header>
 
@@ -574,37 +574,37 @@
                 <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ entry.label }}</p>
                 <p class="text-xs text-gray-500 dark:text-gray-400 capitalize">
                   <span v-if="entry.roleKey">{{ entry.roleKey.toLowerCase() }}</span>
-                  <span v-else>Standard access</span>
+                  <span v-else>{{ t('settings.profileStandardAccess') }}</span>
                 </p>
               </div>
             </div>
           </div>
           <div v-else class="text-center py-10 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
-            <p class="text-sm text-gray-500 dark:text-gray-400">You don't have access to any apps yet. Ask an admin to grant access.</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.profileNoApps') }}</p>
           </div>
 
           <!-- Account meta -->
           <dl class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
             <div>
-              <dt class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 font-semibold">Organization</dt>
+              <dt class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 font-semibold">{{ t('settings.profileMetaOrg') }}</dt>
               <dd class="mt-1 text-gray-900 dark:text-white truncate">{{ organizationName || '—' }}</dd>
             </div>
             <div>
-              <dt class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 font-semibold">Member since</dt>
+              <dt class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 font-semibold">{{ t('settings.profileMetaMemberSince') }}</dt>
               <dd class="mt-1 text-gray-900 dark:text-white">{{ memberSinceLabel || '—' }}</dd>
             </div>
             <div>
-              <dt class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 font-semibold">Last login</dt>
+              <dt class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 font-semibold">{{ t('settings.profileMetaLastLogin') }}</dt>
               <dd class="mt-1 text-gray-900 dark:text-white">{{ lastLoginAbsolute || '—' }}</dd>
             </div>
             <div>
               <dt class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 font-semibold flex items-center gap-1.5">
-                User ID
+                {{ t('settings.profileMetaUserId') }}
                 <button
                   type="button"
-                  @click="copyToClipboard(profile?._id, 'User ID')"
+                  @click="copyToClipboard(profile?._id, t('settings.profileMetaUserId'))"
                   class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-                  title="Copy user ID"
+                  :title="t('settings.profileCopyUserId')"
                 >
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -617,6 +617,8 @@
         </div>
       </section>
     </form>
+
+    <I18nDeveloperSettings class="mt-6" />
 
     <!-- Sticky Save Bar (for editable profile fields) -->
     <transition
@@ -639,8 +641,8 @@
               </svg>
             </span>
             <div class="min-w-0">
-              <p class="text-sm font-medium text-gray-900 dark:text-white truncate">You have unsaved changes</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Save to update your profile across the platform.</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ t('settings.unsavedTitle') }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ t('settings.unsavedHintProfile') }}</p>
             </div>
           </div>
           <div class="flex items-center gap-2 flex-shrink-0">
@@ -650,7 +652,7 @@
               :disabled="saving"
               class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Discard
+              {{ t('settings.discardChanges') }}
             </button>
             <button
               type="button"
@@ -662,7 +664,7 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              {{ saving ? 'Saving…' : 'Save changes' }}
+              {{ saving ? t('states.saving') : t('settings.saveChanges') }}
             </button>
           </div>
         </div>
@@ -673,12 +675,15 @@
 
 <script setup>
 import { ref, computed, onMounted, reactive } from 'vue';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { getApiUrlForFetch } from '@/config/apiBase';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useColorMode } from '@/composables/useColorMode';
 import { useNotifications } from '@/composables/useNotifications';
+import I18nDeveloperSettings from '@/components/settings/I18nDeveloperSettings.vue';
 
+const { t } = useI18n();
 const authStore = useAuthStore();
 const { colorMode, toggleColorMode } = useColorMode();
 const { success: notifySuccess, error: notifyError } = useNotifications();
@@ -719,11 +724,11 @@ const passwordError = ref('');
 const passwordForm = reactive({ current: '', next: '', confirm: '' });
 const passwordVisibility = reactive({ current: false, next: false, confirm: false });
 
-const themeOptions = [
+const THEME_SWATCHES = [
   {
     id: 'light',
-    label: 'Light',
-    description: 'Bright surfaces, classic look',
+    labelKey: 'profileThemeLight',
+    descKey: 'profileThemeLightDesc',
     swatchClass: 'bg-white',
     previewLeft: 'bg-gray-100',
     previewBar1: 'bg-indigo-500',
@@ -732,8 +737,8 @@ const themeOptions = [
   },
   {
     id: 'dark',
-    label: 'Dark',
-    description: 'Easy on the eyes at night',
+    labelKey: 'profileThemeDark',
+    descKey: 'profileThemeDarkDesc',
     swatchClass: 'bg-gray-900',
     previewLeft: 'bg-gray-800',
     previewBar1: 'bg-indigo-400',
@@ -742,8 +747,8 @@ const themeOptions = [
   },
   {
     id: 'system',
-    label: 'System',
-    description: 'Match your device setting',
+    labelKey: 'profileThemeSystem',
+    descKey: 'profileThemeSystemDesc',
     swatchClass: 'bg-gradient-to-r from-white to-gray-900',
     previewLeft: 'bg-gradient-to-b from-gray-100 to-gray-800',
     previewBar1: 'bg-indigo-500',
@@ -751,6 +756,24 @@ const themeOptions = [
     previewBar3: 'bg-gray-400',
   },
 ];
+
+const themeOptions = computed(() =>
+  THEME_SWATCHES.map((meta) => ({
+    id: meta.id,
+    label: t(`settings.${meta.labelKey}`),
+    description: t(`settings.${meta.descKey}`),
+    swatchClass: meta.swatchClass,
+    previewLeft: meta.previewLeft,
+    previewBar1: meta.previewBar1,
+    previewBar2: meta.previewBar2,
+    previewBar3: meta.previewBar3,
+  }))
+);
+
+function themeModeLabel(mode) {
+  const keys = { light: 'profileThemeLight', dark: 'profileThemeDark', system: 'profileThemeSystem' };
+  return t(`settings.${keys[mode] || keys.system}`);
+}
 
 const fullName = computed(() => {
   const parts = [form.value.firstName, form.value.lastName].filter(Boolean).map((s) => s.trim());
@@ -781,7 +804,11 @@ const organizationName = computed(() => {
   return authStore.organization?.name || profile.value?.organizationId?.name || '';
 });
 
-const statusLabel = computed(() => profile.value?.status === 'active' ? 'Active' : (profile.value?.status || 'Active'));
+const statusLabel = computed(() => {
+  const s = profile.value?.status;
+  if (s === 'active') return t('settings.profileThemeActive');
+  return s || t('settings.profileThemeActive');
+});
 const statusDotClass = computed(() => {
   const s = profile.value?.status;
   if (s === 'suspended') return 'bg-rose-500';
@@ -870,12 +897,12 @@ const appAccessList = computed(() => {
 const passwordRules = computed(() => {
   const p = passwordForm.next || '';
   return [
-    { id: 'len', label: 'At least 8 characters', met: p.length >= 8 },
-    { id: 'upper', label: 'An uppercase letter', met: /[A-Z]/.test(p) },
-    { id: 'lower', label: 'A lowercase letter', met: /[a-z]/.test(p) },
-    { id: 'num', label: 'A number', met: /\d/.test(p) },
-    { id: 'sym', label: 'A symbol', met: /[^A-Za-z0-9]/.test(p) },
-    { id: 'diff', label: 'Different from current', met: p.length > 0 && p !== passwordForm.current },
+    { id: 'len', label: t('settings.profilePwdRuleLen'), met: p.length >= 8 },
+    { id: 'upper', label: t('settings.profilePwdRuleUpper'), met: /[A-Z]/.test(p) },
+    { id: 'lower', label: t('settings.profilePwdRuleLower'), met: /[a-z]/.test(p) },
+    { id: 'num', label: t('settings.profilePwdRuleNum'), met: /\d/.test(p) },
+    { id: 'sym', label: t('settings.profilePwdRuleSym'), met: /[^A-Za-z0-9]/.test(p) },
+    { id: 'diff', label: t('settings.profilePwdRuleDiff'), met: p.length > 0 && p !== passwordForm.current },
   ];
 });
 
@@ -883,11 +910,11 @@ const passwordStrength = computed(() => {
   const met = passwordRules.value.filter((r) => r.met).length;
   const total = passwordRules.value.length;
   const percent = (met / total) * 100;
-  if (met <= 1) return { percent, label: 'Very weak', barClass: 'bg-rose-500', labelClass: 'text-rose-600 dark:text-rose-400' };
-  if (met <= 2) return { percent, label: 'Weak', barClass: 'bg-amber-500', labelClass: 'text-amber-600 dark:text-amber-400' };
-  if (met <= 4) return { percent, label: 'Okay', barClass: 'bg-yellow-500', labelClass: 'text-yellow-600 dark:text-yellow-400' };
-  if (met < total) return { percent, label: 'Strong', barClass: 'bg-emerald-500', labelClass: 'text-emerald-600 dark:text-emerald-400' };
-  return { percent, label: 'Excellent', barClass: 'bg-emerald-500', labelClass: 'text-emerald-600 dark:text-emerald-400' };
+  if (met <= 1) return { percent, label: t('settings.profilePwdWeak'), barClass: 'bg-rose-500', labelClass: 'text-rose-600 dark:text-rose-400' };
+  if (met <= 2) return { percent, label: t('settings.profilePwdWeak2'), barClass: 'bg-amber-500', labelClass: 'text-amber-600 dark:text-amber-400' };
+  if (met <= 4) return { percent, label: t('settings.profilePwdOkay'), barClass: 'bg-yellow-500', labelClass: 'text-yellow-600 dark:text-yellow-400' };
+  if (met < total) return { percent, label: t('settings.profilePwdStrong'), barClass: 'bg-emerald-500', labelClass: 'text-emerald-600 dark:text-emerald-400' };
+  return { percent, label: t('settings.profilePwdExcellent'), barClass: 'bg-emerald-500', labelClass: 'text-emerald-600 dark:text-emerald-400' };
 });
 
 const passwordMismatch = computed(() => Boolean(passwordForm.confirm) && passwordForm.confirm !== passwordForm.next);
@@ -915,7 +942,7 @@ async function fetchProfile() {
   try {
     const result = await apiClient('/users/profile');
     if (!result?.success || !result?.data) {
-      throw new Error(result?.message || 'Unable to load profile.');
+      throw new Error(result?.message || t('settings.profileUnableLoad'));
     }
     profile.value = result.data;
     const snapshot = {
@@ -948,7 +975,7 @@ async function saveProfile() {
     };
     const result = await apiClient.put('/users/profile', payload);
     if (!result?.success) {
-      throw new Error(result?.message || 'Failed to update profile');
+      throw new Error(result?.message || t('settings.profileUpdateFailed'));
     }
     originalForm.value = {
       ...originalForm.value,
@@ -957,10 +984,10 @@ async function saveProfile() {
       phoneNumber: payload.phoneNumber,
     };
     await authStore.refreshUser({ force: true });
-    notifySuccess('Profile updated');
+    notifySuccess(t('settings.profileUpdated'));
   } catch (err) {
     console.error('Save profile failed', err);
-    notifyError(err?.message || 'Failed to update profile');
+    notifyError(err?.message || t('settings.profileUpdateFailed'));
   } finally {
     saving.value = false;
   }
@@ -991,11 +1018,11 @@ function handleAvatarDrop(e) {
 async function uploadAvatar(file) {
   avatarError.value = '';
   if (!ACCEPTED_AVATAR_TYPES.includes(file.type)) {
-    avatarError.value = 'Unsupported file type. Please use PNG, JPG, GIF, WEBP or SVG.';
+    avatarError.value = t('settings.profileAvatarUnsupported');
     return;
   }
   if (file.size > MAX_AVATAR_SIZE) {
-    avatarError.value = 'File too large. Maximum size is 10MB.';
+    avatarError.value = t('settings.profileAvatarTooLarge');
     return;
   }
 
@@ -1015,7 +1042,7 @@ async function uploadAvatar(file) {
 
     if (response.status === 401) {
       authStore.logout();
-      throw new Error('Session expired. Please log in again.');
+      throw new Error(t('settings.profileSessionExpired'));
     }
     const result = await response.json().catch(() => ({}));
     if (!response.ok || !result.success) {
@@ -1035,11 +1062,11 @@ async function uploadAvatar(file) {
           // localStorage may be unavailable in private modes — non-fatal.
         }
       }
-      notifySuccess('Avatar updated');
+      notifySuccess(t('settings.profileAvatarUpdated'));
     }
   } catch (err) {
     console.error('Avatar upload failed', err);
-    avatarError.value = err?.message || 'Failed to upload avatar';
+    avatarError.value = err?.message || t('settings.profileAvatarUploadFailed');
     notifyError(avatarError.value);
   } finally {
     avatarUploading.value = false;
@@ -1062,13 +1089,13 @@ async function removeAvatar() {
           // localStorage may be unavailable; non-fatal.
         }
       }
-      notifySuccess('Avatar removed');
+      notifySuccess(t('settings.profileAvatarRemoved'));
     } else {
-      throw new Error(result?.message || 'Failed to remove avatar');
+      throw new Error(result?.message || t('settings.profileAvatarRemoveFailed'));
     }
   } catch (err) {
     console.error('Remove avatar failed', err);
-    notifyError(err?.message || 'Failed to remove avatar');
+    notifyError(err?.message || t('settings.profileAvatarRemoveFailed'));
   } finally {
     avatarUploading.value = false;
   }
@@ -1104,13 +1131,13 @@ async function changePassword() {
       newPassword: passwordForm.next,
     });
     if (!result?.success) {
-      throw new Error(result?.message || 'Failed to change password');
+      throw new Error(result?.message || t('settings.profilePasswordChangeFailed'));
     }
-    notifySuccess('Password updated');
+    notifySuccess(t('settings.profilePasswordUpdated'));
     cancelPasswordEditor();
   } catch (err) {
     console.error('Change password failed', err);
-    passwordError.value = err?.message || 'Failed to change password';
+    passwordError.value = err?.message || t('settings.profilePasswordChangeFailed');
   } finally {
     changingPassword.value = false;
   }
@@ -1120,17 +1147,17 @@ async function changePassword() {
 function setTheme(mode) {
   if (mode === colorMode.value) return;
   toggleColorMode(mode);
-  notifySuccess(`Theme set to ${mode}`);
+  notifySuccess(t('settings.profileThemeSet', { mode: themeModeLabel(mode) }));
 }
 
 // --- Misc ---
-async function copyToClipboard(value, label = 'Value') {
+async function copyToClipboard(value, label) {
   if (!value) return;
   try {
     await navigator.clipboard.writeText(String(value));
-    notifySuccess(`${label} copied`);
+    notifySuccess(t('settings.profileCopied', { label }));
   } catch (_e) {
-    notifyError(`Couldn't copy ${label.toLowerCase()}`);
+    notifyError(t('settings.profileCopyFailed', { label: String(label).toLowerCase() }));
   }
 }
 

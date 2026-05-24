@@ -1,0 +1,462 @@
+{
+  "dealFormModalNextFollowUpDate": {
+    "message": "تاريخ المتابعة التالي",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalAddDetailsAboutThisDealRequirements": {
+    "message": "أضف تفاصيل حول هذه الصفقة والمتطلبات والملاحظات وما إلى ذلك.",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalAdditionalDetails": {
+    "message": "تفاصيل إضافية",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalLinkThisDealToAContact": {
+    "message": "ربط هذه الصفقة إلى جهة اتصال",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalSelectContact": {
+    "message": "حدد جهة الاتصال",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalEnterprisePriorityDemo": {
+    "message": "المؤسسة، الأولوية، التجريبي",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalTagsCommaSeparated": {
+    "message": "العلامات (مفصولة بفواصل)",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalUrgent": {
+    "message": "عاجل",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalCrossSell": {
+    "message": "البيع المتبادل",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalRenewal": {
+    "message": "تجديد",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalUpsell": {
+    "message": "بيع",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalExistingCustomer": {
+    "message": "العميل الحالي",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalNewBusiness": {
+    "message": "أعمال جديدة",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalSelectType": {
+    "message": "حدد النوع",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalDealType": {
+    "message": "نوع الصفقة",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalClassification": {
+    "message": "تصنيف",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalChangingStageUpdatesStatusAndProbability": {
+    "message": "تغيير المرحلة يقوم بتحديث الحالة والاحتمالية تلقائيًا",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalSelectPipeline": {
+    "message": "حدد خط الأنابيب...",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalExpectedCloseDate": {
+    "message": "تاريخ الإغلاق المتوقع",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalEGAcmeCorpCrmImplementation": {
+    "message": "على سبيل المثال، شركة Acme Corp - تنفيذ إدارة علاقات العملاء (CRM).",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalDealName": {
+    "message": "اسم الصفقة",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalDealInformation": {
+    "message": "معلومات الصفقة",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealRelationshipEditorSelectOrganization": {
+    "message": "اختر المنظمة...",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorNoOrganizationsLinkedYet": {
+    "message": "لم يتم ربط أي منظمات حتى الآن.",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorRemoveFromDeal": {
+    "message": "إزالة من الصفقة",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorSetAsPrimaryCustomer": {
+    "message": "تعيين كعميل أساسي",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorOrganizationsOnThisDeal": {
+    "message": "المنظمات في هذه الصفقة",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorShowingContactsFor": {
+    "message": "إظهار جهات الاتصال لـ",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorSelectPerson": {
+    "message": "تحديد شخص...",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorNoPeopleLinkedYet": {
+    "message": "لم يتم ربط أي أشخاص حتى الآن.",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorRemoveFromDeal2": {
+    "message": "إزالة من الصفقة",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorSetAsPrimaryContact": {
+    "message": "تعيين كجهة اتصال أساسية",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorPeopleOnThisDeal": {
+    "message": "الناس على هذه الصفقة",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "relatedDealsWidgetCreateFirstDeal": {
+    "message": "إنشاء الصفقة الأولى",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetNoDealsYet": {
+    "message": "لا توجد صفقات حتى الآن",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetAddDeal": {
+    "message": "أضف صفقة",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetLinkDeals": {
+    "message": "عروض الارتباط",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetRelatedDeals": {
+    "message": "الصفقات ذات الصلة",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "dealsAddDeal": {
+    "message": "أضف صفقة",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsNoDealsInThisStage": {
+    "message": "لا توجد صفقات في هذه المرحلة",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsLoadingPipeline": {
+    "message": "جارٍ تحميل خط الأنابيب...",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsNewDeal": {
+    "message": "صفقة جديدة",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsGroupStage": {
+    "message": "المجموعة: المرحلة",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsUpgradePlan": {
+    "message": "خطة الترقية",
+    "description": "Auto-migrated from deals"
+  },
+  "dealDetailAddANote": {
+    "message": "إضافة ملاحظة...",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailAddEvent": {
+    "message": "أضف حدثًا",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailAge": {
+    "message": "عمر",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailExpectedClose": {
+    "message": "الإغلاق المتوقع",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailOrganizationsOnThisDeal": {
+    "message": "المنظمات في هذه الصفقة",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailPeopleOnThisDeal": {
+    "message": "الناس على هذه الصفقة",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailPrimaryCustomer": {
+    "message": "العميل الأساسي",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailPrimaryContact": {
+    "message": "جهة الاتصال الأساسية",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailSystemOwnedComputedFromStage": {
+    "message": "مملوكة للنظام (محسوبة من المرحلة)",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailBackToDeals": {
+    "message": "العودة إلى العروض",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailLoadingDeal": {
+    "message": "جارٍ تحميل الصفقة...",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealFormModalToastFailedToSaveDeal": {
+    "message": "فشل في حفظ الصفقة",
+    "description": "Toast from DealFormModal.vue"
+  },
+  "sysFieldName": {
+    "message": "اسم الصفقة",
+    "description": "System deal field label"
+  },
+  "sysFieldStage": {
+    "message": "مرحلة الصفقة",
+    "description": "System deal field label"
+  },
+  "sysFieldAmount": {
+    "message": "القيمة المتوقعة",
+    "description": "System deal field label"
+  },
+  "sysFieldProbability": {
+    "message": "الاحتمالية (%)",
+    "description": "System deal field label"
+  },
+  "sysFieldExpectedCloseDate": {
+    "message": "تاريخ الإغلاق",
+    "description": "System deal field label"
+  },
+  "sysFieldOwnerId": {
+    "message": "مالك الصفقة",
+    "description": "System deal field label"
+  },
+  "sysFieldAccountId": {
+    "message": "منظمة",
+    "description": "System deal field label"
+  },
+  "sysFieldContactId": {
+    "message": "اتصال",
+    "description": "System deal field label"
+  },
+  "sysFieldType": {
+    "message": "نوع الصفقة",
+    "description": "System deal field label"
+  },
+  "sysFieldPipeline": {
+    "message": "خط أنابيب",
+    "description": "System deal field label"
+  },
+  "sysFieldNextStep": {
+    "message": "الخطوة التالية",
+    "description": "System deal field label"
+  },
+  "sysFieldTags": {
+    "message": "العلامات",
+    "description": "System deal field label"
+  },
+  "sysFieldAssignedTo": {
+    "message": "تم تعيينه ل",
+    "description": "System deal field label"
+  },
+  "sysFieldDescription": {
+    "message": "وصف",
+    "description": "System deal field label"
+  },
+  "sysFieldDealType": {
+    "message": "نوع الصفقة",
+    "description": "Alias for deal type field"
+  },
+  "activityCreatedDeal": {
+    "message": "خلق هذه الصفقة",
+    "description": "Deal record created activity fragment"
+  },
+  "activityUpdatedDeal": {
+    "message": "تحديث هذه الصفقة",
+    "description": "Deal record updated activity fragment"
+  },
+  "activityYouCreatedDeal": {
+    "message": "قام {actor} بإبرام هذه الصفقة",
+    "description": "Deal created system activity line"
+  },
+  "activityYouUpdatedDeal": {
+    "message": "{actor} قام بتحديث هذه الصفقة",
+    "description": "Deal updated system activity line"
+  },
+  "picklistNew": {
+    "message": "جديد",
+    "description": "Default pipeline stage"
+  },
+  "picklistNewBusiness": {
+    "message": "أعمال جديدة",
+    "description": "Common deal type value"
+  },
+  "picklistUpsell": {
+    "message": "بيع",
+    "description": "Deal type picklist value"
+  },
+  "picklistCrossSell": {
+    "message": "البيع المتبادل",
+    "description": "Deal type picklist value"
+  },
+  "picklistRenewal": {
+    "message": "تجديد",
+    "description": "Deal type picklist value"
+  },
+  "picklistExistingCustomer": {
+    "message": "العميل الحالي",
+    "description": "Deal type picklist value"
+  },
+  "stageNew": {
+    "message": "جديد",
+    "description": "Default pipeline stage name"
+  },
+  "stageQualified": {
+    "message": "مؤهَل",
+    "description": "Pipeline stage name"
+  },
+  "stageProposal": {
+    "message": "عرض",
+    "description": "Pipeline stage name"
+  },
+  "stageNegotiation": {
+    "message": "التفاوض",
+    "description": "Pipeline stage name"
+  },
+  "stageWon": {
+    "message": "فاز",
+    "description": "Pipeline stage name"
+  },
+  "stageLost": {
+    "message": "ضائع",
+    "description": "Pipeline stage name"
+  },
+  "stageClosedWon": {
+    "message": "فاز مغلق",
+    "description": "Pipeline stage name"
+  },
+  "stageClosedLost": {
+    "message": "مغلق ضائع",
+    "description": "Pipeline stage name"
+  },
+  "stageDiscovery": {
+    "message": "اكتشاف",
+    "description": "Pipeline stage name"
+  },
+  "stageNeedsAnalysis": {
+    "message": "تحليل الاحتياجات",
+    "description": "Pipeline stage name"
+  },
+  "stageValueProposition": {
+    "message": "عرض القيمة",
+    "description": "Pipeline stage name"
+  },
+  "stageIdDecisionMakers": {
+    "message": "بطاقة تعريف. صناع القرار",
+    "description": "Pipeline stage name"
+  },
+  "stagePerceptionAnalysis": {
+    "message": "تحليل الإدراك",
+    "description": "Pipeline stage name"
+  },
+  "stageProposalPriceQuote": {
+    "message": "الاقتراح/عرض الأسعار",
+    "description": "Pipeline stage name"
+  },
+  "stageNegotiationReview": {
+    "message": "التفاوض/المراجعة",
+    "description": "Pipeline stage name"
+  },
+  "pipelineSales": {
+    "message": "خط أنابيب المبيعات",
+    "description": "Tenant pipeline display name"
+  },
+  "pipelineDefault": {
+    "message": "خط الأنابيب الافتراضي",
+    "description": "Tenant pipeline display name"
+  },
+  "pipelineMarketing": {
+    "message": "خط أنابيب التسويق",
+    "description": "Tenant pipeline display name"
+  },
+  "pipelinePartner": {
+    "message": "خط أنابيب الشريك",
+    "description": "Tenant pipeline display name"
+  },
+  "listViewAll": {
+    "message": "All Deals",
+    "description": "Deals list default view title"
+  },
+  "listViewMy": {
+    "message": "My Deals",
+    "description": "Deals list assigned-to-me view title"
+  },
+  "listViewOpen": {
+    "message": "Open",
+    "description": "Deals list open view title"
+  },
+  "listViewWon": {
+    "message": "Won",
+    "description": "Deals list won view title"
+  },
+  "listViewLost": {
+    "message": "Lost",
+    "description": "Deals list lost view title"
+  },
+  "listCreate": {
+    "message": "New Deal",
+    "description": "Deals list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "Search deals...",
+    "description": "Deals list search placeholder"
+  },
+  "listStatPipelineValue": {
+    "message": "Pipeline Value",
+    "description": "Deals list statistics card"
+  },
+  "listStatOpenDeals": {
+    "message": "Open Deals",
+    "description": "Deals list statistics card"
+  },
+  "listStatWonThisMonth": {
+    "message": "Won This Month",
+    "description": "Deals list statistics card"
+  },
+  "listStatWinRate": {
+    "message": "Win Rate",
+    "description": "Deals list statistics card"
+  },
+  "dealsFeatureNotAvailable": {
+    "message": "Feature Not Available",
+    "description": "Deals plan limitation error title"
+  },
+  "dealsErrorLoading": {
+    "message": "Error Loading Deals",
+    "description": "Deals load error title"
+  },
+  "dealsDealDetail": {
+    "message": "Deal Detail",
+    "description": "Deal record tab title fallback"
+  },
+  "dealsStageUpdateFailed": {
+    "message": "Failed to update deal stage",
+    "description": "Kanban stage change error"
+  }
+}

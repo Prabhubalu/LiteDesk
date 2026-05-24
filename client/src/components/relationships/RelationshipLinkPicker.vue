@@ -37,7 +37,7 @@
                       class="rounded-md text-indigo-200 hover:text-white"
                       @click="handleClose"
                     >
-                      <span class="sr-only">Close panel</span>
+                      <span class="sr-only">{{ t('forms.previewClosePanelSr') }}</span>
                       <XMarkIcon class="size-6" />
                     </button>
                   </div>
@@ -49,7 +49,7 @@
                       <input
                         v-model="searchQuery"
                         type="text"
-                        placeholder="Search..."
+                        :placeholder="t('common.searchPlaceholder')"
                         class="block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-sm outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:bg-gray-800 dark:outline-white/10"
                       />
                     </div>
@@ -63,9 +63,7 @@
                         <div
                           v-if="visibleItems.length === 0"
                           class="text-center text-sm text-gray-500 dark:text-gray-400 py-8"
-                        >
-                          No records found
-                        </div>
+                        >{{ t('common.formNoRecordsFound') }}</div>
                         <ul class="divide-y divide-gray-200 dark:divide-gray-700">
                           <li
                             v-for="item in visibleItems"
@@ -109,17 +107,13 @@
                         type="button"
                         class="rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
                         @click="handleClose"
-                      >
-                        Cancel
-                      </button>
+                      >{{ t('performance.cancelWizard') }}</button>
                       <button
                         type="button"
                         :disabled="selectedIds.size === 0"
                         class="inline-flex justify-center rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 dark:hover:bg-indigo-600 disabled:opacity-50"
                         @click="confirmLink"
-                      >
-                        Link
-                      </button>
+                      >{{ t('settings.modFieldsPbResourceLink') }}</button>
                     </div>
                   </div>
                 </div>
@@ -133,6 +127,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, computed, watch } from 'vue';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
@@ -144,6 +139,8 @@ const props = defineProps({
   relationship: { type: Object, required: true },
   sourceRecord: { type: Object, required: true }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['close', 'linked']);
 

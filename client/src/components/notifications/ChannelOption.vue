@@ -14,14 +14,14 @@
         :disabled="disabled"
         checkbox-class="w-4 h-4"
         @change="$emit('update', $event.target.checked)"
-        :aria-label="`${channel.label} notifications`"
+        :aria-label="t('notifications.channelOptionAria', { channel: channel.label })"
       />
       <div class="ml-3 flex-1">
         <div class="text-sm font-medium text-gray-900 dark:text-white">
           {{ channel.label }}
         </div>
         <div v-if="disabled" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-          Not available for this app
+          {{ t('notifications.channelUnavailable') }}
         </div>
       </div>
     </div>
@@ -29,6 +29,10 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
+
 defineProps({
   channel: {
     type: Object,

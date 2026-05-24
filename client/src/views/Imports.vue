@@ -1,11 +1,11 @@
 <template>
   <div class="mx-auto w-full">
     <ListView
-      title="Import History"
+      :title="t('import.importsImportHistory')"
       description="View and manage all data imports"
       module-key="imports"
-      create-label="New Import"
-      search-placeholder="Search by filename..."
+      create-:label="t('import.importsNewImport2')"
+      search-:placeholder="t('import.importsSearchByFilename')"
       :data="filteredImports"
       :columns="columns"
       :loading="loading"
@@ -41,7 +41,7 @@
       ]"
       table-id="imports-table"
       row-key="_id"
-      empty-title="No imports yet"
+      empty-:title="t('import.importsNoImportsYet')"
       empty-message="Start importing data to see history here"
       :show-import="false"
       :show-export="false"
@@ -56,9 +56,7 @@
         <button v-if="canCreateImport" @click="showImportModal = true" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-          </svg>
-          New Import
-        </button>
+          </svg>{{ t('import.importsNewImport') }}</button>
       </template>
       <!-- Custom File Name Cell -->
       <template #cell-fileName="{ value }">
@@ -134,9 +132,7 @@
         <button 
           @click.stop="viewImport(row)" 
           class="px-3 py-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-all hover:scale-105"
-        >
-          View Details
-        </button>
+        >{{ t('process.execLogsViewDetails') }}</button>
       </template>
     </ListView>
 
@@ -150,6 +146,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, reactive, onMounted, watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/authRegistry';

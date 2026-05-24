@@ -72,7 +72,7 @@
               <div class="min-h-0 max-h-52 overflow-y-auto py-1">
                 <ListboxOption v-if="allowEmpty || type === 'user' || type === 'entity'" :value="null" v-slot="{ active }">
                   <li :class="['relative cursor-default select-none py-2 pl-4 pr-10', active ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100']">
-                    <span :class="['editable-labeled-value__text block truncate', active ? '' : 'text-gray-500 dark:text-gray-400']">{{ type === 'user' ? 'Unassigned' : (type === 'entity' ? 'Select an option' : (emptyLabel || 'Select an option')) }}</span>
+                    <span :class="['editable-labeled-value__text block truncate', active ? '' : 'text-gray-500 dark:text-gray-400']">{{ type === 'user' ? t('records.editableUnassigned') : (type === 'entity' ? t('records.editableSelectOption') : (emptyLabel || t('records.editableSelectOption'))) }}</span>
                   </li>
                 </ListboxOption>
                 <ListboxOption v-for="option in filteredSelectOptions" :key="String(option.value)" :value="option.value" v-slot="{ active, selected }">
@@ -87,7 +87,7 @@
                   v-if="showListboxSearch && filteredSelectOptions.length === 0"
                   class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400"
                 >
-                  No matches.
+                  {{ t('records.editableNoMatches') }}
                 </div>
               </div>
             </ListboxOptions>
@@ -122,7 +122,7 @@
           <PhoneInput
             ref="inputRef"
             :model-value="localValue"
-            placeholder="Phone number"
+            :placeholder="t('records.editablePhonePh')"
             :invalid="Boolean(phoneError || saveHttpError)"
             input-class="w-full h-8 px-2 py-1 text-sm border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             @update:model-value="onPhoneInput"
@@ -289,7 +289,7 @@
               <div class="min-h-0 max-h-52 overflow-y-auto py-1">
                 <ListboxOption v-if="allowEmpty || type === 'user' || type === 'entity'" :value="null" v-slot="{ active }">
                   <li :class="['relative cursor-default select-none py-2 pl-4 pr-10', active ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100']">
-                    <span :class="['editable-labeled-value__text block truncate', active ? '' : 'text-gray-500 dark:text-gray-400']">{{ type === 'user' ? 'Unassigned' : (type === 'entity' ? 'Select an option' : (emptyLabel || 'Select an option')) }}</span>
+                    <span :class="['editable-labeled-value__text block truncate', active ? '' : 'text-gray-500 dark:text-gray-400']">{{ type === 'user' ? t('records.editableUnassigned') : (type === 'entity' ? t('records.editableSelectOption') : (emptyLabel || t('records.editableSelectOption'))) }}</span>
                   </li>
                 </ListboxOption>
                 <ListboxOption
@@ -309,7 +309,7 @@
                   v-if="showListboxSearch && filteredSelectOptions.length === 0"
                   class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400"
                 >
-                  No matches.
+                  {{ t('records.editableNoMatches') }}
                 </div>
               </div>
             </ListboxOptions>
@@ -339,7 +339,7 @@
           <PhoneInput
             ref="inputRef"
             :model-value="localValue"
-            placeholder="Phone number"
+            :placeholder="t('records.editablePhonePh')"
             :invalid="Boolean(phoneError || saveHttpError)"
             :input-class="stackSingleLineEditInputClass"
             @update:model-value="onPhoneInput"
@@ -453,7 +453,10 @@
 
 <script setup>
 import { ref, watch, computed, nextTick, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue';
+
+const { t } = useI18n();
 import {
   CheckIcon,
   CurrencyDollarIcon,
@@ -849,7 +852,7 @@ const selectOptions = computed(() => {
       const fallbackLabel = typeof props.value === 'object'
         ? getUserDisplayName(props.value)
         : String(props.value);
-      mapped.unshift({ value: selectedId, label: fallbackLabel || 'Unknown user' });
+      mapped.unshift({ value: selectedId, label: fallbackLabel || t('records.editableUnknownUser') });
     }
     return mapped;
   }
@@ -862,7 +865,7 @@ const showListboxSearch = computed(
     (selectOptions.value?.length > 0)
 );
 
-const listboxSearchPlaceholder = 'Search…';
+const listboxSearchPlaceholder = computed(() => t('records.editableListboxSearchPh'));
 
 const filteredSelectOptions = computed(() => {
   const opts = selectOptions.value || [];
@@ -896,7 +899,7 @@ const handleSelectChange = async (value) => {
 };
 
 const getUserDisplayName = (user) => {
-  if (!user) return 'Unassigned';
+  if (!user) return t('records.editableUnassigned');
   const name = [user.firstName || user.first_name, user.lastName || user.last_name]
     .filter(Boolean)
     .join(' ')

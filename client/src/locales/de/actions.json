@@ -1,0 +1,102 @@
+{
+  "save": {
+    "message": "Speichern",
+    "description": "Primary save action button"
+  },
+  "cancel": {
+    "message": "Stornieren",
+    "description": "Dismiss without saving"
+  },
+  "delete": {
+    "message": "Löschen",
+    "description": "Permanently remove the selected item"
+  },
+  "confirm": {
+    "message": "Bestätigen",
+    "description": "Confirm a destructive or important action"
+  },
+  "retry": {
+    "message": "Wiederholen",
+    "description": "Retry a failed network or load operation"
+  },
+  "close": {
+    "message": "Schließen",
+    "description": "Close a modal or panel"
+  },
+  "edit": {
+    "message": "Bearbeiten",
+    "description": "Enter edit mode for the current record"
+  },
+  "create": {
+    "message": "Erstellen",
+    "description": "Create a new record"
+  },
+  "search": {
+    "message": "Suchen",
+    "description": "Submit or focus global search"
+  },
+  "back": {
+    "message": "Zurück",
+    "description": "Navigate to the previous screen"
+  },
+  "update": {
+    "message": "Aktualisieren",
+    "description": "Update an existing saved entity"
+  },
+  "apply": {
+    "message": "Anwenden",
+    "description": "Apply pending settings or filters"
+  },
+  "previous": {
+    "message": "Vorherige",
+    "description": "Previous page or step"
+  },
+  "next": {
+    "message": "Nächste",
+    "description": "Next page or step"
+  },
+  "remove": {
+    "message": "Entfernen",
+    "description": "Remove a selected item or tag"
+  },
+  "select": {
+    "message": "Wählen",
+    "description": "Select a record or option"
+  },
+  "refresh": {
+    "message": "Aktualisieren",
+    "description": "Reload data from the server"
+  },
+  "add": {
+    "message": "Hinzufügen",
+    "description": "Add an item or relation"
+  },
+  "link": {
+    "message": "Link",
+    "description": "Link an existing record"
+  },
+  "duplicate": {
+    "message": "Duplikat",
+    "description": "Duplicate the current record"
+  },
+  "archive": {
+    "message": "Archiv",
+    "description": "Archive the current record"
+  },
+  "follow": {
+    "message": "Folgen",
+    "description": "Follow record updates"
+  },
+  "unfollow": {
+    "message": "Nicht mehr folgen",
+    "description": "Stop following record updates"
+  },
+  "copy": {
+    "message": "Kopie",
+    "description": "Copy text or link to clipboard"
+  },
+  "export": {
+    "message": "Export",
+    "description": "Export record or list data"
+  }
+}

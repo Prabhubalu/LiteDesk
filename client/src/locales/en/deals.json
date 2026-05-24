@@ -1,0 +1,462 @@
+{
+  "dealFormModalNextFollowUpDate": {
+    "message": "Next Follow-up Date",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalAddDetailsAboutThisDealRequirements": {
+    "message": "Add details about this deal, requirements, notes, etc.",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalAdditionalDetails": {
+    "message": "Additional Details",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalLinkThisDealToAContact": {
+    "message": "Link this deal to a contact",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalSelectContact": {
+    "message": "Select Contact",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalEnterprisePriorityDemo": {
+    "message": "enterprise, priority, demo",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalTagsCommaSeparated": {
+    "message": "Tags (comma separated)",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalUrgent": {
+    "message": "Urgent",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalCrossSell": {
+    "message": "Cross-Sell",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalRenewal": {
+    "message": "Renewal",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalUpsell": {
+    "message": "Upsell",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalExistingCustomer": {
+    "message": "Existing Customer",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalNewBusiness": {
+    "message": "New Business",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalSelectType": {
+    "message": "Select Type",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalDealType": {
+    "message": "Deal Type",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalClassification": {
+    "message": "Classification",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalChangingStageUpdatesStatusAndProbability": {
+    "message": "Changing stage updates status and probability automatically",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalSelectPipeline": {
+    "message": "Select pipeline...",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalExpectedCloseDate": {
+    "message": "Expected Close Date",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalEGAcmeCorpCrmImplementation": {
+    "message": "e.g., Acme Corp - CRM Implementation",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalDealName": {
+    "message": "Deal Name",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalDealInformation": {
+    "message": "Deal Information",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealRelationshipEditorSelectOrganization": {
+    "message": "Select organization...",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorNoOrganizationsLinkedYet": {
+    "message": "No organizations linked yet.",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorRemoveFromDeal": {
+    "message": "Remove from deal",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorSetAsPrimaryCustomer": {
+    "message": "Set as primary customer",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorOrganizationsOnThisDeal": {
+    "message": "Organizations on this Deal",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorShowingContactsFor": {
+    "message": "Showing contacts for",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorSelectPerson": {
+    "message": "Select person...",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorNoPeopleLinkedYet": {
+    "message": "No people linked yet.",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorRemoveFromDeal2": {
+    "message": "Remove from deal",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorSetAsPrimaryContact": {
+    "message": "Set as primary contact",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorPeopleOnThisDeal": {
+    "message": "People on this Deal",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "relatedDealsWidgetCreateFirstDeal": {
+    "message": "Create first deal",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetNoDealsYet": {
+    "message": "No deals yet",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetAddDeal": {
+    "message": "Add Deal",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetLinkDeals": {
+    "message": "Link Deals",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetRelatedDeals": {
+    "message": "Related Deals",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "dealsAddDeal": {
+    "message": "Add Deal",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsNoDealsInThisStage": {
+    "message": "No deals in this stage",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsLoadingPipeline": {
+    "message": "Loading pipeline...",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsNewDeal": {
+    "message": "New Deal",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsGroupStage": {
+    "message": "Group: Stage",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsUpgradePlan": {
+    "message": "Upgrade Plan",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsFeatureNotAvailable": {
+    "message": "Feature Not Available",
+    "description": "Deals plan limitation error title"
+  },
+  "dealsErrorLoading": {
+    "message": "Error Loading Deals",
+    "description": "Deals load error title"
+  },
+  "dealsDealDetail": {
+    "message": "Deal Detail",
+    "description": "Deal record tab title fallback"
+  },
+  "dealsStageUpdateFailed": {
+    "message": "Failed to update deal stage",
+    "description": "Kanban stage change error"
+  },
+  "dealDetailAddANote": {
+    "message": "Add a note...",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailAddEvent": {
+    "message": "Add Event",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailAge": {
+    "message": "Age",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailExpectedClose": {
+    "message": "Expected Close",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailOrganizationsOnThisDeal": {
+    "message": "Organizations on this Deal",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailPeopleOnThisDeal": {
+    "message": "People on this Deal",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailPrimaryCustomer": {
+    "message": "Primary Customer",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailPrimaryContact": {
+    "message": "Primary Contact",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailSystemOwnedComputedFromStage": {
+    "message": "System-owned (computed from stage)",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailBackToDeals": {
+    "message": "Back to Deals",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailLoadingDeal": {
+    "message": "Loading deal...",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealFormModalToastFailedToSaveDeal": {
+    "message": "Failed to save deal",
+    "description": "Toast from DealFormModal.vue"
+  },
+  "sysFieldName": {
+    "message": "Deal Name",
+    "description": "System deal field label"
+  },
+  "sysFieldStage": {
+    "message": "Deal Stage",
+    "description": "System deal field label"
+  },
+  "sysFieldAmount": {
+    "message": "Expected Value",
+    "description": "System deal field label"
+  },
+  "sysFieldProbability": {
+    "message": "Probability (%)",
+    "description": "System deal field label"
+  },
+  "sysFieldExpectedCloseDate": {
+    "message": "Close Date",
+    "description": "System deal field label"
+  },
+  "sysFieldOwnerId": {
+    "message": "Deal Owner",
+    "description": "System deal field label"
+  },
+  "sysFieldAccountId": {
+    "message": "Organization",
+    "description": "System deal field label"
+  },
+  "sysFieldContactId": {
+    "message": "Contact",
+    "description": "System deal field label"
+  },
+  "sysFieldType": {
+    "message": "Deal Type",
+    "description": "System deal field label"
+  },
+  "sysFieldPipeline": {
+    "message": "Pipeline",
+    "description": "System deal field label"
+  },
+  "sysFieldNextStep": {
+    "message": "Next Step",
+    "description": "System deal field label"
+  },
+  "sysFieldTags": {
+    "message": "Tags",
+    "description": "System deal field label"
+  },
+  "sysFieldAssignedTo": {
+    "message": "Assigned To",
+    "description": "System deal field label"
+  },
+  "sysFieldDescription": {
+    "message": "Description",
+    "description": "System deal field label"
+  },
+  "sysFieldDealType": {
+    "message": "Deal Type",
+    "description": "Alias for deal type field"
+  },
+  "activityCreatedDeal": {
+    "message": "created this deal",
+    "description": "Deal record created activity fragment"
+  },
+  "activityUpdatedDeal": {
+    "message": "updated this deal",
+    "description": "Deal record updated activity fragment"
+  },
+  "activityYouCreatedDeal": {
+    "message": "{actor} created this deal",
+    "description": "Deal created system activity line"
+  },
+  "activityYouUpdatedDeal": {
+    "message": "{actor} updated this deal",
+    "description": "Deal updated system activity line"
+  },
+  "picklistNew": {
+    "message": "New",
+    "description": "Default pipeline stage"
+  },
+  "picklistNewBusiness": {
+    "message": "New Business",
+    "description": "Common deal type value"
+  },
+  "picklistUpsell": {
+    "message": "Upsell",
+    "description": "Deal type picklist value"
+  },
+  "picklistCrossSell": {
+    "message": "Cross-sell",
+    "description": "Deal type picklist value"
+  },
+  "picklistRenewal": {
+    "message": "Renewal",
+    "description": "Deal type picklist value"
+  },
+  "picklistExistingCustomer": {
+    "message": "Existing Customer",
+    "description": "Deal type picklist value"
+  },
+  "stageNew": {
+    "message": "New",
+    "description": "Default pipeline stage name"
+  },
+  "stageQualified": {
+    "message": "Qualified",
+    "description": "Pipeline stage name"
+  },
+  "stageProposal": {
+    "message": "Proposal",
+    "description": "Pipeline stage name"
+  },
+  "stageNegotiation": {
+    "message": "Negotiation",
+    "description": "Pipeline stage name"
+  },
+  "stageWon": {
+    "message": "Won",
+    "description": "Pipeline stage name"
+  },
+  "stageLost": {
+    "message": "Lost",
+    "description": "Pipeline stage name"
+  },
+  "stageClosedWon": {
+    "message": "Closed Won",
+    "description": "Pipeline stage name"
+  },
+  "stageClosedLost": {
+    "message": "Closed Lost",
+    "description": "Pipeline stage name"
+  },
+  "stageDiscovery": {
+    "message": "Discovery",
+    "description": "Pipeline stage name"
+  },
+  "stageNeedsAnalysis": {
+    "message": "Needs Analysis",
+    "description": "Pipeline stage name"
+  },
+  "stageValueProposition": {
+    "message": "Value Proposition",
+    "description": "Pipeline stage name"
+  },
+  "stageIdDecisionMakers": {
+    "message": "Id. Decision Makers",
+    "description": "Pipeline stage name"
+  },
+  "stagePerceptionAnalysis": {
+    "message": "Perception Analysis",
+    "description": "Pipeline stage name"
+  },
+  "stageProposalPriceQuote": {
+    "message": "Proposal/Price Quote",
+    "description": "Pipeline stage name"
+  },
+  "stageNegotiationReview": {
+    "message": "Negotiation/Review",
+    "description": "Pipeline stage name"
+  },
+  "pipelineSales": {
+    "message": "Sales Pipeline",
+    "description": "Tenant pipeline display name"
+  },
+  "pipelineDefault": {
+    "message": "Default Pipeline",
+    "description": "Tenant pipeline display name"
+  },
+  "pipelineMarketing": {
+    "message": "Marketing Pipeline",
+    "description": "Tenant pipeline display name"
+  },
+  "pipelinePartner": {
+    "message": "Partner Pipeline",
+    "description": "Tenant pipeline display name"
+  },
+  "listViewAll": {
+    "message": "All Deals",
+    "description": "Deals list default view title"
+  },
+  "listViewMy": {
+    "message": "My Deals",
+    "description": "Deals list assigned-to-me view title"
+  },
+  "listViewOpen": {
+    "message": "Open",
+    "description": "Deals list open view title"
+  },
+  "listViewWon": {
+    "message": "Won",
+    "description": "Deals list won view title"
+  },
+  "listViewLost": {
+    "message": "Lost",
+    "description": "Deals list lost view title"
+  },
+  "listCreate": {
+    "message": "New Deal",
+    "description": "Deals list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "Search deals...",
+    "description": "Deals list search placeholder"
+  },
+  "listStatPipelineValue": {
+    "message": "Pipeline Value",
+    "description": "Deals list statistics card"
+  },
+  "listStatOpenDeals": {
+    "message": "Open Deals",
+    "description": "Deals list statistics card"
+  },
+  "listStatWonThisMonth": {
+    "message": "Won This Month",
+    "description": "Deals list statistics card"
+  },
+  "listStatWinRate": {
+    "message": "Win Rate",
+    "description": "Deals list statistics card"
+  }
+}

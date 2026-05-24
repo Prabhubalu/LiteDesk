@@ -254,6 +254,7 @@ app.use('/api/activity', activityRoutes);
 app.use('/api/communications', require('./routes/communicationsRoutes'));
 app.use('/api/mailboxes', require('./routes/mailboxRoutes'));
 app.use('/api/webhooks/email', require('./routes/inboundEmailWebhookRoutes'));
+app.use('/api/hooks/process', require('./routes/processWebhookRoutes'));
 app.use('/api/notes', notesRoutes);
 app.use('/api/files', filesRoutes);
 app.use('/api/v2/organization', organizationV2Routes);
@@ -313,6 +314,9 @@ app.use('/api/responses', responseRoutes);
 
 // Settings Routes
 app.use('/api/settings', settingsRoutes);
+
+// Targets & Quotas (platform performance)
+app.use('/api/targets', require('./routes/targetRoutes'));
 
 // Serve uploaded files (including reports)
 app.use('/api/uploads', express.static(path.join(__dirname, 'uploads'), {
@@ -446,6 +450,11 @@ connectMasterWithRetry(masterUri)
     const processExecutor = require('./services/processExecutor');
     processExecutor.init();
     console.log('✅ Process executor initialized');
+
+    // 3c2. Initialize target contribution engine (domain events → target ledger)
+    const targetContributionEngine = require('./services/targets/targetContributionEngine');
+    targetContributionEngine.init();
+    console.log('✅ Target contribution engine initialized');
 
     // 3d. Start email queue worker in this process (unless a dedicated worker runs — set ENABLE_BULL_IN_WEB=false on API)
     if (process.env.ENABLE_BULL_IN_WEB !== 'false') {

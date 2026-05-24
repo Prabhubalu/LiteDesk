@@ -1,0 +1,2382 @@
+{
+  "recordsCount": {
+    "message": "{count, plural, one {# record} other {# records}}",
+    "description": "Record list count with ICU pluralization"
+  },
+  "itemsSelected": {
+    "message": "{count, plural, one {# item selected} other {# items selected}}",
+    "description": "Bulk selection count in list views"
+  },
+  "welcomeUser": {
+    "message": "Welkom, {name}",
+    "description": "Personalized greeting with interpolation"
+  },
+  "assignedToUser": {
+    "message": "Assigned to {gender, select, female {her} male {him} other {them}}",
+    "description": "ICU select example for gendered copy (platform chrome only)"
+  },
+  "localeDevTitle": {
+    "message": "Lokalisatie QA",
+    "description": "Developer settings section for i18n tools"
+  },
+  "pseudoLocaleHint": {
+    "message": "Pseudo-locales breiden tekst uit en leggen lay-outproblemen bloot vóór vertaling.",
+    "description": "Help text for pseudo-locale developer toggle"
+  },
+  "moreActions": {
+    "message": "Meer acties",
+    "description": "Overflow menu trigger aria-label"
+  },
+  "loadingList": {
+    "message": "Lijst laden",
+    "description": "List skeleton aria-label"
+  },
+  "viewRecord": {
+    "message": "Weergave",
+    "description": "Row action: open record"
+  },
+  "importData": {
+    "message": "Importeren",
+    "description": "Module header import action"
+  },
+  "exportData": {
+    "message": "Exporteren",
+    "description": "Module header export action"
+  },
+  "listSaveView": {
+    "message": "Weergave opslaan",
+    "description": "List view: save current filters/columns"
+  },
+  "listFilters": {
+    "message": "Filters",
+    "description": "List view filters panel title"
+  },
+  "listAllRecords": {
+    "message": "Alle",
+    "description": "List filter tab: all records"
+  },
+  "listClearFilters": {
+    "message": "Wis filters",
+    "description": "Reset active list filters"
+  },
+  "listLoadingOptions": {
+    "message": "Opties laden…",
+    "description": "Filter dropdown loading state"
+  },
+  "listClear": {
+    "message": "Duidelijk",
+    "description": "Clear single filter or selection"
+  },
+  "listViewName": {
+    "message": "Naam bekijken",
+    "description": "Saved view name field label"
+  },
+  "listDeleteView": {
+    "message": "Weergave verwijderen",
+    "description": "Delete saved list view action"
+  },
+  "listCustomizeView": {
+    "message": "Weergave aanpassen",
+    "description": "Open list view customization drawer"
+  },
+  "listLayoutOptions": {
+    "message": "Indelingsopties",
+    "description": "List layout section title"
+  },
+  "listRowHeight": {
+    "message": "Rij hoogte",
+    "description": "Table row height setting"
+  },
+  "listReset": {
+    "message": "Opnieuw instellen",
+    "description": "Reset view settings to defaults"
+  },
+  "listColumnWidths": {
+    "message": "Kolombreedtes",
+    "description": "Column width customization section"
+  },
+  "listDefaultView": {
+    "message": "Standaardweergave",
+    "description": "Mark view as org default"
+  },
+  "listManageFields": {
+    "message": "Beheer velden",
+    "description": "Open field visibility manager"
+  },
+  "listFieldRequired": {
+    "message": "Vereist",
+    "description": "Field cannot be hidden"
+  },
+  "listFieldLocked": {
+    "message": "Vergrendeld",
+    "description": "Field locked from reorder"
+  },
+  "listFieldHidden": {
+    "message": "Verborgen",
+    "description": "Hidden fields section"
+  },
+  "listNoHiddenFields": {
+    "message": "Geen verborgen velden",
+    "description": "Empty hidden fields state"
+  },
+  "listNewCustomField": {
+    "message": "Nieuw aangepast veld",
+    "description": "Create custom field from list manager"
+  },
+  "listCustomizeKanban": {
+    "message": "Kanban aanpassen",
+    "description": "Kanban board customization"
+  },
+  "deleteTitleBulk": {
+    "message": "Verwijder {count} {recordTypePlural}",
+    "description": "Bulk delete dialog title"
+  },
+  "deleteTitleSingle": {
+    "message": "Verwijder {recordType}",
+    "description": "Single delete dialog title"
+  },
+  "deleteConfirmBulk": {
+    "message": "Weet u zeker dat u {count} {recordTypeLabel} wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+    "description": "Bulk delete confirmation"
+  },
+  "deleteConfirmSingle": {
+    "message": "Weet u zeker dat u {target} wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+    "description": "Single delete confirmation; target is quoted name or type"
+  },
+  "deleteInProgress": {
+    "message": "Verwijderen…",
+    "description": "Delete button in progress"
+  },
+  "listEditView": {
+    "message": "Weergave bewerken",
+    "description": "Edit saved list view action title"
+  },
+  "listDeleteViewAction": {
+    "message": "Weergave verwijderen",
+    "description": "Delete saved list view action title"
+  },
+  "listSaveViewHint": {
+    "message": "Sla de huidige weergave op als een nieuwe opgeslagen weergave",
+    "description": "Save view button tooltip"
+  },
+  "listHideStatistics": {
+    "message": "Statistieken verbergen",
+    "description": "Stats panel toggle tooltip when visible"
+  },
+  "listShowStatistics": {
+    "message": "Statistieken weergeven",
+    "description": "Stats panel toggle tooltip when hidden"
+  },
+  "listStatsShort": {
+    "message": "Statistieken",
+    "description": "Short stats toggle label"
+  },
+  "listHideShort": {
+    "message": "Verbergen",
+    "description": "Short hide label for stats toggle"
+  },
+  "listSuggestedLabel": {
+    "message": "Voorgesteld:",
+    "description": "Suggested filters section prefix"
+  },
+  "listSuggestedHint": {
+    "message": "Suggesties gebaseerd op algemeen gebruik. Niets wordt automatisch toegepast.",
+    "description": "Suggested filters tooltip"
+  },
+  "listSuggestedConfigure": {
+    "message": "Klik om het {filter} filter te configureren",
+    "description": "Suggested filter chip tooltip"
+  },
+  "listClearSearch": {
+    "message": "Zoekopdracht wissen voor {title}",
+    "description": "Clear search input aria-label"
+  },
+  "listViewNameExample": {
+    "message": "bijvoorbeeld verkoopleads",
+    "description": "Saved view name placeholder"
+  },
+  "listViewDescOptional": {
+    "message": "Beschrijving (optioneel)",
+    "description": "Saved view description field label"
+  },
+  "listViewDescPlaceholder": {
+    "message": "Optionele beschrijving voor deze weergave",
+    "description": "Saved view description placeholder"
+  },
+  "listSaveCurrentView": {
+    "message": "Huidige weergave opslaan",
+    "description": "Save view modal title"
+  },
+  "listEditViewTitle": {
+    "message": "Weergave bewerken",
+    "description": "Edit view modal title"
+  },
+  "listDeleteViewConfirm": {
+    "message": "Weet u zeker dat u \"{viewName}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+    "description": "Delete saved view confirmation"
+  },
+  "listClearSelection": {
+    "message": "Duidelijke selectie",
+    "description": "Bulk selection clear button tooltip"
+  },
+  "listRowsSelected": {
+    "message": "{count, plural, one {# {singular} selected} other {# {plural} selected}}",
+    "description": "Bulk row selection count in list"
+  },
+  "listSearchFields": {
+    "message": "Zoekvelden",
+    "description": "Field manager search placeholder"
+  },
+  "listShownCount": {
+    "message": "Getoond ({count})",
+    "description": "Visible fields section header"
+  },
+  "listKanbanOptions": {
+    "message": "Kanban-opties",
+    "description": "Kanban settings section title"
+  },
+  "listCardSize": {
+    "message": "Kaartformaat",
+    "description": "Kanban card size setting"
+  },
+  "listStackFields": {
+    "message": "Stapel velden",
+    "description": "Kanban stack fields toggle"
+  },
+  "listCollapseEmpty": {
+    "message": "Lege kolommen samenvouwen",
+    "description": "Kanban collapse empty columns toggle"
+  },
+  "listShowEmptyFields": {
+    "message": "Lege velden weergeven",
+    "description": "Kanban show empty fields toggle"
+  },
+  "listShowClosedRecords": {
+    "message": "Toon gesloten records",
+    "description": "Kanban show closed records toggle"
+  },
+  "darkMode": {
+    "message": "Donkere modus",
+    "description": "Dark color mode menu option"
+  },
+  "lightMode": {
+    "message": "Lichte modus",
+    "description": "Light color mode menu option"
+  },
+  "tableClearSelection": {
+    "message": "Duidelijke selectie",
+    "description": "Clear bulk row selection"
+  },
+  "tableAllPageSelected": {
+    "message": "Alle {count} items op deze pagina zijn geselecteerd.",
+    "description": "Select-all banner when current page is fully selected"
+  },
+  "tableSelectAllItems": {
+    "message": "Selecteer alle {count} items",
+    "description": "Expand selection to all pages"
+  },
+  "tableAllSelected": {
+    "message": "Alle {count} geselecteerd",
+    "description": "All records across pages selected"
+  },
+  "tableSelectedCount": {
+    "message": "{count, plural, one {# selected} other {# selected}}",
+    "description": "Bulk selection count in data table"
+  },
+  "tableDeleteSelected": {
+    "message": "Geselecteerde verwijderen",
+    "description": "Bulk delete action label"
+  },
+  "tableColumns": {
+    "message": "Kolommen",
+    "description": "Column settings button label"
+  },
+  "tableColumnSettings": {
+    "message": "Kolominstellingen",
+    "description": "Column settings modal title"
+  },
+  "tableManageColumns": {
+    "message": "Kolommen beheren",
+    "description": "Column manager section title"
+  },
+  "tableManageColumnsHint": {
+    "message": "Schakel de zichtbaarheid in en sleep om de volgorde te wijzigen",
+    "description": "Column manager help text"
+  },
+  "tableVisibleCount": {
+    "message": "{visible} van {total} zichtbaar",
+    "description": "Visible column count in settings"
+  },
+  "tableUnfreezeColumn": {
+    "message": "Kolom deblokkeren",
+    "description": "Unfreeze sticky column tooltip"
+  },
+  "tableFreezeColumn": {
+    "message": "Kolom bevriezen",
+    "description": "Freeze sticky column tooltip"
+  },
+  "tableFreezeMax": {
+    "message": "Er kunnen maximaal 2 kolommen worden bevroren",
+    "description": "Freeze limit tooltip"
+  },
+  "tableFrozen": {
+    "message": "Bevroren",
+    "description": "Frozen column badge"
+  },
+  "tableResetDefault": {
+    "message": "Resetten naar standaard",
+    "description": "Reset column settings"
+  },
+  "tableShowingResults": {
+    "message": "Toont {start} tot {end} van {total} resultaten",
+    "description": "Pagination summary"
+  },
+  "tableSortAscending": {
+    "message": "Sorteer oplopend",
+    "description": "Table column sort ascending"
+  },
+  "tableSortDescending": {
+    "message": "Sorteer aflopend",
+    "description": "Table column sort descending"
+  },
+  "tableClearSort": {
+    "message": "Duidelijke sortering",
+    "description": "Remove column sort"
+  },
+  "tableToggleSort": {
+    "message": "Schakel sorteren voor {column} in",
+    "description": "Sort toggle aria-label"
+  },
+  "tableRowSelectSr": {
+    "message": "Rijnummer en selecteer rijen",
+    "description": "Screen reader label for selection column"
+  },
+  "tableLoadingSr": {
+    "message": "Tabel laden",
+    "description": "Screen reader label for table loading skeleton"
+  },
+  "metricsTitle": {
+    "message": "Statistieken",
+    "description": "Metrics widget card title"
+  },
+  "metricsConfigure": {
+    "message": "Configureer statistieken",
+    "description": "Open metrics configuration"
+  },
+  "metricsEmptyYet": {
+    "message": "Er zijn nog geen statistieken geconfigureerd.",
+    "description": "Empty metrics widget state"
+  },
+  "metricsEmptyPanel": {
+    "message": "Geen statistieken geconfigureerd.",
+    "description": "Empty metrics config panel"
+  },
+  "metricsAdd": {
+    "message": "Voeg statistiek toe",
+    "description": "Add a new metric row"
+  },
+  "metricsLabel": {
+    "message": "Label",
+    "description": "Metric label column"
+  },
+  "metricsSource": {
+    "message": "Bron",
+    "description": "Metric data source column"
+  },
+  "metricsField": {
+    "message": "Veld",
+    "description": "Metric field column"
+  },
+  "metricsAggregation": {
+    "message": "Aggregatie",
+    "description": "Metric aggregation column"
+  },
+  "metricsDragReorder": {
+    "message": "Sleep om de volgorde te wijzigen",
+    "description": "Metric row drag handle tooltip"
+  },
+  "metricsDelete": {
+    "message": "Metriek verwijderen",
+    "description": "Remove metric row"
+  },
+  "metricsClosePanel": {
+    "message": "Sluit paneel",
+    "description": "Close metrics config drawer"
+  },
+  "keyFieldsTitle": {
+    "message": "Sleutelvelden",
+    "description": "Key fields widget title"
+  },
+  "keyFieldsEmptyValue": {
+    "message": "Leeg",
+    "description": "Empty key field value placeholder"
+  },
+  "keyFieldsNone": {
+    "message": "Geen sleutelvelden geconfigureerd",
+    "description": "No key fields empty state"
+  },
+  "keyFieldsHint": {
+    "message": "Markeer velden als \"Sleutelveld\" in de module-instellingen",
+    "description": "Key fields configuration hint"
+  },
+  "closePanel": {
+    "message": "Sluit paneel",
+    "description": "Screen reader label for closing a side panel"
+  },
+  "formAssignToMe": {
+    "message": "Geef mij de opdracht",
+    "description": "Assign current user to a reviewer field"
+  },
+  "formNoOptions": {
+    "message": "Geen opties beschikbaar.",
+    "description": "Empty picklist dropdown"
+  },
+  "formNoMatchingRecords": {
+    "message": "Geen overeenkomende records gevonden.",
+    "description": "Empty lookup combobox search results"
+  },
+  "formNoRecordsFound": {
+    "message": "Geen gegevens gevonden",
+    "description": "Empty lookup modal list"
+  },
+  "formSelected": {
+    "message": "Gekozen",
+    "description": "Lookup row already selected badge"
+  },
+  "formCreateNew": {
+    "message": "Maak nieuw",
+    "description": "Create related record from lookup footer"
+  },
+  "formSearchOptions": {
+    "message": "Zoekopties...",
+    "description": "Picklist search placeholder"
+  },
+  "formSearchRecords": {
+    "message": "Gegevens zoeken...",
+    "description": "Lookup combobox search placeholder"
+  },
+  "formBrowseRecords": {
+    "message": "Blader door records",
+    "description": "Open lookup record picker modal"
+  },
+  "formCreateAndSelect": {
+    "message": "Creëer en selecteer",
+    "description": "Create new lookup record shortcut"
+  },
+  "formUploading": {
+    "message": "Uploaden...",
+    "description": "Image upload in progress"
+  },
+  "formUploadImage": {
+    "message": "Afbeelding uploaden",
+    "description": "Image upload trigger button"
+  },
+  "formRefreshing": {
+    "message": "Verfrissend...",
+    "description": "Lookup modal refresh in progress"
+  },
+  "formLookupSelectTitle": {
+    "message": "Selecteer {label}",
+    "description": "Lookup modal title"
+  },
+  "formLookupChooseOne": {
+    "message": "Kies één {module} om {field} te vullen",
+    "description": "Lookup modal subtitle"
+  },
+  "formLookupSearchModule": {
+    "message": "Zoek {module}...",
+    "description": "Lookup modal search placeholder"
+  },
+  "formLookupNoMatch": {
+    "message": "Geen {module} komt overeen met \"{query}\".",
+    "description": "Lookup modal empty state with search query"
+  },
+  "formLookupNoRecordsYet": {
+    "message": "Er zijn nog geen {module} waaruit u kunt kiezen.",
+    "description": "Lookup modal empty state without query"
+  },
+  "formLookupCreateModule": {
+    "message": "Creëer nieuwe {module}",
+    "description": "Lookup modal create CTA with module name"
+  },
+  "lifecycleStageTitle": {
+    "message": "Levenscyclusfase",
+    "description": "Lifecycle stage widget title"
+  },
+  "lifecycleType": {
+    "message": "Type:",
+    "description": "Lifecycle widget type label"
+  },
+  "lifecycleAge": {
+    "message": "Leeftijd:",
+    "description": "Lifecycle widget age label"
+  },
+  "lifecycleJustCreated": {
+    "message": "Net gemaakt",
+    "description": "Record age when created today"
+  },
+  "lifecycleAgeDays": {
+    "message": "{days, plural, one {# day} other {# days}}",
+    "description": "Record age in days"
+  },
+  "lifecycleAgeZero": {
+    "message": "0 dagen",
+    "description": "Record age fallback when no createdAt"
+  },
+  "searchPlaceholder": {
+    "message": "Zoekopdracht...",
+    "description": "Generic search input placeholder"
+  },
+  "filterAll": {
+    "message": "Alle",
+    "description": "Filter option: no restriction"
+  },
+  "filterAllNamed": {
+    "message": "Alle {label}",
+    "description": "Filter option: all values for a named field"
+  },
+  "filterDays": {
+    "message": "Dagen",
+    "description": "Relative date filter days input label"
+  },
+  "filterDate": {
+    "message": "Datum",
+    "description": "Single date filter input label"
+  },
+  "filterFrom": {
+    "message": "Van",
+    "description": "Date range filter start label"
+  },
+  "filterTo": {
+    "message": "Naar",
+    "description": "Date range filter end label"
+  },
+  "filterDaysPlaceholder": {
+    "message": "bijv. 7",
+    "description": "Relative date filter days input placeholder"
+  },
+  "dependencyNoFields": {
+    "message": "Geen velden om weer te geven",
+    "description": "Dependency popup empty state"
+  },
+  "drawerBackQuickCreate": {
+    "message": "Terug naar snel maken",
+    "description": "Toggle from full create form to quick create"
+  },
+  "drawerShowAllFields": {
+    "message": "Toon alle velden",
+    "description": "Expand quick create drawer to full form"
+  },
+  "formQuickCreateFields": {
+    "message": "Snel velden maken",
+    "description": "Section heading for quick-create field group"
+  },
+  "taskDescriptionPlaceholder": {
+    "message": "Schrijf of typ '/' voor opdrachten",
+    "description": "Task description editor placeholder"
+  },
+  "taskDescriptionFallback": {
+    "message": "Beschrijving",
+    "description": "Task description field fallback label"
+  },
+  "taskRelatedToFallback": {
+    "message": "Gerelateerd aan",
+    "description": "Task related-to field fallback label"
+  },
+  "taskSubtasksLabel": {
+    "message": "Subtaken",
+    "description": "Task subtasks field label"
+  },
+  "tagsTitle": {
+    "message": "Labels",
+    "description": "Tags picker panel title"
+  },
+  "tagsNewTag": {
+    "message": "Nieuwe tag",
+    "description": "Create a new tag definition"
+  },
+  "tagsSearchPlaceholder": {
+    "message": "Zoek of maak een tag",
+    "description": "Tags picker search input"
+  },
+  "tagsClickSearchHint": {
+    "message": "Klik op het zoekvak om de beschikbare tags te bekijken.",
+    "description": "Tags picker collapsed hint"
+  },
+  "tagsNoTagsYet": {
+    "message": "Er zijn nog geen tags in deze werkruimte.",
+    "description": "Empty workspace tags list"
+  },
+  "tagsCreateFirst": {
+    "message": "Maak de eerste tag",
+    "description": "CTA when no tags exist"
+  },
+  "tagsCreateNamed": {
+    "message": "Maak \"{name}\" aan",
+    "description": "Create tag from search query"
+  },
+  "tagsPublic": {
+    "message": "Openbaar",
+    "description": "Public tag badge"
+  },
+  "tagsRemoveTag": {
+    "message": "Label verwijderen",
+    "description": "Remove tag from selection aria-label"
+  },
+  "tagsEditTag": {
+    "message": "Bewerk tag",
+    "description": "Edit tag definition action"
+  },
+  "tagsTagActions": {
+    "message": "Tag acties",
+    "description": "Tag row overflow menu aria-label"
+  },
+  "tagsTagName": {
+    "message": "Tagnaam",
+    "description": "Tag editor name field label"
+  },
+  "tagsEnterTagName": {
+    "message": "Voer de tagnaam in",
+    "description": "Tag editor name placeholder"
+  },
+  "tagsColor": {
+    "message": "Kleur",
+    "description": "Tag editor color field label"
+  },
+  "tagsMakePublic": {
+    "message": "Maak tag openbaar",
+    "description": "Tag editor public toggle label"
+  },
+  "tagsRemoveFromSelection": {
+    "message": "Verwijderen uit selectie",
+    "description": "Unassign tag from current record"
+  },
+  "tagsAddToSelection": {
+    "message": "Toevoegen aan selectie",
+    "description": "Assign tag to current record"
+  },
+  "tagsDeleteFromModule": {
+    "message": "Verwijder tag uit module",
+    "description": "Delete tag definition from module"
+  },
+  "tagsRemovedNamed": {
+    "message": "\"{name}\" verwijderd.",
+    "description": "Tag removal pending undo banner"
+  },
+  "tagsUndoSeconds": {
+    "message": "Ongedaan maken ({seconds})",
+    "description": "Undo tag removal countdown"
+  },
+  "linkRecordsBackToType": {
+    "message": "Terug naar recordtype",
+    "description": "Return to link records type selector"
+  },
+  "linkRecordsLinked": {
+    "message": "Gekoppeld",
+    "description": "Already-linked record type badge"
+  },
+  "linkRecordsNoTypes": {
+    "message": "Er zijn geen koppelbare recordtypen geconfigureerd voor deze module. Configureer relaties in Instellingen → Modules.",
+    "description": "Empty linkable types state"
+  },
+  "linkRecordsNoMatch": {
+    "message": "Geen overeenkomende records gevonden. Probeer uw zoekopdracht of filters aan te passen.",
+    "description": "Empty link records search results"
+  },
+  "linkRecordsCreateNew": {
+    "message": "Nieuw maken",
+    "description": "Create record from link drawer"
+  },
+  "linkRecordsSelectedCount": {
+    "message": "{count, plural, one {# selected} other {# selected}}",
+    "description": "Link drawer multi-select count"
+  },
+  "linkRecordsLink": {
+    "message": "Link",
+    "description": "Confirm link records action"
+  },
+  "kanbanExpandColumn": {
+    "message": "Vouw kolom uit",
+    "description": "Expand collapsed kanban column"
+  },
+  "kanbanNoItems": {
+    "message": "Geen artikelen",
+    "description": "Empty kanban column placeholder"
+  },
+  "summaryLoadingRecord": {
+    "message": "{type} laden...",
+    "description": "Record summary page loading state"
+  },
+  "summaryErrorLoadingTitle": {
+    "message": "Fout bij laden van {type}",
+    "description": "Record summary page error headline"
+  },
+  "summaryNoTagsYet": {
+    "message": "Nog geen tags",
+    "description": "Empty tags on record header"
+  },
+  "summaryManageTags": {
+    "message": "Beheer tags",
+    "description": "Open tag manager when tags exist"
+  },
+  "summaryAddTag": {
+    "message": "Label toevoegen",
+    "description": "Add a tag to the record"
+  },
+  "summaryAddAnotherTag": {
+    "message": "Voeg nog een tag toe",
+    "description": "Add another tag when some exist"
+  },
+  "summaryCopyLink": {
+    "message": "Kopieer link",
+    "description": "Copy record URL to clipboard"
+  },
+  "summarySelectPlaceholder": {
+    "message": "Selecteer...",
+    "description": "Unset lifecycle/status dropdown value"
+  },
+  "summaryAddRelation": {
+    "message": "Relatie toevoegen",
+    "description": "Add related record menu"
+  },
+  "summaryViewResponses": {
+    "message": "Bekijk reacties",
+    "description": "Open form responses list"
+  },
+  "summaryDeleteRecord": {
+    "message": "Record verwijderen",
+    "description": "Delete current record action"
+  },
+  "summaryFormNotActive": {
+    "message": "Formulier nog niet actief",
+    "description": "Inactive form empty state title"
+  },
+  "summaryFormNotActiveHint": {
+    "message": "Dit formulier is nog niet gebruikt. Wijs het toe via evenementen om reacties te verzamelen.",
+    "description": "Inactive form empty state body"
+  },
+  "summaryAddWidget": {
+    "message": "Widget toevoegen",
+    "description": "Add dashboard widget CTA"
+  },
+  "summaryAddCustomWidget": {
+    "message": "Aangepaste widget toevoegen",
+    "description": "Add widget floating button tooltip"
+  },
+  "summaryShowEmptyFields": {
+    "message": "Lege velden weergeven",
+    "description": "Toggle empty fields in details tab"
+  },
+  "summaryTenantFields": {
+    "message": "Huurdervelden",
+    "description": "Tenant details tab section title"
+  },
+  "summaryTenantFieldsHint": {
+    "message": "Abonnementen, limieten en organisatie-instellingen",
+    "description": "Tenant details tab subtitle"
+  },
+  "summaryTenantFieldsNoMatch": {
+    "message": "Er zijn geen huurdervelden die overeenkomen met uw zoekopdracht.",
+    "description": "Tenant fields search empty"
+  },
+  "summaryTenantFieldsNoValues": {
+    "message": "Geen tenantvelden met waarden om weer te geven.",
+    "description": "Tenant fields all empty hidden"
+  },
+  "summaryTenantFieldsNone": {
+    "message": "Er zijn geen tenantvelden beschikbaar.",
+    "description": "No tenant fields configured"
+  },
+  "summaryManageFields": {
+    "message": "Beheer velden",
+    "description": "Open field management settings"
+  },
+  "summaryNotAvailable": {
+    "message": "Niet beschikbaar",
+    "description": "Field value unavailable placeholder"
+  },
+  "summaryFieldsNoMatch": {
+    "message": "Er zijn geen velden die overeenkomen met uw zoekopdracht.",
+    "description": "Details tab search empty"
+  },
+  "summaryFieldsNoValues": {
+    "message": "Er zijn geen velden met waarden om weer te geven.",
+    "description": "Details tab all empty hidden"
+  },
+  "summaryFieldsNone": {
+    "message": "Geen velden beschikbaar.",
+    "description": "No fields configured on module"
+  },
+  "summaryFormUsage": {
+    "message": "Formuliergebruik",
+    "description": "Form submissions section title"
+  },
+  "summaryFormUsageHint": {
+    "message": "Lijst met formulierinzendingen met status, score en indieningsdatum.",
+    "description": "Form submissions section subtitle"
+  },
+  "summaryLoadingSubmissions": {
+    "message": "Inzendingen laden...",
+    "description": "Form submissions table loading"
+  },
+  "summaryColSubmitted": {
+    "message": "Ingediend",
+    "description": "Submission date column"
+  },
+  "summaryColSubmittedBy": {
+    "message": "Ingezonden door",
+    "description": "Submitter column"
+  },
+  "summaryColStatus": {
+    "message": "Status",
+    "description": "Status column header"
+  },
+  "summaryColScore": {
+    "message": "Scoren",
+    "description": "Score column header"
+  },
+  "summaryColActions": {
+    "message": "Acties",
+    "description": "Actions column header"
+  },
+  "summaryColKpis": {
+    "message": "KPI's",
+    "description": "KPI column header"
+  },
+  "summaryAnonymous": {
+    "message": "Anoniem",
+    "description": "Anonymous submitter label"
+  },
+  "summaryNoSubmissions": {
+    "message": "Nog geen inzendingen",
+    "description": "Empty form submissions state"
+  },
+  "summaryNoSubmissionsHint": {
+    "message": "Dit formulier heeft nog geen inzendingen ontvangen.",
+    "description": "Empty form submissions body"
+  },
+  "summaryFormPreview": {
+    "message": "Formuliervoorbeeld",
+    "description": "Form preview section title"
+  },
+  "summaryFormPreviewHint": {
+    "message": "Bekijk een voorbeeld van hoe dit formulier er voor gebruikers uitziet wanneer het wordt ingevuld.",
+    "description": "Form preview section subtitle"
+  },
+  "summaryFormResponses": {
+    "message": "Formulierantwoorden",
+    "description": "Form responses section title"
+  },
+  "summaryFormResponsesHint": {
+    "message": "Bekijk en beheer alle antwoorden die voor dit formulier zijn ingediend.",
+    "description": "Form responses section subtitle"
+  },
+  "summaryLoadingResponses": {
+    "message": "Reacties laden...",
+    "description": "Form responses table loading"
+  },
+  "summaryNoResponses": {
+    "message": "Nog geen reacties",
+    "description": "Empty form responses state"
+  },
+  "summaryNoResponsesHint": {
+    "message": "Dit formulier heeft nog geen reacties ontvangen.",
+    "description": "Empty form responses body"
+  },
+  "summaryViewAllResponses": {
+    "message": "Bekijk alle reacties",
+    "description": "Navigate to full responses list"
+  },
+  "summaryUser": {
+    "message": "Gebruiker",
+    "description": "Activity filter user label"
+  },
+  "summaryAllUsers": {
+    "message": "Alle gebruikers",
+    "description": "Activity filter all users option"
+  },
+  "summaryType": {
+    "message": "Type",
+    "description": "Activity filter type label"
+  },
+  "summaryAllTypes": {
+    "message": "Alle soorten",
+    "description": "Activity filter all types option"
+  },
+  "summaryComments": {
+    "message": "Opmerkingen",
+    "description": "Activity type filter comments"
+  },
+  "summaryFieldChanges": {
+    "message": "Veldwijzigingen",
+    "description": "Activity type filter field changes"
+  },
+  "summaryNoActivity": {
+    "message": "Nog geen activiteit",
+    "description": "Empty activity feed"
+  },
+  "summarySelectWidget": {
+    "message": "Selecteer een widget om toe te voegen aan uw dashboard",
+    "description": "Add widget drawer subtitle"
+  },
+  "summaryResetToDefault": {
+    "message": "Terugzetten naar standaard",
+    "description": "Reset widget layout action"
+  },
+  "summaryResetWidgetLayout": {
+    "message": "Widgetindeling opnieuw instellen",
+    "description": "Reset layout confirmation title"
+  },
+  "summaryResetLayoutConfirmBody": {
+    "message": "Weet u zeker dat u de widgetindeling wilt terugzetten naar de standaardwaarde? Hiermee worden alle aanpassingen verwijderd, inclusief widgetposities, -groottes en alle widgets die u heeft toegevoegd of verwijderd.",
+    "description": "Reset layout confirmation body"
+  },
+  "summaryResetLayoutTooltip": {
+    "message": "Reset de widgetlay-out naar de standaardvolgorde",
+    "description": "Reset layout button tooltip"
+  },
+  "summaryNoMetrics": {
+    "message": "Geen statistieken beschikbaar.",
+    "description": "Empty metrics widget fallback"
+  },
+  "summaryKeyFieldsPlaceholder": {
+    "message": "Hier worden sleutelvelden weergegeven.",
+    "description": "Empty key fields widget fallback"
+  },
+  "summaryWidgetContent": {
+    "message": "Widget-inhoud",
+    "description": "Generic widget placeholder"
+  },
+  "summaryTabsAria": {
+    "message": "Tabbladen",
+    "description": "Record summary tab list aria-label"
+  },
+  "summarySearchTenantFields": {
+    "message": "Huurdervelden zoeken...",
+    "description": "Tenant fields search placeholder"
+  },
+  "summarySearchFields": {
+    "message": "Zoekvelden...",
+    "description": "Details fields search placeholder"
+  },
+  "summarySearchActivities": {
+    "message": "Activiteiten zoeken...",
+    "description": "Activity feed search placeholder"
+  },
+  "summaryUrlCopied": {
+    "message": "URL gekopieerd naar klembord!",
+    "description": "Copy link success toast"
+  },
+  "summaryResetLayoutFailed": {
+    "message": "Kan de lay-out niet opnieuw instellen. Probeer het opnieuw.",
+    "description": "Reset layout error toast"
+  },
+  "summarySaveFieldsFailed": {
+    "message": "Kan veldupdates niet opslaan. Probeer het opnieuw.",
+    "description": "Inline field save error toast"
+  },
+  "moduleListTheListForThisModuleIs": {
+    "message": "De lijst voor deze module is niet beschikbaar.",
+    "description": "Auto-migrated from moduleList"
+  },
+  "moduleListListNotFound": {
+    "message": "Lijst niet gevonden",
+    "description": "Auto-migrated from moduleList"
+  },
+  "targetWizardStepperTargetCreationProgress": {
+    "message": "Voortgang van het maken van doelen",
+    "description": "Auto-migrated from targetWizardStepper"
+  },
+  "trashRestore": {
+    "message": "Herstellen",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAutoDeleteIn": {
+    "message": "Automatisch verwijderen in",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedBy": {
+    "message": "Verwijderd door",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedItemsWillAppearHereYou": {
+    "message": "Hier verschijnen verwijderde items. U kunt ze herstellen of permanent verwijderen voordat ze verlopen.",
+    "description": "Auto-migrated from trash"
+  },
+  "trashTrashIsEmpty": {
+    "message": "Prullenbak is leeg",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletePermanently": {
+    "message": "Permanent verwijderen",
+    "description": "Auto-migrated from trash"
+  },
+  "trashRestoreSelected": {
+    "message": "Herstellen geselecteerd",
+    "description": "Auto-migrated from trash"
+  },
+  "trashEmptyTrash": {
+    "message": "Prullenbak legen",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedTo": {
+    "message": "Verwijderd naar",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedFrom": {
+    "message": "Verwijderd van",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAllUsers": {
+    "message": "Alle gebruikers",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAllModules": {
+    "message": "Alle modules",
+    "description": "Auto-migrated from trash"
+  },
+  "trashSearchNameModuleDeletedBy": {
+    "message": "Zoek naam, module, verwijderd door...",
+    "description": "Auto-migrated from trash"
+  },
+  "trashRetention": {
+    "message": "Behoud",
+    "description": "Auto-migrated from trash"
+  },
+  "trashOldestItem": {
+    "message": "Oudste artikel",
+    "description": "Auto-migrated from trash"
+  },
+  "trashExpiringIn7Days": {
+    "message": "Verloopt over 7 dagen",
+    "description": "Auto-migrated from trash"
+  },
+  "trashTotalInTrash": {
+    "message": "Totaal in de prullenbak",
+    "description": "Auto-migrated from trash"
+  },
+  "approvalDetailEnterRejectionReason": {
+    "message": "Voer de reden van afwijzing in...",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailReason": {
+    "message": "Reden",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailRejectingWillBlockThisAction": {
+    "message": "Als u weigert, wordt deze actie geblokkeerd.",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailRejectApproval": {
+    "message": "Goedkeuring afwijzen",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailYouAreNotAuthorizedToApprove": {
+    "message": "U bent niet bevoegd om dit verzoek goed te keuren of af te wijzen.",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailReason2": {
+    "message": "Reden:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecidedAt": {
+    "message": "Besloten op:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecidedBy": {
+    "message": "Besloten door:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecisionAlreadyMade": {
+    "message": "Beslissing al genomen",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailYourDecision": {
+    "message": "Jouw beslissing",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailThisApprovalWasEscalatedDueTo": {
+    "message": "Deze goedkeuring werd geëscaleerd omdat er binnen de gestelde termijn geen reactie was. Nieuwe goedkeurders zijn op de hoogte gebracht.",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailEscalated": {
+    "message": "Geëscaleerd",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailIfRejected": {
+    "message": "Indien afgewezen",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailIfApproved": {
+    "message": "Indien goedgekeurd",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailWhatWillHappen": {
+    "message": "Wat zal er gebeuren",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailWhyApprovalIsRequired": {
+    "message": "Waarom goedkeuring vereist is",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailEntity": {
+    "message": "Entiteit",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailContext": {
+    "message": "Context",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailBackToApprovals": {
+    "message": "Terug naar Goedkeuringen",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalInboxEnterRejectionReason": {
+    "message": "Voer de reden van afwijzing in...",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxReason": {
+    "message": "Reden",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRejectingWillBlockThisActionPlease": {
+    "message": "Als u weigert, wordt deze actie geblokkeerd. Geef een reden op.",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRejectApproval": {
+    "message": "Goedkeuring afwijzen",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxDueIn": {
+    "message": "Verschijnt over:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRequestedAt": {
+    "message": "Aangevraagd bij:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRequestedBy": {
+    "message": "Aangevraagd door:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxAllCaughtUpYouHaveNo": {
+    "message": "Allemaal ingehaald! Er zijn geen goedkeuringsverzoeken in behandeling.",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxNoApprovalsPending": {
+    "message": "Er zijn geen goedkeuringen in behandeling",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxReviewAndApprovePendingRequests": {
+    "message": "Beoordeel en keur openstaande aanvragen goed",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxApprovals": {
+    "message": "Goedkeuringen",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "demoRequestsEnterprise": {
+    "message": "Onderneming",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsProfessional": {
+    "message": "Professioneel",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsStarter": {
+    "message": "Starter",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsTrial15Days": {
+    "message": "Proefperiode (15 dagen)",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSubscriptionTier": {
+    "message": "Abonnementsniveau",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsEnterTemporaryPasswordForOwner": {
+    "message": "Voer een tijdelijk wachtwoord in voor de eigenaar",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvert": {
+    "message": "Overzetten",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvertToOrganization": {
+    "message": "Converteren naar organisatie",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted": {
+    "message": "Geconverteerd",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoCompleted": {
+    "message": "Demo voltooid",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoScheduled": {
+    "message": "Demo gepland",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContacted": {
+    "message": "Gecontacteerd",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsUpdateStatus": {
+    "message": "Status bijwerken",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisContactExistsInASeparate": {
+    "message": "Dit contact bestaat in een aparte organisatie. Als ze inloggen, zien ze hun eigen CRM-gegevens.",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactPhone": {
+    "message": "Contacttelefoon:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactEmail": {
+    "message": "E-mailadres voor contact:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContact": {
+    "message": "Contact:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsOrganization": {
+    "message": "Organisatie:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisProspectIsAlreadyInYour": {
+    "message": "Deze prospect zit al in jouw CRM!",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsJobTitle": {
+    "message": "Functie:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsPhone": {
+    "message": "Telefoon:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsEmail": {
+    "message": "E-mail:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactName": {
+    "message": "Contactnaam:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactInformation": {
+    "message": "Contactgegevens",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanySize": {
+    "message": "Bedrijfsgrootte:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsIndustry": {
+    "message": "Industrie:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanyName": {
+    "message": "Bedrijfsnaam:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanyInformation": {
+    "message": "Bedrijfsinformatie",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoRequestDetails": {
+    "message": "Details van demoaanvraag",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsNoDemoRequestsFound": {
+    "message": "Geen demoverzoeken gevonden",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvert2": {
+    "message": "Overzetten",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvertToOrganization2": {
+    "message": "Converteren naar organisatie",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSize": {
+    "message": "Maat",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsLoadingDemoRequests": {
+    "message": "Demoverzoeken laden...",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted2": {
+    "message": "Geconverteerd",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoCompleted2": {
+    "message": "Demo voltooid",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoScheduled2": {
+    "message": "Demo gepland",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContacted2": {
+    "message": "Gecontacteerd",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSearchDemoRequests": {
+    "message": "Demoverzoeken zoeken...",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted3": {
+    "message": "Geconverteerd",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisMonth": {
+    "message": "Deze maand",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsTotalRequests": {
+    "message": "Totaal aantal verzoeken",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "publicBookingViewPoweredByYourCrm": {
+    "message": "Mogelijk gemaakt door uw CRM",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYourDetails": {
+    "message": "Uw gegevens",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYourTime": {
+    "message": "Jouw tijd",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewAvailableTimes": {
+    "message": "Beschikbare tijden",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewPickADate": {
+    "message": "Kies een datum",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewBookWithOurTeam": {
+    "message": "Boek met ons team",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewRescheduleOrCancel": {
+    "message": "Verplaatsen of annuleren",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewAConfirmationHasBeenSentTo": {
+    "message": "Er is een bevestiging naar uw e-mailadres verzonden. Voorafgaand aan uw afspraak krijgt u een herinnering.",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYoureBooked": {
+    "message": "Je bent geboekt!",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewPageUnavailable": {
+    "message": "Pagina niet beschikbaar",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewLoadingCalendar": {
+    "message": "Kalender laden…",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "notificationOverviewOpenHealthDashboard": {
+    "message": "Open het gezondheidsdashboard",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewViewDeliveryStatisticsChannelHealthEvent": {
+    "message": "Bekijk leveringsstatistieken, kanaalstatus, gebeurtenisvolume en gebruikersmeldingspatronen. Identificeer potentiële problemen voordat ze gevolgen hebben voor uw team.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewHealthDashboard": {
+    "message": "Gezondheidsdashboard",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewMonitorNotificationDeliveryHealthAndAnalytics": {
+    "message": "Bewaak de status en analyses van meldingen in uw hele organisatie.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAdminTools": {
+    "message": "Beheertools",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageDigests": {
+    "message": "Beheer samenvattingen",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewReceiveDailyOrWeeklySummariesOf": {
+    "message": "Ontvang dagelijkse of wekelijkse samenvattingen van uw meldingen in plaats van realtime waarschuwingen. Verminder meldingsgeluiden terwijl u op de hoogte blijft.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewDigests": {
+    "message": "verteert",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageRules": {
+    "message": "Regels beheren",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewCreateCustomNotificationConditionsSetUp": {
+    "message": "Maak aangepaste meldingsvoorwaarden. Stel regels op op basis van opdrachten, prioriteiten, statussen en meer.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManagePreferences": {
+    "message": "Beheer voorkeuren",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewToggleWhatTypesOfNotificationsYou": {
+    "message": "Schakel welke soorten meldingen je per gebeurtenis ontvangt. Bepaal welke kanalen worden gebruikt voor elk meldingstype.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewPreferences": {
+    "message": "Voorkeuren",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewCustomizeYourNotificationExperienceToMatch": {
+    "message": "Pas uw meldingservaring aan zodat deze aansluit bij uw workflow.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewYourNotificationControl": {
+    "message": "Uw meldingscontrole",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageDeliveryChannels": {
+    "message": "Beheer leveringskanalen",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable": {
+    "message": "Configureerbaar",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable2": {
+    "message": "Configureerbaar",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhatsapp": {
+    "message": "WhatsAppen",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable3": {
+    "message": "Configureerbaar",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewPush": {
+    "message": "Duw",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable4": {
+    "message": "Configureerbaar",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAlwaysOn": {
+    "message": "Altijd aan",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewChooseWhereAndHowYouReceive": {
+    "message": "Kies waar en hoe je meldingen ontvangt via verschillende bezorgkanalen.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewHowYoureNotified": {
+    "message": "Hoe u op de hoogte wordt gesteld",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined": {
+    "message": "Systeemgedefinieerd",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAccountActivitySystemUpdatesAndCompliance": {
+    "message": "Accountactiviteit, systeemupdates en compliance-gerelateerde meldingen.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined2": {
+    "message": "Systeemgedefinieerd",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewActivityThatInvolvesCollaborationAndReview": {
+    "message": "Activiteit waarbij samenwerking en evaluatie betrokken zijn.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConversations": {
+    "message": "Gesprekken",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewRemindersForUpcomingOrOverdueItems": {
+    "message": "Herinneringen voor komende of achterstallige items.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewDeadlines": {
+    "message": "Deadlines",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewStatusChangesSubmissionsApprovalsAndOther": {
+    "message": "Statuswijzigingen, inzendingen, goedkeuringen en andere belangrijke updates.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined3": {
+    "message": "Systeemgedefinieerd",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhenTasksAuditsOrCorrectiveActions": {
+    "message": "Wanneer taken, audits of corrigerende acties aan u worden toegewezen.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAssignments": {
+    "message": "Opdrachten",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewNotificationsAreOrganizedByIntentTo": {
+    "message": "Meldingen zijn zo georganiseerd dat u op de hoogte blijft zonder overweldigd te worden.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhatYoureNotifiedAbout": {
+    "message": "Waarover u een melding krijgt",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewLearnHowNotificationsWorkAndWhat": {
+    "message": "Ontdek hoe meldingen werken en wat u kunt beheren.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewNotificationOverview": {
+    "message": "Meldingsoverzicht",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationHealthHighVolume": {
+    "message": "Hoog volume",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoUserDataAvailable": {
+    "message": "Geen gebruikersgegevens beschikbaar",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthFlag": {
+    "message": "Vlag",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthReceived": {
+    "message": "Ontvangen",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthHighVolumeUsers": {
+    "message": "Gebruikers met een hoog volume",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoEventDataAvailable": {
+    "message": "Geen gebeurtenisgegevens beschikbaar",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthTopEventTypes": {
+    "message": "Top evenementtypen",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoChannelDataAvailable": {
+    "message": "Geen kanaalgegevens beschikbaar",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthLastFailure": {
+    "message": "Laatste mislukking",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthSent": {
+    "message": "Verstuurd",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthChannelHealth": {
+    "message": "Kanaalgezondheid",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthDegradedChannels": {
+    "message": "Verslechterde kanalen",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthActiveChannels": {
+    "message": "Actieve kanalen",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthReadRate": {
+    "message": "Lees tarief",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthTotalNotifications": {
+    "message": "Totaal aantal meldingen",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthMonitorNotificationDeliveryAndChannelHealth": {
+    "message": "Bewaak de levering van meldingen en de kanaalstatus",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNotificationHealth": {
+    "message": "Melding gezondheid",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthHealth": {
+    "message": "Gezondheid",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationPreferencesReceiveAWeeklySummaryViaEmail": {
+    "message": "Ontvang een wekelijks overzicht per e-mail. Perfect om op de hoogte te blijven zonder dagelijkse onderbrekingen.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWeeklyDigest": {
+    "message": "Wekelijkse samenvatting",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesReceiveADailySummaryOfYour": {
+    "message": "Ontvang dagelijks een overzicht van uw meldingen. Vermindert meldingsgeluiden terwijl u op de hoogte blijft.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesDailyDigest": {
+    "message": "Dagelijks overzicht",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesReceiveSummariesInsteadOfRealTime": {
+    "message": "Ontvang samenvattingen in plaats van realtime meldingen",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationDigests": {
+    "message": "Meldingsoverzichten",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSmsIsOnlyUsedAsA": {
+    "message": "SMS wordt alleen als laatste redmiddel gebruikt als andere kanalen niet beschikbaar zijn. Berichten worden kort gehouden en bevatten waar mogelijk deep links.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSmsNotifications": {
+    "message": "SMS-meldingen",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWhatsappNotificationsAreOnlySentFor": {
+    "message": "WhatsApp-meldingen worden alleen verzonden voor gebeurtenissen met hoge prioriteit in Audit- en Portal-apps.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWhatsappNotifications": {
+    "message": "WhatsApp-meldingen",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPushNotificationsAreBlockedEnableThem": {
+    "message": "Pushmeldingen zijn geblokkeerd. Schakel ze in in uw browserinstellingen.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesTestNotification": {
+    "message": "Testmelding",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesEnablePushNotifications": {
+    "message": "Schakel pushmeldingen in",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPushNotifications": {
+    "message": "Pushmeldingen",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesThereAreNoConfigurableNotificationEvents": {
+    "message": "Er zijn nog geen configureerbare meldingsgebeurtenissen voor deze app.\n          Meldingen blijven hun veilige standaardinstellingen gebruiken.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesInApp": {
+    "message": "In app",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSystemEventManagedByArivu": {
+    "message": "Systeemgebeurtenis (beheerd door Arivu)",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesClickAChannelToJumpTo": {
+    "message": "Klik op een kanaal om naar de instellingen ervan te gaan. Uitgeschakelde kanalen zijn niet beschikbaar voor deze app.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationDelivery": {
+    "message": "Kennisgeving levering",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWeCouldntLoadYourNotificationPreferences": {
+    "message": "We kunnen je meldingsvoorkeuren momenteel niet laden. Meldingen zullen\n        blijven hun standaardinstellingen gebruiken. Je kunt de app veilig blijven gebruiken.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesCouldntSaveChangesPleaseTryAgain": {
+    "message": "Kan wijzigingen niet opslaan. Probeer het opnieuw.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesHealthDashboard": {
+    "message": "Gezondheidsdashboard",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationRules": {
+    "message": "Meldingsregels",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesControlInAppAndEmailNotifications": {
+    "message": "Beheer in-app- en e-mailmeldingen voor deze werkruimte.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationPreferences": {
+    "message": "Meldingsvoorkeuren",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPreferences": {
+    "message": "Voorkeuren",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationRulesDeleteRule": {
+    "message": "Regel verwijderen",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesEditRule": {
+    "message": "Regel bewerken",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesCreateYourFirstRule": {
+    "message": "Maak uw eerste regel",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesGetStartedByCreatingYourFirst": {
+    "message": "Ga aan de slag door uw eerste meldingsregel te maken.",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesNoNotificationRulesYet": {
+    "message": "Er zijn nog geen meldingsregels",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesFailedToLoadNotificationRules": {
+    "message": "Kan meldingsregels niet laden",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesDeleteAnExistingRuleToCreate": {
+    "message": "Verwijder een bestaande regel om een ​​nieuwe te maken.",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesCreateCustomNotificationTriggersForModules": {
+    "message": "Maak aangepaste meldingstriggers voor modules die u belangrijk vindt.",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesNotificationRules": {
+    "message": "Meldingsregels",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "contactDetailToastFailedToDeleteContact": {
+    "message": "Kan contact niet verwijderen",
+    "description": "Toast from ContactDetail.vue"
+  },
+  "contactDetailToastFailedToUnlinkOrganization": {
+    "message": "Kan de organisatie niet ontkoppelen",
+    "description": "Toast from ContactDetail.vue"
+  },
+  "dealDetailToastFailedToDeleteDeal": {
+    "message": "Kan deal niet verwijderen",
+    "description": "Toast from DealDetail.vue"
+  },
+  "dealDetailToastFailedToAddNote": {
+    "message": "Kan notitie niet toevoegen",
+    "description": "Toast from DealDetail.vue"
+  },
+  "dealsToastErrorDeletingDealPleaseTry": {
+    "message": "Fout bij verwijderen deal. Probeer het opnieuw.",
+    "description": "Toast from Deals.vue"
+  },
+  "dealsToastErrorPerformingBulkActionPlease": {
+    "message": "Fout bij uitvoeren van bulkactie. Probeer het opnieuw.",
+    "description": "Toast from Deals.vue"
+  },
+  "dealsToastFailedToExportDeals": {
+    "message": "Kan deals niet exporteren.",
+    "description": "Toast from Deals.vue"
+  },
+  "demoRequestsToastFailedToUpdateStatus": {
+    "message": "Kan de status niet updaten",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "demoRequestsToastSuccessfullyConvertedToOrganization": {
+    "message": "Succesvol omgezet naar organisatie!",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "demoRequestsToastFailedToConvertRequest": {
+    "message": "Kan verzoek niet converteren",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "eventDetailToastFailedToDeleteEvent": {
+    "message": "Kan gebeurtenis niet verwijderen",
+    "description": "Toast from EventDetail.vue"
+  },
+  "eventDetailToastFailedToAddNote": {
+    "message": "Kan notitie niet toevoegen",
+    "description": "Toast from EventDetail.vue"
+  },
+  "eventExecutionSurfaceToastLocationIsRequiredForCheck": {
+    "message": "Voor het inchecken is een locatie vereist. Sta locatietoegang toe en probeer het opnieuw.",
+    "description": "Toast from EventExecutionSurface.vue"
+  },
+  "eventsToastErrorPerformingBulkActionPlease": {
+    "message": "Fout bij uitvoeren van bulkactie. Probeer het opnieuw.",
+    "description": "Toast from Events.vue"
+  },
+  "eventsToastErrorExportingEventsPleaseTry": {
+    "message": "Fout bij het exporteren van gebeurtenissen. Probeer het opnieuw.",
+    "description": "Toast from Events.vue"
+  },
+  "groupDetailToastFailedToLoadGroup": {
+    "message": "Kan groep niet laden",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToAddMember": {
+    "message": "Kan lid niet toevoegen",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToRemoveMember": {
+    "message": "Kan lid niet verwijderen",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToDeleteGroup": {
+    "message": "Kan groep niet verwijderen",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupsToastErrorPerformingBulkActionPlease": {
+    "message": "Fout bij uitvoeren van bulkactie. Probeer het opnieuw.",
+    "description": "Toast from Groups.vue"
+  },
+  "groupsToastErrorDeletingGroupPleaseTry": {
+    "message": "Fout bij verwijderen van groep. Probeer het opnieuw.",
+    "description": "Toast from Groups.vue"
+  },
+  "organizationDetailToastFailedToDeleteOrganizationPlease": {
+    "message": "Kan de organisatie niet verwijderen. Probeer het opnieuw.",
+    "description": "Toast from OrganizationDetail.vue"
+  },
+  "organizationsToastUnknownError": {
+    "message": "Onbekende fout",
+    "description": "Toast from Organizations.vue"
+  },
+  "organizationsToastErrorExportingOrganizationsPleaseTry": {
+    "message": "Fout bij het exporteren van organisaties. Probeer het opnieuw.",
+    "description": "Toast from Organizations.vue"
+  },
+  "organizationsToastErrorExportingOrganizationsPleaseTry2": {
+    "message": "Fout bij het exporteren van organisaties. Probeer het opnieuw.",
+    "description": "Toast from Organizations.vue"
+  },
+  "peopleToastUnknownError": {
+    "message": "Onbekende fout",
+    "description": "Toast from People.vue"
+  },
+  "peopleToastErrorExportingPeoplePleaseTry": {
+    "message": "Fout bij het exporteren van mensen. Probeer het opnieuw.",
+    "description": "Toast from People.vue"
+  },
+  "peopleToastErrorExportingContactsPleaseTry": {
+    "message": "Fout bij het exporteren van contacten. Probeer het opnieuw.",
+    "description": "Toast from People.vue"
+  },
+  "responsesToastFormIdNotFoundPlease": {
+    "message": "Formulier-ID niet gevonden. Vernieuw de pagina en probeer het opnieuw.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToApproveResponsePlease": {
+    "message": "Kan de reactie niet goedkeuren. Probeer het opnieuw.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease2": {
+    "message": "Formulier-ID niet gevonden. Vernieuw de pagina en probeer het opnieuw.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToRejectResponsePlease": {
+    "message": "Het is niet gelukt om de reactie af te wijzen. Probeer het opnieuw.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease3": {
+    "message": "Formulier-ID niet gevonden. Vernieuw de pagina en probeer het opnieuw.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease4": {
+    "message": "Formulier-ID niet gevonden. Vernieuw de pagina en probeer het opnieuw.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToRestoreResponsePlease": {
+    "message": "Kan reactie niet herstellen. Probeer het opnieuw.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastSubmittedResponsesCannotBeDeleted": {
+    "message": "Ingezonden reacties kunnen niet worden verwijderd. Gebruik in plaats daarvan archiveren of ongeldig maken.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease5": {
+    "message": "Formulier-ID niet gevonden. Vernieuw de pagina en probeer het opnieuw.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToDeleteResponsePlease": {
+    "message": "Kan reactie niet verwijderen. Probeer het opnieuw.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastExportFunctionalityForAllResponses": {
+    "message": "De exportfunctionaliteit voor alle reacties komt binnenkort!",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastAnErrorOccurredDuringExport": {
+    "message": "Er is een fout opgetreden tijdens het exporteren.",
+    "description": "Toast from Responses.vue"
+  },
+  "tasksToastFailedToUpdateTaskStatus": {
+    "message": "Kan de taakstatus niet bijwerken",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastFailedToDeleteTask": {
+    "message": "Kan taak niet verwijderen.",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastErrorPerformingBulkActionPlease": {
+    "message": "Fout bij uitvoeren van bulkactie. Probeer het opnieuw.",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastErrorExportingTasksPleaseTry": {
+    "message": "Fout bij het exporteren van taken. Probeer het opnieuw.",
+    "description": "Toast from Tasks.vue"
+  },
+  "trashToastRestoredSomeParentRecordsWere": {
+    "message": "Hersteld. Sommige bovenliggende records zijn definitief verwijderd.",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToRestore": {
+    "message": "Herstellen is mislukt",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToRestore2": {
+    "message": "Herstellen is mislukt",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToDelete": {
+    "message": "Kan niet verwijderen",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToDelete2": {
+    "message": "Kan niet verwijderen",
+    "description": "Toast from Trash.vue"
+  },
+  "notificationPreferencesToastPushNotificationsAreNotSupported": {
+    "message": "Pushmeldingen worden niet ondersteund in deze browser.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastEnablePushNotifications": {
+    "message": "Schakel pushmeldingen in",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastNotificationsAreNotSupportedIn": {
+    "message": "Meldingen worden niet ondersteund in deze browser.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationTriggeredCheckYour": {
+    "message": "Testmelding geactiveerd. Controleer uw systeemmeldingen.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationTriggeredIfYou": {
+    "message": "Testmelding geactiveerd. Als u het niet ziet, controleer dan de instellingen van het Berichtencentrum/browserbesturingssysteem.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastUnknownError": {
+    "message": "Onbekende fout",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationFailedSeeConsole": {
+    "message": "Testmelding mislukt. Zie console voor details.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationRulesToastFailedToDeleteRulePlease": {
+    "message": "Kan regel niet verwijderen. Probeer het opnieuw.",
+    "description": "Toast from NotificationRules.vue"
+  },
+  "pronounYou": {
+    "message": "Jij",
+    "description": "First-person actor label in activity feed"
+  },
+  "relativeJustNow": {
+    "message": "zojuist",
+    "description": "Relative time under one minute"
+  },
+  "relativeOneMinuteAgo": {
+    "message": "1 minuut geleden",
+    "description": "Relative time one minute"
+  },
+  "relativeManyMinutesAgo": {
+    "message": "{count} minuten geleden",
+    "description": "Relative time multiple minutes"
+  },
+  "relativeOneHourAgo": {
+    "message": "1 uur geleden",
+    "description": "Relative time one hour"
+  },
+  "relativeManyHoursAgo": {
+    "message": "{count} uur geleden",
+    "description": "Relative time multiple hours"
+  },
+  "relativeOneDayAgo": {
+    "message": "1 dag geleden",
+    "description": "Relative time one day"
+  },
+  "relativeManyDaysAgo": {
+    "message": "{count} dagen geleden",
+    "description": "Relative time multiple days"
+  },
+  "relativeOneMonthAgo": {
+    "message": "1 maand geleden",
+    "description": "Relative time one month"
+  },
+  "relativeManyMonthsAgo": {
+    "message": "{count} maanden geleden",
+    "description": "Relative time multiple months"
+  },
+  "relativeOneYearAgo": {
+    "message": "1 jaar geleden",
+    "description": "Relative time one year"
+  },
+  "relativeManyYearsAgo": {
+    "message": "{count} jaar geleden",
+    "description": "Relative time multiple years"
+  },
+  "phraseAnnualRevenue": {
+    "message": "Jaarlijkse omzet",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLeadSource": {
+    "message": "Leadbron",
+    "description": "Common tenant custom field label"
+  },
+  "phraseIndustry": {
+    "message": "Industrie",
+    "description": "Common tenant custom field label"
+  },
+  "phraseWebsite": {
+    "message": "Website",
+    "description": "Common tenant custom field label"
+  },
+  "phraseFax": {
+    "message": "Fax",
+    "description": "Common tenant custom field label"
+  },
+  "phraseAddress": {
+    "message": "Adres",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCity": {
+    "message": "Stad",
+    "description": "Common tenant custom field label"
+  },
+  "phraseState": {
+    "message": "Staat",
+    "description": "Common tenant custom field label"
+  },
+  "phraseZipCode": {
+    "message": "Postcode",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCountry": {
+    "message": "Land",
+    "description": "Common tenant custom field label"
+  },
+  "phraseDepartment": {
+    "message": "Afdeling",
+    "description": "Common tenant custom field label"
+  },
+  "phraseJobTitle": {
+    "message": "Functietitel",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLinkedin": {
+    "message": "LinkedIn",
+    "description": "Common tenant custom field label"
+  },
+  "phrasePriority": {
+    "message": "Prioriteit",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRating": {
+    "message": "Beoordeling",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCategory": {
+    "message": "Categorie",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSubcategory": {
+    "message": "Subcategorie",
+    "description": "Common tenant custom field label"
+  },
+  "phraseProduct": {
+    "message": "Product",
+    "description": "Common tenant custom field label"
+  },
+  "phraseQuantity": {
+    "message": "Hoeveelheid",
+    "description": "Common tenant custom field label"
+  },
+  "phraseUnitPrice": {
+    "message": "Eenheidsprijs",
+    "description": "Common tenant custom field label"
+  },
+  "phraseDiscount": {
+    "message": "Korting",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTax": {
+    "message": "Belasting",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTotal": {
+    "message": "Totaal",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSubtotal": {
+    "message": "Subtotaal",
+    "description": "Common tenant custom field label"
+  },
+  "phraseContractStart": {
+    "message": "Contractstart",
+    "description": "Common tenant custom field label"
+  },
+  "phraseContractEnd": {
+    "message": "Contracteinde",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRenewalDate": {
+    "message": "Verlengingsdatum",
+    "description": "Common tenant custom field label"
+  },
+  "phraseMrr": {
+    "message": "MRR",
+    "description": "Common tenant custom field label"
+  },
+  "phraseArr": {
+    "message": "ARR",
+    "description": "Common tenant custom field label"
+  },
+  "phraseEmployees": {
+    "message": "Medewerkers",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRevenue": {
+    "message": "Winst",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTerritory": {
+    "message": "Grondgebied",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRegion": {
+    "message": "Regio",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTimezone": {
+    "message": "Tijdzone",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCurrency": {
+    "message": "Munteenheid",
+    "description": "Common tenant custom field label"
+  },
+  "phrasePoNumber": {
+    "message": "PO-nummer",
+    "description": "Common tenant custom field label"
+  },
+  "phraseInvoiceNumber": {
+    "message": "Factuurnummer",
+    "description": "Common tenant custom field label"
+  },
+  "phraseOrderNumber": {
+    "message": "Bestelnummer",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSerialNumber": {
+    "message": "Serienummer",
+    "description": "Common tenant custom field label"
+  },
+  "phraseExternalId": {
+    "message": "Externe ID",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLastActivity": {
+    "message": "Laatste activiteit",
+    "description": "Common tenant custom field label"
+  },
+  "phraseNextFollowUp": {
+    "message": "Volgende vervolg",
+    "description": "Common tenant custom field label"
+  },
+  "phraseInfluencer": {
+    "message": "Beïnvloeder",
+    "description": "Common tenant custom field label"
+  },
+  "phraseMobile": {
+    "message": "Mobiel",
+    "description": "Common tenant custom field label"
+  },
+  "phraseColor": {
+    "message": "Kleur",
+    "description": "Common tenant custom field label"
+  },
+  "phraseEmoji": {
+    "message": "Emoji",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTrend": {
+    "message": "Trend",
+    "description": "Common tenant custom field label"
+  },
+  "phraseAccount": {
+    "message": "Rekening",
+    "description": "Common tenant custom field label"
+  },
+  "phraseHelpdesk": {
+    "message": "Klantenservice",
+    "description": "App/product name"
+  },
+  "phrasePortal": {
+    "message": "Portaal",
+    "description": "App/product name"
+  },
+  "fieldRequiredBadge": {
+    "message": "Required",
+    "description": "Badge on required fields in settings and forms"
+  },
+  "required": {
+    "message": "Required",
+    "description": "Required field indicator (alias for settings badges)"
+  },
+  "listSearchModule": {
+    "message": "Search {module}...",
+    "description": "Module list search placeholder"
+  },
+  "listCreateModule": {
+    "message": "New {module}",
+    "description": "Generic module list create button"
+  },
+  "listViewAllModule": {
+    "message": "All {module}",
+    "description": "Generic all-records list view title"
+  },
+  "listViewMyModule": {
+    "message": "My {module}",
+    "description": "Generic assigned-to-me list view title"
+  },
+  "listViewCustom": {
+    "message": "Custom",
+    "description": "List view title when filters or search are applied"
+  },
+  "listStatAssignedToMe": {
+    "message": "Assigned to Me",
+    "description": "List statistics card label"
+  },
+  "listStatUnassigned": {
+    "message": "Unassigned",
+    "description": "List statistics card label"
+  },
+  "listStatCompleted": {
+    "message": "Completed",
+    "description": "List statistics card label"
+  },
+  "listStatOverdue": {
+    "message": "Overdue",
+    "description": "List statistics card label"
+  },
+  "listDefaultViewTooltip": {
+    "message": "Default list (loads when opening)",
+    "description": "Tooltip on active default saved list view"
+  },
+  "listSetDefaultViewTooltip": {
+    "message": "Set as default list",
+    "description": "Tooltip to mark a saved list view as default"
+  },
+  "listCoreFields": {
+    "message": "Core Fields",
+    "description": "Customize list field group label"
+  },
+  "listParticipationFields": {
+    "message": "Participation",
+    "description": "Customize list field group label"
+  },
+  "listSystemFields": {
+    "message": "System Fields",
+    "description": "Customize list field group label"
+  },
+  "listParticipationApp": {
+    "message": "Participation: {app}",
+    "description": "Customize list participation field group label"
+  },
+  "listRowHeightSmall": {
+    "message": "Small",
+    "description": "List row height option"
+  },
+  "listRowHeightMedium": {
+    "message": "Medium",
+    "description": "List row height option"
+  },
+  "listRowHeightLarge": {
+    "message": "Large",
+    "description": "List row height option"
+  },
+  "listRowHeightHuge": {
+    "message": "Huge",
+    "description": "List row height option"
+  },
+  "listEmptyTitle": {
+    "message": "No records yet",
+    "description": "Default list empty state title"
+  },
+  "listEmptyMessage": {
+    "message": "Start by adding your first record",
+    "description": "Default list empty state description"
+  },
+  "listEmptyNoModuleYet": {
+    "message": "No {module} yet",
+    "description": "Module list empty state title"
+  },
+  "listEmptyModuleWillAppear": {
+    "message": "{module} will appear here as you add them.",
+    "description": "Module list empty state description"
+  },
+  "listEmptyNoMatchFilters": {
+    "message": "No {module} match your filters",
+    "description": "List empty title when filters are active"
+  },
+  "listEmptyNoMatchSearchAndFilters": {
+    "message": "No {module} match your search or filters. Try adjusting them or clear everything to start over.",
+    "description": "List empty message when search and filters are active"
+  },
+  "listEmptyNoMatchSearch": {
+    "message": "We couldn't find any {module} matching \"{query}\". Try a different keyword or clear the search.",
+    "description": "List empty message when search is active"
+  },
+  "listEmptyNoMatchFiltersOnly": {
+    "message": "No {module} match your filters. Try adjusting or clearing them to see more results.",
+    "description": "List empty message when only filters are active"
+  },
+  "listClearSearchAndFilters": {
+    "message": "Clear search & filters",
+    "description": "Button to reset list search and filters"
+  },
+  "listFilterAll": {
+    "message": "All {filter}",
+    "description": "Filter dropdown placeholder when no value selected"
+  },
+  "listUnknown": {
+    "message": "Unknown",
+    "description": "Fallback label for unknown filter option"
+  },
+  "listNoDataAvailable": {
+    "message": "No data available",
+    "description": "Table empty state title fallback"
+  },
+  "listNoRecordsFound": {
+    "message": "No records found.",
+    "description": "Table empty state message fallback"
+  },
+  "listEmptyIllustrationAlt": {
+    "message": "No records illustration",
+    "description": "Alt text for list empty state illustration"
+  },
+  "phraseDefaultInParens": {
+    "message": "(Default)",
+    "description": "Suffix for default pipeline or option"
+  }
+}

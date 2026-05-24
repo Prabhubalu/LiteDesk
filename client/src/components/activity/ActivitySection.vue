@@ -1,14 +1,14 @@
 <template>
   <div class="flex flex-col h-full min-h-0 overflow-hidden">
     <div class="sticky top-0 z-10 flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-900">
-      <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ title }}</h2>
+      <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ resolvedTitle }}</h2>
       <div class="flex items-center gap-2">
         <button
           v-if="!activitySearchOpen"
           type="button"
           class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-          aria-label="Search"
-          title="Search"
+          :aria-label="t('actions.search')"
+          :title="t('actions.search')"
           @click="openSearch"
         >
           <MagnifyingGlassIcon class="w-5 h-5" />
@@ -17,8 +17,8 @@
           v-else
           type="button"
           class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-          aria-label="Close search"
-          title="Close"
+          :aria-label="t('records.activityCloseSearchAria')"
+          :title="t('actions.close')"
           @click="closeSearch"
         >
           <XMarkIcon class="w-5 h-5" />
@@ -27,8 +27,8 @@
           v-if="showNotifications"
           type="button"
           class="relative p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-          aria-label="Notifications"
-          title="Notifications"
+          :aria-label="t('records.activityNotificationsAria')"
+          :title="t('records.activityNotificationsAria')"
         >
           <BellIcon class="w-5 h-5" />
           <span
@@ -42,8 +42,8 @@
           <MenuButton
             type="button"
             class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-            aria-label="Filter activities"
-            title="Filter activities"
+            :aria-label="t('records.activityFilterAria')"
+            :title="t('records.activityFilterAria')"
           >
             <FunnelIcon class="w-5 h-5" />
           </MenuButton>
@@ -58,14 +58,14 @@
             <MenuItems class="absolute right-0 mt-1 w-56 origin-top-right rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 focus:outline-none z-20 py-1">
               <div class="px-3 py-2 border-b border-gray-100 dark:border-gray-700">
                 <div class="flex items-center justify-between">
-                  <span class="text-sm font-semibold text-gray-900 dark:text-white">Activities</span>
+                  <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('records.activityFilterHeading') }}</span>
                   <button
                     v-if="activityFilterComments && activityFilterUpdates && activityFilterEmail && activityFilterDoneThreads && activityFilterAssignedToMe && activityFilterTagged && activityFilterUntagged"
                     type="button"
                     class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
                     @click="setBothFilters(false)"
                   >
-                    Unselect all
+                    {{ t('records.activityUnselectAll') }}
                   </button>
                   <button
                     v-else
@@ -73,7 +73,7 @@
                     class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
                     @click="setBothFilters(true)"
                   >
-                    Select all
+                    {{ t('records.activitySelectAll') }}
                   </button>
                 </div>
               </div>
@@ -83,7 +83,7 @@
                   :class="[active ? 'bg-gray-50 dark:bg-gray-700/50' : '', 'flex w-full items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300']"
                   @click="toggleCommentsFilter"
                 >
-                  <span>Comments</span>
+                  <span>{{ t('records.activityFilterComments') }}</span>
                   <CheckIcon v-if="activityFilterComments" class="w-5 h-5 text-indigo-600 dark:text-indigo-400 ml-auto flex-shrink-0" />
                 </button>
               </MenuItem>
@@ -93,7 +93,7 @@
                   :class="[active ? 'bg-gray-50 dark:bg-gray-700/50' : '', 'flex w-full items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300']"
                   @click="toggleEmailFilter"
                 >
-                  <span>Email</span>
+                  <span>{{ t('records.activityFilterEmail') }}</span>
                   <CheckIcon v-if="activityFilterEmail" class="w-5 h-5 text-indigo-600 dark:text-indigo-400 ml-auto flex-shrink-0" />
                 </button>
               </MenuItem>
@@ -103,7 +103,7 @@
                   :class="[active ? 'bg-gray-50 dark:bg-gray-700/50' : '', 'flex w-full items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300']"
                   @click="toggleUpdatesFilter"
                 >
-                  <span>Updates</span>
+                  <span>{{ t('records.activityFilterUpdates') }}</span>
                   <CheckIcon v-if="activityFilterUpdates" class="w-5 h-5 text-indigo-600 dark:text-indigo-400 ml-auto flex-shrink-0" />
                 </button>
               </MenuItem>
@@ -113,7 +113,7 @@
                   :class="[active ? 'bg-gray-50 dark:bg-gray-700/50' : '', 'flex w-full items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300']"
                   @click="toggleDoneThreadsFilter"
                 >
-                  <span>Done threads</span>
+                  <span>{{ t('records.activityFilterDoneThreads') }}</span>
                   <CheckIcon v-if="activityFilterDoneThreads" class="w-5 h-5 text-indigo-600 dark:text-indigo-400 ml-auto flex-shrink-0" />
                 </button>
               </MenuItem>
@@ -123,7 +123,7 @@
                   :class="[active ? 'bg-gray-50 dark:bg-gray-700/50' : '', 'flex w-full items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300']"
                   @click="toggleAssignedToMeFilter"
                 >
-                  <span>Assigned to me</span>
+                  <span>{{ t('records.activityFilterAssignedToMe') }}</span>
                   <CheckIcon v-if="activityFilterAssignedToMe" class="w-5 h-5 text-indigo-600 dark:text-indigo-400 ml-auto flex-shrink-0" />
                 </button>
               </MenuItem>
@@ -133,7 +133,7 @@
                   :class="[active ? 'bg-gray-50 dark:bg-gray-700/50' : '', 'flex w-full items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300']"
                   @click="toggleTaggedFilter"
                 >
-                  <span>Tagged threads</span>
+                  <span>{{ t('records.activityFilterTaggedThreads') }}</span>
                   <CheckIcon v-if="activityFilterTagged" class="w-5 h-5 text-indigo-600 dark:text-indigo-400 ml-auto flex-shrink-0" />
                 </button>
               </MenuItem>
@@ -143,7 +143,7 @@
                   :class="[active ? 'bg-gray-50 dark:bg-gray-700/50' : '', 'flex w-full items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300']"
                   @click="toggleUntaggedFilter"
                 >
-                  <span>Untagged threads</span>
+                  <span>{{ t('records.activityFilterUntaggedThreads') }}</span>
                   <CheckIcon v-if="activityFilterUntagged" class="w-5 h-5 text-indigo-600 dark:text-indigo-400 ml-auto flex-shrink-0" />
                 </button>
               </MenuItem>
@@ -170,7 +170,7 @@
             @input="updateSearchQuery($event.target.value)"
             @keydown.esc="closeSearch"
             @keydown.enter.prevent
-            placeholder="Search..."
+            :placeholder="t('records.activitySearchPh')"
             class="flex-1 text-sm outline-none bg-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
           />
           <button
@@ -178,8 +178,8 @@
             type="button"
             @click="clearSearch"
             class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0"
-            aria-label="Clear search"
-            title="Clear"
+            :aria-label="t('records.activityClearSearchAria')"
+            :title="t('records.activityClearSearchTitle')"
           >
             <XMarkIcon class="w-5 h-5" />
           </button>
@@ -197,10 +197,10 @@
         @click="$emit('close-thread')"
       >
         <ArrowLeftIcon class="h-4 w-4" />
-        <span>Back</span>
+        <span>{{ t('actions.back') }}</span>
       </button>
       <div class="ml-auto flex items-center gap-1.5 min-w-0 text-sm font-semibold text-gray-900 dark:text-white">
-        <span class="font-medium text-gray-700 dark:text-gray-300">Thread by</span>
+        <span class="font-medium text-gray-700 dark:text-gray-300">{{ t('records.activityThreadBy') }}</span>
         <Avatar
           v-if="activeThreadRootComment.author && typeof activeThreadRootComment.author === 'object'"
           :user="activeThreadRootComment.author"
@@ -227,14 +227,14 @@
             <span class="block w-[140%] h-0.5 bg-gray-400 dark:bg-gray-500 origin-center rotate-45" aria-hidden="true" />
           </span>
         </div>
-        <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-1">Nothing found</h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Please select at least one filter.</p>
+        <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-1">{{ t('records.activityNothingFound') }}</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ t('records.activitySelectOneFilter') }}</p>
         <button
           type="button"
           class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
           @click="setBothFilters(true)"
         >
-          Reset filters
+          {{ t('records.activityResetFilters') }}
         </button>
       </div>
 
@@ -259,7 +259,7 @@
             @update:model-value="$emit('update:newCommentText', $event)"
             :show-submit="true"
             variant="activity"
-            :placeholder="isThreadViewActive ? 'Reply to comment...' : 'Write a comment...'"
+            :placeholder="commentComposerPlaceholder"
             @submit="submit"
           />
         </template>
@@ -291,6 +291,7 @@
 
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
 import {
   MagnifyingGlassIcon,
@@ -306,8 +307,10 @@ import CommentInput from '@/components/record-page/CommentInput.vue';
 import ActivityEventRenderer from './ActivityEventRenderer.vue';
 import ThreadReplies from './controls/ThreadReplies.vue';
 
+const { t } = useI18n();
+
 const props = defineProps({
-  title: { type: String, default: 'Activity' },
+  title: { type: String, default: undefined },
   events: { type: Array, default: () => [] },
   ui: { type: Object, required: true },
   isThreadViewActive: { type: Boolean, default: false },
@@ -343,6 +346,11 @@ const emit = defineEmits([
   'update:activityFilterUntagged',
   'update:newCommentText'
 ]);
+
+const resolvedTitle = computed(() => props.title ?? t('records.genericTabActivity'));
+const commentComposerPlaceholder = computed(() =>
+  props.isThreadViewActive ? t('records.activityReplyPh') : t('records.activityCommentPh')
+);
 
 const activitySearchInputRef = ref(null);
 const timelineRef = ref(null);

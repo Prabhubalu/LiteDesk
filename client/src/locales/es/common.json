@@ -1,0 +1,2382 @@
+{
+  "recordsCount": {
+    "message": "{count, plural, one {# registro} other {# registros}}",
+    "description": "Record list count with ICU pluralization"
+  },
+  "itemsSelected": {
+    "message": "{count, plural, one {# elemento seleccionado} other {# elementos seleccionados}}",
+    "description": "Bulk selection count in list views"
+  },
+  "welcomeUser": {
+    "message": "Bienvenido, __UCI_0__",
+    "description": "Personalized greeting with interpolation"
+  },
+  "assignedToUser": {
+    "message": "Asignado a {gender, select, female {ella} male {él} other {ellos}}",
+    "description": "ICU select example for gendered copy (platform chrome only)"
+  },
+  "localeDevTitle": {
+    "message": "Control de calidad de localización",
+    "description": "Developer settings section for i18n tools"
+  },
+  "pseudoLocaleHint": {
+    "message": "Las pseudolocalizaciones expanden el texto y exponen problemas de diseño antes de la traducción.",
+    "description": "Help text for pseudo-locale developer toggle"
+  },
+  "moreActions": {
+    "message": "Más acciones",
+    "description": "Overflow menu trigger aria-label"
+  },
+  "loadingList": {
+    "message": "Lista de carga",
+    "description": "List skeleton aria-label"
+  },
+  "viewRecord": {
+    "message": "Vista",
+    "description": "Row action: open record"
+  },
+  "importData": {
+    "message": "Importar",
+    "description": "Module header import action"
+  },
+  "exportData": {
+    "message": "Exportar",
+    "description": "Module header export action"
+  },
+  "listSaveView": {
+    "message": "Guardar vista",
+    "description": "List view: save current filters/columns"
+  },
+  "listFilters": {
+    "message": "Filtros",
+    "description": "List view filters panel title"
+  },
+  "listAllRecords": {
+    "message": "Todo",
+    "description": "List filter tab: all records"
+  },
+  "listClearFilters": {
+    "message": "Limpiar filtros",
+    "description": "Reset active list filters"
+  },
+  "listLoadingOptions": {
+    "message": "Cargando opciones…",
+    "description": "Filter dropdown loading state"
+  },
+  "listClear": {
+    "message": "Claro",
+    "description": "Clear single filter or selection"
+  },
+  "listViewName": {
+    "message": "Ver nombre",
+    "description": "Saved view name field label"
+  },
+  "listDeleteView": {
+    "message": "Eliminar vista",
+    "description": "Delete saved list view action"
+  },
+  "listCustomizeView": {
+    "message": "Personalizar vista",
+    "description": "Open list view customization drawer"
+  },
+  "listLayoutOptions": {
+    "message": "Opciones de diseño",
+    "description": "List layout section title"
+  },
+  "listRowHeight": {
+    "message": "altura de fila",
+    "description": "Table row height setting"
+  },
+  "listReset": {
+    "message": "Reiniciar",
+    "description": "Reset view settings to defaults"
+  },
+  "listColumnWidths": {
+    "message": "Anchos de columna",
+    "description": "Column width customization section"
+  },
+  "listDefaultView": {
+    "message": "Vista predeterminada",
+    "description": "Mark view as org default"
+  },
+  "listManageFields": {
+    "message": "Administrar campos",
+    "description": "Open field visibility manager"
+  },
+  "listFieldRequired": {
+    "message": "Requerido",
+    "description": "Field cannot be hidden"
+  },
+  "listFieldLocked": {
+    "message": "bloqueado",
+    "description": "Field locked from reorder"
+  },
+  "listFieldHidden": {
+    "message": "Oculto",
+    "description": "Hidden fields section"
+  },
+  "listNoHiddenFields": {
+    "message": "Sin campos ocultos",
+    "description": "Empty hidden fields state"
+  },
+  "listNewCustomField": {
+    "message": "Nuevo campo personalizado",
+    "description": "Create custom field from list manager"
+  },
+  "listCustomizeKanban": {
+    "message": "Personalizar Kanban",
+    "description": "Kanban board customization"
+  },
+  "deleteTitleBulk": {
+    "message": "Eliminar {count} {recordTypePlural}",
+    "description": "Bulk delete dialog title"
+  },
+  "deleteTitleSingle": {
+    "message": "Eliminar {recordType}",
+    "description": "Single delete dialog title"
+  },
+  "deleteConfirmBulk": {
+    "message": "¿Está seguro de que desea eliminar {count} {recordTypeLabel}? Esta acción no se puede deshacer.",
+    "description": "Bulk delete confirmation"
+  },
+  "deleteConfirmSingle": {
+    "message": "¿Está seguro de que desea eliminar {target}? Esta acción no se puede deshacer.",
+    "description": "Single delete confirmation; target is quoted name or type"
+  },
+  "deleteInProgress": {
+    "message": "Eliminando…",
+    "description": "Delete button in progress"
+  },
+  "listEditView": {
+    "message": "Editar vista",
+    "description": "Edit saved list view action title"
+  },
+  "listDeleteViewAction": {
+    "message": "Eliminar vista",
+    "description": "Delete saved list view action title"
+  },
+  "listSaveViewHint": {
+    "message": "Guardar la vista actual como una nueva vista guardada",
+    "description": "Save view button tooltip"
+  },
+  "listHideStatistics": {
+    "message": "Ocultar estadísticas",
+    "description": "Stats panel toggle tooltip when visible"
+  },
+  "listShowStatistics": {
+    "message": "Mostrar estadísticas",
+    "description": "Stats panel toggle tooltip when hidden"
+  },
+  "listStatsShort": {
+    "message": "Estadísticas",
+    "description": "Short stats toggle label"
+  },
+  "listHideShort": {
+    "message": "Esconder",
+    "description": "Short hide label for stats toggle"
+  },
+  "listSuggestedLabel": {
+    "message": "Sugerido:",
+    "description": "Suggested filters section prefix"
+  },
+  "listSuggestedHint": {
+    "message": "Sugerencias basadas en el uso común. Nada se aplica automáticamente.",
+    "description": "Suggested filters tooltip"
+  },
+  "listSuggestedConfigure": {
+    "message": "Haga clic para configurar el filtro {filter}",
+    "description": "Suggested filter chip tooltip"
+  },
+  "listClearSearch": {
+    "message": "Borrar búsqueda de {title}",
+    "description": "Clear search input aria-label"
+  },
+  "listViewNameExample": {
+    "message": "por ejemplo, clientes potenciales de ventas",
+    "description": "Saved view name placeholder"
+  },
+  "listViewDescOptional": {
+    "message": "Descripción (opcional)",
+    "description": "Saved view description field label"
+  },
+  "listViewDescPlaceholder": {
+    "message": "Descripción opcional para esta vista",
+    "description": "Saved view description placeholder"
+  },
+  "listSaveCurrentView": {
+    "message": "Guardar vista actual",
+    "description": "Save view modal title"
+  },
+  "listEditViewTitle": {
+    "message": "Editar vista",
+    "description": "Edit view modal title"
+  },
+  "listDeleteViewConfirm": {
+    "message": "¿Está seguro de que desea eliminar \"{viewName}\"? Esta acción no se puede deshacer.",
+    "description": "Delete saved view confirmation"
+  },
+  "listClearSelection": {
+    "message": "Borrar selección",
+    "description": "Bulk selection clear button tooltip"
+  },
+  "listRowsSelected": {
+    "message": "{count, plural, one {# {singular} seleccionado} other {# {plural} seleccionados}}",
+    "description": "Bulk row selection count in list"
+  },
+  "listSearchFields": {
+    "message": "Campos de búsqueda",
+    "description": "Field manager search placeholder"
+  },
+  "listShownCount": {
+    "message": "Mostrado ({count})",
+    "description": "Visible fields section header"
+  },
+  "listKanbanOptions": {
+    "message": "Opciones Kanban",
+    "description": "Kanban settings section title"
+  },
+  "listCardSize": {
+    "message": "Tamaño de tarjeta",
+    "description": "Kanban card size setting"
+  },
+  "listStackFields": {
+    "message": "Campos de pila",
+    "description": "Kanban stack fields toggle"
+  },
+  "listCollapseEmpty": {
+    "message": "Contraer columnas vacías",
+    "description": "Kanban collapse empty columns toggle"
+  },
+  "listShowEmptyFields": {
+    "message": "Mostrar campos vacíos",
+    "description": "Kanban show empty fields toggle"
+  },
+  "listShowClosedRecords": {
+    "message": "Mostrar registros cerrados",
+    "description": "Kanban show closed records toggle"
+  },
+  "darkMode": {
+    "message": "modo oscuro",
+    "description": "Dark color mode menu option"
+  },
+  "lightMode": {
+    "message": "Modo de luz",
+    "description": "Light color mode menu option"
+  },
+  "tableClearSelection": {
+    "message": "Borrar selección",
+    "description": "Clear bulk row selection"
+  },
+  "tableAllPageSelected": {
+    "message": "Todos los {count} elementos de esta página están seleccionados.",
+    "description": "Select-all banner when current page is fully selected"
+  },
+  "tableSelectAllItems": {
+    "message": "Seleccione todos los elementos {count}",
+    "description": "Expand selection to all pages"
+  },
+  "tableAllSelected": {
+    "message": "Todas las {count} seleccionadas",
+    "description": "All records across pages selected"
+  },
+  "tableSelectedCount": {
+    "message": "{count, plural, one {# seleccionado} other {# seleccionados}}",
+    "description": "Bulk selection count in data table"
+  },
+  "tableDeleteSelected": {
+    "message": "Eliminar seleccionado",
+    "description": "Bulk delete action label"
+  },
+  "tableColumns": {
+    "message": "columnas",
+    "description": "Column settings button label"
+  },
+  "tableColumnSettings": {
+    "message": "Configuración de columna",
+    "description": "Column settings modal title"
+  },
+  "tableManageColumns": {
+    "message": "Administrar columnas",
+    "description": "Column manager section title"
+  },
+  "tableManageColumnsHint": {
+    "message": "Alternar visibilidad y arrastrar para reordenar",
+    "description": "Column manager help text"
+  },
+  "tableVisibleCount": {
+    "message": "{visible} de {total} visible",
+    "description": "Visible column count in settings"
+  },
+  "tableUnfreezeColumn": {
+    "message": "Descongelar columna",
+    "description": "Unfreeze sticky column tooltip"
+  },
+  "tableFreezeColumn": {
+    "message": "Congelar columna",
+    "description": "Freeze sticky column tooltip"
+  },
+  "tableFreezeMax": {
+    "message": "Se pueden congelar un máximo de 2 columnas",
+    "description": "Freeze limit tooltip"
+  },
+  "tableFrozen": {
+    "message": "Congelado",
+    "description": "Frozen column badge"
+  },
+  "tableResetDefault": {
+    "message": "Restablecer los valores predeterminados",
+    "description": "Reset column settings"
+  },
+  "tableShowingResults": {
+    "message": "Mostrando {start} a {end} de {total} resultados",
+    "description": "Pagination summary"
+  },
+  "tableSortAscending": {
+    "message": "Orden ascendente",
+    "description": "Table column sort ascending"
+  },
+  "tableSortDescending": {
+    "message": "Orden descendente",
+    "description": "Table column sort descending"
+  },
+  "tableClearSort": {
+    "message": "Borrar clasificación",
+    "description": "Remove column sort"
+  },
+  "tableToggleSort": {
+    "message": "Alternar clasificación para {column}",
+    "description": "Sort toggle aria-label"
+  },
+  "tableRowSelectSr": {
+    "message": "Número de fila y seleccionar filas",
+    "description": "Screen reader label for selection column"
+  },
+  "tableLoadingSr": {
+    "message": "mesa de carga",
+    "description": "Screen reader label for table loading skeleton"
+  },
+  "metricsTitle": {
+    "message": "Métrica",
+    "description": "Metrics widget card title"
+  },
+  "metricsConfigure": {
+    "message": "Configurar métricas",
+    "description": "Open metrics configuration"
+  },
+  "metricsEmptyYet": {
+    "message": "Aún no hay métricas configuradas.",
+    "description": "Empty metrics widget state"
+  },
+  "metricsEmptyPanel": {
+    "message": "No hay métricas configuradas.",
+    "description": "Empty metrics config panel"
+  },
+  "metricsAdd": {
+    "message": "Agregar métrica",
+    "description": "Add a new metric row"
+  },
+  "metricsLabel": {
+    "message": "Etiqueta",
+    "description": "Metric label column"
+  },
+  "metricsSource": {
+    "message": "Fuente",
+    "description": "Metric data source column"
+  },
+  "metricsField": {
+    "message": "Campo",
+    "description": "Metric field column"
+  },
+  "metricsAggregation": {
+    "message": "Agregación",
+    "description": "Metric aggregation column"
+  },
+  "metricsDragReorder": {
+    "message": "Arrastra para reordenar",
+    "description": "Metric row drag handle tooltip"
+  },
+  "metricsDelete": {
+    "message": "Eliminar métrica",
+    "description": "Remove metric row"
+  },
+  "metricsClosePanel": {
+    "message": "Cerrar panel",
+    "description": "Close metrics config drawer"
+  },
+  "keyFieldsTitle": {
+    "message": "Campos clave",
+    "description": "Key fields widget title"
+  },
+  "keyFieldsEmptyValue": {
+    "message": "Vacío",
+    "description": "Empty key field value placeholder"
+  },
+  "keyFieldsNone": {
+    "message": "No hay campos clave configurados",
+    "description": "No key fields empty state"
+  },
+  "keyFieldsHint": {
+    "message": "Marcar campos como \"Campo clave\" en la configuración del módulo",
+    "description": "Key fields configuration hint"
+  },
+  "closePanel": {
+    "message": "Cerrar panel",
+    "description": "Screen reader label for closing a side panel"
+  },
+  "formAssignToMe": {
+    "message": "Asignarme",
+    "description": "Assign current user to a reviewer field"
+  },
+  "formNoOptions": {
+    "message": "No hay opciones disponibles.",
+    "description": "Empty picklist dropdown"
+  },
+  "formNoMatchingRecords": {
+    "message": "No se encontraron registros coincidentes.",
+    "description": "Empty lookup combobox search results"
+  },
+  "formNoRecordsFound": {
+    "message": "No se encontraron registros",
+    "description": "Empty lookup modal list"
+  },
+  "formSelected": {
+    "message": "Seleccionado",
+    "description": "Lookup row already selected badge"
+  },
+  "formCreateNew": {
+    "message": "Crear nuevo",
+    "description": "Create related record from lookup footer"
+  },
+  "formSearchOptions": {
+    "message": "Opciones de búsqueda...",
+    "description": "Picklist search placeholder"
+  },
+  "formSearchRecords": {
+    "message": "Buscar registros...",
+    "description": "Lookup combobox search placeholder"
+  },
+  "formBrowseRecords": {
+    "message": "Explorar registros",
+    "description": "Open lookup record picker modal"
+  },
+  "formCreateAndSelect": {
+    "message": "Crear y seleccionar",
+    "description": "Create new lookup record shortcut"
+  },
+  "formUploading": {
+    "message": "Subiendo...",
+    "description": "Image upload in progress"
+  },
+  "formUploadImage": {
+    "message": "Subir imagen",
+    "description": "Image upload trigger button"
+  },
+  "formRefreshing": {
+    "message": "Refrescante...",
+    "description": "Lookup modal refresh in progress"
+  },
+  "formLookupSelectTitle": {
+    "message": "Seleccione __UCI_0__",
+    "description": "Lookup modal title"
+  },
+  "formLookupChooseOne": {
+    "message": "Elija una {module} para llenar {field}",
+    "description": "Lookup modal subtitle"
+  },
+  "formLookupSearchModule": {
+    "message": "Buscar __UCI_0__...",
+    "description": "Lookup modal search placeholder"
+  },
+  "formLookupNoMatch": {
+    "message": "Ningún {module} coincide con \"{query}\".",
+    "description": "Lookup modal empty state with search query"
+  },
+  "formLookupNoRecordsYet": {
+    "message": "Aún no hay {module} para elegir.",
+    "description": "Lookup modal empty state without query"
+  },
+  "formLookupCreateModule": {
+    "message": "Crear nueva {module}",
+    "description": "Lookup modal create CTA with module name"
+  },
+  "lifecycleStageTitle": {
+    "message": "Etapa del ciclo de vida",
+    "description": "Lifecycle stage widget title"
+  },
+  "lifecycleType": {
+    "message": "Tipo:",
+    "description": "Lifecycle widget type label"
+  },
+  "lifecycleAge": {
+    "message": "Edad:",
+    "description": "Lifecycle widget age label"
+  },
+  "lifecycleJustCreated": {
+    "message": "Recién creado",
+    "description": "Record age when created today"
+  },
+  "lifecycleAgeDays": {
+    "message": "{days, plural, one {# día} other {# días}}",
+    "description": "Record age in days"
+  },
+  "lifecycleAgeZero": {
+    "message": "0 días",
+    "description": "Record age fallback when no createdAt"
+  },
+  "searchPlaceholder": {
+    "message": "Buscar...",
+    "description": "Generic search input placeholder"
+  },
+  "filterAll": {
+    "message": "Todo",
+    "description": "Filter option: no restriction"
+  },
+  "filterAllNamed": {
+    "message": "Todos __UCI_0__",
+    "description": "Filter option: all values for a named field"
+  },
+  "filterDays": {
+    "message": "Días",
+    "description": "Relative date filter days input label"
+  },
+  "filterDate": {
+    "message": "Fecha",
+    "description": "Single date filter input label"
+  },
+  "filterFrom": {
+    "message": "De",
+    "description": "Date range filter start label"
+  },
+  "filterTo": {
+    "message": "A",
+    "description": "Date range filter end label"
+  },
+  "filterDaysPlaceholder": {
+    "message": "p.ej. 7",
+    "description": "Relative date filter days input placeholder"
+  },
+  "dependencyNoFields": {
+    "message": "No hay campos para mostrar",
+    "description": "Dependency popup empty state"
+  },
+  "drawerBackQuickCreate": {
+    "message": "Volver a creación rápida",
+    "description": "Toggle from full create form to quick create"
+  },
+  "drawerShowAllFields": {
+    "message": "Mostrar todos los campos",
+    "description": "Expand quick create drawer to full form"
+  },
+  "formQuickCreateFields": {
+    "message": "Campos de creación rápida",
+    "description": "Section heading for quick-create field group"
+  },
+  "taskDescriptionPlaceholder": {
+    "message": "Escriba o escriba '/' para los comandos",
+    "description": "Task description editor placeholder"
+  },
+  "taskDescriptionFallback": {
+    "message": "Descripción",
+    "description": "Task description field fallback label"
+  },
+  "taskRelatedToFallback": {
+    "message": "Relacionado A",
+    "description": "Task related-to field fallback label"
+  },
+  "taskSubtasksLabel": {
+    "message": "Subtareas",
+    "description": "Task subtasks field label"
+  },
+  "tagsTitle": {
+    "message": "Etiquetas",
+    "description": "Tags picker panel title"
+  },
+  "tagsNewTag": {
+    "message": "Nueva etiqueta",
+    "description": "Create a new tag definition"
+  },
+  "tagsSearchPlaceholder": {
+    "message": "Buscar o crear una etiqueta",
+    "description": "Tags picker search input"
+  },
+  "tagsClickSearchHint": {
+    "message": "Haga clic en el cuadro de búsqueda para ver las etiquetas disponibles.",
+    "description": "Tags picker collapsed hint"
+  },
+  "tagsNoTagsYet": {
+    "message": "Aún no hay etiquetas en este espacio de trabajo.",
+    "description": "Empty workspace tags list"
+  },
+  "tagsCreateFirst": {
+    "message": "Crear la primera etiqueta",
+    "description": "CTA when no tags exist"
+  },
+  "tagsCreateNamed": {
+    "message": "Crear \"{name}\"",
+    "description": "Create tag from search query"
+  },
+  "tagsPublic": {
+    "message": "Público",
+    "description": "Public tag badge"
+  },
+  "tagsRemoveTag": {
+    "message": "Quitar etiqueta",
+    "description": "Remove tag from selection aria-label"
+  },
+  "tagsEditTag": {
+    "message": "Editar etiqueta",
+    "description": "Edit tag definition action"
+  },
+  "tagsTagActions": {
+    "message": "Acciones de etiqueta",
+    "description": "Tag row overflow menu aria-label"
+  },
+  "tagsTagName": {
+    "message": "Nombre de etiqueta",
+    "description": "Tag editor name field label"
+  },
+  "tagsEnterTagName": {
+    "message": "Introduzca el nombre de la etiqueta",
+    "description": "Tag editor name placeholder"
+  },
+  "tagsColor": {
+    "message": "Color",
+    "description": "Tag editor color field label"
+  },
+  "tagsMakePublic": {
+    "message": "Hacer pública la etiqueta",
+    "description": "Tag editor public toggle label"
+  },
+  "tagsRemoveFromSelection": {
+    "message": "Eliminar de la selección",
+    "description": "Unassign tag from current record"
+  },
+  "tagsAddToSelection": {
+    "message": "Añadir a la selección",
+    "description": "Assign tag to current record"
+  },
+  "tagsDeleteFromModule": {
+    "message": "Eliminar etiqueta del módulo",
+    "description": "Delete tag definition from module"
+  },
+  "tagsRemovedNamed": {
+    "message": "Se eliminó \"{name}\".",
+    "description": "Tag removal pending undo banner"
+  },
+  "tagsUndoSeconds": {
+    "message": "Deshacer ({seconds})",
+    "description": "Undo tag removal countdown"
+  },
+  "linkRecordsBackToType": {
+    "message": "Volver al tipo de registro",
+    "description": "Return to link records type selector"
+  },
+  "linkRecordsLinked": {
+    "message": "Vinculado",
+    "description": "Already-linked record type badge"
+  },
+  "linkRecordsNoTypes": {
+    "message": "No hay tipos de registros vinculables configurados para este módulo. Configure las relaciones en Configuración → Módulos.",
+    "description": "Empty linkable types state"
+  },
+  "linkRecordsNoMatch": {
+    "message": "No se encontraron registros coincidentes. Intente ajustar su búsqueda o filtros.",
+    "description": "Empty link records search results"
+  },
+  "linkRecordsCreateNew": {
+    "message": "Crear nuevo",
+    "description": "Create record from link drawer"
+  },
+  "linkRecordsSelectedCount": {
+    "message": "{count, plural, one {# seleccionado} other {# seleccionados}}",
+    "description": "Link drawer multi-select count"
+  },
+  "linkRecordsLink": {
+    "message": "Enlace",
+    "description": "Confirm link records action"
+  },
+  "kanbanExpandColumn": {
+    "message": "Expandir columna",
+    "description": "Expand collapsed kanban column"
+  },
+  "kanbanNoItems": {
+    "message": "Sin artículos",
+    "description": "Empty kanban column placeholder"
+  },
+  "summaryLoadingRecord": {
+    "message": "Cargando {type}...",
+    "description": "Record summary page loading state"
+  },
+  "summaryErrorLoadingTitle": {
+    "message": "Error al cargar {type}",
+    "description": "Record summary page error headline"
+  },
+  "summaryNoTagsYet": {
+    "message": "Aún no hay etiquetas",
+    "description": "Empty tags on record header"
+  },
+  "summaryManageTags": {
+    "message": "Administrar etiquetas",
+    "description": "Open tag manager when tags exist"
+  },
+  "summaryAddTag": {
+    "message": "Agregar etiqueta",
+    "description": "Add a tag to the record"
+  },
+  "summaryAddAnotherTag": {
+    "message": "Agregar otra etiqueta",
+    "description": "Add another tag when some exist"
+  },
+  "summaryCopyLink": {
+    "message": "Copiar enlace",
+    "description": "Copy record URL to clipboard"
+  },
+  "summarySelectPlaceholder": {
+    "message": "Seleccionar...",
+    "description": "Unset lifecycle/status dropdown value"
+  },
+  "summaryAddRelation": {
+    "message": "Agregar relación",
+    "description": "Add related record menu"
+  },
+  "summaryViewResponses": {
+    "message": "Ver respuestas",
+    "description": "Open form responses list"
+  },
+  "summaryDeleteRecord": {
+    "message": "Eliminar registro",
+    "description": "Delete current record action"
+  },
+  "summaryFormNotActive": {
+    "message": "Formulario aún no activo",
+    "description": "Inactive form empty state title"
+  },
+  "summaryFormNotActiveHint": {
+    "message": "Este formulario aún no se ha utilizado. Asígnalo a través de eventos para comenzar a recopilar respuestas.",
+    "description": "Inactive form empty state body"
+  },
+  "summaryAddWidget": {
+    "message": "Agregar widget",
+    "description": "Add dashboard widget CTA"
+  },
+  "summaryAddCustomWidget": {
+    "message": "Agregar widget personalizado",
+    "description": "Add widget floating button tooltip"
+  },
+  "summaryShowEmptyFields": {
+    "message": "Mostrar campos vacíos",
+    "description": "Toggle empty fields in details tab"
+  },
+  "summaryTenantFields": {
+    "message": "Campos de inquilinos",
+    "description": "Tenant details tab section title"
+  },
+  "summaryTenantFieldsHint": {
+    "message": "Suscripción, límites y configuración de organización",
+    "description": "Tenant details tab subtitle"
+  },
+  "summaryTenantFieldsNoMatch": {
+    "message": "Ningún campo de inquilino coincide con su búsqueda.",
+    "description": "Tenant fields search empty"
+  },
+  "summaryTenantFieldsNoValues": {
+    "message": "No hay campos de inquilino con valores para mostrar.",
+    "description": "Tenant fields all empty hidden"
+  },
+  "summaryTenantFieldsNone": {
+    "message": "No hay campos de inquilino disponibles.",
+    "description": "No tenant fields configured"
+  },
+  "summaryManageFields": {
+    "message": "Administrar campos",
+    "description": "Open field management settings"
+  },
+  "summaryNotAvailable": {
+    "message": "No disponible",
+    "description": "Field value unavailable placeholder"
+  },
+  "summaryFieldsNoMatch": {
+    "message": "Ningún campo coincide con su búsqueda.",
+    "description": "Details tab search empty"
+  },
+  "summaryFieldsNoValues": {
+    "message": "No hay campos con valores para mostrar.",
+    "description": "Details tab all empty hidden"
+  },
+  "summaryFieldsNone": {
+    "message": "No hay campos disponibles.",
+    "description": "No fields configured on module"
+  },
+  "summaryFormUsage": {
+    "message": "Uso del formulario",
+    "description": "Form submissions section title"
+  },
+  "summaryFormUsageHint": {
+    "message": "Lista de envíos de formularios con estado, puntuación y fecha de envío.",
+    "description": "Form submissions section subtitle"
+  },
+  "summaryLoadingSubmissions": {
+    "message": "Cargando envíos...",
+    "description": "Form submissions table loading"
+  },
+  "summaryColSubmitted": {
+    "message": "Enviado",
+    "description": "Submission date column"
+  },
+  "summaryColSubmittedBy": {
+    "message": "Enviado por",
+    "description": "Submitter column"
+  },
+  "summaryColStatus": {
+    "message": "Estado",
+    "description": "Status column header"
+  },
+  "summaryColScore": {
+    "message": "Puntaje",
+    "description": "Score column header"
+  },
+  "summaryColActions": {
+    "message": "Comportamiento",
+    "description": "Actions column header"
+  },
+  "summaryColKpis": {
+    "message": "KPI",
+    "description": "KPI column header"
+  },
+  "summaryAnonymous": {
+    "message": "Anónimo",
+    "description": "Anonymous submitter label"
+  },
+  "summaryNoSubmissions": {
+    "message": "Aún no hay envíos",
+    "description": "Empty form submissions state"
+  },
+  "summaryNoSubmissionsHint": {
+    "message": "Este formulario aún no ha recibido ningún envío.",
+    "description": "Empty form submissions body"
+  },
+  "summaryFormPreview": {
+    "message": "Vista previa del formulario",
+    "description": "Form preview section title"
+  },
+  "summaryFormPreviewHint": {
+    "message": "Obtenga una vista previa de cómo aparecerá este formulario para los usuarios al completarlo.",
+    "description": "Form preview section subtitle"
+  },
+  "summaryFormResponses": {
+    "message": "Respuestas del formulario",
+    "description": "Form responses section title"
+  },
+  "summaryFormResponsesHint": {
+    "message": "Vea y administre todas las respuestas enviadas para este formulario.",
+    "description": "Form responses section subtitle"
+  },
+  "summaryLoadingResponses": {
+    "message": "Cargando respuestas...",
+    "description": "Form responses table loading"
+  },
+  "summaryNoResponses": {
+    "message": "Aún no hay respuestas",
+    "description": "Empty form responses state"
+  },
+  "summaryNoResponsesHint": {
+    "message": "Este formulario aún no ha recibido ninguna respuesta.",
+    "description": "Empty form responses body"
+  },
+  "summaryViewAllResponses": {
+    "message": "Ver todas las respuestas",
+    "description": "Navigate to full responses list"
+  },
+  "summaryUser": {
+    "message": "Usuario",
+    "description": "Activity filter user label"
+  },
+  "summaryAllUsers": {
+    "message": "Todos los usuarios",
+    "description": "Activity filter all users option"
+  },
+  "summaryType": {
+    "message": "Tipo",
+    "description": "Activity filter type label"
+  },
+  "summaryAllTypes": {
+    "message": "Todos los tipos",
+    "description": "Activity filter all types option"
+  },
+  "summaryComments": {
+    "message": "Comentarios",
+    "description": "Activity type filter comments"
+  },
+  "summaryFieldChanges": {
+    "message": "Cambios de campo",
+    "description": "Activity type filter field changes"
+  },
+  "summaryNoActivity": {
+    "message": "Aún no hay actividad",
+    "description": "Empty activity feed"
+  },
+  "summarySelectWidget": {
+    "message": "Seleccione un widget para agregar a su panel",
+    "description": "Add widget drawer subtitle"
+  },
+  "summaryResetToDefault": {
+    "message": "Restablecer los valores predeterminados",
+    "description": "Reset widget layout action"
+  },
+  "summaryResetWidgetLayout": {
+    "message": "Restablecer diseño de widget",
+    "description": "Reset layout confirmation title"
+  },
+  "summaryResetLayoutConfirmBody": {
+    "message": "¿Está seguro de que desea restablecer el diseño predeterminado del widget? Esto eliminará todas las personalizaciones, incluidas las posiciones y tamaños de los widgets, y cualquier widget que haya agregado o eliminado.",
+    "description": "Reset layout confirmation body"
+  },
+  "summaryResetLayoutTooltip": {
+    "message": "Restablecer el diseño del widget al orden predeterminado",
+    "description": "Reset layout button tooltip"
+  },
+  "summaryNoMetrics": {
+    "message": "No hay métricas disponibles.",
+    "description": "Empty metrics widget fallback"
+  },
+  "summaryKeyFieldsPlaceholder": {
+    "message": "Los campos clave se mostrarán aquí.",
+    "description": "Empty key fields widget fallback"
+  },
+  "summaryWidgetContent": {
+    "message": "Contenido del widget",
+    "description": "Generic widget placeholder"
+  },
+  "summaryTabsAria": {
+    "message": "Cortina a la italiana",
+    "description": "Record summary tab list aria-label"
+  },
+  "summarySearchTenantFields": {
+    "message": "Buscar campos de inquilinos...",
+    "description": "Tenant fields search placeholder"
+  },
+  "summarySearchFields": {
+    "message": "Campos de búsqueda...",
+    "description": "Details fields search placeholder"
+  },
+  "summarySearchActivities": {
+    "message": "Buscar actividades...",
+    "description": "Activity feed search placeholder"
+  },
+  "summaryUrlCopied": {
+    "message": "¡URL copiada al portapapeles!",
+    "description": "Copy link success toast"
+  },
+  "summaryResetLayoutFailed": {
+    "message": "No se pudo restablecer el diseño. Por favor inténtalo de nuevo.",
+    "description": "Reset layout error toast"
+  },
+  "summarySaveFieldsFailed": {
+    "message": "No se pudieron guardar las actualizaciones de campo. Por favor inténtalo de nuevo.",
+    "description": "Inline field save error toast"
+  },
+  "moduleListTheListForThisModuleIs": {
+    "message": "La lista para este módulo no está disponible.",
+    "description": "Auto-migrated from moduleList"
+  },
+  "moduleListListNotFound": {
+    "message": "Lista no encontrada",
+    "description": "Auto-migrated from moduleList"
+  },
+  "targetWizardStepperTargetCreationProgress": {
+    "message": "Progreso de la creación de objetivos",
+    "description": "Auto-migrated from targetWizardStepper"
+  },
+  "trashRestore": {
+    "message": "Restaurar",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAutoDeleteIn": {
+    "message": "Eliminación automática en",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedBy": {
+    "message": "Eliminado por",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedItemsWillAppearHereYou": {
+    "message": "Los elementos eliminados aparecerán aquí. Puede restaurarlos o eliminarlos permanentemente antes de que caduquen.",
+    "description": "Auto-migrated from trash"
+  },
+  "trashTrashIsEmpty": {
+    "message": "la papelera esta vacia",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletePermanently": {
+    "message": "Eliminar permanentemente",
+    "description": "Auto-migrated from trash"
+  },
+  "trashRestoreSelected": {
+    "message": "Restaurar seleccionado",
+    "description": "Auto-migrated from trash"
+  },
+  "trashEmptyTrash": {
+    "message": "Vaciar la papelera",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedTo": {
+    "message": "Eliminado a",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedFrom": {
+    "message": "Eliminado de",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAllUsers": {
+    "message": "Todos los usuarios",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAllModules": {
+    "message": "Todos los módulos",
+    "description": "Auto-migrated from trash"
+  },
+  "trashSearchNameModuleDeletedBy": {
+    "message": "Nombre de búsqueda, módulo, eliminado por...",
+    "description": "Auto-migrated from trash"
+  },
+  "trashRetention": {
+    "message": "Retención",
+    "description": "Auto-migrated from trash"
+  },
+  "trashOldestItem": {
+    "message": "Artículo más antiguo",
+    "description": "Auto-migrated from trash"
+  },
+  "trashExpiringIn7Days": {
+    "message": "Expira en 7 días",
+    "description": "Auto-migrated from trash"
+  },
+  "trashTotalInTrash": {
+    "message": "Total en la papelera",
+    "description": "Auto-migrated from trash"
+  },
+  "approvalDetailEnterRejectionReason": {
+    "message": "Introduzca el motivo del rechazo...",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailReason": {
+    "message": "Razón",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailRejectingWillBlockThisAction": {
+    "message": "Rechazar bloqueará esta acción.",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailRejectApproval": {
+    "message": "Rechazar aprobación",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailYouAreNotAuthorizedToApprove": {
+    "message": "No está autorizado a aprobar o rechazar esta solicitud.",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailReason2": {
+    "message": "Razón:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecidedAt": {
+    "message": "Decidido en:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecidedBy": {
+    "message": "Decidido por:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecisionAlreadyMade": {
+    "message": "Decisión ya tomada",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailYourDecision": {
+    "message": "Tu decisión",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailThisApprovalWasEscalatedDueTo": {
+    "message": "Esta aprobación se intensificó debido a que no hubo respuesta dentro del plazo. Se han notificado nuevos aprobadores.",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailEscalated": {
+    "message": "escalado",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailIfRejected": {
+    "message": "Si es rechazado",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailIfApproved": {
+    "message": "Si se aprueba",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailWhatWillHappen": {
+    "message": "¿Qué pasará?",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailWhyApprovalIsRequired": {
+    "message": "Por qué se requiere aprobación",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailEntity": {
+    "message": "Entidad",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailContext": {
+    "message": "Contexto",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailBackToApprovals": {
+    "message": "Volver a Aprobaciones",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalInboxEnterRejectionReason": {
+    "message": "Introduzca el motivo del rechazo...",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxReason": {
+    "message": "Razón",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRejectingWillBlockThisActionPlease": {
+    "message": "Rechazar bloqueará esta acción. Por favor proporcione una razón.",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRejectApproval": {
+    "message": "Rechazar aprobación",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxDueIn": {
+    "message": "Vencimiento en:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRequestedAt": {
+    "message": "Solicitado en:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRequestedBy": {
+    "message": "Solicitado por:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxAllCaughtUpYouHaveNo": {
+    "message": "¡Todos atrapados! No tienes solicitudes de aprobación pendientes.",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxNoApprovalsPending": {
+    "message": "No hay aprobaciones pendientes",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxReviewAndApprovePendingRequests": {
+    "message": "Revisar y aprobar solicitudes pendientes",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxApprovals": {
+    "message": "Aprobaciones",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "demoRequestsEnterprise": {
+    "message": "Empresa",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsProfessional": {
+    "message": "Profesional",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsStarter": {
+    "message": "Motor de arranque",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsTrial15Days": {
+    "message": "Prueba (15 días)",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSubscriptionTier": {
+    "message": "Nivel de suscripción",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsEnterTemporaryPasswordForOwner": {
+    "message": "Ingrese la contraseña temporal para el propietario",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvert": {
+    "message": "Convertir",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvertToOrganization": {
+    "message": "Convertir en organización",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted": {
+    "message": "Convertido",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoCompleted": {
+    "message": "Demostración completada",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoScheduled": {
+    "message": "Demostración programada",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContacted": {
+    "message": "Contactado",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsUpdateStatus": {
+    "message": "Estado de actualización",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisContactExistsInASeparate": {
+    "message": "Este contacto existe en una organización separada. Verán sus propios datos de CRM cuando inicien sesión.",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactPhone": {
+    "message": "Teléfono de contacto:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactEmail": {
+    "message": "Correo electrónico de contacto:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContact": {
+    "message": "Contacto:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsOrganization": {
+    "message": "Organización:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisProspectIsAlreadyInYour": {
+    "message": "¡Este prospecto ya está en tu CRM!",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsJobTitle": {
+    "message": "Título profesional:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsPhone": {
+    "message": "Teléfono:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsEmail": {
+    "message": "Correo electrónico:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactName": {
+    "message": "Nombre de contacto:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactInformation": {
+    "message": "Información del contacto",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanySize": {
+    "message": "Tamaño de la empresa:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsIndustry": {
+    "message": "Industria:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanyName": {
+    "message": "Nombre de empresa:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanyInformation": {
+    "message": "Información de la empresa",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoRequestDetails": {
+    "message": "Detalles de la solicitud de demostración",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsNoDemoRequestsFound": {
+    "message": "No se encontraron solicitudes de demostración",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvert2": {
+    "message": "Convertir",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvertToOrganization2": {
+    "message": "Convertir en organización",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSize": {
+    "message": "Tamaño",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsLoadingDemoRequests": {
+    "message": "Cargando solicitudes de demostración...",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted2": {
+    "message": "Convertido",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoCompleted2": {
+    "message": "Demostración completada",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoScheduled2": {
+    "message": "Demostración programada",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContacted2": {
+    "message": "Contactado",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSearchDemoRequests": {
+    "message": "Buscar solicitudes de demostración...",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted3": {
+    "message": "Convertido",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisMonth": {
+    "message": "este mes",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsTotalRequests": {
+    "message": "Solicitudes totales",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "publicBookingViewPoweredByYourCrm": {
+    "message": "Desarrollado por su CRM",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYourDetails": {
+    "message": "Tus datos",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYourTime": {
+    "message": "tu tiempo",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewAvailableTimes": {
+    "message": "Horarios disponibles",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewPickADate": {
+    "message": "Elige una fecha",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewBookWithOurTeam": {
+    "message": "Reserva con nuestro equipo",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewRescheduleOrCancel": {
+    "message": "Reprogramar o cancelar",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewAConfirmationHasBeenSentTo": {
+    "message": "Se ha enviado una confirmación a su correo electrónico. Recibirá un recordatorio antes de su cita.",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYoureBooked": {
+    "message": "¡Estás reservado!",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewPageUnavailable": {
+    "message": "Página no disponible",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewLoadingCalendar": {
+    "message": "Cargando calendario…",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "notificationOverviewOpenHealthDashboard": {
+    "message": "Abrir panel de salud",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewViewDeliveryStatisticsChannelHealthEvent": {
+    "message": "Vea estadísticas de entrega, estado del canal, volumen de eventos y patrones de notificación de usuarios. Identifique problemas potenciales antes de que afecten a su equipo.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewHealthDashboard": {
+    "message": "Panel de salud",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewMonitorNotificationDeliveryHealthAndAnalytics": {
+    "message": "Supervise el estado y el análisis de la entrega de notificaciones en toda su organización.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAdminTools": {
+    "message": "Herramientas de administración",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageDigests": {
+    "message": "Administrar resúmenes",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewReceiveDailyOrWeeklySummariesOf": {
+    "message": "Reciba resúmenes diarios o semanales de sus notificaciones en lugar de alertas en tiempo real. Reduzca el ruido de las notificaciones mientras se mantiene informado.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewDigests": {
+    "message": "resúmenes",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageRules": {
+    "message": "Administrar reglas",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewCreateCustomNotificationConditionsSetUp": {
+    "message": "Cree condiciones de notificación personalizadas. Configure reglas basadas en asignaciones, prioridades, estados y más.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManagePreferences": {
+    "message": "Administrar preferencias",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewToggleWhatTypesOfNotificationsYou": {
+    "message": "Alterna qué tipos de notificaciones recibes por evento. Controle qué canales se utilizan para cada tipo de notificación.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewPreferences": {
+    "message": "Preferencias",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewCustomizeYourNotificationExperienceToMatch": {
+    "message": "Personalice su experiencia de notificación para que coincida con su flujo de trabajo.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewYourNotificationControl": {
+    "message": "Tu control de notificaciones",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageDeliveryChannels": {
+    "message": "Administrar canales de entrega",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable": {
+    "message": "Configurable",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable2": {
+    "message": "Configurable",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhatsapp": {
+    "message": "WhatsApp",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable3": {
+    "message": "Configurable",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewPush": {
+    "message": "Empujar",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable4": {
+    "message": "Configurable",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAlwaysOn": {
+    "message": "Siempre encendido",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewChooseWhereAndHowYouReceive": {
+    "message": "Elija dónde y cómo recibir notificaciones a través de diferentes canales de entrega.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewHowYoureNotified": {
+    "message": "Cómo te notifican",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined": {
+    "message": "Definido por el sistema",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAccountActivitySystemUpdatesAndCompliance": {
+    "message": "Actividad de la cuenta, actualizaciones del sistema y notificaciones relacionadas con el cumplimiento.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined2": {
+    "message": "Definido por el sistema",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewActivityThatInvolvesCollaborationAndReview": {
+    "message": "Actividad que implica colaboración y revisión.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConversations": {
+    "message": "Conversaciones",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewRemindersForUpcomingOrOverdueItems": {
+    "message": "Recordatorios de artículos próximos o vencidos.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewDeadlines": {
+    "message": "Plazos",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewStatusChangesSubmissionsApprovalsAndOther": {
+    "message": "Cambios de estado, envíos, aprobaciones y otras actualizaciones importantes.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined3": {
+    "message": "Definido por el sistema",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhenTasksAuditsOrCorrectiveActions": {
+    "message": "Cuando se le asignan tareas, auditorías o acciones correctivas.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAssignments": {
+    "message": "Asignaciones",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewNotificationsAreOrganizedByIntentTo": {
+    "message": "Las notificaciones están organizadas por intención para ayudarle a mantenerse informado sin sentirse abrumado.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhatYoureNotifiedAbout": {
+    "message": "Sobre qué te notifican",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewLearnHowNotificationsWorkAndWhat": {
+    "message": "Aprenda cómo funcionan las notificaciones y qué puede controlar.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewNotificationOverview": {
+    "message": "Descripción general de notificaciones",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationHealthHighVolume": {
+    "message": "Alto volumen",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoUserDataAvailable": {
+    "message": "No hay datos de usuario disponibles",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthFlag": {
+    "message": "Bandera",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthReceived": {
+    "message": "Recibió",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthHighVolumeUsers": {
+    "message": "Usuarios de gran volumen",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoEventDataAvailable": {
+    "message": "No hay datos de eventos disponibles",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthTopEventTypes": {
+    "message": "Principales tipos de eventos",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoChannelDataAvailable": {
+    "message": "No hay datos de canal disponibles",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthLastFailure": {
+    "message": "último fracaso",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthSent": {
+    "message": "Enviado",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthChannelHealth": {
+    "message": "Estado del canal",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthDegradedChannels": {
+    "message": "Canales degradados",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthActiveChannels": {
+    "message": "Canales activos",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthReadRate": {
+    "message": "Tasa de lectura",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthTotalNotifications": {
+    "message": "Notificaciones totales",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthMonitorNotificationDeliveryAndChannelHealth": {
+    "message": "Supervisar la entrega de notificaciones y el estado del canal",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNotificationHealth": {
+    "message": "Notificación de estado",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthHealth": {
+    "message": "Salud",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationPreferencesReceiveAWeeklySummaryViaEmail": {
+    "message": "Reciba un resumen semanal por correo electrónico. Perfecto para mantenerse informado sin interrupciones diarias.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWeeklyDigest": {
+    "message": "Resumen semanal",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesReceiveADailySummaryOfYour": {
+    "message": "Reciba un resumen diario de sus notificaciones. Reduce el ruido de las notificaciones mientras te mantiene informado.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesDailyDigest": {
+    "message": "Resumen diario",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesReceiveSummariesInsteadOfRealTime": {
+    "message": "Reciba resúmenes en lugar de notificaciones en tiempo real",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationDigests": {
+    "message": "Resúmenes de notificaciones",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSmsIsOnlyUsedAsA": {
+    "message": "Los SMS sólo se utilizan como último recurso cuando otros canales no están disponibles. Los mensajes son breves e incluyen enlaces profundos cuando es posible.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSmsNotifications": {
+    "message": "Notificaciones por SMS",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWhatsappNotificationsAreOnlySentFor": {
+    "message": "Las notificaciones de WhatsApp solo se envían para eventos de alta prioridad en las aplicaciones de Auditoría y Portal.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWhatsappNotifications": {
+    "message": "Notificaciones de WhatsApp",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPushNotificationsAreBlockedEnableThem": {
+    "message": "Las notificaciones push están bloqueadas. Habilítelos en la configuración de su navegador.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesTestNotification": {
+    "message": "Notificación de prueba",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesEnablePushNotifications": {
+    "message": "Habilitar notificaciones automáticas",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPushNotifications": {
+    "message": "Notificaciones push",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesThereAreNoConfigurableNotificationEvents": {
+    "message": "Aún no hay eventos de notificación configurables para esta aplicación.\n          Las notificaciones seguirán utilizando sus valores predeterminados seguros.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesInApp": {
+    "message": "En la aplicación",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSystemEventManagedByArivu": {
+    "message": "Evento del sistema (gestionado por Arivu)",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesClickAChannelToJumpTo": {
+    "message": "Haga clic en un canal para ir a su configuración. Los canales deshabilitados no están disponibles para esta aplicación.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationDelivery": {
+    "message": "Entrega de notificaciones",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWeCouldntLoadYourNotificationPreferences": {
+    "message": "No pudimos cargar sus preferencias de notificación en este momento. Las notificaciones\n        continuar usando sus valores predeterminados. Puedes seguir usando la aplicación de forma segura.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesCouldntSaveChangesPleaseTryAgain": {
+    "message": "No se pudieron guardar los cambios. Por favor inténtalo de nuevo.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesHealthDashboard": {
+    "message": "Panel de salud",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationRules": {
+    "message": "Reglas de notificación",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesControlInAppAndEmailNotifications": {
+    "message": "Controle las notificaciones dentro de la aplicación y por correo electrónico para este espacio de trabajo.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationPreferences": {
+    "message": "Preferencias de notificación",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPreferences": {
+    "message": "Preferencias",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationRulesDeleteRule": {
+    "message": "Eliminar regla",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesEditRule": {
+    "message": "Editar regla",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesCreateYourFirstRule": {
+    "message": "Crea tu primera regla",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesGetStartedByCreatingYourFirst": {
+    "message": "Comience creando su primera regla de notificación.",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesNoNotificationRulesYet": {
+    "message": "Aún no hay reglas de notificación",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesFailedToLoadNotificationRules": {
+    "message": "No se pudieron cargar las reglas de notificación",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesDeleteAnExistingRuleToCreate": {
+    "message": "Elimine una regla existente para crear una nueva.",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesCreateCustomNotificationTriggersForModules": {
+    "message": "Cree activadores de notificaciones personalizados para los módulos que le interesen.",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesNotificationRules": {
+    "message": "Reglas de notificación",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "contactDetailToastFailedToDeleteContact": {
+    "message": "No se pudo eliminar el contacto",
+    "description": "Toast from ContactDetail.vue"
+  },
+  "contactDetailToastFailedToUnlinkOrganization": {
+    "message": "No se pudo desvincular la organización",
+    "description": "Toast from ContactDetail.vue"
+  },
+  "dealDetailToastFailedToDeleteDeal": {
+    "message": "No se pudo eliminar el trato",
+    "description": "Toast from DealDetail.vue"
+  },
+  "dealDetailToastFailedToAddNote": {
+    "message": "No se pudo agregar la nota",
+    "description": "Toast from DealDetail.vue"
+  },
+  "dealsToastErrorDeletingDealPleaseTry": {
+    "message": "Error al eliminar la oferta. Por favor inténtalo de nuevo.",
+    "description": "Toast from Deals.vue"
+  },
+  "dealsToastErrorPerformingBulkActionPlease": {
+    "message": "Error al realizar la acción masiva. Por favor inténtalo de nuevo.",
+    "description": "Toast from Deals.vue"
+  },
+  "dealsToastFailedToExportDeals": {
+    "message": "No se pudieron exportar acuerdos.",
+    "description": "Toast from Deals.vue"
+  },
+  "demoRequestsToastFailedToUpdateStatus": {
+    "message": "No se pudo actualizar el estado",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "demoRequestsToastSuccessfullyConvertedToOrganization": {
+    "message": "¡Convertido exitosamente en organización!",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "demoRequestsToastFailedToConvertRequest": {
+    "message": "No se pudo convertir la solicitud",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "eventDetailToastFailedToDeleteEvent": {
+    "message": "No se pudo eliminar el evento",
+    "description": "Toast from EventDetail.vue"
+  },
+  "eventDetailToastFailedToAddNote": {
+    "message": "No se pudo agregar la nota",
+    "description": "Toast from EventDetail.vue"
+  },
+  "eventExecutionSurfaceToastLocationIsRequiredForCheck": {
+    "message": "Se requiere ubicación para el check-in. Permita el acceso a la ubicación e inténtelo de nuevo.",
+    "description": "Toast from EventExecutionSurface.vue"
+  },
+  "eventsToastErrorPerformingBulkActionPlease": {
+    "message": "Error al realizar la acción masiva. Por favor inténtalo de nuevo.",
+    "description": "Toast from Events.vue"
+  },
+  "eventsToastErrorExportingEventsPleaseTry": {
+    "message": "Error al exportar eventos. Por favor inténtalo de nuevo.",
+    "description": "Toast from Events.vue"
+  },
+  "groupDetailToastFailedToLoadGroup": {
+    "message": "No se pudo cargar el grupo",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToAddMember": {
+    "message": "No se pudo agregar miembro",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToRemoveMember": {
+    "message": "No se pudo eliminar el miembro",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToDeleteGroup": {
+    "message": "No se pudo eliminar el grupo",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupsToastErrorPerformingBulkActionPlease": {
+    "message": "Error al realizar la acción masiva. Por favor inténtalo de nuevo.",
+    "description": "Toast from Groups.vue"
+  },
+  "groupsToastErrorDeletingGroupPleaseTry": {
+    "message": "Error al eliminar el grupo. Por favor inténtalo de nuevo.",
+    "description": "Toast from Groups.vue"
+  },
+  "organizationDetailToastFailedToDeleteOrganizationPlease": {
+    "message": "No se pudo eliminar la organización. Por favor inténtalo de nuevo.",
+    "description": "Toast from OrganizationDetail.vue"
+  },
+  "organizationsToastUnknownError": {
+    "message": "Error desconocido",
+    "description": "Toast from Organizations.vue"
+  },
+  "organizationsToastErrorExportingOrganizationsPleaseTry": {
+    "message": "Error al exportar organizaciones. Por favor inténtalo de nuevo.",
+    "description": "Toast from Organizations.vue"
+  },
+  "organizationsToastErrorExportingOrganizationsPleaseTry2": {
+    "message": "Error al exportar organizaciones. Por favor inténtalo de nuevo.",
+    "description": "Toast from Organizations.vue"
+  },
+  "peopleToastUnknownError": {
+    "message": "Error desconocido",
+    "description": "Toast from People.vue"
+  },
+  "peopleToastErrorExportingPeoplePleaseTry": {
+    "message": "Error al exportar personas. Por favor inténtalo de nuevo.",
+    "description": "Toast from People.vue"
+  },
+  "peopleToastErrorExportingContactsPleaseTry": {
+    "message": "Error al exportar contactos. Por favor inténtalo de nuevo.",
+    "description": "Toast from People.vue"
+  },
+  "responsesToastFormIdNotFoundPlease": {
+    "message": "No se encontró el ID del formulario. Actualice la página e inténtelo de nuevo.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToApproveResponsePlease": {
+    "message": "No se pudo aprobar la respuesta. Por favor inténtalo de nuevo.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease2": {
+    "message": "No se encontró el ID del formulario. Actualice la página e inténtelo de nuevo.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToRejectResponsePlease": {
+    "message": "No se pudo rechazar la respuesta. Por favor inténtalo de nuevo.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease3": {
+    "message": "No se encontró el ID del formulario. Actualice la página e inténtelo de nuevo.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease4": {
+    "message": "No se encontró el ID del formulario. Actualice la página e inténtelo de nuevo.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToRestoreResponsePlease": {
+    "message": "No se pudo restaurar la respuesta. Por favor inténtalo de nuevo.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastSubmittedResponsesCannotBeDeleted": {
+    "message": "Las respuestas enviadas no se pueden eliminar. Utilice archivar o invalidar en su lugar.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease5": {
+    "message": "No se encontró el ID del formulario. Actualice la página e inténtelo de nuevo.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToDeleteResponsePlease": {
+    "message": "No se pudo eliminar la respuesta. Por favor inténtalo de nuevo.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastExportFunctionalityForAllResponses": {
+    "message": "¡La funcionalidad de exportación para todas las respuestas estará disponible pronto!",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastAnErrorOccurredDuringExport": {
+    "message": "Se produjo un error durante la exportación.",
+    "description": "Toast from Responses.vue"
+  },
+  "tasksToastFailedToUpdateTaskStatus": {
+    "message": "No se pudo actualizar el estado de la tarea",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastFailedToDeleteTask": {
+    "message": "No se pudo eliminar la tarea.",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastErrorPerformingBulkActionPlease": {
+    "message": "Error al realizar la acción masiva. Por favor inténtalo de nuevo.",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastErrorExportingTasksPleaseTry": {
+    "message": "Error al exportar tareas. Por favor inténtalo de nuevo.",
+    "description": "Toast from Tasks.vue"
+  },
+  "trashToastRestoredSomeParentRecordsWere": {
+    "message": "Restaurado. Algunos registros de padres se eliminaron permanentemente.",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToRestore": {
+    "message": "No se pudo restaurar",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToRestore2": {
+    "message": "No se pudo restaurar",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToDelete": {
+    "message": "No se pudo eliminar",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToDelete2": {
+    "message": "No se pudo eliminar",
+    "description": "Toast from Trash.vue"
+  },
+  "notificationPreferencesToastPushNotificationsAreNotSupported": {
+    "message": "Las notificaciones push no son compatibles con este navegador.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastEnablePushNotifications": {
+    "message": "Habilitar notificaciones automáticas",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastNotificationsAreNotSupportedIn": {
+    "message": "Las notificaciones no son compatibles con este navegador.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationTriggeredCheckYour": {
+    "message": "Notificación de prueba activada. Consulta las notificaciones de tu sistema.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationTriggeredIfYou": {
+    "message": "Notificación de prueba activada. Si no lo ve, verifique la configuración del sistema operativo del navegador/Centro de notificaciones.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastUnknownError": {
+    "message": "Error desconocido",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationFailedSeeConsole": {
+    "message": "Error en la notificación de prueba. Consulte la consola para obtener más detalles.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationRulesToastFailedToDeleteRulePlease": {
+    "message": "No se pudo eliminar la regla. Por favor inténtalo de nuevo.",
+    "description": "Toast from NotificationRules.vue"
+  },
+  "pronounYou": {
+    "message": "Tú",
+    "description": "First-person actor label in activity feed"
+  },
+  "relativeJustNow": {
+    "message": "ahora mismo",
+    "description": "Relative time under one minute"
+  },
+  "relativeOneMinuteAgo": {
+    "message": "hace 1 min",
+    "description": "Relative time one minute"
+  },
+  "relativeManyMinutesAgo": {
+    "message": "hace {count} min",
+    "description": "Relative time multiple minutes"
+  },
+  "relativeOneHourAgo": {
+    "message": "hace 1 hora",
+    "description": "Relative time one hour"
+  },
+  "relativeManyHoursAgo": {
+    "message": "hace {count} horas",
+    "description": "Relative time multiple hours"
+  },
+  "relativeOneDayAgo": {
+    "message": "hace 1 día",
+    "description": "Relative time one day"
+  },
+  "relativeManyDaysAgo": {
+    "message": "hace {count} días",
+    "description": "Relative time multiple days"
+  },
+  "relativeOneMonthAgo": {
+    "message": "hace 1 mes",
+    "description": "Relative time one month"
+  },
+  "relativeManyMonthsAgo": {
+    "message": "hace {count} meses",
+    "description": "Relative time multiple months"
+  },
+  "relativeOneYearAgo": {
+    "message": "hace 1 año",
+    "description": "Relative time one year"
+  },
+  "relativeManyYearsAgo": {
+    "message": "hace {count} años",
+    "description": "Relative time multiple years"
+  },
+  "phraseAnnualRevenue": {
+    "message": "Ingresos anuales",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLeadSource": {
+    "message": "Fuente principal",
+    "description": "Common tenant custom field label"
+  },
+  "phraseIndustry": {
+    "message": "Industria",
+    "description": "Common tenant custom field label"
+  },
+  "phraseWebsite": {
+    "message": "Sitio web",
+    "description": "Common tenant custom field label"
+  },
+  "phraseFax": {
+    "message": "Fax",
+    "description": "Common tenant custom field label"
+  },
+  "phraseAddress": {
+    "message": "DIRECCIÓN",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCity": {
+    "message": "Ciudad",
+    "description": "Common tenant custom field label"
+  },
+  "phraseState": {
+    "message": "Estado",
+    "description": "Common tenant custom field label"
+  },
+  "phraseZipCode": {
+    "message": "Código postal",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCountry": {
+    "message": "País",
+    "description": "Common tenant custom field label"
+  },
+  "phraseDepartment": {
+    "message": "Departamento",
+    "description": "Common tenant custom field label"
+  },
+  "phraseJobTitle": {
+    "message": "Título profesional",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLinkedin": {
+    "message": "LinkedIn",
+    "description": "Common tenant custom field label"
+  },
+  "phrasePriority": {
+    "message": "Prioridad",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRating": {
+    "message": "Clasificación",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCategory": {
+    "message": "Categoría",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSubcategory": {
+    "message": "Subcategoría",
+    "description": "Common tenant custom field label"
+  },
+  "phraseProduct": {
+    "message": "Producto",
+    "description": "Common tenant custom field label"
+  },
+  "phraseQuantity": {
+    "message": "Cantidad",
+    "description": "Common tenant custom field label"
+  },
+  "phraseUnitPrice": {
+    "message": "Precio unitario",
+    "description": "Common tenant custom field label"
+  },
+  "phraseDiscount": {
+    "message": "Descuento",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTax": {
+    "message": "Impuesto",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTotal": {
+    "message": "Total",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSubtotal": {
+    "message": "Total parcial",
+    "description": "Common tenant custom field label"
+  },
+  "phraseContractStart": {
+    "message": "Inicio del contrato",
+    "description": "Common tenant custom field label"
+  },
+  "phraseContractEnd": {
+    "message": "Fin del contrato",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRenewalDate": {
+    "message": "Fecha de renovación",
+    "description": "Common tenant custom field label"
+  },
+  "phraseMrr": {
+    "message": "MRR",
+    "description": "Common tenant custom field label"
+  },
+  "phraseArr": {
+    "message": "ARRR",
+    "description": "Common tenant custom field label"
+  },
+  "phraseEmployees": {
+    "message": "Empleados",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRevenue": {
+    "message": "Ganancia",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTerritory": {
+    "message": "Territorio",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRegion": {
+    "message": "Región",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTimezone": {
+    "message": "Zona horaria",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCurrency": {
+    "message": "Divisa",
+    "description": "Common tenant custom field label"
+  },
+  "phrasePoNumber": {
+    "message": "Número de orden de compra",
+    "description": "Common tenant custom field label"
+  },
+  "phraseInvoiceNumber": {
+    "message": "Número de factura",
+    "description": "Common tenant custom field label"
+  },
+  "phraseOrderNumber": {
+    "message": "Número de orden",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSerialNumber": {
+    "message": "Número de serie",
+    "description": "Common tenant custom field label"
+  },
+  "phraseExternalId": {
+    "message": "Identificación externa",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLastActivity": {
+    "message": "Última actividad",
+    "description": "Common tenant custom field label"
+  },
+  "phraseNextFollowUp": {
+    "message": "Próximo seguimiento",
+    "description": "Common tenant custom field label"
+  },
+  "phraseInfluencer": {
+    "message": "Hombre de influencia",
+    "description": "Common tenant custom field label"
+  },
+  "phraseMobile": {
+    "message": "Móvil",
+    "description": "Common tenant custom field label"
+  },
+  "phraseColor": {
+    "message": "Color",
+    "description": "Common tenant custom field label"
+  },
+  "phraseEmoji": {
+    "message": "emojis",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTrend": {
+    "message": "Tendencia",
+    "description": "Common tenant custom field label"
+  },
+  "phraseAccount": {
+    "message": "Cuenta",
+    "description": "Common tenant custom field label"
+  },
+  "phraseHelpdesk": {
+    "message": "Servicio de asistencia",
+    "description": "App/product name"
+  },
+  "phrasePortal": {
+    "message": "Portal",
+    "description": "App/product name"
+  },
+  "fieldRequiredBadge": {
+    "message": "Requerido",
+    "description": "Badge on required fields in settings and forms"
+  },
+  "required": {
+    "message": "Requerido",
+    "description": "Required field indicator (alias for settings badges)"
+  },
+  "listSearchModule": {
+    "message": "Buscar __UCI_0__...",
+    "description": "Module list search placeholder"
+  },
+  "listCreateModule": {
+    "message": "Nueva __UCI_0__",
+    "description": "Generic module list create button"
+  },
+  "listViewAllModule": {
+    "message": "Todos __UCI_0__",
+    "description": "Generic all-records list view title"
+  },
+  "listViewMyModule": {
+    "message": "Mi __UCI_0__",
+    "description": "Generic assigned-to-me list view title"
+  },
+  "listViewCustom": {
+    "message": "Costumbre",
+    "description": "List view title when filters or search are applied"
+  },
+  "listStatAssignedToMe": {
+    "message": "Asignado a mí",
+    "description": "List statistics card label"
+  },
+  "listStatUnassigned": {
+    "message": "No asignado",
+    "description": "List statistics card label"
+  },
+  "listStatCompleted": {
+    "message": "Terminado",
+    "description": "List statistics card label"
+  },
+  "listStatOverdue": {
+    "message": "Atrasado",
+    "description": "List statistics card label"
+  },
+  "listDefaultViewTooltip": {
+    "message": "Lista predeterminada (se carga al abrir)",
+    "description": "Tooltip on active default saved list view"
+  },
+  "listSetDefaultViewTooltip": {
+    "message": "Establecer como lista predeterminada",
+    "description": "Tooltip to mark a saved list view as default"
+  },
+  "listCoreFields": {
+    "message": "Campos principales",
+    "description": "Customize list field group label"
+  },
+  "listParticipationFields": {
+    "message": "Participación",
+    "description": "Customize list field group label"
+  },
+  "listSystemFields": {
+    "message": "Campos del sistema",
+    "description": "Customize list field group label"
+  },
+  "listParticipationApp": {
+    "message": "Participación: __UCI_0__",
+    "description": "Customize list participation field group label"
+  },
+  "listRowHeightSmall": {
+    "message": "Pequeño",
+    "description": "List row height option"
+  },
+  "listRowHeightMedium": {
+    "message": "Medio",
+    "description": "List row height option"
+  },
+  "listRowHeightLarge": {
+    "message": "Grande",
+    "description": "List row height option"
+  },
+  "listRowHeightHuge": {
+    "message": "Enorme",
+    "description": "List row height option"
+  },
+  "listEmptyTitle": {
+    "message": "Aún no hay registros",
+    "description": "Default list empty state title"
+  },
+  "listEmptyMessage": {
+    "message": "Comience agregando su primer registro",
+    "description": "Default list empty state description"
+  },
+  "listEmptyNoModuleYet": {
+    "message": "No hay __UCI_0__ todavía",
+    "description": "Module list empty state title"
+  },
+  "listEmptyModuleWillAppear": {
+    "message": "{module} aparecerá aquí a medida que los agregue.",
+    "description": "Module list empty state description"
+  },
+  "listEmptyNoMatchFilters": {
+    "message": "Ningún {module} coincide con tus filtros",
+    "description": "List empty title when filters are active"
+  },
+  "listEmptyNoMatchSearchAndFilters": {
+    "message": "Ningún {module} coincide con su búsqueda o filtros. Intente ajustarlos o borre todo para empezar de nuevo.",
+    "description": "List empty message when search and filters are active"
+  },
+  "listEmptyNoMatchSearch": {
+    "message": "No pudimos encontrar ningún {module} que coincida con \"{query}\". Pruebe con una palabra clave diferente o borre la búsqueda.",
+    "description": "List empty message when search is active"
+  },
+  "listEmptyNoMatchFiltersOnly": {
+    "message": "Ningún {module} coincide con tus filtros. Intente ajustarlos o borrarlos para ver más resultados.",
+    "description": "List empty message when only filters are active"
+  },
+  "listClearSearchAndFilters": {
+    "message": "Borrar búsqueda y filtros",
+    "description": "Button to reset list search and filters"
+  },
+  "listFilterAll": {
+    "message": "Todos __UCI_0__",
+    "description": "Filter dropdown placeholder when no value selected"
+  },
+  "listUnknown": {
+    "message": "Desconocido",
+    "description": "Fallback label for unknown filter option"
+  },
+  "listNoDataAvailable": {
+    "message": "No hay datos disponibles",
+    "description": "Table empty state title fallback"
+  },
+  "listNoRecordsFound": {
+    "message": "No se encontraron registros.",
+    "description": "Table empty state message fallback"
+  },
+  "listEmptyIllustrationAlt": {
+    "message": "Ilustración sin registros",
+    "description": "Alt text for list empty state illustration"
+  },
+  "phraseDefaultInParens": {
+    "message": "(Por defecto)",
+    "description": "Suffix for default pipeline or option"
+  }
+}

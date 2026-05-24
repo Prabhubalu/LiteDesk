@@ -5,26 +5,18 @@
       <div class="flex-1">
         <!-- Breadcrumb -->
         <nav class="mb-4 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-          <router-link to="/settings" class="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-            Settings
-          </router-link>
+          <router-link to="/settings" class="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">{{ t('settings.modFieldsSourceSettings') }}</router-link>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
-          <router-link to="/settings?tab=notifications&notificationPage=overview" class="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-            Notifications
-          </router-link>
+          <router-link to="/settings?tab=notifications&notificationPage=overview" class="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">{{ t('settings.helpdeskExecNotifications') }}</router-link>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
-          <span class="text-gray-900 dark:text-white">Health</span>
+          <span class="text-gray-900 dark:text-white">{{ t('common.notificationHealthHealth') }}</span>
         </nav>
-        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-          Notification Health
-        </h1>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-          Monitor notification delivery and channel health
-        </p>
+        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{{ t('common.notificationHealthNotificationHealth') }}</h1>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('common.notificationHealthMonitorNotificationDeliveryAndChannelHealth') }}</p>
       </div>
       <div class="flex items-center gap-3">
         <!-- App Filter -->
@@ -33,18 +25,16 @@
           @change="loadData"
           class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
         >
-          <option value="">All Apps</option>
-          <option value="SALES">Sales</option>
-          <option value="AUDIT">Audit</option>
-          <option value="PORTAL">Portal</option>
+          <option value="">{{ t('process.filterApps') }}</option>
+          <option value="SALES">{{ t('settings.peopleTypesAppSales') }}</option>
+          <option value="AUDIT">{{ t('settings.appsNameAudit') }}</option>
+          <option value="PORTAL">{{ t('settings.appsNamePortal') }}</option>
         </select>
         <button
           @click="loadData"
           :disabled="loading"
           class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Refresh
-        </button>
+        >{{ t('settings.integrationsRefresh') }}</button>
       </div>
     </header>
 
@@ -123,15 +113,11 @@
         <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Total Notifications
-              </p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('common.notificationHealthTotalNotifications') }}</p>
               <p class="mt-1 text-2xl font-bold text-gray-900 dark:text-white">
                 {{ overview?.stats?.total || 0 }}
               </p>
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-500">
-                Last 7 days
-              </p>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-500">{{ t('process.flowHealthLast7') }}</p>
             </div>
             <div class="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
               <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" viewBox="0 0 20 20" fill="currentColor">
@@ -145,9 +131,7 @@
         <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Read Rate
-              </p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('common.notificationHealthReadRate') }}</p>
               <p class="mt-1 text-2xl font-bold text-gray-900 dark:text-white">
                 {{ overview?.stats?.readRate || 0 }}%
               </p>
@@ -164,9 +148,7 @@
         <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Active Channels
-              </p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('common.notificationHealthActiveChannels') }}</p>
               <p class="mt-1 text-2xl font-bold text-gray-900 dark:text-white">
                 {{ overview?.channelHealth?.active || 0 }}
               </p>
@@ -183,9 +165,7 @@
         <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Degraded Channels
-              </p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('common.notificationHealthDegradedChannels') }}</p>
               <p class="mt-1 text-2xl font-bold"
                  :class="
                    (overview?.channelHealth?.degraded || 0) > 0
@@ -222,39 +202,25 @@
       <!-- Channel Health Table -->
       <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
         <div class="px-4 py-3 sm:px-5 sm:py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 class="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">
-            Channel Health
-          </h2>
+          <h2 class="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">{{ t('common.notificationHealthChannelHealth') }}</h2>
         </div>
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead class="bg-gray-50 dark:bg-gray-900/50">
               <tr>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Channel
-                </th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Status
-                </th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Sent
-                </th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Failed
-                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('settings.assignRulesCondFieldChannel') }}</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('settings.settingsBhFieldStatus') }}</th>
+                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('common.notificationHealthSent') }}</th>
+                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('process.execFailed') }}</th>
                 <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Failure %
                 </th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Last Failure
-                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('common.notificationHealthLastFailure') }}</th>
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               <tr v-if="channelHealth.length === 0">
-                <td colspan="6" class="px-4 py-8 text-center text-sm text-gray-600 dark:text-gray-400">
-                  No channel data available
-                </td>
+                <td colspan="6" class="px-4 py-8 text-center text-sm text-gray-600 dark:text-gray-400">{{ t('common.notificationHealthNoChannelDataAvailable') }}</td>
               </tr>
               <tr
                 v-for="channel in channelHealth"
@@ -307,9 +273,7 @@
       <!-- Event Volume Chart -->
       <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
         <div class="px-4 py-3 sm:px-5 sm:py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 class="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">
-            Top Event Types
-          </h2>
+          <h2 class="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">{{ t('common.notificationHealthTopEventTypes') }}</h2>
         </div>
         <div class="p-4 sm:p-5">
           <div class="space-y-3">
@@ -338,9 +302,7 @@
             <p
               v-if="topEvents.length === 0"
               class="text-sm text-gray-600 dark:text-gray-400 text-center py-4"
-            >
-              No event data available
-            </p>
+            >{{ t('common.notificationHealthNoEventDataAvailable') }}</p>
           </div>
         </div>
       </div>
@@ -348,39 +310,25 @@
       <!-- High-Volume Users -->
       <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
         <div class="px-4 py-3 sm:px-5 sm:py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-          <h2 class="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">
-            High-Volume Users
-          </h2>
-          <span class="text-xs text-gray-600 dark:text-gray-400">
-            Last 7 days
-          </span>
+          <h2 class="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">{{ t('common.notificationHealthHighVolumeUsers') }}</h2>
+          <span class="text-xs text-gray-600 dark:text-gray-400">{{ t('process.flowHealthLast7') }}</span>
         </div>
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead class="bg-gray-50 dark:bg-gray-900/50">
               <tr>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  User
-                </th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  App
-                </th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Received
-                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('settings.settingsBhFieldUser') }}</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('settings.modFieldsBadgeApp') }}</th>
+                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('common.notificationHealthReceived') }}</th>
                 <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Unread %
                 </th>
-                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Flag
-                </th>
+                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('common.notificationHealthFlag') }}</th>
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               <tr v-if="highVolumeUsers.length === 0">
-                <td colspan="5" class="px-4 py-8 text-center text-sm text-gray-600 dark:text-gray-400">
-                  No user data available
-                </td>
+                <td colspan="5" class="px-4 py-8 text-center text-sm text-gray-600 dark:text-gray-400">{{ t('common.notificationHealthNoUserDataAvailable') }}</td>
               </tr>
               <tr
                 v-for="user in highVolumeUsers"
@@ -403,9 +351,7 @@
                   <span
                     v-if="user.highVolume"
                     class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
-                  >
-                    High volume
-                  </span>
+                  >{{ t('common.notificationHealthHighVolume') }}</span>
                   <span v-else class="text-xs text-gray-400">—</span>
                 </td>
               </tr>
@@ -425,16 +371,12 @@
               @click="loadUsers(userPagination.page - 1)"
               :disabled="userPagination.page <= 1"
               class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Previous
-            </button>
+            >{{ t('actions.previous') }}</button>
             <button
               @click="loadUsers(userPagination.page + 1)"
               :disabled="userPagination.page >= userPagination.totalPages"
               class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next
-            </button>
+            >{{ t('actions.next') }}</button>
           </div>
         </div>
       </div>
@@ -443,6 +385,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, onMounted, computed } from 'vue';
 import apiClient from '@/utils/apiClient';
 

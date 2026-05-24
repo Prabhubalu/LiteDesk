@@ -1,0 +1,334 @@
+{
+  "cSVImportModalDone": {
+    "message": "Done",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalImportNowSkipDuplicateCheck": {
+    "message": "Import Now (Skip Duplicate Check)",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalAllRecordsImportedSuccessfully": {
+    "message": "All records imported successfully!",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalImportErrors": {
+    "message": "Import Errors:",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalUpdated": {
+    "message": "Updated",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalThisMayTakeAMoment": {
+    "message": "This may take a moment",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalImportingRecords": {
+    "message": "Importing records...",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalImportAllCreateDuplicates": {
+    "message": "Import All (Create Duplicates)",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalUpdateExistingRecords": {
+    "message": "Update Existing Records",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalSkipDuplicates": {
+    "message": "Skip Duplicates",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalTotalRows": {
+    "message": "Total Rows",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalDuplicatesFound": {
+    "message": "Duplicates Found",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalNewRecords": {
+    "message": "New Records",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalCheckingForDuplicates": {
+    "message": "Checking for duplicates...",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalAll": {
+    "message": "ALL",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalARecordIsOnlyConsideredA": {
+    "message": "A record is only considered a duplicate if it matches on",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalAndLogic": {
+    "message": "AND Logic:",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalSelectFieldsToCheck": {
+    "message": "Select fields to check...",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalDuplicateCheckFields": {
+    "message": "Duplicate Check Fields",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalSelectedFieldsWillBeConsideredDuplicates": {
+    "message": "selected fields will be considered duplicates.",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalAll2": {
+    "message": "ALL",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalSelectWhichFieldSToUse": {
+    "message": "Select which field(s) to use for duplicate checking. Records matching",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalImportAllRecordsWithoutDuplicateChecking": {
+    "message": "Import all records without duplicate checking. Use this if you're confident your data is clean.",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalDoNotCheckForDuplicates": {
+    "message": "Do Not Check for Duplicates",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalScanYourCsvForDuplicateRecords": {
+    "message": "Scan your CSV for duplicate records based on selected fields. You can choose to skip, update, or import them.",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalCheckForDuplicates": {
+    "message": "Check for Duplicates",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalDuplicateDetectionOptions": {
+    "message": "Duplicate Detection Options",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalDetectedInYourCsvFile": {
+    "message": "detected in your CSV file",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalChooseADifferentFile": {
+    "message": "Choose a different file",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalFileSelected": {
+    "message": "File Selected",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalSupportedFormatCsvFilesOnly": {
+    "message": "Supported format: CSV files only",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalChooseFile": {
+    "message": "Choose File",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalDragAndDropYourFileHere": {
+    "message": "Drag and drop your file here, or click to browse from your computer",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalUploadYourCsvFile": {
+    "message": "Upload Your CSV File",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalUploadAndMapYourCsvData": {
+    "message": "Upload and map your CSV data",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "importDetailModalNoErrorsDuringImport": {
+    "message": "No errors during import",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalCsvColumnsWereMappedToThe": {
+    "message": "CSV columns were mapped to the following CRM fields:",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalCheckedFields": {
+    "message": "Checked Fields",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalDuplicateCheck": {
+    "message": "Duplicate Check",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalTotalRowsInCsv": {
+    "message": "Total Rows in CSV",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalProcessingTime": {
+    "message": "Processing Time",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalImportedBy": {
+    "message": "Imported By",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalUpdated": {
+    "message": "Updated",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalTotalRecords": {
+    "message": "Total Records",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalSuccessRate": {
+    "message": "Success Rate",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalImportDetails": {
+    "message": "Import Details",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "universalImportModalFieldsNameIndustryWebsitePhoneEtc": {
+    "message": "Fields: Name, Industry, Website, Phone, etc.",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalImportCompaniesAndOrganizations": {
+    "message": "Import companies and organizations",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalFieldsTitleDescriptionStatusPriorityEtc": {
+    "message": "Fields: Title, Description, Status, Priority, etc.",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalImportTasksAndToDoItems": {
+    "message": "Import tasks and to-do items",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalFieldsNameAmountStageStatusEtc": {
+    "message": "Fields: Name, Amount, Stage, Status, etc.",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalImportSalesOpportunitiesAndDeals": {
+    "message": "Import sales opportunities and deals",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalFieldsNameEmailPhoneCompanyEtc": {
+    "message": "Fields: Name, Email, Phone, Company, etc.",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalImportCustomerContactsLeadsAndProspects": {
+    "message": "Import customer contacts, leads, and prospects",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalChooseWhichModuleYouWantTo": {
+    "message": "Choose which module you want to import data into",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalSelectModuleToImport": {
+    "message": "Select Module to Import",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalImportData": {
+    "message": "Import Data",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "importsNewImport": {
+    "message": "New Import",
+    "description": "Auto-migrated from imports"
+  },
+  "importsNoImportsYet": {
+    "message": "No imports yet",
+    "description": "Auto-migrated from imports"
+  },
+  "importsSearchByFilename": {
+    "message": "Search by filename...",
+    "description": "Auto-migrated from imports"
+  },
+  "importsNewImport2": {
+    "message": "New Import",
+    "description": "Auto-migrated from imports"
+  },
+  "importsImportHistory": {
+    "message": "Import History",
+    "description": "Auto-migrated from imports"
+  },
+  "importDetailNoErrorsDuringImport": {
+    "message": "No errors during import",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailCsvColumnsWereMappedToThe": {
+    "message": "CSV columns were mapped to the following CRM fields:",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailCheckedFields": {
+    "message": "Checked Fields",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailDuplicateCheck": {
+    "message": "Duplicate Check",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailTotalRows": {
+    "message": "Total Rows",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailProcessingTime": {
+    "message": "Processing Time",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailImportedBy": {
+    "message": "Imported By",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailNoErrorDetailsAvailable": {
+    "message": "No error details available.",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailCheckedOn": {
+    "message": "Checked on:",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailTheseRecordsWereSkippedBecauseThey": {
+    "message": "These records were skipped because they were identified as duplicates.",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailRecordsSkipped": {
+    "message": "Records Skipped",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailUnableToFetchRecordsTheyMay": {
+    "message": "Unable to fetch records. They may have been deleted or modified.",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailUpdated": {
+    "message": "Updated",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailBackToImports": {
+    "message": "Back to Imports",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailErrorLoadingImport": {
+    "message": "Error Loading Import",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailLoadingImport": {
+    "message": "Loading import...",
+    "description": "Auto-migrated from importDetail"
+  },
+  "cSVImportModalToastPleaseUploadACsvFile": {
+    "message": "Please upload a CSV file",
+    "description": "Toast from CSVImportModal.vue"
+  },
+  "cSVImportModalToastCsvFileIsEmpty": {
+    "message": "CSV file is empty",
+    "description": "Toast from CSVImportModal.vue"
+  },
+  "cSVImportModalToastErrorParsingCsvFilePlease": {
+    "message": "Error parsing CSV file. Please check the format and try again.",
+    "description": "Toast from CSVImportModal.vue"
+  },
+  "cSVImportModalToastErrorCheckingForDuplicatesPlease": {
+    "message": "Error checking for duplicates. Please try again.",
+    "description": "Toast from CSVImportModal.vue"
+  },
+  "cSVImportModalToastErrorImportingDataPleaseTry": {
+    "message": "Error importing data. Please try again.",
+    "description": "Toast from CSVImportModal.vue"
+  }
+}

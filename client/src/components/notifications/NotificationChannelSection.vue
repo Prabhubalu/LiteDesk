@@ -84,7 +84,7 @@
             :class="globalToggleEnabled ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'"
             role="switch"
             :aria-checked="globalToggleEnabled"
-            :aria-label="`Toggle ${channelLabel} notifications`"
+            :aria-label="t('notifications.channelToggleAria', { channel: channelLabel })"
             :disabled="!available"
             @click="handleGlobalToggle"
           >
@@ -114,7 +114,7 @@
           {{ title }}
         </h3>
         <p class="mt-0.5 text-xs text-gray-600 dark:text-gray-400">
-          Coming soon
+          {{ t('notifications.channelComingSoon') }}
         </p>
       </div>
     </div>
@@ -122,6 +122,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, computed, h } from 'vue';
 
 const props = defineProps({

@@ -6,9 +6,12 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
+
+const { t, locale } = useI18n();
 
 const props = defineProps({
   data: {
@@ -29,20 +32,19 @@ const createChart = () => {
     return;
   }
 
-  // Destroy existing chart if any
   if (chartInstance) {
     chartInstance.destroy();
   }
 
   const ctx = chartCanvas.value.getContext('2d');
-  
+
   chartInstance = new Chart(ctx, {
     type: 'line',
     data: {
       labels: props.data.labels,
       datasets: [
         {
-          label: 'Compliance %',
+          label: t('forms.trendsChartCompliance'),
           data: props.data.compliance,
           borderColor: 'rgb(59, 130, 246)',
           backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -50,7 +52,7 @@ const createChart = () => {
           fill: true
         },
         {
-          label: 'Score %',
+          label: t('forms.trendsChartScore'),
           data: props.data.scores,
           borderColor: 'rgb(34, 197, 94)',
           backgroundColor: 'rgba(34, 197, 94, 0.1)',
@@ -99,6 +101,10 @@ watch(() => props.data, () => {
   createChart();
 }, { deep: true });
 
+watch(locale, () => {
+  createChart();
+});
+
 onMounted(() => {
   createChart();
 });
@@ -111,4 +117,3 @@ onMounted(() => {
   width: 100%;
 }
 </style>
-

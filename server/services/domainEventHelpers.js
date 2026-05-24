@@ -27,6 +27,67 @@ function eq(a, b) {
   return false;
 }
 
+/** Keys to compare for generic record.updated changedFields */
+function diffFieldKeys(previous, current, keys) {
+  if (!current) return [];
+  if (!previous) return keys.filter((k) => current[k] !== undefined);
+  const changed = [];
+  for (const k of keys) {
+    if (!eq(previous[k], current[k])) changed.push(k);
+  }
+  return changed;
+}
+
+function emitRecordLifecycle(opts) {
+  const {
+    entityType,
+    entityId,
+    previous,
+    current,
+    snapshotKeys,
+    appKey,
+    triggeredBy,
+    organizationId,
+    ownerId
+  } = opts;
+  const prevSnap = previous
+    ? Object.fromEntries(snapshotKeys.map((k) => [k, previous[k]]))
+    : null;
+  const currSnap = Object.fromEntries(snapshotKeys.map((k) => [k, current[k]]));
+
+  if (!previous) {
+    emit({
+      entityType,
+      entityId,
+      eventType: `${entityType}.created`,
+      previousState: null,
+      currentState: currSnap,
+      changedFields: [],
+      appKey,
+      triggeredBy,
+      organizationId,
+      ownerId
+    });
+    return;
+  }
+
+  const changedFields = diffFieldKeys(prevSnap, currSnap, snapshotKeys);
+  if (changedFields.length === 0) return;
+
+  emit({
+    entityType,
+    entityId,
+    eventType: `${entityType}.updated`,
+    previousState: prevSnap,
+    currentState: currSnap,
+    changedFields,
+    appKey,
+    triggeredBy,
+    organizationId,
+    ownerId
+  });
+}
+
 function resolveOwner(entityType, current) {
   if (!current) return null;
   let ref = null;
@@ -51,6 +112,7 @@ function emitPeopleEvents({ previous, current, appKey = 'SALES', triggeredBy = n
   if (!current) return;
   const entityId = toId(current._id);
   const orgId = organizationId ? toId(organizationId) : null;
+  const ownerId = resolveOwner('people', current);
 
   const { getSalesParticipationValues } = require('../utils/getSalesParticipationValues');
   const prevSales = previous ? getSalesParticipationValues(previous) : {};
@@ -62,7 +124,42 @@ function emitPeopleEvents({ previous, current, appKey = 'SALES', triggeredBy = n
   const prevContact = prevSales.contact_status;
   const currContact = currSales.contact_status;
 
-  const ownerId = resolveOwner('people', current);
+  const peopleSnap = (p) => {
+    if (!p) return null;
+    const s = getSalesParticipationValues(p);
+    return {
+      first_name: p.first_name,
+      last_name: p.last_name,
+      email: p.email,
+      organization: toId(p.organization),
+      assignedTo: toId(p.assignedTo),
+      lifecycle: p.lifecycle,
+      sales_type: s.role,
+      lead_status: s.lead_status,
+      contact_status: s.contact_status
+    };
+  };
+  emitRecordLifecycle({
+    entityType: 'people',
+    entityId,
+    previous: previous ? peopleSnap(previous) : null,
+    current: peopleSnap(current),
+    snapshotKeys: [
+      'first_name',
+      'last_name',
+      'email',
+      'organization',
+      'assignedTo',
+      'lifecycle',
+      'sales_type',
+      'lead_status',
+      'contact_status'
+    ],
+    appKey,
+    triggeredBy,
+    organizationId: orgId,
+    ownerId
+  });
 
   if (prevType !== undefined && !eq(prevType, currType)) {
     emit({
@@ -123,6 +220,29 @@ function emitOrganizationEvents({ previous, current, appKey = 'SALES', triggered
   const currVendor = current?.vendorStatus;
 
   const ownerId = resolveOwner('organization', current);
+
+  const orgSnap = (o) => {
+    if (!o) return null;
+    return {
+      name: o.name,
+      assignedTo: toId(o.assignedTo),
+      types: o.types,
+      customerStatus: o.customerStatus,
+      partnerStatus: o.partnerStatus,
+      vendorStatus: o.vendorStatus
+    };
+  };
+  emitRecordLifecycle({
+    entityType: 'organization',
+    entityId,
+    previous: previous ? orgSnap(previous) : null,
+    current: orgSnap(current),
+    snapshotKeys: ['name', 'assignedTo', 'types', 'customerStatus', 'partnerStatus', 'vendorStatus'],
+    appKey,
+    triggeredBy,
+    organizationId: orgId,
+    ownerId
+  });
 
   if (!eq(prevTypes, currTypes)) {
     emit({
@@ -200,6 +320,34 @@ async function emitDealEvents({ previous, current, appKey = 'SALES', triggeredBy
   const currStage = current?.stage;
   const prevPipeline = previous?.pipeline;
   const currPipeline = current?.pipeline;
+  const prevOwner = toId(previous?.ownerId);
+  const currOwner = toId(current?.ownerId);
+
+  emitRecordLifecycle({
+    entityType: 'deal',
+    entityId,
+    previous: previous
+      ? {
+          name: previous?.name,
+          stage: prevStage,
+          pipeline: prevPipeline,
+          amount: previous?.amount,
+          ownerId: prevOwner
+        }
+      : null,
+    current: {
+      name: current?.name,
+      stage: currStage,
+      pipeline: currPipeline,
+      amount: current?.amount,
+      ownerId: currOwner
+    },
+    snapshotKeys: ['name', 'stage', 'pipeline', 'amount', 'ownerId'],
+    appKey,
+    triggeredBy,
+    organizationId: orgId,
+    ownerId
+  });
 
   if (prevStage !== undefined && prevStage !== currStage) {
     emit({

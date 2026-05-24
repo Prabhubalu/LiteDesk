@@ -6,7 +6,7 @@
       class="w-full p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
     >
       <div class="flex items-center gap-3">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Corrective Actions</h2>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('forms.correctiveActionsHeading') }}</h2>
         <svg
           class="w-5 h-5 text-gray-400 dark:text-gray-500 transition-transform duration-200"
           :class="{ 'rotate-180': isExpanded }"
@@ -27,7 +27,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <p class="text-sm font-medium text-green-800 dark:text-green-300">
-          All questions passed. No corrective actions required.
+          {{ t('forms.correctiveAllPassed') }}
         </p>
       </div>
 
@@ -45,12 +45,12 @@
                 {{ question.questionText }}
               </h3>
               <p class="text-xs text-gray-600 dark:text-gray-400">
-                Answer: {{ formatAnswer(question.answer) }}
+                {{ t('forms.correctiveAnswerLabel') }} {{ formatAnswer(question.answer) }}
               </p>
             </div>
-            <BadgeCell 
-              value="Fail" 
-              :variant-map="{ 'Fail': 'danger' }" 
+            <BadgeCell
+              :value="t('forms.correctivePassFailFail')"
+              :variant-map="failBadgeVariantMap"
             />
           </div>
 
@@ -59,9 +59,9 @@
             <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
               <!-- Action Title -->
               <div class="mb-3">
-                <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Action</h4>
+                <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">{{ t('forms.correctiveActionTitle') }}</h4>
                 <p class="text-sm text-gray-700 dark:text-gray-300">
-                  {{ getCorrectiveAction(question.questionId).managerAction?.comment || 'No description provided' }}
+                  {{ getCorrectiveAction(question.questionId).managerAction?.comment || t('forms.correctiveNoDescription') }}
                 </p>
               </div>
 
@@ -69,7 +69,7 @@
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
                 <!-- Last Updated By -->
                 <div>
-                  <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Last Updated By</p>
+                  <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{{ t('forms.correctiveLastUpdatedBy') }}</p>
                   <p class="text-sm text-gray-900 dark:text-white">
                     {{ getLastUpdatedByName(question.questionId) || '—' }}
                   </p>
@@ -77,29 +77,25 @@
 
                 <!-- Status -->
                 <div>
-                  <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Status</p>
+                  <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{{ t('forms.fieldStatus') }}</p>
                   <BadgeCell
                     :value="mapStatus(getCorrectiveAction(question.questionId).managerAction?.status)"
-                    :variant-map="{
-                      'Open': 'default',
-                      'In Progress': 'warning',
-                      'Completed': 'success'
-                    }"
+                    :variant-map="correctiveStatusVariantMap"
                   />
                 </div>
 
                 <!-- Due Date (placeholder for future) -->
                 <div>
-                  <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Due Date</p>
+                  <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{{ t('forms.correctiveDueDate') }}</p>
                   <p class="text-sm text-gray-900 dark:text-white">
-                    {{ formatDate(getCorrectiveAction(question.questionId).managerAction?.addedAt) || 'Not set' }}
+                    {{ formatDate(getCorrectiveAction(question.questionId).managerAction?.addedAt) || t('forms.correctiveNotSet') }}
                   </p>
                 </div>
               </div>
 
               <!-- Proof Files -->
               <div v-if="getCorrectiveAction(question.questionId).managerAction?.proof?.length" class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
-                <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Proof Files</p>
+                <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">{{ t('forms.correctiveProofFiles') }}</p>
                 <div class="flex flex-wrap gap-2">
                   <a
                     v-for="(proof, pIndex) in getCorrectiveAction(question.questionId).managerAction.proof"
@@ -123,7 +119,7 @@
               @click="startEdit(question.questionId)"
               class="px-3 py-1.5 text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded transition-colors"
             >
-              Edit Corrective Action
+              {{ t('forms.correctiveEditAction') }}
             </button>
           </div>
 
@@ -134,12 +130,12 @@
           >
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Action Title <span class="text-red-500">*</span>
+                {{ t('forms.correctiveActionTitleField') }} <span class="text-red-500">*</span>
               </label>
               <textarea
                 v-model="getCorrectiveActionData(question.questionId).comment"
                 rows="3"
-                placeholder="Describe the corrective action to be taken..."
+                :placeholder="t('forms.correctiveActionTitlePh')"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 required
               ></textarea>
@@ -148,23 +144,23 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Status <span class="text-red-500">*</span>
+                  {{ t('forms.fieldStatus') }} <span class="text-red-500">*</span>
                 </label>
                 <select
                   v-model="getCorrectiveActionData(question.questionId).status"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   required
                 >
-                  <option value="open">Open</option>
-                  <option value="in_progress">In Progress</option>
-                  <option value="completed">Completed</option>
+                  <option value="open">{{ t('forms.correctiveStatusOpen') }}</option>
+                  <option value="in_progress">{{ t('forms.correctiveStatusInProgress') }}</option>
+                  <option value="completed">{{ t('forms.correctiveStatusCompleted') }}</option>
                 </select>
               </div>
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Upload Proof (Optional)
+                {{ t('forms.correctiveUploadProof') }}
               </label>
               <input
                 type="file"
@@ -196,14 +192,15 @@
                 :disabled="saving || !getCorrectiveActionData(question.questionId).comment.trim()"
                 class="px-4 py-2 bg-indigo-600 text-white dark:text-white dark:bg-indigo-700 rounded-lg hover:bg-indigo-700 font-medium transition-colors shadow-sm ring-1 ring-black/5 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {{ saving ? 'Saving...' : (getCorrectiveAction(question.questionId) ? 'Update' : 'Add') }} Corrective Action
+                {{ saving ? t('states.saving') : (getCorrectiveAction(question.questionId) ? t('actions.update') : t('actions.add')) }}
+                {{ t('forms.correctiveActionNoun') }}
               </button>
               <button
                 v-if="editingQuestionId === question.questionId"
                 @click="cancelEdit"
                 class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 font-medium transition-colors"
               >
-                Cancel
+                {{ t('actions.cancel') }}
               </button>
             </div>
           </div>
@@ -214,7 +211,7 @@
             class="border-t border-gray-200 dark:border-gray-700 pt-4"
           >
             <p class="text-sm text-gray-600 dark:text-gray-400">
-              This section is read-only. Only users assigned in the event’s <span class="font-medium">Corrective Action Owners</span> can update corrective actions.
+              {{ t('forms.correctiveReadOnly', { ownersField: t('forms.correctiveOwnersField') }) }}
             </p>
           </div>
           <div
@@ -222,7 +219,7 @@
             class="border-t border-gray-200 dark:border-gray-700 pt-4"
           >
             <p class="text-sm text-gray-600 dark:text-gray-400">
-              Loading permissions…
+              {{ t('forms.correctiveLoadingPermissions') }}
             </p>
           </div>
         </div>
@@ -233,9 +230,22 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import { useAuthStore } from '@/stores/authRegistry';
+
+const { t } = useI18n();
+
+const failBadgeVariantMap = computed(() => ({
+  [t('forms.correctivePassFailFail')]: 'danger',
+}));
+
+const correctiveStatusVariantMap = computed(() => ({
+  [t('forms.correctiveStatusOpen')]: 'default',
+  [t('forms.correctiveStatusInProgress')]: 'warning',
+  [t('forms.correctiveStatusCompleted')]: 'success',
+}));
 
 const props = defineProps({
   response: {
@@ -333,7 +343,7 @@ const getCorrectiveActionData = (questionId) => {
 };
 
 const formatAnswer = (answer) => {
-  if (answer === null || answer === undefined) return 'No answer';
+  if (answer === null || answer === undefined) return t('forms.correctiveNoAnswer');
   if (Array.isArray(answer)) return answer.join(', ');
   return String(answer);
 };
@@ -349,14 +359,12 @@ const formatDate = (date) => {
 
 const mapStatus = (status) => {
   const statusMap = {
-    // Stored enum values
-    'open': 'Open',
-    'in_progress': 'In Progress',
-    'completed': 'Completed',
-    // Legacy UI values (backward compatibility)
-    'Pending': 'Open',
-    'In Progress': 'In Progress',
-    'Resolved': 'Completed'
+    open: t('forms.correctiveStatusOpen'),
+    in_progress: t('forms.correctiveStatusInProgress'),
+    completed: t('forms.correctiveStatusCompleted'),
+    Pending: t('forms.correctiveStatusOpen'),
+    'In Progress': t('forms.correctiveStatusInProgress'),
+    Resolved: t('forms.correctiveStatusCompleted'),
   };
   return statusMap[status] || status;
 };
@@ -367,7 +375,7 @@ const getLastUpdatedByName = (questionId) => {
   
   const user = action.managerAction.addedBy;
   if (typeof user === 'object') {
-    return `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'Unknown User';
+    return `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || t('forms.correctiveUnknownUser');
   }
   return null;
 };
@@ -398,7 +406,7 @@ const saveCorrectiveAction = async (questionId) => {
   const actionData = getCorrectiveActionData(questionId);
   
   if (!actionData.comment.trim()) {
-    alert('Please provide an action title/description');
+    alert(t('forms.correctiveTitleRequired'));
     return;
   }
 
@@ -440,7 +448,7 @@ const saveCorrectiveAction = async (questionId) => {
         contentType,
         bodyPreview: text?.slice(0, 300)
       });
-      throw new Error(`Server error (${response.status}). Please try again.`);
+      throw new Error(t('forms.correctiveServerError', { status: response.status }));
     }
 
     if (result.success) {
@@ -450,11 +458,11 @@ const saveCorrectiveAction = async (questionId) => {
       // Emit updated event - this will trigger response status recalculation via backend
       emit('updated');
     } else {
-      throw new Error(result.error || result.message || 'Failed to save corrective action');
+      throw new Error(result.error || result.message || t('forms.correctiveSaveFailed'));
     }
   } catch (error) {
     console.error('Error saving corrective action:', error);
-    alert(error?.message || 'Failed to save corrective action. Please try again.');
+    alert(error?.message || t('forms.correctiveSaveFailedRetry'));
   } finally {
     saving.value = false;
   }

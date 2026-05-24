@@ -15,16 +15,12 @@
           type="button"
           @click="$emit('cycle-range')"
           class="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-        >
-          Date Range
-        </button>
+        >{{ t('dashboard.dashboardHeaderDateRange') }}</button>
         <button
           type="button"
           @click="$emit('refresh')"
           class="rounded-md border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-400/30 dark:bg-indigo-500/10 dark:text-indigo-200 dark:hover:bg-indigo-500/20"
-        >
-          Refresh
-        </button>
+        >{{ t('settings.integrationsRefresh') }}</button>
       </div>
     </div>
     <p v-if="showControls" class="text-xs text-slate-500 dark:text-slate-400">Last synced {{ formattedNow }}</p>
@@ -32,12 +28,15 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 defineProps({
   dashboardDefinition: { type: Object, required: true },
   formattedNow: { type: String, required: true },
   selectedRangeLabel: { type: String, required: true },
   showControls: { type: Boolean, default: true }
 });
+
+const { t } = useI18n();
 
 defineEmits(['cycle-range', 'refresh', 'action']);
 </script>

@@ -2,12 +2,12 @@
   <div class="mx-auto w-full max-w-5xl">
     <header class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <p class="text-sm font-medium text-indigo-600 dark:text-indigo-400">Scheduling</p>
+        <p class="text-sm font-medium text-indigo-600 dark:text-indigo-400">{{ t('appointments.hubEyebrow') }}</p>
         <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-3xl">
-          Booking Pages
+          {{ t('appointments.hubTitle') }}
         </h1>
         <p class="mt-2 max-w-xl text-sm text-gray-600 dark:text-gray-400">
-          Share a link so customers book time on your calendar. Every booking creates an event automatically.
+          {{ t('appointments.hubHint') }}
         </p>
       </div>
       <div v-if="hasPages" class="flex flex-wrap gap-2">
@@ -17,7 +17,7 @@
           class="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
           @click="createPersonalPage"
         >
-          + Personal page
+          {{ t('appointments.personalPageBtn') }}
         </button>
         <button
           v-if="isAdmin"
@@ -25,7 +25,7 @@
           class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
           @click="createTeamPage"
         >
-          + Team page
+          {{ t('appointments.teamPageBtn') }}
         </button>
       </div>
     </header>
@@ -41,7 +41,6 @@
       {{ error }}
     </div>
 
-    <!-- Empty landing -->
     <div
       v-else-if="!hasPages"
       class="rounded-2xl border border-dashed border-gray-300 bg-gradient-to-b from-white to-indigo-50/40 px-6 py-14 text-center dark:border-gray-700 dark:from-gray-900 dark:to-indigo-950/20 sm:px-10"
@@ -50,10 +49,10 @@
         📅
       </div>
       <h2 class="mt-6 text-xl font-semibold text-gray-900 dark:text-white">
-        Create your first booking page
+        {{ t('appointments.emptyTitle') }}
       </h2>
       <p class="mx-auto mt-2 max-w-md text-sm text-gray-600 dark:text-gray-400">
-        Pick how you want customers to schedule — a personal link just for you, or one shared link for your team.
+        {{ t('appointments.emptyHint') }}
       </p>
       <div class="mx-auto mt-10 grid max-w-2xl gap-4 sm:grid-cols-2">
         <button
@@ -62,12 +61,12 @@
           @click="createPersonalPage"
         >
           <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-100 text-xl dark:bg-indigo-900/60">👤</span>
-          <h3 class="mt-4 font-semibold text-gray-900 dark:text-white">Personal booking page</h3>
+          <h3 class="mt-4 font-semibold text-gray-900 dark:text-white">{{ t('appointments.cardPersonalTitle') }}</h3>
           <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            One link with your availability. Ideal for consultants and account owners.
+            {{ t('appointments.cardPersonalHint') }}
           </p>
           <span class="mt-4 inline-flex text-sm font-semibold text-indigo-600 group-hover:underline dark:text-indigo-400">
-            Set up my page →
+            {{ t('appointments.setupMyPage') }}
           </span>
         </button>
         <button
@@ -77,24 +76,23 @@
           @click="createTeamPage"
         >
           <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100 text-xl dark:bg-violet-900/60">👥</span>
-          <h3 class="mt-4 font-semibold text-gray-900 dark:text-white">Team booking page</h3>
+          <h3 class="mt-4 font-semibold text-gray-900 dark:text-white">{{ t('appointments.cardTeamTitle') }}</h3>
           <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            One link routes meetings across team members automatically.
+            {{ t('appointments.cardTeamHint') }}
           </p>
           <span class="mt-4 inline-flex text-sm font-semibold text-violet-600 group-hover:underline dark:text-violet-400">
-            Create team page →
+            {{ t('appointments.createTeamPage') }}
           </span>
         </button>
         <p
           v-else
           class="flex items-center justify-center rounded-2xl border border-gray-100 bg-gray-50/80 px-4 py-6 text-sm text-gray-500 dark:border-gray-800 dark:bg-gray-800/40 dark:text-gray-400"
         >
-          Team pages can be created by workspace admins.
+          {{ t('appointments.teamAdminOnly') }}
         </p>
       </div>
     </div>
 
-    <!-- Pages list -->
     <div v-else class="space-y-3">
       <article
         v-for="page in pages"
@@ -112,7 +110,7 @@
                 ? 'bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-200'
                 : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'"
             >
-              {{ page.ownerType === 'team' ? 'Team' : 'Personal' }}
+              {{ page.ownerType === 'team' ? t('appointments.badgeTeam') : t('appointments.badgePersonal') }}
             </span>
             <span
               class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium"
@@ -120,7 +118,7 @@
                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200'
                 : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'"
             >
-              {{ page.enabled ? 'Live' : 'Paused' }}
+              {{ page.enabled ? t('appointments.badgeLive') : t('appointments.badgePaused') }}
             </span>
           </div>
           <p class="mt-1 truncate font-mono text-sm text-gray-500 dark:text-gray-400">
@@ -136,7 +134,7 @@
             :disabled="!page.slug"
             @click="copyPageLink(page)"
           >
-            {{ copiedPageId === page._id ? 'Copied' : 'Copy link' }}
+            {{ copiedPageId === page._id ? t('appointments.copied') : t('appointments.copyLink') }}
           </button>
           <button
             type="button"
@@ -144,7 +142,7 @@
             :disabled="!page.slug"
             @click="viewPageLink(page)"
           >
-            View
+            {{ t('common.viewRecord') }}
           </button>
           <button
             type="button"
@@ -152,7 +150,7 @@
             :disabled="!page.slug"
             @click="openShareModal(page)"
           >
-            Share
+            {{ t('appointments.share') }}
           </button>
           <button
             v-if="canEditPage(page)"
@@ -160,7 +158,7 @@
             class="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 active:scale-[0.98]"
             @click="editPage(page)"
           >
-            Edit
+            {{ t('actions.edit') }}
           </button>
         </div>
       </article>
@@ -188,6 +186,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
@@ -196,6 +195,7 @@ import { buildBookingPageUrl } from '@/utils/appointmentFormatters';
 import ShareBookingPageModal from '@/components/appointments/ShareBookingPageModal.vue';
 import EmailComposeDrawer from '@/components/communications/EmailComposeDrawer.vue';
 
+const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
 const { openTab } = useTabs();
@@ -225,17 +225,17 @@ function ownerName(page) {
   const u = page.ownerId;
   if (u && typeof u === 'object') {
     const name = [u.firstName, u.lastName].filter(Boolean).join(' ');
-    return name || u.email || u.username || 'User';
+    return name || u.email || u.username || t('appointments.userFallback');
   }
-  return page.displayName || 'User';
+  return page.displayName || t('appointments.userFallback');
 }
 
 function pageLabel(page) {
   if (page.ownerType === 'team') {
     const count = page.memberUserIds?.length || 0;
-    return page.displayName || `Team page (${count} members)`;
+    return page.displayName || t('appointments.teamPageMembers', { count });
   }
-  if (isOwnedByMe(page)) return page.displayName || 'My booking page';
+  if (isOwnedByMe(page)) return page.displayName || t('appointments.myBookingPage');
   return page.displayName || ownerName(page);
 }
 
@@ -245,30 +245,30 @@ function canEditPage(page) {
 }
 
 function createPersonalPage() {
-  openTab('/appointments/configure', { title: 'Personal booking page', icon: '📅' });
+  openTab('/appointments/configure', { title: t('appointments.tabPersonalPage'), icon: '📅' });
   router.push({ name: 'appointments-configure' });
 }
 
 function createTeamPage() {
-  openTab('/appointments/team/configure', { title: 'New team page', icon: '👥' });
+  openTab('/appointments/team/configure', { title: t('appointments.tabTeamNew'), icon: '👥' });
   router.push({ name: 'appointments-team-configure-new' });
 }
 
 function editPage(page) {
   if (page.ownerType === 'team') {
     const path = `/appointments/team/configure/${page._id}`;
-    openTab(path, { title: page.displayName || 'Team page', icon: '👥' });
+    openTab(path, { title: page.displayName || t('appointments.tabTeamPage'), icon: '👥' });
     router.push({ name: 'appointments-team-configure', params: { id: page._id } });
     return;
   }
   const userId = page.ownerId?._id || page.ownerId;
   if (isOwnedByMe(page)) {
-    openTab('/appointments/configure', { title: page.displayName || 'Personal page', icon: '📅' });
+    openTab('/appointments/configure', { title: page.displayName || t('appointments.tabPersonalShort'), icon: '📅' });
     router.push({ name: 'appointments-configure' });
     return;
   }
   const path = `/appointments/configure/user/${userId}`;
-  openTab(path, { title: `${ownerName(page)} · Booking`, icon: '📅' });
+  openTab(path, { title: t('appointments.tabUserBooking', { name: ownerName(page) }), icon: '📅' });
   router.push({ name: 'appointments-configure-user', params: { userId } });
 }
 
@@ -282,7 +282,7 @@ async function copyPageLink(page) {
   if (!url) return;
   await navigator.clipboard.writeText(url);
   copiedPageId.value = page._id;
-  notifySuccess('Booking link copied');
+  notifySuccess(t('appointments.bookingLinkCopied'));
   setTimeout(() => {
     if (copiedPageId.value === page._id) copiedPageId.value = null;
   }, 2000);
@@ -321,12 +321,12 @@ async function handleEmailSubmit(payload) {
   try {
     const res = await apiClient.post('/communications/email', payload);
     if (res?.success) {
-      notifySuccess(res?.queued ? 'Email queued' : 'Email sent');
+      notifySuccess(res?.queued ? t('appointments.emailQueued') : t('appointments.emailSent'));
     } else {
-      notifyError(res?.message || 'Failed to send email');
+      notifyError(res?.message || t('appointments.emailSendFailed'));
     }
   } catch (e) {
-    notifyError(e?.response?.data?.message || e?.message || 'Failed to send email');
+    notifyError(e?.response?.data?.message || e?.message || t('appointments.emailSendFailed'));
   }
 }
 
@@ -336,9 +336,9 @@ async function fetchPages() {
   try {
     const res = await apiClient.get('/appointments/config/pages');
     if (res.success) pages.value = Array.isArray(res.data) ? res.data : [];
-    else error.value = res.message || 'Could not load booking pages';
+    else error.value = res.message || t('appointments.loadPagesFailed');
   } catch (e) {
-    error.value = e?.message || 'Could not load booking pages';
+    error.value = e?.message || t('appointments.loadPagesFailed');
     pages.value = [];
   } finally {
     loading.value = false;
@@ -347,4 +347,3 @@ async function fetchPages() {
 
 onMounted(fetchPages);
 </script>
-

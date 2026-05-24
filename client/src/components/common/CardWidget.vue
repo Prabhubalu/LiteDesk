@@ -13,9 +13,12 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 const props = defineProps({
   title: { type: String, required: true }
 });
+
+const { t } = useI18n();
 </script>
 
 

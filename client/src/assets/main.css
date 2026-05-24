@@ -569,3 +569,27 @@ label[for] {
 .dark .mobile-header .mobile-bell {
   color: #ffffff !important; /* white */
 }
+
+/* -------------------------------------------------------------------------- */
+/* RTL architecture — use logical properties in new UI; html[dir] toggled     */
+/* via useLocale() when language is ar or pseudo ar-XB.                        */
+/* -------------------------------------------------------------------------- */
+
+html.rtl {
+  direction: rtl;
+}
+
+html.rtl [data-mirror-rtl='true'],
+html.rtl .icon-mirror-rtl {
+  transform: scaleX(-1);
+}
+
+html.rtl .ms-auto {
+  margin-inline-start: auto;
+  margin-left: unset;
+}
+
+html.rtl .me-auto {
+  margin-inline-end: auto;
+  margin-right: unset;
+}

@@ -2,9 +2,9 @@
   <div class="space-y-4">
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Holiday calendars</h3>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.settingsBhTabHolidays') }}</h3>
         <p class="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
-          Link calendars to schedules so booked slots and SLAs skip holidays.
+          {{ t('settings.settingsBhHolidayDesc') }}
         </p>
       </div>
       <button
@@ -12,11 +12,11 @@
         class="px-3 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
         @click="openImport"
       >
-        Import CSV
+        {{ t('settings.settingsBhImportCsv') }}
       </button>
     </div>
 
-    <div v-if="loading" class="text-sm text-gray-500">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500">{{ t('states.loading') }}</div>
     <div v-else class="grid gap-3">
       <div
         v-for="cal in calendars"
@@ -26,7 +26,7 @@
         <div>
           <p class="font-medium text-gray-900 dark:text-white">{{ cal.name }}</p>
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            {{ cal.dates?.length || 0 }} holidays
+            {{ t('settings.settingsBhHolidayCount', { count: cal.dates?.length || 0 }) }}
             <span v-if="cal.region"> · {{ cal.region }}</span>
           </p>
         </div>
@@ -35,11 +35,11 @@
           class="text-xs text-red-600 hover:underline"
           @click="remove(cal._id)"
         >
-          Delete
+          {{ t('actions.delete') }}
         </button>
       </div>
       <p v-if="!calendars.length" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">
-        No holiday calendars yet. Import a CSV with <code class="text-xs">date,name</code> per line.
+        {{ t('settings.settingsBhEmptyHolidayCalendars') }}
       </p>
     </div>
 
@@ -47,17 +47,17 @@
       v-if="showImport"
       class="rounded-xl border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800 space-y-3"
     >
-      <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Import calendar</h4>
+      <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.settingsBhImportCalendarTitle') }}</h4>
       <input
         v-model="importName"
         type="text"
-        placeholder="Calendar name"
+        :placeholder="t('settings.settingsBhCalendarNamePh')"
         class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm"
       />
       <textarea
         v-model="importCsv"
         rows="6"
-        placeholder="2026-01-01,New Year&#10;2026-12-25,Christmas"
+        :placeholder="t('settings.settingsBhImportCsvPh')"
         class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-mono"
       />
       <div class="flex gap-2">
@@ -67,10 +67,14 @@
           :disabled="importing"
           @click="submitImport"
         >
-          {{ importing ? 'Importing…' : 'Import' }}
+          {{ importing ? t('settings.settingsBhImporting') : t('settings.settingsBhImport') }}
         </button>
-        <button type="button" class="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600" @click="showImport = false">
-          Cancel
+        <button
+          type="button"
+          class="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600"
+          @click="showImport = false"
+        >
+          {{ t('actions.cancel') }}
         </button>
       </div>
     </div>
@@ -79,9 +83,11 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useBusinessHours } from '@/composables/useBusinessHours';
 import { useNotifications } from '@/composables/useNotifications';
 
+const { t } = useI18n();
 const { fetchHolidayCalendars, importHolidayCsv, deleteHolidayCalendar } = useBusinessHours();
 const { success, error: notifyError } = useNotifications();
 
@@ -114,24 +120,24 @@ async function submitImport() {
       name: importName.value,
       csv: importCsv.value
     });
-    success('Holiday calendar imported');
+    success(t('settings.settingsBhHolidayImported'));
     showImport.value = false;
     await load();
   } catch (e) {
-    notifyError(e?.message || 'Import failed');
+    notifyError(e?.message || t('settings.settingsBhImportFailed'));
   } finally {
     importing.value = false;
   }
 }
 
 async function remove(id) {
-  if (!confirm('Delete this holiday calendar?')) return;
+  if (!confirm(t('settings.settingsBhDeleteHolidayConfirm'))) return;
   try {
     await deleteHolidayCalendar(id);
-    success('Calendar deleted');
+    success(t('settings.settingsBhCalendarDeleted'));
     await load();
   } catch (e) {
-    notifyError(e?.message || 'Delete failed');
+    notifyError(e?.message || t('settings.settingsBhDeleteFailed'));
   }
 }
 

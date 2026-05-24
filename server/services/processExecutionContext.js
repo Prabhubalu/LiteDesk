@@ -54,9 +54,12 @@ function buildExecutionContext(params) {
   } = params;
 
   // Generate deterministic execution ID
-  // Format: processId:eventId or processId:manual:timestamp:random
   const executionId = event
     ? `${processId}:${event.eventId}`
+    : params.webhookDeliveryId
+    ? `${processId}:webhook:${params.webhookDeliveryId}`
+    : params.webhookInvocation
+    ? `${processId}:webhook:${Date.now()}:${Math.random().toString(36).substr(2, 9)}`
     : `${processId}:manual:${Date.now()}:${Math.random().toString(36).substr(2, 9)}`;
 
   return {

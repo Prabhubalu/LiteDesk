@@ -17,6 +17,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 
 const props = defineProps({
@@ -42,6 +43,8 @@ const props = defineProps({
     validator: (value) => ['sm', 'md', 'lg', 'xl'].includes(value)
   }
 });
+
+const { t } = useI18n();
 
 // Size mapping
 const sizeClass = computed(() => {

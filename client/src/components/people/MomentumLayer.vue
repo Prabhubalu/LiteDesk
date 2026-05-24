@@ -3,14 +3,12 @@
     <!-- Layer Header -->
     <div class="mb-4">
       <div class="flex items-center gap-2 mb-2">
-        <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Momentum</span>
+        <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ t('people.momentumLayerMomentum') }}</span>
       </div>
       <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
         What matters now?
       </h2>
-      <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-        Current activity and priorities
-      </p>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">{{ t('people.momentumLayerCurrentActivityAndPriorities') }}</p>
     </div>
 
     <!-- Momentum Signals -->
@@ -44,7 +42,7 @@
           @click="showAllSignals = false"
           class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 font-medium flex items-center gap-1"
         >
-          <span>Show less</span>
+          <span>{{ t('people.momentumLayerShowLess') }}</span>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
           </svg>
@@ -75,18 +73,15 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">
-          Nothing needs attention right now.
-        </p>
-        <p class="text-sm text-gray-500 dark:text-gray-400">
-          All systems are up to date.
-        </p>
+        <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">{{ t('people.momentumLayerNothingNeedsAttentionRightNow') }}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('people.momentumLayerAllSystemsAreUpToDate') }}</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import MomentumSignal from './MomentumSignal.vue';
 import { deriveMomentumSignals, sortSignalsBySeverity } from './momentum/deriveMomentumSignals';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
@@ -120,6 +115,8 @@ const props = defineProps({
     default: () => new Set()
   }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['convert', 'edit', 'edit-details', 'attach-to-app', 'add-activity']);
 

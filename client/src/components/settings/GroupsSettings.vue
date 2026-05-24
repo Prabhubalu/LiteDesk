@@ -4,25 +4,25 @@
     <div class="mb-4 flex items-center justify-between gap-3">
       <template v-if="selectedGroupId">
         <div class="flex items-center gap-3">
-          <button @click="clearSelection" class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5" title="Back to groups">
+          <button @click="clearSelection" class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5" :title="t('settings.groupsBackTitle')">
             <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12.78 15.22a.75.75 0 01-1.06 0l-4.5-4.5a.75.75 0 010-1.06l4.5-4.5a.75.75 0 111.06 1.06L8.56 10l4.22 4.22a.75.75 0 010 1.06z" clip-rule="evenodd"/></svg>
           </button>
           <div>
             <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ selectedGroup?.name }}</h2>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Manage group members, settings, and details</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.groupsDetailSubtitle') }}</p>
           </div>
         </div>
       </template>
       <template v-else>
         <div>
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Groups & Teams</h2>
-          <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Organize users into teams, departments, and project groups</p>
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.groupsPageTitle') }}</h2>
+          <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.groupsPageSubtitle') }}</p>
         </div>
         <button @click="openCreateModal" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
-          Create Group
+          {{ t('settings.groupsCreate') }}
         </button>
       </template>
     </div>
@@ -34,7 +34,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">Total Groups</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">{{ t('settings.groupsStatTotal') }}</p>
               <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ statistics.totalGroups || 0 }}</p>
             </div>
             <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
@@ -48,7 +48,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">Active Groups</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">{{ t('settings.groupsStatActive') }}</p>
               <p class="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{{ statistics.activeGroups || 0 }}</p>
             </div>
             <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
@@ -62,7 +62,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">Total Members</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">{{ t('settings.groupsStatMembers') }}</p>
               <p class="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{{ statistics.totalMembers || 0 }}</p>
             </div>
             <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
@@ -76,7 +76,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">Avg Members/Group</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">{{ t('settings.groupsStatAvg') }}</p>
               <p class="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">{{ statistics.avgMembersPerGroup || 0 }}</p>
             </div>
             <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
@@ -98,22 +98,22 @@
             <input 
               v-model="searchQuery" 
               type="text" 
-              placeholder="Search groups..."
+              :placeholder="t('settings.groupsSearchPh')"
               @input="debouncedSearch"
               class="w-full pl-9 pr-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
             />
           </div>
           <select v-model="filters.type" @change="fetchGroups" class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer text-sm">
-            <option value="">All Types</option>
-            <option value="Team">Team</option>
-            <option value="Department">Department</option>
-            <option value="Project">Project</option>
-            <option value="Custom">Custom</option>
+            <option value="">{{ t('settings.groupsFilterAllTypes') }}</option>
+            <option value="Team">{{ t('settings.groupsTypeTeam') }}</option>
+            <option value="Department">{{ t('settings.groupsTypeDepartment') }}</option>
+            <option value="Project">{{ t('settings.groupsTypeProject') }}</option>
+            <option value="Custom">{{ t('settings.groupsTypeCustom') }}</option>
           </select>
           <select v-model="filters.isActive" @change="fetchGroups" class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer text-sm">
-            <option value="">All Status</option>
-            <option value="true">Active</option>
-            <option value="false">Inactive</option>
+            <option value="">{{ t('settings.groupsFilterAllStatus') }}</option>
+            <option value="true">{{ t('settings.groupsFilterActive') }}</option>
+            <option value="false">{{ t('settings.groupsFilterInactive') }}</option>
           </select>
           <button 
             @click="clearFilters" 
@@ -123,7 +123,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
-            Clear
+            {{ t('settings.groupsClearFilters') }}
           </button>
         </div>
       </div>
@@ -137,14 +137,14 @@
         <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
         </svg>
-        <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No groups</h3>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating your first group.</p>
+        <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.groupsEmptyTitle') }}</h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.groupsEmptyBody') }}</p>
         <div class="mt-6">
           <button @click="openCreateModal" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium text-sm">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
-            New Group
+            {{ t('settings.groupsNewGroup') }}
           </button>
         </div>
       </div>
@@ -168,25 +168,17 @@
                 <div class="flex items-center gap-2">
                   <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate">{{ group.name }}</h3>
                   <BadgeCell 
-                    :value="group.isActive ? 'Active' : 'Inactive'" 
-                    :variant-map="{
-                      'Active': 'success',
-                      'Inactive': 'danger'
-                    }"
+                    :value="groupStatusLabel(group.isActive)" 
+                    :variant-map="statusVariantMap"
                   />
                 </div>
                 <p v-if="group.description" class="text-sm text-gray-500 dark:text-gray-400 truncate mt-1">{{ group.description }}</p>
                 <div class="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
                   <BadgeCell 
-                    :value="group.type || 'Team'" 
-                    :variant-map="{
-                      'Team': 'primary',
-                      'Department': 'info',
-                      'Project': 'warning',
-                      'Custom': 'secondary'
-                    }"
+                    :value="groupTypeLabel(group.type)" 
+                    :variant-map="typeVariantMap"
                   />
-                  <span>{{ group.memberCount || (group.members?.length || 0) }} member{{ (group.memberCount || group.members?.length || 0) !== 1 ? 's' : '' }}</span>
+                  <span>{{ formatMemberCount(group.memberCount || group.members?.length || 0) }}</span>
                 </div>
               </div>
             </div>
@@ -194,7 +186,7 @@
               <button 
                 @click.stop="editGroup(group)" 
                 class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                title="Edit"
+                :title="t('settings.groupsEditTitle')"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -203,7 +195,7 @@
               <button 
                 @click.stop="handleDelete(group)" 
                 class="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                title="Delete"
+                :title="t('settings.groupsDeleteTitle')"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -217,7 +209,7 @@
       <!-- Pagination -->
       <div v-if="pagination.totalPages > 1" class="flex items-center justify-between mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
         <div class="text-sm text-gray-700 dark:text-gray-300">
-          Showing {{ ((pagination.currentPage - 1) * pagination.limit) + 1 }} to {{ Math.min(pagination.currentPage * pagination.limit, pagination.totalGroups) }} of {{ pagination.totalGroups }} groups
+          {{ t('settings.groupsPaginationRange', paginationRange) }}
         </div>
         <div class="flex gap-2">
           <button 
@@ -225,14 +217,14 @@
             :disabled="pagination.currentPage === 1"
             class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Previous
+            {{ t('actions.previous') }}
           </button>
           <button 
             @click="changePage(pagination.currentPage + 1)"
             :disabled="pagination.currentPage >= pagination.totalPages"
             class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Next
+            {{ t('actions.next') }}
           </button>
         </div>
       </div>
@@ -244,33 +236,25 @@
         <div class="p-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Group Name</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('settings.groupsLabelGroupName') }}</label>
               <div class="text-lg font-semibold text-gray-900 dark:text-white">{{ selectedGroup?.name }}</div>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('settings.groupsLabelType') }}</label>
               <BadgeCell 
-                :value="selectedGroup?.type || 'Team'" 
-                :variant-map="{
-                  'Team': 'primary',
-                  'Department': 'info',
-                  'Project': 'warning',
-                  'Custom': 'secondary'
-                }"
+                :value="groupTypeLabel(selectedGroup?.type)" 
+                :variant-map="typeVariantMap"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('settings.groupsLabelStatus') }}</label>
               <BadgeCell 
-                :value="selectedGroup?.isActive ? 'Active' : 'Inactive'" 
-                :variant-map="{
-                  'Active': 'success',
-                  'Inactive': 'danger'
-                }"
+                :value="groupStatusLabel(selectedGroup?.isActive)" 
+                :variant-map="statusVariantMap"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Roles & Permissions</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('settings.groupsLabelRoles') }}</label>
               <div v-if="selectedGroup?.roleIds && selectedGroup.roleIds.length > 0" class="flex flex-wrap gap-2">
                 <div
                   v-for="role in selectedGroup.roleIds"
@@ -281,28 +265,28 @@
                   <span>{{ typeof role === 'object' ? role.name : role }}</span>
                 </div>
               </div>
-              <span v-else class="text-sm text-gray-500 dark:text-gray-400">No roles assigned</span>
+              <span v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.groupsNoRoles') }}</span>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Members</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('settings.groupsLabelMembers') }}</label>
               <div class="text-lg font-semibold text-gray-900 dark:text-white">
-                {{ selectedGroup?.memberCount || (selectedGroup?.members?.length || 0) }} member{{ (selectedGroup?.memberCount || selectedGroup?.members?.length || 0) !== 1 ? 's' : '' }}
+                {{ formatMemberCount(selectedGroup?.memberCount || selectedGroup?.members?.length || 0) }}
               </div>
             </div>
             <div class="md:col-span-2" v-if="selectedGroup?.description">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('settings.groupsLabelDescription') }}</label>
               <div class="text-sm text-gray-600 dark:text-gray-400">{{ selectedGroup.description }}</div>
             </div>
           </div>
 
           <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Group Members</h3>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.groupsMembersHeading') }}</h3>
               <button 
                 @click="editGroup(selectedGroup)" 
                 class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium text-sm transition-colors"
               >
-                Edit Group
+                {{ t('settings.groupsEditGroupBtn') }}
               </button>
             </div>
             <div v-if="selectedGroup?.members && selectedGroup.members.length > 0" class="mt-4 space-y-2">
@@ -330,7 +314,7 @@
               </div>
             </div>
             <div v-else class="mt-4 text-sm text-gray-500 dark:text-gray-400 text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
-              No members in this group
+              {{ t('settings.groupsNoMembersInGroup') }}
             </div>
           </div>
         </div>
@@ -349,14 +333,12 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useTabs } from '@/composables/useTabs';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import GroupFormModal from '@/components/groups/GroupFormModal.vue';
 
-const router = useRouter();
-const { openTab } = useTabs();
+const { t } = useI18n();
 
 // State
 const groups = ref([]);
@@ -387,6 +369,46 @@ const statistics = ref({
 
 const sortField = ref('createdAt');
 const sortOrder = ref('desc');
+
+const GROUP_TYPE_KEYS = {
+  Team: 'settings.groupsTypeTeam',
+  Department: 'settings.groupsTypeDepartment',
+  Project: 'settings.groupsTypeProject',
+  Custom: 'settings.groupsTypeCustom'
+};
+
+const statusVariantMap = computed(() => ({
+  [t('settings.groupsStatusActive')]: 'success',
+  [t('settings.groupsStatusInactive')]: 'danger'
+}));
+
+const typeVariantMap = computed(() => ({
+  [t('settings.groupsTypeTeam')]: 'primary',
+  [t('settings.groupsTypeDepartment')]: 'info',
+  [t('settings.groupsTypeProject')]: 'warning',
+  [t('settings.groupsTypeCustom')]: 'secondary'
+}));
+
+function groupTypeLabel(type) {
+  const key = GROUP_TYPE_KEYS[type || 'Team'];
+  return key ? t(key) : type || t('settings.groupsTypeTeam');
+}
+
+function groupStatusLabel(isActive) {
+  return isActive ? t('settings.groupsStatusActive') : t('settings.groupsStatusInactive');
+}
+
+function formatMemberCount(count) {
+  return count === 1
+    ? t('settings.groupsMemberOne', { count })
+    : t('settings.groupsMemberMany', { count });
+}
+
+const paginationRange = computed(() => ({
+  from: (pagination.value.currentPage - 1) * pagination.value.limit + 1,
+  to: Math.min(pagination.value.currentPage * pagination.value.limit, pagination.value.totalGroups),
+  total: pagination.value.totalGroups
+}));
 
 // Computed
 const selectedGroup = computed(() => {
@@ -457,12 +479,6 @@ const changePage = (page) => {
   fetchGroups();
 };
 
-const handleSort = (field, order) => {
-  sortField.value = field;
-  sortOrder.value = order;
-  fetchGroups();
-};
-
 const clearFilters = () => {
   searchQuery.value = '';
   filters.type = '';
@@ -496,30 +512,27 @@ const closeFormModal = () => {
 
 const handleGroupSaved = (savedGroup) => {
   closeFormModal();
-  // If we were viewing this group, refresh the selection
   if (selectedGroupId.value === savedGroup._id) {
     fetchGroups().then(() => {
-      // Ensure the group is still selected after refresh
       selectedGroupId.value = savedGroup._id;
     });
   } else {
-    fetchGroups(); // Refresh the list
+    fetchGroups();
   }
 };
 
 const handleDelete = async (group) => {
-  if (!confirm(`Are you sure you want to delete "${group.name}"? This action cannot be undone.`)) return;
+  if (!confirm(t('settings.groupsDeleteConfirm', { name: group.name }))) return;
   
   try {
     await apiClient.delete(`/groups/${group._id}`);
-    // If we were viewing this group, clear selection
     if (selectedGroupId.value === group._id) {
       selectedGroupId.value = null;
     }
     fetchGroups();
   } catch (error) {
     console.error('Error deleting group:', error);
-    alert('Error deleting group. Please try again.');
+    alert(t('settings.groupsDeleteFailed'));
   }
 };
 
@@ -562,4 +575,3 @@ onMounted(() => {
   fetchGroups();
 });
 </script>
-

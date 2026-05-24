@@ -26,14 +26,14 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
-            Back
+            {{ t('actions.back') }}
           </button>
           <div>
             <h1 class="text-xl font-bold text-gray-900 dark:text-white">
-              {{ healthData.flowName }} — Health
+              {{ healthData.flowName }}{{ t('process.flowHealthTitleSuffix') }}
             </h1>
             <p class="text-sm text-gray-600 dark:text-gray-400">
-              Operational visibility for this business flow
+              {{ t('process.flowHealthSubtitle') }}
             </p>
           </div>
         </div>
@@ -44,9 +44,9 @@
           @change="loadAllData"
           class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
         >
-          <option :value="7">Last 7 days</option>
-          <option :value="30">Last 30 days</option>
-          <option :value="90">Last 90 days</option>
+          <option :value="7">{{ t('process.flowHealthLast7') }}</option>
+          <option :value="30">{{ t('process.flowHealthLast30') }}</option>
+          <option :value="90">{{ t('process.flowHealthLast90') }}</option>
         </select>
       </div>
 
@@ -55,7 +55,7 @@
         <!-- Health Status -->
         <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
           <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-            Status
+            {{ t('process.flowHealthCardStatus') }}
           </div>
           <div class="flex items-center gap-2">
             <span
@@ -66,7 +66,7 @@
               ]"
             ></span>
             <span class="text-lg font-semibold text-gray-900 dark:text-white capitalize">
-              {{ healthData.summary.healthStatus.replace('_', ' ') }}
+              {{ healthStatusLabel(healthData.summary.healthStatus) }}
             </span>
           </div>
         </div>
@@ -74,7 +74,7 @@
         <!-- Total Executions -->
         <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
           <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-            Executions
+            {{ t('process.flowHealthCardExecutions') }}
           </div>
           <div class="text-2xl font-bold text-gray-900 dark:text-white">
             {{ healthData.summary.totalExecutions }}
@@ -84,7 +84,7 @@
         <!-- Completion Rate -->
         <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
           <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-            Completion Rate
+            {{ t('process.flowHealthCardCompletion') }}
           </div>
           <div class="text-2xl font-bold text-green-600 dark:text-green-400">
             {{ healthData.summary.completionRate }}%
@@ -94,7 +94,7 @@
         <!-- Avg Time -->
         <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
           <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-            Avg Time
+            {{ t('process.flowHealthCardAvgTime') }}
           </div>
           <div class="text-2xl font-bold text-gray-900 dark:text-white">
             {{ formatDuration(healthData.summary.avgCompletionTimeMinutes) }}
@@ -104,7 +104,7 @@
         <!-- Approval Pause Rate -->
         <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
           <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-            Approval Pauses
+            {{ t('process.flowHealthCardApprovalPauses') }}
           </div>
           <div class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
             {{ healthData.summary.approvalPauseRate }}%
@@ -114,7 +114,7 @@
         <!-- Failure Rate -->
         <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
           <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-            Failure Rate
+            {{ t('process.flowHealthCardFailureRate') }}
           </div>
           <div class="text-2xl font-bold text-red-600 dark:text-red-400">
             {{ healthData.summary.failureRate }}%
@@ -130,10 +130,10 @@
           </svg>
           <div>
             <h3 class="text-sm font-semibold text-yellow-900 dark:text-yellow-200 mb-1">
-              {{ bottlenecks.bottleneckCount }} Bottleneck{{ bottlenecks.bottleneckCount !== 1 ? 's' : '' }} Detected
+              {{ t('process.flowHealthBottlenecks', { count: bottlenecks.bottleneckCount }) }}
             </h3>
             <p class="text-sm text-yellow-800 dark:text-yellow-300">
-              {{ bottlenecks.criticalCount }} critical, {{ bottlenecks.warningCount }} warnings
+              {{ t('process.flowHealthBottleneckSummary', { critical: bottlenecks.criticalCount, warning: bottlenecks.warningCount }) }}
             </p>
           </div>
         </div>
@@ -141,7 +141,7 @@
 
       <!-- Process Metrics Timeline -->
       <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Process Metrics</h2>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">{{ t('process.flowHealthProcessMetrics') }}</h2>
 
         <div v-if="processMetrics && processMetrics.processes.length > 0" class="space-y-6">
           <div
@@ -189,26 +189,26 @@
                       : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                   ]"
                 >
-                  {{ proc.status === 'active' ? 'Active' : 'Draft' }}
+                  {{ proc.status === 'active' ? t('process.statusActive') : t('process.statusDraft') }}
                 </span>
               </div>
 
               <!-- Metrics Grid -->
               <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
-                  <div class="text-gray-500 dark:text-gray-400">Executions</div>
+                  <div class="text-gray-500 dark:text-gray-400">{{ t('process.flowHealthMetricExecutions') }}</div>
                   <div class="font-semibold text-gray-900 dark:text-white">{{ proc.metrics.totalExecutions }}</div>
                 </div>
                 <div>
-                  <div class="text-gray-500 dark:text-gray-400">Completion</div>
+                  <div class="text-gray-500 dark:text-gray-400">{{ t('process.flowHealthMetricCompletion') }}</div>
                   <div class="font-semibold text-green-600 dark:text-green-400">{{ proc.metrics.completionRate }}%</div>
                 </div>
                 <div>
-                  <div class="text-gray-500 dark:text-gray-400">Avg Time</div>
+                  <div class="text-gray-500 dark:text-gray-400">{{ t('process.flowHealthMetricAvgTime') }}</div>
                   <div class="font-semibold text-gray-900 dark:text-white">{{ formatDuration(proc.metrics.avgDurationMinutes) }}</div>
                 </div>
                 <div>
-                  <div class="text-gray-500 dark:text-gray-400">Failures</div>
+                  <div class="text-gray-500 dark:text-gray-400">{{ t('process.flowHealthMetricFailures') }}</div>
                   <div :class="['font-semibold', proc.metrics.failedExecutions > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white']">
                     {{ proc.metrics.failedExecutions }}
                   </div>
@@ -217,26 +217,26 @@
 
               <!-- Approval Metrics (if applicable) -->
               <div v-if="proc.approvalMetrics.totalApprovals > 0" class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 mb-2">Approval Gate</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mb-2">{{ t('process.flowHealthApprovalGate') }}</div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <div class="text-gray-500 dark:text-gray-400">Pending</div>
+                    <div class="text-gray-500 dark:text-gray-400">{{ t('process.flowHealthPending') }}</div>
                     <div :class="['font-semibold', proc.approvalMetrics.pendingApprovals > 0 ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-900 dark:text-white']">
                       {{ proc.approvalMetrics.pendingApprovals }}
                     </div>
                   </div>
                   <div>
-                    <div class="text-gray-500 dark:text-gray-400">Approved</div>
+                    <div class="text-gray-500 dark:text-gray-400">{{ t('process.flowHealthApproved') }}</div>
                     <div class="font-semibold text-green-600 dark:text-green-400">{{ proc.approvalMetrics.approvedCount }}</div>
                   </div>
                   <div>
-                    <div class="text-gray-500 dark:text-gray-400">Rejected</div>
+                    <div class="text-gray-500 dark:text-gray-400">{{ t('process.flowHealthRejected') }}</div>
                     <div :class="['font-semibold', proc.approvalMetrics.rejectedCount > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white']">
                       {{ proc.approvalMetrics.rejectedCount }}
                     </div>
                   </div>
                   <div>
-                    <div class="text-gray-500 dark:text-gray-400">Avg Wait</div>
+                    <div class="text-gray-500 dark:text-gray-400">{{ t('process.flowHealthAvgWait') }}</div>
                     <div class="font-semibold text-gray-900 dark:text-white">{{ formatDuration(proc.approvalMetrics.avgApprovalWaitMinutes) }}</div>
                   </div>
                 </div>
@@ -268,13 +268,13 @@
         </div>
 
         <div v-else class="text-center py-8 text-gray-500 dark:text-gray-400">
-          No process data available for this period.
+          {{ t('process.flowHealthNoData') }}
         </div>
       </div>
 
       <!-- Bottlenecks Detail -->
       <div v-if="bottlenecks && bottlenecks.bottlenecks.length > 0" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Bottleneck Details</h2>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('process.flowHealthBottleneckDetails') }}</h2>
 
         <div class="space-y-3">
           <div
@@ -342,22 +342,22 @@
           <div class="space-y-4">
             <!-- Execution Stats -->
             <div>
-              <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Execution Statistics</h4>
+              <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('process.flowHealthExecStats') }}</h4>
               <div class="grid grid-cols-2 gap-4 text-sm">
                 <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3">
-                  <div class="text-gray-500 dark:text-gray-400">Total Executions</div>
+                  <div class="text-gray-500 dark:text-gray-400">{{ t('process.flowHealthTotalExecutions') }}</div>
                   <div class="text-xl font-bold text-gray-900 dark:text-white">{{ selectedProcess.metrics.totalExecutions }}</div>
                 </div>
                 <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3">
-                  <div class="text-gray-500 dark:text-gray-400">Completed</div>
+                  <div class="text-gray-500 dark:text-gray-400">{{ t('process.flowHealthCompleted') }}</div>
                   <div class="text-xl font-bold text-green-600 dark:text-green-400">{{ selectedProcess.metrics.completedExecutions }}</div>
                 </div>
                 <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3">
-                  <div class="text-gray-500 dark:text-gray-400">Failed</div>
+                  <div class="text-gray-500 dark:text-gray-400">{{ t('process.flowHealthFailed') }}</div>
                   <div class="text-xl font-bold text-red-600 dark:text-red-400">{{ selectedProcess.metrics.failedExecutions }}</div>
                 </div>
                 <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3">
-                  <div class="text-gray-500 dark:text-gray-400">Waiting Approval</div>
+                  <div class="text-gray-500 dark:text-gray-400">{{ t('process.flowHealthWaitingApproval') }}</div>
                   <div class="text-xl font-bold text-yellow-600 dark:text-yellow-400">{{ selectedProcess.metrics.waitingApproval }}</div>
                 </div>
               </div>
@@ -365,22 +365,22 @@
 
             <!-- Approval Stats (if applicable) -->
             <div v-if="selectedProcess.approvalMetrics.totalApprovals > 0">
-              <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Approval Statistics</h4>
+              <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('process.flowHealthApprovalStats') }}</h4>
               <div class="grid grid-cols-2 gap-4 text-sm">
                 <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3">
-                  <div class="text-gray-500 dark:text-gray-400">Total Approvals</div>
+                  <div class="text-gray-500 dark:text-gray-400">{{ t('process.flowHealthTotalApprovals') }}</div>
                   <div class="text-xl font-bold text-gray-900 dark:text-white">{{ selectedProcess.approvalMetrics.totalApprovals }}</div>
                 </div>
                 <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3">
-                  <div class="text-gray-500 dark:text-gray-400">Avg Wait Time</div>
+                  <div class="text-gray-500 dark:text-gray-400">{{ t('process.flowHealthAvgWaitTime') }}</div>
                   <div class="text-xl font-bold text-gray-900 dark:text-white">{{ formatDuration(selectedProcess.approvalMetrics.avgApprovalWaitMinutes) }}</div>
                 </div>
                 <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3">
-                  <div class="text-gray-500 dark:text-gray-400">Timed Out</div>
+                  <div class="text-gray-500 dark:text-gray-400">{{ t('process.flowHealthTimedOut') }}</div>
                   <div class="text-xl font-bold text-orange-600 dark:text-orange-400">{{ selectedProcess.approvalMetrics.timedOutCount }}</div>
                 </div>
                 <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3">
-                  <div class="text-gray-500 dark:text-gray-400">Rejection Rate</div>
+                  <div class="text-gray-500 dark:text-gray-400">{{ t('process.flowHealthRejectionRate') }}</div>
                   <div class="text-xl font-bold text-red-600 dark:text-red-400">
                     {{ getRejectionRate(selectedProcess.approvalMetrics) }}%
                   </div>
@@ -394,13 +394,13 @@
                 @click="viewProcessLogs(selectedProcess)"
                 class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
-                View Execution Logs
+                {{ t('process.flowHealthViewLogs') }}
               </button>
               <button
                 @click="viewProcess(selectedProcess)"
                 class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
               >
-                View Process
+                {{ t('process.flowHealthViewProcess') }}
               </button>
             </div>
           </div>
@@ -413,10 +413,18 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 
+const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
+
+function healthStatusLabel(status) {
+  if (status === 'healthy') return t('process.flowHealthStatusHealthy');
+  if (status === 'needs_attention') return t('process.flowHealthStatusNeedsAttention');
+  return t('process.flowHealthStatusUnhealthy');
+}
 
 const loading = ref(true);
 const error = ref(null);
@@ -443,7 +451,7 @@ const loadAllData = async () => {
     processMetrics.value = metricsRes.data;
     bottlenecks.value = bottlenecksRes.data;
   } catch (err) {
-    error.value = err.message || 'Failed to load health data';
+    error.value = err.message || t('process.flowHealthLoadFailed');
     console.error('Error loading health data:', err);
   } finally {
     loading.value = false;
@@ -451,27 +459,31 @@ const loadAllData = async () => {
 };
 
 const formatDuration = (minutes) => {
-  if (!minutes || minutes === 0) return '0m';
-  if (minutes < 60) return `${minutes}m`;
+  if (!minutes || minutes === 0) return t('process.durationZero');
+  if (minutes < 60) return t('process.durationMinutes', { minutes });
   if (minutes < 60 * 24) {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
-    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+    return mins > 0
+      ? t('process.durationHoursMinutes', { hours, minutes: mins })
+      : t('process.durationHours', { hours });
   }
   const days = Math.floor(minutes / (60 * 24));
   const hours = Math.floor((minutes % (60 * 24)) / 60);
-  return hours > 0 ? `${days}d ${hours}h` : `${days}d`;
+  return hours > 0
+    ? t('process.durationDaysHours', { days, hours })
+    : t('process.durationDays', { days });
 };
 
 const getTriggerLabel = (trigger) => {
-  if (!trigger) return 'Manual trigger';
+  if (!trigger) return t('process.triggerManualSummary');
   const labels = {
-    'record.created': 'On record created',
-    'record.updated': 'On record updated',
-    'status.changed': 'On status change',
-    'stage.changed': 'On stage change'
+    'record.created': t('process.triggerHealthRecordCreated'),
+    'record.updated': t('process.triggerHealthRecordUpdated'),
+    'status.changed': t('process.triggerHealthStatusChanged'),
+    'stage.changed': t('process.triggerHealthStageChanged')
   };
-  return labels[trigger.eventType] || trigger.eventType || 'Manual trigger';
+  return labels[trigger.eventType] || trigger.eventType || t('process.triggerManualSummary');
 };
 
 const getProcessHealthColor = (proc) => {
@@ -502,16 +514,16 @@ const selectProcess = (proc) => {
 };
 
 const viewProcess = (proc) => {
-  router.push(`/control/processes?processId=${proc.processId}`);
+  router.push(`/settings/automation/processes?processId=${proc.processId}`);
 };
 
 const viewProcessLogs = (proc) => {
   // Navigate to process with logs view
-  router.push(`/control/processes?processId=${proc.processId}&view=logs`);
+  router.push(`/settings/automation/processes?processId=${proc.processId}&view=logs`);
 };
 
 onMounted(() => {
-  document.title = 'Flow Health | Arivu';
+  document.title = t('process.flowHealthPageTitle');
   loadAllData();
 });
 </script>

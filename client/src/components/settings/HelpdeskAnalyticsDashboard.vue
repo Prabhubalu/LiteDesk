@@ -3,16 +3,16 @@
     <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
       <div class="flex flex-col md:flex-row md:items-end gap-4">
         <div>
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Helpdesk Analytics Dashboard</h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Operational KPIs and SLA performance by trend, owner, and segment.</p>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.helpdeskAnalyticsTitle') }}</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ t('settings.helpdeskAnalyticsSubtitle') }}</p>
         </div>
         <div class="flex items-end gap-3 md:ml-auto">
           <div>
-            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">From</label>
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.helpdeskAnalyticsFrom') }}</label>
             <input v-model="filters.from" type="date" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white" />
           </div>
           <div>
-            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">To</label>
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.helpdeskAnalyticsTo') }}</label>
             <input v-model="filters.to" type="date" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white" />
           </div>
           <button
@@ -21,7 +21,7 @@
             :disabled="loading"
             @click="fetchAnalytics"
           >
-            {{ loading ? 'Refreshing...' : 'Refresh' }}
+            {{ loading ? t('settings.helpdeskAnalyticsRefreshing') : t('actions.refresh') }}
           </button>
         </div>
       </div>
@@ -44,14 +44,14 @@
     >
       <div class="flex items-center justify-between gap-3 mb-4">
         <div>
-          <h4 class="text-base font-semibold text-gray-900 dark:text-white">Business hours impact</h4>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Capacity, in-hours activity, and off-hours SLA breaches</p>
+          <h4 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.helpdeskAnalyticsBhTitle') }}</h4>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ t('settings.helpdeskAnalyticsBhSubtitle') }}</p>
         </div>
         <router-link
           :to="{ path: '/settings', query: { tab: 'business-hours' } }"
           class="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline shrink-0"
         >
-          Manage schedules
+          {{ t('settings.helpdeskAnalyticsManageSchedules') }}
         </router-link>
       </div>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -67,12 +67,12 @@
     </div>
 
     <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-      <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-4">Daily Trend (Created / Resolved / Breached)</h4>
+      <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-4">{{ t('settings.helpdeskAnalyticsTrendTitle') }}</h4>
       <div class="space-y-3 max-h-80 overflow-y-auto pr-1">
         <div v-for="point in trendPreview" :key="point.date" class="space-y-1">
           <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
             <span>{{ point.date }}</span>
-            <span>C {{ point.created }} | R {{ point.resolved }} | B {{ point.breached }}</span>
+            <span>{{ t('settings.helpdeskAnalyticsTrendLegend', { created: point.created, resolved: point.resolved, breached: point.breached }) }}</span>
           </div>
           <div class="grid grid-cols-3 gap-2">
             <div class="h-2 rounded bg-indigo-100 dark:bg-indigo-900/40 overflow-hidden">
@@ -91,7 +91,7 @@
 
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-        <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-4">Owner Performance</h4>
+        <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-4">{{ t('settings.helpdeskAnalyticsOwnerTitle') }}</h4>
         <div class="space-y-3 max-h-96 overflow-y-auto">
           <div v-for="owner in owners" :key="owner.ownerId" class="p-3 rounded-lg border border-gray-100 dark:border-gray-700">
             <div class="flex items-center justify-between">
@@ -100,38 +100,38 @@
                 <p class="text-xs text-gray-500 dark:text-gray-400">{{ owner.owner?.email || owner.ownerId }}</p>
               </div>
               <span class="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-                Open {{ owner.openCases }}
+                {{ t('settings.helpdeskAnalyticsOpenBadge', { count: owner.openCases }) }}
               </span>
             </div>
             <div class="mt-2 text-xs text-gray-600 dark:text-gray-300 flex flex-wrap gap-3">
-              <span>Total {{ owner.totalCases }}</span>
-              <span>SLA {{ owner.slaCompliancePercent }}%</span>
-              <span>Reopen {{ owner.reopenRatePercent }}%</span>
-              <span>Avg Res {{ owner.averageResolutionMinutes ?? '-' }}m</span>
+              <span>{{ t('settings.helpdeskAnalyticsOwnerTotal', { count: owner.totalCases }) }}</span>
+              <span>{{ t('settings.helpdeskAnalyticsOwnerSla', { percent: owner.slaCompliancePercent }) }}</span>
+              <span>{{ t('settings.helpdeskAnalyticsOwnerReopen', { percent: owner.reopenRatePercent }) }}</span>
+              <span>{{ t('settings.helpdeskAnalyticsOwnerAvgRes', { minutes: ownerAvgResMinutes(owner) }) }}</span>
             </div>
           </div>
-          <p v-if="owners.length === 0" class="text-sm text-gray-500 dark:text-gray-400">No owner analytics available for selected range.</p>
+          <p v-if="owners.length === 0" class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.helpdeskAnalyticsOwnerEmpty') }}</p>
         </div>
       </div>
 
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-        <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-4">Distribution Snapshot</h4>
+        <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-4">{{ t('settings.helpdeskAnalyticsDistTitle') }}</h4>
         <div class="space-y-4">
           <div>
-            <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">By Priority</p>
+            <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">{{ t('settings.helpdeskAnalyticsByPriority') }}</p>
             <div class="space-y-2">
               <div v-for="row in distribution.byPriority" :key="`p-${row.segment}`" class="flex items-center justify-between text-sm">
                 <span class="text-gray-700 dark:text-gray-300">{{ row.segment }}</span>
-                <span class="text-gray-600 dark:text-gray-400">{{ row.totalCases }} cases / SLA {{ row.slaCompliancePercent }}%</span>
+                <span class="text-gray-600 dark:text-gray-400">{{ t('settings.helpdeskAnalyticsDistRow', { count: row.totalCases, percent: row.slaCompliancePercent }) }}</span>
               </div>
             </div>
           </div>
           <div>
-            <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">By Channel</p>
+            <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">{{ t('settings.helpdeskAnalyticsByChannel') }}</p>
             <div class="space-y-2">
               <div v-for="row in distribution.byChannel" :key="`c-${row.segment}`" class="flex items-center justify-between text-sm">
                 <span class="text-gray-700 dark:text-gray-300">{{ row.segment }}</span>
-                <span class="text-gray-600 dark:text-gray-400">{{ row.totalCases }} cases / SLA {{ row.slaCompliancePercent }}%</span>
+                <span class="text-gray-600 dark:text-gray-400">{{ t('settings.helpdeskAnalyticsDistRow', { count: row.totalCases, percent: row.slaCompliancePercent }) }}</span>
               </div>
             </div>
           </div>
@@ -143,7 +143,10 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
+
+const { t } = useI18n();
 
 const loading = ref(false);
 const error = ref('');
@@ -154,14 +157,14 @@ const distribution = ref({ byPriority: [], byChannel: [], byCaseType: [] });
 const bhTotals = ref(null);
 
 const bhCards = computed(() => {
-  const t = bhTotals.value;
-  if (!t) return [];
-  const capH = Math.floor((t.businessMinutesAvailable || 0) / 60);
+  const totals = bhTotals.value;
+  if (!totals) return [];
+  const capH = Math.floor((totals.businessMinutesAvailable || 0) / 60);
   return [
-    { label: 'Scheduled capacity', value: `${capH}h` },
-    { label: 'In-hours activity', value: t.activitiesInsideHours ?? 0 },
-    { label: 'Overtime activity', value: t.overtimeCount ?? 0 },
-    { label: 'SLA breaches (off-hours)', value: t.slaBreachesOffHours ?? 0 }
+    { label: t('settings.helpdeskAnalyticsBhCapacity'), value: `${capH}h` },
+    { label: t('settings.helpdeskAnalyticsBhInHours'), value: totals.activitiesInsideHours ?? 0 },
+    { label: t('settings.helpdeskAnalyticsBhOvertime'), value: totals.overtimeCount ?? 0 },
+    { label: t('settings.helpdeskAnalyticsBhBreachesOff'), value: totals.slaBreachesOffHours ?? 0 }
   ];
 });
 
@@ -177,11 +180,14 @@ const summaryCards = computed(() => {
   const totals = summary.value?.totals || {};
   const resolution = summary.value?.resolution || {};
   const response = summary.value?.response || {};
+  const avgFirstResponse = response.averageFirstResponseMinutes != null
+    ? `${response.averageFirstResponseMinutes}m`
+    : '-';
   return [
-    { label: 'Total Cases', value: totals.totalCases ?? 0 },
-    { label: 'Open Cases', value: totals.openCases ?? 0 },
-    { label: 'SLA Compliance', value: `${resolution.slaCompliancePercent ?? 0}%` },
-    { label: 'Avg First Response', value: response.averageFirstResponseMinutes != null ? `${response.averageFirstResponseMinutes}m` : '-' }
+    { label: t('settings.helpdeskAnalyticsCardTotalCases'), value: totals.totalCases ?? 0 },
+    { label: t('settings.helpdeskAnalyticsCardOpenCases'), value: totals.openCases ?? 0 },
+    { label: t('settings.helpdeskAnalyticsCardSlaCompliance'), value: `${resolution.slaCompliancePercent ?? 0}%` },
+    { label: t('settings.helpdeskAnalyticsCardAvgFirstResponse'), value: avgFirstResponse }
   ];
 });
 
@@ -199,7 +205,12 @@ function normalizeBar(value) {
 function ownerName(owner) {
   const first = owner?.owner?.firstName || '';
   const last = owner?.owner?.lastName || '';
-  return `${first} ${last}`.trim() || 'Unknown Owner';
+  return `${first} ${last}`.trim() || t('settings.helpdeskAnalyticsUnknownOwner');
+}
+
+function ownerAvgResMinutes(owner) {
+  const minutes = owner?.averageResolutionMinutes;
+  return minutes != null ? minutes : '-';
 }
 
 async function fetchAnalytics() {
@@ -225,7 +236,7 @@ async function fetchAnalytics() {
     ]);
 
     if (!summaryRes?.success || !trendsRes?.success || !ownersRes?.success || !distributionRes?.success) {
-      throw new Error('Failed to load one or more analytics datasets');
+      throw new Error(t('settings.helpdeskAnalyticsLoadFailed'));
     }
 
     summary.value = summaryRes.data || null;
@@ -235,7 +246,7 @@ async function fetchAnalytics() {
     bhTotals.value = bhRes?.success ? bhRes.data?.totals || null : null;
   } catch (err) {
     console.error('Failed to load Helpdesk analytics:', err);
-    error.value = err?.message || 'Failed to load Helpdesk analytics';
+    error.value = err?.message || t('settings.helpdeskAnalyticsLoadFailed');
   } finally {
     loading.value = false;
   }

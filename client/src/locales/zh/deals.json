@@ -1,0 +1,462 @@
+{
+  "dealFormModalNextFollowUpDate": {
+    "message": "下一次随访日期",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalAddDetailsAboutThisDealRequirements": {
+    "message": "添加有关此交易、要求、注释等的详细信息。",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalAdditionalDetails": {
+    "message": "其他细节",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalLinkThisDealToAContact": {
+    "message": "将此交易链接到联系人",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalSelectContact": {
+    "message": "选择联系人",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalEnterprisePriorityDemo": {
+    "message": "企业、优先级、演示",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalTagsCommaSeparated": {
+    "message": "标签（逗号分隔）",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalUrgent": {
+    "message": "紧迫的",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalCrossSell": {
+    "message": "交叉销售",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalRenewal": {
+    "message": "更新",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalUpsell": {
+    "message": "追加销售",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalExistingCustomer": {
+    "message": "现有客户",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalNewBusiness": {
+    "message": "新业务",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalSelectType": {
+    "message": "选择类型",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalDealType": {
+    "message": "交易类型",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalClassification": {
+    "message": "分类",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalChangingStageUpdatesStatusAndProbability": {
+    "message": "改变阶段会自动更新状态和概率",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalSelectPipeline": {
+    "message": "选择管道...",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalExpectedCloseDate": {
+    "message": "预计截止日期",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalEGAcmeCorpCrmImplementation": {
+    "message": "例如，Acme Corp - CRM 实施",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalDealName": {
+    "message": "交易名称",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalDealInformation": {
+    "message": "交易信息",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealRelationshipEditorSelectOrganization": {
+    "message": "选择组织...",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorNoOrganizationsLinkedYet": {
+    "message": "尚未链接任何组织。",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorRemoveFromDeal": {
+    "message": "从交易中删除",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorSetAsPrimaryCustomer": {
+    "message": "设为主要客户",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorOrganizationsOnThisDeal": {
+    "message": "本次交易的组织",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorShowingContactsFor": {
+    "message": "显示联系人",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorSelectPerson": {
+    "message": "选择人...",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorNoPeopleLinkedYet": {
+    "message": "还没有人联系。",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorRemoveFromDeal2": {
+    "message": "从交易中删除",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorSetAsPrimaryContact": {
+    "message": "设置为主要联系人",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorPeopleOnThisDeal": {
+    "message": "参与此交易的人员",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "relatedDealsWidgetCreateFirstDeal": {
+    "message": "创建第一笔交易",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetNoDealsYet": {
+    "message": "还没有优惠",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetAddDeal": {
+    "message": "添加优惠",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetLinkDeals": {
+    "message": "链接优惠",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetRelatedDeals": {
+    "message": "相关优惠",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "dealsAddDeal": {
+    "message": "添加优惠",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsNoDealsInThisStage": {
+    "message": "此阶段没有交易",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsLoadingPipeline": {
+    "message": "正在加载管道...",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsNewDeal": {
+    "message": "新政",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsGroupStage": {
+    "message": "组别：舞台",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsUpgradePlan": {
+    "message": "升级计划",
+    "description": "Auto-migrated from deals"
+  },
+  "dealDetailAddANote": {
+    "message": "添加注释...",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailAddEvent": {
+    "message": "添加事件",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailAge": {
+    "message": "年龄",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailExpectedClose": {
+    "message": "预计关闭",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailOrganizationsOnThisDeal": {
+    "message": "本次交易的组织",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailPeopleOnThisDeal": {
+    "message": "参与此交易的人员",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailPrimaryCustomer": {
+    "message": "主要客户",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailPrimaryContact": {
+    "message": "主要联系人",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailSystemOwnedComputedFromStage": {
+    "message": "系统拥有（从阶段计算）",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailBackToDeals": {
+    "message": "返回优惠",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailLoadingDeal": {
+    "message": "正在加载交易...",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealFormModalToastFailedToSaveDeal": {
+    "message": "无法保存交易",
+    "description": "Toast from DealFormModal.vue"
+  },
+  "sysFieldName": {
+    "message": "交易名称",
+    "description": "System deal field label"
+  },
+  "sysFieldStage": {
+    "message": "交易阶段",
+    "description": "System deal field label"
+  },
+  "sysFieldAmount": {
+    "message": "期望值",
+    "description": "System deal field label"
+  },
+  "sysFieldProbability": {
+    "message": "概率（%）",
+    "description": "System deal field label"
+  },
+  "sysFieldExpectedCloseDate": {
+    "message": "截止日期",
+    "description": "System deal field label"
+  },
+  "sysFieldOwnerId": {
+    "message": "交易所有者",
+    "description": "System deal field label"
+  },
+  "sysFieldAccountId": {
+    "message": "组织",
+    "description": "System deal field label"
+  },
+  "sysFieldContactId": {
+    "message": "接触",
+    "description": "System deal field label"
+  },
+  "sysFieldType": {
+    "message": "交易类型",
+    "description": "System deal field label"
+  },
+  "sysFieldPipeline": {
+    "message": "管道",
+    "description": "System deal field label"
+  },
+  "sysFieldNextStep": {
+    "message": "下一步",
+    "description": "System deal field label"
+  },
+  "sysFieldTags": {
+    "message": "标签",
+    "description": "System deal field label"
+  },
+  "sysFieldAssignedTo": {
+    "message": "分配给",
+    "description": "System deal field label"
+  },
+  "sysFieldDescription": {
+    "message": "描述",
+    "description": "System deal field label"
+  },
+  "sysFieldDealType": {
+    "message": "交易类型",
+    "description": "Alias for deal type field"
+  },
+  "activityCreatedDeal": {
+    "message": "创建了这笔交易",
+    "description": "Deal record created activity fragment"
+  },
+  "activityUpdatedDeal": {
+    "message": "更新了此交易",
+    "description": "Deal record updated activity fragment"
+  },
+  "activityYouCreatedDeal": {
+    "message": "{actor} 创建了这笔交易",
+    "description": "Deal created system activity line"
+  },
+  "activityYouUpdatedDeal": {
+    "message": "{actor} 更新了此交易",
+    "description": "Deal updated system activity line"
+  },
+  "picklistNew": {
+    "message": "新的",
+    "description": "Default pipeline stage"
+  },
+  "picklistNewBusiness": {
+    "message": "新业务",
+    "description": "Common deal type value"
+  },
+  "picklistUpsell": {
+    "message": "追加销售",
+    "description": "Deal type picklist value"
+  },
+  "picklistCrossSell": {
+    "message": "交叉销售",
+    "description": "Deal type picklist value"
+  },
+  "picklistRenewal": {
+    "message": "更新",
+    "description": "Deal type picklist value"
+  },
+  "picklistExistingCustomer": {
+    "message": "现有客户",
+    "description": "Deal type picklist value"
+  },
+  "stageNew": {
+    "message": "新的",
+    "description": "Default pipeline stage name"
+  },
+  "stageQualified": {
+    "message": "合格的",
+    "description": "Pipeline stage name"
+  },
+  "stageProposal": {
+    "message": "提议",
+    "description": "Pipeline stage name"
+  },
+  "stageNegotiation": {
+    "message": "谈判",
+    "description": "Pipeline stage name"
+  },
+  "stageWon": {
+    "message": "韩元",
+    "description": "Pipeline stage name"
+  },
+  "stageLost": {
+    "message": "丢失的",
+    "description": "Pipeline stage name"
+  },
+  "stageClosedWon": {
+    "message": "已结束 获胜",
+    "description": "Pipeline stage name"
+  },
+  "stageClosedLost": {
+    "message": "关闭 丢失",
+    "description": "Pipeline stage name"
+  },
+  "stageDiscovery": {
+    "message": "发现",
+    "description": "Pipeline stage name"
+  },
+  "stageNeedsAnalysis": {
+    "message": "需求分析",
+    "description": "Pipeline stage name"
+  },
+  "stageValueProposition": {
+    "message": "价值主张",
+    "description": "Pipeline stage name"
+  },
+  "stageIdDecisionMakers": {
+    "message": "ID。决策者",
+    "description": "Pipeline stage name"
+  },
+  "stagePerceptionAnalysis": {
+    "message": "感知分析",
+    "description": "Pipeline stage name"
+  },
+  "stageProposalPriceQuote": {
+    "message": "提案/报价",
+    "description": "Pipeline stage name"
+  },
+  "stageNegotiationReview": {
+    "message": "谈判/审查",
+    "description": "Pipeline stage name"
+  },
+  "pipelineSales": {
+    "message": "销售渠道",
+    "description": "Tenant pipeline display name"
+  },
+  "pipelineDefault": {
+    "message": "默认管道",
+    "description": "Tenant pipeline display name"
+  },
+  "pipelineMarketing": {
+    "message": "营销渠道",
+    "description": "Tenant pipeline display name"
+  },
+  "pipelinePartner": {
+    "message": "合作伙伴管道",
+    "description": "Tenant pipeline display name"
+  },
+  "listViewAll": {
+    "message": "All Deals",
+    "description": "Deals list default view title"
+  },
+  "listViewMy": {
+    "message": "My Deals",
+    "description": "Deals list assigned-to-me view title"
+  },
+  "listViewOpen": {
+    "message": "Open",
+    "description": "Deals list open view title"
+  },
+  "listViewWon": {
+    "message": "Won",
+    "description": "Deals list won view title"
+  },
+  "listViewLost": {
+    "message": "Lost",
+    "description": "Deals list lost view title"
+  },
+  "listCreate": {
+    "message": "New Deal",
+    "description": "Deals list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "Search deals...",
+    "description": "Deals list search placeholder"
+  },
+  "listStatPipelineValue": {
+    "message": "Pipeline Value",
+    "description": "Deals list statistics card"
+  },
+  "listStatOpenDeals": {
+    "message": "Open Deals",
+    "description": "Deals list statistics card"
+  },
+  "listStatWonThisMonth": {
+    "message": "Won This Month",
+    "description": "Deals list statistics card"
+  },
+  "listStatWinRate": {
+    "message": "Win Rate",
+    "description": "Deals list statistics card"
+  },
+  "dealsFeatureNotAvailable": {
+    "message": "Feature Not Available",
+    "description": "Deals plan limitation error title"
+  },
+  "dealsErrorLoading": {
+    "message": "Error Loading Deals",
+    "description": "Deals load error title"
+  },
+  "dealsDealDetail": {
+    "message": "Deal Detail",
+    "description": "Deal record tab title fallback"
+  },
+  "dealsStageUpdateFailed": {
+    "message": "Failed to update deal stage",
+    "description": "Kanban stage change error"
+  }
+}

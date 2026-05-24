@@ -1,0 +1,18 @@
+{
+  "notesBlockedContext": {
+    "message": "El contexto de la aplicación es ambiguo. No se puede determinar qué notas mostrar.",
+    "description": "Notes blocked when app context unclear"
+  },
+  "notesAdding": {
+    "message": "Añadiendo…",
+    "description": "Submit note in progress"
+  },
+  "notesAddNoteBtn": {
+    "message": "Añadir nota",
+    "description": "Submit new note button"
+  },
+  "notesUserFallback": {
+    "message": "Usuario",
+    "description": "Author name fallback in notes list"
+  }
+}

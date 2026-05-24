@@ -882,7 +882,7 @@ exports.updateDeal = async (req, res) => {
             });
         }
 
-        if (shouldComputeDerivedStatus) {
+        try {
             const { emitDealEvents } = require('../services/domainEventHelpers');
             await emitDealEvents({
                 previous: previousDeal,
@@ -891,6 +891,8 @@ exports.updateDeal = async (req, res) => {
                 triggeredBy: req.user?._id ?? null,
                 organizationId: req.user?.organizationId ?? null
             });
+        } catch (emitErr) {
+            console.error('[dealController] emitDealEvents on update failed:', emitErr?.message || emitErr);
         }
 
         const populatedDeal = await Deal.findById(updatedDeal._id)

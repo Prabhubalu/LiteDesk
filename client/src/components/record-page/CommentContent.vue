@@ -14,6 +14,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 
 /**
@@ -26,6 +27,8 @@ const props = defineProps({
     default: ''
   }
 });
+
+const { t } = useI18n();
 
 const parsedParts = computed(() => {
   if (!props.content) return [];

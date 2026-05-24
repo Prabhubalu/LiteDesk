@@ -14,7 +14,7 @@
           class="h-11 w-11 animate-spin rounded-full border-2"
           :class="isEmbed ? 'border-gray-300 border-t-indigo-600' : 'border-white/30 border-t-white'"
         ></div>
-        <p class="text-sm" :class="isEmbed ? 'text-gray-500' : 'text-white/80'">Loading calendar…</p>
+        <p class="text-sm" :class="isEmbed ? 'text-gray-500' : 'text-white/80'">{{ t('common.publicBookingViewLoadingCalendar') }}</p>
       </div>
 
       <!-- Error -->
@@ -24,7 +24,7 @@
       >
         <div class="rounded-2xl bg-white/95 p-8 shadow-2xl dark:bg-gray-900">
           <CalendarDaysIcon class="mx-auto h-12 w-12 text-gray-400" />
-          <h1 class="mt-4 text-xl font-bold text-gray-900 dark:text-white">Page unavailable</h1>
+          <h1 class="mt-4 text-xl font-bold text-gray-900 dark:text-white">{{ t('common.publicBookingViewPageUnavailable') }}</h1>
           <p class="mt-2 text-gray-600 dark:text-gray-400">{{ loadError }}</p>
         </div>
       </div>
@@ -35,7 +35,7 @@
             <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/40">
               <CheckCircleIcon class="h-10 w-10 text-emerald-600" />
             </div>
-            <h1 class="mt-5 text-2xl font-bold text-gray-900 dark:text-white">You're booked!</h1>
+            <h1 class="mt-5 text-2xl font-bold text-gray-900 dark:text-white">{{ t('common.publicBookingViewYoureBooked') }}</h1>
             <p class="mt-2 text-gray-600 dark:text-gray-400">{{ confirmation.eventName }}</p>
             <p class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
               {{ formatSlotDate(confirmation.startDateTime) }}
@@ -43,16 +43,12 @@
             <p class="text-indigo-600 dark:text-indigo-400">
               {{ formatSlotTime(confirmation.startDateTime) }} – {{ formatSlotTime(confirmation.endDateTime) }}
             </p>
-            <p class="mt-6 text-sm text-gray-500">
-              A confirmation has been sent to your email. You'll get a reminder before your appointment.
-            </p>
+            <p class="mt-6 text-sm text-gray-500">{{ t('common.publicBookingViewAConfirmationHasBeenSentTo') }}</p>
             <a
               v-if="confirmation.manageUrl"
               :href="confirmation.manageUrl"
               class="mt-4 inline-block text-sm font-medium text-indigo-600 underline"
-            >
-              Reschedule or cancel
-            </a>
+            >{{ t('common.publicBookingViewRescheduleOrCancel') }}</a>
           </div>
       </div>
 
@@ -98,9 +94,7 @@
             v-if="page.isTeam"
             class="mt-1 text-sm"
             :class="isEmbed ? 'text-gray-500 dark:text-gray-400' : 'text-white/75'"
-          >
-            Book with our team
-          </p>
+          >{{ t('common.publicBookingViewBookWithOurTeam') }}</p>
           <p
             class="mt-2 max-w-md mx-auto text-sm leading-relaxed"
             :class="isEmbed ? 'text-gray-600 dark:text-gray-400' : 'text-white/85'"
@@ -152,9 +146,8 @@
           <!-- Step 1: Date & time -->
           <div v-show="step === 'schedule'" class="p-6 sm:p-8">
             <button type="button" class="mb-4 flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800" @click="step = 'type'">
-              <ChevronLeftIcon class="h-4 w-4" /> Back
-            </button>
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Pick a date</h2>
+              <ChevronLeftIcon class="h-4 w-4" />{{ t('performance.back') }}</button>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('common.publicBookingViewPickADate') }}</h2>
             <div class="mt-3 flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
               <button
                 v-for="d in dateOptions"
@@ -171,7 +164,7 @@
               </button>
             </div>
 
-            <h3 class="mt-6 text-sm font-semibold text-gray-700 dark:text-gray-300">Available times</h3>
+            <h3 class="mt-6 text-sm font-semibold text-gray-700 dark:text-gray-300">{{ t('common.publicBookingViewAvailableTimes') }}</h3>
             <p v-if="visitorTimezoneLabel" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
               Times in your timezone ({{ visitorTimezoneLabel }})
               <span v-if="scheduleTimezoneLabel && scheduleTimezoneLabel !== visitorTimezoneLabel">
@@ -202,24 +195,21 @@
               :style="{ backgroundColor: accent }"
               :disabled="!selectedSlot"
               @click="step = 'details'"
-            >
-              Continue
-            </button>
+            >{{ t('performance.next') }}</button>
           </div>
 
           <!-- Step 2: Details -->
           <div v-show="step === 'details'" class="p-6 sm:p-8">
             <button type="button" class="mb-4 flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800" @click="step = 'schedule'">
-              <ChevronLeftIcon class="h-4 w-4" /> Back
-            </button>
+              <ChevronLeftIcon class="h-4 w-4" />{{ t('performance.back') }}</button>
             <div class="mb-5 rounded-xl bg-gray-50 p-4 dark:bg-gray-800/50">
-              <p class="text-xs font-medium uppercase text-gray-500">Your time</p>
+              <p class="text-xs font-medium uppercase text-gray-500">{{ t('common.publicBookingViewYourTime') }}</p>
               <p class="mt-1 font-semibold text-gray-900 dark:text-white">
                 {{ selectedSlot ? formatSlotDate(selectedSlot.start) : '' }}
               </p>
               <p class="text-sm text-[var(--accent)]">{{ selectedSlot ? formatSlotTime(selectedSlot.start) : '' }}</p>
             </div>
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Your details</h2>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('common.publicBookingViewYourDetails') }}</h2>
             <form class="mt-4 space-y-4" @submit.prevent="submitBooking">
               <div class="grid gap-4 sm:grid-cols-2">
                 <div>
@@ -227,7 +217,7 @@
                   <input v-model="guest.firstName" required class="field-input mt-1" />
                 </div>
                 <div>
-                  <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Last name</label>
+                  <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('settings.assignRulesCondFieldLastName') }}</label>
                   <input v-model="guest.lastName" class="field-input mt-1" />
                 </div>
               </div>
@@ -236,7 +226,7 @@
                 <input v-model="guest.email" type="email" required class="field-input mt-1" />
               </div>
               <div>
-                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Phone</label>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('settings.settingsAddFieldTypePhone') }}</label>
                 <input v-model="guest.phone" type="tel" class="field-input mt-1" />
               </div>
               <div v-for="field in page.customFields" :key="field.key">
@@ -278,13 +268,16 @@
           </div>
         </div>
 
-        <p v-if="!isEmbed" class="mt-6 text-center text-xs text-white/60">Powered by your CRM</p>
+        <p v-if="!isEmbed" class="mt-6 text-center text-xs text-white/60">{{ t('common.publicBookingViewPoweredByYourCrm') }}</p>
       </template>
     </div>
   </div>
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import {

@@ -6,17 +6,17 @@
         type="checkbox"
         class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
       />
-      <span>Use business hours for SLA calculations</span>
+      <span>{{ t('settings.helpdeskSlaUseBusinessHours') }}</span>
     </label>
 
     <template v-if="enabled">
       <p class="text-xs text-gray-500 dark:text-gray-400">
-        SLA targets count only time inside the selected schedule (breaks and holidays excluded).
+        {{ t('settings.helpdeskSlaHintBefore') }}
         <RouterLink
           :to="{ path: '/settings', query: { tab: 'business-hours' } }"
           class="font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
         >
-          Manage schedules
+          {{ t('settings.helpdeskSlaManageSchedules') }}
         </RouterLink>
       </p>
 
@@ -45,31 +45,31 @@
 
       <AvailabilitySourceCard
         v-if="scheduleSource === 'inherit'"
-        label="Company SLA schedule"
+        :label="t('settings.helpdeskSlaCompanySchedule')"
       />
 
       <div v-else-if="scheduleSource === 'custom'" class="space-y-2">
-        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Saved schedule</label>
+        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('settings.helpdeskSlaSavedSchedule') }}</label>
         <BusinessHoursSelect
           v-model="businessHourSetId"
           :options="setOptions"
-          placeholder="Select a schedule…"
+          :placeholder="t('settings.helpdeskSlaSelectSchedulePh')"
         />
-        <p v-if="setsLoading" class="text-xs text-gray-500">Loading schedules…</p>
+        <p v-if="setsLoading" class="text-xs text-gray-500">{{ t('settings.helpdeskSlaLoadingSchedules') }}</p>
         <p v-else-if="!setOptions.length" class="text-xs text-amber-600 dark:text-amber-400">
-          No schedules found. Create one under Business Hours in Settings.
+          {{ t('settings.helpdeskSlaNoSchedules') }}
         </p>
       </div>
 
       <div v-else class="space-y-4">
-        <p class="text-xs text-gray-500 dark:text-gray-400">Inline hours used only for Helpdesk SLA (not shared with other modules).</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.helpdeskSlaInlineHint') }}</p>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
-            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Timezone</label>
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.helpdeskSlaTimezone') }}</label>
             <TimezoneSelect v-model="timezone" />
           </div>
           <div>
-            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Start</label>
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.helpdeskSlaStart') }}</label>
             <input
               v-model="startTime"
               type="time"
@@ -77,7 +77,7 @@
             />
           </div>
           <div>
-            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">End</label>
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.helpdeskSlaEnd') }}</label>
             <input
               v-model="endTime"
               type="time"
@@ -107,11 +107,14 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { RouterLink } from 'vue-router';
 import AvailabilitySourceCard from '@/components/business-hours/AvailabilitySourceCard.vue';
 import BusinessHoursSelect from '@/components/business-hours/BusinessHoursSelect.vue';
 import TimezoneSelect from '@/components/business-hours/TimezoneSelect.vue';
 import { useBusinessHours } from '@/composables/useBusinessHours';
+
+const { t } = useI18n();
 
 const businessHours = defineModel('businessHours', {
   type: Object,
@@ -122,21 +125,21 @@ const { fetchSets } = useBusinessHours();
 const setsLoading = ref(false);
 const scheduleSets = ref([]);
 
-const sourceOptions = [
-  { value: 'inherit', label: 'Company default schedule', hint: 'Uses your org default from Business Hours settings.' },
-  { value: 'custom', label: 'Pick a saved schedule', hint: 'Choose any active schedule (e.g. Support Team India).' },
-  { value: 'legacy', label: 'Helpdesk-only inline hours', hint: 'Keep separate hours just for SLA on this page.' }
-];
+const sourceOptions = computed(() => [
+  { value: 'inherit', label: t('settings.helpdeskSlaSourceInherit'), hint: t('settings.helpdeskSlaSourceInheritHint') },
+  { value: 'custom', label: t('settings.helpdeskSlaSourceCustom'), hint: t('settings.helpdeskSlaSourceCustomHint') },
+  { value: 'legacy', label: t('settings.helpdeskSlaSourceLegacy'), hint: t('settings.helpdeskSlaSourceLegacyHint') }
+]);
 
-const weekDays = [
-  { value: 0, label: 'Sun' },
-  { value: 1, label: 'Mon' },
-  { value: 2, label: 'Tue' },
-  { value: 3, label: 'Wed' },
-  { value: 4, label: 'Thu' },
-  { value: 5, label: 'Fri' },
-  { value: 6, label: 'Sat' }
-];
+const weekDays = computed(() => [
+  { value: 0, label: t('settings.helpdeskSlaDaySun') },
+  { value: 1, label: t('settings.helpdeskSlaDayMon') },
+  { value: 2, label: t('settings.helpdeskSlaDayTue') },
+  { value: 3, label: t('settings.helpdeskSlaDayWed') },
+  { value: 4, label: t('settings.helpdeskSlaDayThu') },
+  { value: 5, label: t('settings.helpdeskSlaDayFri') },
+  { value: 6, label: t('settings.helpdeskSlaDaySat') }
+]);
 
 const enabled = computed({
   get: () => Boolean(businessHours.value?.enabled),

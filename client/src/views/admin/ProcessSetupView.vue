@@ -1,0 +1,280 @@
+<template>
+  <div class="min-h-[calc(100vh-4rem)] bg-gray-50 dark:bg-gray-900 flex flex-col">
+    <header class="shrink-0 px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+      <button
+        type="button"
+        class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+        @click="goBack"
+      >
+        {{ t('process.setupBackToProcesses') }}
+      </button>
+    </header>
+
+    <div class="flex-1 flex items-center justify-center p-6">
+      <div class="w-full max-w-lg">
+        <div class="mb-8 text-center">
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('process.setupTitle') }}</h1>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+            {{ t('process.setupDescription') }}
+          </p>
+        </div>
+
+        <form
+          class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-6 space-y-5"
+          @submit.prevent="continueToDesigner"
+        >
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('process.setupProcessName') }}</label>
+            <input
+              v-model="form.name"
+              type="text"
+              :placeholder="t('process.setupProcessNamePh')"
+              class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {{ t('process.setupApp') }} <span class="text-red-500">*</span>
+            </label>
+            <HeadlessSelect
+              v-model="form.appKey"
+              :options="appOptions"
+              allow-empty
+              :empty-label="t('process.setupSelectApp')"
+              :placeholder="t('process.setupSelectApp')"
+              :button-class="SELECT_CLASS"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {{ t('process.setupModule') }} <span class="text-red-500">*</span>
+            </label>
+            <HeadlessSelect
+              v-model="form.entityType"
+              :options="moduleOptions"
+              allow-empty
+              :empty-label="t('process.setupSelectModule')"
+              :placeholder="t('process.setupSelectModule')"
+              :button-class="SELECT_CLASS"
+              @update:model-value="onModuleChange"
+            />
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ t('process.setupModuleHint') }}</p>
+          </div>
+
+          <div class="rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50/50 dark:bg-indigo-900/20 p-4 space-y-3">
+            <div>
+              <span class="text-[10px] font-semibold uppercase tracking-wide text-indigo-600 dark:text-indigo-400">{{ t('process.setupStep1') }}</span>
+              <label class="block text-sm font-medium text-gray-900 dark:text-white mt-1">
+                {{ t('process.setupStartsWhen') }} <span class="text-red-500">*</span>
+              </label>
+              <HeadlessSelect
+                v-model="form.coreTrigger"
+                :options="coreTriggerOptionsList"
+                allow-empty
+                :empty-label="startsWhenPlaceholder"
+                :placeholder="startsWhenPlaceholder"
+                :disabled="!form.entityType"
+                :button-class="SELECT_CLASS"
+              />
+              <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">{{ startsWhenHint }}</p>
+            </div>
+
+            <div v-if="form.coreTrigger === 'record_updated' && form.entityType">
+              <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('process.setupWatchChanges') }}</label>
+              <HeadlessSelect
+                v-model="form.updateWatchField"
+                :options="watchFieldOptions"
+                :button-class="SELECT_CLASS"
+              />
+              <p class="text-[10px] text-gray-500 mt-1">{{ t('process.setupWatchHint') }}</p>
+            </div>
+
+            <div v-if="form.coreTrigger === 'schedule'" class="space-y-2">
+              <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">{{ t('process.setupFrequency') }}</label>
+              <HeadlessSelect
+                v-model="form.schedule.preset"
+                :options="schedulePresetOptions"
+                :button-class="SELECT_CLASS"
+              />
+              <div
+                v-if="form.schedule.preset === 'daily' || form.schedule.preset === 'weekly'"
+                class="grid grid-cols-2 gap-2"
+              >
+                <div>
+                  <label class="block text-[10px] text-gray-500 mb-1">{{ t('process.setupHour') }}</label>
+                  <input
+                    v-model.number="form.schedule.hour"
+                    type="number"
+                    min="0"
+                    max="23"
+                    class="w-full px-2 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900"
+                  />
+                </div>
+                <div>
+                  <label class="block text-[10px] text-gray-500 mb-1">{{ t('process.setupMinute') }}</label>
+                  <input
+                    v-model.number="form.schedule.minute"
+                    type="number"
+                    min="0"
+                    max="59"
+                    class="w-full px-2 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <p v-if="form.coreTrigger === 'webhook'" class="text-xs text-amber-700 dark:text-amber-300">
+              {{ t('process.setupWebhookNote') }}
+            </p>
+          </div>
+
+          <div class="rounded-lg bg-gray-50 dark:bg-gray-900/50 px-3 py-2">
+            <p class="text-[10px] font-semibold uppercase text-gray-500 mb-1">{{ t('process.setupSummary') }}</p>
+            <p class="text-sm text-gray-800 dark:text-gray-200">{{ scopeSummary }}</p>
+          </div>
+
+          <p v-if="error" class="text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+
+          <div class="flex gap-3 pt-1">
+            <button
+              type="button"
+              class="flex-1 px-4 py-2.5 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+              @click="goBack"
+            >
+              {{ t('actions.cancel') }}
+            </button>
+            <button
+              type="submit"
+              :disabled="!canContinue || saving"
+              class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg disabled:opacity-50"
+            >
+              {{ saving ? t('process.setupCreating') : t('process.setupContinue') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
+import apiClient from '@/utils/apiClient';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
+import {
+  getAppOptions,
+  getModuleOptions,
+  coreTriggerOptions,
+  getSchedulePresetOptions,
+  getCoreTriggerDescription,
+  PROCESS_SELECT_BUTTON_CLASS,
+  updateWatchFieldOptions,
+  buildTriggerFromCore,
+  buildProcessScopeSentence
+} from '@/utils/processDesignerConstants';
+
+const { t } = useI18n();
+const router = useRouter();
+const SELECT_CLASS = PROCESS_SELECT_BUTTON_CLASS;
+
+const saving = ref(false);
+const error = ref(null);
+
+const form = ref({
+  name: '',
+  appKey: '',
+  entityType: '',
+  coreTrigger: '',
+  updateWatchField: '__any__',
+  schedule: { preset: 'daily', hour: 9, minute: 0, dayOfWeek: 1, timezone: 'UTC' }
+});
+
+const appOptions = computed(() => getAppOptions(t));
+const moduleOptions = computed(() => getModuleOptions(t));
+const coreTriggerOptionsList = computed(() => coreTriggerOptions(t));
+const schedulePresetOptions = computed(() => getSchedulePresetOptions(t));
+const watchFieldOptions = computed(() => updateWatchFieldOptions(form.value.entityType, t));
+
+const startsWhenPlaceholder = computed(() => {
+  if (!form.value.entityType) return t('process.setupSelectModuleFirst');
+  return t('process.setupChooseTrigger');
+});
+
+const startsWhenHint = computed(() => {
+  if (!form.value.entityType) return t('process.setupPickModuleForTrigger');
+  return getCoreTriggerDescription(t, form.value.coreTrigger);
+});
+
+const scopeSummary = computed(() =>
+  buildProcessScopeSentence(
+    {
+      appKey: form.value.appKey,
+      entityType: form.value.entityType,
+      coreTrigger: form.value.coreTrigger,
+      trigger: buildTriggerFromCore(form.value.coreTrigger, form.value.entityType, {
+        updateWatchField: form.value.updateWatchField,
+        schedule: form.value.schedule
+      })
+    },
+    t
+  )
+);
+
+const canContinue = computed(
+  () =>
+    !!(form.value.appKey && form.value.entityType && form.value.coreTrigger)
+);
+
+function onModuleChange() {
+  if (!form.value.entityType) {
+    form.value.coreTrigger = '';
+  }
+}
+
+function buildPayload() {
+  return {
+    name: form.value.name.trim() || t('process.setupUntitled'),
+    description: '',
+    appKey: form.value.appKey,
+    entityType: form.value.entityType,
+    trigger: buildTriggerFromCore(form.value.coreTrigger, form.value.entityType, {
+      updateWatchField: form.value.updateWatchField,
+      schedule: form.value.schedule
+    }),
+    triggerConfigured: true,
+    status: 'draft',
+    nodes: [],
+    edges: []
+  };
+}
+
+async function continueToDesigner() {
+  if (!canContinue.value) return;
+  saving.value = true;
+  error.value = null;
+  try {
+    const res = await apiClient.post('/admin/processes', buildPayload());
+    if (!res.success) throw new Error(res.message || t('process.setupCreateFailed'));
+    if (res.webhookSecret) {
+      alert(t('process.designerWebhookSecret', { secret: res.webhookSecret }));
+    }
+    await router.push({ name: 'process-designer', params: { id: res.data._id } });
+  } catch (e) {
+    error.value = e.message || t('process.setupCreateFailed');
+  } finally {
+    saving.value = false;
+  }
+}
+
+function goBack() {
+  router.push({ name: 'settings-automation-processes' });
+}
+
+onMounted(() => {
+  document.title = t('process.setupPageTitle');
+});
+</script>

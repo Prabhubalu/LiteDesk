@@ -9,6 +9,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import NotificationOverview from '@/views/settings/NotificationOverview.vue';

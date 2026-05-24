@@ -1,0 +1,34 @@
+{
+  "integrationsSettingsSmtpGmailCom587": {
+    "message": "smtp.gmail.com:587",
+    "description": "Auto-migrated from integrationsSettings"
+  },
+  "modulesAndFieldsSelectNonSystemEventFieldsTo": {
+    "message": "Select non-system event fields to include in Quick Create.\n                      Fields are grouped by ownership (core, participation, custom) to match field configuration.",
+    "description": "Auto-migrated from modulesAndFields"
+  },
+  "modulesAndFieldsTheseSettingsConfigureFormLinkingEligibility": {
+    "message": "These settings configure form linking eligibility (whether forms can be linked to events), not form assignment or execution.\n                    Form assignment and execution belong in Work interfaces.",
+    "description": "Auto-migrated from modulesAndFields"
+  },
+  "modulesAndFieldsImportant": {
+    "message": "Important:",
+    "description": "Auto-migrated from modulesAndFields"
+  },
+  "modulesAndFieldsTheseSettingsConfigureGeoRequirementsWhether": {
+    "message": "These settings configure geo requirements (whether geo tracking must be enabled), not geo tracking execution. \n                    Geo tracking execution (GPS capture, radius validation) belongs in Work interfaces.",
+    "description": "Auto-migrated from modulesAndFields"
+  },
+  "modulesAndFieldsImportant2": {
+    "message": "Important:",
+    "description": "Auto-migrated from modulesAndFields"
+  },
+  "modulesAndFieldsTheseCheckboxesConfigureFieldRequirementsWhich": {
+    "message": "These checkboxes configure field requirements (which roles must be assigned), not role assignment itself. \n                    Role assignment happens in Work interfaces when creating/editing events.",
+    "description": "Auto-migrated from modulesAndFields"
+  },
+  "modulesAndFieldsImportant3": {
+    "message": "Important:",
+    "description": "Auto-migrated from modulesAndFields"
+  }
+}

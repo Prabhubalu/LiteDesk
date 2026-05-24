@@ -1,0 +1,422 @@
+{
+  "settings": {
+    "message": "設定",
+    "description": "Settings area navigation label"
+  },
+  "home": {
+    "message": "家",
+    "description": "Home dashboard navigation label"
+  },
+  "profile": {
+    "message": "プロフィール",
+    "description": "User profile settings navigation label"
+  },
+  "inbox": {
+    "message": "受信箱",
+    "description": "Communications inbox navigation label"
+  },
+  "signOut": {
+    "message": "サインアウト",
+    "description": "Sign out of the application"
+  },
+  "noNav": {
+    "message": "ナビゲーションは利用できません",
+    "description": "Empty sidebar when no modules are configured"
+  },
+  "userMenu": {
+    "message": "ユーザーメニュー",
+    "description": "User avatar menu aria-label"
+  },
+  "toggleMenu": {
+    "message": "メニューの切り替え",
+    "description": "Mobile navigation menu toggle"
+  },
+  "closeSidebar": {
+    "message": "サイドバーを閉じる",
+    "description": "Screen reader label for mobile drawer close"
+  },
+  "openSidebar": {
+    "message": "サイドバーを開く",
+    "description": "Screen reader label for mobile drawer open"
+  },
+  "syncStatus": {
+    "message": "同期ステータス",
+    "description": "Audit offline sync status button"
+  },
+  "portalAudits": {
+    "message": "監査",
+    "description": "Portal bottom nav audits tab"
+  },
+  "portalActions": {
+    "message": "アクション",
+    "description": "Portal bottom nav actions tab"
+  },
+  "collapseSidebar": {
+    "message": "サイドバーを折りたたむ",
+    "description": "Collapse app sidebar tooltip"
+  },
+  "coreModules": {
+    "message": "コアモジュール",
+    "description": "Core modules section tooltip"
+  },
+  "coreSection": {
+    "message": "コア",
+    "description": "Core modules section heading"
+  },
+  "help": {
+    "message": "ヘルプ",
+    "description": "Sidebar help link"
+  },
+  "loadingNavigation": {
+    "message": "ナビゲーションの読み込み中",
+    "description": "Sidebar skeleton aria-label"
+  },
+  "salesAppFallback": {
+    "message": "販売",
+    "description": "Default app name when active app is unset"
+  },
+  "tabClose": {
+    "message": "近い",
+    "description": "Close single tab context menu item"
+  },
+  "tabCloseOthers": {
+    "message": "その他を閉じる",
+    "description": "Close other tabs context menu item"
+  },
+  "tabCloseToRight": {
+    "message": "右側のタブを閉じる",
+    "description": "Close tabs to the right context menu item"
+  },
+  "tabCloseAll": {
+    "message": "すべてのタブを閉じる",
+    "description": "Close all tabs context menu item"
+  },
+  "tabAccount": {
+    "message": "アカウント",
+    "description": "Tab bar account menu tooltip"
+  },
+  "tabCloseTab": {
+    "message": "タブを閉じる",
+    "description": "Close tab button aria-label"
+  },
+  "globalSearchPlaceholder": {
+    "message": "検索またはコマンドを実行してください…",
+    "description": "Global search modal input placeholder"
+  },
+  "globalSearchSearching": {
+    "message": "検索中…",
+    "description": "Global search loading state"
+  },
+  "globalSearchNoCommands": {
+    "message": "一致するコマンドはありません",
+    "description": "Command palette no matches"
+  },
+  "globalSearchNoCommandsHint": {
+    "message": "別のコマンドを試すか、ESC キーを押して終了します。",
+    "description": "Command palette no matches hint"
+  },
+  "globalSearchNoResults": {
+    "message": "結果が見つかりませんでした",
+    "description": "Global search no entity results"
+  },
+  "globalSearchNoResultsHint": {
+    "message": "名前、メールアドレス、またはキーワードで検索してみてください。",
+    "description": "Global search no results hint"
+  },
+  "globalSearchConfirmTitle": {
+    "message": "本気ですか？",
+    "description": "Destructive command confirmation title"
+  },
+  "globalSearchToCancel": {
+    "message": "キャンセルする",
+    "description": "Keyboard hint fragment after ESC"
+  },
+  "globalSearchToConfirm": {
+    "message": "確認する",
+    "description": "Keyboard hint fragment after Enter"
+  },
+  "globalSearchCommandsHeader": {
+    "message": "コマンド",
+    "description": "Command palette section header"
+  },
+  "globalSearchTypeToFind": {
+    "message": "入力してコマンドを検索します",
+    "description": "Command palette empty query hint"
+  },
+  "globalSearchStartTyping": {
+    "message": "入力を開始して検索します",
+    "description": "Search mode empty state"
+  },
+  "globalSearchSlashHint": {
+    "message": "/ を使用して作成、リンク、または移動します",
+    "description": "Discoverability hint for command mode trigger"
+  },
+  "globalSearchGroupPeople": {
+    "message": "人々",
+    "description": "Search results group label"
+  },
+  "globalSearchGroupOrganizations": {
+    "message": "組織",
+    "description": "Search results group label"
+  },
+  "globalSearchGroupWork": {
+    "message": "仕事",
+    "description": "Search results group label"
+  },
+  "globalSearchGroupConfiguration": {
+    "message": "構成",
+    "description": "Search results group label"
+  },
+  "globalSearchUnknownUser": {
+    "message": "不明なユーザー",
+    "description": "Fallback display name in search"
+  },
+  "globalSearchLinkModule": {
+    "message": "リンク {module}",
+    "description": "Link drawer title when module name capitalized"
+  },
+  "userAccountFallback": {
+    "message": "あなたのアカウント",
+    "description": "User menu display name fallback"
+  },
+  "userStatusLabel": {
+    "message": "ステータス: {label}",
+    "description": "User menu status dot aria-label"
+  },
+  "userClearStatus": {
+    "message": "クリアステータス",
+    "description": "Clear custom status button title"
+  },
+  "userSetAvailability": {
+    "message": "セットの可用性",
+    "description": "Availability picker listbox aria-label"
+  },
+  "userSetCustomStatus": {
+    "message": "カスタムステータスを設定…",
+    "description": "Open custom status editor"
+  },
+  "userEditCustomStatus": {
+    "message": "カスタムステータスを編集…",
+    "description": "Edit existing custom status"
+  },
+  "userStatusPlaceholder": {
+    "message": "あなたのステータスは何ですか？",
+    "description": "Custom status input placeholder"
+  },
+  "userPickEmoji": {
+    "message": "絵文字を選択してください",
+    "description": "Emoji picker button title"
+  },
+  "userYourProfile": {
+    "message": "あなたのプロフィール",
+    "description": "User menu profile link"
+  },
+  "userControlPanel": {
+    "message": "コントロールパネル",
+    "description": "Admin control panel link"
+  },
+  "userBookingPages": {
+    "message": "予約ページ",
+    "description": "User menu appointments link"
+  },
+  "userTrash": {
+    "message": "ごみ",
+    "description": "User menu trash link"
+  },
+  "userSwitchToLight": {
+    "message": "ライトモードに切り替える",
+    "description": "Theme toggle label when dark"
+  },
+  "userSwitchToDark": {
+    "message": "ダークモードに切り替える",
+    "description": "Theme toggle label when light"
+  },
+  "tabBookingPages": {
+    "message": "予約ページ",
+    "description": "Tab title for appointments pages"
+  },
+  "approvals": {
+    "message": "承認",
+    "description": "Approvals shell navigation label"
+  },
+  "attention": {
+    "message": "注意",
+    "description": "Attention shell navigation label"
+  },
+  "search": {
+    "message": "検索",
+    "description": "Search shell navigation label"
+  },
+  "dashboard": {
+    "message": "概要",
+    "description": "App dashboard navigation label"
+  },
+  "modulePeople": {
+    "message": "人々",
+    "description": "People module navigation label"
+  },
+  "moduleContacts": {
+    "message": "連絡先",
+    "description": "Contacts module navigation label"
+  },
+  "moduleOrganizations": {
+    "message": "組織",
+    "description": "Organizations module navigation label"
+  },
+  "moduleTasks": {
+    "message": "タスク",
+    "description": "Tasks module navigation label"
+  },
+  "moduleEvents": {
+    "message": "イベント",
+    "description": "Events module navigation label"
+  },
+  "moduleForms": {
+    "message": "フォーム",
+    "description": "Forms module navigation label"
+  },
+  "moduleItems": {
+    "message": "アイテム",
+    "description": "Items module navigation label"
+  },
+  "moduleDeals": {
+    "message": "商談",
+    "description": "Deals module navigation label"
+  },
+  "moduleResponses": {
+    "message": "応答",
+    "description": "Form responses module navigation label"
+  },
+  "moduleImports": {
+    "message": "輸入",
+    "description": "Imports module navigation label"
+  },
+  "moduleCases": {
+    "message": "事例",
+    "description": "Helpdesk cases module navigation label"
+  },
+  "moduleFindings": {
+    "message": "調査結果",
+    "description": "Audit findings module navigation label"
+  },
+  "moduleAudits": {
+    "message": "監査",
+    "description": "Audits module navigation label"
+  },
+  "appSales": {
+    "message": "販売",
+    "description": "Sales app name in app switcher"
+  },
+  "appAudit": {
+    "message": "監査",
+    "description": "Audit app name in app switcher"
+  },
+  "appHelpdesk": {
+    "message": "ヘルプデスク",
+    "description": "Helpdesk app name in app switcher"
+  },
+  "appProjects": {
+    "message": "プロジェクト",
+    "description": "Projects app name in app switcher"
+  },
+  "appPortal": {
+    "message": "ポータル",
+    "description": "Portal app name in app switcher"
+  },
+  "salesDashboard": {
+    "message": "セールスダッシュボード",
+    "description": "Sales dashboard tab title"
+  },
+  "auditDashboard": {
+    "message": "監査ダッシュボード",
+    "description": "Audit dashboard tab title"
+  },
+  "appDashboard": {
+    "message": "{app} ダッシュボード",
+    "description": "App-scoped dashboard tab title"
+  },
+  "tabDemoRequests": {
+    "message": "デモのリクエスト",
+    "description": "Demo requests tab title"
+  },
+  "tabInstances": {
+    "message": "インスタンス",
+    "description": "Instances tab title"
+  },
+  "tabAutomationRules": {
+    "message": "自動化ルール",
+    "description": "Automation rules tab title"
+  },
+  "tabProcesses": {
+    "message": "プロセス",
+    "description": "Processes tab title"
+  },
+  "tabBusinessFlows": {
+    "message": "ビジネスの流れ",
+    "description": "Business flows tab title"
+  },
+  "tabAutomation": {
+    "message": "オートメーション",
+    "description": "Automation settings tab title"
+  },
+  "tabFlowHealth": {
+    "message": "フローヘルス",
+    "description": "Business flow health tab title"
+  },
+  "tabEditBusinessFlow": {
+    "message": "業務フローの編集",
+    "description": "Edit business flow tab title"
+  },
+  "tabCreateBusinessFlow": {
+    "message": "業務フローの作成",
+    "description": "Create business flow tab title"
+  },
+  "tabBusinessFlow": {
+    "message": "業務の流れ",
+    "description": "Business flow detail tab title"
+  },
+  "tabMyAudits": {
+    "message": "私の監査",
+    "description": "My audits tab title"
+  },
+  "tabAuditDetail": {
+    "message": "監査の詳細",
+    "description": "Audit detail tab title"
+  },
+  "tabPersonalBooking": {
+    "message": "個人予約ページ",
+    "description": "Personal booking page tab title"
+  },
+  "tabTeamBooking": {
+    "message": "チーム予約ページ",
+    "description": "Team booking page tab title"
+  },
+  "tabNewTeamPage": {
+    "message": "新しいチームページ",
+    "description": "New team booking page tab title"
+  },
+  "tabBookingPage": {
+    "message": "予約ページ",
+    "description": "User booking page tab title"
+  },
+  "tabCaseDetail": {
+    "message": "事件の詳細",
+    "description": "Helpdesk case detail tab title"
+  },
+  "tabFormResponseDetail": {
+    "message": "({id}) 詳細",
+    "description": "Form response detail tab title"
+  },
+  "tabRecordNamed": {
+    "message": "{module}: {name}",
+    "description": "Record tab with entity name"
+  },
+  "tabRecordDetail": {
+    "message": "{module} 詳細",
+    "description": "Record detail tab title without name"
+  },
+  "tabPage": {
+    "message": "ページ",
+    "description": "Generic fallback tab title"
+  }
+}

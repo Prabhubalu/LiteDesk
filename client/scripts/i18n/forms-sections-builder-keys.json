@@ -1,0 +1,634 @@
+{
+  "permBlockingActive": {
+    "message": "This form is currently active and in use.\nTo make this change, create a new version.",
+    "description": "Tooltip when structural edit blocked on active form"
+  },
+  "permBlockingArchived": {
+    "message": "This form is archived and cannot be edited.\nTo make changes, duplicate the form.",
+    "description": "Tooltip when edit blocked on archived form"
+  },
+  "builderBannerActiveBefore": {
+    "message": "This form is ",
+    "description": "Active form banner lead-in before status"
+  },
+  "builderBannerActiveAfter": {
+    "message": " and in use. Only cosmetic changes (titles, labels, help text) are allowed.",
+    "description": "Active form banner text after status"
+  },
+  "builderBannerStructuralNote": {
+    "message": "Structural changes (adding/removing sections or questions, changing question types, modifying scoring) are blocked to protect data integrity.",
+    "description": "Active form structural changes note"
+  },
+  "builderBannerArchivedBefore": {
+    "message": "This form is ",
+    "description": "Archived form banner lead-in"
+  },
+  "builderBannerArchivedAfter": {
+    "message": " and read-only. To make changes, duplicate the form.",
+    "description": "Archived form banner text after status"
+  },
+  "builderBannerDraftBefore": {
+    "message": "This form is in ",
+    "description": "Draft form banner lead-in"
+  },
+  "builderBannerDraftMiddle": {
+    "message": " status. Complete the form and save to set it to ",
+    "description": "Draft form banner between status labels"
+  },
+  "builderBannerDraftEnd": {
+    "message": ".",
+    "description": "Draft form banner closing period"
+  },
+  "builderQuestionsHeading": {
+    "message": "Questions",
+    "description": "Flat mode questions panel heading"
+  },
+  "builderQuestionCount": {
+    "message": "{count, plural, one {# question} other {# questions}}",
+    "description": "Question count label"
+  },
+  "builderNewQuestionPh": {
+    "message": "New Question",
+    "description": "Default question text placeholder"
+  },
+  "builderHelpTextPh": {
+    "message": "Optional description or guidance",
+    "description": "Question help text placeholder on card"
+  },
+  "builderRequired": {
+    "message": "Required",
+    "description": "Required question badge"
+  },
+  "builderAddQuestion": {
+    "message": "Add Question",
+    "description": "Add question palette heading"
+  },
+  "builderInspector": {
+    "message": "Inspector",
+    "description": "Inspector panel title"
+  },
+  "builderQuestionIndex": {
+    "message": "Question {number}",
+    "description": "Selected question index label"
+  },
+  "builderBasics": {
+    "message": "Basics",
+    "description": "Question basics settings section"
+  },
+  "builderQuestionText": {
+    "message": "Question Text",
+    "description": "Question text field label"
+  },
+  "builderDescriptionHelpText": {
+    "message": "Description / Help Text",
+    "description": "Help text field label"
+  },
+  "builderHelpTextInspectorPh": {
+    "message": "Optional hint or explanation shown under the question",
+    "description": "Help text placeholder in inspector"
+  },
+  "builderType": {
+    "message": "Type",
+    "description": "Question type field label"
+  },
+  "builderQtText": {
+    "message": "Text",
+    "description": "Question type display: Text"
+  },
+  "builderQtTextarea": {
+    "message": "Textarea",
+    "description": "Question type display: Textarea"
+  },
+  "builderQtEmail": {
+    "message": "Email",
+    "description": "Question type display: Email"
+  },
+  "builderQtNumber": {
+    "message": "Number",
+    "description": "Question type display: Number"
+  },
+  "builderQtDate": {
+    "message": "Date",
+    "description": "Question type display: Date"
+  },
+  "builderQtDropdown": {
+    "message": "Dropdown",
+    "description": "Question type display: Dropdown"
+  },
+  "builderQtRating": {
+    "message": "Rating",
+    "description": "Question type display: Rating"
+  },
+  "builderQtFile": {
+    "message": "File",
+    "description": "Question type display: File"
+  },
+  "builderQtSignature": {
+    "message": "Signature",
+    "description": "Question type display: Signature"
+  },
+  "builderQtYesNo": {
+    "message": "Yes-No",
+    "description": "Question type display: Yes-No"
+  },
+  "builderOptions": {
+    "message": "Options",
+    "description": "Dropdown options section heading"
+  },
+  "builderOptionNumber": {
+    "message": "Option {number}",
+    "description": "Dropdown option placeholder"
+  },
+  "builderAddOption": {
+    "message": "Add Option",
+    "description": "Add dropdown option button"
+  },
+  "builderSelectQuestionEmpty": {
+    "message": "Select a question to edit its settings",
+    "description": "Flat mode inspector empty state"
+  },
+  "builderStructure": {
+    "message": "Structure",
+    "description": "Structure panel heading"
+  },
+  "builderTitleAddSection": {
+    "message": "Add new section",
+    "description": "Add section button tooltip"
+  },
+  "builderAddSection": {
+    "message": "Add Section",
+    "description": "Add section button label"
+  },
+  "builderSectionNumber": {
+    "message": "Section {number} ·",
+    "description": "Section index prefix in structure tree"
+  },
+  "builderTitleRemoveSection": {
+    "message": "Remove section",
+    "description": "Remove section tooltip"
+  },
+  "builderSubsectionNamePh": {
+    "message": "Enter subsection name",
+    "description": "Subsection name placeholder"
+  },
+  "builderAddInline": {
+    "message": "+ Add",
+    "description": "Inline add subsection control"
+  },
+  "builderSubsectionActions": {
+    "message": "Subsection actions",
+    "description": "Subsection menu button title"
+  },
+  "builderTitleDuplicateSubsection": {
+    "message": "Duplicate subsection",
+    "description": "Duplicate subsection menu tooltip"
+  },
+  "builderDuplicate": {
+    "message": "Duplicate",
+    "description": "Duplicate menu action"
+  },
+  "builderTitleDeleteSubsection": {
+    "message": "Delete subsection",
+    "description": "Delete subsection menu tooltip"
+  },
+  "builderDelete": {
+    "message": "Delete",
+    "description": "Delete menu action"
+  },
+  "builderAddSubsection": {
+    "message": "+ Add subsection",
+    "description": "Add subsection button"
+  },
+  "builderCanvas": {
+    "message": "Canvas",
+    "description": "Canvas panel heading"
+  },
+  "builderPreview": {
+    "message": "Preview",
+    "description": "Preview form button"
+  },
+  "builderCanvasQuestionCount": {
+    "message": "{count, plural, one {# question} other {# questions}}",
+    "description": "Canvas subtitle question count"
+  },
+  "builderTitleRemoveQuestion": {
+    "message": "Remove question",
+    "description": "Remove question tooltip"
+  },
+  "builderAddQuestionTypeTitle": {
+    "message": "Add {type} question",
+    "description": "Add question palette button tooltip"
+  },
+  "builderQuestionSettings": {
+    "message": "Question Settings",
+    "description": "Inspector title when editing question"
+  },
+  "builderSubsectionSettings": {
+    "message": "Subsection Settings",
+    "description": "Inspector title when editing subsection"
+  },
+  "builderSectionSettings": {
+    "message": "Section Settings",
+    "description": "Inspector title when editing section"
+  },
+  "builderQuestionTextLabel": {
+    "message": "Question text",
+    "description": "Question text label in structured inspector"
+  },
+  "builderHelpTextLabel": {
+    "message": "Help text",
+    "description": "Help text label in structured inspector"
+  },
+  "builderHelpTextStructuredPh": {
+    "message": "Optional hint shown under question",
+    "description": "Help text placeholder structured mode"
+  },
+  "builderVisibility": {
+    "message": "Visibility",
+    "description": "Visibility settings section"
+  },
+  "builderShowQuestionIf": {
+    "message": "Show this question if",
+    "description": "Conditional visibility label"
+  },
+  "builderQuestionsAvailable": {
+    "message": "({count} questions available)",
+    "description": "Conditional visibility hint count"
+  },
+  "builderAlwaysVisible": {
+    "message": "Always visible",
+    "description": "Conditional visibility default option"
+  },
+  "builderQuestionFallback": {
+    "message": "Question {number}",
+    "description": "Fallback label for unnamed question in dropdown"
+  },
+  "builderCondition": {
+    "message": "Condition",
+    "description": "Conditional operator label"
+  },
+  "builderCondEquals": {
+    "message": "equals",
+    "description": "Conditional operator equals"
+  },
+  "builderCondNotEquals": {
+    "message": "does not equal",
+    "description": "Conditional operator not equals"
+  },
+  "builderCondContains": {
+    "message": "contains",
+    "description": "Conditional operator contains"
+  },
+  "builderCondNotContains": {
+    "message": "does not contain",
+    "description": "Conditional operator not contains"
+  },
+  "builderCondGreaterThan": {
+    "message": "is greater than",
+    "description": "Conditional operator greater than"
+  },
+  "builderCondLessThan": {
+    "message": "is less than",
+    "description": "Conditional operator less than"
+  },
+  "builderValue": {
+    "message": "Value",
+    "description": "Conditional value label"
+  },
+  "builderSelectOption": {
+    "message": "Select an option",
+    "description": "Conditional value empty option"
+  },
+  "builderAnswerYes": {
+    "message": "Yes",
+    "description": "Yes answer option label"
+  },
+  "builderAnswerNo": {
+    "message": "No",
+    "description": "No answer option label"
+  },
+  "builderSelectRating": {
+    "message": "Select a rating",
+    "description": "Conditional rating placeholder"
+  },
+  "builderEnterNumberPh": {
+    "message": "Enter number",
+    "description": "Conditional number placeholder"
+  },
+  "builderEnterEmailPh": {
+    "message": "Enter email",
+    "description": "Conditional email placeholder"
+  },
+  "builderEnterValuePh": {
+    "message": "Enter value",
+    "description": "Conditional text placeholder"
+  },
+  "builderScoring": {
+    "message": "Scoring",
+    "description": "Scoring settings section"
+  },
+  "builderEnableScoring": {
+    "message": "Enable scoring",
+    "description": "Enable scoring checkbox label"
+  },
+  "builderPassIfAnswer": {
+    "message": "Pass if answer is",
+    "description": "Pass condition label"
+  },
+  "builderPassOptionsHint": {
+    "message": "Select one or more options that constitute a pass:",
+    "description": "Dropdown pass options hint"
+  },
+  "builderAddOptionsFirst": {
+    "message": "Add options above first",
+    "description": "Empty dropdown pass options hint"
+  },
+  "builderMinRating": {
+    "message": "Minimum rating:",
+    "description": "Minimum rating label"
+  },
+  "builderRatingPassHint": {
+    "message": "Answers with rating ≥ {min} will pass",
+    "description": "Rating pass threshold hint"
+  },
+  "builderRuleGte": {
+    "message": "Greater than or equal to (≥)",
+    "description": "Number scoring rule gte"
+  },
+  "builderRuleLte": {
+    "message": "Less than or equal to (≤)",
+    "description": "Number scoring rule lte"
+  },
+  "builderRuleBetween": {
+    "message": "Between (inclusive)",
+    "description": "Number scoring rule between"
+  },
+  "builderEnterMinValuePh": {
+    "message": "Enter minimum value",
+    "description": "Number pass min placeholder"
+  },
+  "builderEnterMaxValuePh": {
+    "message": "Enter maximum value",
+    "description": "Number pass max placeholder"
+  },
+  "builderMinValuePh": {
+    "message": "Minimum value",
+    "description": "Between rule min placeholder"
+  },
+  "builderMaxValuePh": {
+    "message": "Maximum value",
+    "description": "Between rule max placeholder"
+  },
+  "builderWeight": {
+    "message": "Weight",
+    "description": "Scoring weight label"
+  },
+  "builderWeightDefaultPh": {
+    "message": "1",
+    "description": "Default weight input placeholder"
+  },
+  "builderWeightQuestionHint": {
+    "message": "Default weight is 1. Higher weights contribute more to the overall score.",
+    "description": "Question weight hint"
+  },
+  "builderCriticalQuestion": {
+    "message": "Critical question",
+    "description": "Critical question checkbox"
+  },
+  "builderCriticalQuestionHint": {
+    "message": "If a critical question fails, its parent section fails immediately regardless of score.",
+    "description": "Critical question hint"
+  },
+  "builderEvidence": {
+    "message": "Evidence",
+    "description": "Evidence settings section"
+  },
+  "builderEnableEvidence": {
+    "message": "Enable evidence capture",
+    "description": "Enable evidence checkbox"
+  },
+  "builderEvidenceRulesHint": {
+    "message": "Configure evidence requirements per answer option. Evidence inputs will appear during audit execution when the selected answer matches a rule.",
+    "description": "Evidence rules intro"
+  },
+  "builderEvidenceRuleNumber": {
+    "message": "Rule {number}",
+    "description": "Evidence rule heading"
+  },
+  "builderRemove": {
+    "message": "Remove",
+    "description": "Remove evidence rule button"
+  },
+  "builderWhenAnswerIs": {
+    "message": "When answer is:",
+    "description": "Evidence rule when label"
+  },
+  "builderEvidenceComment": {
+    "message": "Comment",
+    "description": "Evidence type comment"
+  },
+  "builderEvidenceImage": {
+    "message": "Image upload",
+    "description": "Evidence type image"
+  },
+  "builderEvidenceVideo": {
+    "message": "Video upload",
+    "description": "Evidence type video"
+  },
+  "builderEvidenceNotRequired": {
+    "message": "Not required",
+    "description": "Evidence requirement hidden"
+  },
+  "builderEvidenceOptional": {
+    "message": "Optional",
+    "description": "Evidence requirement optional"
+  },
+  "builderEvidenceRequired": {
+    "message": "Required",
+    "description": "Evidence requirement required"
+  },
+  "builderAddRule": {
+    "message": "Add Rule",
+    "description": "Add evidence rule button"
+  },
+  "builderEvidenceValidation": {
+    "message": "At least one evidence type must be enabled when any rule is marked as Required.",
+    "description": "Evidence validation error"
+  },
+  "builderAdvanced": {
+    "message": "Advanced",
+    "description": "Advanced settings section"
+  },
+  "builderQuestionId": {
+    "message": "Question ID",
+    "description": "Question ID field label"
+  },
+  "builderQuestionIdHint": {
+    "message": "Unique identifier for this question (used in conditional logic)",
+    "description": "Question ID hint"
+  },
+  "builderDisplayOrder": {
+    "message": "Display Order",
+    "description": "Display order field label"
+  },
+  "builderDisplayOrderHint": {
+    "message": "Lower numbers appear first (0 = first)",
+    "description": "Display order hint"
+  },
+  "builderPassFailDefinition": {
+    "message": "Pass/Fail Definition",
+    "description": "Pass fail definition label"
+  },
+  "builderPassFailDefinitionPh": {
+    "message": "Optional: Define what constitutes a pass or fail for this question",
+    "description": "Pass fail definition placeholder"
+  },
+  "builderFileSettings": {
+    "message": "File Settings",
+    "description": "File question settings section"
+  },
+  "builderAllowMultipleFiles": {
+    "message": "Allow multiple files",
+    "description": "Allow multiple files checkbox"
+  },
+  "builderSubsectionName": {
+    "message": "Subsection name",
+    "description": "Subsection name field label"
+  },
+  "builderWeightSubsectionHint": {
+    "message": "Default weight is 1. Higher weights contribute more to the section score.",
+    "description": "Subsection weight hint"
+  },
+  "builderPassThreshold": {
+    "message": "Pass threshold (%)",
+    "description": "Pass threshold percent label"
+  },
+  "builderThresholdDefaultPh": {
+    "message": "100",
+    "description": "Default threshold placeholder"
+  },
+  "builderSubsectionThresholdHint": {
+    "message": "Subsection passes if its score percentage is ≥ this threshold. Default is 100%.",
+    "description": "Subsection threshold hint"
+  },
+  "builderSectionName": {
+    "message": "Section name",
+    "description": "Section name field label"
+  },
+  "builderWeightSectionHint": {
+    "message": "Default weight is 1. Higher weights contribute more to the overall audit score.",
+    "description": "Section weight hint"
+  },
+  "builderSectionThresholdHint": {
+    "message": "Section passes if its score percentage is ≥ this threshold. Default is 100%.",
+    "description": "Section threshold hint"
+  },
+  "builderSelectTargetEmpty": {
+    "message": "Select a question, subsection, or section to edit its settings",
+    "description": "Structured inspector empty state"
+  },
+  "builderEmptyAuditLead": {
+    "message": "Start by creating your first section.",
+    "description": "Empty state audit mode"
+  },
+  "builderEmptyFlatLead": {
+    "message": "Start by adding your first question.",
+    "description": "Empty state flat mode"
+  },
+  "builderAddFirstQuestion": {
+    "message": "Add Your First Question",
+    "description": "Empty state add first question"
+  },
+  "builderAddFirstSection": {
+    "message": "Add Your First Section",
+    "description": "Empty state add first section"
+  },
+  "builderAddSectionOptional": {
+    "message": "Add Section (optional)",
+    "description": "Empty state optional section button"
+  },
+  "builderPaletteShortText": {
+    "message": "Short Text",
+    "description": "Question palette short text"
+  },
+  "builderPaletteLongText": {
+    "message": "Long Text",
+    "description": "Question palette long text"
+  },
+  "builderPaletteYesNo": {
+    "message": "Yes / No",
+    "description": "Question palette yes no"
+  },
+  "builderPaletteDropdown": {
+    "message": "Dropdown",
+    "description": "Question palette dropdown"
+  },
+  "builderPaletteRating": {
+    "message": "Rating",
+    "description": "Question palette rating"
+  },
+  "builderPaletteNumber": {
+    "message": "Number",
+    "description": "Question palette number"
+  },
+  "builderPaletteDate": {
+    "message": "Date",
+    "description": "Question palette date"
+  },
+  "builderPaletteEmail": {
+    "message": "Email",
+    "description": "Question palette email"
+  },
+  "builderPaletteFileUpload": {
+    "message": "File Upload",
+    "description": "Question palette file"
+  },
+  "builderPaletteSignature": {
+    "message": "Signature",
+    "description": "Question palette signature"
+  },
+  "builderStructureSectionNamePh": {
+    "message": "Section name",
+    "description": "Structure tree section name placeholder"
+  },
+  "builderStructureSubsectionNamePh": {
+    "message": "Subsection name",
+    "description": "Structure tree subsection name placeholder"
+  },
+  "builderEnterSectionNamePh": {
+    "message": "Enter section name",
+    "description": "Section name placeholder in inspector"
+  },
+  "builderEnterSubsectionNamePh": {
+    "message": "Enter subsection name",
+    "description": "Subsection name placeholder in inspector"
+  },
+  "builderUntitledSubsection": {
+    "message": "Untitled subsection",
+    "description": "Fallback subsection title"
+  },
+  "builderUntitledSection": {
+    "message": "Untitled section",
+    "description": "Fallback section title"
+  },
+  "builderNoSubsectionSelected": {
+    "message": "No subsection selected",
+    "description": "Canvas title when nothing selected"
+  },
+  "builderSectionSummary": {
+    "message": "{subsectionCount, plural, one {# subsection} other {# subsections}} • {questionCount, plural, one {# question} other {# questions}}",
+    "description": "Section summary in structure panel"
+  },
+  "builderDefaultSectionName": {
+    "message": "General Compliance",
+    "description": "Default audit section name"
+  },
+  "builderDefaultOption1": {
+    "message": "Option 1",
+    "description": "Default dropdown option 1"
+  },
+  "builderDefaultOption2": {
+    "message": "Option 2",
+    "description": "Default dropdown option 2"
+  }
+}

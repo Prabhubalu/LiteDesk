@@ -1,7 +1,7 @@
 <template>
   <!-- Conversation style: [Older] ... [Newest] ───── [Composer] -->
   <section :class="['record-activity-timeline', 'flex', 'flex-col', { 'flex-1': expandToFill, 'min-h-0': expandToFill }]" aria-labelledby="record-activity-heading">
-    <h2 id="record-activity-heading" class="sr-only">Activity (newest at bottom)</h2>
+    <h2 id="record-activity-heading" class="sr-only">{{ t('records.activityHeadingSr') }}</h2>
     
     <!-- Activity feed – scrollable; inner wrapper anchors content at bottom when short -->
     <div
@@ -24,7 +24,7 @@
           <slot name="event" :event="event" :index="index">
             <!-- Default event rendering -->
             <div v-if="event.type === 'system'" class="text-sm text-gray-600 dark:text-gray-400">
-              <span>{{ event.message || `${event.action || 'updated'} this record` }}</span>
+              <span>{{ event.message || t('records.activitySystemWithAction', { action: event.action || t('records.activityUpdated') }) }}</span>
               <span v-if="event.createdAt" class="ml-2 text-xs text-gray-400 dark:text-gray-500">
                 {{ formatDate(event.createdAt) }}
               </span>
@@ -84,7 +84,7 @@
                     type="button"
                     class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none"
                   >
-                    Reply
+                    {{ t('records.activityReply') }}
                   </button>
                 </div>
               </div>
@@ -94,7 +94,7 @@
       </ul>
       
       <div v-if="events.length === 0" class="flex-shrink-0 px-4 py-6 text-sm text-gray-500 dark:text-gray-400 text-center">
-        <slot name="empty">No activity yet.</slot>
+        <slot name="empty">{{ t('records.activityEmpty') }}</slot>
       </div>
       </div>
     </div>
@@ -104,7 +104,7 @@
       <slot name="commentInput" :submit="handleSubmitComment">
         <textarea
           v-model="commentText"
-          placeholder="Write a comment..."
+          :placeholder="t('records.activityCommentPh')"
           rows="3"
           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent resize-none"
         />
@@ -113,21 +113,21 @@
             <button
               type="button"
               class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none"
-              title="Add attachment"
+              :title="t('records.activityAddAttachment')"
             >
               <PaperClipIcon class="w-5 h-5" />
             </button>
             <button
               type="button"
               class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none"
-              title="Mention"
+              :title="t('records.activityMention')"
             >
               <span class="text-sm font-medium">@</span>
             </button>
             <button
               type="button"
               class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none"
-              title="Emoji"
+              :title="t('records.activityEmoji')"
             >
               <span class="text-sm">😊</span>
             </button>
@@ -138,7 +138,7 @@
             :disabled="!commentText.trim()"
             class="px-4 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none"
           >
-            Comment
+            {{ t('records.activityCommentBtn') }}
           </button>
         </div>
       </slot>
@@ -148,7 +148,10 @@
 
 <script setup>
 import { ref, nextTick, onMounted, onUnmounted, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { PaperClipIcon, HandThumbUpIcon, HandThumbDownIcon } from '@heroicons/vue/24/outline';
+
+const { t } = useI18n();
 
 const feedEl = ref(null);
 

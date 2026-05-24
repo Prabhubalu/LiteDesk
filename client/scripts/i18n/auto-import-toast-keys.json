@@ -1,0 +1,22 @@
+{
+  "cSVImportModalToastPleaseUploadACsvFile": {
+    "message": "Please upload a CSV file",
+    "description": "Toast from CSVImportModal.vue"
+  },
+  "cSVImportModalToastCsvFileIsEmpty": {
+    "message": "CSV file is empty",
+    "description": "Toast from CSVImportModal.vue"
+  },
+  "cSVImportModalToastErrorParsingCsvFilePlease": {
+    "message": "Error parsing CSV file. Please check the format and try again.",
+    "description": "Toast from CSVImportModal.vue"
+  },
+  "cSVImportModalToastErrorCheckingForDuplicatesPlease": {
+    "message": "Error checking for duplicates. Please try again.",
+    "description": "Toast from CSVImportModal.vue"
+  },
+  "cSVImportModalToastErrorImportingDataPleaseTry": {
+    "message": "Error importing data. Please try again.",
+    "description": "Toast from CSVImportModal.vue"
+  }
+}

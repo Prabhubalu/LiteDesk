@@ -44,6 +44,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { watch, onMounted } from 'vue';
 import { useNotifications, setGlobalNotificationFn } from '@/composables/useNotifications';
 import { CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/vue/24/solid';

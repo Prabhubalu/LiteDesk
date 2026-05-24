@@ -1,5 +1,5 @@
 <template>
-  <CardWidget title="Key Fields">
+  <CardWidget :title="t('common.keyFieldsTitle')">
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center py-8">
       <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
@@ -27,21 +27,24 @@
           <template v-if="getFieldValueForDisplay(fieldDef)">
             {{ getFieldValueForDisplay(fieldDef) }}
           </template>
-          <span v-else class="text-gray-400 dark:text-gray-500 italic">Empty</span>
+          <span v-else class="text-gray-400 dark:text-gray-500 italic">{{ t('common.keyFieldsEmptyValue') }}</span>
         </div>
       </div>
     </div>
     <!-- Empty State -->
     <div v-else class="text-center py-8">
       <KeyIcon class="mx-auto h-10 w-10 text-gray-400 dark:text-gray-600 mb-2" />
-      <p class="text-sm text-gray-500 dark:text-gray-400">No key fields configured</p>
-      <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Mark fields as "Key Field" in module settings</p>
+      <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('common.keyFieldsNone') }}</p>
+      <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">{{ t('common.keyFieldsHint') }}</p>
     </div>
   </CardWidget>
 </template>
 
 <script setup>
 import { ref, computed, inject } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import CardWidget from '@/components/common/CardWidget.vue';
 import { getKeyFields, getFieldValue } from '@/utils/fieldDisplay';
 import { KeyIcon } from '@heroicons/vue/24/outline';

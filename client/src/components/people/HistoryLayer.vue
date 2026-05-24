@@ -30,11 +30,9 @@
       <div class="flex items-center justify-between">
         <div class="flex-1">
           <div class="flex items-center gap-2 mb-2">
-            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">History</span>
+            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ t('people.historyLayerHistory') }}</span>
           </div>
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-            Activity Timeline
-          </h2>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('people.historyLayerActivityTimeline') }}</h2>
           <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
             Complete chronological history — what happened, when, and in which app
           </p>
@@ -63,6 +61,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import ActivityTimeline from '@/components/ActivityTimeline.vue';
 import SecondaryActionMenu from '@/components/ui/SecondaryActionMenu.vue';
 import { computed } from 'vue';
@@ -85,6 +84,8 @@ const props = defineProps({
     default: null
   }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['create-task', 'schedule-meeting', 'add-note', 'email', 'retry-email']);
 

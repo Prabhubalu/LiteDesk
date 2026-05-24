@@ -191,16 +191,12 @@
             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
           </svg>
           <div class="flex-1">
-            <h3 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-1">
-              Error Loading Organization
-            </h3>
+            <h3 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-1">{{ t('organizations.organizationSurfaceErrorLoadingOrganization') }}</h3>
             <p class="text-sm text-red-700 dark:text-red-300">{{ error }}</p>
             <button 
               @click="fetchOrganization"
               class="mt-3 text-sm text-red-700 dark:text-red-300 hover:underline"
-            >
-              Try again
-            </button>
+            >{{ t('organizations.organizationSurfaceTryAgain') }}</button>
           </div>
         </div>
       </div>
@@ -233,7 +229,7 @@
             
             <!-- Primary Contact -->
             <div v-if="organization.primaryContact" class="mt-2">
-              <span class="text-sm text-gray-500 dark:text-gray-400">Primary Contact: </span>
+              <span class="text-sm text-gray-500 dark:text-gray-400">{{ t('organizations.organizationSurfacePrimaryContact') }}</span>
               <button
                 @click="openTab(`/people/${organization.primaryContact.id}`, { insertAdjacent: true })"
                 class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
@@ -250,9 +246,7 @@
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-            Email
-          </button>
+            </svg>{{ t('settings.settingsAddFieldTypeEmail') }}</button>
         </div>
       </div>
 
@@ -260,20 +254,15 @@
       <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
         <div class="flex items-center justify-between mb-2">
           <div>
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              People <span v-if="organization.peopleCount !== undefined" class="text-gray-500 dark:text-gray-400 font-normal">({{ organization.peopleCount }})</span>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ t('settings.coreModDetailModulePeople') }}<span v-if="organization.peopleCount !== undefined" class="text-gray-500 dark:text-gray-400 font-normal">({{ organization.peopleCount }})</span>
             </h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              People associated with this organization
-            </p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ t('organizations.organizationSurfacePeopleAssociatedWithThisOrganization') }}</p>
           </div>
           <button
             v-if="organization.peopleCount > organization.peoplePreview.length"
             @click="openTab(`/people?organization=${organization.id}`, { insertAdjacent: true })"
             class="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-          >
-            View all
-          </button>
+          >{{ t('settings.roleDrawerPermViewAll') }}</button>
         </div>
         
         <div v-if="organization.peoplePreview && organization.peoplePreview.length > 0" class="space-y-2 mt-4">
@@ -324,9 +313,7 @@
               </div>
             </div>
           </div>
-          <p v-else class="text-sm text-gray-500 dark:text-gray-400">
-            Work exists for this app.
-          </p>
+          <p v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('organizations.organizationSurfaceWorkExistsForThisApp') }}</p>
         </div>
         
         <!-- Empty state: Explain why data is missing, guide to context -->
@@ -347,9 +334,7 @@
             @click="showBusinessDetails = !showBusinessDetails"
             class="flex-1 flex items-center justify-between text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 -m-6 p-6 transition-colors rounded-lg"
           >
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              Business Details
-            </h2>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ t('organizations.organizationSurfaceBusinessDetails') }}</h2>
             <svg
               :class="['w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform flex-shrink-0', { 'rotate-180': showBusinessDetails }]"
               fill="none"
@@ -367,19 +352,15 @@
             @click="showEditDrawer = true"
             class="ml-4 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             :title="'Edit shared business information like address, website, and industry.'"
-          >
-            Edit business details
-          </button>
+          >{{ t('organizations.organizationSurfaceEditBusinessDetails') }}</button>
         </div>
         
         <div v-if="showBusinessDetails" class="px-6 pb-6 space-y-4">
           <!-- Helper note: Explain that details are managed by apps -->
-          <p class="text-xs text-gray-500 dark:text-gray-400 italic mb-4 pb-4 border-b border-gray-100 dark:border-gray-700">
-            These details are managed by the app that uses them (e.g., Sales, Helpdesk).
-          </p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 italic mb-4 pb-4 border-b border-gray-100 dark:border-gray-700">{{ t('organizations.organizationSurfaceTheseDetailsAreManagedByThe') }}</p>
           
           <div v-if="organization.website" class="flex items-start">
-            <span class="text-sm font-medium text-gray-600 dark:text-gray-400 w-24 flex-shrink-0">Website:</span>
+            <span class="text-sm font-medium text-gray-600 dark:text-gray-400 w-24 flex-shrink-0">{{ t('organizations.organizationSurfaceWebsite') }}</span>
             <a
               :href="organization.website"
               target="_blank"
@@ -391,7 +372,7 @@
           </div>
           
           <div v-if="organization.phone" class="flex items-start">
-            <span class="text-sm font-medium text-gray-600 dark:text-gray-400 w-24 flex-shrink-0">Phone:</span>
+            <span class="text-sm font-medium text-gray-600 dark:text-gray-400 w-24 flex-shrink-0">{{ t('organizations.organizationSurfacePhone') }}</span>
             <a
               :href="`tel:${organization.phone}`"
               class="text-sm text-gray-900 dark:text-gray-100"
@@ -401,19 +382,19 @@
           </div>
           
           <div v-if="organization.address" class="flex items-start">
-            <span class="text-sm font-medium text-gray-600 dark:text-gray-400 w-24 flex-shrink-0">Address:</span>
+            <span class="text-sm font-medium text-gray-600 dark:text-gray-400 w-24 flex-shrink-0">{{ t('organizations.organizationSurfaceAddress') }}</span>
             <span class="text-sm text-gray-900 dark:text-gray-100">{{ organization.address }}</span>
           </div>
           
           <div v-if="organization.annualRevenue" class="flex items-start">
-            <span class="text-sm font-medium text-gray-600 dark:text-gray-400 w-24 flex-shrink-0">Revenue:</span>
+            <span class="text-sm font-medium text-gray-600 dark:text-gray-400 w-24 flex-shrink-0">{{ t('organizations.organizationSurfaceRevenue') }}</span>
             <span class="text-sm text-gray-900 dark:text-gray-100">
               {{ formatCurrency(organization.annualRevenue) }}
             </span>
           </div>
           
           <div v-if="organization.numberOfEmployees" class="flex items-start">
-            <span class="text-sm font-medium text-gray-600 dark:text-gray-400 w-24 flex-shrink-0">Employees:</span>
+            <span class="text-sm font-medium text-gray-600 dark:text-gray-400 w-24 flex-shrink-0">{{ t('organizations.organizationSurfaceEmployees') }}</span>
             <span class="text-sm text-gray-900 dark:text-gray-100">
               {{ organization.numberOfEmployees.toLocaleString() }}
             </span>
@@ -430,9 +411,7 @@
       <!-- ARCHITECTURAL NOTE: This section explains why actions may or may not be allowed -->
       <!-- It does NOT enforce, hide, disable, or change behavior -->
       <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-          Action Availability
-        </h2>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{{ t('organizations.organizationSurfaceActionAvailability') }}</h2>
         
         <div class="space-y-3">
           <div
@@ -476,9 +455,7 @@
 
       <!-- E. Activity Timeline (consistent with Person: threads, unread, email) -->
       <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-          Recent Activity
-        </h2>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{{ t('organizations.organizationSurfaceRecentActivity') }}</h2>
         <ActivityTimeline
           v-if="organization?.id"
           :key="`activity-${organization.id}-${activityRefreshKey}`"
@@ -510,6 +487,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useTabs } from '@/composables/useTabs';

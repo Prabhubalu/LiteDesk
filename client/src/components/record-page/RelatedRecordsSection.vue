@@ -1,6 +1,6 @@
 <template>
   <section class="related-records-section py-3" aria-labelledby="related-records-heading">
-    <h2 id="related-records-heading" class="sr-only">Related records</h2>
+    <h2 id="related-records-heading" class="sr-only">{{ t('records.relatedRecordsHeadingSr') }}</h2>
     <AccordionSection
       :title="'Related Records'"
       :storage-key="storageKey"
@@ -37,6 +37,9 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ChevronRightIcon } from '@heroicons/vue/24/solid';
 import AccordionSection from './AccordionSection.vue';
 

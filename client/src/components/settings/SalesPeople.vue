@@ -10,19 +10,19 @@
         </div>
         <div class="flex-1">
           <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-300 mb-2">
-            People Configuration Moved
+            {{ t('settings.settingsSalesPeopleTitle') }}
           </h3>
           <p class="text-sm text-blue-800 dark:text-blue-400 mb-4">
-            People is a Core module shared across all applications. Configuration for People (fields, layouts, relationships, quick create) is now managed in <strong>Settings → Core Modules → People</strong>.
+            {{ t('settings.settingsSalesPeopleBody1', { path: t('settings.settingsSalesPeoplePath') }) }}
           </p>
           <p class="text-sm text-blue-800 dark:text-blue-400 mb-4">
-            Sales participation fields are shown in Core → People settings and remain governed by the field model (owner + intent + fieldScope).
+            {{ t('settings.settingsSalesPeopleBody2') }}
           </p>
           <button
             @click="goToCorePeople"
             class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-700 dark:text-blue-300 bg-white dark:bg-gray-800 border border-blue-300 dark:border-blue-700 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
           >
-            <span>Open People Settings</span>
+            <span>{{ t('settings.settingsSalesPeopleOpenBtn') }}</span>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
@@ -39,14 +39,16 @@
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
       </svg>
-      Back to Sales Settings
+      {{ t('settings.settingsSalesPeopleBack') }}
     </button>
   </div>
 </template>
 
 <script setup>
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 
+const { t } = useI18n();
 const router = useRouter();
 
 const goToCorePeople = () => {
@@ -69,4 +71,3 @@ const goBack = () => {
   });
 };
 </script>
-

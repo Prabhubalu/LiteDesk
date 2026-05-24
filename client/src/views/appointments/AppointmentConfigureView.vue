@@ -5,34 +5,29 @@
       class="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 transition hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
       @click="goToPagesHub"
     >
-      ← Booking Pages
+      {{ t('appointments.backToPages') }}
     </button>
       <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p class="text-sm font-medium text-indigo-600 dark:text-indigo-400">
-            {{ isAdminEdit ? 'Admin · Booking page' : 'Personal booking page' }}
+            {{ isAdminEdit ? t('appointments.adminBookingPage') : t('appointments.personalBookingPage') }}
           </p>
           <h1 class="mt-1 text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-            {{ isAdminEdit ? editUserLabel : 'Booking page' }}
+            {{ isAdminEdit ? editUserLabel : t('appointments.bookingPageTitle') }}
           </h1>
           <p class="mt-2 max-w-xl text-gray-600 dark:text-gray-400">
-            <template v-if="isAdminEdit">
-              Configure this user's public booking page and availability.
-            </template>
-            <template v-else>
-              Share your link so customers can book time on your calendar. Every booking creates an event automatically.
-            </template>
+            {{ isAdminEdit ? t('appointments.adminConfigureHint') : t('appointments.personalConfigureHint') }}
           </p>
           <RouterLink
-            to="/control/automation-rules"
+            to="/settings/automation/automation-rules"
             class="mt-2 inline-flex text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
           >
-            Set up automations for bookings →
+            {{ t('appointments.automationsLink') }}
           </RouterLink>
         </div>
         <div class="flex items-center gap-3">
           <label class="flex cursor-pointer items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <span class="text-gray-600 dark:text-gray-300">Page live</span>
+            <span class="text-gray-600 dark:text-gray-300">{{ t('appointments.pageLive') }}</span>
             <button
               type="button"
               role="switch"
@@ -53,7 +48,7 @@
             :disabled="saving || !slugAvailable"
             @click="handleSave"
           >
-            {{ saving ? 'Saving…' : 'Save changes' }}
+            {{ saving ? t('states.saving') : t('settings.saveChanges') }}
           </button>
         </div>
       </div>
@@ -72,20 +67,20 @@
       <div class="grid gap-8 lg:grid-cols-5">
         <div class="space-y-6 lg:col-span-3">
           <section class="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700/80 dark:bg-gray-900/80">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Public link</h2>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">This is the URL you share with customers.</p>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('appointments.publicLinkHeading') }}</h2>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('appointments.publicLinkHint') }}</p>
             <div class="mt-4">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Page name</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('appointments.pageName') }}</label>
               <input
                 v-model="form.displayName"
                 type="text"
                 class="mt-1.5 w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-2.5 text-gray-900 transition-all focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-800/50 dark:text-white"
-                placeholder="e.g. Book a demo with Alex"
+                :placeholder="t('appointments.pageNamePh')"
                 @blur="maybeAutoSlug"
               />
             </div>
             <div class="mt-4">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">URL path</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('appointments.urlPath') }}</label>
               <div
                 class="mt-1.5 flex overflow-hidden rounded-xl border transition-colors duration-200"
                 :class="slugAvailable ? 'border-gray-200 dark:border-gray-600' : 'border-amber-400 ring-2 ring-amber-400/30'"
@@ -98,12 +93,12 @@
                   @input="onSlugInput"
                 />
               </div>
-              <p v-if="!slugAvailable" class="mt-1 text-xs text-amber-600 dark:text-amber-400">This URL is already taken</p>
+              <p v-if="!slugAvailable" class="mt-1 text-xs text-amber-600 dark:text-amber-400">{{ t('appointments.slugTaken') }}</p>
             </div>
             <div v-if="bookingUrl" class="mt-4 flex items-center gap-2 rounded-xl bg-indigo-50/80 p-3 dark:bg-indigo-950/40">
               <LinkIcon class="h-5 w-5 shrink-0 text-indigo-600 dark:text-indigo-400" />
               <a :href="bookingUrl" target="_blank" rel="noopener" class="min-w-0 truncate text-sm font-medium text-indigo-700 hover:underline dark:text-indigo-300">{{ bookingUrl }}</a>
-              <button type="button" class="shrink-0 rounded-lg bg-white px-2.5 py-1 text-xs font-semibold text-indigo-600 shadow-sm transition hover:bg-indigo-50 dark:bg-gray-800" @click="copyLink">Copy</button>
+              <button type="button" class="shrink-0 rounded-lg bg-white px-2.5 py-1 text-xs font-semibold text-indigo-600 shadow-sm transition hover:bg-indigo-50 dark:bg-gray-800" @click="copyLink">{{ t('actions.copy') }}</button>
             </div>
           </section>
 
@@ -120,10 +115,10 @@
           />
 
           <section class="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm dark:border-gray-700/80 dark:bg-gray-900/80">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Meeting format</h2>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('appointments.meetingFormat') }}</h2>
             <div class="mt-4 grid gap-3 sm:grid-cols-3">
               <button
-                v-for="opt in MEETING_TYPE_OPTIONS"
+                v-for="opt in meetingTypeOptions"
                 :key="opt.value"
                 type="button"
                 class="rounded-xl border-2 p-4 text-left transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
@@ -143,27 +138,27 @@
             v-if="form.meetingType === 'ms_teams'"
             class="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm dark:border-gray-700/80 dark:bg-gray-900/80"
           >
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Microsoft Outlook & Teams</h2>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('appointments.msTeamsHeading') }}</h2>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Connect Microsoft 365 to auto-create Teams links and hide times when you're busy on Outlook.
+              {{ t('appointments.msTeamsHint') }}
             </p>
             <div
               v-if="calendarStatus.microsoft && !calendarStatus.microsoft.configured"
               class="mt-4 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
             >
-              Microsoft OAuth is not configured on the API server yet. Ask your admin to set
+              {{ t('appointments.msOAuthNotConfigured') }}
               <code class="text-xs">MICROSOFT_CALENDAR_CLIENT_ID</code> and
               <code class="text-xs">MICROSOFT_CALENDAR_CLIENT_SECRET</code>.
             </div>
             <div v-else-if="!config?._id" class="mt-4 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
-              Save this page first, then connect Microsoft Calendar.
+              {{ t('appointments.savePageFirstMs') }}
             </div>
             <div v-else class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p v-if="microsoftCalendarConnected" class="text-sm font-medium text-emerald-700 dark:text-emerald-300">
-                  Connected as {{ calendarStatus.microsoft?.accountEmail }}
+                  {{ t('appointments.connectedAs', { email: calendarStatus.microsoft?.accountEmail }) }}
                 </p>
-                <p v-else class="text-sm text-gray-600 dark:text-gray-400">Not connected</p>
+                <p v-else class="text-sm text-gray-600 dark:text-gray-400">{{ t('appointments.notConnected') }}</p>
               </div>
               <div class="flex gap-2">
                 <button
@@ -173,7 +168,7 @@
                   :disabled="microsoftCalendarConnecting || !calendarStatus.microsoft?.configured"
                   @click="connectMicrosoftCalendar"
                 >
-                  {{ microsoftCalendarConnecting ? 'Opening…' : 'Connect Microsoft' }}
+                  {{ microsoftCalendarConnecting ? t('appointments.opening') : t('appointments.connectMicrosoft') }}
                 </button>
                 <button
                   v-else
@@ -181,20 +176,20 @@
                   class="rounded-xl border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300"
                   @click="disconnectMicrosoftCalendar"
                 >
-                  Disconnect
+                  {{ t('appointments.disconnect') }}
                 </button>
               </div>
             </div>
             <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
-              Register an app in
-              <a href="https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps" target="_blank" rel="noopener" class="text-indigo-600 underline">Azure App registrations</a>
-              with delegated permissions: Calendars.Read, Calendars.ReadWrite, OnlineMeetings.ReadWrite, User.Read.
+              {{ t('appointments.msAzureHint') }}
+              <a href="https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps" target="_blank" rel="noopener" class="text-indigo-600 underline">{{ t('appointments.msAzureLink') }}</a>
+              {{ t('appointments.msAzureHintSuffix') }}
             </p>
             <p
               v-if="calendarStatus.microsoft?.redirectUri"
               class="mt-2 rounded-lg bg-gray-100 px-3 py-2 font-mono text-xs text-gray-700 break-all dark:bg-gray-800 dark:text-gray-300"
             >
-              Add this redirect URI in Azure → Authentication → Web:<br />
+              {{ t('appointments.msRedirectHint') }}<br />
               <span class="text-indigo-600 dark:text-indigo-400">{{ calendarStatus.microsoft.redirectUri }}</span>
             </p>
           </section>
@@ -203,19 +198,19 @@
             v-if="form.meetingType === 'google_meet'"
             class="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm dark:border-gray-700/80 dark:bg-gray-900/80"
           >
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Google Calendar & Meet</h2>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('appointments.googleHeading') }}</h2>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Connect Google Calendar to auto-create Meet links and hide times when you're busy on Google.
+              {{ t('appointments.googleHint') }}
             </p>
             <div v-if="!config?._id" class="mt-4 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
-              Save this page first, then connect Google Calendar.
+              {{ t('appointments.savePageFirstGoogle') }}
             </div>
             <div v-else class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p v-if="googleCalendarConnected" class="text-sm font-medium text-emerald-700 dark:text-emerald-300">
-                  Connected as {{ calendarStatus.google?.accountEmail || calendarStatus.accountEmail }}
+                  {{ t('appointments.connectedAs', { email: calendarStatus.google?.accountEmail || calendarStatus.accountEmail }) }}
                 </p>
-                <p v-else class="text-sm text-gray-600 dark:text-gray-400">Not connected</p>
+                <p v-else class="text-sm text-gray-600 dark:text-gray-400">{{ t('appointments.notConnected') }}</p>
               </div>
               <div class="flex gap-2">
                 <button
@@ -225,7 +220,7 @@
                   :disabled="calendarConnecting"
                   @click="connectGoogleCalendar"
                 >
-                  {{ calendarConnecting ? 'Opening…' : 'Connect Google Calendar' }}
+                  {{ calendarConnecting ? t('appointments.opening') : t('appointments.connectGoogle') }}
                 </button>
                 <button
                   v-else
@@ -233,22 +228,22 @@
                   class="rounded-xl border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300"
                   @click="disconnectGoogleCalendar"
                 >
-                  Disconnect
+                  {{ t('appointments.disconnect') }}
                 </button>
               </div>
             </div>
             <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
-              Uses the same Google OAuth app as Gmail (Settings → Integrations → Email). Enable the
-              <strong>Google Calendar API</strong> in your Google Cloud project. If you see
-              “Insufficient permission”, remove this app at
-              <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener" class="text-indigo-600 underline">Google Account permissions</a>
-              then connect again.
+              {{ t('appointments.googleSetupHint') }}
+              <strong>{{ t('appointments.googleCalendarApi') }}</strong>
+              {{ t('appointments.googleSetupHint2') }}
+              <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener" class="text-indigo-600 underline">{{ t('appointments.googlePermissionsLink') }}</a>
+              {{ t('appointments.googleSetupHint3') }}
             </p>
             <p
               v-if="calendarStatus.redirectUri"
               class="mt-2 rounded-lg bg-gray-100 px-3 py-2 font-mono text-xs text-gray-700 break-all dark:bg-gray-800 dark:text-gray-300"
             >
-              Add this exact URL under Google Cloud → OAuth client → Authorized redirect URIs:<br />
+              {{ t('appointments.googleRedirectHint') }}<br />
               <span class="text-indigo-600 dark:text-indigo-400">{{ calendarStatus.redirectUri }}</span>
             </p>
           </section>
@@ -256,13 +251,13 @@
           <AppointmentCustomFieldsEditor v-model="form.customFields" />
 
           <section class="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm dark:border-gray-700/80 dark:bg-gray-900/80">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Branding</h2>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('appointments.branding') }}</h2>
             <div class="mt-4 flex items-center gap-4">
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Accent color</label>
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('appointments.accentColor') }}</label>
               <input v-model="form.branding.themeColor" type="color" class="h-10 w-14 cursor-pointer rounded-lg border-0" />
             </div>
             <div class="mt-4">
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Welcome message</label>
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('appointments.welcomeMessage') }}</label>
               <textarea
                 v-model="form.branding.welcomeNote"
                 rows="3"
@@ -274,7 +269,7 @@
 
         <div class="lg:col-span-2">
           <div class="sticky top-6">
-            <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Live preview</p>
+            <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('appointments.livePreview') }}</p>
             <div
               class="overflow-hidden rounded-2xl border border-gray-200/80 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl dark:border-gray-700"
               :style="{ '--accent': form.branding.themeColor || '#4f46e5' }"
@@ -286,12 +281,12 @@
                     {{ (form.displayName || 'Y')[0] }}
                   </div>
                   <div>
-                    <p class="font-semibold text-gray-900 dark:text-white">{{ form.displayName || 'Your name' }}</p>
-                    <p class="text-sm text-gray-500">{{ form.slotDurationMinutes }} min meeting</p>
+                    <p class="font-semibold text-gray-900 dark:text-white">{{ form.displayName || t('appointments.yourName') }}</p>
+                    <p class="text-sm text-gray-500">{{ t('appointments.minMeeting', { minutes: form.slotDurationMinutes }) }}</p>
                   </div>
                 </div>
                 <p class="mt-4 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                  {{ form.branding.welcomeNote || 'Welcome message preview…' }}
+                  {{ form.branding.welcomeNote || t('appointments.welcomePreviewPh') }}
                 </p>
                 <div class="mt-6 flex flex-wrap gap-2">
                   <span
@@ -302,7 +297,7 @@
                     {{ previewSlot(i) }}
                   </span>
                 </div>
-                <p v-if="!form.enabled" class="mt-4 text-center text-xs font-medium text-amber-600">Page is paused</p>
+                <p v-if="!form.enabled" class="mt-4 text-center text-xs font-medium text-amber-600">{{ t('appointments.pagePaused') }}</p>
               </div>
             </div>
           </div>
@@ -314,6 +309,7 @@
 
 <script setup>
 import { reactive, ref, computed, watch, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter, useRoute } from 'vue-router';
 import apiClient from '@/utils/apiClient';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -340,6 +336,7 @@ const {
   checkSlug
 } = useAppointmentConfig();
 
+const { t } = useI18n();
 const { success: notifySuccess, error: notifyError } = useNotifications();
 const authStore = useAuthStore();
 const router = useRouter();
@@ -353,7 +350,7 @@ const inheritUserIdForSchedule = computed(() => {
   if (isAdminEdit.value) return editUserId.value;
   return authStore.user?._id ? String(authStore.user._id) : null;
 });
-const editUserLabel = ref('User booking page');
+const editUserLabel = ref('');
 const calendarStatus = ref({
   connected: false,
   accountEmail: null,
@@ -367,6 +364,19 @@ const googleCalendarConnected = computed(
   () => calendarStatus.value.google?.connected || calendarStatus.value.connected
 );
 const microsoftCalendarConnected = computed(() => !!calendarStatus.value.microsoft?.connected);
+
+const MEETING_TYPE_KEYS = {
+  offline: 'meetInPerson',
+  google_meet: 'meetGoogle',
+  ms_teams: 'meetTeams'
+};
+
+const meetingTypeOptions = computed(() =>
+  MEETING_TYPE_OPTIONS.map((o) => ({
+    ...o,
+    label: t(`appointments.${MEETING_TYPE_KEYS[o.value]}`)
+  }))
+);
 
 const form = reactive({
   displayName: '',
@@ -412,7 +422,7 @@ async function handleSave() {
   } else {
     await saveConfig({ ...form });
   }
-  notifySuccess('Booking page saved');
+  notifySuccess(t('appointments.pageSaved'));
   await refreshCalendarStatus();
 }
 
@@ -471,14 +481,14 @@ async function connectGoogleCalendar() {
   try {
     const res = await apiClient.get(`/appointments/calendar/${config.value._id}/google/start`);
     if (!res.success || !res.data?.url) {
-      notifyError(res.message || 'Could not start Google connection');
+      notifyError(res.message || t('appointments.googleStartFailed'));
       return;
     }
     await openCalendarOAuthPopup(res.data.url, 'google-calendar-oauth');
     await fetchConfig();
     await refreshCalendarStatus();
   } catch (e) {
-    notifyError(e?.message || 'Connection failed');
+    notifyError(e?.message || t('appointments.connectionFailed'));
   } finally {
     calendarConnecting.value = false;
   }
@@ -489,7 +499,7 @@ async function disconnectGoogleCalendar() {
   await apiClient.delete(`/appointments/calendar/${config.value._id}/google`);
   calendarStatus.value.google = { connected: false, accountEmail: null };
   calendarStatus.value.connected = false;
-  notifySuccess('Google Calendar disconnected');
+  notifySuccess(t('appointments.googleDisconnected'));
 }
 
 async function connectMicrosoftCalendar() {
@@ -498,14 +508,14 @@ async function connectMicrosoftCalendar() {
   try {
     const res = await apiClient.get(`/appointments/calendar/${config.value._id}/microsoft/start`);
     if (!res.success || !res.data?.url) {
-      notifyError(res.message || 'Could not start Microsoft connection');
+      notifyError(res.message || t('appointments.msStartFailed'));
       return;
     }
     await openCalendarOAuthPopup(res.data.url, 'microsoft-calendar-oauth');
     await fetchConfig();
     await refreshCalendarStatus();
   } catch (e) {
-    notifyError(e?.message || 'Connection failed');
+    notifyError(e?.message || t('appointments.connectionFailed'));
   } finally {
     microsoftCalendarConnecting.value = false;
   }
@@ -515,27 +525,27 @@ async function disconnectMicrosoftCalendar() {
   if (!config.value?._id) return;
   await apiClient.delete(`/appointments/calendar/${config.value._id}/microsoft`);
   calendarStatus.value.microsoft = { connected: false, accountEmail: null };
-  notifySuccess('Microsoft Calendar disconnected');
+  notifySuccess(t('appointments.msDisconnected'));
 }
 
 async function fetchConfig() {
   if (isAdminEdit.value) {
     await fetchUserConfig(editUserId.value);
-    editUserLabel.value = config.value?.displayName || 'User booking page';
+    editUserLabel.value = config.value?.displayName || t('appointments.userBookingPage');
   } else {
     await fetchMyConfig();
   }
 }
 
 function goToPagesHub() {
-  openTab('/appointments/pages', { title: 'Booking Pages', icon: '📅' });
+  openTab('/appointments/pages', { title: t('appointments.hubTitle'), icon: '📅' });
   router.push({ name: 'appointments-pages' });
 }
 
 async function copyLink() {
   if (!bookingUrl.value) return;
   await navigator.clipboard.writeText(bookingUrl.value);
-  notifySuccess('Link copied');
+  notifySuccess(t('appointments.linkCopied'));
 }
 
 watch(config, (c) => {
@@ -576,12 +586,16 @@ onMounted(async () => {
   await fetchConfig();
   await refreshCalendarStatus();
   if (route.query.calendar === 'connected') {
-    const provider = route.query.provider === 'microsoft' ? 'Microsoft' : 'Google';
-    notifySuccess(`${provider} Calendar connected`);
+    const provider = route.query.provider === 'microsoft'
+      ? t('appointments.providerMicrosoft')
+      : t('appointments.providerGoogle');
+    notifySuccess(t('appointments.calendarConnected', { provider }));
     router.replace({ query: {} });
   } else if (route.query.calendar === 'error') {
-    const provider = route.query.provider === 'microsoft' ? 'Microsoft' : 'Google';
-    notifyError(route.query.message || `${provider} Calendar connection failed`);
+    const provider = route.query.provider === 'microsoft'
+      ? t('appointments.providerMicrosoft')
+      : t('appointments.providerGoogle');
+    notifyError(route.query.message || t('appointments.calendarConnectFailed', { provider }));
     router.replace({ query: {} });
   }
 });

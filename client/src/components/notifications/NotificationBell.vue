@@ -41,6 +41,9 @@
 
 <script setup>
 import { computed, onMounted, onBeforeUnmount, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { useNotificationStore } from '@/stores/notifications';
 import { useNotificationStream } from '@/composables/useNotificationStream';
 import { useOffline } from '@/composables/useOffline';
@@ -81,12 +84,17 @@ const displayCount = computed(() => {
 });
 
 const ariaLabel = computed(() =>
-  hasUnread.value ? 'Notifications, unread items present' : 'Notifications'
+  hasUnread.value ? t('notifications.bellAriaUnread') : t('notifications.bellAria')
 );
 
-const tooltipText = computed(() =>
-  hasUnread.value ? `${displayCount.value} unread notification${store.unreadCount !== 1 ? 's' : ''}` : 'Notifications'
-);
+const tooltipText = computed(() => {
+  if (!hasUnread.value) return t('notifications.bellAria');
+  const count = store.unreadCount;
+  const key = count === 1
+    ? 'notifications.bellTooltipUnreadOne'
+    : 'notifications.bellTooltipUnreadMany';
+  return t(key, { count });
+});
 
 let streamDisconnect = null;
 

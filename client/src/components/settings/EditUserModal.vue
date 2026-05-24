@@ -14,10 +14,11 @@
           <!-- Header -->
           <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 rounded-t-2xl z-10">
             <div class="flex items-center justify-between">
-              <h2 class="text-xl font-bold text-gray-900 dark:text-white">Edit User</h2>
+              <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ t('settings.editUserTitle') }}</h2>
               <button
                 @click="close"
                 class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                :aria-label="t('common.closePanel')"
               >
                 <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -44,14 +45,14 @@
             <!-- Role -->
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Role *
+                {{ t('settings.inviteRole') }} *
               </label>
               <select
                 v-model="form.roleId"
                 required
                 class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 focus:border-transparent transition-all"
               >
-                <option value="">Select a role</option>
+                <option value="">{{ t('settings.inviteSelectRole') }}</option>
                 <option v-for="role in availableRoles" :key="role._id" :value="role._id">
                   {{ role.name }} - {{ role.description }}
                 </option>
@@ -61,29 +62,29 @@
             <!-- Status -->
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Status *
+                {{ t('settings.editUserStatus') }} *
               </label>
               <select
                 v-model="form.status"
                 required
                 class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 focus:border-transparent transition-all"
               >
-                <option value="active">Active - User can log in and access the system</option>
-                <option value="inactive">Inactive - User cannot log in</option>
-                <option value="suspended">Suspended - Temporarily blocked</option>
+                <option value="active">{{ t('settings.editUserStatusActive') }}</option>
+                <option value="inactive">{{ t('settings.editUserStatusInactive') }}</option>
+                <option value="suspended">{{ t('settings.editUserStatusSuspended') }}</option>
               </select>
             </div>
 
             <!-- App Access -->
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                App Access *
+                {{ t('settings.inviteAppAccess') }} *
               </label>
               <div v-if="loadingCapabilities" class="text-sm text-gray-500 dark:text-gray-400">
-                Loading available apps...
+                {{ t('settings.inviteLoadingApps') }}
               </div>
               <div v-else-if="availableApps.length === 0" class="text-sm text-gray-500 dark:text-gray-400">
-                No apps available for this user's type.
+                {{ t('settings.editUserNoAppsType') }}
               </div>
               <div v-else class="space-y-3">
                 <div
@@ -114,12 +115,12 @@
                             {{ getAppDisplayName(app.appKey) }}
                           </div>
                           <div v-if="app.seatInfo && app.seatInfo.limit !== null" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            {{ app.seatInfo.used }}/{{ app.seatInfo.limit }} seats used
+                            {{ t('settings.inviteSeatsUsed', { used: app.seatInfo.used, limit: app.seatInfo.limit }) }}
                             <span v-if="app.seatInfo.available === 0" class="text-red-600 dark:text-red-400 font-medium">
-                              (No seats available)
+                              {{ t('settings.inviteNoSeats') }}
                             </span>
                             <span v-else-if="app.seatInfo.available !== null" class="text-green-600 dark:text-green-400">
-                              ({{ app.seatInfo.available }} available)
+                              {{ t('settings.inviteSeatsAvailable', { count: app.seatInfo.available }) }}
                             </span>
                           </div>
                         </div>
@@ -127,7 +128,7 @@
 
                       <div v-if="isAppSelected(app.appKey)" class="mt-3 ml-7">
                         <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Role for {{ getAppDisplayName(app.appKey) }}:
+                          {{ t('settings.inviteRoleForApp', { app: getAppDisplayName(app.appKey) }) }}
                         </label>
                         <select
                           v-model="selectedAppRoles[app.appKey]"
@@ -160,10 +161,10 @@
                 </svg>
                 <div class="flex-1">
                   <p class="text-sm font-medium text-yellow-800 dark:text-yellow-300">
-                    {{ form.status === 'inactive' ? 'Deactivating User' : 'Suspending User' }}
+                    {{ form.status === 'inactive' ? t('settings.editUserDeactivating') : t('settings.editUserSuspending') }}
                   </p>
                   <p class="text-sm text-yellow-700 dark:text-yellow-400 mt-1">
-                    This user will no longer be able to access the system. Consider transferring their data ownership before proceeding.
+                    {{ t('settings.editUserStatusWarning') }}
                   </p>
                 </div>
               </div>
@@ -173,9 +174,9 @@
             <div class="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
               <div class="flex items-center justify-between">
                 <div class="flex-1">
-                  <p class="text-sm font-medium text-blue-900 dark:text-blue-300">Reset Password</p>
+                  <p class="text-sm font-medium text-blue-900 dark:text-blue-300">{{ t('settings.editUserResetPassword') }}</p>
                   <p class="text-xs text-blue-700 dark:text-blue-400 mt-1">
-                    Generate a new temporary password and send it to the user's email
+                    {{ t('settings.editUserResetPasswordHint') }}
                   </p>
                 </div>
                 <button
@@ -183,7 +184,7 @@
                   @click="resetPassword"
                   class="px-4 py-2 text-sm font-medium text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/50 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/70 transition-colors"
                 >
-                  Reset
+                  {{ t('settings.editUserReset') }}
                 </button>
               </div>
             </div>
@@ -200,7 +201,7 @@
                 @click="deleteUser"
                 class="px-5 py-2.5 text-sm font-medium text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-all"
               >
-                Delete User
+                {{ t('settings.editUserDeleteAccount') }}
               </button>
 
               <div class="flex items-center gap-3">
@@ -209,7 +210,7 @@
                   @click="close"
                   class="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-all"
                 >
-                  Cancel
+                  {{ t('actions.cancel') }}
                 </button>
                 <button
                   type="submit"
@@ -220,7 +221,7 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  <span>{{ saving ? 'Saving...' : 'Save Changes' }}</span>
+                  <span>{{ saving ? t('settings.editUserSaving') : t('settings.editUserSave') }}</span>
                 </button>
               </div>
             </div>
@@ -234,10 +235,13 @@
 <script setup>
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { ref, watch, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useAppShellStore } from '@/stores/appShell';
 import { invalidateTenantSchemaCaches } from '@/utils/tenantSchemaApiCache';
+
+const { t } = useI18n();
 
 const authStore = useAuthStore();
 const appShellStore = useAppShellStore();
@@ -292,6 +296,8 @@ const availableApps = computed(() => {
 
 const selectedApps = computed(() => Object.keys(selectedAppRoles.value));
 
+const userDisplayName = (user) => `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
+
 const resolveRoleIdFromUser = (candidateUser) => {
   if (!candidateUser) return '';
 
@@ -336,7 +342,7 @@ const fetchCapabilities = async () => {
     }
   } catch (err) {
     console.error('Error fetching capabilities:', err);
-    error.value = 'Failed to load app access capabilities.';
+    error.value = t('settings.editUserLoadAppsFailed');
   } finally {
     loadingCapabilities.value = false;
   }
@@ -427,7 +433,7 @@ const getRoleDisplayName = (appKey, roleKey) => roleDisplayNames[appKey]?.[roleK
 const validateForm = () => {
   validationErrors.value = {};
   if (selectedApps.value.length === 0) {
-    validationErrors.value.appAccess = 'At least one app must remain assigned.';
+    validationErrors.value.appAccess = t('settings.editUserAppAccessRemain');
     return false;
   }
   for (const appKey of selectedApps.value) {
@@ -493,35 +499,35 @@ const handleSubmit = async () => {
 
       emit('user-updated');
     } else {
-      error.value = response.message || 'Failed to update user';
+      error.value = response.message || t('settings.editUserUpdateFailed');
     }
   } catch (err) {
     console.error('Error updating user:', err);
-    error.value = err.message || 'Failed to update user';
+    error.value = err.message || t('settings.editUserUpdateFailed');
   } finally {
     saving.value = false;
   }
 };
 
 const resetPassword = async () => {
-  if (!confirm('Generate a new password and send it to this user via email?')) return;
+  if (!confirm(t('settings.editUserResetConfirm'))) return;
 
   try {
     const response = await apiClient.post(`/users/${props.user._id}/reset-password`);
 
     if (response.success) {
-      alert('Password reset email sent successfully');
+      alert(t('settings.editUserResetSuccess'));
     } else {
-      alert('Failed to reset password');
+      alert(t('settings.editUserResetFailed'));
     }
   } catch (err) {
     console.error('Error resetting password:', err);
-    alert('Failed to reset password');
+    alert(t('settings.editUserResetFailed'));
   }
 };
 
 const deleteUser = async () => {
-  if (!confirm(`Delete user ${props.user.firstName} ${props.user.lastName}? This action cannot be undone.`)) return;
+  if (!confirm(t('settings.editUserDeleteConfirm', { name: userDisplayName(props.user) }))) return;
 
   try {
     const response = await apiClient.delete(`/users/${props.user._id}`);
@@ -529,12 +535,11 @@ const deleteUser = async () => {
     if (response.success) {
       emit('user-updated');
     } else {
-      alert('Failed to delete user');
+      alert(t('settings.editUserDeleteFailed'));
     }
   } catch (err) {
     console.error('Error deleting user:', err);
-    alert('Failed to delete user');
+    alert(t('settings.editUserDeleteFailed'));
   }
 };
 </script>
-

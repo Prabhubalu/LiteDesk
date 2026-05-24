@@ -1,6 +1,6 @@
 <template>
   <section v-if="history.length" class="space-y-2">
-    <h3 v-if="!hideHeader" class="text-base font-semibold text-gray-900 dark:text-white">Stage History</h3>
+    <h3 v-if="!hideHeader" class="text-base font-semibold text-gray-900 dark:text-white">{{ t('records.stageHistoryTitle') }}</h3>
     <div class="space-y-2">
       <div v-for="(entry, index) in history" :key="entry.id || index" class="flex items-center gap-2 text-xs">
         <div class="w-2 h-2 rounded-full bg-indigo-600 dark:bg-indigo-500"></div>
@@ -15,6 +15,9 @@
 
 <script setup>
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
   record: { type: Object, default: null },

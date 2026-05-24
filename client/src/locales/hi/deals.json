@@ -1,0 +1,462 @@
+{
+  "dealFormModalNextFollowUpDate": {
+    "message": "अगली अनुवर्ती तिथि",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalAddDetailsAboutThisDealRequirements": {
+    "message": "इस सौदे, आवश्यकताओं, नोट्स आदि के बारे में विवरण जोड़ें।",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalAdditionalDetails": {
+    "message": "अतिरिक्त विवरण",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalLinkThisDealToAContact": {
+    "message": "इस डील को किसी संपर्क से लिंक करें",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalSelectContact": {
+    "message": "संपर्क चुनें",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalEnterprisePriorityDemo": {
+    "message": "उद्यम, प्राथमिकता, डेमो",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalTagsCommaSeparated": {
+    "message": "टैग (कॉमा लगाकर अलग किए हुए)",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalUrgent": {
+    "message": "अति आवश्यक",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalCrossSell": {
+    "message": "पार बेचने",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalRenewal": {
+    "message": "नवीनीकरण",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalUpsell": {
+    "message": "अपसैल",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalExistingCustomer": {
+    "message": "मौजूदा ग्राहक",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalNewBusiness": {
+    "message": "नया कारोबार",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalSelectType": {
+    "message": "प्रकार चुनें",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalDealType": {
+    "message": "डील का प्रकार",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalClassification": {
+    "message": "वर्गीकरण",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalChangingStageUpdatesStatusAndProbability": {
+    "message": "चरण बदलने से स्थिति और संभावना स्वचालित रूप से अपडेट हो जाती है",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalSelectPipeline": {
+    "message": "पाइपलाइन का चयन करें...",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalExpectedCloseDate": {
+    "message": "अपेक्षित समापन तिथि",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalEGAcmeCorpCrmImplementation": {
+    "message": "उदाहरण के लिए, एक्मे कॉर्प - सीआरएम कार्यान्वयन",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalDealName": {
+    "message": "डील का नाम",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalDealInformation": {
+    "message": "सौदे की जानकारी",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealRelationshipEditorSelectOrganization": {
+    "message": "संगठन चुनें...",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorNoOrganizationsLinkedYet": {
+    "message": "अभी तक कोई संगठन नहीं जुड़ा है.",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorRemoveFromDeal": {
+    "message": "सौदे से हटाएँ",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorSetAsPrimaryCustomer": {
+    "message": "प्राथमिक ग्राहक के रूप में सेट करें",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorOrganizationsOnThisDeal": {
+    "message": "इस डील पर संगठन",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorShowingContactsFor": {
+    "message": "के लिए संपर्क दिखा रहा है",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorSelectPerson": {
+    "message": "व्यक्ति चुनें...",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorNoPeopleLinkedYet": {
+    "message": "अभी तक कोई भी व्यक्ति लिंक नहीं हुआ है.",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorRemoveFromDeal2": {
+    "message": "सौदे से हटाएँ",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorSetAsPrimaryContact": {
+    "message": "प्राथमिक संपर्क के रूप में सेट करें",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorPeopleOnThisDeal": {
+    "message": "इस सौदे पर लोग",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "relatedDealsWidgetCreateFirstDeal": {
+    "message": "पहला सौदा बनाएं",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetNoDealsYet": {
+    "message": "अभी तक कोई डील नहीं",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetAddDeal": {
+    "message": "डील जोड़ें",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetLinkDeals": {
+    "message": "लिंक डील",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetRelatedDeals": {
+    "message": "संबंधित सौदे",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "dealsAddDeal": {
+    "message": "डील जोड़ें",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsNoDealsInThisStage": {
+    "message": "इस चरण में कोई डील नहीं",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsLoadingPipeline": {
+    "message": "पाइपलाइन लोड हो रही है...",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsNewDeal": {
+    "message": "नए सौदे",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsGroupStage": {
+    "message": "ग्रुप चरण",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsUpgradePlan": {
+    "message": "उन्नयन योजना",
+    "description": "Auto-migrated from deals"
+  },
+  "dealDetailAddANote": {
+    "message": "एक नोट जोड़े...",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailAddEvent": {
+    "message": "कार्यक्रम जोड़ें",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailAge": {
+    "message": "आयु",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailExpectedClose": {
+    "message": "अपेक्षित समापन",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailOrganizationsOnThisDeal": {
+    "message": "इस डील पर संगठन",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailPeopleOnThisDeal": {
+    "message": "इस सौदे पर लोग",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailPrimaryCustomer": {
+    "message": "प्राथमिक ग्राहक",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailPrimaryContact": {
+    "message": "प्राथमिक संपर्क",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailSystemOwnedComputedFromStage": {
+    "message": "सिस्टम-स्वामित्व (स्टेज से गणना)",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailBackToDeals": {
+    "message": "डील पर वापस जाएँ",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailLoadingDeal": {
+    "message": "डील लोड हो रही है...",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealFormModalToastFailedToSaveDeal": {
+    "message": "सौदा सहेजने में विफल",
+    "description": "Toast from DealFormModal.vue"
+  },
+  "sysFieldName": {
+    "message": "डील का नाम",
+    "description": "System deal field label"
+  },
+  "sysFieldStage": {
+    "message": "डील स्टेज",
+    "description": "System deal field label"
+  },
+  "sysFieldAmount": {
+    "message": "अपेक्षित मूल्य",
+    "description": "System deal field label"
+  },
+  "sysFieldProbability": {
+    "message": "संभावना (%)",
+    "description": "System deal field label"
+  },
+  "sysFieldExpectedCloseDate": {
+    "message": "करीबी तारीख",
+    "description": "System deal field label"
+  },
+  "sysFieldOwnerId": {
+    "message": "सौदा स्वामी",
+    "description": "System deal field label"
+  },
+  "sysFieldAccountId": {
+    "message": "संगठन",
+    "description": "System deal field label"
+  },
+  "sysFieldContactId": {
+    "message": "संपर्क",
+    "description": "System deal field label"
+  },
+  "sysFieldType": {
+    "message": "डील का प्रकार",
+    "description": "System deal field label"
+  },
+  "sysFieldPipeline": {
+    "message": "पाइपलाइन",
+    "description": "System deal field label"
+  },
+  "sysFieldNextStep": {
+    "message": "अगला कदम",
+    "description": "System deal field label"
+  },
+  "sysFieldTags": {
+    "message": "टैग",
+    "description": "System deal field label"
+  },
+  "sysFieldAssignedTo": {
+    "message": "को सौंपना",
+    "description": "System deal field label"
+  },
+  "sysFieldDescription": {
+    "message": "विवरण",
+    "description": "System deal field label"
+  },
+  "sysFieldDealType": {
+    "message": "डील का प्रकार",
+    "description": "Alias for deal type field"
+  },
+  "activityCreatedDeal": {
+    "message": "यह सौदा बनाया",
+    "description": "Deal record created activity fragment"
+  },
+  "activityUpdatedDeal": {
+    "message": "इस डील को अपडेट किया",
+    "description": "Deal record updated activity fragment"
+  },
+  "activityYouCreatedDeal": {
+    "message": "{actor} ने यह सौदा बनाया",
+    "description": "Deal created system activity line"
+  },
+  "activityYouUpdatedDeal": {
+    "message": "{actor} ने इस सौदे को अद्यतन किया",
+    "description": "Deal updated system activity line"
+  },
+  "picklistNew": {
+    "message": "नया",
+    "description": "Default pipeline stage"
+  },
+  "picklistNewBusiness": {
+    "message": "नया कारोबार",
+    "description": "Common deal type value"
+  },
+  "picklistUpsell": {
+    "message": "अपसैल",
+    "description": "Deal type picklist value"
+  },
+  "picklistCrossSell": {
+    "message": "पार बेचने",
+    "description": "Deal type picklist value"
+  },
+  "picklistRenewal": {
+    "message": "नवीनीकरण",
+    "description": "Deal type picklist value"
+  },
+  "picklistExistingCustomer": {
+    "message": "मौजूदा ग्राहक",
+    "description": "Deal type picklist value"
+  },
+  "stageNew": {
+    "message": "नया",
+    "description": "Default pipeline stage name"
+  },
+  "stageQualified": {
+    "message": "योग्य",
+    "description": "Pipeline stage name"
+  },
+  "stageProposal": {
+    "message": "प्रस्ताव",
+    "description": "Pipeline stage name"
+  },
+  "stageNegotiation": {
+    "message": "बातचीत",
+    "description": "Pipeline stage name"
+  },
+  "stageWon": {
+    "message": "जीत गया",
+    "description": "Pipeline stage name"
+  },
+  "stageLost": {
+    "message": "खो गया",
+    "description": "Pipeline stage name"
+  },
+  "stageClosedWon": {
+    "message": "बंद जीत गया",
+    "description": "Pipeline stage name"
+  },
+  "stageClosedLost": {
+    "message": "बंद हुआ खोया हुआ",
+    "description": "Pipeline stage name"
+  },
+  "stageDiscovery": {
+    "message": "खोज",
+    "description": "Pipeline stage name"
+  },
+  "stageNeedsAnalysis": {
+    "message": "विश्लेषण की आवश्यकता है",
+    "description": "Pipeline stage name"
+  },
+  "stageValueProposition": {
+    "message": "मूल्य प्रस्ताव",
+    "description": "Pipeline stage name"
+  },
+  "stageIdDecisionMakers": {
+    "message": "पहचान। निर्णयकर्ता",
+    "description": "Pipeline stage name"
+  },
+  "stagePerceptionAnalysis": {
+    "message": "धारणा विश्लेषण",
+    "description": "Pipeline stage name"
+  },
+  "stageProposalPriceQuote": {
+    "message": "प्रस्ताव/मूल्य उद्धरण",
+    "description": "Pipeline stage name"
+  },
+  "stageNegotiationReview": {
+    "message": "बातचीत/समीक्षा",
+    "description": "Pipeline stage name"
+  },
+  "pipelineSales": {
+    "message": "बिक्री पाइपलाइन",
+    "description": "Tenant pipeline display name"
+  },
+  "pipelineDefault": {
+    "message": "डिफ़ॉल्ट पाइपलाइन",
+    "description": "Tenant pipeline display name"
+  },
+  "pipelineMarketing": {
+    "message": "मार्केटिंग पाइपलाइन",
+    "description": "Tenant pipeline display name"
+  },
+  "pipelinePartner": {
+    "message": "साथी पाइपलाइन",
+    "description": "Tenant pipeline display name"
+  },
+  "listViewAll": {
+    "message": "सभी सौदे",
+    "description": "Deals list default view title"
+  },
+  "listViewMy": {
+    "message": "मेरे सौदे",
+    "description": "Deals list assigned-to-me view title"
+  },
+  "listViewOpen": {
+    "message": "खुले",
+    "description": "Deals list open view title"
+  },
+  "listViewWon": {
+    "message": "जीते",
+    "description": "Deals list won view title"
+  },
+  "listViewLost": {
+    "message": "हारे",
+    "description": "Deals list lost view title"
+  },
+  "listCreate": {
+    "message": "नया सौदा",
+    "description": "Deals list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "सौदे खोजें...",
+    "description": "Deals list search placeholder"
+  },
+  "listStatPipelineValue": {
+    "message": "पाइपलाइन मूल्य",
+    "description": "Deals list statistics card"
+  },
+  "listStatOpenDeals": {
+    "message": "खुले सौदे",
+    "description": "Deals list statistics card"
+  },
+  "listStatWonThisMonth": {
+    "message": "इस महीने जीते",
+    "description": "Deals list statistics card"
+  },
+  "listStatWinRate": {
+    "message": "जीत दर",
+    "description": "Deals list statistics card"
+  },
+  "dealsFeatureNotAvailable": {
+    "message": "सुविधा उपलब्ध नहीं",
+    "description": "Deals plan limitation error title"
+  },
+  "dealsErrorLoading": {
+    "message": "सौदे लोड करने में त्रुटि",
+    "description": "Deals load error title"
+  },
+  "dealsDealDetail": {
+    "message": "सौदा विवरण",
+    "description": "Deal record tab title fallback"
+  },
+  "dealsStageUpdateFailed": {
+    "message": "सौदे का चरण अपडेट करने में विफल",
+    "description": "Kanban stage change error"
+  }
+}

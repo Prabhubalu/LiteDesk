@@ -1,0 +1,2382 @@
+{
+  "recordsCount": {
+    "message": "{count, plural, one {# record} other {# records}}",
+    "description": "Record list count with ICU pluralization"
+  },
+  "itemsSelected": {
+    "message": "{count, plural, one {# item selected} other {# items selected}}",
+    "description": "Bulk selection count in list views"
+  },
+  "welcomeUser": {
+    "message": "مرحبًا، {name}",
+    "description": "Personalized greeting with interpolation"
+  },
+  "assignedToUser": {
+    "message": "Assigned to {gender, select, female {her} male {him} other {them}}",
+    "description": "ICU select example for gendered copy (platform chrome only)"
+  },
+  "localeDevTitle": {
+    "message": "توطين ضمان الجودة",
+    "description": "Developer settings section for i18n tools"
+  },
+  "pseudoLocaleHint": {
+    "message": "تقوم اللغات الزائفة بتوسيع النص وكشف مشكلات التخطيط قبل الترجمة.",
+    "description": "Help text for pseudo-locale developer toggle"
+  },
+  "moreActions": {
+    "message": "المزيد من الإجراءات",
+    "description": "Overflow menu trigger aria-label"
+  },
+  "loadingList": {
+    "message": "جارٍ تحميل القائمة",
+    "description": "List skeleton aria-label"
+  },
+  "viewRecord": {
+    "message": "منظر",
+    "description": "Row action: open record"
+  },
+  "importData": {
+    "message": "يستورد",
+    "description": "Module header import action"
+  },
+  "exportData": {
+    "message": "يصدّر",
+    "description": "Module header export action"
+  },
+  "listSaveView": {
+    "message": "حفظ العرض",
+    "description": "List view: save current filters/columns"
+  },
+  "listFilters": {
+    "message": "المرشحات",
+    "description": "List view filters panel title"
+  },
+  "listAllRecords": {
+    "message": "الجميع",
+    "description": "List filter tab: all records"
+  },
+  "listClearFilters": {
+    "message": "مسح المرشحات",
+    "description": "Reset active list filters"
+  },
+  "listLoadingOptions": {
+    "message": "جارٍ تحميل الخيارات…",
+    "description": "Filter dropdown loading state"
+  },
+  "listClear": {
+    "message": "واضح",
+    "description": "Clear single filter or selection"
+  },
+  "listViewName": {
+    "message": "عرض الاسم",
+    "description": "Saved view name field label"
+  },
+  "listDeleteView": {
+    "message": "حذف العرض",
+    "description": "Delete saved list view action"
+  },
+  "listCustomizeView": {
+    "message": "تخصيص العرض",
+    "description": "Open list view customization drawer"
+  },
+  "listLayoutOptions": {
+    "message": "خيارات التخطيط",
+    "description": "List layout section title"
+  },
+  "listRowHeight": {
+    "message": "ارتفاع الصف",
+    "description": "Table row height setting"
+  },
+  "listReset": {
+    "message": "إعادة ضبط",
+    "description": "Reset view settings to defaults"
+  },
+  "listColumnWidths": {
+    "message": "عرض العمود",
+    "description": "Column width customization section"
+  },
+  "listDefaultView": {
+    "message": "العرض الافتراضي",
+    "description": "Mark view as org default"
+  },
+  "listManageFields": {
+    "message": "إدارة الحقول",
+    "description": "Open field visibility manager"
+  },
+  "listFieldRequired": {
+    "message": "مطلوب",
+    "description": "Field cannot be hidden"
+  },
+  "listFieldLocked": {
+    "message": "مغلق",
+    "description": "Field locked from reorder"
+  },
+  "listFieldHidden": {
+    "message": "مختفي",
+    "description": "Hidden fields section"
+  },
+  "listNoHiddenFields": {
+    "message": "لا توجد حقول مخفية",
+    "description": "Empty hidden fields state"
+  },
+  "listNewCustomField": {
+    "message": "حقل مخصص جديد",
+    "description": "Create custom field from list manager"
+  },
+  "listCustomizeKanban": {
+    "message": "تخصيص كانبان",
+    "description": "Kanban board customization"
+  },
+  "deleteTitleBulk": {
+    "message": "حذف {count} {recordTypePlural}",
+    "description": "Bulk delete dialog title"
+  },
+  "deleteTitleSingle": {
+    "message": "حذف {recordType}",
+    "description": "Single delete dialog title"
+  },
+  "deleteConfirmBulk": {
+    "message": "هل أنت متأكد أنك تريد حذف {count} {recordTypeLabel}؟ لا يمكن التراجع عن هذا الإجراء.",
+    "description": "Bulk delete confirmation"
+  },
+  "deleteConfirmSingle": {
+    "message": "هل أنت متأكد أنك تريد حذف {target}؟ لا يمكن التراجع عن هذا الإجراء.",
+    "description": "Single delete confirmation; target is quoted name or type"
+  },
+  "deleteInProgress": {
+    "message": "جارٍ الحذف...",
+    "description": "Delete button in progress"
+  },
+  "listEditView": {
+    "message": "تحرير العرض",
+    "description": "Edit saved list view action title"
+  },
+  "listDeleteViewAction": {
+    "message": "حذف العرض",
+    "description": "Delete saved list view action title"
+  },
+  "listSaveViewHint": {
+    "message": "حفظ العرض الحالي كعرض محفوظ جديد",
+    "description": "Save view button tooltip"
+  },
+  "listHideStatistics": {
+    "message": "إخفاء الإحصائيات",
+    "description": "Stats panel toggle tooltip when visible"
+  },
+  "listShowStatistics": {
+    "message": "عرض الإحصائيات",
+    "description": "Stats panel toggle tooltip when hidden"
+  },
+  "listStatsShort": {
+    "message": "احصائيات",
+    "description": "Short stats toggle label"
+  },
+  "listHideShort": {
+    "message": "يخفي",
+    "description": "Short hide label for stats toggle"
+  },
+  "listSuggestedLabel": {
+    "message": "مقترح:",
+    "description": "Suggested filters section prefix"
+  },
+  "listSuggestedHint": {
+    "message": "اقتراحات مبنية على الاستخدام الشائع. لا يتم تطبيق أي شيء تلقائيًا.",
+    "description": "Suggested filters tooltip"
+  },
+  "listSuggestedConfigure": {
+    "message": "انقر لتكوين مرشح {filter}",
+    "description": "Suggested filter chip tooltip"
+  },
+  "listClearSearch": {
+    "message": "مسح البحث عن {title}",
+    "description": "Clear search input aria-label"
+  },
+  "listViewNameExample": {
+    "message": "على سبيل المثال، عملاء محتملين للمبيعات",
+    "description": "Saved view name placeholder"
+  },
+  "listViewDescOptional": {
+    "message": "الوصف (اختياري)",
+    "description": "Saved view description field label"
+  },
+  "listViewDescPlaceholder": {
+    "message": "وصف اختياري لهذا العرض",
+    "description": "Saved view description placeholder"
+  },
+  "listSaveCurrentView": {
+    "message": "حفظ العرض الحالي",
+    "description": "Save view modal title"
+  },
+  "listEditViewTitle": {
+    "message": "تحرير العرض",
+    "description": "Edit view modal title"
+  },
+  "listDeleteViewConfirm": {
+    "message": "هل أنت متأكد أنك تريد حذف \"{viewName}\"؟ لا يمكن التراجع عن هذا الإجراء.",
+    "description": "Delete saved view confirmation"
+  },
+  "listClearSelection": {
+    "message": "مسح التحديد",
+    "description": "Bulk selection clear button tooltip"
+  },
+  "listRowsSelected": {
+    "message": "{count, plural, one {# {singular} selected} other {# {plural} selected}}",
+    "description": "Bulk row selection count in list"
+  },
+  "listSearchFields": {
+    "message": "حقول البحث",
+    "description": "Field manager search placeholder"
+  },
+  "listShownCount": {
+    "message": "معروض ({count})",
+    "description": "Visible fields section header"
+  },
+  "listKanbanOptions": {
+    "message": "خيارات كانبان",
+    "description": "Kanban settings section title"
+  },
+  "listCardSize": {
+    "message": "حجم البطاقة",
+    "description": "Kanban card size setting"
+  },
+  "listStackFields": {
+    "message": "حقول المكدس",
+    "description": "Kanban stack fields toggle"
+  },
+  "listCollapseEmpty": {
+    "message": "طي الأعمدة الفارغة",
+    "description": "Kanban collapse empty columns toggle"
+  },
+  "listShowEmptyFields": {
+    "message": "إظهار الحقول الفارغة",
+    "description": "Kanban show empty fields toggle"
+  },
+  "listShowClosedRecords": {
+    "message": "إظهار السجلات المغلقة",
+    "description": "Kanban show closed records toggle"
+  },
+  "darkMode": {
+    "message": "الوضع المظلم",
+    "description": "Dark color mode menu option"
+  },
+  "lightMode": {
+    "message": "وضع الضوء",
+    "description": "Light color mode menu option"
+  },
+  "tableClearSelection": {
+    "message": "مسح التحديد",
+    "description": "Clear bulk row selection"
+  },
+  "tableAllPageSelected": {
+    "message": "تم تحديد جميع عناصر {count} الموجودة في هذه الصفحة.",
+    "description": "Select-all banner when current page is fully selected"
+  },
+  "tableSelectAllItems": {
+    "message": "حدد جميع عناصر {count}",
+    "description": "Expand selection to all pages"
+  },
+  "tableAllSelected": {
+    "message": "تم تحديد كافة {count}",
+    "description": "All records across pages selected"
+  },
+  "tableSelectedCount": {
+    "message": "{count, plural, one {# selected} other {# selected}}",
+    "description": "Bulk selection count in data table"
+  },
+  "tableDeleteSelected": {
+    "message": "حذف المحدد",
+    "description": "Bulk delete action label"
+  },
+  "tableColumns": {
+    "message": "أعمدة",
+    "description": "Column settings button label"
+  },
+  "tableColumnSettings": {
+    "message": "إعدادات العمود",
+    "description": "Column settings modal title"
+  },
+  "tableManageColumns": {
+    "message": "إدارة الأعمدة",
+    "description": "Column manager section title"
+  },
+  "tableManageColumnsHint": {
+    "message": "قم بتبديل الرؤية واسحب لإعادة الترتيب",
+    "description": "Column manager help text"
+  },
+  "tableVisibleCount": {
+    "message": "{visible} من {total} مرئي",
+    "description": "Visible column count in settings"
+  },
+  "tableUnfreezeColumn": {
+    "message": "إلغاء تجميد العمود",
+    "description": "Unfreeze sticky column tooltip"
+  },
+  "tableFreezeColumn": {
+    "message": "تجميد العمود",
+    "description": "Freeze sticky column tooltip"
+  },
+  "tableFreezeMax": {
+    "message": "يمكن تجميد عمودين كحد أقصى",
+    "description": "Freeze limit tooltip"
+  },
+  "tableFrozen": {
+    "message": "المجمدة",
+    "description": "Frozen column badge"
+  },
+  "tableResetDefault": {
+    "message": "إعادة التعيين إلى الوضع الافتراضي",
+    "description": "Reset column settings"
+  },
+  "tableShowingResults": {
+    "message": "عرض {start} إلى {end} من نتائج {total}",
+    "description": "Pagination summary"
+  },
+  "tableSortAscending": {
+    "message": "فرز تصاعدي",
+    "description": "Table column sort ascending"
+  },
+  "tableSortDescending": {
+    "message": "الترتيب تنازليًا",
+    "description": "Table column sort descending"
+  },
+  "tableClearSort": {
+    "message": "فرز واضح",
+    "description": "Remove column sort"
+  },
+  "tableToggleSort": {
+    "message": "تبديل الفرز لـ {column}",
+    "description": "Sort toggle aria-label"
+  },
+  "tableRowSelectSr": {
+    "message": "رقم الصف وحدد الصفوف",
+    "description": "Screen reader label for selection column"
+  },
+  "tableLoadingSr": {
+    "message": "جدول التحميل",
+    "description": "Screen reader label for table loading skeleton"
+  },
+  "metricsTitle": {
+    "message": "المقاييس",
+    "description": "Metrics widget card title"
+  },
+  "metricsConfigure": {
+    "message": "تكوين المقاييس",
+    "description": "Open metrics configuration"
+  },
+  "metricsEmptyYet": {
+    "message": "لم يتم تكوين أي مقاييس حتى الآن.",
+    "description": "Empty metrics widget state"
+  },
+  "metricsEmptyPanel": {
+    "message": "لم يتم تكوين أي مقاييس.",
+    "description": "Empty metrics config panel"
+  },
+  "metricsAdd": {
+    "message": "أضف مقياسًا",
+    "description": "Add a new metric row"
+  },
+  "metricsLabel": {
+    "message": "ملصق",
+    "description": "Metric label column"
+  },
+  "metricsSource": {
+    "message": "مصدر",
+    "description": "Metric data source column"
+  },
+  "metricsField": {
+    "message": "مجال",
+    "description": "Metric field column"
+  },
+  "metricsAggregation": {
+    "message": "تجميع",
+    "description": "Metric aggregation column"
+  },
+  "metricsDragReorder": {
+    "message": "اسحب لإعادة الترتيب",
+    "description": "Metric row drag handle tooltip"
+  },
+  "metricsDelete": {
+    "message": "حذف المقياس",
+    "description": "Remove metric row"
+  },
+  "metricsClosePanel": {
+    "message": "إغلاق اللوحة",
+    "description": "Close metrics config drawer"
+  },
+  "keyFieldsTitle": {
+    "message": "الحقول الرئيسية",
+    "description": "Key fields widget title"
+  },
+  "keyFieldsEmptyValue": {
+    "message": "فارغ",
+    "description": "Empty key field value placeholder"
+  },
+  "keyFieldsNone": {
+    "message": "لم يتم تكوين أي حقول رئيسية",
+    "description": "No key fields empty state"
+  },
+  "keyFieldsHint": {
+    "message": "قم بتمييز الحقول على أنها \"حقل رئيسي\" في إعدادات الوحدة النمطية",
+    "description": "Key fields configuration hint"
+  },
+  "closePanel": {
+    "message": "إغلاق اللوحة",
+    "description": "Screen reader label for closing a side panel"
+  },
+  "formAssignToMe": {
+    "message": "خصص لي",
+    "description": "Assign current user to a reviewer field"
+  },
+  "formNoOptions": {
+    "message": "لا توجد خيارات متاحة.",
+    "description": "Empty picklist dropdown"
+  },
+  "formNoMatchingRecords": {
+    "message": "لم يتم العثور على سجلات مطابقة.",
+    "description": "Empty lookup combobox search results"
+  },
+  "formNoRecordsFound": {
+    "message": "لم يتم العثور على سجلات",
+    "description": "Empty lookup modal list"
+  },
+  "formSelected": {
+    "message": "مختارة",
+    "description": "Lookup row already selected badge"
+  },
+  "formCreateNew": {
+    "message": "إنشاء جديد",
+    "description": "Create related record from lookup footer"
+  },
+  "formSearchOptions": {
+    "message": "خيارات البحث...",
+    "description": "Picklist search placeholder"
+  },
+  "formSearchRecords": {
+    "message": "بحث في السجلات...",
+    "description": "Lookup combobox search placeholder"
+  },
+  "formBrowseRecords": {
+    "message": "تصفح السجلات",
+    "description": "Open lookup record picker modal"
+  },
+  "formCreateAndSelect": {
+    "message": "إنشاء واختيار",
+    "description": "Create new lookup record shortcut"
+  },
+  "formUploading": {
+    "message": "جارٍ التحميل...",
+    "description": "Image upload in progress"
+  },
+  "formUploadImage": {
+    "message": "تحميل الصورة",
+    "description": "Image upload trigger button"
+  },
+  "formRefreshing": {
+    "message": "منعش...",
+    "description": "Lookup modal refresh in progress"
+  },
+  "formLookupSelectTitle": {
+    "message": "اختر {label}",
+    "description": "Lookup modal title"
+  },
+  "formLookupChooseOne": {
+    "message": "اختر واحدة {module} لملء {field}",
+    "description": "Lookup modal subtitle"
+  },
+  "formLookupSearchModule": {
+    "message": "بحث {module}...",
+    "description": "Lookup modal search placeholder"
+  },
+  "formLookupNoMatch": {
+    "message": "لا يوجد {module} مطابق لـ \"{query}\".",
+    "description": "Lookup modal empty state with search query"
+  },
+  "formLookupNoRecordsYet": {
+    "message": "لا يوجد {module} للاختيار من بينها حتى الآن.",
+    "description": "Lookup modal empty state without query"
+  },
+  "formLookupCreateModule": {
+    "message": "إنشاء {module} جديد",
+    "description": "Lookup modal create CTA with module name"
+  },
+  "lifecycleStageTitle": {
+    "message": "مرحلة دورة الحياة",
+    "description": "Lifecycle stage widget title"
+  },
+  "lifecycleType": {
+    "message": "يكتب:",
+    "description": "Lifecycle widget type label"
+  },
+  "lifecycleAge": {
+    "message": "عمر:",
+    "description": "Lifecycle widget age label"
+  },
+  "lifecycleJustCreated": {
+    "message": "خلقت للتو",
+    "description": "Record age when created today"
+  },
+  "lifecycleAgeDays": {
+    "message": "{days, plural, one {# day} other {# days}}",
+    "description": "Record age in days"
+  },
+  "lifecycleAgeZero": {
+    "message": "0 أيام",
+    "description": "Record age fallback when no createdAt"
+  },
+  "searchPlaceholder": {
+    "message": "يبحث...",
+    "description": "Generic search input placeholder"
+  },
+  "filterAll": {
+    "message": "الجميع",
+    "description": "Filter option: no restriction"
+  },
+  "filterAllNamed": {
+    "message": "الكل {label}",
+    "description": "Filter option: all values for a named field"
+  },
+  "filterDays": {
+    "message": "أيام",
+    "description": "Relative date filter days input label"
+  },
+  "filterDate": {
+    "message": "تاريخ",
+    "description": "Single date filter input label"
+  },
+  "filterFrom": {
+    "message": "من",
+    "description": "Date range filter start label"
+  },
+  "filterTo": {
+    "message": "ل",
+    "description": "Date range filter end label"
+  },
+  "filterDaysPlaceholder": {
+    "message": "على سبيل المثال 7",
+    "description": "Relative date filter days input placeholder"
+  },
+  "dependencyNoFields": {
+    "message": "لا توجد حقول لعرضها",
+    "description": "Dependency popup empty state"
+  },
+  "drawerBackQuickCreate": {
+    "message": "العودة إلى الإنشاء السريع",
+    "description": "Toggle from full create form to quick create"
+  },
+  "drawerShowAllFields": {
+    "message": "إظهار كافة الحقول",
+    "description": "Expand quick create drawer to full form"
+  },
+  "formQuickCreateFields": {
+    "message": "حقول الإنشاء السريع",
+    "description": "Section heading for quick-create field group"
+  },
+  "taskDescriptionPlaceholder": {
+    "message": "اكتب أو اكتب \"/\" للأوامر",
+    "description": "Task description editor placeholder"
+  },
+  "taskDescriptionFallback": {
+    "message": "وصف",
+    "description": "Task description field fallback label"
+  },
+  "taskRelatedToFallback": {
+    "message": "ذات صلة ب",
+    "description": "Task related-to field fallback label"
+  },
+  "taskSubtasksLabel": {
+    "message": "المهام الفرعية",
+    "description": "Task subtasks field label"
+  },
+  "tagsTitle": {
+    "message": "العلامات",
+    "description": "Tags picker panel title"
+  },
+  "tagsNewTag": {
+    "message": "علامة جديدة",
+    "description": "Create a new tag definition"
+  },
+  "tagsSearchPlaceholder": {
+    "message": "بحث أو إنشاء علامة",
+    "description": "Tags picker search input"
+  },
+  "tagsClickSearchHint": {
+    "message": "انقر فوق مربع البحث لعرض العلامات المتاحة.",
+    "description": "Tags picker collapsed hint"
+  },
+  "tagsNoTagsYet": {
+    "message": "لا توجد علامات في مساحة العمل هذه حتى الآن.",
+    "description": "Empty workspace tags list"
+  },
+  "tagsCreateFirst": {
+    "message": "إنشاء العلامة الأولى",
+    "description": "CTA when no tags exist"
+  },
+  "tagsCreateNamed": {
+    "message": "إنشاء \"{name}\"",
+    "description": "Create tag from search query"
+  },
+  "tagsPublic": {
+    "message": "عام",
+    "description": "Public tag badge"
+  },
+  "tagsRemoveTag": {
+    "message": "إزالة العلامة",
+    "description": "Remove tag from selection aria-label"
+  },
+  "tagsEditTag": {
+    "message": "تحرير العلامة",
+    "description": "Edit tag definition action"
+  },
+  "tagsTagActions": {
+    "message": "إجراءات العلامة",
+    "description": "Tag row overflow menu aria-label"
+  },
+  "tagsTagName": {
+    "message": "اسم العلامة",
+    "description": "Tag editor name field label"
+  },
+  "tagsEnterTagName": {
+    "message": "أدخل اسم العلامة",
+    "description": "Tag editor name placeholder"
+  },
+  "tagsColor": {
+    "message": "لون",
+    "description": "Tag editor color field label"
+  },
+  "tagsMakePublic": {
+    "message": "جعل العلامة عامة",
+    "description": "Tag editor public toggle label"
+  },
+  "tagsRemoveFromSelection": {
+    "message": "إزالة من التحديد",
+    "description": "Unassign tag from current record"
+  },
+  "tagsAddToSelection": {
+    "message": "أضف إلى الاختيار",
+    "description": "Assign tag to current record"
+  },
+  "tagsDeleteFromModule": {
+    "message": "حذف العلامة من الوحدة النمطية",
+    "description": "Delete tag definition from module"
+  },
+  "tagsRemovedNamed": {
+    "message": "تمت إزالة \"{name}\".",
+    "description": "Tag removal pending undo banner"
+  },
+  "tagsUndoSeconds": {
+    "message": "تراجع ({seconds})",
+    "description": "Undo tag removal countdown"
+  },
+  "linkRecordsBackToType": {
+    "message": "العودة إلى نوع السجل",
+    "description": "Return to link records type selector"
+  },
+  "linkRecordsLinked": {
+    "message": "مرتبط",
+    "description": "Already-linked record type badge"
+  },
+  "linkRecordsNoTypes": {
+    "message": "لم يتم تكوين أي أنواع سجلات قابلة للربط لهذه الوحدة. قم بتكوين العلاقات في الإعدادات → الوحدات.",
+    "description": "Empty linkable types state"
+  },
+  "linkRecordsNoMatch": {
+    "message": "لم يتم العثور على سجلات مطابقة. حاول تعديل بحثك أو عوامل التصفية.",
+    "description": "Empty link records search results"
+  },
+  "linkRecordsCreateNew": {
+    "message": "إنشاء جديد",
+    "description": "Create record from link drawer"
+  },
+  "linkRecordsSelectedCount": {
+    "message": "{count, plural, one {# selected} other {# selected}}",
+    "description": "Link drawer multi-select count"
+  },
+  "linkRecordsLink": {
+    "message": "وصلة",
+    "description": "Confirm link records action"
+  },
+  "kanbanExpandColumn": {
+    "message": "قم بتوسيع العمود",
+    "description": "Expand collapsed kanban column"
+  },
+  "kanbanNoItems": {
+    "message": "لا توجد عناصر",
+    "description": "Empty kanban column placeholder"
+  },
+  "summaryLoadingRecord": {
+    "message": "جارٍ التحميل {type}...",
+    "description": "Record summary page loading state"
+  },
+  "summaryErrorLoadingTitle": {
+    "message": "حدث خطأ أثناء تحميل {type}",
+    "description": "Record summary page error headline"
+  },
+  "summaryNoTagsYet": {
+    "message": "لا توجد علامات حتى الآن",
+    "description": "Empty tags on record header"
+  },
+  "summaryManageTags": {
+    "message": "إدارة العلامات",
+    "description": "Open tag manager when tags exist"
+  },
+  "summaryAddTag": {
+    "message": "إضافة علامة",
+    "description": "Add a tag to the record"
+  },
+  "summaryAddAnotherTag": {
+    "message": "أضف علامة أخرى",
+    "description": "Add another tag when some exist"
+  },
+  "summaryCopyLink": {
+    "message": "نسخ الوصلة",
+    "description": "Copy record URL to clipboard"
+  },
+  "summarySelectPlaceholder": {
+    "message": "يختار...",
+    "description": "Unset lifecycle/status dropdown value"
+  },
+  "summaryAddRelation": {
+    "message": "أضف العلاقة",
+    "description": "Add related record menu"
+  },
+  "summaryViewResponses": {
+    "message": "عرض الردود",
+    "description": "Open form responses list"
+  },
+  "summaryDeleteRecord": {
+    "message": "حذف السجل",
+    "description": "Delete current record action"
+  },
+  "summaryFormNotActive": {
+    "message": "النموذج غير نشط بعد",
+    "description": "Inactive form empty state title"
+  },
+  "summaryFormNotActiveHint": {
+    "message": "لم يتم استخدام هذا النموذج بعد. قم بتعيينه عبر الأحداث لبدء جمع الردود.",
+    "description": "Inactive form empty state body"
+  },
+  "summaryAddWidget": {
+    "message": "إضافة القطعة",
+    "description": "Add dashboard widget CTA"
+  },
+  "summaryAddCustomWidget": {
+    "message": "إضافة القطعة المخصصة",
+    "description": "Add widget floating button tooltip"
+  },
+  "summaryShowEmptyFields": {
+    "message": "إظهار الحقول الفارغة",
+    "description": "Toggle empty fields in details tab"
+  },
+  "summaryTenantFields": {
+    "message": "حقول المستأجر",
+    "description": "Tenant details tab section title"
+  },
+  "summaryTenantFieldsHint": {
+    "message": "الاشتراك والحدود وإعدادات المؤسسة",
+    "description": "Tenant details tab subtitle"
+  },
+  "summaryTenantFieldsNoMatch": {
+    "message": "لا توجد حقول مستأجرة تطابق بحثك.",
+    "description": "Tenant fields search empty"
+  },
+  "summaryTenantFieldsNoValues": {
+    "message": "لا توجد حقول مستأجر بها قيم لعرضها.",
+    "description": "Tenant fields all empty hidden"
+  },
+  "summaryTenantFieldsNone": {
+    "message": "لا توجد حقول المستأجر المتاحة.",
+    "description": "No tenant fields configured"
+  },
+  "summaryManageFields": {
+    "message": "إدارة الحقول",
+    "description": "Open field management settings"
+  },
+  "summaryNotAvailable": {
+    "message": "غير متوفر",
+    "description": "Field value unavailable placeholder"
+  },
+  "summaryFieldsNoMatch": {
+    "message": "لا توجد حقول تطابق بحثك.",
+    "description": "Details tab search empty"
+  },
+  "summaryFieldsNoValues": {
+    "message": "لا توجد حقول ذات قيم لعرضها.",
+    "description": "Details tab all empty hidden"
+  },
+  "summaryFieldsNone": {
+    "message": "لا توجد حقول متاحة.",
+    "description": "No fields configured on module"
+  },
+  "summaryFormUsage": {
+    "message": "استخدام النموذج",
+    "description": "Form submissions section title"
+  },
+  "summaryFormUsageHint": {
+    "message": "قائمة عمليات إرسال النماذج مع الحالة والنتيجة وتاريخ الإرسال.",
+    "description": "Form submissions section subtitle"
+  },
+  "summaryLoadingSubmissions": {
+    "message": "جارٍ تحميل التقديمات...",
+    "description": "Form submissions table loading"
+  },
+  "summaryColSubmitted": {
+    "message": "مُقَدَّم",
+    "description": "Submission date column"
+  },
+  "summaryColSubmittedBy": {
+    "message": "مقدم بواسطة",
+    "description": "Submitter column"
+  },
+  "summaryColStatus": {
+    "message": "حالة",
+    "description": "Status column header"
+  },
+  "summaryColScore": {
+    "message": "نتيجة",
+    "description": "Score column header"
+  },
+  "summaryColActions": {
+    "message": "الإجراءات",
+    "description": "Actions column header"
+  },
+  "summaryColKpis": {
+    "message": "مؤشرات الأداء الرئيسية",
+    "description": "KPI column header"
+  },
+  "summaryAnonymous": {
+    "message": "مجهول",
+    "description": "Anonymous submitter label"
+  },
+  "summaryNoSubmissions": {
+    "message": "لا يوجد تقديمات حتى الآن",
+    "description": "Empty form submissions state"
+  },
+  "summaryNoSubmissionsHint": {
+    "message": "هذا النموذج لم يتلق أي إرسالات حتى الآن.",
+    "description": "Empty form submissions body"
+  },
+  "summaryFormPreview": {
+    "message": "معاينة النموذج",
+    "description": "Form preview section title"
+  },
+  "summaryFormPreviewHint": {
+    "message": "قم بمعاينة كيفية ظهور هذا النموذج للمستخدمين عند ملئه.",
+    "description": "Form preview section subtitle"
+  },
+  "summaryFormResponses": {
+    "message": "ردود النموذج",
+    "description": "Form responses section title"
+  },
+  "summaryFormResponsesHint": {
+    "message": "عرض وإدارة جميع الردود المقدمة لهذا النموذج.",
+    "description": "Form responses section subtitle"
+  },
+  "summaryLoadingResponses": {
+    "message": "جارٍ تحميل الردود...",
+    "description": "Form responses table loading"
+  },
+  "summaryNoResponses": {
+    "message": "لا توجد ردود حتى الآن",
+    "description": "Empty form responses state"
+  },
+  "summaryNoResponsesHint": {
+    "message": "هذا النموذج لم يتلق أي ردود حتى الآن.",
+    "description": "Empty form responses body"
+  },
+  "summaryViewAllResponses": {
+    "message": "عرض كافة الردود",
+    "description": "Navigate to full responses list"
+  },
+  "summaryUser": {
+    "message": "مستخدم",
+    "description": "Activity filter user label"
+  },
+  "summaryAllUsers": {
+    "message": "كافة المستخدمين",
+    "description": "Activity filter all users option"
+  },
+  "summaryType": {
+    "message": "يكتب",
+    "description": "Activity filter type label"
+  },
+  "summaryAllTypes": {
+    "message": "جميع الأنواع",
+    "description": "Activity filter all types option"
+  },
+  "summaryComments": {
+    "message": "تعليقات",
+    "description": "Activity type filter comments"
+  },
+  "summaryFieldChanges": {
+    "message": "التغييرات الميدانية",
+    "description": "Activity type filter field changes"
+  },
+  "summaryNoActivity": {
+    "message": "لا يوجد نشاط بعد",
+    "description": "Empty activity feed"
+  },
+  "summarySelectWidget": {
+    "message": "حدد عنصر واجهة مستخدم لإضافته إلى لوحة التحكم الخاصة بك",
+    "description": "Add widget drawer subtitle"
+  },
+  "summaryResetToDefault": {
+    "message": "إعادة التعيين إلى الافتراضي",
+    "description": "Reset widget layout action"
+  },
+  "summaryResetWidgetLayout": {
+    "message": "إعادة تعيين تخطيط القطعة",
+    "description": "Reset layout confirmation title"
+  },
+  "summaryResetLayoutConfirmBody": {
+    "message": "هل أنت متأكد أنك تريد إعادة تعيين تخطيط القطعة إلى الوضع الافتراضي؟ سيؤدي هذا إلى إزالة جميع التخصيصات بما في ذلك مواضع الأدوات وأحجامها وأي أدوات قمت بإضافتها أو إزالتها.",
+    "description": "Reset layout confirmation body"
+  },
+  "summaryResetLayoutTooltip": {
+    "message": "إعادة تعيين تخطيط القطعة إلى الترتيب الافتراضي",
+    "description": "Reset layout button tooltip"
+  },
+  "summaryNoMetrics": {
+    "message": "لا توجد مقاييس متاحة.",
+    "description": "Empty metrics widget fallback"
+  },
+  "summaryKeyFieldsPlaceholder": {
+    "message": "سيتم عرض الحقول الرئيسية هنا.",
+    "description": "Empty key fields widget fallback"
+  },
+  "summaryWidgetContent": {
+    "message": "محتوى القطعة",
+    "description": "Generic widget placeholder"
+  },
+  "summaryTabsAria": {
+    "message": "علامات التبويب",
+    "description": "Record summary tab list aria-label"
+  },
+  "summarySearchTenantFields": {
+    "message": "البحث في حقول المستأجر...",
+    "description": "Tenant fields search placeholder"
+  },
+  "summarySearchFields": {
+    "message": "حقول البحث...",
+    "description": "Details fields search placeholder"
+  },
+  "summarySearchActivities": {
+    "message": "أنشطة البحث...",
+    "description": "Activity feed search placeholder"
+  },
+  "summaryUrlCopied": {
+    "message": "تم نسخ عنوان URL إلى الحافظة!",
+    "description": "Copy link success toast"
+  },
+  "summaryResetLayoutFailed": {
+    "message": "فشلت إعادة تعيين التخطيط. يرجى المحاولة مرة أخرى.",
+    "description": "Reset layout error toast"
+  },
+  "summarySaveFieldsFailed": {
+    "message": "فشل في حفظ التحديثات الميدانية. يرجى المحاولة مرة أخرى.",
+    "description": "Inline field save error toast"
+  },
+  "moduleListTheListForThisModuleIs": {
+    "message": "القائمة الخاصة بهذه الوحدة غير متوفرة.",
+    "description": "Auto-migrated from moduleList"
+  },
+  "moduleListListNotFound": {
+    "message": "لم يتم العثور على القائمة",
+    "description": "Auto-migrated from moduleList"
+  },
+  "targetWizardStepperTargetCreationProgress": {
+    "message": "التقدم في إنشاء الهدف",
+    "description": "Auto-migrated from targetWizardStepper"
+  },
+  "trashRestore": {
+    "message": "يعيد",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAutoDeleteIn": {
+    "message": "الحذف التلقائي في",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedBy": {
+    "message": "تم الحذف بواسطة",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedItemsWillAppearHereYou": {
+    "message": "سوف تظهر العناصر المحذوفة هنا. ويمكنك استعادتها أو حذفها نهائيًا قبل انتهاء صلاحيتها.",
+    "description": "Auto-migrated from trash"
+  },
+  "trashTrashIsEmpty": {
+    "message": "سلة المهملات فارغة",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletePermanently": {
+    "message": "حذف نهائيا",
+    "description": "Auto-migrated from trash"
+  },
+  "trashRestoreSelected": {
+    "message": "استعادة المحدد",
+    "description": "Auto-migrated from trash"
+  },
+  "trashEmptyTrash": {
+    "message": "سلة المهملات الفارغة",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedTo": {
+    "message": "تم الحذف إلى",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedFrom": {
+    "message": "محذوف من",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAllUsers": {
+    "message": "كافة المستخدمين",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAllModules": {
+    "message": "جميع الوحدات",
+    "description": "Auto-migrated from trash"
+  },
+  "trashSearchNameModuleDeletedBy": {
+    "message": "اسم البحث، الوحدة، تم حذفه بواسطة...",
+    "description": "Auto-migrated from trash"
+  },
+  "trashRetention": {
+    "message": "حفظ",
+    "description": "Auto-migrated from trash"
+  },
+  "trashOldestItem": {
+    "message": "أقدم عنصر",
+    "description": "Auto-migrated from trash"
+  },
+  "trashExpiringIn7Days": {
+    "message": "تنتهي صلاحيته خلال 7 أيام",
+    "description": "Auto-migrated from trash"
+  },
+  "trashTotalInTrash": {
+    "message": "الإجمالي في المهملات",
+    "description": "Auto-migrated from trash"
+  },
+  "approvalDetailEnterRejectionReason": {
+    "message": "أدخل سبب الرفض...",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailReason": {
+    "message": "سبب",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailRejectingWillBlockThisAction": {
+    "message": "سيؤدي الرفض إلى منع هذا الإجراء.",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailRejectApproval": {
+    "message": "رفض الموافقة",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailYouAreNotAuthorizedToApprove": {
+    "message": "لا يحق لك الموافقة على هذا الطلب أو رفضه.",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailReason2": {
+    "message": "سبب:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecidedAt": {
+    "message": "تقرر في:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecidedBy": {
+    "message": "قرر بواسطة:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecisionAlreadyMade": {
+    "message": "القرار اتخذ بالفعل",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailYourDecision": {
+    "message": "قرارك",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailThisApprovalWasEscalatedDueTo": {
+    "message": "تم تصعيد هذه الموافقة بسبب عدم الرد خلال المهلة الزمنية المحددة. لقد تم إخطار الموافقين الجدد.",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailEscalated": {
+    "message": "تصاعدت",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailIfRejected": {
+    "message": "إذا تم رفضه",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailIfApproved": {
+    "message": "إذا تمت الموافقة عليه",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailWhatWillHappen": {
+    "message": "ماذا سيحدث",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailWhyApprovalIsRequired": {
+    "message": "لماذا الموافقة مطلوبة",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailEntity": {
+    "message": "كيان",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailContext": {
+    "message": "سياق",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailBackToApprovals": {
+    "message": "العودة إلى الموافقات",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalInboxEnterRejectionReason": {
+    "message": "أدخل سبب الرفض...",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxReason": {
+    "message": "سبب",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRejectingWillBlockThisActionPlease": {
+    "message": "سيؤدي الرفض إلى منع هذا الإجراء. يرجى تقديم السبب.",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRejectApproval": {
+    "message": "رفض الموافقة",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxDueIn": {
+    "message": "مستحق في:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRequestedAt": {
+    "message": "تم الطلب في:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRequestedBy": {
+    "message": "تم الطلب بواسطة:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxAllCaughtUpYouHaveNo": {
+    "message": "جميع المحاصرين! ليس لديك أي طلبات موافقة معلقة.",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxNoApprovalsPending": {
+    "message": "لا توجد موافقات معلقة",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxReviewAndApprovePendingRequests": {
+    "message": "مراجعة الطلبات المعلقة والموافقة عليها",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxApprovals": {
+    "message": "الموافقات",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "demoRequestsEnterprise": {
+    "message": "مَشرُوع",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsProfessional": {
+    "message": "احترافي",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsStarter": {
+    "message": "بداية",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsTrial15Days": {
+    "message": "المحاكمة (15 يوما)",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSubscriptionTier": {
+    "message": "فئة الاشتراك",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsEnterTemporaryPasswordForOwner": {
+    "message": "أدخل كلمة المرور المؤقتة للمالك",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvert": {
+    "message": "يتحول",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvertToOrganization": {
+    "message": "تحويل إلى منظمة",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted": {
+    "message": "تحويلها",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoCompleted": {
+    "message": "اكتمل العرض التوضيحي",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoScheduled": {
+    "message": "تمت جدولة العرض التوضيحي",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContacted": {
+    "message": "تم الاتصال به",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsUpdateStatus": {
+    "message": "تحديث الحالة",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisContactExistsInASeparate": {
+    "message": "جهة الاتصال هذه موجودة في مؤسسة منفصلة. سوف يرون بيانات CRM الخاصة بهم عند تسجيل الدخول.",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactPhone": {
+    "message": "هاتف الاتصال:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactEmail": {
+    "message": "البريد الإلكتروني للاتصال:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContact": {
+    "message": "اتصال:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsOrganization": {
+    "message": "منظمة:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisProspectIsAlreadyInYour": {
+    "message": "هذا الاحتمال موجود بالفعل في نظام إدارة علاقات العملاء الخاص بك!",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsJobTitle": {
+    "message": "مسمى وظيفي:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsPhone": {
+    "message": "هاتف:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsEmail": {
+    "message": "بريد إلكتروني:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactName": {
+    "message": "اسم جهة الاتصال:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactInformation": {
+    "message": "معلومات الاتصال",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanySize": {
+    "message": "حجم الشركة:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsIndustry": {
+    "message": "صناعة:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanyName": {
+    "message": "اسم الشركة:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanyInformation": {
+    "message": "معلومات الشركة",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoRequestDetails": {
+    "message": "تفاصيل طلب العرض التوضيحي",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsNoDemoRequestsFound": {
+    "message": "لم يتم العثور على طلبات تجريبية",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvert2": {
+    "message": "يتحول",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvertToOrganization2": {
+    "message": "تحويل إلى منظمة",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSize": {
+    "message": "مقاس",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsLoadingDemoRequests": {
+    "message": "جارٍ تحميل طلبات العرض التوضيحي...",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted2": {
+    "message": "تحويلها",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoCompleted2": {
+    "message": "اكتمل العرض التوضيحي",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoScheduled2": {
+    "message": "تمت جدولة العرض التوضيحي",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContacted2": {
+    "message": "تم الاتصال به",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSearchDemoRequests": {
+    "message": "بحث في طلبات العرض التوضيحي...",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted3": {
+    "message": "تحويلها",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisMonth": {
+    "message": "هذا الشهر",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsTotalRequests": {
+    "message": "إجمالي الطلبات",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "publicBookingViewPoweredByYourCrm": {
+    "message": "مدعوم من إدارة علاقات العملاء (CRM) الخاصة بك",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYourDetails": {
+    "message": "التفاصيل الخاصة بك",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYourTime": {
+    "message": "وقتك",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewAvailableTimes": {
+    "message": "الأوقات المتاحة",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewPickADate": {
+    "message": "اختر موعدًا",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewBookWithOurTeam": {
+    "message": "احجز مع فريقنا",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewRescheduleOrCancel": {
+    "message": "إعادة جدولة أو إلغاء",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewAConfirmationHasBeenSentTo": {
+    "message": "تم إرسال تأكيد إلى البريد الإلكتروني الخاص بك. سوف تحصل على تذكير قبل موعدك.",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYoureBooked": {
+    "message": "لقد حجزت!",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewPageUnavailable": {
+    "message": "الصفحة غير متاحة",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewLoadingCalendar": {
+    "message": "جارٍ تحميل التقويم…",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "notificationOverviewOpenHealthDashboard": {
+    "message": "فتح لوحة القيادة الصحية",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewViewDeliveryStatisticsChannelHealthEvent": {
+    "message": "عرض إحصائيات التسليم وصحة القناة وحجم الأحداث وأنماط إشعارات المستخدم. حدد المشكلات المحتملة قبل أن تؤثر على فريقك.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewHealthDashboard": {
+    "message": "لوحة الصحة",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewMonitorNotificationDeliveryHealthAndAnalytics": {
+    "message": "مراقبة صحة تسليم الإشعارات والتحليلات عبر مؤسستك.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAdminTools": {
+    "message": "أدوات الإدارة",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageDigests": {
+    "message": "إدارة الملخصات",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewReceiveDailyOrWeeklySummariesOf": {
+    "message": "احصل على ملخصات يومية أو أسبوعية لإشعاراتك بدلاً من التنبيهات في الوقت الفعلي. تقليل ضجيج الإشعارات مع البقاء على اطلاع.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewDigests": {
+    "message": "ملخصات",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageRules": {
+    "message": "إدارة القواعد",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewCreateCustomNotificationConditionsSetUp": {
+    "message": "إنشاء شروط الإخطار المخصصة. قم بإعداد القواعد بناءً على المهام والأولويات والحالات والمزيد.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManagePreferences": {
+    "message": "إدارة التفضيلات",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewToggleWhatTypesOfNotificationsYou": {
+    "message": "قم بتبديل أنواع الإشعارات التي تتلقاها لكل حدث. التحكم في القنوات المستخدمة لكل نوع من أنواع الإشعارات.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewPreferences": {
+    "message": "التفضيلات",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewCustomizeYourNotificationExperienceToMatch": {
+    "message": "قم بتخصيص تجربة الإخطار الخاصة بك لتتناسب مع سير العمل الخاص بك.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewYourNotificationControl": {
+    "message": "التحكم في الإخطار الخاص بك",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageDeliveryChannels": {
+    "message": "إدارة قنوات التسليم",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable": {
+    "message": "شكلي",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable2": {
+    "message": "شكلي",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhatsapp": {
+    "message": "واتساب",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable3": {
+    "message": "شكلي",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewPush": {
+    "message": "يدفع",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable4": {
+    "message": "شكلي",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAlwaysOn": {
+    "message": "دائما على",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewChooseWhereAndHowYouReceive": {
+    "message": "اختر مكان وكيفية تلقي الإشعارات عبر قنوات التسليم المختلفة.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewHowYoureNotified": {
+    "message": "كيف يتم إعلامك",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined": {
+    "message": "محددة من قبل النظام",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAccountActivitySystemUpdatesAndCompliance": {
+    "message": "نشاط الحساب وتحديثات النظام والإشعارات المتعلقة بالامتثال.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined2": {
+    "message": "محددة من قبل النظام",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewActivityThatInvolvesCollaborationAndReview": {
+    "message": "نشاط يتضمن التعاون والمراجعة.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConversations": {
+    "message": "المحادثات",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewRemindersForUpcomingOrOverdueItems": {
+    "message": "تذكير للعناصر القادمة أو المتأخرة.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewDeadlines": {
+    "message": "المواعيد النهائية",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewStatusChangesSubmissionsApprovalsAndOther": {
+    "message": "تغييرات الحالة وعمليات الإرسال والموافقات والتحديثات المهمة الأخرى.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined3": {
+    "message": "محددة من قبل النظام",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhenTasksAuditsOrCorrectiveActions": {
+    "message": "عندما يتم إسناد المهام أو عمليات التدقيق أو الإجراءات التصحيحية إليك.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAssignments": {
+    "message": "المهام",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewNotificationsAreOrganizedByIntentTo": {
+    "message": "يتم تنظيم الإشعارات حسب النية لمساعدتك على البقاء على اطلاع دون أن تطغى عليك الأمور.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhatYoureNotifiedAbout": {
+    "message": "ما تم إعلامك به",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewLearnHowNotificationsWorkAndWhat": {
+    "message": "تعرف على كيفية عمل الإشعارات وما يمكنك التحكم فيه.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewNotificationOverview": {
+    "message": "نظرة عامة على الإخطار",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationHealthHighVolume": {
+    "message": "حجم مرتفع",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoUserDataAvailable": {
+    "message": "لا توجد بيانات المستخدم المتاحة",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthFlag": {
+    "message": "علَم",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthReceived": {
+    "message": "تلقى",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthHighVolumeUsers": {
+    "message": "عدد كبير من المستخدمين",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoEventDataAvailable": {
+    "message": "لا توجد بيانات الحدث المتاحة",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthTopEventTypes": {
+    "message": "أهم أنواع الأحداث",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoChannelDataAvailable": {
+    "message": "لا توجد بيانات القناة المتاحة",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthLastFailure": {
+    "message": "الفشل الأخير",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthSent": {
+    "message": "مرسل",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthChannelHealth": {
+    "message": "صحة القناة",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthDegradedChannels": {
+    "message": "القنوات المتدهورة",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthActiveChannels": {
+    "message": "القنوات النشطة",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthReadRate": {
+    "message": "معدل القراءة",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthTotalNotifications": {
+    "message": "إجمالي الإخطارات",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthMonitorNotificationDeliveryAndChannelHealth": {
+    "message": "مراقبة تسليم الإخطارات وصحة القناة",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNotificationHealth": {
+    "message": "صحة الإخطار",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthHealth": {
+    "message": "صحة",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationPreferencesReceiveAWeeklySummaryViaEmail": {
+    "message": "احصل على ملخص أسبوعي عبر البريد الإلكتروني. مثالي للبقاء على اطلاع دون انقطاع يومي.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWeeklyDigest": {
+    "message": "الملخص الأسبوعي",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesReceiveADailySummaryOfYour": {
+    "message": "احصل على ملخص يومي لإشعاراتك. يقلل من ضجيج الإشعارات مع إبقائك على اطلاع.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesDailyDigest": {
+    "message": "الملخص اليومي",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesReceiveSummariesInsteadOfRealTime": {
+    "message": "تلقي ملخصات بدلا من الإخطارات في الوقت الحقيقي",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationDigests": {
+    "message": "ملخصات الإخطار",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSmsIsOnlyUsedAsA": {
+    "message": "يتم استخدام الرسائل القصيرة فقط كملاذ أخير عندما لا تكون القنوات الأخرى متاحة. تظل الرسائل قصيرة وتتضمن روابط عميقة عندما يكون ذلك ممكنًا.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSmsNotifications": {
+    "message": "إشعارات الرسائل القصيرة",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWhatsappNotificationsAreOnlySentFor": {
+    "message": "يتم إرسال إشعارات WhatsApp فقط للأحداث ذات الأولوية العالية في تطبيقات التدقيق والبوابة.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWhatsappNotifications": {
+    "message": "إشعارات الواتساب",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPushNotificationsAreBlockedEnableThem": {
+    "message": "تم حظر إشعارات الدفع. قم بتمكينها في إعدادات المتصفح الخاص بك.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesTestNotification": {
+    "message": "إشعار الاختبار",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesEnablePushNotifications": {
+    "message": "تمكين دفع الإخطارات",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPushNotifications": {
+    "message": "دفع الإخطارات",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesThereAreNoConfigurableNotificationEvents": {
+    "message": "لا توجد أحداث إعلام قابلة للتكوين لهذا التطبيق حتى الآن.\n          ستستمر الإشعارات في استخدام إعداداتها الافتراضية الآمنة.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesInApp": {
+    "message": "في التطبيق",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSystemEventManagedByArivu": {
+    "message": "حدث النظام (يُديره Arivu)",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesClickAChannelToJumpTo": {
+    "message": "انقر فوق قناة للانتقال إلى إعداداتها. القنوات المعطلة غير متوفرة لهذا التطبيق.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationDelivery": {
+    "message": "تسليم الإخطار",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWeCouldntLoadYourNotificationPreferences": {
+    "message": "لم نتمكن من تحميل تفضيلات الإشعارات الخاصة بك الآن. سوف الإخطارات\n        الاستمرار في استخدام الإعدادات الافتراضية الخاصة بهم. يمكنك الاستمرار في استخدام التطبيق بأمان.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesCouldntSaveChangesPleaseTryAgain": {
+    "message": "تعذر حفظ التغييرات. يرجى المحاولة مرة أخرى.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesHealthDashboard": {
+    "message": "لوحة المعلومات الصحية",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationRules": {
+    "message": "قواعد الإخطار",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesControlInAppAndEmailNotifications": {
+    "message": "التحكم في إشعارات التطبيق والبريد الإلكتروني لمساحة العمل هذه.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationPreferences": {
+    "message": "تفضيلات الإخطار",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPreferences": {
+    "message": "التفضيلات",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationRulesDeleteRule": {
+    "message": "حذف القاعدة",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesEditRule": {
+    "message": "تحرير القاعدة",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesCreateYourFirstRule": {
+    "message": "قم بإنشاء القاعدة الأولى الخاصة بك",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesGetStartedByCreatingYourFirst": {
+    "message": "ابدأ بإنشاء قاعدة الإشعارات الأولى.",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesNoNotificationRulesYet": {
+    "message": "لا توجد قواعد الإخطار حتى الآن",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesFailedToLoadNotificationRules": {
+    "message": "فشل تحميل قواعد الإعلام",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesDeleteAnExistingRuleToCreate": {
+    "message": "احذف قاعدة موجودة لإنشاء قاعدة جديدة.",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesCreateCustomNotificationTriggersForModules": {
+    "message": "أنشئ مشغلات إشعارات مخصصة للوحدات التي تهمك.",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesNotificationRules": {
+    "message": "قواعد الإخطار",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "contactDetailToastFailedToDeleteContact": {
+    "message": "فشل حذف جهة الاتصال",
+    "description": "Toast from ContactDetail.vue"
+  },
+  "contactDetailToastFailedToUnlinkOrganization": {
+    "message": "فشل إلغاء ربط المؤسسة",
+    "description": "Toast from ContactDetail.vue"
+  },
+  "dealDetailToastFailedToDeleteDeal": {
+    "message": "فشل في حذف الصفقة",
+    "description": "Toast from DealDetail.vue"
+  },
+  "dealDetailToastFailedToAddNote": {
+    "message": "فشلت إضافة ملاحظة",
+    "description": "Toast from DealDetail.vue"
+  },
+  "dealsToastErrorDeletingDealPleaseTry": {
+    "message": "حدث خطأ أثناء حذف الصفقة. يرجى المحاولة مرة أخرى.",
+    "description": "Toast from Deals.vue"
+  },
+  "dealsToastErrorPerformingBulkActionPlease": {
+    "message": "حدث خطأ أثناء تنفيذ الإجراء المجمع. يرجى المحاولة مرة أخرى.",
+    "description": "Toast from Deals.vue"
+  },
+  "dealsToastFailedToExportDeals": {
+    "message": "فشل تصدير الصفقات.",
+    "description": "Toast from Deals.vue"
+  },
+  "demoRequestsToastFailedToUpdateStatus": {
+    "message": "فشل تحديث الحالة",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "demoRequestsToastSuccessfullyConvertedToOrganization": {
+    "message": "تم التحويل بنجاح إلى منظمة!",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "demoRequestsToastFailedToConvertRequest": {
+    "message": "فشل تحويل الطلب",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "eventDetailToastFailedToDeleteEvent": {
+    "message": "فشل في حذف الحدث",
+    "description": "Toast from EventDetail.vue"
+  },
+  "eventDetailToastFailedToAddNote": {
+    "message": "فشلت إضافة ملاحظة",
+    "description": "Toast from EventDetail.vue"
+  },
+  "eventExecutionSurfaceToastLocationIsRequiredForCheck": {
+    "message": "الموقع مطلوب لتسجيل الوصول. يرجى السماح بالوصول إلى الموقع والمحاولة مرة أخرى.",
+    "description": "Toast from EventExecutionSurface.vue"
+  },
+  "eventsToastErrorPerformingBulkActionPlease": {
+    "message": "حدث خطأ أثناء تنفيذ الإجراء المجمع. يرجى المحاولة مرة أخرى.",
+    "description": "Toast from Events.vue"
+  },
+  "eventsToastErrorExportingEventsPleaseTry": {
+    "message": "حدث خطأ أثناء تصدير الأحداث. يرجى المحاولة مرة أخرى.",
+    "description": "Toast from Events.vue"
+  },
+  "groupDetailToastFailedToLoadGroup": {
+    "message": "فشل تحميل المجموعة",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToAddMember": {
+    "message": "فشلت إضافة العضو",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToRemoveMember": {
+    "message": "فشل في إزالة العضو",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToDeleteGroup": {
+    "message": "فشل حذف المجموعة",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupsToastErrorPerformingBulkActionPlease": {
+    "message": "حدث خطأ أثناء تنفيذ الإجراء المجمع. يرجى المحاولة مرة أخرى.",
+    "description": "Toast from Groups.vue"
+  },
+  "groupsToastErrorDeletingGroupPleaseTry": {
+    "message": "حدث خطأ أثناء حذف المجموعة. يرجى المحاولة مرة أخرى.",
+    "description": "Toast from Groups.vue"
+  },
+  "organizationDetailToastFailedToDeleteOrganizationPlease": {
+    "message": "فشل حذف المؤسسة. يرجى المحاولة مرة أخرى.",
+    "description": "Toast from OrganizationDetail.vue"
+  },
+  "organizationsToastUnknownError": {
+    "message": "خطأ غير معروف",
+    "description": "Toast from Organizations.vue"
+  },
+  "organizationsToastErrorExportingOrganizationsPleaseTry": {
+    "message": "حدث خطأ أثناء تصدير المؤسسات. يرجى المحاولة مرة أخرى.",
+    "description": "Toast from Organizations.vue"
+  },
+  "organizationsToastErrorExportingOrganizationsPleaseTry2": {
+    "message": "حدث خطأ أثناء تصدير المؤسسات. يرجى المحاولة مرة أخرى.",
+    "description": "Toast from Organizations.vue"
+  },
+  "peopleToastUnknownError": {
+    "message": "خطأ غير معروف",
+    "description": "Toast from People.vue"
+  },
+  "peopleToastErrorExportingPeoplePleaseTry": {
+    "message": "حدث خطأ أثناء تصدير الأشخاص. يرجى المحاولة مرة أخرى.",
+    "description": "Toast from People.vue"
+  },
+  "peopleToastErrorExportingContactsPleaseTry": {
+    "message": "حدث خطأ أثناء تصدير جهات الاتصال. يرجى المحاولة مرة أخرى.",
+    "description": "Toast from People.vue"
+  },
+  "responsesToastFormIdNotFoundPlease": {
+    "message": "لم يتم العثور على معرف النموذج. يرجى تحديث الصفحة والمحاولة مرة أخرى.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToApproveResponsePlease": {
+    "message": "فشلت الموافقة على الرد. يرجى المحاولة مرة أخرى.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease2": {
+    "message": "لم يتم العثور على معرف النموذج. يرجى تحديث الصفحة والمحاولة مرة أخرى.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToRejectResponsePlease": {
+    "message": "فشل رفض الاستجابة. يرجى المحاولة مرة أخرى.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease3": {
+    "message": "لم يتم العثور على معرف النموذج. يرجى تحديث الصفحة والمحاولة مرة أخرى.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease4": {
+    "message": "لم يتم العثور على معرف النموذج. يرجى تحديث الصفحة والمحاولة مرة أخرى.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToRestoreResponsePlease": {
+    "message": "فشلت استعادة الاستجابة. يرجى المحاولة مرة أخرى.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastSubmittedResponsesCannotBeDeleted": {
+    "message": "لا يمكن حذف الردود المقدمة. استخدم الأرشيف أو إبطال بدلاً من ذلك.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease5": {
+    "message": "لم يتم العثور على معرف النموذج. يرجى تحديث الصفحة والمحاولة مرة أخرى.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToDeleteResponsePlease": {
+    "message": "فشل في حذف الرد. يرجى المحاولة مرة أخرى.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastExportFunctionalityForAllResponses": {
+    "message": "ستتوفر قريبًا وظيفة التصدير لجميع الاستجابات!",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastAnErrorOccurredDuringExport": {
+    "message": "حدث خطأ أثناء التصدير.",
+    "description": "Toast from Responses.vue"
+  },
+  "tasksToastFailedToUpdateTaskStatus": {
+    "message": "فشل تحديث حالة المهمة",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastFailedToDeleteTask": {
+    "message": "فشل في حذف المهمة.",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastErrorPerformingBulkActionPlease": {
+    "message": "حدث خطأ أثناء تنفيذ الإجراء المجمع. يرجى المحاولة مرة أخرى.",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastErrorExportingTasksPleaseTry": {
+    "message": "حدث خطأ أثناء تصدير المهام. يرجى المحاولة مرة أخرى.",
+    "description": "Toast from Tasks.vue"
+  },
+  "trashToastRestoredSomeParentRecordsWere": {
+    "message": "المستعادة. تم حذف بعض سجلات الوالدين نهائيًا.",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToRestore": {
+    "message": "فشل في الاستعادة",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToRestore2": {
+    "message": "فشل في الاستعادة",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToDelete": {
+    "message": "فشل الحذف",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToDelete2": {
+    "message": "فشل الحذف",
+    "description": "Toast from Trash.vue"
+  },
+  "notificationPreferencesToastPushNotificationsAreNotSupported": {
+    "message": "إشعارات الدفع غير مدعومة في هذا المتصفح.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastEnablePushNotifications": {
+    "message": "تمكين دفع الإخطارات",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastNotificationsAreNotSupportedIn": {
+    "message": "الإخطارات غير مدعومة في هذا المتصفح.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationTriggeredCheckYour": {
+    "message": "تم تشغيل إشعار الاختبار. تحقق من إشعارات النظام الخاص بك.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationTriggeredIfYou": {
+    "message": "تم تشغيل إشعار الاختبار. إذا لم تشاهده، فتحقق من إعدادات مركز الإشعارات / نظام تشغيل المتصفح.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastUnknownError": {
+    "message": "خطأ غير معروف",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationFailedSeeConsole": {
+    "message": "فشل إعلام الاختبار. انظر وحدة التحكم للحصول على التفاصيل.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationRulesToastFailedToDeleteRulePlease": {
+    "message": "فشل حذف القاعدة. يرجى المحاولة مرة أخرى.",
+    "description": "Toast from NotificationRules.vue"
+  },
+  "pronounYou": {
+    "message": "أنت",
+    "description": "First-person actor label in activity feed"
+  },
+  "relativeJustNow": {
+    "message": "الآن",
+    "description": "Relative time under one minute"
+  },
+  "relativeOneMinuteAgo": {
+    "message": "منذ دقيقة",
+    "description": "Relative time one minute"
+  },
+  "relativeManyMinutesAgo": {
+    "message": "منذ {count} د",
+    "description": "Relative time multiple minutes"
+  },
+  "relativeOneHourAgo": {
+    "message": "منذ ساعة",
+    "description": "Relative time one hour"
+  },
+  "relativeManyHoursAgo": {
+    "message": "منذ {count} س",
+    "description": "Relative time multiple hours"
+  },
+  "relativeOneDayAgo": {
+    "message": "منذ يوم",
+    "description": "Relative time one day"
+  },
+  "relativeManyDaysAgo": {
+    "message": "منذ {count} ي",
+    "description": "Relative time multiple days"
+  },
+  "relativeOneMonthAgo": {
+    "message": "منذ شهر",
+    "description": "Relative time one month"
+  },
+  "relativeManyMonthsAgo": {
+    "message": "منذ {count} ش",
+    "description": "Relative time multiple months"
+  },
+  "relativeOneYearAgo": {
+    "message": "منذ سنة",
+    "description": "Relative time one year"
+  },
+  "relativeManyYearsAgo": {
+    "message": "منذ {count} سنة",
+    "description": "Relative time multiple years"
+  },
+  "phraseAnnualRevenue": {
+    "message": "الإيرادات السنوية",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLeadSource": {
+    "message": "مصدر الرصاص",
+    "description": "Common tenant custom field label"
+  },
+  "phraseIndustry": {
+    "message": "صناعة",
+    "description": "Common tenant custom field label"
+  },
+  "phraseWebsite": {
+    "message": "موقع إلكتروني",
+    "description": "Common tenant custom field label"
+  },
+  "phraseFax": {
+    "message": "فاكس",
+    "description": "Common tenant custom field label"
+  },
+  "phraseAddress": {
+    "message": "عنوان",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCity": {
+    "message": "مدينة",
+    "description": "Common tenant custom field label"
+  },
+  "phraseState": {
+    "message": "ولاية",
+    "description": "Common tenant custom field label"
+  },
+  "phraseZipCode": {
+    "message": "الرمز البريدي",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCountry": {
+    "message": "دولة",
+    "description": "Common tenant custom field label"
+  },
+  "phraseDepartment": {
+    "message": "قسم",
+    "description": "Common tenant custom field label"
+  },
+  "phraseJobTitle": {
+    "message": "مسمى وظيفي",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLinkedin": {
+    "message": "ينكدين",
+    "description": "Common tenant custom field label"
+  },
+  "phrasePriority": {
+    "message": "أولوية",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRating": {
+    "message": "تصنيف",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCategory": {
+    "message": "فئة",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSubcategory": {
+    "message": "فئة فرعية",
+    "description": "Common tenant custom field label"
+  },
+  "phraseProduct": {
+    "message": "منتج",
+    "description": "Common tenant custom field label"
+  },
+  "phraseQuantity": {
+    "message": "كمية",
+    "description": "Common tenant custom field label"
+  },
+  "phraseUnitPrice": {
+    "message": "سعر الوحدة",
+    "description": "Common tenant custom field label"
+  },
+  "phraseDiscount": {
+    "message": "تخفيض",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTax": {
+    "message": "ضريبة",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTotal": {
+    "message": "المجموع",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSubtotal": {
+    "message": "المجموع الفرعي",
+    "description": "Common tenant custom field label"
+  },
+  "phraseContractStart": {
+    "message": "بداية العقد",
+    "description": "Common tenant custom field label"
+  },
+  "phraseContractEnd": {
+    "message": "نهاية العقد",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRenewalDate": {
+    "message": "تاريخ التجديد",
+    "description": "Common tenant custom field label"
+  },
+  "phraseMrr": {
+    "message": "MRR",
+    "description": "Common tenant custom field label"
+  },
+  "phraseArr": {
+    "message": "آر",
+    "description": "Common tenant custom field label"
+  },
+  "phraseEmployees": {
+    "message": "موظفين",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRevenue": {
+    "message": "ربح",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTerritory": {
+    "message": "إِقلِيم",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRegion": {
+    "message": "منطقة",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTimezone": {
+    "message": "المنطقة الزمنية",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCurrency": {
+    "message": "عملة",
+    "description": "Common tenant custom field label"
+  },
+  "phrasePoNumber": {
+    "message": "رقم أمر الشراء",
+    "description": "Common tenant custom field label"
+  },
+  "phraseInvoiceNumber": {
+    "message": "رقم الفاتورة",
+    "description": "Common tenant custom field label"
+  },
+  "phraseOrderNumber": {
+    "message": "رقم الطلب",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSerialNumber": {
+    "message": "رقم سري",
+    "description": "Common tenant custom field label"
+  },
+  "phraseExternalId": {
+    "message": "معرف خارجي",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLastActivity": {
+    "message": "النشاط الأخير",
+    "description": "Common tenant custom field label"
+  },
+  "phraseNextFollowUp": {
+    "message": "المتابعة التالية",
+    "description": "Common tenant custom field label"
+  },
+  "phraseInfluencer": {
+    "message": "المؤثر",
+    "description": "Common tenant custom field label"
+  },
+  "phraseMobile": {
+    "message": "متحرك",
+    "description": "Common tenant custom field label"
+  },
+  "phraseColor": {
+    "message": "لون",
+    "description": "Common tenant custom field label"
+  },
+  "phraseEmoji": {
+    "message": "الرموز التعبيرية",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTrend": {
+    "message": "اتجاه",
+    "description": "Common tenant custom field label"
+  },
+  "phraseAccount": {
+    "message": "حساب",
+    "description": "Common tenant custom field label"
+  },
+  "phraseHelpdesk": {
+    "message": "مكتب المساعدة",
+    "description": "App/product name"
+  },
+  "phrasePortal": {
+    "message": "منفذ",
+    "description": "App/product name"
+  },
+  "fieldRequiredBadge": {
+    "message": "Required",
+    "description": "Badge on required fields in settings and forms"
+  },
+  "required": {
+    "message": "Required",
+    "description": "Required field indicator (alias for settings badges)"
+  },
+  "listSearchModule": {
+    "message": "Search {module}...",
+    "description": "Module list search placeholder"
+  },
+  "listCreateModule": {
+    "message": "New {module}",
+    "description": "Generic module list create button"
+  },
+  "listViewAllModule": {
+    "message": "All {module}",
+    "description": "Generic all-records list view title"
+  },
+  "listViewMyModule": {
+    "message": "My {module}",
+    "description": "Generic assigned-to-me list view title"
+  },
+  "listViewCustom": {
+    "message": "Custom",
+    "description": "List view title when filters or search are applied"
+  },
+  "listStatAssignedToMe": {
+    "message": "Assigned to Me",
+    "description": "List statistics card label"
+  },
+  "listStatUnassigned": {
+    "message": "Unassigned",
+    "description": "List statistics card label"
+  },
+  "listStatCompleted": {
+    "message": "Completed",
+    "description": "List statistics card label"
+  },
+  "listStatOverdue": {
+    "message": "Overdue",
+    "description": "List statistics card label"
+  },
+  "listDefaultViewTooltip": {
+    "message": "Default list (loads when opening)",
+    "description": "Tooltip on active default saved list view"
+  },
+  "listSetDefaultViewTooltip": {
+    "message": "Set as default list",
+    "description": "Tooltip to mark a saved list view as default"
+  },
+  "listCoreFields": {
+    "message": "Core Fields",
+    "description": "Customize list field group label"
+  },
+  "listParticipationFields": {
+    "message": "Participation",
+    "description": "Customize list field group label"
+  },
+  "listSystemFields": {
+    "message": "System Fields",
+    "description": "Customize list field group label"
+  },
+  "listParticipationApp": {
+    "message": "Participation: {app}",
+    "description": "Customize list participation field group label"
+  },
+  "listRowHeightSmall": {
+    "message": "Small",
+    "description": "List row height option"
+  },
+  "listRowHeightMedium": {
+    "message": "Medium",
+    "description": "List row height option"
+  },
+  "listRowHeightLarge": {
+    "message": "Large",
+    "description": "List row height option"
+  },
+  "listRowHeightHuge": {
+    "message": "Huge",
+    "description": "List row height option"
+  },
+  "listEmptyTitle": {
+    "message": "No records yet",
+    "description": "Default list empty state title"
+  },
+  "listEmptyMessage": {
+    "message": "Start by adding your first record",
+    "description": "Default list empty state description"
+  },
+  "listEmptyNoModuleYet": {
+    "message": "No {module} yet",
+    "description": "Module list empty state title"
+  },
+  "listEmptyModuleWillAppear": {
+    "message": "{module} will appear here as you add them.",
+    "description": "Module list empty state description"
+  },
+  "listEmptyNoMatchFilters": {
+    "message": "No {module} match your filters",
+    "description": "List empty title when filters are active"
+  },
+  "listEmptyNoMatchSearchAndFilters": {
+    "message": "No {module} match your search or filters. Try adjusting them or clear everything to start over.",
+    "description": "List empty message when search and filters are active"
+  },
+  "listEmptyNoMatchSearch": {
+    "message": "We couldn't find any {module} matching \"{query}\". Try a different keyword or clear the search.",
+    "description": "List empty message when search is active"
+  },
+  "listEmptyNoMatchFiltersOnly": {
+    "message": "No {module} match your filters. Try adjusting or clearing them to see more results.",
+    "description": "List empty message when only filters are active"
+  },
+  "listClearSearchAndFilters": {
+    "message": "Clear search & filters",
+    "description": "Button to reset list search and filters"
+  },
+  "listFilterAll": {
+    "message": "All {filter}",
+    "description": "Filter dropdown placeholder when no value selected"
+  },
+  "listUnknown": {
+    "message": "Unknown",
+    "description": "Fallback label for unknown filter option"
+  },
+  "listNoDataAvailable": {
+    "message": "No data available",
+    "description": "Table empty state title fallback"
+  },
+  "listNoRecordsFound": {
+    "message": "No records found.",
+    "description": "Table empty state message fallback"
+  },
+  "listEmptyIllustrationAlt": {
+    "message": "No records illustration",
+    "description": "Alt text for list empty state illustration"
+  },
+  "phraseDefaultInParens": {
+    "message": "(Default)",
+    "description": "Suffix for default pipeline or option"
+  }
+}

@@ -1,11 +1,11 @@
 <template>
   <div class="space-y-6">
-    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Form Details</h2>
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('forms.tabDetailsHeading') }}</h2>
 
     <!-- Form ID (Read-only if exists) -->
     <div v-if="form?.formId" class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-        Form ID
+        {{ t('forms.fieldFormId') }}
       </label>
       <input
         type="text"
@@ -18,12 +18,12 @@
     <!-- Form Name -->
     <div>
       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-        Form Name <span class="text-red-500">*</span>
+        {{ t('forms.fieldFormName') }} <span class="text-red-500">*</span>
       </label>
       <input
         v-model="localForm.name"
         type="text"
-        placeholder="Enter form name"
+        :placeholder="t('forms.fieldFormNamePh')"
         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
       />
     </div>
@@ -31,12 +31,12 @@
     <!-- Description -->
     <div>
       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-        Description
+        {{ t('forms.fieldDescription') }}
       </label>
       <textarea
         v-model="localForm.description"
         rows="3"
-        placeholder="Enter form description"
+        :placeholder="t('forms.fieldFormDescriptionPh')"
         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
       ></textarea>
     </div>
@@ -44,17 +44,17 @@
     <!-- Form Type -->
     <div>
       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-        Form Type <span class="text-red-500">*</span>
+        {{ t('forms.fieldFormType') }} <span class="text-red-500">*</span>
       </label>
       <select
         v-model="localForm.formType"
         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
       >
-        <option value="Audit">Audit</option>
-        <option value="Survey">Survey</option>
-        <option value="Feedback">Feedback</option>
-        <option value="Inspection">Inspection</option>
-        <option value="Custom">Custom</option>
+        <option value="Audit">{{ t('forms.typeAudit') }}</option>
+        <option value="Survey">{{ t('forms.typeSurvey') }}</option>
+        <option value="Feedback">{{ t('forms.typeFeedback') }}</option>
+        <option value="Inspection">{{ t('forms.typeInspection') }}</option>
+        <option value="Custom">{{ t('forms.typeCustom') }}</option>
       </select>
     </div>
 
@@ -62,30 +62,30 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Visibility
+          {{ t('forms.fieldVisibility') }}
         </label>
         <select
           v-model="localForm.visibility"
           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
         >
-          <option value="Internal">Internal</option>
-          <option value="Partner">Partner</option>
-          <option value="Public">Public</option>
+          <option value="Internal">{{ t('forms.visibilityInternal') }}</option>
+          <option value="Partner">{{ t('forms.visibilityPartner') }}</option>
+          <option value="Public">{{ t('forms.visibilityPublic') }}</option>
         </select>
       </div>
 
       <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Status
+          {{ t('forms.fieldStatus') }}
         </label>
         <select
           v-model="localForm.status"
           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
         >
-          <option value="Draft">Draft</option>
-          <option value="Ready">Ready</option>
-          <option value="Active">Active</option>
-          <option value="Archived">Archived</option>
+          <option value="Draft">{{ t('forms.statusDraft') }}</option>
+          <option value="Ready">{{ t('forms.statusReady') }}</option>
+          <option value="Active">{{ t('forms.statusActive') }}</option>
+          <option value="Archived">{{ t('forms.statusArchived') }}</option>
         </select>
       </div>
     </div>
@@ -93,7 +93,7 @@
     <!-- Expiry Date (for Surveys) -->
     <div v-if="localForm.formType === 'Survey'">
       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-        Expiry Date
+        {{ t('forms.fieldExpiryDate') }}
       </label>
       <input
         v-model="localForm.expiryDate"
@@ -106,7 +106,7 @@
     <!-- Tags -->
     <div>
       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-        Tags
+        {{ t('forms.fieldTags') }}
       </label>
       <div class="flex flex-wrap gap-2">
         <span
@@ -128,7 +128,7 @@
           v-model="newTag"
           @keyup.enter="addTag"
           type="text"
-          placeholder="Add tag..."
+          :placeholder="t('forms.fieldAddTagPh')"
           class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
         />
       </div>
@@ -141,19 +141,19 @@
         checkbox-class="w-4 h-4"
       />
       <span class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-        Approval Required
+        {{ t('forms.fieldApprovalRequired') }}
       </span>
     </label>
 
     <!-- Notes -->
     <div>
       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-        Notes
+        {{ t('forms.fieldNotes') }}
       </label>
       <textarea
         v-model="localForm.notes"
         rows="4"
-        placeholder="Internal notes about this form"
+        :placeholder="t('forms.fieldNotesPh')"
         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
       ></textarea>
     </div>
@@ -162,7 +162,10 @@
 
 <script setup>
 import { ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { openDatePicker } from '@/utils/dateUtils';
+
+const { t } = useI18n();
 
 const props = defineProps({
   form: {
@@ -228,4 +231,3 @@ const removeTag = (index) => {
   localForm.value.tags.splice(index, 1);
 };
 </script>
-

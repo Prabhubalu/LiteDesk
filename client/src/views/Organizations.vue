@@ -140,7 +140,7 @@
           />
           <span class="text-sm text-gray-700 dark:text-gray-300">{{ getUserDisplayName(row.assignedTo) }}</span>
         </div>
-        <span v-else class="text-sm text-gray-500 dark:text-gray-400">Unassigned</span>
+        <span v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('records.editableUnassigned') }}</span>
       </template>
       <!-- Also support lowercase variant -->
       <template #cell-assignedto="{ row }">
@@ -156,7 +156,7 @@
           />
           <span class="text-sm text-gray-700 dark:text-gray-300">{{ getUserDisplayName(row.assignedTo) }}</span>
         </div>
-        <span v-else class="text-sm text-gray-500 dark:text-gray-400">Unassigned</span>
+        <span v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('records.editableUnassigned') }}</span>
       </template>
 
       <!-- Custom Account Manager Cells -->
@@ -208,6 +208,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, onMounted, onUnmounted, onActivated } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -397,7 +400,7 @@ const bulkDeleteOrganizations = async (selectedRows) => {
     }
   } catch (error) {
     console.error('Error bulk deleting organizations:', error);
-    alert(`Error deleting organizations: ${error.message || 'Unknown error'}`);
+    alert(`Error deleting organizations: ${error.message || t('common.organizationsToastUnknownError')}`);
   } finally {
     deleting.value = false;
   }
@@ -465,7 +468,7 @@ const bulkExportOrganizations = async (selectedRows) => {
     window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Error bulk exporting organizations:', error);
-    alert('Error exporting organizations. Please try again.');
+    alert(t('common.organizationsToastErrorExportingOrganizationsPleaseTry'));
   }
 };
 
@@ -501,7 +504,7 @@ const exportOrganizations = async () => {
     window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Error exporting organizations:', error);
-    alert('Error exporting organizations. Please try again.');
+    alert(t('common.organizationsToastErrorExportingOrganizationsPleaseTry2'));
   }
 };
 

@@ -5,7 +5,7 @@
       <nav
         class="flex flex-wrap gap-1 border-b border-gray-200 dark:border-gray-700"
         role="tablist"
-        aria-label="App participation"
+        :aria-label="t('records.genericAppParticipation')"
       >
         <button
           v-for="opt in contextOptions"
@@ -125,7 +125,7 @@
             {{ getUserDisplayName(row.owner_id) }}
           </span>
         </div>
-        <span v-else class="text-sm text-gray-500 dark:text-gray-400">Unassigned</span>
+        <span v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('records.editableUnassigned') }}</span>
       </template>
 
       <!-- Custom Assigned To Cell -->
@@ -142,7 +142,7 @@
           />
           <span class="text-sm text-gray-700 dark:text-gray-300">{{ getUserDisplayName(row.assignedTo) }}</span>
         </div>
-        <span v-else class="text-sm text-gray-500 dark:text-gray-400">Unassigned</span>
+        <span v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('records.editableUnassigned') }}</span>
       </template>
 
       <!-- Custom Lifecycle Stage Cell with Badge -->
@@ -276,6 +276,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, onActivated } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
@@ -295,19 +296,27 @@ import {
 } from '@/utils/peopleParticipationUi';
 import { usePeopleTypes } from '@/composables/usePeopleTypes';
 import { typeDefsToBadgeOptions } from '@/utils/peopleTypeColors';
+import { APP_NAME_KEYS } from '@/utils/navigationLabels';
 
 const router = useRouter();
+const { t, te } = useI18n();
 const authStore = useAuthStore();
 const { openTab } = useTabs();
 
 /** @type {import('vue').Ref<'ALL' | 'SALES' | 'HELPDESK'>} */
 const peopleContext = ref('ALL');
 
-const contextOptions = [
-  { label: 'All Apps', value: 'ALL' },
-  { label: getAppLabel('SALES'), value: 'SALES' },
-  { label: getAppLabel('HELPDESK'), value: 'HELPDESK' }
-];
+const contextOptions = computed(() => [
+  { label: t('people.contextAllApps'), value: 'ALL' },
+  {
+    label: te(APP_NAME_KEYS.SALES) ? t(APP_NAME_KEYS.SALES) : getAppLabel('SALES'),
+    value: 'SALES',
+  },
+  {
+    label: te(APP_NAME_KEYS.HELPDESK) ? t(APP_NAME_KEYS.HELPDESK) : getAppLabel('HELPDESK'),
+    value: 'HELPDESK',
+  },
+]);
 
 const { typeDefs: salesPeopleTypeDefs } = usePeopleTypes('SALES');
 const { typeDefs: helpdeskPeopleTypeDefs } = usePeopleTypes('HELPDESK');
@@ -641,7 +650,7 @@ const bulkDeletePeople = async (selectedRows) => {
     }
   } catch (error) {
     console.error('Error bulk deleting people:', error);
-    alert(`Error deleting people: ${error.message || 'Unknown error'}`);
+    alert(`Error deleting people: ${error.message || t('common.peopleToastUnknownError')}`);
   } finally {
     deleting.value = false;
   }
@@ -702,7 +711,7 @@ const bulkExportPeople = async (selectedRows) => {
     window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Error bulk exporting people:', error);
-    alert('Error exporting people. Please try again.');
+    alert(t('common.peopleToastErrorExportingPeoplePleaseTry'));
   }
 };
 
@@ -738,7 +747,7 @@ const exportContacts = async () => {
     window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Error exporting contacts:', error);
-    alert('Error exporting contacts. Please try again.');
+    alert(t('common.peopleToastErrorExportingContactsPleaseTry'));
   }
 };
 

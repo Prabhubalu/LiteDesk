@@ -80,6 +80,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
@@ -105,6 +106,8 @@ const props = defineProps({
     default: false
   }
 });
+
+const { t } = useI18n();
 
 defineEmits(['select', 'complete']);
 

@@ -1,6 +1,6 @@
 <template>
   <section class="record-fields-section space-y-6" aria-labelledby="record-fields-heading">
-    <h2 id="record-fields-heading" class="sr-only">Record fields</h2>
+    <h2 id="record-fields-heading" class="sr-only">{{ t('records.fieldsHeadingSr') }}</h2>
     <AccordionSection
       v-if="collapsible"
       :title="accordionTitle || 'Core Fields'"
@@ -8,25 +8,7 @@
       :default-open="defaultOpen"
       content-class=""
     >
-      <template #actions>
-        <!--
-        Future use: Core Fields header action buttons (Search / Expand / Resize / Add)
-        <div v-if="listLayout" class="record-fields-section__header-actions flex items-center gap-1 text-gray-400 dark:text-gray-500">
-          <button type="button" class="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" aria-label="Search">
-            <MagnifyingGlassIcon class="w-4 h-4" />
-          </button>
-          <button type="button" class="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" aria-label="Expand">
-            <ArrowsPointingOutIcon class="w-4 h-4" />
-          </button>
-          <button type="button" class="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" aria-label="Resize">
-            <Squares2X2Icon class="w-4 h-4" />
-          </button>
-          <button type="button" class="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" aria-label="Add">
-            <PlusIcon class="w-4 h-4" />
-          </button>
-        </div>
-        -->
-      </template>
+      <template #actions />
       <!-- List layout: single list for all groups -->
       <div
         v-if="listLayout"
@@ -86,13 +68,10 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import AccordionSection from './AccordionSection.vue';
-import {
-  MagnifyingGlassIcon,
-  ArrowsPointingOutIcon,
-  Squares2X2Icon,
-  PlusIcon
-} from '@heroicons/vue/24/outline';
+
+const { t } = useI18n();
 
 /**
  * RecordFieldsSection – grouped, inline-editable fields.

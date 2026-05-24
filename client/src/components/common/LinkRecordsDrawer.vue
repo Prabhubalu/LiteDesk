@@ -18,7 +18,7 @@
                         v-if="showTypeSelector && selectedModuleKey"
                         type="button"
                         class="shrink-0 p-1 rounded text-indigo-200 hover:text-white"
-                        aria-label="Back to record type"
+                        :aria-label="t('common.linkRecordsBackToType')"
                         @click="clearRecordTypeSelection"
                       >
                         <ChevronLeftIcon class="size-5" />
@@ -26,7 +26,7 @@
                       <DialogTitle class="text-base font-semibold text-white truncate">{{ computedTitle }}</DialogTitle>
                     </div>
                     <button type="button" class="rounded-md text-indigo-200 hover:text-white shrink-0" @click="closeDrawer">
-                      <span class="sr-only">Close panel</span>
+                      <span class="sr-only">{{ t('common.closePanel') }}</span>
                       <XMarkIcon class="size-6" />
                     </button>
                   </div>
@@ -40,7 +40,7 @@
                         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
                       </div>
                       <div v-else-if="recordTypeOptions.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">
-                        No linkable record types configured for this module. Configure relationships in Settings → Modules.
+                        {{ t('common.linkRecordsNoTypes') }}
                       </div>
                       <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <button
@@ -62,7 +62,7 @@
                             v-if="isRecordTypeOptionDisabled(opt)"
                             class="ml-auto shrink-0 rounded-full bg-gray-200 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-600 dark:bg-gray-600 dark:text-gray-200"
                           >
-                            Linked
+                            {{ t('common.linkRecordsLinked') }}
                           </span>
                         </button>
                       </div>
@@ -71,7 +71,7 @@
                     <template v-else>
                     <!-- Search -->
                     <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-                      <input v-model="searchQuery" type="text" placeholder="Search..." class="block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-sm outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:bg-gray-800 dark:outline-white/10" />
+                      <input v-model="searchQuery" type="text" :placeholder="t('common.searchPlaceholder')" class="block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-sm outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:bg-gray-800 dark:outline-white/10" />
                     </div>
 
                     <!-- List -->
@@ -80,7 +80,7 @@
                         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
                       </div>
                       <div v-else>
-                        <div v-if="visibleItems.length === 0" class="text-center text-sm text-gray-500 dark:text-gray-400 py-8">No matching records found. Try adjusting your search or filters.</div>
+                        <div v-if="visibleItems.length === 0" class="text-center text-sm text-gray-500 dark:text-gray-400 py-8">{{ t('common.linkRecordsNoMatch') }}</div>
                         <ul class="divide-y divide-gray-200 dark:divide-gray-700">
                           <li 
                             v-for="item in visibleItems" 
@@ -112,7 +112,7 @@
                                 class="rounded-md bg-white dark:bg-gray-800 px-3 py-1.5 text-xs font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                 @click="selectSingle(item)"
                               >
-                                Select
+                                {{ t('actions.select') }}
                               </button>
                             </div>
                           </li>
@@ -124,7 +124,7 @@
 
                   <!-- Footer (only when list view) -->
                   <div v-if="effectiveModuleKey" class="flex items-center justify-between gap-3 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-                    <div class="text-xs text-gray-500 dark:text-gray-400" v-if="multiple">{{ deltaCount }} selected</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400" v-if="multiple">{{ t('common.linkRecordsSelectedCount', { count: deltaCount }) }}</div>
                     <div class="ml-auto flex gap-3">
                       <button 
                         v-if="allowCreate"
@@ -132,10 +132,10 @@
                         class="inline-flex justify-center rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
                         @click="handleCreate"
                       >
-                        Create New
+                        {{ t('common.linkRecordsCreateNew') }}
                       </button>
-                      <button type="button" class="rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700" @click="closeDrawer">Cancel</button>
-                      <button type="button" :disabled="multiple && deltaCount === 0" class="inline-flex justify-center rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 dark:hover:bg-indigo-600 disabled:opacity-50" @click="confirmLink">Link</button>
+                      <button type="button" class="rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700" @click="closeDrawer">{{ t('actions.cancel') }}</button>
+                      <button type="button" :disabled="multiple && deltaCount === 0" class="inline-flex justify-center rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 dark:hover:bg-indigo-600 disabled:opacity-50" @click="confirmLink">{{ t('common.linkRecordsLink') }}</button>
                     </div>
                   </div>
                 </div>
@@ -150,6 +150,9 @@
 
 <script setup>
 import { ref, watch, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { XMarkIcon, ChevronLeftIcon } from '@heroicons/vue/24/outline';
 import apiClient from '@/utils/apiClient';

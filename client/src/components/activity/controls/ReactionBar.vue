@@ -24,7 +24,7 @@
           v-if="!ui.isCommentReactionSelected(event, '👍')"
           type="button"
           class="inline-flex h-[1.875rem] w-[1.875rem] items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
-          aria-label="Like comment"
+          :aria-label="t('records.reactionBarLikeComment2')"
           @click="ui.toggleCommentReaction(event, '👍')"
         >
           <HandThumbUpIcon class="w-4 h-4" />
@@ -32,7 +32,7 @@
         <button
           type="button"
           class="inline-flex h-[1.875rem] w-[1.875rem] items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
-          aria-label="React to comment"
+          :aria-label="t('records.reactionBarReactToComment2')"
           :ref="(el) => ui.setCommentReactionButtonRef(event, el)"
           @click="ui.toggleCommentReactionPicker(event)"
         >
@@ -43,7 +43,7 @@
         <button
           type="button"
           class="inline-flex h-[1.875rem] w-[1.875rem] items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
-          aria-label="Like comment"
+          :aria-label="t('records.reactionBarLikeComment')"
           @click="ui.toggleCommentReaction(event, '👍')"
         >
           <HandThumbUpIcon class="w-4 h-4" />
@@ -51,7 +51,7 @@
         <button
           type="button"
           class="inline-flex h-[1.875rem] w-[1.875rem] items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
-          aria-label="React to comment"
+          :aria-label="t('records.reactionBarReactToComment')"
           :ref="(el) => ui.setCommentReactionButtonRef(event, el)"
           @click="ui.toggleCommentReactionPicker(event)"
         >
@@ -85,6 +85,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { HandThumbUpIcon, FaceSmileIcon } from '@heroicons/vue/24/outline';
 import Avatar from '@/components/common/Avatar.vue';
 
@@ -93,4 +94,6 @@ defineProps({
   ui: { type: Object, required: true },
   isThreadViewActive: { type: Boolean, default: false }
 });
+
+const { t } = useI18n();
 </script>

@@ -82,6 +82,19 @@ exports.create = async (req, res) => {
     }
 
     try {
+      const { emitOrganizationEvents } = require('../services/domainEventHelpers');
+      emitOrganizationEvents({
+        previous: null,
+        current: org.toObject ? org.toObject() : org,
+        appKey,
+        triggeredBy: req.user?._id ?? null,
+        organizationId: req.user?.organizationId ?? null
+      });
+    } catch (emitErr) {
+      console.error('[organizationV2Controller] emitOrganizationEvents on create failed:', emitErr?.message || emitErr);
+    }
+
+    try {
       const { runImmediateAssignmentForSalesRecord } = require('../services/assignmentExecutionService');
       const { enqueueAssignmentJobsForSalesRecord } = require('../services/assignmentSchedulingService');
       const tenantOrganizationId = req.user?.organizationId;
@@ -1088,8 +1101,7 @@ exports.update = async (req, res) => {
         }
       }
 
-      // Emit domain events for automation (lifecycle/type changes)
-      if (shouldComputeDerivedStatus) {
+      try {
         const { emitOrganizationEvents } = require('../services/domainEventHelpers');
         emitOrganizationEvents({
           previous: previousSnapshot,
@@ -1098,6 +1110,8 @@ exports.update = async (req, res) => {
           triggeredBy: req.user?._id ?? null,
           organizationId: req.user?.organizationId ?? null
         });
+      } catch (emitErr) {
+        console.error('[organizationV2Controller] emitOrganizationEvents on update failed:', emitErr?.message || emitErr);
       }
     }
     

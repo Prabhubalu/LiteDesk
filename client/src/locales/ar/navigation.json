@@ -1,0 +1,422 @@
+{
+  "settings": {
+    "message": "إعدادات",
+    "description": "Settings area navigation label"
+  },
+  "home": {
+    "message": "بيت",
+    "description": "Home dashboard navigation label"
+  },
+  "profile": {
+    "message": "حساب تعريفي",
+    "description": "User profile settings navigation label"
+  },
+  "inbox": {
+    "message": "البريد الوارد",
+    "description": "Communications inbox navigation label"
+  },
+  "signOut": {
+    "message": "تسجيل الخروج",
+    "description": "Sign out of the application"
+  },
+  "noNav": {
+    "message": "لا يوجد التنقل المتاحة",
+    "description": "Empty sidebar when no modules are configured"
+  },
+  "userMenu": {
+    "message": "قائمة المستخدم",
+    "description": "User avatar menu aria-label"
+  },
+  "toggleMenu": {
+    "message": "تبديل القائمة",
+    "description": "Mobile navigation menu toggle"
+  },
+  "closeSidebar": {
+    "message": "إغلاق الشريط الجانبي",
+    "description": "Screen reader label for mobile drawer close"
+  },
+  "openSidebar": {
+    "message": "افتح الشريط الجانبي",
+    "description": "Screen reader label for mobile drawer open"
+  },
+  "syncStatus": {
+    "message": "حالة المزامنة",
+    "description": "Audit offline sync status button"
+  },
+  "portalAudits": {
+    "message": "عمليات التدقيق",
+    "description": "Portal bottom nav audits tab"
+  },
+  "portalActions": {
+    "message": "الإجراءات",
+    "description": "Portal bottom nav actions tab"
+  },
+  "collapseSidebar": {
+    "message": "طي الشريط الجانبي",
+    "description": "Collapse app sidebar tooltip"
+  },
+  "coreModules": {
+    "message": "الوحدات الأساسية",
+    "description": "Core modules section tooltip"
+  },
+  "coreSection": {
+    "message": "جوهر",
+    "description": "Core modules section heading"
+  },
+  "help": {
+    "message": "يساعد",
+    "description": "Sidebar help link"
+  },
+  "loadingNavigation": {
+    "message": "جارٍ تحميل التنقل",
+    "description": "Sidebar skeleton aria-label"
+  },
+  "salesAppFallback": {
+    "message": "مبيعات",
+    "description": "Default app name when active app is unset"
+  },
+  "tabClose": {
+    "message": "يغلق",
+    "description": "Close single tab context menu item"
+  },
+  "tabCloseOthers": {
+    "message": "إغلاق أخرى",
+    "description": "Close other tabs context menu item"
+  },
+  "tabCloseToRight": {
+    "message": "إغلاق علامات التبويب إلى اليمين",
+    "description": "Close tabs to the right context menu item"
+  },
+  "tabCloseAll": {
+    "message": "إغلاق كافة علامات التبويب",
+    "description": "Close all tabs context menu item"
+  },
+  "tabAccount": {
+    "message": "حساب",
+    "description": "Tab bar account menu tooltip"
+  },
+  "tabCloseTab": {
+    "message": "إغلاق علامة التبويب",
+    "description": "Close tab button aria-label"
+  },
+  "globalSearchPlaceholder": {
+    "message": "بحث أو تشغيل أمر...",
+    "description": "Global search modal input placeholder"
+  },
+  "globalSearchSearching": {
+    "message": "البحث…",
+    "description": "Global search loading state"
+  },
+  "globalSearchNoCommands": {
+    "message": "لا توجد أوامر مطابقة",
+    "description": "Command palette no matches"
+  },
+  "globalSearchNoCommandsHint": {
+    "message": "جرب أمرًا مختلفًا أو اضغط على ESC للخروج.",
+    "description": "Command palette no matches hint"
+  },
+  "globalSearchNoResults": {
+    "message": "لم يتم العثور على نتائج",
+    "description": "Global search no entity results"
+  },
+  "globalSearchNoResultsHint": {
+    "message": "حاول البحث حسب الاسم أو البريد الإلكتروني أو الكلمة الرئيسية.",
+    "description": "Global search no results hint"
+  },
+  "globalSearchConfirmTitle": {
+    "message": "هل أنت متأكد؟",
+    "description": "Destructive command confirmation title"
+  },
+  "globalSearchToCancel": {
+    "message": "للإلغاء",
+    "description": "Keyboard hint fragment after ESC"
+  },
+  "globalSearchToConfirm": {
+    "message": "للتأكيد",
+    "description": "Keyboard hint fragment after Enter"
+  },
+  "globalSearchCommandsHeader": {
+    "message": "الأوامر",
+    "description": "Command palette section header"
+  },
+  "globalSearchTypeToFind": {
+    "message": "اكتب للعثور على أمر",
+    "description": "Command palette empty query hint"
+  },
+  "globalSearchStartTyping": {
+    "message": "ابدأ الكتابة للبحث",
+    "description": "Search mode empty state"
+  },
+  "globalSearchSlashHint": {
+    "message": "استخدم / للإنشاء أو الارتباط أو التنقل",
+    "description": "Discoverability hint for command mode trigger"
+  },
+  "globalSearchGroupPeople": {
+    "message": "الناس",
+    "description": "Search results group label"
+  },
+  "globalSearchGroupOrganizations": {
+    "message": "المنظمات",
+    "description": "Search results group label"
+  },
+  "globalSearchGroupWork": {
+    "message": "عمل",
+    "description": "Search results group label"
+  },
+  "globalSearchGroupConfiguration": {
+    "message": "إعدادات",
+    "description": "Search results group label"
+  },
+  "globalSearchUnknownUser": {
+    "message": "مستخدم غير معروف",
+    "description": "Fallback display name in search"
+  },
+  "globalSearchLinkModule": {
+    "message": "الرابط {module}",
+    "description": "Link drawer title when module name capitalized"
+  },
+  "userAccountFallback": {
+    "message": "حسابك",
+    "description": "User menu display name fallback"
+  },
+  "userStatusLabel": {
+    "message": "الحالة: {label}",
+    "description": "User menu status dot aria-label"
+  },
+  "userClearStatus": {
+    "message": "حالة واضحة",
+    "description": "Clear custom status button title"
+  },
+  "userSetAvailability": {
+    "message": "ضبط التوفر",
+    "description": "Availability picker listbox aria-label"
+  },
+  "userSetCustomStatus": {
+    "message": "تعيين الحالة المخصصة...",
+    "description": "Open custom status editor"
+  },
+  "userEditCustomStatus": {
+    "message": "تحرير الحالة المخصصة...",
+    "description": "Edit existing custom status"
+  },
+  "userStatusPlaceholder": {
+    "message": "ما هو حالتك؟",
+    "description": "Custom status input placeholder"
+  },
+  "userPickEmoji": {
+    "message": "اختر الرموز التعبيرية",
+    "description": "Emoji picker button title"
+  },
+  "userYourProfile": {
+    "message": "ملفك الشخصي",
+    "description": "User menu profile link"
+  },
+  "userControlPanel": {
+    "message": "لوحة التحكم",
+    "description": "Admin control panel link"
+  },
+  "userBookingPages": {
+    "message": "صفحات الحجز",
+    "description": "User menu appointments link"
+  },
+  "userTrash": {
+    "message": "نفاية",
+    "description": "User menu trash link"
+  },
+  "userSwitchToLight": {
+    "message": "التبديل إلى وضع الضوء",
+    "description": "Theme toggle label when dark"
+  },
+  "userSwitchToDark": {
+    "message": "التبديل إلى الوضع المظلم",
+    "description": "Theme toggle label when light"
+  },
+  "tabBookingPages": {
+    "message": "صفحات الحجز",
+    "description": "Tab title for appointments pages"
+  },
+  "approvals": {
+    "message": "الموافقات",
+    "description": "Approvals shell navigation label"
+  },
+  "attention": {
+    "message": "انتباه",
+    "description": "Attention shell navigation label"
+  },
+  "search": {
+    "message": "يبحث",
+    "description": "Search shell navigation label"
+  },
+  "dashboard": {
+    "message": "نظرة عامة",
+    "description": "App dashboard navigation label"
+  },
+  "modulePeople": {
+    "message": "الناس",
+    "description": "People module navigation label"
+  },
+  "moduleContacts": {
+    "message": "اتصالات",
+    "description": "Contacts module navigation label"
+  },
+  "moduleOrganizations": {
+    "message": "المنظمات",
+    "description": "Organizations module navigation label"
+  },
+  "moduleTasks": {
+    "message": "المهام",
+    "description": "Tasks module navigation label"
+  },
+  "moduleEvents": {
+    "message": "الأحداث",
+    "description": "Events module navigation label"
+  },
+  "moduleForms": {
+    "message": "النماذج",
+    "description": "Forms module navigation label"
+  },
+  "moduleItems": {
+    "message": "أغراض",
+    "description": "Items module navigation label"
+  },
+  "moduleDeals": {
+    "message": "الصفقات",
+    "description": "Deals module navigation label"
+  },
+  "moduleResponses": {
+    "message": "الردود",
+    "description": "Form responses module navigation label"
+  },
+  "moduleImports": {
+    "message": "يستورد",
+    "description": "Imports module navigation label"
+  },
+  "moduleCases": {
+    "message": "حالات",
+    "description": "Helpdesk cases module navigation label"
+  },
+  "moduleFindings": {
+    "message": "النتائج",
+    "description": "Audit findings module navigation label"
+  },
+  "moduleAudits": {
+    "message": "عمليات التدقيق",
+    "description": "Audits module navigation label"
+  },
+  "appSales": {
+    "message": "مبيعات",
+    "description": "Sales app name in app switcher"
+  },
+  "appAudit": {
+    "message": "مراجعة",
+    "description": "Audit app name in app switcher"
+  },
+  "appHelpdesk": {
+    "message": "مكتب المساعدة",
+    "description": "Helpdesk app name in app switcher"
+  },
+  "appProjects": {
+    "message": "المشاريع",
+    "description": "Projects app name in app switcher"
+  },
+  "appPortal": {
+    "message": "منفذ",
+    "description": "Portal app name in app switcher"
+  },
+  "salesDashboard": {
+    "message": "لوحة تحكم المبيعات",
+    "description": "Sales dashboard tab title"
+  },
+  "auditDashboard": {
+    "message": "لوحة معلومات التدقيق",
+    "description": "Audit dashboard tab title"
+  },
+  "appDashboard": {
+    "message": "{app} لوحة القيادة",
+    "description": "App-scoped dashboard tab title"
+  },
+  "tabDemoRequests": {
+    "message": "طلبات العرض التوضيحي",
+    "description": "Demo requests tab title"
+  },
+  "tabInstances": {
+    "message": "المثيلات",
+    "description": "Instances tab title"
+  },
+  "tabAutomationRules": {
+    "message": "قواعد الأتمتة",
+    "description": "Automation rules tab title"
+  },
+  "tabProcesses": {
+    "message": "العمليات",
+    "description": "Processes tab title"
+  },
+  "tabBusinessFlows": {
+    "message": "تدفقات الأعمال",
+    "description": "Business flows tab title"
+  },
+  "tabAutomation": {
+    "message": "الأتمتة",
+    "description": "Automation settings tab title"
+  },
+  "tabFlowHealth": {
+    "message": "صحة التدفق",
+    "description": "Business flow health tab title"
+  },
+  "tabEditBusinessFlow": {
+    "message": "تحرير تدفق الأعمال",
+    "description": "Edit business flow tab title"
+  },
+  "tabCreateBusinessFlow": {
+    "message": "إنشاء تدفق الأعمال",
+    "description": "Create business flow tab title"
+  },
+  "tabBusinessFlow": {
+    "message": "تدفق الأعمال",
+    "description": "Business flow detail tab title"
+  },
+  "tabMyAudits": {
+    "message": "عمليات التدقيق الخاصة بي",
+    "description": "My audits tab title"
+  },
+  "tabAuditDetail": {
+    "message": "تفاصيل التدقيق",
+    "description": "Audit detail tab title"
+  },
+  "tabPersonalBooking": {
+    "message": "صفحة الحجز الشخصية",
+    "description": "Personal booking page tab title"
+  },
+  "tabTeamBooking": {
+    "message": "صفحة حجز الفريق",
+    "description": "Team booking page tab title"
+  },
+  "tabNewTeamPage": {
+    "message": "صفحة الفريق الجديدة",
+    "description": "New team booking page tab title"
+  },
+  "tabBookingPage": {
+    "message": "صفحة الحجز",
+    "description": "User booking page tab title"
+  },
+  "tabCaseDetail": {
+    "message": "تفاصيل القضية",
+    "description": "Helpdesk case detail tab title"
+  },
+  "tabFormResponseDetail": {
+    "message": "({id}) التفاصيل",
+    "description": "Form response detail tab title"
+  },
+  "tabRecordNamed": {
+    "message": "{module}: {name}",
+    "description": "Record tab with entity name"
+  },
+  "tabRecordDetail": {
+    "message": "{module} التفاصيل",
+    "description": "Record detail tab title without name"
+  },
+  "tabPage": {
+    "message": "صفحة",
+    "description": "Generic fallback tab title"
+  }
+}

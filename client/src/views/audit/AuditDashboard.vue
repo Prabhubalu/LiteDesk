@@ -52,8 +52,8 @@
     <div v-else>
       <!-- Page Header -->
       <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Audit Dashboard</h1>
-        <p class="text-gray-600 dark:text-gray-400">View your assigned audits and track progress</p>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ t('audit.auditDashboardAuditDashboard') }}</h1>
+        <p class="text-gray-600 dark:text-gray-400">{{ t('audit.auditDashboardViewYourAssignedAuditsAndTrack') }}</p>
       </div>
 
       <!-- Stats Cards (Mobile: Stacked, Desktop: Grid) -->
@@ -61,7 +61,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm text-gray-600 dark:text-gray-400">Assigned</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('audit.auditDashboardAssigned') }}</p>
               <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ stats.assigned || 0 }}</p>
             </div>
             <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
@@ -75,7 +75,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm text-gray-600 dark:text-gray-400">Due Today</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('audit.auditDashboardDueToday') }}</p>
               <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ stats.dueToday || 0 }}</p>
             </div>
             <div class="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
@@ -89,7 +89,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm text-gray-600 dark:text-gray-400">Overdue</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('audit.auditDashboardOverdue') }}</p>
               <p class="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">{{ stats.overdue || 0 }}</p>
             </div>
             <div class="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
@@ -103,7 +103,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm text-gray-600 dark:text-gray-400">Needs Review</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('audit.auditDashboardNeedsReview') }}</p>
               <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ stats.needsReview || 0 }}</p>
             </div>
             <div class="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
@@ -118,7 +118,7 @@
       <!-- Recent Audits Section -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Audits</h2>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('audit.auditDashboardRecentAudits') }}</h2>
         </div>
         
         <!-- Empty State -->
@@ -126,7 +126,7 @@
           <svg class="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          <p class="text-gray-600 dark:text-gray-400">No audits assigned yet</p>
+          <p class="text-gray-600 dark:text-gray-400">{{ t('audit.auditDashboardNoAuditsAssignedYet') }}</p>
         </div>
 
         <!-- Audit Cards (Mobile: Stacked, Desktop: Table) -->
@@ -134,11 +134,11 @@
           <table class="w-full">
             <thead class="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Audit</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Due Date</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('settings.appsNameAudit') }}</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('settings.modFieldsValidationType') }}</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('forms.correctiveDueDate') }}</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('settings.settingsBhFieldStatus') }}</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('navigation.portalActions') }}</th>
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -161,9 +161,7 @@
                   <router-link
                     :to="`/audit/audits/${assignment.eventId}`"
                     class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
-                  >
-                    View
-                  </router-link>
+                  >{{ t('common.viewRecord') }}</router-link>
                 </td>
               </tr>
             </tbody>
@@ -191,9 +189,7 @@
               <router-link
                 :to="`/audit/audits/${assignment.eventId}`"
                 class="px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
-              >
-                View
-              </router-link>
+              >{{ t('common.viewRecord') }}</router-link>
             </div>
           </div>
         </div>
@@ -203,6 +199,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import apiClient from '@/utils/apiClient';
 import { useOffline } from '@/composables/useOffline';

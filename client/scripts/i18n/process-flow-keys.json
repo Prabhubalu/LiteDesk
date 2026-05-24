@@ -1,0 +1,678 @@
+{
+  "edgeYes": {
+    "message": "Yes",
+    "description": "Condition branch edge label on flow canvas"
+  },
+  "edgeNo": {
+    "message": "No",
+    "description": "Condition branch edge label on flow canvas"
+  },
+  "execCompleted": {
+    "message": "Completed",
+    "description": "Process node execution status label"
+  },
+  "execRunning": {
+    "message": "Running",
+    "description": "Process node execution status label"
+  },
+  "execFailed": {
+    "message": "Failed",
+    "description": "Process node execution status label"
+  },
+  "execSkipped": {
+    "message": "Skipped",
+    "description": "Process node execution status label"
+  },
+  "execCompletedDuration": {
+    "message": "{status} · {durationMs}ms",
+    "description": "Completed execution status with duration"
+  },
+  "inspectorSelectStep": {
+    "message": "Select a step on the canvas to configure it.",
+    "description": "Node inspector empty state"
+  },
+  "inspectorProcessSettings": {
+    "message": "Process settings",
+    "description": "Link to process settings panel from inspector"
+  },
+  "inspectorSchemaVersion": {
+    "message": "Schema v{version}",
+    "description": "Node schema version subtitle in inspector"
+  },
+  "inspectorSummaryHeading": {
+    "message": "Summary",
+    "description": "Inspector summary section heading"
+  },
+  "inspectorTriggerConfigured": {
+    "message": "Trigger is configured under",
+    "description": "Trigger node read-only hint prefix in inspector"
+  },
+  "inspectorOpenProcessSettings": {
+    "message": "Process settings",
+    "description": "Inline link to process settings from trigger inspector"
+  },
+  "inspectorAppliesToModule": {
+    "message": "Applies to {module} records",
+    "description": "IF condition module scope hint"
+  },
+  "inspectorFieldHeading": {
+    "message": "Field",
+    "description": "Condition field select heading"
+  },
+  "inspectorSelectField": {
+    "message": "Select field…",
+    "description": "Empty option for condition field select"
+  },
+  "inspectorCustomPathPh": {
+    "message": "event.currentState.amount",
+    "description": "Placeholder for custom condition field path"
+  },
+  "inspectorOperatorHeading": {
+    "message": "Operator",
+    "description": "Condition operator select heading"
+  },
+  "inspectorValueHeading": {
+    "message": "Value",
+    "description": "Condition value input heading"
+  },
+  "inspectorSelectValue": {
+    "message": "Select value…",
+    "description": "Empty option for condition value select"
+  },
+  "inspectorSelectGeneric": {
+    "message": "Select…",
+    "description": "Generic empty select option in inspector"
+  },
+  "inspectorEnterValuePh": {
+    "message": "Enter value",
+    "description": "Condition text value placeholder"
+  },
+  "inspectorLoadingFieldOptions": {
+    "message": "Loading field options…",
+    "description": "Condition value options loading hint"
+  },
+  "inspectorNoPicklistOptions": {
+    "message": "No picklist options found. Configure stages in Settings → Deals, or use Custom path.",
+    "description": "Empty picklist for condition value"
+  },
+  "inspectorConnectHandles": {
+    "message": "Connect Yes / No handles to next steps.",
+    "description": "Hint for wiring condition branches"
+  },
+  "inspectorModulePrefix": {
+    "message": "Module: {module}",
+    "description": "Field rule module scope line"
+  },
+  "inspectorDefaultValuePh": {
+    "message": "Default value",
+    "description": "Field rule default value placeholder"
+  },
+  "inspectorOwnerTargetPh": {
+    "message": "User ID, role, or rule",
+    "description": "Ownership rule target placeholder"
+  },
+  "inspectorStatusFromPh": {
+    "message": "From",
+    "description": "Status guard transition from placeholder"
+  },
+  "inspectorStatusToPh": {
+    "message": "To",
+    "description": "Status guard transition to placeholder"
+  },
+  "inspectorBlockReasonPh": {
+    "message": "Block reason shown to users",
+    "description": "Status guard block reason placeholder"
+  },
+  "inspectorActionHeading": {
+    "message": "Action",
+    "description": "Action step type select heading"
+  },
+  "inspectorSelectAction": {
+    "message": "Select action",
+    "description": "Empty action type select"
+  },
+  "inspectorApproverRolePh": {
+    "message": "Approver role (e.g. manager)",
+    "description": "Approval gate approver placeholder"
+  },
+  "inspectorTimeoutHoursPh": {
+    "message": "Timeout (hours)",
+    "description": "Approval gate timeout placeholder"
+  },
+  "inspectorWaitHint": {
+    "message": "Process pauses until the delay elapses, then continues automatically.",
+    "description": "Wait step configuration hint"
+  },
+  "inspectorDurationPh": {
+    "message": "Duration",
+    "description": "Wait duration input placeholder"
+  },
+  "inspectorNoConfig": {
+    "message": "No additional configuration for this step.",
+    "description": "Inspector fallback when step has no config"
+  },
+  "inspectorRemoveStep": {
+    "message": "Remove step",
+    "description": "Delete step button in inspector"
+  },
+  "inspectorDuplicateToEdit": {
+    "message": "Duplicate this process to edit steps.",
+    "description": "Read-only inspector hint for active processes"
+  },
+  "inspectorStepDefault": {
+    "message": "Step",
+    "description": "Default node label when none provided"
+  },
+  "inspectorCustomPathOption": {
+    "message": "Custom path…",
+    "description": "Custom condition field path option"
+  },
+  "inspectorRecordsFallback": {
+    "message": "records",
+    "description": "Fallback module label in inspector"
+  },
+  "opEquals": {
+    "message": "is",
+    "description": "Condition operator: equals"
+  },
+  "opNotEquals": {
+    "message": "is not",
+    "description": "Condition operator: not equals"
+  },
+  "opGreaterThan": {
+    "message": "is greater than",
+    "description": "Condition operator: greater than"
+  },
+  "opLessThan": {
+    "message": "is less than",
+    "description": "Condition operator: less than"
+  },
+  "opContains": {
+    "message": "contains",
+    "description": "Condition operator: contains"
+  },
+  "boolTrue": {
+    "message": "Yes / true",
+    "description": "Boolean condition value option"
+  },
+  "boolFalse": {
+    "message": "No / false",
+    "description": "Boolean condition value option"
+  },
+  "fieldRuleMandatory": {
+    "message": "Make mandatory",
+    "description": "Field rule type option"
+  },
+  "fieldRuleDefault": {
+    "message": "Set default value",
+    "description": "Field rule type option"
+  },
+  "fieldRuleVisibility": {
+    "message": "Show / hide field",
+    "description": "Field rule type option"
+  },
+  "ownershipOwner": {
+    "message": "Specific user",
+    "description": "Ownership assignment type"
+  },
+  "ownershipRole": {
+    "message": "Role",
+    "description": "Ownership assignment type"
+  },
+  "ownershipRule": {
+    "message": "Rule-based",
+    "description": "Ownership assignment type"
+  },
+  "guardFieldStage": {
+    "message": "Stage",
+    "description": "Status guard field option"
+  },
+  "guardFieldStatus": {
+    "message": "Status",
+    "description": "Status guard field option"
+  },
+  "guardFieldLifecycle": {
+    "message": "Lifecycle",
+    "description": "Status guard field option"
+  },
+  "waitUnitMinutes": {
+    "message": "Minutes",
+    "description": "Wait duration unit"
+  },
+  "waitUnitHours": {
+    "message": "Hours",
+    "description": "Wait duration unit"
+  },
+  "waitUnitDays": {
+    "message": "Days",
+    "description": "Wait duration unit"
+  },
+  "waitPreset15Min": {
+    "message": "15 min",
+    "description": "Wait step quick preset"
+  },
+  "waitPreset1Hour": {
+    "message": "1 hour",
+    "description": "Wait step quick preset"
+  },
+  "waitPreset2Days": {
+    "message": "2 days",
+    "description": "Wait step quick preset"
+  },
+  "waitPreset1Week": {
+    "message": "1 week",
+    "description": "Wait step quick preset"
+  },
+  "settingsHeading": {
+    "message": "Process settings",
+    "description": "Process settings panel title"
+  },
+  "settingsSubtitle": {
+    "message": "App, module, and what starts this process",
+    "description": "Process settings panel subtitle"
+  },
+  "settingsSummaryHeading": {
+    "message": "Summary",
+    "description": "Process settings summary section heading"
+  },
+  "settingsActiveDuplicate": {
+    "message": "Active process — duplicate to edit settings.",
+    "description": "Read-only warning on active process settings"
+  },
+  "settingsAppHeading": {
+    "message": "App",
+    "description": "App select field heading"
+  },
+  "settingsSelectApp": {
+    "message": "Select app…",
+    "description": "Empty app select option"
+  },
+  "settingsModuleHeading": {
+    "message": "Module",
+    "description": "Module select field heading"
+  },
+  "settingsSelectModule": {
+    "message": "Select module…",
+    "description": "Empty module select option"
+  },
+  "settingsModuleHint": {
+    "message": "Which records this process applies to",
+    "description": "Module field help text"
+  },
+  "settingsStep1Badge": {
+    "message": "Step 1",
+    "description": "Starts-when setup step badge"
+  },
+  "settingsStep1Hint": {
+    "message": "Then add steps on the canvas",
+    "description": "Hint after choosing starts-when"
+  },
+  "settingsStartsWhenHeading": {
+    "message": "Starts when",
+    "description": "Core trigger select heading"
+  },
+  "settingsSelectModuleFirst": {
+    "message": "Select module first…",
+    "description": "Starts-when placeholder before module chosen"
+  },
+  "settingsChooseStart": {
+    "message": "Choose what starts this process…",
+    "description": "Starts-when empty placeholder"
+  },
+  "settingsPickModuleFirst": {
+    "message": "Pick a module first.",
+    "description": "Starts-when hint before module chosen"
+  },
+  "settingsWatchChangesHeading": {
+    "message": "Watch changes in",
+    "description": "Record updated watch field heading"
+  },
+  "settingsWatchIfHint": {
+    "message": "Use IF steps for business rules (e.g. stage = Closed Won, deal won).",
+    "description": "Hint for record-updated watch configuration"
+  },
+  "settingsFrequencyHeading": {
+    "message": "Frequency",
+    "description": "Schedule frequency select heading"
+  },
+  "settingsHourHeading": {
+    "message": "Hour (0–23)",
+    "description": "Schedule hour input label"
+  },
+  "settingsMinuteHeading": {
+    "message": "Minute",
+    "description": "Schedule minute input label"
+  },
+  "settingsScheduleRunnerHint": {
+    "message": "Scheduled runs require the process schedule runner to be enabled on the server.",
+    "description": "Schedule trigger server requirement warning"
+  },
+  "settingsWebhookUrlHeading": {
+    "message": "Webhook URL",
+    "description": "Webhook URL field heading"
+  },
+  "settingsWebhookSaveHint": {
+    "message": "Save the process to generate a webhook URL.",
+    "description": "Webhook URL empty state"
+  },
+  "settingsSecretConfigured": {
+    "message": "Secret configured",
+    "description": "Webhook secret status when set"
+  },
+  "settingsSecretNotSet": {
+    "message": "Secret not set",
+    "description": "Webhook secret status when missing"
+  },
+  "settingsRotatingSecret": {
+    "message": "Rotating…",
+    "description": "Webhook secret rotate in progress"
+  },
+  "settingsRotateSecret": {
+    "message": "Rotate secret",
+    "description": "Webhook secret rotate action"
+  },
+  "settingsWebhookAuthHint": {
+    "message": "Send Authorization: Bearer [secret] on each POST.",
+    "description": "Webhook authentication hint"
+  },
+  "settingsPayloadMappingHeading": {
+    "message": "Payload → data mapping",
+    "description": "Webhook payload mapping section heading"
+  },
+  "settingsDataBagKeyPh": {
+    "message": "dataBag key",
+    "description": "Webhook mapping dataBag key placeholder"
+  },
+  "settingsBodyFieldPh": {
+    "message": "body.field",
+    "description": "Webhook mapping source path placeholder"
+  },
+  "settingsAddMapping": {
+    "message": "+ Add mapping",
+    "description": "Add webhook payload mapping row"
+  },
+  "settingsDescriptionHeading": {
+    "message": "Description",
+    "description": "Process description field heading"
+  },
+  "settingsDescriptionPh": {
+    "message": "Optional notes for your team",
+    "description": "Process description textarea placeholder"
+  },
+  "settingsRotateSecretFailed": {
+    "message": "Failed to rotate secret",
+    "description": "Webhook secret rotation error alert"
+  },
+  "recordPickerSearching": {
+    "message": "Searching…",
+    "description": "Record picker search loading state"
+  },
+  "recordPickerSelected": {
+    "message": "Selected: {name}",
+    "description": "Record picker selected record line"
+  },
+  "recordPickerSearchPh": {
+    "message": "Search by name…",
+    "description": "Record picker search input placeholder"
+  },
+  "testModalHeading": {
+    "message": "Simulate test run",
+    "description": "Process test simulation modal title"
+  },
+  "testModalBody": {
+    "message": "Preview what would happen. No data will be changed.",
+    "description": "Process test simulation modal intro"
+  },
+  "testModalModuleHeading": {
+    "message": "Module",
+    "description": "Test modal module select heading"
+  },
+  "testModalSampleRecordHeading": {
+    "message": "Sample record (optional)",
+    "description": "Test modal record picker heading"
+  },
+  "testModalSyntheticHint": {
+    "message": "Leave empty to use a synthetic test record.",
+    "description": "Test modal empty record hint"
+  },
+  "testModalSampleJsonHeading": {
+    "message": "Sample field values (JSON, optional)",
+    "description": "Test modal JSON state heading"
+  },
+  "testModalSampleJsonPh": {
+    "message": "'{ \"stage\": \"Negotiation\", \"amount\": 500000 }'",
+    "description": "Test modal JSON textarea placeholder"
+  },
+  "testModalRunSimulation": {
+    "message": "Run simulation",
+    "description": "Test modal primary action"
+  },
+  "testModalInvalidJson": {
+    "message": "Invalid JSON for sample field values",
+    "description": "Test modal JSON parse error alert"
+  },
+  "insightTabDesign": {
+    "message": "Design",
+    "description": "Process designer mode tab"
+  },
+  "insightTabRun": {
+    "message": "Run insight",
+    "description": "Process execution insight mode tab"
+  },
+  "insightSelectRun": {
+    "message": "Select a run…",
+    "description": "Execution history empty select"
+  },
+  "insightSimulating": {
+    "message": "Simulating…",
+    "description": "Test simulation in progress button"
+  },
+  "insightSimulateTest": {
+    "message": "Simulate test",
+    "description": "Open test simulation button"
+  },
+  "insightDryRunBadge": {
+    "message": "Test run — no data changed",
+    "description": "Dry-run execution badge"
+  },
+  "insightRunVersion": {
+    "message": "Run v{version} · {status}",
+    "description": "Execution version and status line"
+  },
+  "insightRunStatus": {
+    "message": "Status: {status}",
+    "description": "Execution status without version"
+  },
+  "insightRunUnknownTime": {
+    "message": "Unknown",
+    "description": "Fallback when execution start time missing"
+  },
+  "insightRunOption": {
+    "message": "{status} · {startedAt}",
+    "description": "Execution select option label"
+  },
+  "designerAppSales": {
+    "message": "Sales",
+    "description": "Process designer app option"
+  },
+  "designerAppAudit": {
+    "message": "Audit",
+    "description": "Process designer app option"
+  },
+  "designerAppPortal": {
+    "message": "Portal",
+    "description": "Process designer app option"
+  },
+  "designerModulePeople": {
+    "message": "People",
+    "description": "Process designer module option"
+  },
+  "designerModuleOrganization": {
+    "message": "Organization",
+    "description": "Process designer module option"
+  },
+  "designerModuleDeal": {
+    "message": "Deal",
+    "description": "Process designer module option"
+  },
+  "designerModulePerson": {
+    "message": "Person",
+    "description": "Singular module name in scope sentences"
+  },
+  "designerTriggerRecordCreated": {
+    "message": "Record created",
+    "description": "Core trigger option"
+  },
+  "designerTriggerRecordUpdated": {
+    "message": "Record updated",
+    "description": "Core trigger option"
+  },
+  "designerTriggerSchedule": {
+    "message": "Schedule",
+    "description": "Core trigger option"
+  },
+  "designerTriggerWebhook": {
+    "message": "Webhook",
+    "description": "Core trigger option"
+  },
+  "designerTriggerManual": {
+    "message": "Manual",
+    "description": "Core trigger option"
+  },
+  "designerTriggerDescRecordCreated": {
+    "message": "Runs when a new record is created in the selected module.",
+    "description": "Core trigger description"
+  },
+  "designerTriggerDescRecordUpdated": {
+    "message": "Runs when an existing record is updated. Use “Watch changes” to limit which fields, or add IF steps for business rules (e.g. stage or deal won).",
+    "description": "Core trigger description"
+  },
+  "designerTriggerDescSchedule": {
+    "message": "Runs on a repeating schedule (hourly, daily, or weekly). Scheduled execution uses the process schedule runner when enabled.",
+    "description": "Core trigger description"
+  },
+  "designerTriggerDescWebhook": {
+    "message": "Runs when an external system sends an authenticated HTTP POST to your webhook URL.",
+    "description": "Core trigger description"
+  },
+  "designerTriggerDescManual": {
+    "message": "Runs only when started manually (test run, API, or operational action).",
+    "description": "Core trigger description"
+  },
+  "designerScheduleHourly": {
+    "message": "Every hour",
+    "description": "Schedule preset option"
+  },
+  "designerScheduleDaily": {
+    "message": "Daily",
+    "description": "Schedule preset option"
+  },
+  "designerScheduleWeekly": {
+    "message": "Weekly",
+    "description": "Schedule preset option"
+  },
+  "designerWatchAnyField": {
+    "message": "Any field",
+    "description": "Record-updated watch any field option"
+  },
+  "designerWatchLifecycle": {
+    "message": "Lifecycle",
+    "description": "Watch field option"
+  },
+  "designerWatchSalesRole": {
+    "message": "Sales role",
+    "description": "People watch field option"
+  },
+  "designerWatchLeadStatus": {
+    "message": "Lead status",
+    "description": "People watch field option"
+  },
+  "designerWatchContactStatus": {
+    "message": "Contact status",
+    "description": "People watch field option"
+  },
+  "designerWatchType": {
+    "message": "Type",
+    "description": "Organization watch field option"
+  },
+  "designerWatchCustomerStatus": {
+    "message": "Customer status",
+    "description": "Organization watch field option"
+  },
+  "designerWatchPartnerStatus": {
+    "message": "Partner status",
+    "description": "Organization watch field option"
+  },
+  "designerWatchVendorStatus": {
+    "message": "Vendor status",
+    "description": "Organization watch field option"
+  },
+  "designerWatchStage": {
+    "message": "Stage",
+    "description": "Deal watch field option"
+  },
+  "designerWatchPipeline": {
+    "message": "Pipeline",
+    "description": "Deal watch field option"
+  },
+  "designerWatchAmount": {
+    "message": "Amount",
+    "description": "Deal watch field option"
+  },
+  "designerWatchOwner": {
+    "message": "Owner",
+    "description": "Deal watch field option"
+  },
+  "designerCondSalesType": {
+    "message": "Sales type",
+    "description": "IF condition field option"
+  },
+  "designerCondStatus": {
+    "message": "Status",
+    "description": "IF condition field option"
+  },
+  "designerScopeSelectStart": {
+    "message": "Select what starts this process",
+    "description": "Process scope summary when trigger not chosen"
+  },
+  "designerScopeManual": {
+    "message": "Runs when triggered manually",
+    "description": "Process scope summary for manual trigger"
+  },
+  "designerScopeWebhook": {
+    "message": "Runs when a webhook request is received",
+    "description": "Process scope summary for webhook trigger"
+  },
+  "designerScopeScheduleHourly": {
+    "message": "Runs every hour",
+    "description": "Process scope summary for hourly schedule"
+  },
+  "designerScopeScheduleWeekly": {
+    "message": "Runs weekly at {time}",
+    "description": "Process scope summary for weekly schedule"
+  },
+  "designerScopeScheduleDaily": {
+    "message": "Runs every day at {time}",
+    "description": "Process scope summary for daily schedule"
+  },
+  "designerScopeRecordCreated": {
+    "message": "Runs when a {module} is created",
+    "description": "Process scope summary for record created"
+  },
+  "designerScopeRecordUpdated": {
+    "message": "Runs when a {module} is updated",
+    "description": "Process scope summary for record updated"
+  },
+  "designerScopeRecordUpdatedField": {
+    "message": "Runs when a {module} is updated ({field} changed)",
+    "description": "Process scope summary when watching specific field"
+  },
+  "designerScopeGeneric": {
+    "message": "Process for {module}",
+    "description": "Fallback process scope summary"
+  },
+  "designerModuleRecordFallback": {
+    "message": "record",
+    "description": "Fallback singular module in scope sentences"
+  }
+}

@@ -3,7 +3,7 @@
     <div class="fixed inset-0 bg-black/50 dark:bg-black/75 backdrop-blur-sm z-[9999] flex items-center justify-center p-4" @click.self="$emit('close')">
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
       <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Import Details</h2>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('import.importDetailModalImportDetails') }}</h2>
         <button @click="$emit('close')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -36,7 +36,7 @@
               <div class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
                 {{ successRate }}%
               </div>
-              <div class="text-xs text-gray-600 dark:text-gray-400">Success Rate</div>
+              <div class="text-xs text-gray-600 dark:text-gray-400">{{ t('import.importDetailModalSuccessRate') }}</div>
             </div>
           </div>
         </div>
@@ -45,19 +45,19 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 text-center">
             <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ importRecord.stats?.total || 0 }}</div>
-            <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">Total Records</div>
+            <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">{{ t('import.importDetailModalTotalRecords') }}</div>
           </div>
           <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 text-center">
             <div class="text-2xl font-bold text-success-600 dark:text-success-400">{{ importRecord.stats?.created || 0 }}</div>
-            <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">Created</div>
+            <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">{{ t('forms.hubColCreated') }}</div>
           </div>
           <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 text-center">
             <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ importRecord.stats?.updated || 0 }}</div>
-            <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">Updated</div>
+            <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">{{ t('import.importDetailModalUpdated') }}</div>
           </div>
           <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 text-center">
             <div class="text-2xl font-bold text-danger-600 dark:text-danger-400">{{ importRecord.stats?.failed || 0 }}</div>
-            <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">Failed</div>
+            <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">{{ t('process.execFailed') }}</div>
           </div>
         </div>
 
@@ -88,7 +88,7 @@
           <!-- Overview Tab -->
           <div v-if="activeTab === 'overview'" class="space-y-4">
             <div class="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-0">
-              <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Imported By</span>
+              <span class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('import.importDetailModalImportedBy') }}</span>
               <div class="flex items-center gap-2">
                 <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center text-white text-sm font-medium">
                   {{ (importRecord.importedBy?.firstName?.[0] || '') + (importRecord.importedBy?.lastName?.[0] || '') }}
@@ -100,17 +100,17 @@
             </div>
 
             <div class="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-0">
-              <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Processing Time</span>
+              <span class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('import.importDetailModalProcessingTime') }}</span>
               <span class="text-sm font-medium text-gray-900 dark:text-white">{{ formatProcessingTime(importRecord.processingTime) }}</span>
             </div>
 
             <div class="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-0">
-              <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Rows in CSV</span>
+              <span class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('import.importDetailModalTotalRowsInCsv') }}</span>
               <span class="text-sm font-medium text-gray-900 dark:text-white">{{ importRecord.metadata?.totalRows || importRecord.stats.total }}</span>
             </div>
 
             <div class="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-0">
-              <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Duplicate Check</span>
+              <span class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('import.importDetailModalDuplicateCheck') }}</span>
               <span class="text-sm font-medium text-gray-900 dark:text-white">
                 {{ importRecord.duplicateCheckEnabled ? 'Enabled' : 'Disabled' }}
                 <span v-if="importRecord.duplicateCheckEnabled" class="text-sm text-gray-500">
@@ -120,7 +120,7 @@
             </div>
 
             <div v-if="importRecord.duplicateCheckFields?.length" class="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-0">
-              <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Checked Fields</span>
+              <span class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('import.importDetailModalCheckedFields') }}</span>
               <div class="flex flex-wrap gap-2">
                 <span 
                   v-for="field in importRecord.duplicateCheckFields" 
@@ -135,9 +135,7 @@
 
           <!-- Field Mapping Tab -->
           <div v-if="activeTab === 'mapping'" class="space-y-4">
-            <div class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              CSV columns were mapped to the following CRM fields:
-            </div>
+            <div class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ t('import.importDetailModalCsvColumnsWereMappedToThe') }}</div>
             <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 space-y-3">
               <div 
                 v-for="(crmField, csvField) in importRecord.metadata?.fieldMapping || {}"
@@ -161,7 +159,7 @@
               <svg class="mx-auto h-12 w-12 text-success-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <p class="mt-2 text-gray-600 dark:text-gray-400">No errors during import</p>
+              <p class="mt-2 text-gray-600 dark:text-gray-400">{{ t('import.importDetailModalNoErrorsDuringImport') }}</p>
             </div>
             <div v-else class="space-y-3">
               <div 
@@ -189,9 +187,7 @@
       </div>
 
       <div class="modal-footer">
-        <button @click="$emit('close')" class="btn-secondary">
-          Close
-        </button>
+        <button @click="$emit('close')" class="btn-secondary">{{ t('settings.roleDrawerCloseSr') }}</button>
       </div>
     </div>
     </div>
@@ -199,6 +195,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, computed } from 'vue';
 
 const props = defineProps({
@@ -207,6 +204,8 @@ const props = defineProps({
     required: true
   }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['close']);
 

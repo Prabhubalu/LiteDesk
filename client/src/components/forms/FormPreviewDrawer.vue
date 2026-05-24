@@ -31,7 +31,7 @@
                   <!-- Fixed Header -->
                   <div class="flex-shrink-0 bg-indigo-700 dark:bg-indigo-800 px-4 py-6 sm:px-6">
                     <div class="flex items-center justify-between">
-                      <DialogTitle class="text-base font-semibold text-white">Form Preview</DialogTitle>
+                      <DialogTitle class="text-base font-semibold text-white">{{ t('forms.previewDrawerTitle') }}</DialogTitle>
                       <div class="ml-3 flex h-7 items-center">
                         <button 
                           type="button" 
@@ -39,13 +39,13 @@
                           @click="handleClose"
                         >
                           <span class="absolute -inset-2.5"></span>
-                          <span class="sr-only">Close panel</span>
+                          <span class="sr-only">{{ t('forms.previewClosePanelSr') }}</span>
                           <XMarkIcon class="size-6" aria-hidden="true" />
                         </button>
                       </div>
                     </div>
                     <div class="mt-1">
-                      <p class="text-sm text-indigo-300">Preview your form as it will appear to users</p>
+                      <p class="text-sm text-indigo-300">{{ t('forms.previewDrawerSubtitle') }}</p>
                     </div>
                   </div>
                   <!-- Scrollable Content -->
@@ -75,8 +75,11 @@
 
 <script setup>
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
+import { useI18n } from 'vue-i18n';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import FormPreview from './FormPreview.vue';
+
+const { t } = useI18n();
 
 const props = defineProps({
   isOpen: {

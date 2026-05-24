@@ -298,6 +298,20 @@ exports.create = async (req, res) => {
       console.error('[peopleController] assignment on create failed:', assignErr?.message || assignErr);
     }
 
+    try {
+      const { emitPeopleEvents } = require('../services/domainEventHelpers');
+      const freshForEmit = await People.findById(record._id);
+      emitPeopleEvents({
+        previous: null,
+        current: freshForEmit?.toObject ? freshForEmit.toObject() : freshForEmit || record,
+        appKey,
+        triggeredBy: req.user?._id ?? null,
+        organizationId: req.user?.organizationId ?? null
+      });
+    } catch (emitErr) {
+      console.error('[peopleController] emitPeopleEvents on create failed:', emitErr?.message || emitErr);
+    }
+
     const createdOut = await People.findById(record._id);
     res.status(201).json({ success: true, data: flattenPeopleForResponse(createdOut || record) });
   } catch (error) {
@@ -1091,8 +1105,7 @@ exports.update = async (req, res) => {
       }
     }
     
-    // Emit domain events for automation (lifecycle/type changes only)
-    if (shouldComputeDerivedStatus) {
+    try {
       const { emitPeopleEvents } = require('../services/domainEventHelpers');
       emitPeopleEvents({
         previous,
@@ -1101,6 +1114,8 @@ exports.update = async (req, res) => {
         triggeredBy: req.user?._id ?? null,
         organizationId: req.user?.organizationId ?? null
       });
+    } catch (emitErr) {
+      console.error('[peopleController] emitPeopleEvents on update failed:', emitErr?.message || emitErr);
     }
     
     // Compute derived status if lifecycle/type fields changed

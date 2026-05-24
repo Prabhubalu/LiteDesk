@@ -2,9 +2,9 @@
   <div class="p-6">
     <!-- Header with Tabs -->
     <div class="mb-6">
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Roles & Permissions</h2>
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.usersTabRoles') }}</h2>
       <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        Manage custom roles, permissions, and organizational hierarchy
+        {{ t('settings.rolesPageSubtitle') }}
       </p>
       
       <!-- Sub-tabs -->
@@ -32,14 +32,14 @@
       <!-- Roles List Tab -->
       <div v-if="activeTab === 'roles'">
         <div class="flex items-center justify-between mb-4">
-          <p class="text-sm text-gray-600 dark:text-gray-400">{{ roles.length }} custom roles</p>
+          <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.rolesCount', { count: roles.length }) }}</p>
           <div class="flex gap-2">
             <button
               @click="initializeDefaultRoles"
               v-if="roles.length === 0"
               class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-medium transition-all"
             >
-              Initialize Default Roles
+              {{ t('settings.rolesInitDefaults') }}
             </button>
             <button
               @click="openCreateRoleModal"
@@ -48,7 +48,7 @@
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
               </svg>
-              <span>Create Role</span>
+              <span>{{ t('settings.rolesCreate') }}</span>
             </button>
           </div>
         </div>
@@ -62,16 +62,20 @@
           <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
           </svg>
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No roles yet</h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Get started by initializing default roles or creating a custom role</p>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.rolesEmptyTitle') }}</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ t('settings.rolesEmptyBody') }}</p>
         </div>
 
         <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div
             v-for="role in roles"
             :key="role._id"
-            class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 hover:shadow-md transition-shadow cursor-pointer"
-            @click="openEditRoleModal(role)"
+            :class="[
+              'bg-white dark:bg-gray-800 rounded-xl shadow-sm border p-5 transition-all',
+              selectedRole?._id === role._id && showRoleDrawer
+                ? 'border-indigo-400 dark:border-indigo-500 ring-2 ring-indigo-500/20 shadow-md'
+                : 'border-gray-200 dark:border-gray-700 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600'
+            ]"
           >
             <!-- Header -->
             <div class="flex items-start justify-between mb-3">
@@ -101,19 +105,28 @@
                   <h3 class="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                     {{ role.name }}
                     <span v-if="role.isSystemRole" class="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded text-xs font-medium">
-                      System
+                      {{ t('settings.rolesSystemBadge') }}
                     </span>
                   </h3>
-                  <p class="text-xs text-gray-600 dark:text-gray-400">Level {{ role.level }}</p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">{{ t('settings.rolesLevel', { level: role.level }) }}</p>
                 </div>
               </div>
             </div>
 
             <!-- Description -->
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">{{ role.description || 'No description' }}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">{{ role.description || t('settings.rolesNoDescription') }}</p>
 
             <!-- Actions -->
             <div class="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+              <button
+                @click="openEditRoleModal(role)"
+                class="flex-1 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg font-medium text-xs transition-colors inline-flex items-center justify-center gap-1.5"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                {{ t('actions.edit') }}
+              </button>
               <button
                 @click.stop="viewRoleUsers(role)"
                 class="flex-1 px-3 py-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 rounded-lg font-medium text-xs transition-colors inline-flex items-center justify-center gap-2"
@@ -121,7 +134,7 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
-                <span>{{ role.userCount || 0 }} Users</span>
+                <span>{{ t('settings.rolesUsersCount', { count: role.userCount || 0 }) }}</span>
               </button>
               <button
                 @click.stop="viewRolePermissions(role)"
@@ -130,13 +143,13 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span>Permissions</span>
+                <span>{{ t('settings.rolesPermissionsBtn') }}</span>
               </button>
               <button
                 v-if="!role.isSystemRole"
                 @click.stop="deleteRole(role)"
                 class="px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg font-medium text-xs transition-colors"
-                title="Delete Role"
+                :title="t('settings.rolesDeleteTitle')"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" />
@@ -146,98 +159,6 @@
           </div>
         </div>
 
-        <!-- Permission breakdown -->
-        <div v-if="selectedRoleForView" class="mt-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Permissions for</p>
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                {{ selectedRoleForView.name }}
-                <span v-if="selectedRoleForView.isSystemRole" class="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded text-xs font-medium">
-                  System
-                </span>
-              </h3>
-            </div>
-            <button
-              class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
-              @click="selectedRoleForView = null"
-            >
-              Clear
-            </button>
-          </div>
-
-          <!-- Platform permissions -->
-          <div class="mb-6">
-            <div class="flex items-center gap-2 mb-2">
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Platform Permissions</h4>
-              <span class="text-xs text-gray-500">Organization-wide controls</span>
-            </div>
-            <div v-if="selectedRolePermissions.platform.length" class="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div
-                v-for="perm in selectedRolePermissions.platform"
-                :key="`platform-${perm.name}`"
-                class="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60"
-              >
-                <p class="font-medium text-gray-900 dark:text-white">{{ perm.name }}</p>
-                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">{{ perm.actions.join(', ') || 'Read-only' }}</p>
-              </div>
-            </div>
-            <p v-else class="text-sm text-gray-500 dark:text-gray-400">No platform permissions assigned.</p>
-          </div>
-
-          <!-- Application permissions -->
-          <div class="mb-6">
-            <div class="flex items-center gap-2 mb-2">
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Application Permissions</h4>
-              <span class="text-xs text-gray-500">Scoped per application</span>
-            </div>
-            <div v-if="Object.keys(selectedRolePermissions.apps).length" class="space-y-3">
-              <div
-                v-for="(perms, appKey) in selectedRolePermissions.apps"
-                :key="`app-${appKey}`"
-                class="border border-gray-200 dark:border-gray-700 rounded-lg"
-              >
-                <div class="px-4 py-2 bg-gray-50 dark:bg-gray-800/60 flex items-center justify-between">
-                  <div class="flex items-center gap-2">
-                    <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ appKey }}</span>
-                    <span class="text-xs text-gray-500">App-scoped</span>
-                  </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 p-4">
-                  <div
-                    v-for="perm in perms"
-                    :key="`perm-${appKey}-${perm.name}`"
-                    class="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40"
-                  >
-                    <p class="font-medium text-gray-900 dark:text-white">{{ perm.name }}</p>
-                    <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">{{ perm.actions.join(', ') || 'Read-only' }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <p v-else class="text-sm text-gray-500 dark:text-gray-400">No application permissions assigned.</p>
-          </div>
-
-          <!-- Legacy / deprecated -->
-          <div>
-            <div class="flex items-center gap-2 mb-2">
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Legacy Permissions</h4>
-              <span class="text-xs text-amber-600 dark:text-amber-400">Deprecated - avoid using</span>
-            </div>
-            <div v-if="selectedRolePermissions.legacy.length" class="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div
-                v-for="perm in selectedRolePermissions.legacy"
-                :key="`legacy-${perm.name}`"
-                class="p-3 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20"
-              >
-                <p class="font-medium text-amber-800 dark:text-amber-200">{{ perm.name }}</p>
-                <p class="text-xs text-amber-700 dark:text-amber-300 mt-1">{{ perm.actions.join(', ') || 'Legacy scope' }}</p>
-                <p class="text-xs text-amber-600 dark:text-amber-400 mt-2">Deprecated: migrate to app-scoped permissions.</p>
-              </div>
-            </div>
-            <p v-else class="text-sm text-gray-500 dark:text-gray-400">No legacy permissions present.</p>
-          </div>
-        </div>
       </div>
 
       <!-- Organization Hierarchy Tab -->
@@ -246,11 +167,12 @@
       </div>
     </div>
 
-    <!-- Create/Edit Role Modal -->
-    <RoleFormModal
-      :is-open="showRoleModal"
+    <!-- Create/Edit Role Drawer -->
+    <RoleFormDrawer
+      :open="showRoleDrawer"
       :role="selectedRole"
-      @close="showRoleModal = false"
+      :initial-tab="drawerInitialTab"
+      @close="showRoleDrawer = false"
       @saved="handleRoleSaved"
     />
 
@@ -277,96 +199,31 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
-import RoleFormModal from './RoleFormModal.vue';
+import RoleFormDrawer from './RoleFormDrawer.vue';
 import OrganizationHierarchy from './OrganizationHierarchy.vue';
 import RoleUsersModal from './RoleUsersModal.vue';
 import EditUserModal from './EditUserModal.vue';
+
+const { t } = useI18n();
 
 const ROLES_PERMS_TAB_KEY = 'arivu-settings-rolesperms-tab';
 const activeTab = ref(localStorage.getItem(ROLES_PERMS_TAB_KEY) || 'roles');
 const roles = ref([]);
 const loading = ref(false);
-const showRoleModal = ref(false);
+const showRoleDrawer = ref(false);
+const drawerInitialTab = ref('overview');
 const selectedRole = ref(null);
 const showUsersModal = ref(false);
 const selectedRoleForUsers = ref(null);
 const showEditUserModal = ref(false);
 const selectedUserToEdit = ref(null);
-const selectedRoleForView = ref(null); // role currently being inspected for permissions
 
-const tabs = [
-  { id: 'roles', name: 'Roles Management' },
-  { id: 'hierarchy', name: 'Organization Hierarchy' }
-];
-
-// Helpers
-const toTitleCase = (str = '') => {
-  return str
-    .replace(/[_-]/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-};
-
-const normalizeActions = (actionsObj = {}) => {
-  return Object.entries(actionsObj)
-    .filter(([, allowed]) => allowed === true)
-    .map(([action]) => action);
-};
-
-const groupPermissions = (role) => {
-  const result = {
-    platform: [],
-    apps: {},
-    legacy: []
-  };
-
-  if (!role?.permissions || typeof role.permissions !== 'object') return result;
-
-  for (const [key, value] of Object.entries(role.permissions)) {
-    const actions = Array.isArray(value) ? value : normalizeActions(value || {});
-    const lowerKey = key.toLowerCase();
-    const isLegacy = lowerKey.includes('legacy') || lowerKey.startsWith('crm');
-
-    if (isLegacy) {
-      result.legacy.push({
-        name: toTitleCase(key.replace(/legacy[:.]?/i, '').replace(/^crm[:.]?/i, '')),
-        actions
-      });
-      continue;
-    }
-
-    if (key.startsWith('platform:') || key.startsWith('platform.')) {
-      result.platform.push({
-        name: toTitleCase(key.replace(/^platform[:.]?/, '')),
-        actions
-      });
-      continue;
-    }
-
-    // Expect app-scoped keys like "SALES:people" or "HELPDESK.tickets"
-    const separator = key.includes(':') ? ':' : key.includes('.') ? '.' : null;
-    const [appKeyRaw, moduleRaw] = separator ? key.split(separator) : [null, key];
-    const appKey = appKeyRaw ? appKeyRaw.toUpperCase() : 'APP';
-    const moduleName = toTitleCase(moduleRaw || key);
-
-    if (!result.apps[appKey]) result.apps[appKey] = [];
-    result.apps[appKey].push({
-      name: moduleName,
-      actions
-    });
-  }
-
-  // Sort for stable display
-  result.platform.sort((a, b) => a.name.localeCompare(b.name));
-  Object.keys(result.apps).forEach((app) => {
-    result.apps[app].sort((a, b) => a.name.localeCompare(b.name));
-  });
-  result.legacy.sort((a, b) => a.name.localeCompare(b.name));
-
-  return result;
-};
-
-const selectedRolePermissions = computed(() => groupPermissions(selectedRoleForView.value));
+const tabs = computed(() => [
+  { id: 'roles', name: t('settings.rolesTabManagement') },
+  { id: 'hierarchy', name: t('settings.rolesTabHierarchy') }
+]);
 
 // Fetch roles
 const fetchRoles = async () => {
@@ -386,36 +243,38 @@ const fetchRoles = async () => {
 
 // Initialize default roles
 const initializeDefaultRoles = async () => {
-  if (!confirm('This will create 5 default roles (Owner, Admin, Manager, User, Viewer). Continue?')) return;
+  if (!confirm(t('settings.rolesInitConfirm'))) return;
   
   try {
     const response = await apiClient.post('/roles/initialize');
     
     if (response.success) {
-      alert('Default roles created successfully!');
+      alert(t('settings.rolesInitSuccess'));
       fetchRoles();
     }
   } catch (error) {
     console.error('Error initializing roles:', error);
-    alert('Failed to initialize roles');
+    alert(t('settings.rolesInitFailed'));
   }
 };
 
 // Open create role modal
 const openCreateRoleModal = () => {
   selectedRole.value = null;
-  showRoleModal.value = true;
+  drawerInitialTab.value = 'overview';
+  showRoleDrawer.value = true;
 };
 
-// Open edit role modal
-const openEditRoleModal = (role) => {
+// Open edit role drawer
+const openEditRoleModal = (role, tab = 'overview') => {
   selectedRole.value = role;
-  showRoleModal.value = true;
+  drawerInitialTab.value = tab;
+  showRoleDrawer.value = true;
 };
 
 // Handle role saved
 const handleRoleSaved = () => {
-  showRoleModal.value = false;
+  showRoleDrawer.value = false;
   selectedRole.value = null;
   fetchRoles();
   
@@ -425,7 +284,7 @@ const handleRoleSaved = () => {
 
 // Delete role
 const deleteRole = async (role) => {
-  if (!confirm(`Delete role "${role.name}"? This action cannot be undone.`)) return;
+  if (!confirm(t('settings.rolesDeleteConfirm', { name: role.name }))) return;
   
   try {
     const response = await apiClient.delete(`/roles/${role._id}`);
@@ -433,11 +292,11 @@ const deleteRole = async (role) => {
     if (response.success) {
       fetchRoles();
     } else {
-      alert(response.message || 'Failed to delete role');
+      alert(response.message || t('settings.rolesDeleteFailed'));
     }
   } catch (error) {
     console.error('Error deleting role:', error);
-    const errorMessage = error.response?.message || 'Failed to delete role';
+    const errorMessage = error.response?.message || t('settings.rolesDeleteFailed');
     alert(errorMessage);
   }
 };
@@ -450,7 +309,7 @@ const viewRoleUsers = (role) => {
 };
 
 const viewRolePermissions = (role) => {
-  selectedRoleForView.value = role;
+  openEditRoleModal(role, 'permissions');
 };
 
 // Handle edit user from role users modal
@@ -483,4 +342,3 @@ watch(activeTab, (v) => {
   localStorage.setItem(ROLES_PERMS_TAB_KEY, v);
 });
 </script>
-

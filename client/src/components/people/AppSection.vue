@@ -26,8 +26,7 @@
         class="block"
         @update:model-value="onParticipationTypeChange"
       >
-        <ListboxLabel class="block text-sm/6 font-medium text-gray-900 dark:text-white mb-1">
-          Type <span class="text-red-500">*</span>
+        <ListboxLabel class="block text-sm/6 font-medium text-gray-900 dark:text-white mb-1">{{ t('settings.modFieldsValidationType') }}<span class="text-red-500">*</span>
         </ListboxLabel>
         <div class="relative mt-2">
           <ListboxButton
@@ -117,6 +116,7 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { ref, computed, watch, toRef, Transition, type PropType } from 'vue';
 import { Listbox, ListboxLabel, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue';
 import { ChevronUpDownIcon, CheckIcon } from '@heroicons/vue/24/outline';
@@ -151,6 +151,8 @@ const props = defineProps({
     default: () => ({})
   }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits<{
   'update:modelValue': [value: AppSectionModelValue];

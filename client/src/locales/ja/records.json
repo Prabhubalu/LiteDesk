@@ -1,0 +1,1214 @@
+{
+  "shellErrorTitle": {
+    "message": "レコードのロード中にエラーが発生しました",
+    "description": "Record page load error heading"
+  },
+  "shellLoadFailed": {
+    "message": "レコードのロードに失敗しました",
+    "description": "Record page load error fallback"
+  },
+  "contextTabsAria": {
+    "message": "コンテキストパネルのタブ",
+    "description": "Vertical context tab rail aria label"
+  },
+  "fieldsHeadingSr": {
+    "message": "レコードフィールド",
+    "description": "Screen reader heading for record fields section"
+  },
+  "customFieldsHeadingSr": {
+    "message": "カスタムフィールド",
+    "description": "Screen reader heading for custom fields section"
+  },
+  "relatedRecordsHeadingSr": {
+    "message": "関連記録",
+    "description": "Screen reader heading for related records section"
+  },
+  "activityHeadingSr": {
+    "message": "アクティビティ (最新のものは一番下にあります)",
+    "description": "Activity timeline screen reader heading"
+  },
+  "activityReply": {
+    "message": "返事",
+    "description": "Reply to comment action"
+  },
+  "activityEmpty": {
+    "message": "まだ活動はありません。",
+    "description": "Empty activity feed"
+  },
+  "activityCommentPh": {
+    "message": "コメントを書いてください...",
+    "description": "Comment composer placeholder"
+  },
+  "activityAddAttachment": {
+    "message": "添付ファイルを追加する",
+    "description": "Add attachment button title"
+  },
+  "activityMention": {
+    "message": "言及",
+    "description": "Mention button title"
+  },
+  "activityEmoji": {
+    "message": "絵文字",
+    "description": "Emoji picker button title"
+  },
+  "activityCommentBtn": {
+    "message": "コメント",
+    "description": "Submit comment button"
+  },
+  "activityUpdated": {
+    "message": "更新されました",
+    "description": "Default system activity verb"
+  },
+  "activitySystemWithAction": {
+    "message": "{action} このレコード",
+    "description": "System activity fallback with action verb"
+  },
+  "tagsTitle": {
+    "message": "タグ",
+    "description": "Tags popover title"
+  },
+  "tagsNewTag": {
+    "message": "新しいタグ",
+    "description": "New tag button"
+  },
+  "tagsNoPermission": {
+    "message": "タグを編集する権限がありません。",
+    "description": "Tags read-only message"
+  },
+  "tagsRemoveFromRecord": {
+    "message": "この記録から削除",
+    "description": "Remove tag from record action"
+  },
+  "tagsEditTag": {
+    "message": "タグを編集する",
+    "description": "Edit tag action"
+  },
+  "tagsDeleteFromModule": {
+    "message": "モジュールからタグを削除",
+    "description": "Delete tag from module action"
+  },
+  "tagsSearchHint": {
+    "message": "検索ボックスをクリックして、使用可能なタグを表示します。",
+    "description": "Tags search hint"
+  },
+  "tagsNoneYet": {
+    "message": "このインスタンスではまだタグが作成されていません。",
+    "description": "Empty tags list"
+  },
+  "tagsCreateFirst": {
+    "message": "最初のタグを作成する",
+    "description": "Create first tag CTA"
+  },
+  "tagsPublic": {
+    "message": "公共",
+    "description": "Public tag badge"
+  },
+  "tagsTagName": {
+    "message": "タグ名",
+    "description": "Tag name field label"
+  },
+  "tagsColor": {
+    "message": "色",
+    "description": "Tag color field label"
+  },
+  "tagsMakePublic": {
+    "message": "タグを公開する",
+    "description": "Make tag public checkbox"
+  },
+  "tagsSearchPh": {
+    "message": "タグを検索または作成する",
+    "description": "Tag search placeholder"
+  },
+  "tagsTagActions": {
+    "message": "タグアクション",
+    "description": "Tag actions menu aria label"
+  },
+  "tagsNamePh": {
+    "message": "タグ名を入力してください",
+    "description": "Tag name input placeholder"
+  },
+  "detailsTitle": {
+    "message": "詳細",
+    "description": "Details section title"
+  },
+  "detailsSelectOption": {
+    "message": "オプションを選択してください",
+    "description": "Empty picklist placeholder"
+  },
+  "detailsLinkRecord": {
+    "message": "クリックしてレコードをリンクします",
+    "description": "Empty lookup field placeholder"
+  },
+  "relatedTitle": {
+    "message": "関連している",
+    "description": "Related section title"
+  },
+  "relatedEmpty": {
+    "message": "関連する記録はまだありません。",
+    "description": "Empty related list"
+  },
+  "relatedEmptyHint": {
+    "message": "このレコードを関連アイテムにリンクします。",
+    "description": "Empty related hint"
+  },
+  "relatedUnlink": {
+    "message": "リンクを解除する",
+    "description": "Unlink related record"
+  },
+  "relatedActionsAria": {
+    "message": "関連するレコードのアクション",
+    "description": "Related record actions menu aria"
+  },
+  "stageHistoryTitle": {
+    "message": "舞台歴",
+    "description": "Stage history section title"
+  },
+  "subtasksEditAria": {
+    "message": "サブタスクの編集",
+    "description": "Edit subtask button title"
+  },
+  "subtasksDeleteAria": {
+    "message": "サブタスクの削除",
+    "description": "Delete subtask button title"
+  },
+  "subtasksNamePh": {
+    "message": "タスク名",
+    "description": "New subtask name placeholder"
+  },
+  "subtasksEmpty": {
+    "message": "まだサブタスクはありません。",
+    "description": "Empty subtasks list"
+  },
+  "stateHeadingSr": {
+    "message": "記録状態",
+    "description": "Record state section screen reader heading"
+  },
+  "descriptionTitle": {
+    "message": "説明",
+    "description": "Description section default title"
+  },
+  "descriptionEmpty": {
+    "message": "説明なし",
+    "description": "Empty description placeholder"
+  },
+  "tabSummary": {
+    "message": "まとめ",
+    "description": "Right pane summary tab"
+  },
+  "tabDetails": {
+    "message": "詳細",
+    "description": "Right pane details tab"
+  },
+  "tabUpdates": {
+    "message": "アップデート",
+    "description": "Right pane updates tab"
+  },
+  "tabContentFallback": {
+    "message": "{name} コンテンツ",
+    "description": "Right pane tab placeholder content"
+  },
+  "sectionActionFallback": {
+    "message": "アクション",
+    "description": "Section stack action button fallback label"
+  },
+  "descriptionAdd": {
+    "message": "説明を追加",
+    "description": "Editable empty description CTA"
+  },
+  "descriptionEmptyReadonly": {
+    "message": "まだ説明がありません。",
+    "description": "Read-only empty description"
+  },
+  "subtasksHeader": {
+    "message": "サブタスク ({completed}/{total})",
+    "description": "Subtasks section header with counts"
+  },
+  "subtasksUntitled": {
+    "message": "無題のサブタスク",
+    "description": "Subtask without title"
+  },
+  "subtasksViewAll": {
+    "message": "すべて表示 ({count})",
+    "description": "View all subtasks link"
+  },
+  "relatedUntitled": {
+    "message": "無題",
+    "description": "Related record without title"
+  },
+  "genericLoading": {
+    "message": "{module}をロード中…",
+    "description": "Record page loading message"
+  },
+  "genericErrorTitle": {
+    "message": "{module} のロード中にエラーが発生しました",
+    "description": "Record page error title"
+  },
+  "genericNavPrevious": {
+    "message": "前 {singular}",
+    "description": "Previous record navigation"
+  },
+  "genericNavNext": {
+    "message": "次の {singular}",
+    "description": "Next record navigation"
+  },
+  "genericTagsAria": {
+    "message": "タグ",
+    "description": "Tags button aria"
+  },
+  "genericCopyUrl": {
+    "message": "URLをコピー",
+    "description": "Copy URL button"
+  },
+  "genericMoreActions": {
+    "message": "さらなるアクション",
+    "description": "More actions menu"
+  },
+  "genericSendEmail": {
+    "message": "電子メールを送信する",
+    "description": "Send email menu action"
+  },
+  "genericBackTo": {
+    "message": "{singular} に戻る",
+    "description": "Back from expanded section"
+  },
+  "genericCollapseSection": {
+    "message": "セクションを折りたたむ",
+    "description": "Collapse section aria"
+  },
+  "genericCollapse": {
+    "message": "崩壊",
+    "description": "Collapse button title"
+  },
+  "genericNoDescInVersion": {
+    "message": "このバージョンでは説明がありません。",
+    "description": "Empty description version"
+  },
+  "genericVersionHistory": {
+    "message": "バージョン履歴",
+    "description": "Description version history title"
+  },
+  "genericCurrentVersion": {
+    "message": "現在のバージョン",
+    "description": "Current version label"
+  },
+  "genericVersionRetention": {
+    "message": "バージョン履歴は最大 365 日間保存されます。",
+    "description": "Version retention note"
+  },
+  "genericRestoreVersion": {
+    "message": "このバージョンを復元する",
+    "description": "Restore description version"
+  },
+  "genericRestoring": {
+    "message": "復元中…",
+    "description": "Restore in progress"
+  },
+  "genericSomeone": {
+    "message": "誰か",
+    "description": "Unknown version author"
+  },
+  "genericKeyFields": {
+    "message": "主要なフィールド",
+    "description": "Key fields section heading"
+  },
+  "genericAppParticipation": {
+    "message": "アプリへの参加",
+    "description": "People app participation section"
+  },
+  "genericConvertToContact": {
+    "message": "連絡先に変換",
+    "description": "Convert lead to contact"
+  },
+  "genericNotInAnyApp": {
+    "message": "この人はまだどのアプリにも参加していません",
+    "description": "Empty people participation"
+  },
+  "genericAddRecord": {
+    "message": "レコードの追加",
+    "description": "Add related record button"
+  },
+  "genericLinkRecord": {
+    "message": "リンクレコード",
+    "description": "Link record button"
+  },
+  "genericShowEmptyFields": {
+    "message": "空のフィールドを表示",
+    "description": "Show empty fields toggle"
+  },
+  "genericNoFieldsMatch": {
+    "message": "フィルタに一致するフィールドはありません。",
+    "description": "Details filter no match"
+  },
+  "genericNoFieldsToShow": {
+    "message": "表示するフィールドはありません。",
+    "description": "Empty details fields"
+  },
+  "genericNoRecordLoaded": {
+    "message": "レコードがロードされていません。",
+    "description": "No record state"
+  },
+  "genericIntegrations": {
+    "message": "統合",
+    "description": "Integrations section title"
+  },
+  "genericNoIntegrations": {
+    "message": "統合が構成されていません。",
+    "description": "Empty integrations"
+  },
+  "genericFilterFieldsPh": {
+    "message": "フィールドをフィルタリング…",
+    "description": "Details field filter placeholder"
+  },
+  "genericOpenInNewTab": {
+    "message": "新しいタブで開く",
+    "description": "Open record in new tab"
+  },
+  "genericEditParticipation": {
+    "message": "参加の編集",
+    "description": "Edit app participation"
+  },
+  "genericAddToApp": {
+    "message": "{app} に追加",
+    "description": "Add person to app"
+  },
+  "genericLinkDrawerAddAndLink": {
+    "message": "レコードの追加とリンク",
+    "description": "Link drawer title multi"
+  },
+  "genericLinkDrawerLink": {
+    "message": "リンクレコード",
+    "description": "Link drawer title single"
+  },
+  "genericReactorUnavailable": {
+    "message": "原子炉の詳細は不明",
+    "description": "Reactor panel unavailable"
+  },
+  "genericUnlinkFailed": {
+    "message": "レコードのリンク解除中にエラーが発生しました。もう一度試してください。",
+    "description": "Unlink related record error"
+  },
+  "genericThreadAssigned": {
+    "message": "割り当てられたスレッド",
+    "description": "Thread assign success"
+  },
+  "genericThreadUnassigned": {
+    "message": "スレッドが割り当てられていません",
+    "description": "Thread unassign success"
+  },
+  "genericThreadAssignFailed": {
+    "message": "スレッドの割り当てに失敗しました",
+    "description": "Thread assign error"
+  },
+  "genericThreadUnassignFailed": {
+    "message": "スレッドの割り当て解除に失敗しました",
+    "description": "Thread unassign error"
+  },
+  "genericTagAdded": {
+    "message": "タグが追加されました",
+    "description": "Tag add success"
+  },
+  "genericTagAddFailed": {
+    "message": "タグの追加に失敗しました",
+    "description": "Tag add error"
+  },
+  "genericTagRemoved": {
+    "message": "タグが削除されました",
+    "description": "Tag remove success"
+  },
+  "genericTagRemoveFailed": {
+    "message": "タグの削除に失敗しました",
+    "description": "Tag remove error"
+  },
+  "genericThreadMarkedDone": {
+    "message": "完了マークが付けられたスレッド",
+    "description": "Thread done success"
+  },
+  "genericThreadReopened": {
+    "message": "スレッドが再開されました",
+    "description": "Thread reopen success"
+  },
+  "genericThreadStatusFailed": {
+    "message": "スレッドステータスの更新に失敗しました",
+    "description": "Thread status error"
+  },
+  "genericConfirmCancelAppt": {
+    "message": "この予定をキャンセルしますか?ゲストは公開リンクを使用して再度予約できます。",
+    "description": "Cancel appointment confirm"
+  },
+  "genericApptCancelled": {
+    "message": "予約がキャンセルされました",
+    "description": "Appointment cancel success"
+  },
+  "genericApptCancelFailed": {
+    "message": "予約をキャンセルできませんでした",
+    "description": "Appointment cancel error"
+  },
+  "genericConfirmCompleteAppt": {
+    "message": "この予定を完了としてマークしますか?",
+    "description": "Complete appointment confirm"
+  },
+  "genericApptCompleted": {
+    "message": "予約完了",
+    "description": "Appointment complete success"
+  },
+  "genericApptCompleteFailed": {
+    "message": "予約を完了できませんでした",
+    "description": "Appointment complete error"
+  },
+  "genericConfirmNoShowAppt": {
+    "message": "この予定をノーショーとしてマークしますか?イベントは予定通りカレンダーに残ります。",
+    "description": "No-show appointment confirm"
+  },
+  "genericApptNoShow": {
+    "message": "ノーショーとしてマークされています",
+    "description": "No-show success"
+  },
+  "genericApptNoShowFailed": {
+    "message": "ノーショーをマークできませんでした",
+    "description": "No-show error"
+  },
+  "genericApptRescheduled": {
+    "message": "予定が変更されました",
+    "description": "Appointment reschedule success"
+  },
+  "genericEmailSent": {
+    "message": "メールを送信しました",
+    "description": "Email send success"
+  },
+  "genericEmailSendFailed": {
+    "message": "メールの送信に失敗しました",
+    "description": "Email send error"
+  },
+  "genericNotParticipatingIn": {
+    "message": "まだ{app}に参加していません",
+    "description": "People not in app context"
+  },
+  "genericDetailsEmptyValuesHint": {
+    "message": "値を含むフィールドはありません。残りを表示するには、「空のフィールドを表示」をオンにします。",
+    "description": "Details tab empty values hint"
+  },
+  "genericPersonReacted": {
+    "message": "人が反応した",
+    "description": "Single reaction tooltip suffix"
+  },
+  "genericPeopleReacted": {
+    "message": "人々は反応した",
+    "description": "Multiple reactions tooltip suffix"
+  },
+  "genericTabActivity": {
+    "message": "活動",
+    "description": "Right pane activity tab"
+  },
+  "commentComposerDefaultPh": {
+    "message": "コメントを書く...ユーザーまたはグループを @メンションする",
+    "description": "Default comment composer placeholder"
+  },
+  "commentAddFile": {
+    "message": "ファイルを追加する",
+    "description": "Attach file toolbar button"
+  },
+  "commentMentionTitle": {
+    "message": "誰かに言及してください ({atSymbol})",
+    "description": "Mention toolbar button"
+  },
+  "commentAddEmoji": {
+    "message": "絵文字を追加する",
+    "description": "Emoji picker toolbar button"
+  },
+  "commentSubmitLabel": {
+    "message": "コメント",
+    "description": "Submit comment button label"
+  },
+  "commentMentionLoading": {
+    "message": "読み込み中…",
+    "description": "Mention dropdown loading"
+  },
+  "commentMentionGroup": {
+    "message": "グループ",
+    "description": "Mention item group badge"
+  },
+  "commentMentionEmpty": {
+    "message": "ユーザーまたはグループが見つかりませんでした",
+    "description": "Empty mention search"
+  },
+  "commentRemoveAttachment": {
+    "message": "{name} を削除",
+    "description": "Remove attachment aria-label"
+  },
+  "editableListboxSearchPh": {
+    "message": "検索…",
+    "description": "Inline field listbox search"
+  },
+  "editablePhonePh": {
+    "message": "電話番号",
+    "description": "Phone field edit placeholder"
+  },
+  "editableUnassigned": {
+    "message": "未割り当て",
+    "description": "Empty user field value"
+  },
+  "editableSelectOption": {
+    "message": "オプションを選択してください",
+    "description": "Empty select/entity option"
+  },
+  "editableNoMatches": {
+    "message": "一致はありません。",
+    "description": "Listbox filter empty state"
+  },
+  "editableUnknownUser": {
+    "message": "不明なユーザー",
+    "description": "User option fallback label"
+  },
+  "dealLoading": {
+    "message": "取引を読み込み中…",
+    "description": "Deal record page loading"
+  },
+  "dealErrorTitle": {
+    "message": "取引の読み込みエラー",
+    "description": "Deal record page error title"
+  },
+  "dealNavPrevious": {
+    "message": "以前の取引",
+    "description": "Previous deal navigation"
+  },
+  "dealNavNext": {
+    "message": "次の取引",
+    "description": "Next deal navigation"
+  },
+  "dealModuleLabel": {
+    "message": "取引",
+    "description": "Deal module singular label"
+  },
+  "dealBackTo": {
+    "message": "取引に戻る",
+    "description": "Collapse expanded deal section"
+  },
+  "dealEmailContact": {
+    "message": "メール連絡先",
+    "description": "Email contact action"
+  },
+  "dealEditAria": {
+    "message": "取引を編集する",
+    "description": "Edit deal action"
+  },
+  "dealVersionRetentionNote": {
+    "message": "バージョン履歴は、取引説明に最大 365 日間保存されます。",
+    "description": "Deal description version retention"
+  },
+  "dealWeightedAmount": {
+    "message": "加重{amount}",
+    "description": "Deal weighted amount label"
+  },
+  "dealExpectedValuePh": {
+    "message": "期待値",
+    "description": "Deal amount field placeholder"
+  },
+  "dealProbabilityPh": {
+    "message": "確率",
+    "description": "Deal probability placeholder"
+  },
+  "dealCloseDatePh": {
+    "message": "締切日",
+    "description": "Deal expected close date placeholder"
+  },
+  "dealStarAria": {
+    "message": "星",
+    "description": "Star/follow deal"
+  },
+  "dealUnstarAria": {
+    "message": "スターを外す",
+    "description": "Unfollow deal"
+  },
+  "dealRelatedRecordsTab": {
+    "message": "関連記録",
+    "description": "Deal right pane related tab"
+  },
+  "dealDuplicateNotImplemented": {
+    "message": "取引には重複アクションはまだ実装されていません。",
+    "description": "Deal duplicate stub alert"
+  },
+  "dealExportNotImplemented": {
+    "message": "取引にはエクスポート アクションがまだ実装されていません。",
+    "description": "Deal export stub alert"
+  },
+  "dealDeleteFailed": {
+    "message": "取引を削除できませんでした",
+    "description": "Deal delete error"
+  },
+  "dealCopyUrlFailed": {
+    "message": "URLのコピーに失敗しました",
+    "description": "Deal copy URL error"
+  },
+  "dealCommentAddFailed": {
+    "message": "コメントの追加に失敗しました",
+    "description": "Deal add comment error"
+  },
+  "dealCommentUpdateFailed": {
+    "message": "コメントの更新に失敗しました",
+    "description": "Deal edit comment error"
+  },
+  "dealCreateTaskFailed": {
+    "message": "タスクの作成に失敗しました",
+    "description": "Deal create related task error"
+  },
+  "dealCreateCaseFailed": {
+    "message": "ケースの作成に失敗しました",
+    "description": "Deal create related case error"
+  },
+  "dealAttachedFilesFallback": {
+    "message": "添付ファイル",
+    "description": "Comment with attachments only"
+  },
+  "dealUnnamedOrganization": {
+    "message": "無名の組織",
+    "description": "Organization picker fallback"
+  },
+  "dealUnnamedPerson": {
+    "message": "無名",
+    "description": "Person picker fallback"
+  },
+  "taskLoading": {
+    "message": "タスクを読み込み中…",
+    "description": "Task record page loading"
+  },
+  "taskErrorTitle": {
+    "message": "タスクのロード中にエラーが発生しました",
+    "description": "Task record page error title"
+  },
+  "taskNavPrevious": {
+    "message": "前のタスク",
+    "description": "Previous task navigation"
+  },
+  "taskNavNext": {
+    "message": "次のタスク",
+    "description": "Next task navigation"
+  },
+  "taskModuleLabel": {
+    "message": "タスク",
+    "description": "Task module singular label"
+  },
+  "taskBackTo": {
+    "message": "タスクに戻る",
+    "description": "Collapse expanded task section"
+  },
+  "taskEditAria": {
+    "message": "タスクの編集",
+    "description": "Edit task action"
+  },
+  "taskEmailAssignee": {
+    "message": "電子メール担当者",
+    "description": "Email task assignee action"
+  },
+  "taskVersionRetentionNote": {
+    "message": "バージョン履歴は、タスクの説明に最大 365 日間保存されます。",
+    "description": "Task description version retention"
+  },
+  "taskStarAria": {
+    "message": "星",
+    "description": "Star/follow task"
+  },
+  "taskUnstarAria": {
+    "message": "スターを外す",
+    "description": "Unfollow task"
+  },
+  "taskRelatedRecordsTab": {
+    "message": "関連記録",
+    "description": "Task right pane related tab"
+  },
+  "taskCopyUrlSuccess": {
+    "message": "URL がクリップボードにコピーされました!",
+    "description": "Task copy URL success"
+  },
+  "taskLinkModuleFailed": {
+    "message": "{moduleKey} のリンク中にエラーが発生しました。もう一度試してください。",
+    "description": "Task link related record error"
+  },
+  "taskRelatedGroupProject": {
+    "message": "プロジェクト",
+    "description": "Related project group heading"
+  },
+  "taskRelatedGroupPeople": {
+    "message": "人々",
+    "description": "Related people group heading"
+  },
+  "taskRelatedGroupEvents": {
+    "message": "イベント",
+    "description": "Related events group heading"
+  },
+  "taskRelatedGroupDeals": {
+    "message": "お得情報",
+    "description": "Related deals group heading"
+  },
+  "taskRelatedGroupForms": {
+    "message": "フォーム",
+    "description": "Related forms group heading"
+  },
+  "taskCloseTimestampDetails": {
+    "message": "タイムスタンプの詳細を閉じる",
+    "description": "Close timestamp popover aria"
+  },
+  "activityCloseSearchAria": {
+    "message": "検索を閉じる",
+    "description": "Close activity search bar"
+  },
+  "activityNotificationsAria": {
+    "message": "通知",
+    "description": "Activity notifications button"
+  },
+  "activityFilterAria": {
+    "message": "フィルタアクティビティ",
+    "description": "Activity filter menu button"
+  },
+  "activityFilterHeading": {
+    "message": "活動内容",
+    "description": "Activity filter menu title"
+  },
+  "activityUnselectAll": {
+    "message": "すべての選択を解除します",
+    "description": "Clear all activity filters"
+  },
+  "activitySelectAll": {
+    "message": "すべて選択",
+    "description": "Enable all activity filters"
+  },
+  "activityFilterComments": {
+    "message": "コメント",
+    "description": "Activity filter: comments"
+  },
+  "activityFilterEmail": {
+    "message": "電子メール",
+    "description": "Activity filter: email"
+  },
+  "activityFilterUpdates": {
+    "message": "アップデート",
+    "description": "Activity filter: updates"
+  },
+  "activityFilterDoneThreads": {
+    "message": "完了したスレッド",
+    "description": "Activity filter: done threads"
+  },
+  "activityFilterAssignedToMe": {
+    "message": "私に割り当てられました",
+    "description": "Activity filter: assigned to me"
+  },
+  "activityFilterTaggedThreads": {
+    "message": "タグ付きスレッド",
+    "description": "Activity filter: tagged threads"
+  },
+  "activityFilterUntaggedThreads": {
+    "message": "タグなしのスレッド",
+    "description": "Activity filter: untagged threads"
+  },
+  "activitySearchPh": {
+    "message": "検索…",
+    "description": "Activity search input placeholder"
+  },
+  "activityClearSearchAria": {
+    "message": "検索をクリア",
+    "description": "Clear activity search"
+  },
+  "activityClearSearchTitle": {
+    "message": "クリア",
+    "description": "Clear search button title"
+  },
+  "activityThreadBy": {
+    "message": "スレッド作成者",
+    "description": "Thread view author prefix"
+  },
+  "activityNothingFound": {
+    "message": "何も見つかりませんでした",
+    "description": "No activities match filters"
+  },
+  "activitySelectOneFilter": {
+    "message": "少なくとも 1 つのフィルターを選択してください。",
+    "description": "Empty filter state hint"
+  },
+  "activityResetFilters": {
+    "message": "フィルターをリセットする",
+    "description": "Reset activity filters button"
+  },
+  "activityReplyPh": {
+    "message": "コメントに返信…",
+    "description": "Thread reply composer placeholder"
+  },
+  "activityCommentEdited": {
+    "message": "(編集済み)",
+    "description": "Comment edited indicator"
+  },
+  "activityEditCommentAria": {
+    "message": "コメントの編集",
+    "description": "Edit comment button aria"
+  },
+  "activityReplyToCommentAria": {
+    "message": "コメントに返信する",
+    "description": "Reply to comment button aria"
+  },
+  "activityEditCommentPh": {
+    "message": "コメントを編集…",
+    "description": "Edit comment composer placeholder"
+  },
+  "notesBlockedContext": {
+    "message": "アプリのコンテキストが曖昧です。どのノートを表示するかを決定できません。",
+    "description": "Notes blocked when app context unclear"
+  },
+  "notesAdding": {
+    "message": "追加中…",
+    "description": "Submit note in progress"
+  },
+  "notesAddNoteBtn": {
+    "message": "メモを追加",
+    "description": "Submit new note button"
+  },
+  "notesUserFallback": {
+    "message": "ユーザー",
+    "description": "Author name fallback in notes list"
+  },
+  "notesAddANoteAboveToGet": {
+    "message": "開始するには、上にメモを追加してください。",
+    "description": "Auto-migrated from notes"
+  },
+  "notesNoNotesYet": {
+    "message": "まだメモはありません。",
+    "description": "Auto-migrated from notes"
+  },
+  "notesWriteANote": {
+    "message": "メモを書いてください...",
+    "description": "Auto-migrated from notes"
+  },
+  "notesAddNote": {
+    "message": "メモを追加",
+    "description": "Auto-migrated from notes"
+  },
+  "notesCannotLoadNotes": {
+    "message": "メモをロードできません",
+    "description": "Auto-migrated from notes"
+  },
+  "notesErrorLoadingNotes": {
+    "message": "ノートの読み込みエラー",
+    "description": "Auto-migrated from notes"
+  },
+  "notesLoadingNotes": {
+    "message": "メモを読み込んでいます...",
+    "description": "Auto-migrated from notes"
+  },
+  "filesUploadAFileAboveToGet": {
+    "message": "開始するには、上記のファイルをアップロードしてください。",
+    "description": "Auto-migrated from files"
+  },
+  "filesNoFilesUploadedYet": {
+    "message": "ファイルはまだアップロードされていません。",
+    "description": "Auto-migrated from files"
+  },
+  "filesDownload": {
+    "message": "ダウンロード",
+    "description": "Auto-migrated from files"
+  },
+  "filesAllowedImagesPdfWordExcelCsv": {
+    "message": "許可: 画像、PDF、Word、Excel、CSV (最大 10MB)",
+    "description": "Auto-migrated from files"
+  },
+  "filesUploadFile": {
+    "message": "ファイルをアップロードする",
+    "description": "Auto-migrated from files"
+  },
+  "filesCannotLoadFiles": {
+    "message": "ファイルをロードできません",
+    "description": "Auto-migrated from files"
+  },
+  "filesErrorLoadingFiles": {
+    "message": "ファイルのロード中にエラーが発生しました",
+    "description": "Auto-migrated from files"
+  },
+  "filesLoadingFiles": {
+    "message": "ファイルをロード中...",
+    "description": "Auto-migrated from files"
+  },
+  "activityTimelineCannotLoadActivities": {
+    "message": "アクティビティをロードできません",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "activityTimelineErrorLoadingActivities": {
+    "message": "アクティビティの読み込みエラー",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "activityTimelineLoadingActivities": {
+    "message": "アクティビティを読み込んでいます...",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "taskDescriptionEditorInsertLink": {
+    "message": "リンクを挿入",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorRemoveLink": {
+    "message": "リンクを削除する",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorNumberedList": {
+    "message": "番号付きリスト",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorBulletList": {
+    "message": "箇条書きリスト",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorStrikethrough": {
+    "message": "取り消し線",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorItalic": {
+    "message": "イタリック",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorBold": {
+    "message": "大胆な",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading3": {
+    "message": "見出し 3",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading2": {
+    "message": "見出し2",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading1": {
+    "message": "見出し1",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "recordDetailThisRecordTypeIsNotConfigured": {
+    "message": "このレコード タイプは設定されていません。",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "recordDetailRecordNotFound": {
+    "message": "レコードが見つかりません",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "recordDetailLoading": {
+    "message": "読み込み中...",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "relatedRecordsPanelThisRecordRequiresTheFollowingRelationships": {
+    "message": "このレコードには、次の関係をリンクする必要があります。",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelRequiredRelationships": {
+    "message": "必要な関係",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelLinkThisRecordToPeopleOrganizations": {
+    "message": "このレコードを人、組織、タスク、イベント、またはフォームにリンクします。",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelNoRelationshipsConfiguredForThisRecord": {
+    "message": "このレコード タイプには関係が設定されていません。",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelErrorLoadingRelatedRecords": {
+    "message": "関連レコードのロード中にエラーが発生しました",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelLoadingRelatedRecords": {
+    "message": "関連レコードをロードしています...",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsRendererNoRelationshipsConfiguredForThisRecord": {
+    "message": "このレコード タイプには関係が設定されていません。",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsRendererTheFollowingRequiredRelationshipsMustBe": {
+    "message": "保存する前に、次の必須の関係をリンクする必要があります。",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsRendererRequiredRelationshipsMissing": {
+    "message": "必要な関係がありません",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsTabLinkExisting": {
+    "message": "リンクが存在します",
+    "description": "Auto-migrated from relatedRecordsTab"
+  },
+  "relationshipUnlinkConfirmAreYouSureYouWantTo": {
+    "message": "リンクを解除してもよろしいですか",
+    "description": "Auto-migrated from relationshipUnlinkConfirm"
+  },
+  "reactionBarReactToComment": {
+    "message": "コメントに反応する",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarLikeComment": {
+    "message": "コメントにいいね！",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarReactToComment2": {
+    "message": "コメントに反応する",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarLikeComment2": {
+    "message": "コメントにいいね！",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "activitySystemRowShowMore": {
+    "message": "もっと見る",
+    "description": "Auto-migrated from activitySystemRow"
+  },
+  "approvalHistoryEscalatedToNewApprovers": {
+    "message": "新しい承認者にエスカレーションされました",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryProcess": {
+    "message": "プロセス：",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryReason": {
+    "message": "理由：",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryDecidedBy": {
+    "message": "決定者:",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryNoApprovalHistoryFound": {
+    "message": "承認履歴が見つかりません",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryApprovalHistory": {
+    "message": "承認履歴",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "linkRecordModalLinking": {
+    "message": "リンク中...",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "linkRecordModalSelectARecordType": {
+    "message": "レコードタイプを選択してください...",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "linkRecordModalRecordType": {
+    "message": "レコードタイプ",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "recordDetailToastFailedToDeleteRecordPlease": {
+    "message": "レコードの削除に失敗しました。もう一度試してください。",
+    "description": "Toast from RecordDetail.vue"
+  },
+  "instanceManagementToastInstanceManagementUiComingSoon": {
+    "message": "インスタンス管理 UI は近日公開予定です。",
+    "description": "Toast from InstanceManagement.vue"
+  },
+  "useRecordHeaderActionsToastUrlCopiedToClipboard": {
+    "message": "URL がクリップボードにコピーされました!",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "useRecordHeaderActionsToastErrorExportingRecordPleaseTry": {
+    "message": "レコードのエクスポート中にエラーが発生しました。もう一度試してください。",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "useRecordHeaderActionsToastErrorDeletingRecordPleaseTry": {
+    "message": "レコードの削除中にエラーが発生しました。もう一度試してください。",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "tabPreview": {
+    "message": "プレビュー",
+    "description": "Form summary preview tab"
+  },
+  "tabUsage": {
+    "message": "使用法",
+    "description": "Form summary usage tab"
+  },
+  "tabResponses": {
+    "message": "応答",
+    "description": "Form summary responses tab"
+  },
+  "tabTenantDetails": {
+    "message": "テナント詳細",
+    "description": "Organization tenant details tab"
+  },
+  "relatedRecordsTitle": {
+    "message": "関連記録",
+    "description": "Left column related records section title"
+  },
+  "subtasksTitle": {
+    "message": "サブタスク",
+    "description": "Task record subtasks section title"
+  },
+  "subtasksTitleWithCount": {
+    "message": "サブタスク ({completed}/{total})",
+    "description": "Task subtasks section title with completion counts"
+  },
+  "sectionAddSubtask": {
+    "message": "サブタスクの追加",
+    "description": "Add subtask action label"
+  },
+  "sectionExpand": {
+    "message": "拡大する",
+    "description": "Expand record section action"
+  },
+  "sectionHistory": {
+    "message": "歴史",
+    "description": "Description history action"
+  },
+  "sectionLinkRecord": {
+    "message": "リンクレコード",
+    "description": "Link related record action"
+  },
+  "sectionAddRecord": {
+    "message": "レコードの追加",
+    "description": "Add related record action"
+  },
+  "sectionViewMore": {
+    "message": "もっと見る",
+    "description": "Load more subtasks action"
+  },
+  "sectionViewLess": {
+    "message": "表示を減らす",
+    "description": "Collapse field list action"
+  },
+  "sectionViewAll": {
+    "message": "すべて表示 ({count})",
+    "description": "Expand details field list"
+  },
+  "sectionGroupCore": {
+    "message": "コア",
+    "description": "Field group label"
+  },
+  "sectionGroupSystem": {
+    "message": "システム",
+    "description": "Field group label"
+  },
+  "sectionGroupOther": {
+    "message": "他の",
+    "description": "Field group label"
+  },
+  "sectionCreatedVia": {
+    "message": "経由で作成されました",
+    "description": "Record source field label"
+  },
+  "sectionGroupRecord": {
+    "message": "記録",
+    "description": "Record metadata group label"
+  },
+  "activitySystemActorSystem": {
+    "message": "システム",
+    "description": "System actor label in activity feed"
+  },
+  "activitySystemFieldFallback": {
+    "message": "分野",
+    "description": "Fallback when system event field label is unknown"
+  },
+  "activitySystemChanged": {
+    "message": "変わった",
+    "description": "System field change activity between actor and field"
+  },
+  "activitySystemChangedTo": {
+    "message": "{field} を次のように変更しました",
+    "description": "Tags/system field change lead-in"
+  },
+  "activitySystemChangedFromTo": {
+    "message": "{field} を「{from}」から「{to}」に変更しました",
+    "description": "Generic field change summary"
+  },
+  "activityUpdatedRecord": {
+    "message": "この記録を更新しました",
+    "description": "Generic system activity fallback"
+  }
+}

@@ -3,7 +3,7 @@
     ref="modulesAndFieldsRef"
     :module-filter="salesSchemaFilter"
     :excluded-tabs="['pipeline', 'playbooks']"
-    title="Sales Modules"
+    :title="t('settings.appsSalesModules')"
     :hide-header="true"
     :start-with-module-list="true"
     :on-navigate-to-pipelines="onNavigateToPipelines"
@@ -12,6 +12,9 @@
 
 <script setup>
 import { ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
   /** Callback to open Pipelines & Stages (e.g. switch parent tab when editing Deal Stage/Pipeline field) */

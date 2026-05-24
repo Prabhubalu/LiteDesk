@@ -23,8 +23,8 @@
       <button
         type="button"
         class="inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-        title="Back to inbox"
-        aria-label="Back to inbox"
+        :title="t('inbox.emailThreadReaderBackToInbox2')"
+        :aria-label="t('inbox.emailThreadReaderBackToInbox')"
         @click="emit('close')"
       >
         <ArrowLeftIcon class="h-5 w-5" />
@@ -43,8 +43,8 @@
       <button
         type="button"
         class="inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 disabled:opacity-50 dark:text-gray-300 dark:hover:bg-gray-800"
-        title="Snooze to tomorrow"
-        aria-label="Snooze to tomorrow"
+        :title="t('inbox.emailThreadReaderSnoozeToTomorrow2')"
+        :aria-label="t('inbox.emailThreadReaderSnoozeToTomorrow')"
         :disabled="actionLoading"
         @click="emit('snooze', threadRow)"
       >
@@ -53,8 +53,8 @@
       <button
         type="button"
         class="inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 disabled:opacity-50 dark:text-gray-300 dark:hover:bg-gray-800"
-        title="Assign to me"
-        aria-label="Assign to me"
+        :title="t('common.formAssignToMe')"
+        :aria-label="t('common.formAssignToMe')"
         :disabled="actionLoading"
         @click="emit('assign-to-me', threadRow)"
       >
@@ -77,8 +77,8 @@
         <button
           type="button"
           class="inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 disabled:opacity-50 dark:text-gray-300 dark:hover:bg-gray-800"
-          title="Reload thread"
-          aria-label="Reload thread"
+          :title="t('inbox.emailThreadReaderReloadThread2')"
+          :aria-label="t('inbox.emailThreadReaderReloadThread')"
           :disabled="loading"
           @click="loadThread"
         >
@@ -155,9 +155,7 @@
               <span
                 v-if="msg.direction === 'outbound'"
                 class="rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-800 dark:bg-blue-900/40 dark:text-blue-200"
-              >
-                Sent
-              </span>
+              >{{ t('inbox.emailThreadReaderSent') }}</span>
             </div>
           </header>
 
@@ -196,17 +194,13 @@
               class="inline-flex items-center gap-1.5 rounded-full border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-800 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
               @click="emit('reply', threadRow)"
             >
-              <ArrowUturnLeftIcon class="h-4 w-4" />
-              Reply
-            </button>
+              <ArrowUturnLeftIcon class="h-4 w-4" />{{ t('records.activityReply') }}</button>
             <button
               type="button"
               class="inline-flex items-center gap-1.5 rounded-full border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-800 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
               @click="emit('forward', { row: threadRow, message: msg })"
             >
-              <ArrowUturnRightIcon class="h-4 w-4" />
-              Forward
-            </button>
+              <ArrowUturnRightIcon class="h-4 w-4" />{{ t('inbox.emailThreadReaderForward') }}</button>
           </footer>
         </article>
       </div>
@@ -215,6 +209,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, computed, watch, onMounted } from 'vue';
 import apiClient from '@/utils/apiClient';
 import {
@@ -236,6 +231,8 @@ const props = defineProps({
   /** Optional record-path string ("/people/123") to enable the "Go to record" link. */
   recordPath: { type: String, default: '' }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits([
   'close',

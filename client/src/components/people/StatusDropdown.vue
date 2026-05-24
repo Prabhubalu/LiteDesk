@@ -74,6 +74,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, computed, watch, onUnmounted } from 'vue';
 import apiClient from '@/utils/apiClient';
 
@@ -231,11 +234,11 @@ const handleStatusSelect = async (newStatus) => {
       showDropdown.value = false;
     } else {
       console.error('Failed to update status:', response.message);
-      alert(response.message || 'Failed to update status');
+      alert(response.message || t('people.statusDropdownToastFailedToUpdateStatus'));
     }
   } catch (error) {
     console.error('Error updating status:', error);
-    alert(error.response?.data?.message || 'Error updating status');
+    alert(error.response?.data?.message || t('people.statusDropdownToastErrorUpdatingStatus'));
   } finally {
     updating.value = false;
   }

@@ -5,9 +5,7 @@
         <!-- Header -->
         <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 rounded-t-2xl z-10">
           <div class="flex items-center justify-between">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white">
-              Collect Payment
-            </h2>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ t('events.paymentCollectionModalCollectPayment') }}</h2>
             <button @click="close" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
               <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -20,15 +18,14 @@
         <form @submit.prevent="handleSubmit" class="p-6 space-y-6">
           <!-- Organization -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Organization <span class="text-red-500">*</span>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.profileMetaOrg') }}<span class="text-red-500">*</span>
             </label>
             <select
               v-model="form.targetOrgId"
               required
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
-              <option value="">Select Organization...</option>
+              <option value="">{{ t('events.paymentCollectionModalSelectOrganization') }}</option>
               <option v-for="org in organizations" :key="org._id" :value="org._id">
                 {{ org.name }}
               </option>
@@ -37,8 +34,7 @@
 
           <!-- Amount -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Amount <span class="text-red-500">*</span>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.assignRulesCondFieldAmount') }}<span class="text-red-500">*</span>
             </label>
             <div class="relative">
               <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
@@ -56,43 +52,40 @@
 
           <!-- Payment Method -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Payment Method <span class="text-red-500">*</span>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('events.paymentCollectionModalPaymentMethod') }}<span class="text-red-500">*</span>
             </label>
             <select
               v-model="form.paymentMethod"
               required
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
-              <option value="">Select method...</option>
-              <option value="Cash">Cash</option>
-              <option value="Card">Card</option>
-              <option value="Check">Check</option>
-              <option value="Bank Transfer">Bank Transfer</option>
-              <option value="Other">Other</option>
+              <option value="">{{ t('events.paymentCollectionModalSelectMethod') }}</option>
+              <option value="Cash">{{ t('events.paymentCollectionModalCash') }}</option>
+              <option value="Card">{{ t('events.paymentCollectionModalCard') }}</option>
+              <option value="Check">{{ t('events.paymentCollectionModalCheck') }}</option>
+              <option value="Bank Transfer">{{ t('events.paymentCollectionModalBankTransfer') }}</option>
+              <option value="Other">{{ t('settings.settingsBhTzGroupOther') }}</option>
             </select>
           </div>
 
           <!-- Reference Number -->
           <div v-if="form.paymentMethod && form.paymentMethod !== 'Cash'">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Reference Number
-            </label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('events.paymentCollectionModalReferenceNumber') }}</label>
             <input
               v-model="form.referenceNumber"
               type="text"
-              placeholder="Transaction/Check number"
+              :placeholder="t('events.paymentCollectionModalTransactionCheckNumber')"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
 
           <!-- Notes -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('forms.fieldNotes') }}</label>
             <textarea
               v-model="form.notes"
               rows="3"
-              placeholder="Payment notes..."
+              :placeholder="t('events.paymentCollectionModalPaymentNotes')"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             ></textarea>
           </div>
@@ -103,9 +96,7 @@
               type="button"
               @click="close"
               class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg font-medium transition-colors"
-            >
-              Cancel
-            </button>
+            >{{ t('performance.cancelWizard') }}</button>
             <button
               type="submit"
               :disabled="saving"
@@ -125,6 +116,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, watch } from 'vue';
 import apiClient from '@/utils/apiClient';
 
@@ -142,6 +134,8 @@ const props = defineProps({
     default: null
   }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['close', 'collected']);
 
@@ -215,11 +209,11 @@ const handleSubmit = async () => {
       emit('collected', response.data);
       close();
     } else {
-      alert(response.message || 'Failed to collect payment');
+      alert(response.message || t('events.paymentCollectionModalToastFailedToCollectPayment'));
     }
   } catch (error) {
     console.error('Error collecting payment:', error);
-    alert('Failed to collect payment: ' + (error.message || 'Unknown error'));
+    alert(t('events.paymentCollectionModalToastFailedToCollectPayment2') + (error.message || 'Unknown error'));
   } finally {
     saving.value = false;
   }

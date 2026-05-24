@@ -41,49 +41,62 @@ export const createTaskSectionStackAdapter = (context = {}) => {
         ? TASK_STACK_SECTION_KEYS.filter((key) => key === expandedLeftSection)
         : TASK_STACK_SECTION_KEYS;
 
+      const L = context.sectionLabels || {
+        description: 'Description',
+        details: 'Details',
+        related: 'Related Records',
+        expand: 'Expand',
+        history: 'History',
+        linkRecord: 'Link record',
+        addRecord: 'Add record',
+        addSubtask: 'Add subtask',
+        viewMore: 'View more',
+        subtasksWithCount: (c, t) => `Subtasks (${c}/${t})`,
+      };
+
       const sections = {
         description: {
           key: 'description',
-          title: 'Description',
+          title: L.description,
           component: DescriptionSection,
           className: 'pt-4 pb-4',
           actions: [
-            ...(hasDescriptionHistory ? [{ key: 'description-history', type: 'history', label: 'History' }] : []),
-            ...(!isExpandedMode ? [{ key: 'expand-description', type: 'expand', label: 'Expand' }] : [])
+            ...(hasDescriptionHistory ? [{ key: 'description-history', type: 'history', label: L.history }] : []),
+            ...(!isExpandedMode ? [{ key: 'expand-description', type: 'expand', label: L.expand }] : [])
           ]
         },
         details: {
           key: 'details',
-          title: 'Details',
+          title: L.details,
           component: DetailsSection,
           className: 'pt-4 pb-2',
-          actions: (!isExpandedMode ? [{ key: 'expand-details', type: 'expand', label: 'Expand' }] : [])
+          actions: (!isExpandedMode ? [{ key: 'expand-details', type: 'expand', label: L.expand }] : [])
         },
         subtasks: {
           key: 'subtasks',
-          title: `Subtasks (${completedSubtasksCount}/${totalSubtasksCount})`,
+          title: L.subtasksWithCount(completedSubtasksCount, totalSubtasksCount),
           component: SubtasksSection,
           className: 'py-3',
           actions: [
             {
               key: 'add-subtask',
               type: 'plus',
-              label: 'Add subtask',
+              label: L.addSubtask,
               handler: () => context.startCreateSubtask?.()
             },
-            ...(canLoadMoreSubtasks ? [{ key: 'load-more-subtasks', type: 'quick', label: 'View more' }] : []),
-            ...(!isExpandedMode ? [{ key: 'expand-subtasks', type: 'expand', label: 'Expand' }] : [])
+            ...(canLoadMoreSubtasks ? [{ key: 'load-more-subtasks', type: 'quick', label: L.viewMore }] : []),
+            ...(!isExpandedMode ? [{ key: 'expand-subtasks', type: 'expand', label: L.expand }] : [])
           ]
         },
         related: {
           key: 'related',
-          title: 'Related Records',
+          title: L.related,
           component: RelatedSection,
           className: 'py-3',
           actions: [
-            ...(canLinkRecords ? [{ key: 'link-record', type: 'link', label: 'Link record' }] : []),
-            ...(canLinkRecords ? [{ key: 'add-record', type: 'plus', label: 'Add record' }] : []),
-            ...(!isExpandedMode ? [{ key: 'expand-related', type: 'expand', label: 'Expand' }] : [])
+            ...(canLinkRecords ? [{ key: 'link-record', type: 'link', label: L.linkRecord }] : []),
+            ...(canLinkRecords ? [{ key: 'add-record', type: 'plus', label: L.addRecord }] : []),
+            ...(!isExpandedMode ? [{ key: 'expand-related', type: 'expand', label: L.expand }] : [])
           ]
         }
       };

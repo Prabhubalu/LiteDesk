@@ -13,18 +13,14 @@
           <span
             v-if="relationship.required"
             class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-          >
-            Required
-          </span>
+          >{{ t('settings.coreModDetailRequired') }}</span>
         </div>
         <button
           v-if="canLink"
           @click="openLinkPicker"
           class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
         >
-          <PlusIcon class="h-4 w-4 mr-1" />
-          Link Existing
-        </button>
+          <PlusIcon class="h-4 w-4 mr-1" />{{ t('records.relatedRecordsTabLinkExisting') }}</button>
       </div>
 
       <!-- Content -->
@@ -63,16 +59,12 @@
               <button
                 @click="viewRecord(record)"
                 class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                View
-              </button>
+              >{{ t('common.viewRecord') }}</button>
               <button
                 v-if="canUnlink"
                 @click="handleUnlinkClick(record)"
                 class="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                Unlink
-              </button>
+              >{{ t('records.relatedUnlink') }}</button>
             </div>
           </li>
         </ul>
@@ -103,6 +95,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref } from 'vue';
 import { PlusIcon } from '@heroicons/vue/24/outline';
 import { useTabs } from '@/composables/useTabs';
@@ -115,6 +108,8 @@ const props = defineProps({
   canUnlink: { type: Boolean, default: false },
   sourceRecord: { type: Object, required: true }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['link', 'unlink', 'refresh']);
 

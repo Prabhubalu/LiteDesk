@@ -25,8 +25,8 @@
           :aria-pressed="showAppointmentsScope"
         >
           <CalendarDaysIcon class="h-4 w-4 shrink-0" />
-          <span class="hidden sm:inline">Appointments only</span>
-          <span class="sm:hidden">Appts</span>
+          <span class="hidden sm:inline">{{ t('events.eventsAppointmentsOnly') }}</span>
+          <span class="sm:hidden">{{ t('events.eventsAppts') }}</span>
         </button>
       </template>
 
@@ -45,22 +45,18 @@
               class="relative z-10 flex-1 flex items-center justify-center gap-2 pl-3 pr-3 py-0 rounded-lg text-sm font-semibold transition-colors duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:ring-offset-gray-800 overflow-visible"
               :class="currentView === 'calendar' ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-600/50'"
             >
-              <CalendarIcon class="w-5 h-5 shrink-0" />
-              Calendar
-            </button>
+              <CalendarIcon class="w-5 h-5 shrink-0" />{{ t('events.eventsCalendar') }}</button>
             <button
               type="button"
               @click="switchView('list')"
               class="relative z-10 flex-1 flex items-center justify-center gap-2 pl-3 pr-3 py-0 rounded-lg text-sm font-semibold transition-colors duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:ring-offset-gray-800 overflow-visible"
               :class="currentView === 'list' ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-600/50'"
             >
-              <ListBulletIcon class="w-5 h-5 shrink-0" />
-              List
-            </button>
+              <ListBulletIcon class="w-5 h-5 shrink-0" />{{ t('forms.rbLayoutList') }}</button>
           </div>
           <ModuleActions
             module="events"
-            create-label="New Event"
+            create-:label="t('events.eventsNewEvent')"
             @create="openEventModal"
             @import="showImportModal = true"
             @export="exportEvents"
@@ -143,9 +139,7 @@
           rel="noopener noreferrer"
           class="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
           @click.stop
-        >
-          Join
-        </a>
+        >{{ t('appointments.join') }}</a>
         <span v-else class="text-sm text-gray-500 dark:text-gray-400">—</span>
       </template>
 
@@ -165,7 +159,7 @@
             {{ getUserDisplayName(row.eventOwnerId) }}
           </span>
         </div>
-        <span v-else class="text-sm text-gray-500 dark:text-gray-400">Unassigned</span>
+        <span v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('records.editableUnassigned') }}</span>
       </template>
     </ModuleList>
 
@@ -178,7 +172,7 @@
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div class="p-6">
           <div v-if="calendarLoading" class="flex items-center justify-center h-64">
-            <div class="text-gray-500 dark:text-gray-400">Loading calendar...</div>
+            <div class="text-gray-500 dark:text-gray-400">{{ t('events.eventsLoadingCalendar') }}</div>
           </div>
           <FullCalendar 
             v-else
@@ -209,6 +203,7 @@
 <script setup>
 import { ref, computed, onMounted, onActivated, onUnmounted, watch, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import FullCalendar from '@fullcalendar/vue3';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -229,6 +224,8 @@ import { getModuleListConfig } from '@/platform/modules/moduleListRegistry';
 import { CalendarIcon, CalendarDaysIcon, ListBulletIcon } from '@heroicons/vue/24/outline';
 import { appointmentSourceLabel, appointmentTypeLabel } from '@/utils/appointmentFormatters';
 
+import { APP_NAME_KEYS } from '@/utils/navigationLabels';
+
 const router = useRouter();
 const route = useRoute();
 const calendarRef = ref(null);
@@ -237,6 +234,7 @@ const moduleListRef = ref(null);
 // Initialize tabs composable
 const { openTab } = useTabs();
 const authStore = useAuthStore();
+const { t, te } = useI18n();
 
 // View state - initialize from localStorage immediately for CSS to work
 const viewStorageKey = 'arivu-events-view';
@@ -503,14 +501,9 @@ const checkDarkMode = () => {
 // Convert events to FullCalendar format
 const convertEventsToCalendarFormat = (events) => {
   const formatAppContext = (appContext) => {
-    const appContextMap = {
-      'SALES': 'Sales',
-      'PORTAL': 'Portal',
-      'AUDIT': 'Audit',
-      'LMS': 'LMS',
-      'CONTROL_PLANE': 'Control Plane'
-    };
-    return appContextMap[appContext] || appContext || '';
+    const navKey = APP_NAME_KEYS[appContext];
+    if (navKey && te(navKey)) return t(navKey);
+    return appContext || '';
   };
 
   return events.map(event => {
@@ -550,11 +543,11 @@ const calendarOptions = computed(() => {
       right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
     },
     buttonText: {
-      today: 'Today',
-      month: 'Month',
-      week: 'Week',
-      day: 'Day',
-      list: 'List'
+      today: t('events.eventsCalendarToday'),
+      month: t('events.eventsCalendarMonth'),
+      week: t('events.eventsCalendarWeek'),
+      day: t('events.eventsCalendarDay'),
+      list: t('events.eventsCalendarList'),
     },
     height: 'auto',
     aspectRatio: 1.8,
@@ -585,7 +578,7 @@ const handleEventClick = (info) => {
   const eventId = info.event.extendedProps.eventId || info.event.id;
   if (eventId) {
     openTab(`/events/${eventId}`, {
-      title: info.event.title || 'Event Detail',
+      title: info.event.title || t('events.eventsTabEventDetail'),
       icon: '📅',
       insertAdjacent: true
     });
@@ -657,7 +650,7 @@ const handleEventResize = async (info) => {
 // List view handlers
 const handleRowClick = (row) => {
   openTab(`/events/${row._id || row.eventId}`, {
-    title: row.eventName || 'Event Detail',
+    title: row.eventName || t('events.eventsTabEventDetail'),
     background: false,
     insertAdjacent: true
   });
@@ -679,7 +672,7 @@ const handleBulkAction = async (action, rows) => {
     }
   } catch (error) {
     console.error('Error performing bulk action:', error);
-    alert('Error performing bulk action. Please try again.');
+    alert(t('common.eventsToastErrorPerformingBulkActionPlease'));
   }
 };
 
@@ -709,7 +702,7 @@ const exportEvents = async () => {
     window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Error exporting events:', error);
-    alert('Error exporting events. Please try again.');
+    alert(t('common.eventsToastErrorExportingEventsPleaseTry'));
   }
 };
 

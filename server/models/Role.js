@@ -195,6 +195,30 @@ const roleSchema = new mongoose.Schema({
             edit: { type: Boolean, default: false },
             manageRoles: { type: Boolean, default: false },
             manageBilling: { type: Boolean, default: false }
+        },
+
+        performance: {
+            targets: {
+                view: { type: Boolean, default: false },
+                create: { type: Boolean, default: false },
+                edit: { type: Boolean, default: false },
+                activate: { type: Boolean, default: false },
+                manageTypes: { type: Boolean, default: false },
+                manageOrgSettings: { type: Boolean, default: false }
+            }
+        },
+
+        // Helpdesk Cases (when Helpdesk app is enabled)
+        cases: {
+            create: { type: Boolean, default: false },
+            read: { type: Boolean, default: false },
+            update: { type: Boolean, default: false },
+            delete: { type: Boolean, default: false },
+            scope: {
+                type: String,
+                enum: ['all', 'team', 'own', 'none'],
+                default: 'own'
+            }
         }
     },
     
@@ -317,7 +341,17 @@ roleSchema.statics.createDefaultRoles = async function(organizationId) {
                 items: { create: true, read: true, update: true, delete: true, export: true, import: true, scope: 'all' },
                 reports: { create: true, read: true, update: true, delete: true, export: true },
                 users: { create: true, read: true, update: true, delete: true, manageRoles: true },
-                settings: { view: true, edit: true, manageRoles: true, manageBilling: true }
+                settings: { view: true, edit: true, manageRoles: true, manageBilling: true },
+                performance: {
+                    targets: {
+                        view: true,
+                        create: true,
+                        edit: true,
+                        activate: true,
+                        manageTypes: true,
+                        manageOrgSettings: true
+                    }
+                }
             },
             canViewAllData: true,
             canManageTeam: true,
@@ -341,7 +375,17 @@ roleSchema.statics.createDefaultRoles = async function(organizationId) {
                 items: { create: true, read: true, update: true, delete: true, export: true, import: true, scope: 'all' },
                 reports: { create: true, read: true, update: true, delete: false, export: true },
                 users: { create: true, read: true, update: true, delete: false, manageRoles: false },
-                settings: { view: true, edit: true, manageRoles: false, manageBilling: false }
+                settings: { view: true, edit: true, manageRoles: false, manageBilling: false },
+                performance: {
+                    targets: {
+                        view: true,
+                        create: true,
+                        edit: true,
+                        activate: true,
+                        manageTypes: true,
+                        manageOrgSettings: false
+                    }
+                }
             },
             canViewAllData: true,
             canManageTeam: true,
@@ -365,7 +409,17 @@ roleSchema.statics.createDefaultRoles = async function(organizationId) {
                 items: { create: true, read: true, update: true, delete: false, export: true, import: true, scope: 'team' },
                 reports: { create: false, read: true, update: false, delete: false, export: true },
                 users: { create: false, read: true, update: false, delete: false, manageRoles: false },
-                settings: { view: false, edit: false, manageRoles: false, manageBilling: false }
+                settings: { view: false, edit: false, manageRoles: false, manageBilling: false },
+                performance: {
+                    targets: {
+                        view: true,
+                        create: true,
+                        edit: true,
+                        activate: true,
+                        manageTypes: false,
+                        manageOrgSettings: false
+                    }
+                }
             },
             canViewAllData: false,
             canManageTeam: true,
@@ -389,7 +443,17 @@ roleSchema.statics.createDefaultRoles = async function(organizationId) {
                 items: { create: true, read: true, update: true, delete: false, export: false, import: false, scope: 'own' },
                 reports: { create: false, read: true, update: false, delete: false, export: false },
                 users: { create: false, read: false, update: false, delete: false, manageRoles: false },
-                settings: { view: false, edit: false, manageRoles: false, manageBilling: false }
+                settings: { view: false, edit: false, manageRoles: false, manageBilling: false },
+                performance: {
+                    targets: {
+                        view: true,
+                        create: false,
+                        edit: false,
+                        activate: false,
+                        manageTypes: false,
+                        manageOrgSettings: false
+                    }
+                }
             },
             canViewAllData: false,
             canManageTeam: false,

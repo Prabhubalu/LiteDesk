@@ -2,9 +2,9 @@
   <div class="flex-1 flex flex-col min-h-0 p-6">
     <!-- Header -->
     <div class="mb-6">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Preview & Save</h3>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('forms.previewSaveHeading') }}</h3>
       <p class="text-sm text-gray-600 dark:text-gray-400">
-        Review your form definition and confirm it's ready to be used. This step does not publish the form.
+        {{ t('forms.previewSaveIntro') }}
       </p>
     </div>
 
@@ -21,7 +21,7 @@
               ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400' 
               : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'"
           >
-            Execution
+            {{ t('forms.previewTabExecution') }}
           </button>
           <button
             @click="activeTab = 'outcome'"
@@ -30,7 +30,7 @@
               ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400' 
               : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'"
           >
-            Outcome
+            {{ t('forms.previewTabOutcome') }}
           </button>
         </div>
 
@@ -41,10 +41,10 @@
             <div class="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 overflow-hidden">
               <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
                 <h4 class="text-base font-semibold text-gray-900 dark:text-white">
-                  Execution Preview
+                  {{ t('forms.previewExecutionTitle') }}
                 </h4>
                 <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                  This is how the form will appear when executed. Preview is read-only.
+                  {{ t('forms.previewExecutionIntro') }}
                 </p>
               </div>
               <div class="p-6">
@@ -63,16 +63,16 @@
             <div class="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 overflow-hidden">
               <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
                 <h4 class="text-base font-semibold text-gray-900 dark:text-white">
-                  Outcome & Report Preview
+                  {{ t('forms.previewOutcomeTitle') }}
                 </h4>
                 <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                  Review audit result rules, reporting metrics, and report template configuration.
+                  {{ t('forms.previewOutcomeIntro') }}
                 </p>
               </div>
               <div class="p-6 space-y-6">
                 <!-- Audit Result Rules (Audit forms only) -->
                 <div v-if="isAuditForm" class="space-y-3">
-                  <h5 class="text-sm font-semibold text-gray-900 dark:text-white">Audit Result Rules</h5>
+                  <h5 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('forms.previewAuditResultRules') }}</h5>
                   <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
                     <div class="flex items-start gap-3">
                       <div class="flex-1">
@@ -89,7 +89,7 @@
 
                 <!-- Reporting Metrics -->
                 <div v-if="isAuditForm" class="space-y-3">
-                  <h5 class="text-sm font-semibold text-gray-900 dark:text-white">Reporting Metrics</h5>
+                  <h5 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('forms.previewReportingMetrics') }}</h5>
                   <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 border border-gray-200 dark:border-gray-600 space-y-2">
                     <div
                       v-for="metric in enabledMetrics"
@@ -102,18 +102,18 @@
                       <span>{{ metric.label }}</span>
                     </div>
                     <div v-if="enabledMetrics.length === 0" class="text-sm text-gray-500 dark:text-gray-400 italic">
-                      No reporting metrics enabled
+                      {{ t('forms.previewNoMetricsEnabled') }}
                     </div>
                   </div>
                 </div>
 
                 <!-- Report Template Preview -->
                 <div class="space-y-3">
-                  <h5 class="text-sm font-semibold text-gray-900 dark:text-white">Report Template</h5>
+                  <h5 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('forms.previewReportTemplate') }}</h5>
                   <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
                     <div class="mb-3">
                       <span class="text-sm font-medium text-gray-900 dark:text-white">
-                        Active Template: {{ activeTemplateName }}
+                        {{ t('forms.previewActiveTemplate', { name: activeTemplateName }) }}
                       </span>
                     </div>
                     <div class="space-y-3 mt-4">
@@ -125,7 +125,7 @@
                         <ReportBlockPreview :block="block" />
                       </div>
                       <div v-if="reportBlocks.length === 0" class="text-sm text-gray-500 dark:text-gray-400 italic text-center py-4">
-                        No blocks in template (default template will be used)
+                        {{ t('forms.previewNoBlocksInTemplate') }}
                       </div>
                     </div>
                   </div>
@@ -141,10 +141,10 @@
         <div class="sticky top-6 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 overflow-hidden">
           <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
             <h4 class="text-base font-semibold text-gray-900 dark:text-white">
-              Final Readiness Check
+              {{ t('forms.previewReadinessTitle') }}
             </h4>
             <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
-              Confirm all required components are configured.
+              {{ t('forms.previewReadinessIntro') }}
             </p>
           </div>
           <div class="p-6 max-h-[calc(100vh-var(--tabbar-offset)-300px)] overflow-y-auto">
@@ -194,7 +194,7 @@
             <!-- Validation Messages -->
             <div v-if="validationErrors.length > 0" class="mt-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
               <h5 class="text-sm font-semibold text-red-800 dark:text-red-300 mb-2">
-                Please fix the following issues before saving:
+                {{ t('forms.previewFixIssuesHeading') }}
               </h5>
               <ul class="list-disc list-inside space-y-1 text-sm text-red-700 dark:text-red-400">
                 <li v-for="error in validationErrors" :key="error">{{ error }}</li>
@@ -208,11 +208,11 @@
                   <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                 </svg>
                 <span class="text-sm font-medium text-green-800 dark:text-green-300">
-                  Form is ready to be saved.
+                  {{ t('forms.previewFormReadySaved') }}
                 </span>
               </div>
               <p class="text-xs text-green-700 dark:text-green-400 mt-2">
-                This form is saved but not live yet.
+                {{ t('forms.previewFormSavedNotLiveYet') }}
               </p>
             </div>
           </div>
@@ -224,8 +224,11 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import FormPreview from './FormPreview.vue';
 import ReportBlockPreview from './report-blocks/ReportBlockPreview.vue';
+
+const { t } = useI18n();
 
 const props = defineProps({
   form: {
@@ -249,16 +252,16 @@ const auditResultRule = computed(() => {
 
 const auditResultRuleLabel = computed(() => {
   const rules = {
-    'any_section_fails': 'Audit fails if any section fails',
-    'overall_score_only': 'Audit result based only on overall score'
+    any_section_fails: t('forms.previewAuditFailAnySection'),
+    overall_score_only: t('forms.previewAuditOverallScoreOnly')
   };
   return rules[auditResultRule.value] || auditResultRule.value;
 });
 
 const auditResultRuleDescription = computed(() => {
   const descriptions = {
-    'any_section_fails': 'The audit fails if any section does not meet its pass threshold.',
-    'overall_score_only': 'The audit result is determined solely by the overall compliance percentage, regardless of individual section results.'
+    any_section_fails: t('forms.previewAuditFailAnySectionDesc'),
+    overall_score_only: t('forms.previewAuditOverallScoreOnlyDesc')
   };
   return descriptions[auditResultRule.value] || '';
 });
@@ -275,12 +278,12 @@ const reportingMetrics = computed(() => {
 
 const enabledMetrics = computed(() => {
   const metrics = [
-    { key: 'overallCompliance', label: 'Overall Compliance %' },
-    { key: 'sectionWiseCompliance', label: 'Section-wise Compliance' },
-    { key: 'evidenceCompletion', label: 'Evidence Completion %' },
-    { key: 'averageRating', label: 'Average Rating' }
+    { key: 'overallCompliance', label: t('forms.previewMetricOverallCompliance') },
+    { key: 'sectionWiseCompliance', label: t('forms.previewMetricSectionWise') },
+    { key: 'evidenceCompletion', label: t('forms.previewMetricEvidenceCompletion') },
+    { key: 'averageRating', label: t('forms.previewMetricAverageRating') }
   ];
-  return metrics.filter(m => reportingMetrics.value[m.key]);
+  return metrics.filter((m) => reportingMetrics.value[m.key]);
 });
 
 // Report Template
@@ -289,7 +292,7 @@ const defaultTemplateBlocks = [
   {
     id: 'default_heading',
     type: 'heading',
-    content: 'Audit Report',
+    content: t('forms.previewDefaultReportHeading'),
     level: 1
   },
   {
@@ -318,9 +321,9 @@ const activeTemplate = computed(() => {
 
 const activeTemplateName = computed(() => {
   if (activeTemplate.value) {
-    return activeTemplate.value.name || 'Default Template';
+    return activeTemplate.value.name || t('forms.previewDefaultTemplateName');
   }
-  return 'Default Template';
+  return t('forms.previewDefaultTemplateName');
 });
 
 const reportBlocks = computed(() => {
@@ -356,13 +359,13 @@ const readinessChecklist = computed(() => {
   
   checklist.push({
     key: 'sections',
-    label: 'Sections & Questions are defined',
+    label: t('forms.previewChecklistSections'),
     status: hasContent ? 'complete' : 'incomplete',
-    message: hasContent 
-      ? (isAuditForm.value 
-          ? `${visibleSections.length} section(s) configured` 
-          : 'Questions configured')
-      : 'At least one section with questions is required'
+    message: hasContent
+      ? (isAuditForm.value
+          ? t('forms.previewChecklistSectionsOkAudit', { count: visibleSections.length })
+          : t('forms.previewChecklistSectionsOkSurvey'))
+      : t('forms.previewChecklistSectionsMissing')
   });
   
   // Scoring (Audit only)
@@ -370,9 +373,9 @@ const readinessChecklist = computed(() => {
     const hasScoring = checkScoringConfiguration();
     checklist.push({
       key: 'scoring',
-      label: 'Scoring rules are configured',
+      label: t('forms.previewChecklistScoring'),
       status: hasScoring ? 'complete' : 'incomplete',
-      message: hasScoring ? 'All scorable questions have pass conditions and weights' : 'Scorable questions must have pass conditions and weights ≥ 1'
+      message: hasScoring ? t('forms.previewChecklistScoringOk') : t('forms.previewChecklistScoringMissing')
     });
   }
   
@@ -381,21 +384,24 @@ const readinessChecklist = computed(() => {
     const hasOutcomeRule = !!props.form?.outcomesAndRules?.auditResultRule;
     checklist.push({
       key: 'outcomeRule',
-      label: 'Outcome rule is selected',
+      label: t('forms.previewChecklistOutcome'),
       status: hasOutcomeRule ? 'complete' : 'incomplete',
-      message: hasOutcomeRule ? auditResultRuleLabel.value : 'An audit result rule must be selected'
+      message: hasOutcomeRule ? auditResultRuleLabel.value : t('forms.previewChecklistOutcomeMissing')
     });
   }
   
   // Response Template
   // Always consider valid - default template will be used if none is explicitly configured
   const hasTemplate = activeTemplate.value !== null;
-  const templateName = hasTemplate ? activeTemplateName.value : 'Default Template';
+  const templateName = hasTemplate ? activeTemplateName.value : t('forms.previewDefaultTemplateName');
   checklist.push({
     key: 'template',
-    label: 'Response template is selected',
-    status: 'complete', // Always complete - default template is always available
-    message: `Using template: ${templateName}${!hasTemplate ? ' (default)' : ''}`
+    label: t('forms.previewChecklistTemplate'),
+    status: 'complete',
+    message: t('forms.previewChecklistUsingTemplate', {
+      name: templateName,
+      suffix: !hasTemplate ? t('forms.previewChecklistTemplateDefaultSuffix') : ''
+    })
   });
   
   return checklist;

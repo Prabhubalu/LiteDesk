@@ -161,6 +161,73 @@ const routes = [
     redirect: () => ({ path: '/settings', query: { tab: 'instances' } }),
     meta: { requiresAuth: true, requiresMasterOrganization: true, hideShell: true }
   },
+  // Settings → Automation (org admin tooling)
+  {
+    path: '/settings/automation/automation-rules',
+    name: 'settings-automation-rules',
+    component: () => import('@/views/admin/AutomationRules.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/settings/automation/processes',
+    name: 'settings-automation-processes',
+    component: () => import('@/views/admin/Processes.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/settings/automation/processes/new',
+    name: 'process-designer-new',
+    component: () => import('@/views/admin/ProcessSetupView.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true, hideShell: false }
+  },
+  {
+    path: '/settings/automation/processes/:id/design',
+    name: 'process-designer',
+    component: () => import('@/views/admin/ProcessFlowDesigner.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true, hideShell: false }
+  },
+  {
+    path: '/settings/automation/flows',
+    name: 'settings-automation-flows',
+    component: () => import('@/views/admin/BusinessFlows.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/settings/automation/flows/create',
+    name: 'settings-automation-flows-create',
+    component: () => import('@/views/admin/BusinessFlowForm.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/settings/automation/flows/:id',
+    name: 'settings-automation-flows-detail',
+    component: () => import('@/views/admin/BusinessFlowDetail.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/settings/automation/flows/:id/health',
+    name: 'settings-automation-flows-health',
+    component: () => import('@/views/admin/BusinessFlowHealth.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/settings/automation/flows/:id/edit',
+    name: 'settings-automation-flows-edit',
+    component: () => import('@/views/admin/BusinessFlowForm.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/targets/new',
+    name: 'target-create',
+    component: () => import('@/views/targets/TargetCreationWizard.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/targets/:id',
+    name: 'target-detail',
+    component: () => import('@/views/targets/TargetDetailView.vue'),
+    meta: { requiresAuth: true }
+  },
   {
     path: '/demo-requests',
     name: 'demo-requests',
@@ -213,66 +280,31 @@ const routes = [
   },
   {
     path: '/control/automation-rules',
-    name: 'control-automation-rules',
-    component: () => import('@/views/admin/AutomationRules.vue'),
-    meta: { 
-      requiresAuth: true, 
-      requiresAdmin: true 
-    }
+    redirect: '/settings/automation/automation-rules',
   },
   {
     path: '/control/processes',
-    name: 'control-processes',
-    component: () => import('@/views/admin/Processes.vue'),
-    meta: { 
-      requiresAuth: true, 
-      requiresAdmin: true 
-    }
-  },
-  {
-    path: '/control/flows',
-    name: 'control-flows',
-    component: () => import('@/views/admin/BusinessFlows.vue'),
-    meta: { 
-      requiresAuth: true, 
-      requiresAdmin: true 
-    }
+    redirect: '/settings/automation/processes',
   },
   {
     path: '/control/flows/create',
-    name: 'control-flows-create',
-    component: () => import('@/views/admin/BusinessFlowForm.vue'),
-    meta: { 
-      requiresAuth: true, 
-      requiresAdmin: true 
-    }
-  },
-  {
-    path: '/control/flows/:id',
-    name: 'control-flows-detail',
-    component: () => import('@/views/admin/BusinessFlowDetail.vue'),
-    meta: { 
-      requiresAuth: true, 
-      requiresAdmin: true 
-    }
+    redirect: '/settings/automation/flows/create',
   },
   {
     path: '/control/flows/:id/health',
-    name: 'control-flows-health',
-    component: () => import('@/views/admin/BusinessFlowHealth.vue'),
-    meta: { 
-      requiresAuth: true, 
-      requiresAdmin: true 
-    }
+    redirect: to => ({ path: `/settings/automation/flows/${to.params.id}/health` }),
   },
   {
     path: '/control/flows/:id/edit',
-    name: 'control-flows-edit',
-    component: () => import('@/views/admin/BusinessFlowForm.vue'),
-    meta: { 
-      requiresAuth: true, 
-      requiresAdmin: true 
-    }
+    redirect: to => ({ path: `/settings/automation/flows/${to.params.id}/edit` }),
+  },
+  {
+    path: '/control/flows/:id',
+    redirect: to => ({ path: `/settings/automation/flows/${to.params.id}` }),
+  },
+  {
+    path: '/control/flows',
+    redirect: '/settings/automation/flows',
   },
   {
     path: '/people',
@@ -678,6 +710,21 @@ router.beforeEach(async (to, from, next) => {
     }
     next({ name: 'login' })
     return
+  }
+
+  // Settings / forms UIs need deferred locale namespaces (settings, forms, process catalogs).
+  if (
+    authStore.isAuthenticated
+    && (to.path.startsWith('/settings') || to.path.startsWith('/forms'))
+  ) {
+    try {
+      const { ensureFullLocaleLoaded, i18n } = await import('@/i18n')
+      const lang = i18n.global.locale.value
+      const full = await ensureFullLocaleLoaded(lang)
+      i18n.global.setLocaleMessage(lang, full)
+    } catch (err) {
+      console.warn('[i18n] Failed to preload full locale for route', to.path, err)
+    }
   }
 
   // Settings hub and nested /settings/* routes require at least one entitled settings section

@@ -234,20 +234,21 @@
             type="submit"
             class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-all"
           >
-            Submit Form
+            {{ t('forms.previewSubmitForm') }}
           </button>
         </div>
       </form>
     </div>
 
     <div v-else class="text-center py-12 text-gray-600 dark:text-gray-400">
-      No form data available for preview
+      {{ t('forms.previewNoData') }}
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, watch, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import TextQuestion from './question-types/TextQuestion.vue';
 import TextareaQuestion from './question-types/TextareaQuestion.vue';
 import DateQuestion from './question-types/DateQuestion.vue';
@@ -256,6 +257,8 @@ import RatingQuestion from './question-types/RatingQuestion.vue';
 import YesNoQuestion from './question-types/YesNoQuestion.vue';
 import FileQuestion from './question-types/FileQuestion.vue';
 import SignatureQuestion from './question-types/SignatureQuestion.vue';
+
+const { t } = useI18n();
 
 const props = defineProps({
   form: {
@@ -410,7 +413,7 @@ const handleSubmit = () => {
   }
   
   if (!validateEvidence()) {
-    alert('Please add the required evidence to continue');
+    alert(t('forms.evidenceAddRequiredHint'));
     return;
   }
   

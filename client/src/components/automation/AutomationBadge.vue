@@ -28,15 +28,16 @@
 
 <script setup>
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 
-const props = defineProps({
+const { t } = useI18n();
+
+defineProps({
   hasAutomation: {
     type: Boolean,
     default: false
   }
 });
 
-const tooltipText = computed(() => {
-  return 'This record is governed by automation (approvals, notifications).';
-});
+const tooltipText = computed(() => t('process.badgeTooltip'));
 </script>

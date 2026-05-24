@@ -1,0 +1,702 @@
+{
+  "assignRulesBackTitle": {
+    "message": "Back to Automation",
+    "description": "Back button title"
+  },
+  "assignRulesTitle": {
+    "message": "Assignment Rules",
+    "description": "Page title"
+  },
+  "assignRulesSubtitle": {
+    "message": "Assignment rules resolve ownership: group routing first, then user distribution. Rules run in order; the first match wins. When automation assigns or reassigns someone, they get the same notification path as a manual assignment (system rules and user notification rules), including for delayed and scheduled runs once they apply.",
+    "description": "Page subtitle"
+  },
+  "assignRulesInfoTitle": {
+    "message": "Scoped by application and module",
+    "description": "Info callout title"
+  },
+  "assignRulesInfoBody1": {
+    "message": "Each combination stores its own ordered rule list. Simulation mode is safe for testing; turn it off only when execution is wired for that module.",
+    "description": "Info body 1"
+  },
+  "assignRulesLabelApplication": {
+    "message": "Application",
+    "description": "Scope label"
+  },
+  "assignRulesLabelModule": {
+    "message": "Module",
+    "description": "Scope label"
+  },
+  "assignRulesRefresh": {
+    "message": "Refresh",
+    "description": "Refresh button"
+  },
+  "assignRulesRuleSetTitle": {
+    "message": "Rule set",
+    "description": "Rule set section"
+  },
+  "assignRulesEnabledTitle": {
+    "message": "When off, this rule set is not used for live or scheduled assignment for this app and module.",
+    "description": "Enabled tooltip"
+  },
+  "assignRulesEnabled": {
+    "message": "Enabled",
+    "description": "Enabled checkbox"
+  },
+  "assignRulesSimulationTitle": {
+    "message": "Evaluates rules without changing owners. Delayed and scheduled jobs will skip with ruleset_simulation_only until you turn this off.",
+    "description": "Simulation tooltip"
+  },
+  "assignRulesSimulationOnly": {
+    "message": "Simulation only",
+    "description": "Simulation checkbox"
+  },
+  "assignRulesLiveWarning": {
+    "message": "Live assignment may run for this module when records are created or updated. Confirm execution is enabled server-side for this scope before disabling simulation.",
+    "description": "Live assignment warning"
+  },
+  "assignRulesWhenRulesChange": {
+    "message": "When rules change",
+    "description": "Apply strategy label"
+  },
+  "assignRulesStrategyNewOnly": {
+    "message": "Apply to new records only",
+    "description": "Apply strategy option"
+  },
+  "assignRulesStrategyManual": {
+    "message": "Allow manual re-evaluation of open records",
+    "description": "Apply strategy option"
+  },
+  "assignRulesStrategyFreeze": {
+    "message": "Freeze existing assignments",
+    "description": "Apply strategy option"
+  },
+  "assignRulesRulesTitle": {
+    "message": "Rules",
+    "description": "Rules section"
+  },
+  "assignRulesAddRule": {
+    "message": "Add rule",
+    "description": "Add rule button"
+  },
+  "assignRulesEmpty": {
+    "message": "No rules yet. Add a rule to define routing for this module.",
+    "description": "Empty rules"
+  },
+  "assignRulesEmptyHint": {
+    "message": "After you save live rules (simulation off), matching records can notify new owners the same way as manual assignment.",
+    "description": "Empty hint"
+  },
+  "assignRulesUntitled": {
+    "message": "Untitled rule",
+    "description": "Untitled rule fallback"
+  },
+  "assignRulesOff": {
+    "message": "Off",
+    "description": "Rule disabled badge"
+  },
+  "assignRulesLabelName": {
+    "message": "Name",
+    "description": "Rule name label"
+  },
+  "assignRulesLabelOrder": {
+    "message": "Order",
+    "description": "Rule order label"
+  },
+  "assignRulesTriggerTitle": {
+    "message": "Immediate runs when records are created or updated. Delayed waits then assigns. Scheduled runs on a calendar or cron.",
+    "description": "Trigger tooltip"
+  },
+  "assignRulesTrigger": {
+    "message": "Trigger",
+    "description": "Trigger label"
+  },
+  "assignRulesTriggerImmediate": {
+    "message": "Immediate",
+    "description": "Trigger type"
+  },
+  "assignRulesTriggerDelayed": {
+    "message": "Delayed",
+    "description": "Trigger type"
+  },
+  "assignRulesTriggerScheduled": {
+    "message": "Scheduled",
+    "description": "Trigger type"
+  },
+  "assignRulesDelayMinutes": {
+    "message": "Delay (minutes)",
+    "description": "Delay label"
+  },
+  "assignRulesDelayedRecheckTitle": {
+    "message": "When the delayed job runs, conditions must still match. If they do not, the job is skipped (rule_no_longer_matches) and no assignment occurs.",
+    "description": "Delayed recheck tooltip"
+  },
+  "assignRulesRecheckBeforeAssign": {
+    "message": "Re-check conditions before assign",
+    "description": "Recheck checkbox"
+  },
+  "assignRulesScheduleType": {
+    "message": "Schedule type",
+    "description": "Schedule type label"
+  },
+  "assignRulesScheduleOneTime": {
+    "message": "One-time",
+    "description": "Schedule type"
+  },
+  "assignRulesScheduleRecurring": {
+    "message": "Recurring",
+    "description": "Schedule type"
+  },
+  "assignRulesFrequency": {
+    "message": "Frequency",
+    "description": "Frequency label"
+  },
+  "assignRulesFreqDaily": {
+    "message": "Daily",
+    "description": "Frequency"
+  },
+  "assignRulesFreqWeekly": {
+    "message": "Weekly",
+    "description": "Frequency"
+  },
+  "assignRulesFreqCustom": {
+    "message": "Custom (cron)",
+    "description": "Frequency"
+  },
+  "assignRulesCron": {
+    "message": "Cron expression",
+    "description": "Cron label"
+  },
+  "assignRulesCronPh": {
+    "message": "0 10 * * *",
+    "description": "Cron placeholder"
+  },
+  "assignRulesScheduledRecheckTitle": {
+    "message": "When the schedule fires, conditions must still match. If they do not, the run is skipped without changing the owner.",
+    "description": "Scheduled recheck tooltip"
+  },
+  "assignRulesRecheckAtRun": {
+    "message": "Re-check conditions at run time",
+    "description": "Recheck at run"
+  },
+  "assignRulesConditions": {
+    "message": "Conditions",
+    "description": "Conditions label"
+  },
+  "assignRulesAddClause": {
+    "message": "Add clause",
+    "description": "Add clause"
+  },
+  "assignRulesConditionsHint": {
+    "message": "Empty list matches all records. Field list matches this module; choose Custom path for nested keys (for example customFields.myKey).",
+    "description": "Conditions hint"
+  },
+  "assignRulesMatch": {
+    "message": "Match",
+    "description": "Match combinator label"
+  },
+  "assignRulesMatchAll": {
+    "message": "all",
+    "description": "Combinator all"
+  },
+  "assignRulesMatchAny": {
+    "message": "any",
+    "description": "Combinator any"
+  },
+  "assignRulesField": {
+    "message": "Field",
+    "description": "Field label"
+  },
+  "assignRulesSelectField": {
+    "message": "Select field…",
+    "description": "Select field"
+  },
+  "assignRulesCustomPath": {
+    "message": "Custom path…",
+    "description": "Custom path option"
+  },
+  "assignRulesCustomPathPh": {
+    "message": "e.g. customFields.region",
+    "description": "Custom path placeholder"
+  },
+  "assignRulesOperator": {
+    "message": "Operator",
+    "description": "Operator label"
+  },
+  "assignRulesValue": {
+    "message": "Value",
+    "description": "Value label"
+  },
+  "assignRulesNoValue": {
+    "message": "No value (existence only)",
+    "description": "Exists operator"
+  },
+  "assignRulesSelectValue": {
+    "message": "Select value…",
+    "description": "Select value"
+  },
+  "assignRulesRemoveTitle": {
+    "message": "Remove",
+    "description": "Remove clause title"
+  },
+  "assignRulesPrimaryGroup": {
+    "message": "Primary group",
+    "description": "Primary group"
+  },
+  "assignRulesSelectGroup": {
+    "message": "Select group",
+    "description": "Select group"
+  },
+  "assignRulesDistribution": {
+    "message": "Distribution",
+    "description": "Distribution label"
+  },
+  "assignRulesDistQueue": {
+    "message": "Queue (claim)",
+    "description": "Distribution mode"
+  },
+  "assignRulesDistRoundRobin": {
+    "message": "Round robin",
+    "description": "Distribution mode"
+  },
+  "assignRulesDistWeighted": {
+    "message": "Weighted",
+    "description": "Distribution mode"
+  },
+  "assignRulesDistLoadBalanced": {
+    "message": "Load balanced",
+    "description": "Distribution mode"
+  },
+  "assignRulesDistAvailability": {
+    "message": "Availability-based",
+    "description": "Distribution mode"
+  },
+  "assignRulesAvailabilityHint": {
+    "message": "Only assigns users who are within business hours now; otherwise queues until the next open window.",
+    "description": "Availability hint"
+  },
+  "assignRulesClaimTimeout": {
+    "message": "Claim timeout (minutes, optional)",
+    "description": "Claim timeout"
+  },
+  "assignRulesFallbackGroups": {
+    "message": "Fallback groups",
+    "description": "Fallback groups"
+  },
+  "assignRulesEscalation": {
+    "message": "Escalation chain",
+    "description": "Escalation"
+  },
+  "assignRulesAction": {
+    "message": "Action",
+    "description": "Action label"
+  },
+  "assignRulesEscReassign": {
+    "message": "Reassign group",
+    "description": "Escalation action"
+  },
+  "assignRulesEscNotifyOwner": {
+    "message": "Notify owner",
+    "description": "Escalation action"
+  },
+  "assignRulesEscNotifyLeadership": {
+    "message": "Notify leadership",
+    "description": "Escalation action"
+  },
+  "assignRulesThreshold": {
+    "message": "Threshold %",
+    "description": "Threshold"
+  },
+  "assignRulesCooldown": {
+    "message": "Cooldown (minutes)",
+    "description": "Cooldown"
+  },
+  "assignRulesChainGroups": {
+    "message": "Chain groups",
+    "description": "Chain groups"
+  },
+  "assignRulesReassignment": {
+    "message": "Reassignment",
+    "description": "Reassignment section"
+  },
+  "assignRulesAllowReassign": {
+    "message": "Allow automatic reassignment when fields change",
+    "description": "Allow reassign"
+  },
+  "assignRulesOnRevert": {
+    "message": "On field revert",
+    "description": "On revert label"
+  },
+  "assignRulesRevertReapply": {
+    "message": "Reapply rules",
+    "description": "Revert mode"
+  },
+  "assignRulesRevertPrevious": {
+    "message": "Revert previous owner",
+    "description": "Revert mode"
+  },
+  "assignRulesRevertLock": {
+    "message": "Lock current owner",
+    "description": "Revert mode"
+  },
+  "assignRulesLockManual": {
+    "message": "Lock after manual override",
+    "description": "Lock manual"
+  },
+  "assignRulesRemoveRule": {
+    "message": "Remove rule",
+    "description": "Remove rule"
+  },
+  "assignRulesSimulationTitle2": {
+    "message": "Simulation",
+    "description": "Simulation section"
+  },
+  "assignRulesRunSimulation": {
+    "message": "Run simulation",
+    "description": "Run simulation"
+  },
+  "assignRulesRunning": {
+    "message": "Running…",
+    "description": "Running simulation"
+  },
+  "assignRulesSampleRecord": {
+    "message": "Sample record (JSON)",
+    "description": "Sample record"
+  },
+  "assignRulesContextJson": {
+    "message": "Context (optional JSON)",
+    "description": "Context JSON"
+  },
+  "assignRulesReset": {
+    "message": "Reset",
+    "description": "Reset button"
+  },
+  "assignRulesSaveChanges": {
+    "message": "Save changes",
+    "description": "Save button"
+  },
+  "assignRulesSaving": {
+    "message": "Saving…",
+    "description": "Saving"
+  },
+  "assignRulesLoadFailed": {
+    "message": "Failed to load assignment rules",
+    "description": "Load error"
+  },
+  "assignRulesSaveFailed": {
+    "message": "Save failed",
+    "description": "Save failed"
+  },
+  "assignRulesSaved": {
+    "message": "Assignment rules saved",
+    "description": "Save success toast"
+  },
+  "assignRulesPrimaryGroupRequired": {
+    "message": "Rule \"{name}\" needs a primary group.",
+    "description": "Validation"
+  },
+  "assignRulesRecordJsonInvalid": {
+    "message": "Record JSON is invalid",
+    "description": "Sim validation"
+  },
+  "assignRulesContextJsonInvalid": {
+    "message": "Context JSON is invalid",
+    "description": "Sim validation"
+  },
+  "assignRulesSimulationFailed": {
+    "message": "Simulation failed",
+    "description": "Sim failed"
+  },
+  "assignRulesValuePh": {
+    "message": "Value",
+    "description": "Value placeholder"
+  },
+  "assignRulesValueArrayPh": {
+    "message": "JSON array, e.g. [\"Low\",\"Medium\"]",
+    "description": "Array value placeholder"
+  },
+  "assignRulesAppHelpdesk": {
+    "message": "Helpdesk",
+    "description": "App option"
+  },
+  "assignRulesAppSales": {
+    "message": "Sales",
+    "description": "App option"
+  },
+  "assignRulesModCases": {
+    "message": "Cases",
+    "description": "Module label"
+  },
+  "assignRulesModPeople": {
+    "message": "People",
+    "description": "Module label"
+  },
+  "assignRulesModOrganizations": {
+    "message": "Organizations",
+    "description": "Module label"
+  },
+  "assignRulesModDeals": {
+    "message": "Deals",
+    "description": "Module label"
+  },
+  "assignRulesModTasks": {
+    "message": "Tasks",
+    "description": "Module label"
+  },
+  "assignRulesModEvents": {
+    "message": "Events",
+    "description": "Module label"
+  },
+  "assignRulesModItems": {
+    "message": "Items",
+    "description": "Module label"
+  },
+  "assignRulesModForms": {
+    "message": "Forms",
+    "description": "Module label"
+  },
+  "assignRulesOpEquals": {
+    "message": "equals",
+    "description": "Operator"
+  },
+  "assignRulesOpNotEquals": {
+    "message": "not equals",
+    "description": "Operator"
+  },
+  "assignRulesOpContains": {
+    "message": "contains",
+    "description": "Operator"
+  },
+  "assignRulesOpIn": {
+    "message": "in (array)",
+    "description": "Operator"
+  },
+  "assignRulesOpNotIn": {
+    "message": "not in (array)",
+    "description": "Operator"
+  },
+  "assignRulesOpExists": {
+    "message": "exists",
+    "description": "Operator"
+  },
+  "assignRulesOpGt": {
+    "message": "greater than",
+    "description": "Operator"
+  },
+  "assignRulesOpGte": {
+    "message": "≥",
+    "description": "Operator"
+  },
+  "assignRulesOpLt": {
+    "message": "less than",
+    "description": "Operator"
+  },
+  "assignRulesOpLte": {
+    "message": "≤",
+    "description": "Operator"
+  },
+  "assignRulesYes": {
+    "message": "Yes",
+    "description": "Boolean yes"
+  },
+  "assignRulesNo": {
+    "message": "No",
+    "description": "Boolean no"
+  },
+  "assignRulesCondFieldPriority": {
+    "message": "Priority",
+    "description": "Condition field: priority"
+  },
+  "assignRulesCondFieldStatus": {
+    "message": "Status",
+    "description": "Condition field: status"
+  },
+  "assignRulesCondFieldCaseType": {
+    "message": "Case type",
+    "description": "Condition field: caseType"
+  },
+  "assignRulesCondFieldChannel": {
+    "message": "Channel",
+    "description": "Condition field: channel"
+  },
+  "assignRulesCondFieldTitle": {
+    "message": "Title",
+    "description": "Condition field: title"
+  },
+  "assignRulesCondFieldCaseId": {
+    "message": "Case ID",
+    "description": "Condition field: caseId"
+  },
+  "assignRulesCondFieldContactId": {
+    "message": "Contact ID",
+    "description": "Condition field: contactId"
+  },
+  "assignRulesCondFieldOrganizationRefId": {
+    "message": "Organization ref ID",
+    "description": "Condition field: organizationRefId"
+  },
+  "assignRulesCondFieldCaseOwnerId": {
+    "message": "Case owner ID",
+    "description": "Condition field: caseOwnerId"
+  },
+  "assignRulesCondFieldSource": {
+    "message": "Record source",
+    "description": "Condition field: source"
+  },
+  "assignRulesCondFieldAssignedTo": {
+    "message": "Assigned to (user ID)",
+    "description": "Condition field: assignedTo"
+  },
+  "assignRulesCondFieldLeadOwner": {
+    "message": "Lead owner",
+    "description": "Condition field: lead_owner"
+  },
+  "assignRulesCondFieldOrganization": {
+    "message": "Organization (company ID)",
+    "description": "Condition field: organization"
+  },
+  "assignRulesCondFieldDerivedStatus": {
+    "message": "Derived status",
+    "description": "Condition field: derivedStatus"
+  },
+  "assignRulesCondFieldFirstName": {
+    "message": "First name",
+    "description": "Condition field: first_name"
+  },
+  "assignRulesCondFieldLastName": {
+    "message": "Last name",
+    "description": "Condition field: last_name"
+  },
+  "assignRulesCondFieldEmail": {
+    "message": "Email",
+    "description": "Condition field: email"
+  },
+  "assignRulesCondFieldType": {
+    "message": "Type / sales role",
+    "description": "Condition field: type"
+  },
+  "assignRulesCondFieldSalesType": {
+    "message": "Sales type (alias)",
+    "description": "Condition field: sales_type"
+  },
+  "assignRulesCondFieldLeadStatus": {
+    "message": "Lead status",
+    "description": "Condition field: lead_status"
+  },
+  "assignRulesCondFieldContactStatus": {
+    "message": "Contact status",
+    "description": "Condition field: contact_status"
+  },
+  "assignRulesCondFieldHelpdeskRole": {
+    "message": "Helpdesk role",
+    "description": "Condition field: helpdesk_role"
+  },
+  "assignRulesCondFieldRole": {
+    "message": "Contact role (decision maker, …)",
+    "description": "Condition field: role"
+  },
+  "assignRulesCondFieldPreferredContactMethod": {
+    "message": "Preferred contact method",
+    "description": "Condition field: preferred_contact_method"
+  },
+  "assignRulesCondFieldDoNotContact": {
+    "message": "Do not contact",
+    "description": "Condition field: do_not_contact"
+  },
+  "assignRulesCondFieldTags": {
+    "message": "Tags",
+    "description": "Condition field: tags"
+  },
+  "assignRulesCondFieldName": {
+    "message": "Name",
+    "description": "Condition field: name"
+  },
+  "assignRulesCondFieldTypes": {
+    "message": "Types",
+    "description": "Condition field: types"
+  },
+  "assignRulesCondFieldCustomerStatus": {
+    "message": "Customer status",
+    "description": "Condition field: customerStatus"
+  },
+  "assignRulesCondFieldPartnerStatus": {
+    "message": "Partner status",
+    "description": "Condition field: partnerStatus"
+  },
+  "assignRulesCondFieldVendorStatus": {
+    "message": "Vendor status",
+    "description": "Condition field: vendorStatus"
+  },
+  "assignRulesCondFieldTerritory": {
+    "message": "Territory",
+    "description": "Condition field: territory"
+  },
+  "assignRulesCondFieldIndustry": {
+    "message": "Industry",
+    "description": "Condition field: industry"
+  },
+  "assignRulesCondFieldAccountManager": {
+    "message": "Account manager",
+    "description": "Condition field: accountManager"
+  },
+  "assignRulesCondFieldOwnerId": {
+    "message": "Owner ID",
+    "description": "Condition field: ownerId"
+  },
+  "assignRulesCondFieldStage": {
+    "message": "Stage",
+    "description": "Condition field: stage"
+  },
+  "assignRulesCondFieldPipeline": {
+    "message": "Pipeline",
+    "description": "Condition field: pipeline"
+  },
+  "assignRulesCondFieldAmount": {
+    "message": "Amount",
+    "description": "Condition field: amount"
+  },
+  "assignRulesCondFieldProbability": {
+    "message": "Probability",
+    "description": "Condition field: probability"
+  },
+  "assignRulesCondFieldAccountId": {
+    "message": "Account ID",
+    "description": "Condition field: accountId"
+  },
+  "assignRulesCondFieldCurrency": {
+    "message": "Currency",
+    "description": "Condition field: currency"
+  },
+  "assignRulesCondFieldDueDate": {
+    "message": "Due date",
+    "description": "Condition field: dueDate"
+  },
+  "assignRulesCondFieldProjectId": {
+    "message": "Project ID",
+    "description": "Condition field: projectId"
+  },
+  "assignRulesCondFieldRelatedToType": {
+    "message": "Related record type",
+    "description": "Condition field: relatedTo.type"
+  },
+  "assignRulesInfoBody2Before": {
+    "message": "Delayed and scheduled rules are processed by the server assignment scheduler (typically every minute). If jobs never run, ask your administrator to enable ",
+    "description": "Info body 2 before env var"
+  },
+  "assignRulesInfoBody2After": {
+    "message": " in the deployment environment.",
+    "description": "Info body 2 after env var"
+  },
+  "assignRulesConditionsHintBefore": {
+    "message": "Empty list matches all records. Field list matches this module; choose Custom path for nested keys (for example ",
+    "description": "Conditions hint before example"
+  },
+  "assignRulesConditionsHintAfter": {
+    "message": ").",
+    "description": "Conditions hint after example"
+  },
+  "assignRulesDefaultRuleName": {
+    "message": "Rule {index}",
+    "description": "Default rule name with index"
+  }
+}

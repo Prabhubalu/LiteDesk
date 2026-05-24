@@ -3,12 +3,12 @@
     <!-- Header -->
     <div class="flex justify-between items-center mb-8">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Groups</h1>
-        <p class="text-lg text-gray-600 dark:text-gray-400 mt-2">Organize users into teams and departments</p>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ t('organizations.groupsGroups') }}</h1>
+        <p class="text-lg text-gray-600 dark:text-gray-400 mt-2">{{ t('organizations.groupsOrganizeUsersIntoTeamsAndDepartments') }}</p>
       </div>
       <ModuleActions 
         module="groups"
-        create-label="New Group"
+        create-:label="t('settings.groupsNewGroup')"
         :show-import="false"
         @create="openCreateModal"
         @export="exportGroups"
@@ -25,7 +25,7 @@
         </div>
         <div>
           <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.totalGroups || 0 }}</p>
-          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Groups</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('settings.groupsStatTotal') }}</p>
         </div>
       </div>
 
@@ -37,7 +37,7 @@
         </div>
         <div>
           <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.activeGroups || 0 }}</p>
-          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active Groups</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('settings.groupsStatActive') }}</p>
         </div>
       </div>
 
@@ -49,7 +49,7 @@
         </div>
         <div>
           <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.totalMembers || 0 }}</p>
-          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Members</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('settings.groupsStatMembers') }}</p>
         </div>
       </div>
 
@@ -61,7 +61,7 @@
         </div>
         <div>
           <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.avgMembersPerGroup || 0 }}</p>
-          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Avg Members/Group</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('settings.groupsStatAvg') }}</p>
         </div>
       </div>
     </div>
@@ -76,7 +76,7 @@
           <input 
             v-model="searchQuery" 
             type="text" 
-            placeholder="Search groups..."
+            :placeholder="t('settings.groupsSearchPh')"
             @input="debouncedSearch"
             class="w-full pl-9 pr-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
           />
@@ -85,17 +85,17 @@
 
       <div class="flex flex-wrap gap-3 flex-1">
         <select v-model="filters.type" @change="fetchGroups" class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer text-sm">
-          <option value="">All Types</option>
-          <option value="Team">Team</option>
-          <option value="Department">Department</option>
-          <option value="Project">Project</option>
-          <option value="Custom">Custom</option>
+          <option value="">{{ t('settings.groupsFilterAllTypes') }}</option>
+          <option value="Team">{{ t('settings.settingsBhScopeTeam') }}</option>
+          <option value="Department">{{ t('settings.groupsTypeDepartment') }}</option>
+          <option value="Project">{{ t('settings.groupsTypeProject') }}</option>
+          <option value="Custom">{{ t('settings.modFieldsBadgeCustomField') }}</option>
         </select>
 
         <select v-model="filters.isActive" @change="fetchGroups" class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer text-sm">
-          <option value="">All Status</option>
-          <option value="true">Active</option>
-          <option value="false">Inactive</option>
+          <option value="">{{ t('settings.groupsFilterAllStatus') }}</option>
+          <option value="true">{{ t('settings.settingsBhStatusActive') }}</option>
+          <option value="false">{{ t('settings.settingsBhStatusInactive') }}</option>
         </select>
 
         <button 
@@ -105,9 +105,7 @@
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-          Clear
-        </button>
+          </svg>{{ t('settings.modFieldsClear') }}</button>
       </div>
     </div>
 
@@ -127,7 +125,7 @@
       table-id="groups-table"
       :mass-actions="massActions"
       row-key="_id"
-      empty-title="No groups found"
+      empty-:title="t('organizations.groupsNoGroupsFound')"
       empty-message="Get started by creating your first group"
       @select="handleSelect"
       @bulk-action="handleBulkAction"
@@ -219,7 +217,7 @@
           </div>
           <span class="text-sm text-gray-700 dark:text-gray-300">{{ getUserDisplayName(row.lead) }}</span>
         </div>
-        <span v-else class="text-sm text-gray-500 dark:text-gray-400">No lead assigned</span>
+        <span v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.groupFormNoLeadAssigned') }}</span>
       </template>
 
       <!-- Custom Status Cell -->
@@ -245,6 +243,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, reactive, computed, onMounted, watch, onActivated } from 'vue';
 import { useRouter } from 'vue-router';
 import { useBulkActions } from '@/composables/useBulkActions';
@@ -442,7 +443,7 @@ const handleBulkAction = async (actionId, selectedRows) => {
     }
   } catch (error) {
     console.error('Error performing bulk action:', error);
-    alert('Error performing bulk action. Please try again.');
+    alert(t('common.groupsToastErrorPerformingBulkActionPlease'));
   }
 };
 
@@ -454,7 +455,7 @@ const handleDelete = async (group) => {
     fetchGroups();
   } catch (error) {
     console.error('Error deleting group:', error);
-    alert('Error deleting group. Please try again.');
+    alert(t('common.groupsToastErrorDeletingGroupPleaseTry'));
   }
 };
 

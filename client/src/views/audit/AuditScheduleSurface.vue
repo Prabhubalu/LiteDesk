@@ -29,12 +29,8 @@
     <div class="max-w-7xl mx-auto p-6 lg:p-8">
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          Schedule Audit
-        </h1>
-        <p class="text-lg text-gray-600 dark:text-gray-400">
-          Plan and configure an audit before execution begins.
-        </p>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ t('audit.auditScheduleSurfaceScheduleAudit') }}</h1>
+        <p class="text-lg text-gray-600 dark:text-gray-400">{{ t('audit.auditScheduleSurfacePlanAndConfigureAnAuditBefore') }}</p>
       </div>
 
       <!-- Step-Based Layout -->
@@ -56,7 +52,7 @@
         <div class="flex flex-col lg:flex-row">
           <!-- Step Indicator (Left Side - Vertical on desktop, Horizontal on mobile) -->
           <div class="lg:w-64 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 p-6">
-            <nav aria-label="Audit Scheduling Steps">
+            <nav :aria-label="t('audit.auditScheduleSurfaceAuditSchedulingSteps')">
               <!-- Mobile: Horizontal Step Indicator -->
               <div class="lg:hidden">
                 <div class="flex items-center justify-between mb-4">
@@ -200,9 +196,7 @@
                 <!-- Helper Text -->
                 <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                   <p class="text-sm text-blue-800 dark:text-blue-300">
-                    <strong>Audit type determines roles, geo rules, and form requirements.</strong>
-                    Choose the type that matches your audit needs.
-                  </p>
+                    <strong>{{ t('audit.auditScheduleSurfaceAuditTypeDeterminesRolesGeoRules') }}</strong>{{ t('audit.auditScheduleSurfaceChooseTheTypeThatMatchesYour') }}</p>
                 </div>
 
                 <!-- Audit Type Selection Cards -->
@@ -246,9 +240,7 @@
 
                     <!-- Consequences / Requirements -->
                     <div class="space-y-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                      <div class="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Requirements:
-                      </div>
+                      <div class="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('audit.auditScheduleSurfaceRequirements') }}</div>
                       <ul class="space-y-1.5 text-xs text-gray-600 dark:text-gray-400">
                         <li
                           v-for="requirement in getAuditTypeRequirements(auditType.key)"
@@ -281,10 +273,10 @@
                 <!-- Helper Text -->
                 <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                   <p class="text-sm text-blue-800 dark:text-blue-300">
-                    <strong>Target organizations determine the scope of the audit.</strong>
-                    <span v-if="isSingleOrgAudit"> Select exactly one organization to audit.</span>
-                    <span v-else-if="isBeatAudit"> Select multiple organizations (minimum 2) for the audit route.</span>
-                    <span v-if="isInternalAudit"> Internal audits target your organization only.</span>
+                    <strong>{{ t('audit.auditScheduleSurfaceTargetOrganizationsDetermineTheScopeOf') }}</strong>
+                    <span v-if="isSingleOrgAudit">{{ t('audit.auditScheduleSurfaceSelectExactlyOneOrganizationToAudit') }}</span>
+                    <span v-else-if="isBeatAudit">{{ t('audit.auditScheduleSurfaceSelectMultipleOrganizationsMinimum2For') }}</span>
+                    <span v-if="isInternalAudit">{{ t('audit.auditScheduleSurfaceInternalAuditsTargetYourOrganizationOnly') }}</span>
                   </p>
                 </div>
 
@@ -295,14 +287,10 @@
                       <p class="text-sm font-medium text-gray-900 dark:text-white">
                         {{ userOrganization?.name || 'Your Organization' }}
                       </p>
-                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        Internal audits are automatically scoped to your organization.
-                      </p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ t('audit.auditScheduleSurfaceInternalAuditsAreAutomaticallyScopedTo') }}</p>
                     </div>
                     <div class="flex items-center gap-2">
-                      <span class="px-2 py-1 text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 rounded">
-                        Locked
-                      </span>
+                      <span class="px-2 py-1 text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 rounded">{{ t('settings.modFieldsLocked') }}</span>
                     </div>
                   </div>
                 </div>
@@ -336,31 +324,21 @@
                       />
                     </svg>
                     <div class="flex-1">
-                      <p class="text-sm font-semibold text-amber-900 dark:text-amber-200">
-                        Organization address required
-                      </p>
-                      <p class="text-sm text-amber-800 dark:text-amber-300 mt-1">
-                        Audits require a physical location. Please add an address for this organization to continue.
-                      </p>
-                      <p v-if="missingAddressOrganizationNames.length > 0" class="text-xs text-amber-800 dark:text-amber-300 mt-2">
-                        Missing address:
-                        <span class="font-medium">{{ missingAddressOrganizationNames.join(', ') }}</span>
+                      <p class="text-sm font-semibold text-amber-900 dark:text-amber-200">{{ t('audit.auditScheduleSurfaceOrganizationAddressRequired') }}</p>
+                      <p class="text-sm text-amber-800 dark:text-amber-300 mt-1">{{ t('audit.auditScheduleSurfaceAuditsRequireAPhysicalLocationPlease') }}</p>
+                      <p v-if="missingAddressOrganizationNames.length > 0" class="text-xs text-amber-800 dark:text-amber-300 mt-2">{{ t('audit.auditScheduleSurfaceMissingAddress') }}<span class="font-medium">{{ missingAddressOrganizationNames.join(', ') }}</span>
                       </p>
                       <div class="mt-3 flex flex-wrap gap-3">
                         <button
                           type="button"
                           @click="openAddressEditorForNextMissing"
                           class="px-4 py-2 text-sm font-medium bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
-                        >
-                          Add address
-                        </button>
+                        >{{ t('audit.auditScheduleSurfaceAddAddress2') }}</button>
                         <button
                           type="button"
                           @click="cancelScheduling"
                           class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                        >
-                          Cancel scheduling
-                        </button>
+                        >{{ t('audit.auditScheduleSurfaceCancelScheduling') }}</button>
                       </div>
                     </div>
                   </div>
@@ -373,18 +351,15 @@
                 >
                   <div class="flex items-start justify-between gap-3">
                     <div>
-                      <p class="text-sm font-semibold text-gray-900 dark:text-white">
-                        Add address
-                      </p>
-                      <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                        Organization: <span class="font-medium">{{ getOrganizationName(addressEditorOrgId || '') }}</span>
+                      <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('audit.auditScheduleSurfaceAddAddress') }}</p>
+                      <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">{{ t('audit.auditScheduleSurfaceOrganization') }}<span class="font-medium">{{ getOrganizationName(addressEditorOrgId || '') }}</span>
                       </p>
                     </div>
                     <button
                       type="button"
                       @click="closeAddressEditor"
                       class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                      aria-label="Close address editor"
+                      :aria-label="t('audit.auditScheduleSurfaceCloseAddressEditor')"
                     >
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -393,13 +368,12 @@
                   </div>
 
                   <div class="space-y-2">
-                    <label class="block text-sm font-medium text-gray-900 dark:text-white">
-                      Address <span class="text-red-500">*</span>
+                    <label class="block text-sm font-medium text-gray-900 dark:text-white">{{ t('audit.auditScheduleSurfaceAddress') }}<span class="text-red-500">*</span>
                     </label>
                     <textarea
                       v-model="addressDraft"
                       rows="3"
-                      placeholder="Street, City, State, Country"
+                      :placeholder="t('audit.auditScheduleSurfaceStreetCityStateCountry')"
                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     ></textarea>
                     <p v-if="addressSaveError" class="text-xs text-red-600 dark:text-red-400">
@@ -412,9 +386,7 @@
                       type="button"
                       @click="closeAddressEditor"
                       class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                    >
-                      Cancel
-                    </button>
+                    >{{ t('performance.cancelWizard') }}</button>
                     <button
                       type="button"
                       @click="saveAddress"
@@ -435,15 +407,13 @@
                 <div v-if="!isInternalAudit" class="space-y-4">
                   <!-- Search Input -->
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Search Organizations
-                    </label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('audit.auditScheduleSurfaceSearchOrganizations') }}</label>
                     <div class="relative">
                       <input
                         v-model="orgSearchQuery"
                         @input="handleOrgSearch"
                         type="text"
-                        placeholder="Type to search organizations..."
+                        :placeholder="t('audit.auditScheduleSurfaceTypeToSearchOrganizations')"
                         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                       />
                       <svg
@@ -510,9 +480,7 @@
                             v-if="isSingleOrgAudit && !isOrganizationSelected(org._id)"
                             type="button"
                             class="px-3 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded"
-                          >
-                            Select
-                          </button>
+                          >{{ t('settings.modFieldsWidgetSelect') }}</button>
                         </div>
                       </li>
                     </ul>
@@ -529,9 +497,7 @@
                   <!-- Selected Organizations -->
                   <div v-if="selectedOrganizations.length > 0" class="space-y-2">
                     <div class="flex items-center justify-between">
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Selected Organizations
-                        <span class="ml-2 px-2 py-0.5 text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 rounded">
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('audit.auditScheduleSurfaceSelectedOrganizations') }}<span class="ml-2 px-2 py-0.5 text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 rounded">
                           {{ selectedOrganizations.length }}
                           <span v-if="isBeatAudit"> (minimum 2)</span>
                         </span>
@@ -553,9 +519,7 @@
                             <p class="text-sm font-medium text-gray-900 dark:text-white">
                               {{ getOrganizationName(orgId) }}
                             </p>
-                            <p v-if="!hasOrganizationAddress(orgId)" class="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
-                              Address required for audits
-                            </p>
+                            <p v-if="!hasOrganizationAddress(orgId)" class="text-xs text-amber-700 dark:text-amber-300 mt-0.5">{{ t('audit.auditScheduleSurfaceAddressRequiredForAudits') }}</p>
                           </div>
                         </div>
                         <button
@@ -590,9 +554,7 @@
                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                       />
                     </svg>
-                    <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                      Search for organizations to select
-                    </p>
+                    <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">{{ t('audit.auditScheduleSurfaceSearchForOrganizationsToSelect') }}</p>
                   </div>
                 </div>
               </div>
@@ -602,21 +564,18 @@
                 <!-- Helper Text -->
                 <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                   <p class="text-sm text-blue-800 dark:text-blue-300">
-                    <strong>Role assignments determine who conducts, reviews, and addresses audit findings.</strong>
-                    <span v-if="requiresReviewer"> Reviewer is required and cannot be the same as the auditor.</span>
-                    <span v-else-if="allowsSelfReview"> Self-review is allowed for internal audits.</span>
+                    <strong>{{ t('audit.auditScheduleSurfaceRoleAssignmentsDetermineWhoConductsReviews') }}</strong>
+                    <span v-if="requiresReviewer">{{ t('audit.auditScheduleSurfaceReviewerIsRequiredAndCannotBe') }}</span>
+                    <span v-else-if="allowsSelfReview">{{ t('audit.auditScheduleSurfaceSelfReviewIsAllowedForInternal') }}</span>
                   </p>
                 </div>
 
                 <!-- Auditor Section -->
                 <div class="space-y-3">
                   <div>
-                    <label class="block text-sm font-medium text-gray-900 dark:text-white mb-1">
-                      Auditor <span class="text-red-500">*</span>
+                    <label class="block text-sm font-medium text-gray-900 dark:text-white mb-1">{{ t('audit.auditScheduleSurfaceAuditor') }}<span class="text-red-500">*</span>
                     </label>
-                    <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">
-                      The user who will conduct the audit. Required for all audit types.
-                    </p>
+                    <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">{{ t('audit.auditScheduleSurfaceTheUserWhoWillConductThe') }}</p>
                   </div>
                   
                   <!-- Auditor Search Input -->
@@ -703,18 +662,12 @@
                 <!-- Reviewer Section (Conditional) -->
                 <div v-if="showReviewerSection" class="space-y-3">
                   <div>
-                    <label class="block text-sm font-medium text-gray-900 dark:text-white mb-1">
-                      Reviewer
-                      <span v-if="requiresReviewer" class="text-red-500">*</span>
+                    <label class="block text-sm font-medium text-gray-900 dark:text-white mb-1">{{ t('audit.auditScheduleSurfaceReviewer') }}<span v-if="requiresReviewer" class="text-red-500">*</span>
                       <span v-else class="text-gray-500 dark:text-gray-400">(Optional)</span>
                     </label>
                     <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">
-                      <span v-if="requiresReviewer">
-                        Independent reviewer who cannot be the same as the auditor. Required for external audits.
-                      </span>
-                      <span v-else>
-                        Optional reviewer for internal audits. Self-review is allowed.
-                      </span>
+                      <span v-if="requiresReviewer">{{ t('audit.auditScheduleSurfaceIndependentReviewerWhoCannotBeThe') }}</span>
+                      <span v-else>{{ t('audit.auditScheduleSurfaceOptionalReviewerForInternalAuditsSelf') }}</span>
                     </p>
                   </div>
 
@@ -802,12 +755,9 @@
                 <!-- Corrective Owner Section -->
                 <div class="space-y-3">
                   <div>
-                    <label class="block text-sm font-medium text-gray-900 dark:text-white mb-1">
-                      Corrective Owner <span class="text-red-500">*</span>
+                    <label class="block text-sm font-medium text-gray-900 dark:text-white mb-1">{{ t('audit.auditScheduleSurfaceCorrectiveOwner') }}<span class="text-red-500">*</span>
                     </label>
-                    <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">
-                      The user responsible for addressing audit findings and implementing corrective actions. Required for all audit types.
-                    </p>
+                    <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">{{ t('audit.auditScheduleSurfaceTheUserResponsibleForAddressingAudit') }}</p>
                   </div>
 
                   <!-- Corrective Owner Search Input -->
@@ -897,9 +847,7 @@
                 <!-- Helper Text -->
                 <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                   <p class="text-sm text-blue-800 dark:text-blue-300">
-                    <strong>Schedule the audit start and end times.</strong>
-                    Times are in your local timezone. The audit cannot be scheduled in the past.
-                  </p>
+                    <strong>{{ t('audit.auditScheduleSurfaceScheduleTheAuditStartAndEnd') }}</strong>{{ t('audit.auditScheduleSurfaceTimesAreInYourLocalTimezone') }}</p>
                 </div>
 
                 <!-- Date & Time Inputs -->
@@ -909,9 +857,7 @@
                     <label class="block text-sm font-medium text-gray-900 dark:text-white">
                       Start Date & Time <span class="text-red-500">*</span>
                     </label>
-                    <p class="text-xs text-gray-600 dark:text-gray-400">
-                      When the audit is scheduled to begin.
-                    </p>
+                    <p class="text-xs text-gray-600 dark:text-gray-400">{{ t('audit.auditScheduleSurfaceWhenTheAuditIsScheduledTo2') }}</p>
                     <input
                       v-model="startDateTimeLocal"
                       @input="handleStartDateTimeChange"
@@ -934,9 +880,7 @@
                     <label class="block text-sm font-medium text-gray-900 dark:text-white">
                       End Date & Time <span class="text-red-500">*</span>
                     </label>
-                    <p class="text-xs text-gray-600 dark:text-gray-400">
-                      When the audit is scheduled to end.
-                    </p>
+                    <p class="text-xs text-gray-600 dark:text-gray-400">{{ t('audit.auditScheduleSurfaceWhenTheAuditIsScheduledTo') }}</p>
                     <input
                       v-model="endDateTimeLocal"
                       @input="handleEndDateTimeChange"
@@ -988,26 +932,21 @@
                 <!-- Helper Text -->
                 <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                   <p class="text-sm text-blue-800 dark:text-blue-300">
-                    <strong>Link an audit form to this audit event.</strong>
-                    The form will be executed during the audit. Once linked and scheduled, the form cannot be changed.
-                  </p>
+                    <strong>{{ t('audit.auditScheduleSurfaceLinkAnAuditFormToThis') }}</strong>{{ t('audit.auditScheduleSurfaceTheFormWillBeExecutedDuring2') }}</p>
                 </div>
 
                 <!-- Form Search Input -->
                 <div class="space-y-2">
-                  <label class="block text-sm font-medium text-gray-900 dark:text-white">
-                    Search Forms <span class="text-red-500">*</span>
+                  <label class="block text-sm font-medium text-gray-900 dark:text-white">{{ t('audit.auditScheduleSurfaceSearchForms') }}<span class="text-red-500">*</span>
                   </label>
-                  <p class="text-xs text-gray-600 dark:text-gray-400">
-                    Search for audit forms. Only Ready and Active forms are available.
-                  </p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">{{ t('audit.auditScheduleSurfaceSearchForAuditFormsOnlyReady') }}</p>
                   <div class="relative">
                     <input
                       v-model="formSearchQuery"
                       @input="handleFormSearch"
                       @focus="showFormDropdown = true"
                       type="text"
-                      placeholder="Type to search forms..."
+                      :placeholder="t('audit.auditScheduleSurfaceTypeToSearchForms')"
                       :class="[
                         'w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent',
                         formValidationError ? 'border-red-300 dark:border-red-700' : 'border-gray-300 dark:border-gray-600'
@@ -1066,9 +1005,7 @@
                           <button
                             type="button"
                             class="ml-3 px-3 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded"
-                          >
-                            Select
-                          </button>
+                          >{{ t('settings.modFieldsWidgetSelect') }}</button>
                         </div>
                       </li>
                     </ul>
@@ -1091,17 +1028,13 @@
                 <!-- Selected Form Preview -->
                 <div v-if="selectedForm" class="space-y-4">
                   <div class="flex items-center justify-between">
-                    <h3 class="text-sm font-medium text-gray-900 dark:text-white">
-                      Selected Form
-                    </h3>
+                    <h3 class="text-sm font-medium text-gray-900 dark:text-white">{{ t('audit.auditScheduleSurfaceSelectedForm') }}</h3>
                     <button
                       v-if="!isFormConfirmed"
                       @click="clearForm"
                       type="button"
                       class="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
-                    >
-                      Change Form
-                    </button>
+                    >{{ t('audit.auditScheduleSurfaceChangeForm') }}</button>
                   </div>
 
                   <!-- Form Details Card -->
@@ -1170,14 +1103,12 @@
                         />
                       </svg>
                       <div>
-                        <p class="text-sm font-medium text-indigo-900 dark:text-indigo-300 mb-1">
-                          What happens after linking:
-                        </p>
+                        <p class="text-sm font-medium text-indigo-900 dark:text-indigo-300 mb-1">{{ t('audit.auditScheduleSurfaceWhatHappensAfterLinking') }}</p>
                         <ul class="text-xs text-indigo-800 dark:text-indigo-400 space-y-1 list-disc list-inside">
-                          <li>The form will be executed during the audit</li>
-                          <li v-if="selectedForm.status === 'Ready'">Ready forms will automatically become Active when linked</li>
-                          <li>Once the audit is scheduled, the form cannot be changed</li>
-                          <li>The auditor will fill out this form during audit execution</li>
+                          <li>{{ t('audit.auditScheduleSurfaceTheFormWillBeExecutedDuring') }}</li>
+                          <li v-if="selectedForm.status === 'Ready'">{{ t('audit.auditScheduleSurfaceReadyFormsWillAutomaticallyBecomeActive') }}</li>
+                          <li>{{ t('audit.auditScheduleSurfaceOnceTheAuditIsScheduledThe') }}</li>
+                          <li>{{ t('audit.auditScheduleSurfaceTheAuditorWillFillOutThis') }}</li>
                         </ul>
                       </div>
                     </div>
@@ -1202,9 +1133,7 @@
                       d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                     />
                   </svg>
-                  <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                    Search for an audit form to link
-                  </p>
+                  <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">{{ t('audit.auditScheduleSurfaceSearchForAnAuditFormTo') }}</p>
                 </div>
               </div>
 
@@ -1213,9 +1142,7 @@
                 <!-- Helper Text -->
                 <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                   <p class="text-sm text-blue-800 dark:text-blue-300">
-                    <strong>Review your audit configuration before scheduling.</strong>
-                    Once scheduled, these settings cannot be changed.
-                  </p>
+                    <strong>{{ t('audit.auditScheduleSurfaceReviewYourAuditConfigurationBeforeScheduling') }}</strong>{{ t('audit.auditScheduleSurfaceOnceScheduledTheseSettingsCannotBe') }}</p>
                 </div>
 
                 <!-- Review Summary -->
@@ -1225,7 +1152,7 @@
                     <div class="flex items-start justify-between gap-4">
                       <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2 mb-2">
-                          <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Title</span>
+                          <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{{ t('settings.modFieldsActivityTitleLabel') }}</span>
                           <span
                             class="px-2 py-0.5 text-xs font-medium rounded"
                             :class="isTitleCustomized
@@ -1236,9 +1163,7 @@
                           </span>
                         </div>
 
-                        <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">
-                          Audit titles are generated automatically for consistency.
-                        </p>
+                        <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">{{ t('audit.auditScheduleSurfaceAuditTitlesAreGeneratedAutomaticallyFor') }}</p>
 
                         <div class="space-y-2">
                           <input
@@ -1276,10 +1201,8 @@
                     <div class="flex items-start justify-between">
                       <div class="flex-1">
                         <div class="flex items-center gap-2 mb-1">
-                          <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Audit Type</span>
-                          <span class="px-2 py-0.5 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded">
-                            Immutable
-                          </span>
+                          <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{{ t('audit.auditScheduleSurfaceAuditType') }}</span>
+                          <span class="px-2 py-0.5 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded">{{ t('audit.auditScheduleSurfaceImmutable5') }}</span>
                         </div>
                         <p class="text-base font-semibold text-gray-900 dark:text-white">
                           {{ draft.auditType }}
@@ -1296,9 +1219,7 @@
                           <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                             {{ isBeatAudit ? 'Target Organizations' : 'Target Organization' }}
                           </span>
-                          <span class="px-2 py-0.5 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded">
-                            Immutable
-                          </span>
+                          <span class="px-2 py-0.5 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded">{{ t('audit.auditScheduleSurfaceImmutable4') }}</span>
                         </div>
                         <div class="space-y-2">
                           <p
@@ -1318,26 +1239,24 @@
                     <div class="flex items-start justify-between">
                       <div class="flex-1">
                         <div class="flex items-center gap-2 mb-3">
-                          <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Roles</span>
-                          <span class="px-2 py-0.5 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded">
-                            Immutable
-                          </span>
+                          <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{{ t('audit.auditScheduleSurfaceRoles') }}</span>
+                          <span class="px-2 py-0.5 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded">{{ t('audit.auditScheduleSurfaceImmutable3') }}</span>
                         </div>
                         <div class="space-y-2">
                           <div v-if="draft.auditorId && getSelectedUser('auditor')" class="flex items-center gap-3">
-                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Auditor:</span>
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">{{ t('forms.hubResponseDetailAuditor') }}</span>
                             <span class="text-sm text-gray-900 dark:text-white">
                               {{ getUserDisplayName(getSelectedUser('auditor')) }}
                             </span>
                           </div>
                           <div v-if="draft.reviewerId && getSelectedUser('reviewer')" class="flex items-center gap-3">
-                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Reviewer:</span>
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">{{ t('forms.hubResponseDetailReviewer') }}</span>
                             <span class="text-sm text-gray-900 dark:text-white">
                               {{ getUserDisplayName(getSelectedUser('reviewer')) }}
                             </span>
                           </div>
                           <div v-if="draft.correctiveOwnerId && getSelectedUser('correctiveOwner')" class="flex items-center gap-3">
-                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Corrective Owner:</span>
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">{{ t('forms.hubResponseDetailCorrectiveOwner') }}</span>
                             <span class="text-sm text-gray-900 dark:text-white">
                               {{ getUserDisplayName(getSelectedUser('correctiveOwner')) }}
                             </span>
@@ -1352,26 +1271,24 @@
                     <div class="flex items-start justify-between">
                       <div class="flex-1">
                         <div class="flex items-center gap-2 mb-3">
-                          <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Schedule</span>
-                          <span class="px-2 py-0.5 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded">
-                            Immutable
-                          </span>
+                          <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{{ t('process.designerTriggerSchedule') }}</span>
+                          <span class="px-2 py-0.5 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded">{{ t('audit.auditScheduleSurfaceImmutable2') }}</span>
                         </div>
                         <div class="space-y-2">
                           <div class="flex items-center gap-3">
-                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Start:</span>
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">{{ t('audit.auditScheduleSurfaceStart') }}</span>
                             <span class="text-sm text-gray-900 dark:text-white">
                               {{ formattedStartDateTime }}
                             </span>
                           </div>
                           <div class="flex items-center gap-3">
-                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">End:</span>
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">{{ t('audit.auditScheduleSurfaceEnd') }}</span>
                             <span class="text-sm text-gray-900 dark:text-white">
                               {{ formattedEndDateTime }}
                             </span>
                           </div>
                           <div v-if="durationSummary" class="flex items-center gap-3 pt-2 border-t border-gray-200 dark:border-gray-700">
-                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">Duration:</span>
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 w-32">{{ t('process.execLogsDuration') }}</span>
                             <span class="text-sm text-gray-900 dark:text-white">
                               {{ durationSummary }}
                             </span>
@@ -1386,17 +1303,13 @@
                     <div class="flex items-start justify-between">
                       <div class="flex-1">
                         <div class="flex items-center gap-2 mb-2">
-                          <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Linked Form</span>
-                          <span class="px-2 py-0.5 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded">
-                            Immutable
-                          </span>
+                          <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{{ t('audit.auditScheduleSurfaceLinkedForm') }}</span>
+                          <span class="px-2 py-0.5 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded">{{ t('audit.auditScheduleSurfaceImmutable') }}</span>
                         </div>
                         <p v-if="selectedForm" class="text-base font-semibold text-gray-900 dark:text-white">
                           {{ selectedForm.name }}
                         </p>
-                        <p v-else class="text-sm text-gray-500 dark:text-gray-400">
-                          No form selected
-                        </p>
+                        <p v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('audit.auditScheduleSurfaceNoFormSelected') }}</p>
                       </div>
                     </div>
                   </div>
@@ -1419,9 +1332,7 @@
                       />
                     </svg>
                     <div class="flex-1">
-                      <p class="text-sm font-medium text-red-800 dark:text-red-300">
-                        Unable to schedule audit
-                      </p>
+                      <p class="text-sm font-medium text-red-800 dark:text-red-300">{{ t('audit.auditScheduleSurfaceUnableToScheduleAudit') }}</p>
                       <p class="text-sm text-red-700 dark:text-red-400 mt-1">
                         {{ scheduleError }}
                       </p>
@@ -1452,9 +1363,7 @@
                     ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 ]"
-              >
-                Previous
-              </button>
+              >{{ t('actions.previous') }}</button>
 
               <div class="flex items-center gap-3">
                 <span class="text-xs text-gray-500 dark:text-gray-400">
@@ -1474,9 +1383,7 @@
                     <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Scheduling...
-                  </span>
+                    </svg>{{ t('audit.auditScheduleSurfaceScheduling') }}</span>
                   <span v-else>
                     {{ isLastStep ? 'Schedule Audit' : 'Next' }}
                   </span>
@@ -1491,6 +1398,9 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 /**
  * ============================================================================
  * Audit Schedule Surface

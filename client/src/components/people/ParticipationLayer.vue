@@ -3,7 +3,7 @@
     <!-- Layer Header -->
     <div class="mb-4">
       <div class="flex items-center justify-between mb-2">
-        <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Participation</span>
+        <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ t('settings.modFieldsGroupParticipation') }}</span>
         <!-- Attach to App CTA -->
         <button
           v-if="showAttachCTA"
@@ -18,15 +18,13 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
-          <span>Attach to App</span>
+          <span>{{ t('people.participationLayerAttachToApp2') }}</span>
         </button>
       </div>
       <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
         Why are they in our system?
       </h2>
-      <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-        App participations and roles
-      </p>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">{{ t('people.participationLayerAppParticipationsAndRoles') }}</p>
     </div>
 
     <!-- Participation Cards -->
@@ -58,12 +56,8 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
         </div>
-        <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">
-          No App Participations
-        </p>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-          This person is not participating in any apps yet.
-        </p>
+        <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">{{ t('people.participationLayerNoAppParticipations') }}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ t('people.participationLayerThisPersonIsNotParticipatingIn') }}</p>
         <!-- Primary CTA in empty state -->
         <button
           v-if="showAttachCTA"
@@ -73,7 +67,7 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
-          <span>Attach to App</span>
+          <span>{{ t('people.participationLayerAttachToApp') }}</span>
         </button>
       </div>
     </div>
@@ -81,6 +75,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import ParticipationCard from './ParticipationCard.vue';
 import { computed } from 'vue';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -101,6 +96,8 @@ const props = defineProps({
     default: null
   }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['convert', 'edit', 'edit-details', 'view', 'detach', 'create-deal', 'create-task', 'create-case', 'schedule-meeting', 'status-updated', 'attach-to-app']);
 

@@ -8,7 +8,7 @@
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
       </svg>
-      <span>Back to Applications</span>
+      <span>{{ t('settings.settingsAppMgmtBack') }}</span>
     </button>
 
     <!-- Header -->
@@ -21,7 +21,7 @@
           </svg>
         </div>
         <div>
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ application?.name || 'Application Detail' }}</h2>
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ application?.name || t('settings.settingsAppDetailTitleFallback') }}</h2>
           <p v-if="application?.description" class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ application.description }}</p>
         </div>
       </div>
@@ -68,7 +68,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <p class="text-sm text-red-800 dark:text-red-300">
-          {{ error.message || 'Failed to load application details' }}
+          {{ error.message || t('settings.settingsAppDetailLoadFailed') }}
         </p>
       </div>
     </div>
@@ -78,9 +78,9 @@
       <!-- SECTION B: Configure Sales (Primary Actions) -->
       <div v-if="(application.status === 'ENABLED' || application.status === 'TRIAL') && isSalesApp" class="space-y-4">
         <div>
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Configure Sales</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">{{ t('settings.settingsAppDetailConfigureTitle', { app: t('settings.appsNameSales') }) }}</h3>
           <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            Manage Sales-owned configuration and settings
+            {{ t('settings.settingsAppDetailConfigureSalesSubtitle') }}
           </p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -96,15 +96,15 @@
               </div>
               <div class="flex-1 min-w-0">
                 <h4 class="text-base font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors mb-1">
-                  {{ config.name }}
+                  {{ configOptionLabel(config) }}
                 </h4>
                 <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                  {{ config.description }}
+                  {{ configOptionDesc(config) }}
                 </p>
               </div>
             </div>
             <div class="mt-4 flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity">
-              <span>Configure</span>
+              <span>{{ t('settings.appsConfigure') }}</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
@@ -116,9 +116,9 @@
       <!-- SECTION B2: Configure Helpdesk (Primary Actions) -->
       <div v-if="(application.status === 'ENABLED' || application.status === 'TRIAL') && isHelpdeskApp" class="space-y-4">
         <div>
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Configure Helpdesk</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">{{ t('settings.settingsAppDetailConfigureTitle', { app: t('settings.appsNameHelpdesk') }) }}</h3>
           <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            Manage Helpdesk-owned configuration and case settings
+            {{ t('settings.settingsAppDetailConfigureHelpdeskSubtitle') }}
           </p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -134,15 +134,15 @@
               </div>
               <div class="flex-1 min-w-0">
                 <h4 class="text-base font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors mb-1">
-                  {{ config.name }}
+                  {{ configOptionLabel(config) }}
                 </h4>
                 <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                  {{ config.description }}
+                  {{ configOptionDesc(config) }}
                 </p>
               </div>
             </div>
             <div class="mt-4 flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity">
-              <span>Configure</span>
+              <span>{{ t('settings.appsConfigure') }}</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
@@ -154,9 +154,9 @@
       <!-- SECTION A: Dependencies (Informational - Read-Only) -->
       <div class="space-y-6">
         <div>
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Dependencies</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">{{ t('settings.settingsAppDetailDependencies') }}</h3>
           <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            Core modules that {{ application.name }} uses. These are configured in Core Modules settings.
+            {{ t('settings.settingsAppDetailDependenciesBody', { appName: application.name }) }}
           </p>
         </div>
 
@@ -164,10 +164,10 @@
         <div v-if="application.dependencies?.required && application.dependencies.required.length > 0">
           <div class="flex items-center gap-2 mb-3">
             <h4 class="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-              Required Dependencies
+              {{ t('settings.settingsAppDetailRequiredDeps') }}
             </h4>
             <span class="text-xs text-gray-500 dark:text-gray-500">
-              ({{ application.dependencies.required.length }} {{ application.dependencies.required.length === 1 ? 'module' : 'modules' }})
+              {{ t('settings.settingsAppDetailModuleCount', { count: application.dependencies.required.length }) }}
             </span>
           </div>
           <div class="space-y-3">
@@ -187,25 +187,25 @@
                       <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
-                      Required
+                      {{ t('settings.modFieldsDepRequired') }}
                     </span>
                   </div>
                   <p v-if="dep.description" class="text-sm text-gray-600 dark:text-gray-400">
                     {{ dep.description }}
                   </p>
                   <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                    Read-only • View details →
+                    {{ t('settings.settingsAppDetailViewDetailsHint') }}
                   </p>
                 </div>
                 <!-- Locked Status -->
                 <span
                   class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
-                  title="This dependency is required and cannot be disabled"
+                  :title="t('settings.settingsAppDetailDepLockedTooltip')"
                 >
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
-                  Locked
+                  {{ t('settings.orgLocked') }}
                 </span>
               </div>
             </div>
@@ -216,10 +216,10 @@
         <div v-if="application.dependencies?.optional && application.dependencies.optional.length > 0">
           <div class="flex items-center gap-2 mb-3">
             <h4 class="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-              Optional Dependencies
+              {{ t('settings.settingsAppDetailOptionalDeps') }}
             </h4>
             <span class="text-xs text-gray-500 dark:text-gray-500">
-              ({{ application.dependencies.optional.length }} {{ application.dependencies.optional.length === 1 ? 'module' : 'modules' }})
+              {{ t('settings.settingsAppDetailModuleCount', { count: application.dependencies.optional.length }) }}
             </span>
           </div>
           <div class="space-y-3">
@@ -242,20 +242,20 @@
                       <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                       </svg>
-                      Enabled
+                      {{ t('settings.settingsAppsStatusEnabled') }}
                     </span>
                     <span
                       v-else
                       class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
                     >
-                      Disabled
+                      {{ t('settings.settingsAppsStatusDisabled') }}
                     </span>
                   </div>
                   <p v-if="dep.description" class="text-sm text-gray-600 dark:text-gray-400">
                     {{ dep.description }}
                   </p>
                   <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                    Read-only • View details →
+                    {{ t('settings.settingsAppDetailViewDetailsHint') }}
                   </p>
                 </div>
               </div>
@@ -266,7 +266,7 @@
         <!-- No Dependencies Message -->
         <div v-if="(!application.dependencies?.required || application.dependencies.required.length === 0) && (!application.dependencies?.optional || application.dependencies.optional.length === 0)" class="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700">
           <p class="text-sm text-gray-500 dark:text-gray-400">
-            This application has no dependencies on core modules.
+            {{ t('settings.settingsAppDetailNoDependencies') }}
           </p>
         </div>
       </div>
@@ -274,9 +274,9 @@
       <!-- SECTION C: Shared Platform Entities (Redirect Only) -->
       <div v-if="isSalesApp" class="space-y-4">
         <div>
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Shared Platform Entities</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">{{ t('settings.settingsAppDetailSharedEntities') }}</h3>
           <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            Core modules configured in Core Modules settings. These are shared across all applications.
+            {{ t('settings.settingsAppDetailSharedEntitiesBody') }}
           </p>
         </div>
         <div class="space-y-3">
@@ -289,23 +289,23 @@
               <div class="flex-1">
                 <div class="flex items-center gap-3 mb-2">
                   <h4 class="text-base font-semibold text-gray-900 dark:text-white">
-                    {{ entity.name }}
+                    {{ sharedEntityLabel(entity) }}
                   </h4>
                   <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
                     </svg>
-                    Core Module
+                    {{ t('settings.settingsAppDetailCoreModuleBadge') }}
                   </span>
                 </div>
                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                  {{ entity.description }}
+                  {{ sharedEntityDesc(entity) }}
                 </p>
                 <button
                   @click="viewModuleDetail(entity.moduleKey)"
                   class="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
                 >
-                  <span>Open {{ entity.name }} Settings</span>
+                  <span>{{ t('settings.settingsAppDetailOpenEntitySettings', { entityName: sharedEntityLabel(entity) }) }}</span>
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                   </svg>
@@ -321,9 +321,11 @@
 
 <script setup>
 import { ref, computed, onMounted, h } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import apiClient from '@/utils/apiClient';
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 
@@ -341,6 +343,14 @@ const isSalesApp = computed(() => {
 const isHelpdeskApp = computed(() => {
   return appKey.value === 'HELPDESK';
 });
+
+const STATUS_LABEL_KEYS = {
+  ENABLED: 'settings.settingsAppsStatusEnabled',
+  DISABLED: 'settings.settingsAppsStatusDisabled',
+  TRIAL: 'settings.settingsAppsStatusTrial',
+  SUSPENDED: 'settings.settingsAppsStatusSuspended',
+  INCLUDED: 'settings.settingsAppsStatusIncluded',
+};
 
 // Icon components for Sales configuration options
 const PipelineIcon = () => h('svg', { class: 'w-6 h-6', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
@@ -371,36 +381,52 @@ const AnalyticsIcon = () => h('svg', { class: 'w-6 h-6', fill: 'none', stroke: '
   h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M13 17h8m0 0V9m0 8l-8-8-4 4-6-6' })
 ]);
 
+function configOptionLabel(option) {
+  return option?.nameKey ? t(option.nameKey) : '';
+}
+
+function configOptionDesc(option) {
+  return option?.descriptionKey ? t(option.descriptionKey) : '';
+}
+
+function sharedEntityLabel(entity) {
+  return entity?.nameKey ? t(entity.nameKey) : '';
+}
+
+function sharedEntityDesc(entity) {
+  return entity?.descriptionKey ? t(entity.descriptionKey) : '';
+}
+
 // Sales-owned configuration options – Sales Modules first
 const salesConfigOptions = [
   {
     id: 'schema',
-    name: 'Sales Modules',
-    description: 'Configure Sales app modules, custom fields, and data structure',
+    nameKey: 'settings.appsSalesModules',
+    descriptionKey: 'settings.appsSalesModulesDesc',
     icon: SchemaIcon
   },
   {
     id: 'pipelines',
-    name: 'Pipelines & Stages',
-    description: 'Configure sales pipelines, deal stages, and workflow automation',
+    nameKey: 'settings.appsPipelines',
+    descriptionKey: 'settings.appsPipelinesDesc',
     icon: PipelineIcon
   },
   {
     id: 'automations',
-    name: 'Automations',
-    description: 'Set up automated workflows and triggers for Sales',
+    nameKey: 'settings.settingsAppDetailAutomations',
+    descriptionKey: 'settings.settingsAppDetailAutomationsDesc',
     icon: AutomationIcon
   },
   {
     id: 'playbooks',
-    name: 'Playbooks',
-    description: 'Create and manage sales playbooks and process templates',
+    nameKey: 'settings.appsPlaybooks',
+    descriptionKey: 'settings.appsPlaybooksDesc',
     icon: PlaybookIcon
   },
   {
     id: 'permissions',
-    name: 'Permissions',
-    description: 'Manage Sales app permissions and access controls',
+    nameKey: 'settings.settingsAppDetailPermissions',
+    descriptionKey: 'settings.settingsAppDetailPermissionsDesc',
     icon: PermissionsIcon
   }
 ];
@@ -408,20 +434,20 @@ const salesConfigOptions = [
 const helpdeskConfigOptions = [
   {
     id: 'schema',
-    name: 'Cases Module',
-    description: 'Configure case fields, relationships, and quick create',
+    nameKey: 'settings.appsHelpdeskCases',
+    descriptionKey: 'settings.appsHelpdeskCasesDesc',
     icon: SchemaIcon
   },
   {
     id: 'execution-settings',
-    name: 'Execution Settings',
-    description: 'Configure case types, SLA policies, business hours, and escalation rules',
+    nameKey: 'settings.appsHelpdeskExecution',
+    descriptionKey: 'settings.appsHelpdeskExecutionDesc',
     icon: SettingsIcon
   },
   {
     id: 'analytics',
-    name: 'Analytics Dashboard',
-    description: 'Review SLA compliance, owner performance, and distribution trends',
+    nameKey: 'settings.appsHelpdeskAnalytics',
+    descriptionKey: 'settings.appsHelpdeskAnalyticsDesc',
     icon: AnalyticsIcon
   }
 ];
@@ -430,25 +456,24 @@ const helpdeskConfigOptions = [
 const sharedCoreEntities = [
   {
     moduleKey: 'PEOPLE',
-    name: 'People',
-    description: 'Core module for managing people and contacts. Configure fields, layouts, relationships, and quick create settings.'
+    nameKey: 'settings.assignRulesModPeople',
+    descriptionKey: 'settings.settingsAppDetailPeopleDesc'
   },
   {
     moduleKey: 'ORGANIZATIONS',
-    name: 'Organizations',
-    description: 'Core module for managing organizations and companies. Configure fields, layouts, and relationships.'
+    nameKey: 'settings.assignRulesModOrganizations',
+    descriptionKey: 'settings.settingsAppDetailOrganizationsDesc'
   }
 ];
 
 const navigateToSalesConfig = (configId) => {
-  // Navigate to Sales settings with the specific config tab
-  router.push({ 
-    path: '/settings', 
-    query: { 
-      tab: 'applications', 
+  router.push({
+    path: '/settings',
+    query: {
+      tab: 'applications',
       app: 'sales',
       config: configId
-    } 
+    }
   });
 };
 
@@ -469,7 +494,7 @@ const navigateToHelpdeskConfig = (configId) => {
 
 const fetchApplication = async () => {
   if (!appKey.value) {
-    error.value = new Error('Application key is required');
+    error.value = new Error(t('settings.settingsSubDetailAppKeyRequired'));
     loading.value = false;
     return;
   }
@@ -485,7 +510,7 @@ const fetchApplication = async () => {
     if (data && data.success && data.appKey) {
       application.value = data;
     } else {
-      error.value = new Error('Invalid response from server');
+      error.value = new Error(t('settings.settingsSubDetailInvalidResponse'));
       application.value = null;
     }
   } catch (err) {
@@ -503,25 +528,18 @@ const goBack = () => {
 
 
 const viewModuleDetail = (moduleKey) => {
-  // Navigate to Core Module detail page
-  router.push({ 
-    path: '/settings', 
-    query: { 
-      tab: 'core-modules', 
-      moduleKey: moduleKey 
-    } 
+  router.push({
+    path: '/settings',
+    query: {
+      tab: 'core-modules',
+      moduleKey: moduleKey
+    }
   });
 };
 
 const getStatusLabel = (status) => {
-  const labels = {
-    'ENABLED': 'Enabled',
-    'DISABLED': 'Disabled',
-    'TRIAL': 'Trial',
-    'SUSPENDED': 'Suspended',
-    'INCLUDED': 'Included'
-  };
-  return labels[status] || status;
+  const key = STATUS_LABEL_KEYS[status];
+  return key ? t(key) : status;
 };
 
 const getStatusBadgeClass = (status) => {
@@ -539,4 +557,3 @@ onMounted(() => {
   fetchApplication();
 });
 </script>
-

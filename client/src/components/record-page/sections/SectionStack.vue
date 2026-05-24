@@ -14,7 +14,7 @@
             type="button"
             :class="getActionClass(action)"
             :aria-label="action.label || action.type || 'Section action'"
-            :title="action.label || action.type || 'Action'"
+            :title="action.label || action.type || t('records.sectionActionFallback')"
             @click="handleAction(action, section)"
           >
             <component
@@ -40,6 +40,9 @@
 
 <script setup>
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { PlusIcon, ArrowsPointingOutIcon, LinkIcon, BoltIcon, ClockIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({

@@ -1,0 +1,186 @@
+{
+  "relatedTasksWidgetCreateFirstTask": {
+    "message": "Crea la prima attività",
+    "description": "Auto-migrated from relatedTasksWidget"
+  },
+  "relatedTasksWidgetNoTasksYet": {
+    "message": "Nessuna attività ancora",
+    "description": "Auto-migrated from relatedTasksWidget"
+  },
+  "relatedTasksWidgetAddTask": {
+    "message": "Aggiungi attività",
+    "description": "Auto-migrated from relatedTasksWidget"
+  },
+  "relatedTasksWidgetLinkTasks": {
+    "message": "Collega attività",
+    "description": "Auto-migrated from relatedTasksWidget"
+  },
+  "relatedTasksWidgetRelatedTasks": {
+    "message": "Attività correlate",
+    "description": "Auto-migrated from relatedTasksWidget"
+  },
+  "taskDetailModalEstimatedHours": {
+    "message": "Ore stimate",
+    "description": "Auto-migrated from taskDetailModal"
+  },
+  "taskDetailModalCreatedBy": {
+    "message": "Creato da",
+    "description": "Auto-migrated from taskDetailModal"
+  },
+  "taskDetailModalWaiting": {
+    "message": "In attesa",
+    "description": "Auto-migrated from taskDetailModal"
+  },
+  "taskDetailModalToDo": {
+    "message": "Fare",
+    "description": "Auto-migrated from taskDetailModal"
+  },
+  "taskDetailModalTaskDetails": {
+    "message": "Dettagli attività",
+    "description": "Auto-migrated from taskDetailModal"
+  },
+  "taskEditDrawerWriteOrType": {
+    "message": "Scrivi o digita \"/\" per i comandi",
+    "description": "Task description editor placeholder"
+  },
+  "taskEditDrawerUpdateTheTaskInformationBelow": {
+    "message": "Aggiorna le informazioni sull'attività riportate di seguito.",
+    "description": "Auto-migrated from taskEditDrawer"
+  },
+  "taskEditDrawerEditTask": {
+    "message": "Modifica attività",
+    "description": "Auto-migrated from taskEditDrawer"
+  },
+  "taskFormModalAddSubtask": {
+    "message": "Aggiungi attività secondaria",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalSubtaskTitle": {
+    "message": "Titolo dell'attività secondaria",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalEGUrgentClientBugFix": {
+    "message": "ad esempio, urgente, cliente, correzione di bug",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalTagsCommaSeparated": {
+    "message": "Tag (separati da virgole)",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalEstimatedHours": {
+    "message": "Ore stimate",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalSelectAssignee": {
+    "message": "Seleziona assegnatario...",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalUrgent": {
+    "message": "Urgente",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalWaiting": {
+    "message": "In attesa",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalToDo": {
+    "message": "Fare",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalEnterTaskDescription": {
+    "message": "Inserisci la descrizione dell'attività",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalEnterTaskTitle": {
+    "message": "Inserisci il titolo dell'attività",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskSubtasksFieldAddSubtask": {
+    "message": "Aggiungi attività secondaria",
+    "description": "Auto-migrated from taskSubtasksField"
+  },
+  "taskSubtasksFieldSubtaskTitle": {
+    "message": "Titolo dell'attività secondaria",
+    "description": "Auto-migrated from taskSubtasksField"
+  },
+  "taskSubtasksFieldAddSubtask2": {
+    "message": "Aggiungi attività secondaria",
+    "description": "Auto-migrated from taskSubtasksField"
+  },
+  "taskSubtasksFieldAddSubtask3": {
+    "message": "Aggiungi attività secondaria",
+    "description": "Auto-migrated from taskSubtasksField"
+  },
+  "taskSubtasksFieldAddSubtask4": {
+    "message": "Aggiungi attività secondaria",
+    "description": "Auto-migrated from taskSubtasksField"
+  },
+  "tasksAddTask": {
+    "message": "Aggiungi attività",
+    "description": "Auto-migrated from tasks"
+  },
+  "tasksNoTasksInThisStatus": {
+    "message": "Nessuna attività in questo stato",
+    "description": "Auto-migrated from tasks"
+  },
+  "tasksLoadingBoard": {
+    "message": "Caricamento scheda...",
+    "description": "Auto-migrated from tasks"
+  },
+  "tasksNoDueDate": {
+    "message": "Nessuna data di scadenza",
+    "description": "Auto-migrated from tasks"
+  },
+  "tasksNewTask": {
+    "message": "Nuovo compito",
+    "description": "Auto-migrated from tasks"
+  },
+  "tasksBoard": {
+    "message": "Asse",
+    "description": "Auto-migrated from tasks"
+  },
+  "taskFormModalToastErrorSavingTaskPleaseTry": {
+    "message": "Errore durante il salvataggio dell'attività. Per favore riprova.",
+    "description": "Toast from TaskFormModal.vue"
+  },
+  "sysFieldTitle": {
+    "message": "Titolo",
+    "description": "System task field label"
+  },
+  "sysFieldStatus": {
+    "message": "Stato",
+    "description": "System task field label"
+  },
+  "sysFieldAssignedTo": {
+    "message": "Assegnato a",
+    "description": "System task field label"
+  },
+  "sysFieldDueDate": {
+    "message": "Scadenza",
+    "description": "System task field label"
+  },
+  "sysFieldDescription": {
+    "message": "Descrizione",
+    "description": "System task field label"
+  },
+  "listViewAll": {
+    "message": "Tutti i compiti",
+    "description": "Tasks list default view title"
+  },
+  "listViewMy": {
+    "message": "I miei compiti",
+    "description": "Tasks list assigned-to-me view title"
+  },
+  "listCreate": {
+    "message": "Nuovo compito",
+    "description": "Tasks list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "Cerca attività...",
+    "description": "Tasks list search placeholder"
+  },
+  "listStatTotal": {
+    "message": "Compiti totali",
+    "description": "Tasks list statistics card"
+  }
+}

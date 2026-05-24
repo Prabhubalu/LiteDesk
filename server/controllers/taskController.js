@@ -9,6 +9,7 @@ const { getFileUrl } = require('../middleware/uploadMiddleware');
 const { emitNotification } = require('../services/notificationEngine');
 const { processCommentMentions } = require('../services/commentMentionNotifications');
 const domainEvents = require('../constants/domainEvents');
+const { emitTaskDomainEvent } = require('../services/taskDomainEventHelpers');
 const { applyProjectionFilter } = require('../utils/appProjectionQuery');
 const { getProjection } = require('../utils/moduleProjectionResolver');
 const { resolveCreateType, getTypeFieldName } = require('../utils/appProjectionCreateResolver');
@@ -378,6 +379,14 @@ const createTask = async (req, res) => {
       .populate('createdBy', 'firstName lastName');
 
     // Emit domain events for task creation and assignment (non-blocking)
+    emitTaskDomainEvent({
+      task,
+      eventType: 'task.created',
+      previousState: null,
+      currentState: { status: task.status, assignedTo: task.assignedTo },
+      triggeredBy: req.user._id
+    });
+
     // Emit TASK_CREATED event
     emitNotification({
       eventType: domainEvents.TASK_CREATED,
@@ -1048,6 +1057,20 @@ const updateTask = async (req, res) => {
 
     // Emit TASK_STATUS_CHANGED if status changed
     if (task.status && task.status !== oldStatus) {
+      emitTaskDomainEvent({
+        task,
+        eventType: 'task.status.changed',
+        previousState: { status: oldStatus, assignedTo: oldAssignedTo },
+        currentState: { status: task.status, assignedTo: task.assignedTo },
+        triggeredBy: req.user._id
+      });
+      emitTaskDomainEvent({
+        task,
+        eventType: 'task.updated',
+        previousState: { status: oldStatus, assignedTo: oldAssignedTo },
+        currentState: { status: task.status, assignedTo: task.assignedTo },
+        triggeredBy: req.user._id
+      });
       emitNotification({
         eventType: domainEvents.TASK_STATUS_CHANGED,
         entity: {

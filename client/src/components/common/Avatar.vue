@@ -18,6 +18,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 
 const props = defineProps({
@@ -40,6 +41,8 @@ const props = defineProps({
     default: null
   }
 });
+
+const { t } = useI18n();
 
 // Determine which record object to use (user prop or record prop)
 const recordObj = computed(() => props.user || props.record);

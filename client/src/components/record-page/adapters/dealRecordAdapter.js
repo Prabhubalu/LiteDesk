@@ -23,6 +23,9 @@ import {
 import { getDealFieldMetadata, getDealSystemFields } from '@/platform/fields/dealFieldModel';
 import { getGlobalSystemFieldKeys } from '@/platform/fields/fieldCapabilityEngine';
 import { getKeyFields, getFieldDisplayLabel } from '@/utils/fieldDisplay';
+import { i18n } from '@/i18n/index';
+import { resolveFieldLabel } from '@/utils/fieldLabelResolver';
+import { resolvePipelineLabel, resolveStageOrPicklistLabel } from '@/utils/configurableLabelResolver';
 
 /** Normalize field key for exclusion check (lowercase, no spaces/hyphens/underscores). */
 const normalizeKeyForExclusion = (key) =>
@@ -37,8 +40,17 @@ const toReadableFieldLabel = (fieldKey) => String(fieldKey || '')
 
 const getStateFieldLabel = (fieldKey, fallback) => {
   const metadata = getDealFieldMetadata(fieldKey);
-  return metadata?.displayName || metadata?.label || fallback || toReadableFieldLabel(fieldKey);
+  const configured = metadata?.displayName || metadata?.label || fallback || toReadableFieldLabel(fieldKey);
+  const t = i18n.global.t.bind(i18n.global);
+  const te = i18n.global.te.bind(i18n.global);
+  return resolveFieldLabel('deals', { key: fieldKey, label: configured }, t, te);
 };
+
+function resolveDealsFieldLabel(fieldKey, configuredLabel) {
+  const t = i18n.global.t.bind(i18n.global);
+  const te = i18n.global.te.bind(i18n.global);
+  return resolveFieldLabel('deals', { key: fieldKey, label: configuredLabel }, t, te);
+}
 
 const getOwnerDisplayName = (record) => {
   const owner = record?.ownerId;
@@ -214,6 +226,19 @@ const resolveDetailDisplayValue = (record, fieldKey, fieldType, formatDate) => {
     }).filter(Boolean).join(', ') : '';
   }
 
+  const fk = String(fieldKey || '').toLowerCase();
+  if (fk === 'stage' || fk === 'type' || fk === 'dealtype' || fk === 'deal_type') {
+    const t = i18n.global.t.bind(i18n.global);
+    const te = i18n.global.te.bind(i18n.global);
+    const localized = resolveStageOrPicklistLabel(String(rawValue), t, te);
+    if (localized) return localized;
+  }
+  if (fk === 'pipeline') {
+    const t = i18n.global.t.bind(i18n.global);
+    const te = i18n.global.te.bind(i18n.global);
+    return resolvePipelineLabel(String(rawValue), null, t, te) || String(rawValue);
+  }
+
   if (typeof rawValue === 'object') {
     if (fieldKey === 'ownerId') {
       return [rawValue.firstName, rawValue.lastName].filter(Boolean).join(' ') || rawValue.email || '';
@@ -349,6 +374,7 @@ const resolveStateFieldIcon = (fieldKey, configuredField) => {
 };
 
 export const createDealRecordAdapter = ({
+  sectionLabels: sl,
   formatDate,
   moduleDefinition,
   participantPersonName,
@@ -374,6 +400,17 @@ export const createDealRecordAdapter = ({
   expandedLeftSection,
   openLeftSection
 }) => {
+  const L = sl || {
+    description: 'Description',
+    details: 'Details',
+    related: 'Related Records',
+    stageHistory: 'Stage History',
+    expand: 'Expand',
+    history: 'History',
+    linkRecord: 'Link record',
+    addRecord: 'Add record',
+  };
+
   return {
     module: 'deal',
 
@@ -387,37 +424,37 @@ export const createDealRecordAdapter = ({
       const sections = {
         description: {
           key: 'description',
-          title: 'Description',
+          title: L.description,
           component: DescriptionSection,
           className: 'pt-4 pb-2',
           actions: [
-            ...(canViewDescriptionHistory?.(record) ? [{ key: 'description-history', type: 'history', label: 'History', handler: () => openDescriptionHistory?.(record) }] : []),
-            ...(!isExpandedMode ? [{ key: 'expand-description', type: 'expand', label: 'Expand', handler: () => openLeftSection?.('description') }] : [])
+            ...(canViewDescriptionHistory?.(record) ? [{ key: 'description-history', type: 'history', label: L.history, handler: () => openDescriptionHistory?.(record) }] : []),
+            ...(!isExpandedMode ? [{ key: 'expand-description', type: 'expand', label: L.expand, handler: () => openLeftSection?.('description') }] : [])
           ]
         },
         details: {
           key: 'details',
-          title: 'Details',
+          title: L.details,
           component: DetailsSection,
           className: 'pt-2 pb-2',
-          actions: (!isExpandedMode ? [{ key: 'expand-details', type: 'expand', label: 'Expand', handler: () => openLeftSection?.('details') }] : [])
+          actions: (!isExpandedMode ? [{ key: 'expand-details', type: 'expand', label: L.expand, handler: () => openLeftSection?.('details') }] : [])
         },
         'stage-history': {
           key: 'stage-history',
-          title: 'Stage History',
+          title: L.stageHistory,
           component: StageHistorySection,
           className: 'pt-2 pb-2',
-          actions: (!isExpandedMode ? [{ key: 'expand-stage-history', type: 'expand', label: 'Expand', handler: () => openLeftSection?.('stage-history') }] : [])
+          actions: (!isExpandedMode ? [{ key: 'expand-stage-history', type: 'expand', label: L.expand, handler: () => openLeftSection?.('stage-history') }] : [])
         },
         related: {
           key: 'related',
-          title: 'Related Records',
+          title: L.related,
           component: RelatedSection,
           className: 'pt-2 pb-3',
           actions: [
-            ...(canLinkRecords ? [{ key: 'link-record', type: 'link', label: 'Link record', handler: () => openLinkRecordDrawer?.() }] : []),
-            ...(canLinkRecords ? [{ key: 'add-record', type: 'plus', label: 'Add record', handler: () => openAddRecordDrawer?.() }] : []),
-            ...(!isExpandedMode ? [{ key: 'expand-related', type: 'expand', label: 'Expand', handler: () => openLeftSection?.('related') }] : [])
+            ...(canLinkRecords ? [{ key: 'link-record', type: 'link', label: L.linkRecord, handler: () => openLinkRecordDrawer?.() }] : []),
+            ...(canLinkRecords ? [{ key: 'add-record', type: 'plus', label: L.addRecord, handler: () => openAddRecordDrawer?.() }] : []),
+            ...(!isExpandedMode ? [{ key: 'expand-related', type: 'expand', label: L.expand, handler: () => openLeftSection?.('related') }] : [])
           ]
         }
       };
@@ -454,7 +491,7 @@ export const createDealRecordAdapter = ({
 
       return resolveDealStateKeys(moduleDefinitionValue).map((fieldKey) => {
         const configuredField = configuredByKey.get(fieldKey);
-        const fallbackLabel = getStateFieldLabel(fieldKey, fieldKey);
+        const fallbackLabel = getStateFieldLabel(fieldKey, toReadableFieldLabel(fieldKey));
         const fieldType = resolveStateFieldType(fieldKey, configuredField);
         const canEditField = fieldKey !== 'ownerId'
           && fieldKey !== 'stage'
@@ -467,7 +504,10 @@ export const createDealRecordAdapter = ({
 
         return {
           key: fieldKey,
-          label: configuredField ? getFieldDisplayLabel(configuredField) : fallbackLabel,
+          label: resolveDealsFieldLabel(
+            fieldKey,
+            configuredField ? getFieldDisplayLabel(configuredField) : fallbackLabel
+          ),
           icon: resolveStateFieldIcon(fieldKey, configuredField),
           type: fieldType,
           options: fieldType === 'select' || fieldType === 'user'
@@ -538,11 +578,12 @@ export const createDealRecordAdapter = ({
         const hasEntityOptions = entityOptions.length > 0;
         const canOpenLookupEditor = isLookup && fieldKey !== 'ownerId' && canEditDetails?.(record, fieldKey) === true && !hasEntityOptions;
 
-        let label = moduleField
-          ? getFieldDisplayLabel(moduleField)
-          : getStateFieldLabel(fieldKey, toReadableFieldLabel(fieldKey));
+        let label = resolveDealsFieldLabel(
+          fieldKey,
+          moduleField ? getFieldDisplayLabel(moduleField) : toReadableFieldLabel(fieldKey)
+        );
         if (String(fieldKey).toLowerCase() === 'source') {
-          label = 'Created via';
+          label = i18n.global.t('records.sectionCreatedVia');
         }
 
         const rawValue = resolveDetailRawValue(record, fieldKey, fieldType);

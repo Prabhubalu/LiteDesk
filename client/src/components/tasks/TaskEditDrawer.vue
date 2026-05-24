@@ -36,18 +36,18 @@
                   <!-- Header -->
                   <div class="bg-indigo-700 dark:bg-indigo-800 px-4 py-6 sm:px-6 flex-shrink-0">
                     <div class="flex items-center justify-between">
-                      <DialogTitle class="text-base font-semibold text-white">Edit Task</DialogTitle>
+                      <DialogTitle class="text-base font-semibold text-white">{{ t('tasks.taskEditDrawerEditTask') }}</DialogTitle>
                       <button
                         type="button"
                         class="relative rounded-md text-indigo-200 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white cursor-pointer"
                         @click="closeDrawer"
                       >
                         <span class="absolute -inset-2.5" />
-                        <span class="sr-only">Close panel</span>
+                        <span class="sr-only">{{ t('forms.previewClosePanelSr') }}</span>
                         <XMarkIcon class="size-6" aria-hidden="true" />
                       </button>
                     </div>
-                    <p class="mt-1 text-sm text-indigo-300">Update the task information below.</p>
+                    <p class="mt-1 text-sm text-indigo-300">{{ t('tasks.taskEditDrawerUpdateTheTaskInformationBelow') }}</p>
                   </div>
 
                   <!-- Body: scrollable -->
@@ -86,7 +86,7 @@
                               </label>
                               <TaskDescriptionEditor
                                 :model-value="formData[field.key] || ''"
-                                placeholder="Write or type '/' for commands"
+                                :placeholder="t('tasks.taskEditDrawerWriteOrType')"
                                 class="w-full"
                                 @update:model-value="(v) => updateField(field.key, v)"
                               />
@@ -118,7 +118,7 @@
                           <div v-if="showSubtasksInForm" :class="['w-full', fullMode ? 'md:col-span-2' : '']">
                             <TaskSubtasksField
                               :model-value="formData.subtasks || []"
-                              label="Subtasks"
+                              :label="t('common.taskSubtasksLabel')"
                               :error="errors.subtasks"
                               @update:model-value="(v) => updateField('subtasks', v)"
                             />
@@ -147,7 +147,7 @@
                               </label>
                               <TaskDescriptionEditor
                                 :model-value="formData[field.key] || ''"
-                                placeholder="Write or type '/' for commands"
+                                :placeholder="t('tasks.taskEditDrawerWriteOrType')"
                                 class="w-full"
                                 @update:model-value="(v) => updateField(field.key, v)"
                               />
@@ -165,7 +165,7 @@
                             <template v-else-if="field.key === 'subtasks'">
                               <TaskSubtasksField
                                 :model-value="formData.subtasks || []"
-                                label="Subtasks"
+                                :label="t('common.taskSubtasksLabel')"
                                 :error="errors.subtasks"
                                 @update:model-value="(v) => updateField('subtasks', v)"
                               />
@@ -201,9 +201,7 @@
                         type="button"
                         class="rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                         @click="closeDrawer"
-                      >
-                        Cancel
-                      </button>
+                      >{{ t('performance.cancelWizard') }}</button>
                       <button
                         type="submit"
                         :disabled="saving"
@@ -225,6 +223,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, computed, watch } from 'vue';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
@@ -243,6 +242,8 @@ const props = defineProps({
   isOpen: { type: Boolean, default: false },
   record: { type: Object, default: null }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['close', 'saved']);
 

@@ -68,7 +68,349 @@ jobs:
       - name: Run ESLint
         working-directory: ./client
         run: npm run lint || true  # Continue even if linting fails
-      
+
+      - name: i18n validation
+        working-directory: ./client
+        run: npm run i18n:check
+
+      - name: i18n rollout report
+        working-directory: ./client
+        run: npm run i18n:report
+
+      - name: i18n hardcoded scan (enforced paths)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '0'
+        run: npm run i18n:find-hardcoded
+
+      - name: i18n UI primitives gate
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=ui
+
+      - name: i18n layouts gate
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=layouts
+
+      - name: i18n tables gate
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=tables
+
+      - name: i18n forms gate
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=forms
+
+      - name: i18n summary gate
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=summary
+
+      - name: i18n navigation gate
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=navigation
+
+      - name: i18n notifications gate
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=notifications
+
+      - name: i18n auth gate
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=auth
+
+      - name: i18n settings shell gate
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=settings-shell
+
+      - name: i18n settings account gate
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=settings-account
+
+      - name: i18n settings users access gate
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=settings-users-access
+
+      - name: i18n settings groups helpdesk gate
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=settings-groups-helpdesk
+
+      - name: i18n settings assignment rules gate
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=settings-assignment-rules
+
+      - name: i18n settings apps sla gate
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=settings-apps-sla
+
+      - name: i18n settings app panels gate
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=settings-app-panels
+
+      - name: i18n settings modules fields shell gate
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=settings-modules-fields-shell
+
+      - name: i18n settings modules fields editor gate
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=settings-modules-fields-editor
+
+      - name: i18n settings modules fields tabs gate
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=settings-modules-fields-tabs
+
+      - name: i18n settings modules fields modals gate
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=settings-modules-fields-modals
+
+      - name: i18n settings modules fields messages gate
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=settings-modules-fields-messages
+
+      - name: i18n settings modules fields full gate
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=settings-modules-fields
+
+      - name: i18n settings remaining sm gate
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=settings-remaining-sm
+
+      - name: i18n settings remaining drawers gate
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=settings-remaining-drawers
+
+      - name: i18n hardcoded gate (settings people types)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=settings-people-types
+
+      - name: i18n hardcoded gate (settings core module detail)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=settings-core-module-detail
+
+      - name: i18n hardcoded gate (settings integrations)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=settings-integrations
+
+      - name: i18n hardcoded gate (records shell)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=records-shell
+
+      - name: i18n hardcoded gate (records activity pane)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=records-activity-pane
+
+      - name: i18n hardcoded gate (records generic content)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=records-generic-content
+
+      - name: i18n hardcoded gate (records comment + editable field)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=records-comment-editable
+
+      - name: i18n hardcoded gate (records deal page)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=records-deal-page
+
+      - name: i18n hardcoded gate (records task page)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=records-task-page
+
+      - name: i18n hardcoded gate (records activity section)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=records-activity-section
+
+      - name: i18n hardcoded gate (records activity comment card)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=records-activity-comment-card
+
+      - name: i18n hardcoded gate (forms question types)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=forms-question-types
+
+      - name: i18n hardcoded gate (forms modals)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=forms-modals
+
+      - name: i18n hardcoded gate (forms preview)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=forms-preview
+
+      - name: i18n hardcoded strings (forms builder tabs)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=forms-tabs
+
+      - name: i18n hardcoded strings (forms analytics and panels)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=forms-analytics-panels
+
+      - name: i18n hardcoded strings (forms outcomes and response template)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=forms-outcomes-template
+
+      - name: i18n hardcoded scan (forms report blocks)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=forms-report-blocks
+
+      - name: i18n hardcoded strings (forms views and widgets)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=forms-views
+
+      - name: i18n hardcoded strings (forms sections builder)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=forms-sections-builder
+
+      - name: i18n hardcoded strings (form builder shell)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=forms-builder-shell
+
+      - name: i18n hardcoded scan (forms hub list)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=forms-hub-list
+
+      - name: i18n hardcoded scan (forms hub response detail)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=forms-hub-response-detail
+
+      - name: i18n hardcoded scan (forms hub wizard)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=forms-hub-wizard
+
+      - name: i18n hardcoded scan (process flow)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=process-flow
+
+      - name: i18n hardcoded scan (process admin views)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=process-admin-views
+
+      - name: i18n hardcoded scan (process admin components)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=process-admin-components
+
+      - name: i18n hardcoded scan (appointments)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=appointments
+
+      - name: i18n hardcoded scan (business-hours)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=business-hours
+
+      - name: i18n hardcoded scan (global-chrome)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=global-chrome
+
+      - name: i18n hardcoded scan (app-surfaces)
+        working-directory: ./client
+        env:
+          I18N_FAIL_ON_HARDCODED: '1'
+        run: node scripts/i18n/find-hardcoded.mjs --scoped --phase=app-surfaces
+
+      - name: i18n validate catalogs
+        working-directory: ./client
+        run: npm run i18n:validate
+
       - name: Build frontend
         working-directory: ./client
         run: npm run build

@@ -1,5 +1,9 @@
 # 🚀 Arivu Deployment Summary
 
+### Targets & Quotas scheduler
+- `ENABLE_TARGET_RECALC_SCHEDULER` (default: enabled) — nightly batch recalc for active targets
+- `TARGET_RECALC_CRON` (default: `30 2 * * *`)
+
 ## ✅ Configuration Complete!
 
 Your Arivu CRM is now properly configured for both **local development** and **production deployment**.
@@ -148,7 +152,8 @@ MONGO_URI=mongodb://localhost:27017/arivu
 ```
 
 **To use:**
-1. Install: `brew install mongodb-community`
+1. Install: `
+`
 2. Start: `brew services start mongodb-community`
 3. Set in `.env`: `MONGO_URI=mongodb://localhost:27017/arivu`
 4. Run: `./start.sh`

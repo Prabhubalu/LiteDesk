@@ -1,25 +1,22 @@
 <template>
   <div class="p-6">
     <div class="mb-6">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Types</h3>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.peopleTypesTitle') }}</h3>
       <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
-        Roles shown when someone participates in an app (for example Lead and Contact in Sales, or Customer and Agent in Helpdesk).
-        Changes apply everywhere those dropdowns are used—no page reload needed.
+        {{ t('settings.peopleTypesIntro') }}
       </p>
       <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 space-y-1">
         <p class="text-xs text-blue-800 dark:text-blue-400">
-          At least one role is required per app. Names cannot duplicate (ignoring case).
+          {{ t('settings.peopleTypesHintMinOne') }}
         </p>
         <p class="text-xs text-blue-800 dark:text-blue-400">
-          The <strong>default role</strong> is used in quick create and attach when no type is pre-selected.
+          {{ t('settings.peopleTypesHintDefaultRole') }}
         </p>
         <p class="text-xs text-blue-800 dark:text-blue-400">
-          Colors work like <strong>picklist options</strong>: use the swatch or hex field, and the preview pill matches what people see in lists.
+          {{ t('settings.peopleTypesHintColors') }}
         </p>
         <p class="text-xs text-blue-800 dark:text-blue-400">
-          Optionally choose <strong>which participation fields</strong> appear in quick create and attach when a type is
-          selected. Leaving a type on <strong>platform defaults</strong> does not store anything—if defaults change later,
-          this type picks them up. Unchecking every field stores <strong>no fields</strong> for that type (explicit).
+          {{ t('settings.peopleTypesHintParticipation') }}
         </p>
       </div>
     </div>
@@ -27,15 +24,14 @@
     <div class="flex flex-col sm:flex-row sm:items-end gap-4 mb-6 max-w-3xl">
       <div class="flex-1 min-w-0">
         <label for="people-types-app" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Application
+          {{ t('settings.peopleTypesAppLabel') }}
         </label>
         <select
           id="people-types-app"
           v-model="selectedAppKey"
           class="w-full max-w-md px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
         >
-          <option value="SALES">Sales</option>
-          <option value="HELPDESK">Helpdesk</option>
+          <option v-for="opt in appOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
         </select>
       </div>
     </div>
@@ -54,7 +50,7 @@
 
       <div v-if="rows.length > 0">
         <label for="people-types-default" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Default role
+          {{ t('settings.peopleTypesDefaultRoleLabel') }}
         </label>
         <select
           id="people-types-default"
@@ -70,14 +66,14 @@
       <!-- Match ModulesAndFields picklist options block -->
       <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
         <div class="flex items-center justify-between mb-2">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300"> Role types </label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('settings.peopleTypesRoleTypesLabel') }}</label>
           <button
             type="button"
             class="px-3 py-1.5 bg-indigo-600 text-white rounded text-xs hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
             :disabled="saving || loading"
             @click="openAddRole"
           >
-            Add Option
+            {{ t('settings.modFieldsAddOption') }}
           </button>
         </div>
 
@@ -85,7 +81,7 @@
           v-if="rows.length === 0"
           class="text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-white/5 border border-dashed border-gray-200 dark:border-white/10 rounded-lg p-4 text-center"
         >
-          No roles defined. Click &quot;Add Option&quot; to add values.
+          {{ t('settings.peopleTypesEmptyRoles') }}
         </div>
 
         <div v-else class="space-y-2">
@@ -101,15 +97,15 @@
             @dragend="onDragEnd"
           >
             <div class="flex items-center gap-3">
-            <div class="cursor-grab select-none text-gray-400 dark:text-gray-500" title="Drag to reorder">⋮⋮</div>
+            <div class="cursor-grab select-none text-gray-400 dark:text-gray-500" :title="t('settings.modFieldsTitleDragReorder')">⋮⋮</div>
 
             <label class="inline-flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 shrink-0">
-              <span>Color</span>
+              <span>{{ t('settings.modFieldsColor') }}</span>
               <input
                 type="color"
                 :value="row.color"
                 class="h-7 w-9 cursor-pointer rounded border border-gray-300 bg-white p-0.5 dark:border-gray-600 dark:bg-gray-800"
-                :aria-label="`Color for ${row.value}`"
+                :aria-label="t('settings.modFieldsColorForOption', { label: row.value })"
                 @input="onRowColorInput(index, $event)"
               />
             </label>
@@ -127,8 +123,7 @@
               <template v-else>
                 <span class="text-sm font-medium text-gray-900 dark:text-white">{{ row.value }}</span>
                 <p v-if="usageCountForDisplay(row.value) > 0" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                  In use by {{ usageCountForDisplay(row.value) }}
-                  {{ usageCountForDisplay(row.value) === 1 ? 'person' : 'people' }}
+                  {{ t('settings.peopleTypesInUse', { count: usageCountForDisplay(row.value) }) }}
                 </p>
               </template>
             </div>
@@ -144,7 +139,7 @@
             <button
               type="button"
               class="p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded shrink-0"
-              :title="editingRowIdx === index ? 'Save' : 'Rename'"
+              :title="getRowEditTitle(index)"
               @click="editingRowIdx === index ? saveRowEdit(index) : startRowEdit(index)"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -160,7 +155,7 @@
             <button
               type="button"
               class="p-1.5 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-200 rounded shrink-0 disabled:opacity-30"
-              title="Remove"
+              :title="t('actions.remove')"
               :disabled="rows.length <= 1 || saving"
               @click="requestRemoveRole(index)"
             >
@@ -178,7 +173,7 @@
             <div class="ml-7 pl-3 border-l-2 border-gray-200 dark:border-gray-600 space-y-2">
               <div class="flex items-center justify-between gap-2 flex-wrap">
                 <span class="text-xs font-medium text-gray-600 dark:text-gray-400">
-                  Fields when this type is selected
+                  {{ t('settings.peopleTypesFieldsWhenSelected') }}
                 </span>
                 <button
                   v-if="row.fields !== undefined"
@@ -186,16 +181,14 @@
                   class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
                   @click="resetFieldsToPlatformDefaults(index)"
                 >
-                  Reset to platform defaults
+                  {{ t('settings.peopleTypesResetPlatformDefaults') }}
                 </button>
               </div>
               <p
                 v-if="participationFieldOptions.length === 0 && !fieldsLoadError"
                 class="text-xs text-gray-500 dark:text-gray-400"
               >
-                No participation fields are defined for {{ selectedAppKey }} in the platform model, and no extra fields
-                are tagged with this app on the People module. For Helpdesk, add app-scoped custom fields in
-                <strong>Modules &amp; fields</strong> if needed.
+                {{ t('settings.peopleTypesNoParticipationFields', { appKey: selectedAppKey }) }}
               </p>
               <p v-if="fieldsLoadError" class="text-xs text-amber-700 dark:text-amber-300">
                 {{ fieldsLoadError }}
@@ -204,27 +197,27 @@
                 v-if="participationFieldOptions.length > 0 && row.fields === undefined && getEffectiveFields(row).length > 0"
                 class="text-xs text-gray-500 dark:text-gray-400"
               >
-                Using platform defaults for this type.
-                <span class="text-gray-400 dark:text-gray-500"> (Inherited — not saved)</span>
+                {{ t('settings.peopleTypesUsingPlatformDefaults') }}
+                <span class="text-gray-400 dark:text-gray-500">{{ t('settings.peopleTypesInheritedNotSaved') }}</span>
               </p>
               <p
                 v-else-if="participationFieldOptions.length > 0 && row.fields === undefined && getEffectiveFields(row).length === 0"
                 class="text-xs text-gray-500 dark:text-gray-400"
               >
-                Platform default is no fields for this type.
-                <span class="text-gray-400 dark:text-gray-500"> (Inherited — not saved)</span>
+                {{ t('settings.peopleTypesPlatformDefaultNoFields') }}
+                <span class="text-gray-400 dark:text-gray-500">{{ t('settings.peopleTypesInheritedNotSaved') }}</span>
               </p>
               <p
                 v-else-if="participationFieldOptions.length > 0 && row.fields !== undefined && row.fields.length > 0"
                 class="text-xs text-gray-600 dark:text-gray-300"
               >
-                Custom fields
+                {{ t('settings.peopleTypesCustomFields') }}
               </p>
               <p
                 v-else-if="participationFieldOptions.length > 0 && row.fields !== undefined && row.fields.length === 0"
                 class="text-xs text-amber-800 dark:text-amber-200/90"
               >
-                No fields for this type (explicit)
+                {{ t('settings.peopleTypesNoFieldsExplicit') }}
               </p>
               <div
                 v-if="participationFieldOptions.length > 0"
@@ -256,7 +249,7 @@
           :disabled="saving || loading || !isDirty"
           @click="resetLocal"
         >
-          Reset
+          {{ t('settings.peopleTypesReset') }}
         </button>
         <button
           type="button"
@@ -265,7 +258,7 @@
           @click="save"
         >
           <span v-if="saving" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-          {{ saving ? 'Saving…' : 'Save changes' }}
+          {{ saving ? t('states.saving') : t('settings.saveChanges') }}
         </button>
       </div>
     </div>
@@ -285,21 +278,21 @@
           @click.stop
         >
           <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-            <h3 id="people-types-add-title" class="text-lg font-semibold text-gray-900 dark:text-white">Add role</h3>
+            <h3 id="people-types-add-title" class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.peopleTypesAddRole') }}</h3>
           </div>
           <div class="p-4 space-y-4">
             <div>
-              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Role name</label>
+              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.peopleTypesRoleNameLabel') }}</label>
               <input
                 v-model="newRoleValue"
                 type="text"
-                placeholder="e.g. Partner"
+                :placeholder="t('settings.peopleTypesRoleNamePh')"
                 class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white"
                 @keyup.enter="submitAddRole"
               />
             </div>
             <div>
-              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Color</label>
+              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsColor') }}</label>
               <div class="flex items-center gap-3 flex-wrap">
                 <input
                   v-model="newRoleColor"
@@ -309,7 +302,7 @@
                 <input
                   v-model="newRoleColor"
                   type="text"
-                  placeholder="#3B82F6"
+                  :placeholder="t('settings.modFieldsColorHexPh')"
                   class="flex-1 min-w-[8rem] px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm font-mono text-gray-900 dark:text-white"
                   pattern="^#[0-9A-Fa-f]{6}$"
                 />
@@ -317,7 +310,7 @@
                   class="px-3 py-1 rounded-full text-xs font-medium text-white shrink-0"
                   :style="{ backgroundColor: peopleTypeColorToHex(newRoleColor) }"
                 >
-                  Preview
+                  {{ t('settings.modFieldsPreview') }}
                 </div>
               </div>
             </div>
@@ -327,14 +320,14 @@
                 class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 rounded"
                 @click="showAddRole = false"
               >
-                Cancel
+                {{ t('actions.cancel') }}
               </button>
               <button
                 type="button"
                 class="px-4 py-2 bg-indigo-600 text-white rounded text-sm hover:bg-indigo-700"
                 @click="submitAddRole"
               >
-                Add
+                {{ t('actions.add') }}
               </button>
             </div>
           </div>
@@ -356,15 +349,13 @@
           @click.stop
         >
           <h4 id="people-types-delete-title" class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            Remove role?
+            {{ t('settings.peopleTypesDeleteTitle') }}
           </h4>
           <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
             <template v-if="deleteConfirmCount > 0">
-              This role is used by {{ deleteConfirmCount }}
-              {{ deleteConfirmCount === 1 ? 'person' : 'people' }}. Removing it from the list does not change existing
-              records; they will keep their current role value until updated.
+              {{ t('settings.peopleTypesDeleteInUse', { count: deleteConfirmCount }) }}
             </template>
-            <template v-else> Remove this role from the list? </template>
+            <template v-else>{{ t('settings.peopleTypesDeleteEmpty') }}</template>
           </p>
           <div class="flex justify-end gap-2">
             <button
@@ -372,14 +363,14 @@
               class="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
               @click="cancelDeleteRole"
             >
-              Cancel
+              {{ t('actions.cancel') }}
             </button>
             <button
               type="button"
               class="px-4 py-2 text-sm font-medium rounded-lg bg-red-600 hover:bg-red-700 text-white"
               @click="confirmRemoveRole"
             >
-              Remove
+              {{ t('actions.remove') }}
             </button>
           </div>
         </div>
@@ -390,6 +381,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import apiClient from '@/utils/apiClient';
 import { invalidatePeopleTypesCache } from '@/utils/peopleTypesInvalidate';
@@ -403,6 +395,17 @@ import {
   type PeopleTypeDef
 } from '@/utils/peopleTypeColors';
 import { getAppFields, getParticipationFields } from '@/platform/fields/peopleFieldModel';
+
+const { t } = useI18n();
+
+const appOptions = computed(() => [
+  { value: 'SALES' as const, label: t('settings.peopleTypesAppSales') },
+  { value: 'HELPDESK' as const, label: t('settings.peopleTypesAppHelpdesk') }
+]);
+
+function getRowEditTitle(index: number): string {
+  return editingRowIdx.value === index ? t('actions.save') : t('settings.modFieldsRename');
+}
 
 const DEFAULTS = {
   SALES: ['Lead', 'Contact'],
@@ -686,12 +689,12 @@ function openAddRole() {
 function submitAddRole() {
   const v = newRoleValue.value.trim();
   if (!v) {
-    clientError.value = 'Enter a role name.';
+    clientError.value = t('settings.peopleTypesErrEnterName');
     return;
   }
   const dup = rows.value.some((r) => r.value.trim().toLowerCase() === v.toLowerCase());
   if (dup) {
-    clientError.value = 'A role with that name already exists.';
+    clientError.value = t('settings.peopleTypesErrDuplicateExists');
     return;
   }
   clearClientError();
@@ -723,7 +726,7 @@ function saveRowEdit(index: number) {
   const low = next.toLowerCase();
   const dup = rows.value.some((r, i) => i !== index && r.value.trim().toLowerCase() === low);
   if (dup) {
-    clientError.value = 'Duplicate role names are not allowed.';
+    clientError.value = t('settings.peopleTypesErrDuplicateNames');
     return;
   }
   clearClientError();
@@ -753,7 +756,7 @@ async function load() {
     ]);
     await fetchUsage();
     if (modRes && typeof modRes === 'object' && '__error' in modRes) {
-      fieldsLoadError.value = 'Could not load People fields for this screen. Check your connection and permissions.';
+      fieldsLoadError.value = t('settings.peopleTypesFieldsLoadConnection');
       peopleModuleFields.value = [];
     } else if (
       modRes &&
@@ -768,7 +771,7 @@ async function load() {
     } else {
       peopleModuleFields.value = [];
       if (modRes && typeof modRes === 'object' && 'success' in modRes && !(modRes as { success?: boolean }).success) {
-        fieldsLoadError.value = 'Could not load People module fields.';
+        fieldsLoadError.value = t('settings.peopleTypesFieldsLoadFailed');
       }
     }
     const fb = defaultsFor(selectedAppKey.value);
@@ -786,7 +789,7 @@ async function load() {
     snapshotJson.value = snapshotFromState();
     editingRowIdx.value = -1;
   } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : 'Failed to load roles';
+    const msg = e instanceof Error ? e.message : t('settings.peopleTypesFailedLoad');
     clientError.value = msg;
     rows.value = defaultRowsFor(selectedAppKey.value);
     peopleModuleFields.value = [];
@@ -869,17 +872,17 @@ function resetLocal() {
 
 function validateClient(): string | null {
   const trimmed = rows.value.map((r) => String(r.value).trim());
-  if (trimmed.some((t) => !t)) {
-    return 'Each role must have a non-empty name.';
+  if (trimmed.some((name) => !name)) {
+    return t('settings.peopleTypesErrEmptyName');
   }
   if (trimmed.length < 1) {
-    return 'At least one role is required.';
+    return t('settings.peopleTypesErrAtLeastOne');
   }
   const seen = new Set<string>();
-  for (const t of trimmed) {
-    const low = t.toLowerCase();
+  for (const name of trimmed) {
+    const low = name.toLowerCase();
     if (seen.has(low)) {
-      return 'Duplicate role names are not allowed.';
+      return t('settings.peopleTypesErrDuplicateNames');
     }
     seen.add(low);
   }
@@ -932,7 +935,7 @@ async function save() {
       message?: string;
     };
     if (!res?.success) {
-      throw new Error(res?.message || 'Save failed');
+      throw new Error(res?.message || t('settings.peopleTypesSaveFailed'));
     }
     const d = res.data;
     if (d && typeof d === 'object') {
@@ -958,7 +961,7 @@ async function save() {
         ? String((e as { response: { data: { message: string } } }).response.data.message)
         : e instanceof Error
           ? e.message
-          : 'Failed to save';
+          : t('settings.peopleTypesFailedSave');
     clientError.value = msg;
   } finally {
     saving.value = false;

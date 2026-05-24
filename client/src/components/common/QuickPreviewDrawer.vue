@@ -34,6 +34,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { computed, ref, watch, onMounted, onUnmounted, nextTick, provide } from 'vue';
 import ModuleRecordPage from '@/pages/ModuleRecordPage.vue';
 
@@ -71,6 +72,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close', 'update', 'navigate-prev', 'navigate-next']);
+
+const { t } = useI18n();
 
 // Provide quick-preview prev/next so embedded record pages (Task, Deal, Generic) can show them in the right-pane header
 provide('quickPreviewNav', computed(() => ({

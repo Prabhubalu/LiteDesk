@@ -38,12 +38,12 @@ export function validateScheduleForm(form: {
   linkedTo?: { type?: string; id?: string | null };
   isDefault?: boolean;
 }): string | null {
-  if (!form.name?.trim()) return 'Please enter a schedule name.';
+  if (!form.name?.trim()) return 'settingsBhValidateNameRequired';
   const type = form.linkedTo?.type || 'company';
-  if (type === 'group' && !form.linkedTo?.id) return 'Please select a team.';
-  if (type === 'user' && !form.linkedTo?.id) return 'Please select a user.';
+  if (type === 'group' && !form.linkedTo?.id) return 'settingsBhValidateTeamRequired';
+  if (type === 'user' && !form.linkedTo?.id) return 'settingsBhValidateUserRequired';
   if (form.isDefault && type !== 'company') {
-    return 'Only company-wide schedules can be set as the default.';
+    return 'settingsBhValidateDefaultCompanyOnly';
   }
   return null;
 }

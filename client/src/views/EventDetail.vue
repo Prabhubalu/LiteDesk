@@ -43,7 +43,7 @@
     <div v-if="loading" class="flex items-center justify-center min-h-screen">
       <div class="text-center">
         <div class="w-16 h-16 border-4 border-gray-200 dark:border-gray-700 border-t-indigo-600 dark:border-t-indigo-500 rounded-full animate-spin mx-auto mb-4"></div>
-        <p class="text-gray-600 dark:text-gray-400 font-medium">Loading event...</p>
+        <p class="text-gray-600 dark:text-gray-400 font-medium">{{ t('events.eventDetailLoadingEvent') }}</p>
       </div>
     </div>
 
@@ -53,11 +53,9 @@
         <svg class="mx-auto h-12 w-12 text-red-500 dark:text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Error Loading Event</h2>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ t('events.eventDetailErrorLoadingEvent') }}</h2>
         <p class="text-gray-600 dark:text-gray-400 mb-6">{{ error }}</p>
-        <button @click="$router.push('/events')" class="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium">
-          Back to Events
-        </button>
+        <button @click="$router.push('/events')" class="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium">{{ t('events.eventDetailBackToEvents2') }}</button>
       </div>
     </div>
 
@@ -69,7 +67,7 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          <span class="font-medium">Back to Events</span>
+          <span class="font-medium">{{ t('events.eventDetailBackToEvents') }}</span>
         </button>
 
         <div class="flex items-center gap-2">
@@ -91,13 +89,9 @@
             <button
               @click="goToExecution"
               class="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors"
-            >
-              Open Execution
-            </button>
+            >{{ t('events.eventDetailOpenExecution') }}</button>
             <!-- Contextual helper text -->
-            <p v-if="!isReadyForExecution" class="text-xs text-gray-500 dark:text-gray-400 text-right max-w-xs">
-              Execution may be blocked until readiness conditions are met.
-            </p>
+            <p v-if="!isReadyForExecution" class="text-xs text-gray-500 dark:text-gray-400 text-right max-w-xs">{{ t('events.eventDetailExecutionMayBeBlockedUntilReadiness') }}</p>
           </div>
           
           <!-- Edit button (disabled when locked, approved, or closed) -->
@@ -112,12 +106,8 @@
                 : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
             ]"
             :title="isEventLocked ? 'Event is locked for editing' : 'Edit event'"
-          >
-            Edit
-          </button>
-          <button @click="deleteEvent" class="px-3 py-1.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg font-medium transition-all">
-            Delete
-          </button>
+          >{{ t('settings.groupsEditTitle') }}</button>
+          <button @click="deleteEvent" class="px-3 py-1.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg font-medium transition-all">{{ t('settings.modFieldsDelete') }}</button>
         </div>
       </div>
 
@@ -195,7 +185,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div class="flex-1">
-                <div class="text-xs text-gray-500 dark:text-gray-400">Audit Workflow State</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">{{ t('events.eventDetailAuditWorkflowState2') }}</div>
                 <div class="mt-1">
                   <span :class="getAuditStateBadgeClass(event.auditState)" class="capitalize">
                     {{ formatAuditState(event.auditState) }}
@@ -211,10 +201,8 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
               <div class="flex-1">
-                <div class="text-xs text-gray-500 dark:text-gray-400">Geo Required</div>
-                <div class="mt-1 text-sm font-medium text-gray-900 dark:text-white">
-                  Always enabled (locked for audit events)
-                </div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">{{ t('events.eventDetailGeoRequired') }}</div>
+                <div class="mt-1 text-sm font-medium text-gray-900 dark:text-white">{{ t('events.eventDetailAlwaysEnabledLockedForAuditEvents') }}</div>
               </div>
             </div>
             
@@ -223,7 +211,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div class="flex-1">
-                <div class="text-xs text-gray-500 dark:text-gray-400">Time</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">{{ t('events.eventDetailTime') }}</div>
                 <div class="text-sm font-medium text-gray-900 dark:text-white mt-0.5">
                   {{ formatDateTime(event.startDateTime || event.startDate) }}
                 </div>
@@ -241,7 +229,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               </svg>
               <div class="flex-1">
-                <div class="text-xs text-gray-500 dark:text-gray-400">Location</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">{{ t('events.eventDetailLocation') }}</div>
                 <div class="text-sm font-medium text-gray-900 dark:text-white mt-0.5">{{ event.location }}</div>
               </div>
             </div>
@@ -251,7 +239,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
               </svg>
               <div class="flex-1">
-                <div class="text-xs text-gray-500 dark:text-gray-400">Meeting Link</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">{{ t('events.eventDetailMeetingLink') }}</div>
                 <a :href="event.location" target="_blank" class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline mt-0.5 block truncate">
                   {{ event.location }}
                 </a>
@@ -263,7 +251,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
               </svg>
               <div class="flex-1">
-                <div class="text-xs text-gray-500 dark:text-gray-400">Tags</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.assignRulesCondFieldTags') }}</div>
                 <div class="flex flex-wrap gap-1.5 mt-1">
                   <span v-for="tag in event.tags" :key="tag" class="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 rounded text-xs font-medium">
                     {{ tag }}
@@ -302,7 +290,7 @@
           
           <!-- Execution Readiness Section (Read-Only) -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Execution Readiness</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('events.eventDetailExecutionReadiness') }}</h3>
             
             <!-- Ready State -->
             <div v-if="isReadyForExecution" class="flex items-start gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
@@ -310,9 +298,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div class="flex-1">
-                <p class="text-sm font-medium text-green-900 dark:text-green-300">
-                  This event is ready for execution.
-                </p>
+                <p class="text-sm font-medium text-green-900 dark:text-green-300">{{ t('events.eventDetailThisEventIsReadyForExecution') }}</p>
               </div>
             </div>
             
@@ -323,18 +309,14 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
                 <div class="flex-1">
-                  <p class="text-sm font-medium text-yellow-900 dark:text-yellow-300 mb-2">
-                    This event is not ready for execution.
-                  </p>
+                  <p class="text-sm font-medium text-yellow-900 dark:text-yellow-300 mb-2">{{ t('events.eventDetailThisEventIsNotReadyFor') }}</p>
                   <ul v-if="executionBlockers.length > 0" class="space-y-1.5">
                     <li v-for="blocker in executionBlockers" :key="blocker.code" class="text-sm text-yellow-800 dark:text-yellow-400 flex items-start gap-2">
                       <span class="text-yellow-600 dark:text-yellow-500 mt-0.5">•</span>
                       <span>{{ blocker.message }}</span>
                     </li>
                   </ul>
-                  <p v-else class="text-sm text-yellow-800 dark:text-yellow-400">
-                    Unable to determine readiness status.
-                  </p>
+                  <p v-else class="text-sm text-yellow-800 dark:text-yellow-400">{{ t('events.eventDetailUnableToDetermineReadinessStatus') }}</p>
                 </div>
               </div>
             </div>
@@ -344,9 +326,7 @@
           <!-- ARCHITECTURAL NOTE: This section explains why actions may or may not be allowed -->
           <!-- It does NOT enforce, hide, disable, or change behavior -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Action Availability
-            </h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('events.eventDetailActionAvailability') }}</h3>
             
             <div class="space-y-3">
               <div
@@ -389,7 +369,7 @@
                ============================================================================ -->
           <!-- Execution History Section -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Execution History</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('events.eventDetailExecutionHistory') }}</h3>
             
             <!-- Canonical Activity Timeline (Generic and Audit) -->
             <div v-if="activityLog.length > 0" class="relative">
@@ -431,15 +411,13 @@
             </div>
             
             <!-- No history message -->
-            <div v-else class="text-center py-6 text-sm text-gray-500 dark:text-gray-400">
-              No execution activity recorded yet.
-            </div>
+            <div v-else class="text-center py-6 text-sm text-gray-500 dark:text-gray-400">{{ t('events.eventDetailNoExecutionActivityRecordedYet') }}</div>
             
             <!-- Audit-specific sections (if audit event) -->
             <div v-if="isAuditEvent" class="space-y-6 mt-6">
               <!-- Geo Tracking Summary (Read-Only) -->
               <div v-if="isAuditEvent" class="pt-4 border-t border-gray-200 dark:border-gray-700">
-                <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Location Tracking Summary</h4>
+                <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('events.eventDetailLocationTrackingSummary') }}</h4>
                 <div v-if="event.geoRequired" class="space-y-3">
                   <div v-if="event.checkIn || event.checkOut" class="space-y-2">
                     <div v-if="event.checkIn" class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
@@ -448,7 +426,7 @@
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Check-In Location</span>
+                        <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ t('events.eventDetailCheckInLocation') }}</span>
                       </div>
                       <p class="text-xs text-gray-600 dark:text-gray-400">
                         {{ formatDateTime(event.checkIn.timestamp) }}
@@ -463,7 +441,7 @@
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Check-Out Location</span>
+                        <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ t('events.eventDetailCheckOutLocation') }}</span>
                       </div>
                       <p class="text-xs text-gray-600 dark:text-gray-400">
                         {{ formatDateTime(event.checkOut.timestamp) }}
@@ -473,29 +451,23 @@
                       </p>
                     </div>
                   </div>
-                  <div v-else class="text-center py-4 text-sm text-gray-500 dark:text-gray-400">
-                    Location data not yet recorded.
-                  </div>
+                  <div v-else class="text-center py-4 text-sm text-gray-500 dark:text-gray-400">{{ t('events.eventDetailLocationDataNotYetRecorded') }}</div>
                 </div>
-                <div v-else class="text-center py-4 text-sm text-gray-500 dark:text-gray-400">
-                  Location tracking not required for this event.
-                </div>
+                <div v-else class="text-center py-4 text-sm text-gray-500 dark:text-gray-400">{{ t('events.eventDetailLocationTrackingNotRequiredForThis') }}</div>
               </div>
             </div>
           </div>
           
           <!-- Audit-Specific Explanation Block (Read-Only) -->
           <div v-if="isAuditEvent" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Audit Event Workflow</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('events.eventDetailAuditEventWorkflow') }}</h3>
             <div class="space-y-4">
               <div class="flex items-start gap-3">
                 <svg class="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <div class="flex-1">
-                  <p class="text-sm text-gray-700 dark:text-gray-300">
-                    Audit events follow a controlled execution workflow. They cannot be manually completed. Completion occurs only when the audit workflow reaches a closed state.
-                  </p>
+                  <p class="text-sm text-gray-700 dark:text-gray-300">{{ t('events.eventDetailAuditEventsFollowAControlledExecution') }}</p>
                 </div>
               </div>
               
@@ -504,10 +476,8 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
                 <div class="flex-1">
-                  <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">Location Tracking</p>
-                  <p class="text-sm text-gray-600 dark:text-gray-400">
-                    Location tracking is mandatory for audits and is automatically enabled. This requirement cannot be changed.
-                  </p>
+                  <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">{{ t('events.eventDetailLocationTracking') }}</p>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('events.eventDetailLocationTrackingIsMandatoryForAudits') }}</p>
                 </div>
               </div>
               
@@ -516,10 +486,8 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
                 <div class="flex-1">
-                  <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">Completion Control</p>
-                  <p class="text-sm text-gray-600 dark:text-gray-400">
-                    Audit events cannot be manually completed. They are completed automatically when the audit workflow reaches a closed state.
-                  </p>
+                  <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">{{ t('events.eventDetailCompletionControl') }}</p>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('events.eventDetailAuditEventsCannotBeManuallyCompleted') }}</p>
                 </div>
               </div>
             </div>
@@ -531,7 +499,7 @@
               <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Event is Read-Only</h3>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('events.eventDetailEventIsReadOnly') }}</h3>
             </div>
             <p class="text-sm text-gray-600 dark:text-gray-400">
               This event has been {{ event.auditState === 'approved' ? 'approved' : 'closed' }} and is now read-only. No further actions can be taken.
@@ -544,37 +512,29 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-                View Form Response
-              </button>
+                </svg>{{ t('events.eventDetailViewFormResponse') }}</button>
             </div>
           </div>
           
           <!-- Corrective Actions Section (when auditState = pending_corrective) -->
           <div v-if="event.auditState === 'pending_corrective' && hasFormResponse" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Corrective Actions</h3>
-              <span class="px-2 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 rounded-full text-xs font-medium">
-                Pending
-              </span>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('forms.reportCorrectiveActions') }}</h3>
+              <span class="px-2 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 rounded-full text-xs font-medium">{{ t('process.flowHealthPending') }}</span>
             </div>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              This audit requires corrective actions. Review and manage corrective actions for failed audit questions.
-            </p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ t('events.eventDetailThisAuditRequiresCorrectiveActionsReview') }}</p>
             <button
               @click="viewFormResponse"
               class="w-full px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors flex items-center justify-center gap-2"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-              View Corrective Actions
-            </button>
+              </svg>{{ t('events.eventDetailViewCorrectiveActions') }}</button>
           </div>
 
           <!-- Related Records Panel (Phase 0F.1: Show Responses) -->
           <div v-if="event" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Related Records</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('records.taskRelatedRecordsTab') }}</h3>
             <RelatedRecordsPanel
               app-key="PLATFORM"
               module-key="events"
@@ -585,13 +545,13 @@
 
           <!-- Notes Card -->
           <div v-if="event.notes" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Notes</h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">{{ t('forms.fieldNotes') }}</h3>
             <p class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{{ event.notes }}</p>
           </div>
 
           <!-- Organization Card -->
           <div v-if="event.relatedToId" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Organization</h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.profileMetaOrg') }}</h3>
             <div class="flex items-center gap-2">
               <span class="text-sm text-gray-900 dark:text-white font-medium">
                 {{ getOrgName(event.relatedToId) }}
@@ -601,7 +561,7 @@
 
           <!-- Form Card -->
           <div v-if="event.linkedFormId" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Form</h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.modFieldsPbResourceForm') }}</h3>
             <div class="flex items-center justify-between gap-3">
               <span class="text-sm text-gray-900 dark:text-white font-medium truncate">
                 {{ getFormName(event.linkedFormId) }}
@@ -609,9 +569,7 @@
               <button
                 @click="openForm"
                 class="px-3 py-1.5 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700 font-medium transition-colors"
-              >
-                Open
-              </button>
+              >{{ t('settings.salesPipeStatusOpen') }}</button>
             </div>
           </div>
 
@@ -623,10 +581,10 @@
                ============================================================================ -->
           <!-- GEO Tracking Card (Read-only display) -->
           <div v-if="event.geoRequired && (event.checkIn || event.checkOut)" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">GEO Tracking History</h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('events.eventDetailGeoTrackingHistory') }}</h3>
             <div class="space-y-3">
               <div v-if="event.checkIn" class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Check-In</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('events.eventDetailCheckIn') }}</div>
                 <div class="text-sm font-medium text-gray-900 dark:text-white">
                   {{ formatDateTime(event.checkIn.timestamp) }}
                 </div>
@@ -635,7 +593,7 @@
                 </div>
               </div>
               <div v-if="event.checkOut" class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Check-Out</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('events.eventDetailCheckOut') }}</div>
                 <div class="text-sm font-medium text-gray-900 dark:text-white">
                   {{ formatDateTime(event.checkOut.timestamp) }}
                 </div>
@@ -657,10 +615,10 @@
                ============================================================================ -->
           <!-- Audit Workflow State -->
           <div v-if="isAuditEvent && event.auditState" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Audit Workflow State</h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('events.eventDetailAuditWorkflowState') }}</h3>
             <div class="space-y-2">
               <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-700 dark:text-gray-300">Current State:</span>
+                <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('events.eventDetailCurrentState') }}</span>
                 <span :class="getAuditStateBadgeClass(event.auditState)">
                   {{ formatAuditState(event.auditState) }}
                 </span>
@@ -668,7 +626,7 @@
               <!-- Workflow Progress (Read-only) -->
               <div class="mt-4">
                 <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-2">
-                  <span>Progress</span>
+                  <span>{{ t('process.wizardProgressAria') }}</span>
                   <span>{{ getAuditProgress() }}%</span>
                 </div>
                 <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
@@ -683,26 +641,26 @@
 
           <!-- Multi-Org Route Summary -->
           <div v-if="event.isMultiOrg && event.orgList" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Route Summary</h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('events.eventDetailRouteSummary') }}</h3>
             <div class="space-y-2">
               <div class="flex items-center justify-between text-sm">
-                <span class="text-gray-600 dark:text-gray-400">Total Organizations:</span>
+                <span class="text-gray-600 dark:text-gray-400">{{ t('events.eventDetailTotalOrganizations') }}</span>
                 <span class="font-medium text-gray-900 dark:text-white">{{ event.orgList.length }}</span>
               </div>
               <div class="flex items-center justify-between text-sm">
-                <span class="text-gray-600 dark:text-gray-400">Completed:</span>
+                <span class="text-gray-600 dark:text-gray-400">{{ t('events.eventDetailCompleted') }}</span>
                 <span class="font-medium text-green-600 dark:text-green-400">
                   {{ event.orgList.filter((o: any) => o.status === 'COMPLETED').length }}
                 </span>
               </div>
               <div class="flex items-center justify-between text-sm">
-                <span class="text-gray-600 dark:text-gray-400">In Progress:</span>
+                <span class="text-gray-600 dark:text-gray-400">{{ t('events.eventDetailInProgress') }}</span>
                 <span class="font-medium text-blue-600 dark:text-blue-400">
                   {{ event.orgList.filter((o: any) => o.status === 'IN_PROGRESS').length }}
                 </span>
               </div>
               <div class="flex items-center justify-between text-sm">
-                <span class="text-gray-600 dark:text-gray-400">Pending:</span>
+                <span class="text-gray-600 dark:text-gray-400">{{ t('events.eventDetailPending') }}</span>
                 <span class="font-medium text-gray-600 dark:text-gray-400">
                   {{ event.orgList.filter((o: any) => o.status === 'PENDING').length }}
                 </span>
@@ -712,28 +670,28 @@
 
           <!-- Field Sales KPI -->
           <div v-if="event.eventType === 'Field Sales Beat' && event.kpiActuals" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Sales KPIs</h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('events.eventDetailSalesKpis') }}</h3>
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <div class="text-xs text-gray-500 dark:text-gray-400">Orders Created</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">{{ t('events.eventDetailOrdersCreated') }}</div>
                 <div class="text-lg font-bold text-gray-900 dark:text-white">
                   {{ event.kpiActuals.orderCount || 0 }}
                 </div>
               </div>
               <div>
-                <div class="text-xs text-gray-500 dark:text-gray-400">Order Value</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">{{ t('events.eventDetailOrderValue') }}</div>
                 <div class="text-lg font-bold text-gray-900 dark:text-white">
                   ${{ (event.kpiActuals.orderValue || 0).toLocaleString() }}
                 </div>
               </div>
               <div>
-                <div class="text-xs text-gray-500 dark:text-gray-400">Visits Completed</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">{{ t('events.eventDetailVisitsCompleted') }}</div>
                 <div class="text-lg font-bold text-gray-900 dark:text-white">
                   {{ event.kpiActuals.visitsCompleted || 0 }}
                 </div>
               </div>
               <div>
-                <div class="text-xs text-gray-500 dark:text-gray-400">Conversion Rate</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">{{ t('events.eventDetailConversionRate') }}</div>
                 <div class="text-lg font-bold text-gray-900 dark:text-white">
                   {{ getConversionRate() }}%
                 </div>
@@ -743,7 +701,7 @@
           
           <!-- Audit History Card -->
           <div v-if="event.auditHistory && event.auditHistory.length > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Audit History</h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('events.eventDetailAuditHistory') }}</h3>
             <div class="space-y-2">
               <div v-for="(entry, index) in event.auditHistory" :key="index" class="text-xs text-gray-600 dark:text-gray-400 border-l-2 border-gray-200 dark:border-gray-700 pl-3 py-1">
                 <div class="font-medium text-gray-900 dark:text-white">{{ entry.action.replace('_', ' ').toUpperCase() }}</div>
@@ -768,16 +726,12 @@
               <textarea
                 v-model="newNote"
                 rows="3"
-                placeholder="Add a note..."
+                :placeholder="t('events.eventDetailAddANote')"
                 class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               ></textarea>
               <div class="flex items-center gap-2 mt-2">
-                <button @click="addNote" :disabled="!newNote.trim()" class="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                  Save Note
-                </button>
-                <button @click="showNoteForm = false; newNote = ''" class="px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-                  Cancel
-                </button>
+                <button @click="addNote" :disabled="!newNote.trim()" class="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed">{{ t('events.eventDetailSaveNote') }}</button>
+                <button @click="showNoteForm = false; newNote = ''" class="px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">{{ t('performance.cancelWizard') }}</button>
               </div>
             </div>
 
@@ -790,9 +744,7 @@
               <p class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{{ event.notes }}</p>
             </div>
 
-            <div v-else class="mt-4 text-center py-6 text-sm text-gray-500 dark:text-gray-400">
-              No notes yet
-            </div>
+            <div v-else class="mt-4 text-center py-6 text-sm text-gray-500 dark:text-gray-400">{{ t('events.eventDetailNoNotesYet') }}</div>
           </div>
         </div>
       </div>
@@ -810,6 +762,9 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import apiClient from '@/utils/apiClient';
@@ -1347,7 +1302,7 @@ const deleteEvent = async () => {
     router.push('/events');
   } catch (err) {
     console.error('Error deleting event:', err);
-    alert('Failed to delete event');
+    alert(t('common.eventDetailToastFailedToDeleteEvent'));
   }
 };
 
@@ -1366,7 +1321,7 @@ const addNote = async () => {
     }
   } catch (err) {
     console.error('Error adding note:', err);
-    alert('Failed to add note');
+    alert(t('common.eventDetailToastFailedToAddNote'));
   }
 };
 

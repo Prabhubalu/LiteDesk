@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useAppShellStore } from '@/stores/appShell';
@@ -8,7 +9,7 @@ import { usePlatformHome } from '@/composables/usePlatformHome';
 import { useAttentionItems } from '@/composables/useAttentionItems';
 import AttentionItemRow from '@/components/platform/AttentionItemRow.vue';
 import AppPulseCard from '@/components/platform/AppPulseCard.vue';
-import { formatPlatformGreeting } from '@/utils/platformHomeGreeting';
+import { formatPlatformGreeting, getLocalTimeOfDay } from '@/utils/platformHomeGreeting';
 import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
@@ -28,6 +29,7 @@ import {
   ClipboardDocumentCheckIcon
 } from '@heroicons/vue/24/outline';
 
+const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
 const appShellStore = useAppShellStore();
@@ -103,7 +105,44 @@ const focusLine = computed(() => snapshot.value.focusLine || '');
 const greetingTitle = computed(() => {
   const user = authStore.user;
   const fallbackName = user?.firstName || user?.name?.split?.(' ')?.[0] || '';
-  return formatPlatformGreeting(snapshot.value.greeting, fallbackName);
+  return formatPlatformGreeting(snapshot.value.greeting, t, fallbackName, getLocalTimeOfDay());
+});
+
+const attentionChipLabel = computed(() =>
+  t('platform.platformHomeNeedAttentionCount', { count: attentionTotal.value })
+);
+
+const approvalsChipLabel = computed(() =>
+  t(
+    shellCounts.value?.approvalsPending === 1
+      ? 'platform.platformHomeApprovalCountOne'
+      : 'platform.platformHomeApprovalCountMany',
+    { count: shellCounts.value?.approvalsPending ?? 0 }
+  )
+);
+
+const unreadChipLabel = computed(() =>
+  t(
+    shellCounts.value?.mail?.unread === 1
+      ? 'platform.platformHomeUnreadCountOne'
+      : 'platform.platformHomeUnreadCountMany',
+    { count: shellCounts.value?.mail?.unread ?? 0 }
+  )
+);
+
+const attentionSummaryCountLabel = computed(() => {
+  if (attentionSummary.value?.overdue > 0) {
+    return t('platform.platformHomeOverdueCount', { count: attentionSummary.value.overdue });
+  }
+  if (attentionSummary.value?.dueToday > 0) {
+    return t('platform.platformHomeDueTodayCount', { count: attentionSummary.value.dueToday });
+  }
+  return t(
+    attentionSummary.value?.total === 1
+      ? 'platform.platformHomeItemCountOne'
+      : 'platform.platformHomeItemCountMany',
+    { count: attentionSummary.value?.total ?? 0 }
+  );
 });
 
 const pulseAppKeys = computed(() => new Set(appPulses.value.map((p) => p.appKey)));
@@ -207,8 +246,8 @@ const loadAlerts = async () => {
     if (status === 'suspended' || status === 'expired') {
       alerts.value.push({
         type: 'error',
-        title: 'Instance Suspended',
-        message: 'This instance is currently suspended. Please contact support to restore access.',
+        title: t('platform.platformHomeAlertInstanceSuspendedTitle'),
+        message: t('platform.platformHomeAlertInstanceSuspendedMessage'),
         icon: XCircleIcon
       });
     }
@@ -222,15 +261,20 @@ const loadAlerts = async () => {
       if (daysRemaining < 0) {
         alerts.value.push({
           type: 'warning',
-          title: 'Trial Ended',
-          message: 'Your trial has ended. Please subscribe to continue.',
+          title: t('platform.platformHomeAlertTrialEndedTitle'),
+          message: t('platform.platformHomeAlertTrialEndedMessage'),
           icon: ExclamationTriangleIcon
         });
       } else if (daysRemaining <= 3) {
         alerts.value.push({
           type: 'warning',
-          title: 'Trial Ending Soon',
-          message: `Your trial ends in ${daysRemaining} day${daysRemaining !== 1 ? 's' : ''}.`,
+          title: t('platform.platformHomeAlertTrialEndingSoonTitle'),
+          message: t(
+            daysRemaining === 1
+              ? 'platform.platformHomeAlertTrialEndingSoonMessageOne'
+              : 'platform.platformHomeAlertTrialEndingSoonMessageMany',
+            { count: daysRemaining }
+          ),
           icon: ExclamationTriangleIcon
         });
       }
@@ -276,7 +320,7 @@ const navigateToApp = (app) => {
   const appKeyUpper = app.appKey?.toUpperCase();
   if (appKeyUpper === 'AUDIT') {
     openTab(app.route, {
-      title: app.name || 'Audit Dashboard',
+      title: app.name || t('platform.platformHomeAuditDashboard'),
       icon: 'document'
     });
   } else {
@@ -288,7 +332,7 @@ const openAppPulse = (pulse) => {
   const appKeyUpper = pulse?.appKey?.toUpperCase();
   if (appKeyUpper === 'AUDIT') {
     openTab(pulse.route, {
-      title: pulse.name || 'Audit Dashboard',
+      title: pulse.name || t('platform.platformHomeAuditDashboard'),
       icon: 'document'
     });
   } else if (pulse?.route) {
@@ -334,9 +378,7 @@ onMounted(() => {
         <p
           v-else
           class="text-gray-600 dark:text-gray-400"
-        >
-          What needs your attention right now
-        </p>
+        >{{ t('platform.platformHomeWhatNeedsYourAttentionRightNow') }}</p>
       </header>
 
       <!-- Loading State -->
@@ -357,12 +399,8 @@ onMounted(() => {
       <!-- Empty State -->
       <div v-else-if="!hasAnyData" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
         <SparklesIcon class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600 mb-4" />
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-          Welcome to your Home
-        </h3>
-        <p class="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
-          Tasks, events, and alerts from your apps will appear here as you get started.
-        </p>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('platform.platformHomeWelcomeToYourHome') }}</h3>
+        <p class="text-gray-600 dark:text-gray-400 max-w-md mx-auto">{{ t('platform.platformHomeTasksEventsAndAlertsFromYour') }}</p>
       </div>
 
       <!-- Content Sections -->
@@ -379,7 +417,7 @@ onMounted(() => {
             @click="goToAttention"
           >
             <CheckCircleIcon class="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-            {{ attentionTotal }} need attention
+            {{ attentionChipLabel }}
           </button>
           <button
             v-if="shellCounts.approvalsPending > 0"
@@ -388,7 +426,7 @@ onMounted(() => {
             @click="goToApprovals"
           >
             <ClipboardDocumentCheckIcon class="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-            {{ shellCounts.approvalsPending }} approval{{ shellCounts.approvalsPending !== 1 ? 's' : '' }}
+            {{ approvalsChipLabel }}
           </button>
           <button
             v-if="shellCounts.mail.unread > 0"
@@ -397,7 +435,7 @@ onMounted(() => {
             @click="goToInbox"
           >
             <InboxIcon class="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-            {{ shellCounts.mail.unread }} unread
+            {{ unreadChipLabel }}
           </button>
         </div>
 
@@ -408,22 +446,20 @@ onMounted(() => {
         >
           <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-                Needs your attention
-              </h2>
+              <h2 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('platform.platformHomeNeedsYourAttention') }}</h2>
               <p
                 v-if="attentionSummary.total > 0"
                 class="text-sm text-gray-500 dark:text-gray-400 mt-1"
               >
                 <span v-if="attentionSummary.overdue > 0" class="text-red-600 dark:text-red-400">
-                  {{ attentionSummary.overdue }} overdue
+                  {{ t('platform.platformHomeOverdueCount', { count: attentionSummary.overdue }) }}
                 </span>
                 <span v-if="attentionSummary.overdue > 0 && attentionSummary.dueToday > 0"> · </span>
                 <span v-if="attentionSummary.dueToday > 0">
-                  {{ attentionSummary.dueToday }} due today
+                  {{ t('platform.platformHomeDueTodayCount', { count: attentionSummary.dueToday }) }}
                 </span>
                 <span v-if="attentionSummary.overdue === 0 && attentionSummary.dueToday === 0">
-                  {{ attentionSummary.total }} item{{ attentionSummary.total !== 1 ? 's' : '' }}
+                  {{ attentionSummaryCountLabel }}
                 </span>
               </p>
             </div>
@@ -431,9 +467,7 @@ onMounted(() => {
               type="button"
               class="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
               @click="goToAttention"
-            >
-              View all
-              <span v-if="hasMoreAttention">({{ attentionSummary.total }})</span>
+            >{{ t('settings.roleDrawerPermViewAll') }}<span v-if="hasMoreAttention">({{ attentionSummary.total }})</span>
               <ArrowRightIcon class="w-4 h-4" />
             </button>
           </div>
@@ -461,9 +495,7 @@ onMounted(() => {
           class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
         >
           <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-              Continue where you left off
-            </h2>
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('platform.platformHomeContinueWhereYouLeftOff') }}</h2>
           </div>
           <div class="p-6 space-y-2">
             <button
@@ -488,9 +520,7 @@ onMounted(() => {
 
         <!-- App pulse cards -->
         <section v-if="appPulses.length > 0">
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-            Your apps
-          </h2>
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">{{ t('platform.platformHomeYourApps') }}</h2>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <AppPulseCard
               v-for="pulse in appPulses"
@@ -508,9 +538,7 @@ onMounted(() => {
         >
           <div class="p-6 border-b border-gray-200 dark:border-gray-700">
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-              <SparklesIcon class="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-              Quick Access
-            </h2>
+              <SparklesIcon class="w-6 h-6 text-indigo-600 dark:text-indigo-400" />{{ t('platform.platformHomeQuickAccess') }}</h2>
           </div>
           
           <div class="p-6">
@@ -543,9 +571,7 @@ onMounted(() => {
         >
           <div class="p-6 border-b border-gray-200 dark:border-gray-700">
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-              <ExclamationTriangleIcon class="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-              Alerts
-            </h2>
+              <ExclamationTriangleIcon class="w-6 h-6 text-indigo-600 dark:text-indigo-400" />{{ t('platform.platformHomeAlerts') }}</h2>
           </div>
           
           <div class="p-6">

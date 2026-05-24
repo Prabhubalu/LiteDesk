@@ -5,6 +5,9 @@ import { useAppShellStore } from '@/stores/appShell';
 import NotificationBell from '@/components/notifications/NotificationBell.vue';
 import NotificationDrawer from '@/components/notifications/NotificationDrawer.vue';
 import { computed, inject, ref, watch, onMounted, onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { buildSidebarStructureForSession } from '@/utils/buildSidebarForSession';
 import { invalidateTenantSchemaCaches } from '@/utils/tenantSchemaApiCache';
 import { createPermissionSnapshot, hasPermission as hasSnapshotPermission } from '@/types/permission-snapshot.types';
@@ -398,7 +401,7 @@ const logoSrc = computed(() => {
               <TransitionChild as="template" enter="ease-in-out duration-300" enter-from="opacity-0" enter-to="opacity-100" leave="ease-in-out duration-300" leave-from="opacity-100" leave-to="opacity-0">
                 <div class="absolute top-0 left-full flex w-16 justify-center pt-5">
                   <button type="button" class="-m-2.5 p-2.5" @click="sidebarOpen = false">
-                    <span class="sr-only">Close sidebar</span>
+                    <span class="sr-only">{{ t('navigation.closeSidebar') }}</span>
                     <XMarkIcon class="size-6 text-white dark:text-white" aria-hidden="true" />
                   </button>
                 </div>
@@ -422,7 +425,7 @@ const logoSrc = computed(() => {
 
                   <!-- Empty State -->
                   <div v-if="!loadingSidebar && !sidebarStructure" class="px-2 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                    No navigation available
+                    {{ t('navigation.noNav') }}
                   </div>
                 </div>
               </div>
@@ -466,7 +469,7 @@ const logoSrc = computed(() => {
 
         <!-- Empty State -->
         <div v-if="!loadingSidebar && !sidebarStructure" class="px-2 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-          No navigation available
+          {{ t('navigation.noNav') }}
         </div>
       </div>
 
@@ -475,7 +478,7 @@ const logoSrc = computed(() => {
     <!-- Mobile top bar -->
     <div class="fixed top-0 left-0 right-0 z-50 flex items-center gap-x-6 bg-white dark:bg-gray-900 px-4 py-3 h-16 after:pointer-events-none after:absolute after:inset-0 after:border-b after:border-gray-200 dark:after:border-white/10 dark:after:bg-black/10 sm:px-6 lg:hidden">
       <button type="button" class="-m-2.5 p-2.5 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white lg:hidden" @click="sidebarOpen = true">
-        <span class="sr-only">Open sidebar</span>
+        <span class="sr-only">{{ t('navigation.openSidebar') }}</span>
         <Bars3Icon class="size-6 text-gray-900 dark:text-gray-400" aria-hidden="true" />
       </button>
       <div class="flex-1 text-base font-semibold text-gray-900 dark:text-white">{{ mobileHeaderTitle }}</div>

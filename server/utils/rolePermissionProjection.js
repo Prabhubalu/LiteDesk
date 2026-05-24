@@ -174,6 +174,18 @@ function projectRoleToUserPermissions(rolePlain, appAccess = []) {
     edit: p.settings?.edit === true
   };
 
+  const perfTargets = p.performance?.targets || {};
+  const performance = {
+    targets: {
+      view: perfTargets.view === true,
+      create: perfTargets.create === true,
+      edit: perfTargets.edit === true,
+      activate: perfTargets.activate === true,
+      manageTypes: perfTargets.manageTypes === true,
+      manageOrgSettings: perfTargets.manageOrgSettings === true
+    }
+  };
+
   const reports = {
     viewStandard: p.reports?.read === true,
     viewCustom: p.reports?.read === true,
@@ -181,7 +193,23 @@ function projectRoleToUserPermissions(rolePlain, appAccess = []) {
     exportReports: p.reports?.export === true
   };
 
-  const casesModule = buildCasesEnvelopeFromAppAccess(access);
+  const roleCases = p.cases;
+  const hasRoleCasesMatrix =
+    roleCases &&
+    (roleCases.read === true ||
+      roleCases.create === true ||
+      roleCases.update === true ||
+      roleCases.delete === true);
+
+  const casesModule = hasRoleCasesMatrix
+    ? {
+        view: roleCases.read === true,
+        create: roleCases.create === true,
+        edit: roleCases.update === true,
+        delete: roleCases.delete === true,
+        viewAll: viewAllForModule(roleCases, rolePlain)
+      }
+    : buildCasesEnvelopeFromAppAccess(access);
 
   const projected = {
     contacts,
@@ -195,6 +223,7 @@ function projectRoleToUserPermissions(rolePlain, appAccess = []) {
     items,
     imports,
     settings,
+    performance,
     reports,
     cases: casesModule
   };
@@ -292,15 +321,19 @@ function roleAllowsPlatformOwnedFieldEdits(rolePlain) {
 }
 
 /**
- * Applies projection + platform-field elevation flag to req.user / User document / plain object.
+ * Applies projection + runtime grants + org guards to req.user / User document.
  * @param {import('mongoose').Document|object} user
  * @param {object|null} roleLean
+ * @param {object|null} [organization]
  */
-function applyProjectionToUser(user, roleLean) {
+async function applyProjectionToUser(user, roleLean, organization = null) {
   if (!user || !roleLean) return;
-  const access = Array.isArray(user.appAccess) ? user.appAccess : [];
-  const projected = projectRoleToUserPermissions(roleLean, access);
-  user.permissions = projected;
+  const { materializeRuntimePermissionsOnUser } = require('../services/runtimePermissionResolver');
+  await materializeRuntimePermissionsOnUser(user, {
+    roleLean,
+    organization,
+    appAccess: user.appAccess
+  });
   user._roleAllowsPlatformOwnedFieldEdit = roleAllowsPlatformOwnedFieldEdits(roleLean);
 }
 
@@ -314,14 +347,34 @@ function applyProjectionToUser(user, roleLean) {
 async function materializeEffectiveCRMEnvelopeOnUser(user, options = {}) {
   if (!user) return;
 
+  const Organization = require('../models/Organization');
+  const { materializeRuntimePermissionsOnUser } = require('../services/runtimePermissionResolver');
+
   try {
+    let organization = options.organization || null;
+    if (!organization && user.organizationId) {
+      organization = await Organization.findById(user.organizationId)
+        .select('enabledApps moduleOverrides')
+        .lean();
+    }
+
     if (user.isOwner === true && typeof user.setPermissionsByRole === 'function') {
       user.setPermissionsByRole('owner');
       user._roleAllowsPlatformOwnedFieldEdit = true;
       const plain = userPermissionsEnvelopeToPlain(user);
       plain.cases = buildCasesEnvelopeFromAppAccess(user.appAccess);
       ensurePermissionEnvelopeDefaults(plain);
+      await materializeRuntimePermissionsOnUser(user, {
+        organization,
+        appAccess: user.appAccess
+      });
       user.permissions = plain;
+      user._permissionRuntime = user._permissionRuntime || {
+        envelope: plain,
+        modulesByApp: {},
+        flat: {}
+      };
+      user._permissionRuntime.envelope = plain;
       return;
     }
 
@@ -337,8 +390,7 @@ async function materializeEffectiveCRMEnvelopeOnUser(user, options = {}) {
         roleLean = await Role.findById(id).lean();
       }
       if (roleLean) {
-        applyProjectionToUser(user, roleLean);
-        finalizeUserPermissionEnvelope(user);
+        await applyProjectionToUser(user, roleLean, organization);
         return;
       }
     }
@@ -347,7 +399,7 @@ async function materializeEffectiveCRMEnvelopeOnUser(user, options = {}) {
     if (access.length > 0 && typeof user.setPermissionsByAppAccess === 'function') {
       user.setPermissionsByAppAccess(access);
       user._roleAllowsPlatformOwnedFieldEdit = false;
-      finalizeUserPermissionEnvelope(user);
+      await materializeRuntimePermissionsOnUser(user, { organization, appAccess: access });
       return;
     }
 

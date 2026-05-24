@@ -3,8 +3,8 @@
     <RecordPageShell
       :loading="loading"
       :error="error"
-      loading-message="Loading deal..."
-      error-title="Error Loading Deal"
+      :loading-message="dealLoadingMessage"
+      :error-title="dealErrorTitle"
       :layout-props="{
         leftExpanded: !!expandedLeftSection,
         forceMobile: props.embed,
@@ -25,8 +25,8 @@
           :show-navigation="true"
           :can-previous="canNavigatePreviousDeal"
           :can-next="canNavigateNextDeal"
-          previous-label="Previous deal"
-          next-label="Next deal"
+          :previous-label="dealNavPreviousLabel"
+          :next-label="dealNavNextLabel"
           :shortcut-prev="navShortcutPrev"
           :shortcut-next="navShortcutNext"
           @previous="goToPreviousDeal"
@@ -34,7 +34,7 @@
         >
           <template #breadcrumbs>
             <span class="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
-              Deal <span class="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500"></span> {{ deal?._id?.slice(-8) || 'N/A' }}
+              {{ dealModuleLabel }} <span class="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500"></span> {{ deal?._id?.slice(-8) || 'N/A' }}
             </span>
           </template>
 
@@ -43,8 +43,8 @@
               v-if="primaryContact?.email"
               type="button"
               class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              aria-label="Email contact"
-              title="Email contact"
+              :aria-label="t('records.dealEmailContact')"
+              :title="t('records.dealEmailContact')"
               @click="showEmailModal = true"
             >
               <EnvelopeIcon class="w-5 h-5" />
@@ -52,8 +52,8 @@
             <button
               type="button"
               class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              aria-label="Edit deal"
-              title="Edit deal"
+              :aria-label="t('records.dealEditAria')"
+              :title="t('records.dealEditAria')"
               @click="showEditModal = true"
             >
               <PencilSquareIcon class="w-5 h-5" />
@@ -68,8 +68,8 @@
                   ? 'text-indigo-600 dark:text-indigo-400'
                   : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
               ]"
-              aria-label="Tag"
-              title="Tag"
+              :aria-label="t('records.genericTagsAria')"
+              :title="t('records.genericTagsAria')"
             >
               <TagIcon class="block w-5 h-5" />
               <span
@@ -80,8 +80,8 @@
             <button
               type="button"
               class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              aria-label="Copy URL"
-              title="Copy URL"
+              :aria-label="t('records.genericCopyUrl')"
+              :title="t('records.genericCopyUrl')"
               @click="handleCopyUrl"
             >
               <ClipboardDocumentIcon class="w-5 h-5" />
@@ -92,8 +92,8 @@
                 'p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors',
                 isFollowing ? 'text-yellow-500 dark:text-yellow-400' : ''
               ]"
-              :aria-label="isFollowing ? 'Unstar' : 'Star'"
-              :title="isFollowing ? 'Unstar' : 'Star'"
+              :aria-label="dealStarAriaLabel"
+              :title="dealStarAriaLabel"
               @click="isFollowing = !isFollowing"
             >
               <StarIcon v-if="!isFollowing" class="w-5 h-5" />
@@ -102,7 +102,7 @@
             <Menu as="div" class="relative">
               <MenuButton
                 class="p-1 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                aria-label="More actions"
+                :aria-label="t('records.genericMoreActions')"
               >
                 <EllipsisVerticalIcon class="w-5 h-5" />
               </MenuButton>
@@ -123,7 +123,7 @@
                         active ? 'bg-gray-100 dark:bg-gray-700' : 'text-gray-700 dark:text-gray-200'
                       ]"
                     >
-                      Duplicate
+                      {{ t('actions.duplicate') }}
                     </button>
                   </MenuItem>
                   <MenuItem v-slot="{ active }">
@@ -134,7 +134,7 @@
                         active ? 'bg-gray-100 dark:bg-gray-700' : 'text-gray-700 dark:text-gray-200'
                       ]"
                     >
-                      Export
+                      {{ t('actions.export') }}
                     </button>
                   </MenuItem>
                   <MenuItem v-slot="{ active }">
@@ -145,7 +145,7 @@
                         active ? 'bg-gray-100 dark:bg-gray-700' : 'text-gray-700 dark:text-gray-200'
                       ]"
                     >
-                      Email contact
+                      {{ t('records.dealEmailContact') }}
                     </button>
                   </MenuItem>
                   <hr class="my-1 border-gray-200 dark:border-gray-700" />
@@ -157,7 +157,7 @@
                         active ? 'bg-gray-100 dark:bg-gray-700' : 'text-red-600 dark:text-red-400'
                       ]"
                     >
-                      Delete
+                      {{ t('actions.delete') }}
                     </button>
                   </MenuItem>
                 </MenuItems>
@@ -182,13 +182,13 @@
                 @click="closeExpandedLeftSection"
               >
                 <ArrowLeftIcon class="h-4 w-4" />
-                <span>Back to deal</span>
+                <span>{{ t('records.dealBackTo') }}</span>
               </button>
               <button
                 type="button"
                 class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 dark:border-gray-700 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                aria-label="Collapse section"
-                title="Collapse"
+                :aria-label="t('records.genericCollapseSection')"
+                :title="t('records.genericCollapse')"
                 @click="closeExpandedLeftSection"
               >
                 <ArrowsPointingInIcon class="h-4 w-4" />
@@ -200,7 +200,7 @@
             v-if="deal && expandedLeftSection === 'description-history'"
             class="description-history-page flex-1 min-h-0 mt-4 flex flex-col gap-6"
           >
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex-shrink-0">{{ deal.name || 'Deal' }}</h2>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex-shrink-0">{{ deal.name || dealModuleLabel }}</h2>
             <div class="grid grid-cols-1 lg:grid-cols-[1fr_320px] grid-rows-[1fr] gap-6 min-h-0 flex-1">
               <div class="flex flex-col min-h-0 min-w-0 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden h-full">
                 <div class="flex-1 min-h-0 overflow-y-auto overscroll-contain">
@@ -215,13 +215,13 @@
                     v-html="descriptionHistorySelectedContent"
                   />
                   <p v-else class="px-6 py-4 text-sm text-gray-400 dark:text-gray-500 italic m-0">
-                    No description in this version.
+                    {{ t('records.genericNoDescInVersion') }}
                   </p>
                 </div>
               </div>
               <div class="flex flex-col min-h-0 min-w-0 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden h-full">
                 <h3 class="font-semibold text-gray-900 dark:text-white px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-                  Version history
+                  {{ t('records.genericVersionHistory') }}
                 </h3>
                 <div v-if="descriptionVersionsLoading" class="flex items-center justify-center py-8 flex-1 min-h-0 overflow-hidden">
                   <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
@@ -249,7 +249,7 @@
                         {{ formatDescriptionVersionDate(ver.createdAt) }}
                       </span>
                       <span class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mt-0.5">
-                        <span v-if="ver.isCurrent" class="font-medium text-gray-600 dark:text-gray-300">Current Version</span>
+                        <span v-if="ver.isCurrent" class="font-medium text-gray-600 dark:text-gray-300">{{ t('records.genericCurrentVersion') }}</span>
                         <template v-else>
                           <Avatar
                             v-if="ver.createdBy"
@@ -257,14 +257,14 @@
                             size="sm"
                             class="shrink-0"
                           />
-                          {{ ver.createdBy || 'Someone' }}
+                          {{ ver.createdBy || t('records.genericSomeone') }}
                         </template>
                       </span>
                     </div>
                   </label>
                 </div>
                 <p class="text-xs text-gray-400 dark:text-gray-500 px-4 py-2 border-t border-gray-100 dark:border-gray-700 flex-shrink-0">
-                  Version history will be stored for up to 365 days in deal descriptions.
+                  {{ t('records.dealVersionRetentionNote') }}
                 </p>
                 <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
                   <button
@@ -273,8 +273,8 @@
                     class="w-full inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:pointer-events-none"
                     @click="restoreDescriptionVersion"
                   >
-                    <span v-if="descriptionRestoreLoading">Restoring…</span>
-                    <span v-else>Restore this version</span>
+                    <span v-if="descriptionRestoreLoading">{{ t('records.genericRestoring') }}</span>
+                    <span v-else>{{ t('records.genericRestoreVersion') }}</span>
                   </button>
                 </div>
               </div>
@@ -293,7 +293,7 @@
             ]"
           >
             <div class="flex items-center gap-3">
-              <Avatar :record="{ name: DEAL_MODULE_NAME }" :icon="BanknotesIcon" size="lg" class="shrink-0" />
+              <Avatar :record="{ name: dealModuleLabel }" :icon="BanknotesIcon" size="lg" class="shrink-0" />
               <div class="min-w-0 flex-1">
                 <EditableTitle
                   :title="deal.name || ''"
@@ -304,7 +304,7 @@
             </div>
             <div class="flex items-center gap-3">
               <p class="text-3xl font-bold text-green-600 dark:text-green-400">${{ (deal.amount || 0).toLocaleString() }}</p>
-              <span class="text-sm text-gray-500 dark:text-gray-400">Weighted ${{ weightedAmount.toLocaleString() }}</span>
+              <span class="text-sm text-gray-500 dark:text-gray-400">{{ dealWeightedLabel }}</span>
             </div>
           </div>
 
@@ -314,7 +314,8 @@
             :class="['group/left-section', expandedLeftSection ? 'mt-8' : 'mt-4']"
           >
             <RecordStateSection
-              heading="Key fields"
+              :heading="t('records.genericKeyFields')"
+              module-key="deals"
               :fields="dealStateFields"
               :field-values="dealStateValues"
             >
@@ -396,7 +397,7 @@
                     @keydown.enter="handleAmountBlur"
                     @keydown.esc="handleAmountCancel"
                     class="text-xs h-8 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full min-w-0 flex-1"
-                    placeholder="Expected value"
+                    :placeholder="t('records.dealExpectedValuePh')"
                   />
                   <span
                     v-show="!isEditingAmount"
@@ -406,7 +407,7 @@
                       deal?.amount != null ? 'text-gray-900 dark:text-white' : 'text-record-empty'
                     ]"
                   >
-                    {{ formatDealAmount(deal?.amount) || 'Empty' }}
+                    {{ formatDealAmount(deal?.amount) || keyFieldsEmptyLabel }}
                   </span>
                 </div>
                 <span
@@ -431,7 +432,7 @@
                     @keydown.enter="handleProbabilityBlur"
                     @keydown.esc="handleProbabilityCancel"
                     class="text-xs h-8 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full min-w-0 flex-1"
-                    placeholder="Probability"
+                    :placeholder="t('records.dealProbabilityPh')"
                   />
                   <span
                     v-show="!isEditingProbability"
@@ -441,7 +442,7 @@
                       deal?.probability != null ? 'text-gray-900 dark:text-white' : 'text-record-empty'
                     ]"
                   >
-                    {{ formatDealProbability(deal?.probability) || 'Empty' }}
+                    {{ formatDealProbability(deal?.probability) || keyFieldsEmptyLabel }}
                   </span>
                 </div>
                 <span
@@ -463,7 +464,7 @@
                     @keydown.enter="handleExpectedCloseDateBlur"
                     @keydown.esc="handleExpectedCloseDateCancel"
                     class="text-xs h-8 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full min-w-0 flex-1 cursor-pointer"
-                    placeholder="Close date"
+                    :placeholder="t('records.dealCloseDatePh')"
                   />
                   <span
                     v-show="!isEditingExpectedCloseDate"
@@ -473,7 +474,7 @@
                       deal?.expectedCloseDate ? 'text-gray-900 dark:text-white' : 'text-record-empty'
                     ]"
                   >
-                    {{ formatDealCloseDate(deal?.expectedCloseDate) || 'Empty' }}
+                    {{ formatDealCloseDate(deal?.expectedCloseDate) || keyFieldsEmptyLabel }}
                   </span>
                 </div>
                 <span
@@ -505,7 +506,7 @@
                           formatDealOwnerName(deal) ? 'text-gray-900 dark:text-white' : 'text-record-empty'
                         ]"
                       >
-                        {{ formatDealOwnerName(deal) || 'Empty' }}
+                        {{ formatDealOwnerName(deal) || keyFieldsEmptyLabel }}
                       </span>
                     </ListboxButton>
                     <Transition
@@ -518,7 +519,7 @@
                       >
                         <ListboxOption :value="null" v-slot="{ active }">
                           <li :class="['relative cursor-default select-none py-2 pl-4 pr-10 flex items-center gap-2', active ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100']">
-                            <span class="block truncate">Unassigned</span>
+                            <span class="block truncate">{{ t('records.editableUnassigned') }}</span>
                           </li>
                         </ListboxOption>
                         <ListboxOption
@@ -551,7 +552,7 @@
                       formatDealOwnerName(deal) ? 'text-gray-900 dark:text-white' : 'text-record-empty'
                     ]"
                   >
-                    {{ formatDealOwnerName(deal) || 'Empty' }}
+                    {{ formatDealOwnerName(deal) || keyFieldsEmptyLabel }}
                   </span>
                 </div>
               </template>
@@ -586,7 +587,7 @@
                           formatDealOrganizationName(deal) ? 'text-gray-900 dark:text-white' : 'text-record-empty'
                         ]"
                       >
-                        {{ formatDealOrganizationName(deal) || 'Empty' }}
+                        {{ formatDealOrganizationName(deal) || keyFieldsEmptyLabel }}
                       </span>
                     </ListboxButton>
                     <Transition
@@ -599,7 +600,7 @@
                       >
                         <ListboxOption :value="null" v-slot="{ active }">
                           <li :class="['relative cursor-default select-none py-2 pl-4 pr-10', active ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100']">
-                            <span class="block truncate">Empty</span>
+                            <span class="block truncate">{{ keyFieldsEmptyLabel }}</span>
                           </li>
                         </ListboxOption>
                         <ListboxOption
@@ -609,7 +610,7 @@
                           v-slot="{ active, selected }"
                         >
                           <li :class="['relative cursor-default select-none py-2 pl-4 pr-10', active ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100']">
-                            <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">{{ organization.name || 'Unnamed organization' }}</span>
+                            <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">{{ organization.name || t('records.dealUnnamedOrganization') }}</span>
                             <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-indigo-600 dark:text-indigo-400">
                               <CheckIcon class="h-5 w-5" aria-hidden="true" />
                             </span>
@@ -670,7 +671,7 @@
                           formatDealContactName(deal) ? 'text-gray-900 dark:text-white' : 'text-record-empty'
                         ]"
                       >
-                        {{ formatDealContactName(deal) || 'Empty' }}
+                        {{ formatDealContactName(deal) || keyFieldsEmptyLabel }}
                       </span>
                     </ListboxButton>
                     <Transition
@@ -683,7 +684,7 @@
                       >
                         <ListboxOption :value="null" v-slot="{ active }">
                           <li :class="['relative cursor-default select-none py-2 pl-4 pr-10', active ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100']">
-                            <span class="block truncate">Empty</span>
+                            <span class="block truncate">{{ keyFieldsEmptyLabel }}</span>
                           </li>
                         </ListboxOption>
                         <ListboxOption
@@ -693,7 +694,7 @@
                           v-slot="{ active, selected }"
                         >
                           <li :class="['relative cursor-default select-none py-2 pl-4 pr-10', active ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100']">
-                            <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">{{ person.name || 'Unnamed' }}</span>
+                            <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">{{ person.name || t('records.dealUnnamedPerson') }}</span>
                             <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-indigo-600 dark:text-indigo-400">
                               <CheckIcon class="h-5 w-5" aria-hidden="true" />
                             </span>
@@ -746,7 +747,7 @@
           :default-tab="recordLayoutIsMobile ? undefined : 'activity'"
           :show-header="props.embed"
           :show-close-button="props.embed"
-          :title="props.embed ? 'Deal' : ''"
+          :title="props.embed ? dealModuleLabel : ''"
           :persistence-key="`deal-${deal._id}`"
           :record-id="deal._id"
           @close="handleEmbedClose"
@@ -758,8 +759,8 @@
                 class="inline-flex h-7 w-7 items-center justify-center rounded border border-gray-200 text-gray-500 transition-colors dark:border-gray-700 dark:text-gray-400 shrink-0"
                 :class="quickPreviewNav.canPrevious ? 'hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200' : 'opacity-40 cursor-not-allowed'"
                 :disabled="!quickPreviewNav.canPrevious"
-                aria-label="Previous deal"
-                title="Previous deal"
+                :aria-label="dealNavPreviousLabel"
+                :title="dealNavPreviousLabel"
                 @click="quickPreviewNav.onPrev()"
               >
                 <ArrowLeftIcon class="h-4 w-4" />
@@ -769,8 +770,8 @@
                 class="inline-flex h-7 w-7 items-center justify-center rounded border border-gray-200 text-gray-500 transition-colors dark:border-gray-700 dark:text-gray-400 shrink-0"
                 :class="quickPreviewNav.canNext ? 'hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200' : 'opacity-40 cursor-not-allowed'"
                 :disabled="!quickPreviewNav.canNext"
-                aria-label="Next deal"
-                title="Next deal"
+                :aria-label="dealNavNextLabel"
+                :title="dealNavNextLabel"
                 @click="quickPreviewNav.onNext()"
               >
                 <ArrowRightIcon class="h-4 w-4" />
@@ -781,8 +782,8 @@
             <button
               type="button"
               class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              aria-label="Open in new tab"
-              title="Open in new tab"
+              :aria-label="t('records.genericOpenInNewTab')"
+              :title="t('records.genericOpenInNewTab')"
               @click="openDealInNewTab"
             >
               <ArrowTopRightOnSquareIcon class="w-5 h-5" />
@@ -791,8 +792,8 @@
               v-if="primaryContact?.email"
               type="button"
               class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              aria-label="Email contact"
-              title="Email contact"
+              :aria-label="t('records.dealEmailContact')"
+              :title="t('records.dealEmailContact')"
               @click="showEmailModal = true"
             >
               <EnvelopeIcon class="w-5 h-5" />
@@ -800,8 +801,8 @@
             <button
               type="button"
               class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              aria-label="Edit deal"
-              title="Edit deal"
+              :aria-label="t('records.dealEditAria')"
+              :title="t('records.dealEditAria')"
               @click="showEditModal = true"
             >
               <PencilSquareIcon class="w-5 h-5" />
@@ -816,8 +817,8 @@
                   ? 'text-indigo-600 dark:text-indigo-400'
                   : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
               ]"
-              aria-label="Tag"
-              title="Tag"
+              :aria-label="t('records.genericTagsAria')"
+              :title="t('records.genericTagsAria')"
             >
               <TagIcon class="block w-5 h-5" />
               <span
@@ -828,8 +829,8 @@
             <button
               type="button"
               class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              aria-label="Copy URL"
-              title="Copy URL"
+              :aria-label="t('records.genericCopyUrl')"
+              :title="t('records.genericCopyUrl')"
               @click="copyDealUrl"
             >
               <ClipboardDocumentIcon class="w-5 h-5" />
@@ -840,8 +841,8 @@
                 'p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors',
                 isFollowing ? 'text-yellow-500 dark:text-yellow-400' : ''
               ]"
-              :aria-label="isFollowing ? 'Unstar' : 'Star'"
-              :title="isFollowing ? 'Unstar' : 'Star'"
+              :aria-label="dealStarAriaLabel"
+              :title="dealStarAriaLabel"
               @click="isFollowing = !isFollowing"
             >
               <StarIcon v-if="!isFollowing" class="w-5 h-5" />
@@ -850,7 +851,7 @@
             <Menu as="div" class="relative">
               <MenuButton
                 class="p-1 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                aria-label="More actions"
+                :aria-label="t('records.genericMoreActions')"
               >
                 <EllipsisVerticalIcon class="w-5 h-5" />
               </MenuButton>
@@ -871,7 +872,7 @@
                         active ? 'bg-gray-100 dark:bg-gray-700' : 'text-gray-700 dark:text-gray-200'
                       ]"
                     >
-                      Duplicate
+                      {{ t('actions.duplicate') }}
                     </button>
                   </MenuItem>
                   <MenuItem v-slot="{ active }">
@@ -882,7 +883,7 @@
                         active ? 'bg-gray-100 dark:bg-gray-700' : 'text-gray-700 dark:text-gray-200'
                       ]"
                     >
-                      Export
+                      {{ t('actions.export') }}
                     </button>
                   </MenuItem>
                   <MenuItem v-slot="{ active }">
@@ -893,7 +894,7 @@
                         active ? 'bg-gray-100 dark:bg-gray-700' : 'text-gray-700 dark:text-gray-200'
                       ]"
                     >
-                      Email contact
+                      {{ t('records.dealEmailContact') }}
                     </button>
                   </MenuItem>
                   <hr class="my-1 border-gray-200 dark:border-gray-700" />
@@ -905,7 +906,7 @@
                         active ? 'bg-gray-100 dark:bg-gray-700' : 'text-red-600 dark:text-red-400'
                       ]"
                     >
-                      Delete
+                      {{ t('actions.delete') }}
                     </button>
                   </MenuItem>
                 </MenuItems>
@@ -951,7 +952,7 @@
           <template #tab-related>
             <div class="flex flex-col h-full">
               <div class="record-context-panel__header flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-900">
-                <h2 class="text-base font-semibold text-gray-900 dark:text-white">Related</h2>
+                <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('records.relatedTitle') }}</h2>
                 <div class="flex items-center gap-2">
                   <button
                     type="button"
@@ -959,7 +960,7 @@
                     class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
                   >
                     <PlusIcon class="w-4 h-4" />
-                    Add record
+                    {{ t('records.genericAddRecord') }}
                   </button>
                   <button
                     type="button"
@@ -967,7 +968,7 @@
                     class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
                   >
                     <LinkIcon class="w-4 h-4" />
-                    Link record
+                    {{ t('records.genericLinkRecord') }}
                   </button>
                 </div>
               </div>
@@ -987,7 +988,7 @@
           <template #tab-integrations>
             <div class="flex flex-col h-full">
               <div class="record-context-panel__header flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-900">
-                <h2 class="text-base font-semibold text-gray-900 dark:text-white">Integrations</h2>
+                <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('records.genericIntegrations') }}</h2>
               </div>
               <div class="p-4 overflow-y-auto flex-1 min-h-0">
                 <AutomationContext
@@ -1042,7 +1043,7 @@
       :multiple="true"
       :allow-create="allowCreateFromLinkDrawer"
       :create-and-link="allowCreateFromLinkDrawer"
-      :title="allowCreateFromLinkDrawer ? 'Add and Link Records' : 'Link Record'"
+      :title="linkRecordDrawerTitle"
       :context="linkRecordDrawerContext"
       @close="closeLinkRecordDrawer"
       @linked="handleLinkRecordDrawerLinked"
@@ -1091,7 +1092,7 @@
         <template v-else>
           <p class="text-xs font-semibold leading-4">
             {{ commentReactionTooltipData.emoji }} {{ commentReactionTooltipData.count }}
-            {{ commentReactionTooltipData.count === 1 ? 'person reacted' : 'people reacted' }}
+            {{ commentReactionTooltipData.count === 1 ? t('records.genericPersonReacted') : t('records.genericPeopleReacted') }}
           </p>
           <ul
             v-if="commentReactionTooltipData.reactors.length > 0"
@@ -1108,7 +1109,7 @@
               <span class="truncate">{{ getReactionUserDisplayName(reactor) }}</span>
             </li>
           </ul>
-          <p v-else class="mt-1.5 text-xs leading-4 text-slate-300">Reactor details unavailable</p>
+          <p v-else class="mt-1.5 text-xs leading-4 text-slate-300">{{ t('records.genericReactorUnavailable') }}</p>
         </template>
         <span
           :class="[
@@ -1151,6 +1152,7 @@
 
 <script setup>
 import { ref, computed, watch, inject, nextTick, onMounted, onBeforeUnmount } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { Menu, MenuButton, MenuItem, MenuItems, Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/vue';
 import DOMPurify from 'dompurify';
@@ -1180,6 +1182,11 @@ import EditableTitle from '@/components/record-page/EditableTitle.vue';
 import { createActivityTimelineRefSetter } from '@/components/activity/useRecordActivityAdapter';
 import { createDealActivityUi } from '@/components/activity/adapters/dealActivityUiAdapter';
 import { createDealRecordAdapter } from '@/components/record-page/adapters/dealRecordAdapter';
+import { createRecordSectionLabels } from '@/utils/recordSectionLabels';
+import { formatRelativeTime } from '@/utils/relativeTime';
+import { resolveFieldLabel } from '@/utils/fieldLabelResolver';
+import { resolveStageOrPicklistLabel } from '@/utils/configurableLabelResolver';
+import { i18n } from '@/i18n/index';
 import { useRecordPageLifecycle } from '@/components/record-page/composables/useRecordPageLifecycle';
 import {
   normalizeSystemActivityEvent,
@@ -1211,6 +1218,7 @@ import Avatar from '@/components/common/Avatar.vue';
 import { useTabs } from '@/composables/useTabs';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
+import { getProcessActivityMessage } from '@/utils/processActivityMessages';
 import { useNotifications } from '@/composables/useNotifications';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import LinkRecordsDrawer from '@/components/common/LinkRecordsDrawer.vue';
@@ -1218,6 +1226,8 @@ import DeleteConfirmationModal from '@/components/common/DeleteConfirmationModal
 import EmailComposeDrawer from '@/components/communications/EmailComposeDrawer.vue';
 import { useRecordContext, invalidateRecordContext } from '@/composables/useRecordContext';
 import AutomationContext from '@/components/automation/AutomationContext.vue';
+
+const { t, te } = useI18n();
 
 const route = useRoute();
 const router = useRouter();
@@ -1286,7 +1296,12 @@ const editingNoteHasPendingFiles = ref(false);
 const savingEditedNote = ref(false);
 const lastRoutedDealId = ref(String(effectiveDealId.value || ''));
 const dealModuleDefinition = ref(null);
-const DEAL_MODULE_NAME = 'Deal';
+const dealModuleLabel = computed(() => t('records.dealModuleLabel'));
+const dealLoadingMessage = computed(() => t('records.dealLoading'));
+const dealErrorTitle = computed(() => t('records.dealErrorTitle'));
+const dealNavPreviousLabel = computed(() => t('records.dealNavPrevious'));
+const dealNavNextLabel = computed(() => t('records.dealNavNext'));
+const keyFieldsEmptyLabel = computed(() => t('common.keyFieldsEmptyValue'));
 const SLOT_RENDERED_KEY_FIELDS = Object.freeze(new Set(['stage', 'amount', 'probability', 'expectedCloseDate', 'ownerId', 'accountId', 'contactId']));
 const dealUsers = ref([]);
 const dealOrganizationsList = ref([]);
@@ -1383,9 +1398,9 @@ const dealRelatedGroupsFromContext = computed(() => {
 });
 
 const rightPaneTabs = computed(() => ([
-  { id: 'activity', name: 'Activity', icon: ClockIcon },
-  { id: 'related', name: 'Related Records', icon: LinkIcon },
-  { id: 'integrations', name: 'Integrations', icon: PuzzlePieceIcon }
+  { id: 'activity', name: t('records.genericTabActivity'), icon: ClockIcon },
+  { id: 'related', name: t('records.dealRelatedRecordsTab'), icon: LinkIcon },
+  { id: 'integrations', name: t('records.genericIntegrations'), icon: PuzzlePieceIcon }
 ]));
 
 const DEAL_NAV_CONTEXT_STORAGE_PREFIX = 'arivu-deal-nav-context:';
@@ -1428,7 +1443,7 @@ const navigateToDealById = (dealId) => {
   const path = navToken
     ? `/deals/${targetId}?navCtx=${encodeURIComponent(navToken)}`
     : `/deals/${targetId}`;
-  replaceActiveTab(path, { title: 'Deal' });
+  replaceActiveTab(path, { title: dealModuleLabel.value });
 };
 
 const goToPreviousDeal = () => {
@@ -1485,7 +1500,7 @@ watch(
     const pathBase = tab.path.split('?')[0].replace(/\/$/, '');
     if (pathBase === '/deals') return; // list tab – never overwrite with record name
     if (!tab.path.includes(String(dealId))) return; // only update the tab that shows this record
-    updateTabTitle(tabId, String(name || 'Deal').trim() || 'Deal');
+    updateTabTitle(tabId, String(name || dealModuleLabel.value).trim() || dealModuleLabel.value);
   },
   { immediate: true }
 );
@@ -1835,11 +1850,12 @@ const handleUnlinkDealRelated = async (item, group, record) => {
     await loadDealRecordContext(true);
   } catch (err) {
     console.error('Error unlinking related record:', err);
-    alert('Error unlinking record. Please try again.');
+    alert(t('records.genericUnlinkFailed'));
   }
 };
 
 const dealRecordAdapter = computed(() => createDealRecordAdapter({
+  sectionLabels: createRecordSectionLabels(t),
   formatDate,
   moduleDefinition: dealModuleDefinition,
   participantPersonName,
@@ -1916,9 +1932,10 @@ const dealStageOptions = computed(() => {
   return pipelineStages.map((s) => {
     const name = (s.name || '').trim();
     if (!name) return null;
+    const label = resolveStageOrPicklistLabel(name, t, te) || name;
     return {
       value: name,
-      label: name,
+      label,
       color: (s.color && /^#[0-9A-Fa-f]{6}$/.test(String(s.color).trim())) ? String(s.color).trim() : null
     };
   }).filter(Boolean);
@@ -1940,7 +1957,7 @@ const dealOrganizationOptions = computed(() => {
     seen.add(normalizedId);
     merged.push({
       _id: normalizedId,
-      name: organization.name || organization.title || 'Unnamed organization'
+      name: organization.name || organization.title || t('records.dealUnnamedOrganization')
     });
   };
 
@@ -1976,7 +1993,7 @@ const dealPeopleOptions = computed(() => {
     seen.add(normalizedId);
     const first = person.firstName || person.first_name || '';
     const last = person.lastName || person.last_name || '';
-    const name = [first, last].filter(Boolean).join(' ').trim() || person.email || person.name || 'Unnamed';
+    const name = [first, last].filter(Boolean).join(' ').trim() || person.email || person.name || t('records.dealUnnamedPerson');
     merged.push({ _id: normalizedId, name });
   };
 
@@ -2007,10 +2024,16 @@ const findDealStageOption = (stageValue) => {
   return dealStageOptions.value.find((option) => String(option.value) === lookup) || null;
 };
 
+function translatePicklistValue(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return null;
+  return resolveStageOrPicklistLabel(raw, t, te) || raw;
+}
+
 const formatDealStage = (stageValue) => {
   const configured = findDealStageOption(stageValue);
-  if (configured?.label) return configured.label;
-  return stageValue || null;
+  const label = configured?.label || stageValue;
+  return translatePicklistValue(label) || label || null;
 };
 
 const hexToRgb = (hex) => {
@@ -2101,11 +2124,11 @@ const formatDealOwnerName = (dealValue) => {
 };
 
 const getDealUserDisplayName = (user) => {
-  if (!user) return 'Unknown user';
+  if (!user) return t('records.editableUnknownUser');
   return [user.firstName || user.first_name, user.lastName || user.last_name].filter(Boolean).join(' ')
     || user.email
     || user.username
-    || 'Unknown user';
+    || t('records.editableUnknownUser');
 };
 
 const dealOwnerAvatarUser = computed(() => {
@@ -2299,6 +2322,20 @@ const weightedAmount = computed(() => {
   return Math.round((amount * probability) / 100);
 });
 
+const dealWeightedLabel = computed(() => t('records.dealWeightedAmount', {
+  amount: `$${weightedAmount.value.toLocaleString()}`
+}));
+
+const dealStarAriaLabel = computed(() => (
+  isFollowing.value ? t('records.dealUnstarAria') : t('records.dealStarAria')
+));
+
+const linkRecordDrawerTitle = computed(() => (
+  allowCreateFromLinkDrawer.value
+    ? t('records.genericLinkDrawerAddAndLink')
+    : t('records.genericLinkDrawerLink')
+));
+
 const commentEvents = computed(() => {
   return (comments.value || []).map((comment) => normalizeCommentActivityEvent({
     ...comment,
@@ -2332,8 +2369,8 @@ const systemEvents = computed(() => {
             ...log?.details,
             field,
             fieldLabel: toReadableFieldLabel(field),
-            from: log?.details?.fromByField?.[field] ?? 'Empty',
-            to: log?.details?.toByField?.[field] ?? 'Empty'
+            from: log?.details?.fromByField?.[field] ?? keyFieldsEmptyLabel.value,
+            to: log?.details?.toByField?.[field] ?? keyFieldsEmptyLabel.value
           }
         };
 
@@ -2851,23 +2888,24 @@ const fetchDeal = async () => {
   }
 };
 
+const dateLocale = computed(() => {
+  const code = String(i18n.global.locale.value || 'en').split('-')[0];
+  if (code === 'de') return 'de-DE';
+  if (code === 'es') return 'es-ES';
+  if (code === 'fr') return 'fr-FR';
+  return 'en-US';
+});
+
 const formatDate = (date) => {
   if (!date) return '-';
-  return new Date(date).toLocaleDateString('en-US', {
+  return new Date(date).toLocaleDateString(dateLocale.value, {
     year: 'numeric',
     month: 'short',
     day: 'numeric'
   });
 };
 
-const formatTimeAgo = (date) => {
-  if (!date) return '';
-  const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-  if (seconds < 60) return `${seconds} secs ago`;
-  if (seconds < 3600) return `${Math.floor(seconds / 60)} mins ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
-  return `${Math.floor(seconds / 86400)} days ago`;
-};
+const formatTimeAgo = (date) => formatRelativeTime(date, t);
 
 const handleEmailSubmit = async (payload) => {
   showEmailModal.value = false;
@@ -2875,14 +2913,14 @@ const handleEmailSubmit = async (payload) => {
   try {
     const res = await apiClient.post('/communications/email', payload);
     if (res.success) {
-      notifications.success('Email sent');
+      notifications.success(t('records.genericEmailSent'));
       fetchDeal();
     } else {
-      notifications.error(res.message || 'Failed to send email');
+      notifications.error(res.message || t('records.genericEmailSendFailed'));
     }
   } catch (err) {
     const msg = err.response?.data?.error || err.response?.data?.message || err.message;
-    notifications.error(msg || 'Failed to send email');
+    notifications.error(msg || t('records.genericEmailSendFailed'));
   }
 };
 
@@ -2901,9 +2939,9 @@ const handleToggleThreadDone = async ({ threadId, done }) => {
         ? { ...thread, done: doneValue, doneAt: doneValue ? (res?.data?.doneAt || new Date().toISOString()) : null, unread: doneValue ? false : thread.unread }
         : thread
     );
-    notifications.success(doneValue ? 'Thread marked done' : 'Thread reopened');
+    notifications.success(doneValue ? t('records.genericThreadMarkedDone') : t('records.genericThreadReopened'));
   } catch (err) {
-    notifications.error(err?.response?.data?.message || err?.message || 'Failed to update thread status');
+    notifications.error(err?.response?.data?.message || err?.message || t('records.genericThreadStatusFailed'));
   }
 };
 
@@ -2935,7 +2973,7 @@ const createTaskFromEmailMessage = async (msg) => {
       window.open(`/tasks/${res.data.taskId}`, '_blank');
     }
   } catch (err) {
-    notifications.error(err.response?.data?.message || err.message || 'Failed to create task');
+    notifications.error(err.response?.data?.message || err.message || t('records.dealCreateTaskFailed'));
   }
 };
 
@@ -2947,7 +2985,7 @@ const createCaseFromEmailMessage = async (msg) => {
       window.open(`/helpdesk/cases/${res.data.caseRecordId}`, '_blank');
     }
   } catch (err) {
-    notifications.error(err.response?.data?.message || err.message || 'Failed to create case');
+    notifications.error(err.response?.data?.message || err.message || t('records.dealCreateCaseFailed'));
   }
 };
 
@@ -2965,9 +3003,9 @@ const assignEmailThread = async ({ threadId, assignedToUserId }) => {
       const isMe = nextAssignee && meId && String(nextAssignee) === String(meId);
       return { ...thread, assignedToUserId: nextAssignee, assignedToDisplay: isMe ? meLabel : (thread.assignedToDisplay || null) };
     });
-    notifications.success(nextAssignee ? 'Thread assigned' : 'Thread unassigned');
+    notifications.success(nextAssignee ? t('records.genericThreadAssigned') : t('records.genericThreadUnassigned'));
   } catch (err) {
-    notifications.error(err.response?.data?.message || err.message || 'Failed to assign thread');
+    notifications.error(err.response?.data?.message || err.message || t('records.genericThreadAssignFailed'));
   }
 };
 
@@ -2981,9 +3019,9 @@ const unassignEmailThread = async ({ threadId }) => {
     emailThreads.value = (emailThreads.value || []).map((thread) => (
       thread.threadId === threadId ? { ...thread, assignedToUserId: nextAssignee, assignedToDisplay: null } : thread
     ));
-    notifications.success('Thread unassigned');
+    notifications.success(t('records.genericThreadUnassigned'));
   } catch (err) {
-    notifications.error(err.response?.data?.message || err.message || 'Failed to unassign thread');
+    notifications.error(err.response?.data?.message || err.message || t('records.genericThreadUnassignFailed'));
   }
 };
 
@@ -2999,9 +3037,9 @@ const addTagToEmailThread = async ({ threadId, tag }) => {
     emailThreads.value = (emailThreads.value || []).map((thread) => (
       thread.threadId === threadId ? { ...thread, tags: nextTags } : thread
     ));
-    notifications.success('Tag added');
+    notifications.success(t('records.genericTagAdded'));
   } catch (err) {
-    notifications.error(err.response?.data?.message || err.message || 'Failed to add tag');
+    notifications.error(err.response?.data?.message || err.message || t('records.genericTagAddFailed'));
   }
 };
 
@@ -3016,9 +3054,9 @@ const removeTagFromEmailThread = async ({ threadId, tag }) => {
     emailThreads.value = (emailThreads.value || []).map((thread) => (
       thread.threadId === threadId ? { ...thread, tags: nextTags } : thread
     ));
-    notifications.success('Tag removed');
+    notifications.success(t('records.genericTagRemoved'));
   } catch (err) {
-    notifications.error(err.response?.data?.message || err.message || 'Failed to remove tag');
+    notifications.error(err.response?.data?.message || err.message || t('records.genericTagRemoveFailed'));
   }
 };
 
@@ -3031,7 +3069,7 @@ const handleCopyUrl = async () => {
   try {
     await navigator.clipboard.writeText(window.location.href);
   } catch {
-    alert('Failed to copy URL');
+    alert(t('records.dealCopyUrlFailed'));
   }
 };
 
@@ -3045,7 +3083,7 @@ function getDealPageUrl() {
 function openDealInNewTab() {
   if (!deal.value?._id) return;
   const path = `/deals/${deal.value._id}`;
-  openTab(path, { title: 'Deal', background: false, insertAdjacent: true });
+  openTab(path, { title: dealModuleLabel.value, background: false, insertAdjacent: true });
   handleEmbedClose();
 }
 
@@ -3055,16 +3093,16 @@ async function copyDealUrl() {
   try {
     await navigator.clipboard.writeText(url);
   } catch {
-    alert('Failed to copy URL');
+    alert(t('records.dealCopyUrlFailed'));
   }
 }
 
 const handleDuplicate = () => {
-  alert('Duplicate action is not implemented yet for deals.');
+  alert(t('records.dealDuplicateNotImplemented'));
 };
 
 const handleExport = () => {
-  alert('Export action is not implemented yet for deals.');
+  alert(t('records.dealExportNotImplemented'));
 };
 
 const confirmDeleteDeal = async () => {
@@ -3075,7 +3113,7 @@ const confirmDeleteDeal = async () => {
     showDeleteModal.value = false;
     router.push('/deals');
   } catch {
-    alert('Failed to delete deal');
+    alert(t('records.dealDeleteFailed'));
   } finally {
     deleting.value = false;
   }
@@ -3094,7 +3132,7 @@ const addComment = async (content = '', attachments = [], parentCommentId = null
     }
   } catch (err) {
     console.error('Failed to add comment:', err);
-    alert('Failed to add comment');
+    alert(t('records.dealCommentAddFailed'));
   }
 };
 
@@ -3105,12 +3143,12 @@ const addCommentWithUploads = async (content = '', files = [], parentCommentId =
       const uploaded = await uploadDealCommentAttachmentFile(file);
       if (uploaded) attachments.push(uploaded);
     }
-    const finalContent = content || (attachments.length > 0 ? 'Attached file(s)' : '');
+    const finalContent = content || (attachments.length > 0 ? t('records.dealAttachedFilesFallback') : '');
     if (!finalContent) return;
     await addComment(finalContent, attachments, parentCommentId);
   } catch (err) {
     console.error('Failed to add comment with attachments:', err);
-    alert('Failed to add comment');
+    alert(t('records.dealCommentAddFailed'));
   }
 };
 
@@ -3130,13 +3168,13 @@ const handleAddComment = async (payload) => {
 
 const eventAuthorName = (event) => {
   const author = event?.author;
-  if (!author) return 'Unknown user';
+  if (!author) return t('records.editableUnknownUser');
   if (typeof author === 'string') return author;
   return [author.firstName, author.lastName].filter(Boolean).join(' ')
     || [author.first_name, author.last_name].filter(Boolean).join(' ')
     || author.email
     || author.username
-    || 'Unknown user';
+    || t('records.editableUnknownUser');
 };
 
 const canEditNote = (event) => {
@@ -3247,7 +3285,7 @@ const saveEditedNote = async (submitPayload) => {
       ...uploadedAttachments
     ].filter((attachment) => attachment && typeof attachment.url === 'string' && typeof attachment.filename === 'string');
 
-    const finalContent = content || (finalAttachments.length > 0 ? 'Attached file(s)' : '');
+    const finalContent = content || (finalAttachments.length > 0 ? t('records.dealAttachedFilesFallback') : '');
     if (!finalContent) return;
 
     const response = await apiClient.put(`/deals/${effectiveDealId.value}/comments/${commentId}`, {
@@ -3260,7 +3298,7 @@ const saveEditedNote = async (submitPayload) => {
     }
   } catch (err) {
     console.error('Failed to update comment:', err);
-    alert('Failed to update comment');
+    alert(t('records.dealCommentUpdateFailed'));
   } finally {
     savingEditedNote.value = false;
   }
@@ -3490,8 +3528,8 @@ const isCurrentUserByName = (name) => {
 };
 
 const resolveActorLabel = (name, userId) => {
-  if (isCurrentUserById(userId) || isCurrentUserByName(name)) return 'You';
-  return name || 'System';
+  if (isCurrentUserById(userId) || isCurrentUserByName(name)) return t('common.pronounYou');
+  return name || t('records.activitySystemActorSystem');
 };
 
 const isFieldChangeSystemEvent = (event) => {
@@ -3500,10 +3538,10 @@ const isFieldChangeSystemEvent = (event) => {
 };
 
 const getSystemEventActorLabel = (event) => {
-  if (!event) return 'System';
+  if (!event) return t('records.activitySystemActorSystem');
   const author = event.author;
   if (author && typeof author === 'object') {
-    const authorName = [author.firstName, author.lastName].filter(Boolean).join(' ').trim() || author.username || author.email || 'System';
+    const authorName = [author.firstName, author.lastName].filter(Boolean).join(' ').trim() || author.username || author.email || t('records.activitySystemActorSystem');
     return resolveActorLabel(authorName, author._id || author.id);
   }
   if (typeof author === 'string') {
@@ -3512,28 +3550,39 @@ const getSystemEventActorLabel = (event) => {
   if (typeof event.actor === 'string') {
     return resolveActorLabel(event.actor, event.userId || event.user);
   }
-  return 'System';
+  return t('records.activitySystemActorSystem');
 };
 
 const getSystemEventFieldLabel = (event) => {
   const details = event?.details || event?.payload?.details || {};
   const raw = details.fieldLabel ?? details.field;
-  const label = String(raw ?? '').trim();
-  return label || 'field';
+  const key = String(details.field || raw || '').trim();
+  return resolveFieldLabel('deals', { key, label: String(raw ?? '').trim() }, t, te) || t('records.activitySystemFieldFallback');
 };
 
 const formatSystemEventValue = (value) => {
-  if (value === undefined || value === null || value === '') return 'Empty';
+  if (value === undefined || value === null || value === '') return keyFieldsEmptyLabel.value;
   return String(value);
 };
 
 const getSystemEventFromValue = (event) => formatSystemEventValue(event?.details?.from ?? event?.details?.oldValue ?? event?.payload?.details?.from ?? event?.payload?.details?.oldValue);
 const getSystemEventToValue = (event) => formatSystemEventValue(event?.details?.to ?? event?.details?.newValue ?? event?.payload?.details?.to ?? event?.payload?.details?.newValue);
 const getSystemEventMessage = (event) => {
-  if (!event) return 'Updated this record';
+  if (!event) return t('records.activityUpdatedRecord');
+  const processMsg = getProcessActivityMessage(event);
+  if (processMsg) return processMsg;
+  const actor = getSystemEventActorLabel(event);
+  const action = String(event?.action || '').toLowerCase();
+  const rawMsg = String(event?.message || event?.payload?.message || '').trim().toLowerCase();
+  if (action === 'created' || rawMsg.includes('created this deal')) {
+    return t('deals.activityYouCreatedDeal', { actor });
+  }
+  if (action === 'updated' || rawMsg.includes('updated this deal')) {
+    return t('deals.activityYouUpdatedDeal', { actor });
+  }
   const message = String(event?.message || event?.payload?.message || '').trim();
   if (message) return message;
-  return `${event?.action || 'updated'} this record`;
+  return t('records.activitySystemWithAction', { action: t('records.activityUpdated') });
 };
 const handleShowMore = () => {};
 

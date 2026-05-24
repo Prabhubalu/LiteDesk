@@ -16,7 +16,7 @@
         <p :class="['mt-1 text-xs font-semibold', metric.delta >= 0 ? 'text-emerald-600 dark:text-emerald-300' : 'text-rose-600 dark:text-rose-300']">
           {{ metric.delta >= 0 ? '+' : '' }}{{ metric.delta }}%
         </p>
-        <p class="mt-1 text-[10px] text-slate-500 dark:text-slate-400">vs previous period</p>
+        <p class="mt-1 text-[10px] text-slate-500 dark:text-slate-400">{{ t('dashboard.executiveSnapshotVsPreviousPeriod') }}</p>
         <div class="mt-2 flex h-8 items-end gap-1">
           <span
             v-for="(point, idx) in metric.trend"
@@ -31,9 +31,12 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 defineProps({
   cards: { type: Array, required: true }
 });
+
+const { t } = useI18n();
 
 const metricIcon = (idx) => ['$', 'P', 'F', 'W', 'S', 'C'][idx] || 'M';
 const badgeClass = (idx) => [

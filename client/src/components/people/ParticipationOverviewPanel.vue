@@ -2,14 +2,10 @@
   <div class="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow border-2 border-gray-200 dark:border-gray-700 overflow-hidden">
     <div class="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-b-2 border-gray-200 dark:border-gray-700">
       <div class="flex items-center gap-2 mb-2">
-        <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Platform-Mediated</span>
+        <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ t('people.participationOverviewPanelPlatformMediated') }}</span>
       </div>
-      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-        Participation Overview
-      </h2>
-      <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-        Summary of this person's participation across applications
-      </p>
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('people.participationOverviewPanelParticipationOverview') }}</h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">{{ t('people.participationOverviewPanelSummaryOfThisPersonsParticipationAcross') }}</p>
     </div>
     
     <div class="px-6 py-4">
@@ -111,16 +107,12 @@
       
       <!-- Empty State -->
       <div v-else class="text-center py-8">
-        <p class="text-sm text-gray-500 dark:text-gray-400">
-          No app participations yet.
-        </p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('people.participationOverviewPanelNoAppParticipationsYet') }}</p>
       </div>
       
       <!-- Non-Participating Apps (Attach CTAs) -->
       <div v-if="nonParticipatingApps.length > 0" class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-          Available Apps
-        </h3>
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('people.participationOverviewPanelAvailableApps') }}</h3>
         <div class="flex flex-wrap gap-2">
           <button
             v-for="app in nonParticipatingApps"
@@ -138,6 +130,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { computed, ref } from 'vue';
 import { getParticipationFields, getStateFields, getFieldMetadata } from '@/platform/fields/peopleFieldModel';
 import { getParticipationActions, normalizeParticipationType } from './participationActions';
@@ -156,6 +149,8 @@ const props = defineProps({
     required: true
   }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['edit', 'convert', 'detach', 'attach']);
 

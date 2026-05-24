@@ -1,0 +1,465 @@
+{
+  "integrationsTitle": { "message": "Integrations", "description": "Page title" },
+  "integrationsSubtitle": {
+    "message": "Connect external tools to enhance your workspace. All integrations are optional and can be turned off at any time.",
+    "description": "Page subtitle"
+  },
+  "integrationsBannerTitle": { "message": "Optional, Safe Integrations", "description": "Info banner title" },
+  "integrationsBannerBody": {
+    "message": "Integrations are optional and do not change your core data. Disabling an integration stops new data from flowing but does not delete existing business records.",
+    "description": "Info banner body"
+  },
+  "integrationsLoadFailed": { "message": "Failed to load integrations", "description": "List load error fallback" },
+  "integrationsAvailableTitle": { "message": "Available Integrations", "description": "Catalog list heading" },
+  "integrationsCount": {
+    "message": "{count, plural, one {# integration} other {# integrations}}",
+    "description": "Catalog integration count"
+  },
+  "integrationsScopePlatform": { "message": "Platform-wide", "description": "Platform scope badge" },
+  "integrationsScopeApp": { "message": "App-specific", "description": "App scope badge" },
+  "integrationsRecommended": { "message": "Recommended", "description": "Recommended badge" },
+  "integrationsSelectTitle": { "message": "Select an integration to view details", "description": "Empty detail state title" },
+  "integrationsSelectHint": {
+    "message": "You can safely explore integrations without enabling them.",
+    "description": "Empty detail state hint"
+  },
+  "integrationsDisableButton": { "message": "Disable Integration", "description": "Disable integration CTA" },
+  "integrationsEnableButton": { "message": "Enable Integration", "description": "Enable integration CTA" },
+  "integrationsScopeHeading": { "message": "Scope", "description": "Scope section heading" },
+  "integrationsScopePlatformDesc": {
+    "message": "This integration is platform-wide and can be used across all applications.",
+    "description": "Platform scope description"
+  },
+  "integrationsScopeAppDesc": {
+    "message": "This integration is app-specific and only affects the applications listed.",
+    "description": "App scope description"
+  },
+  "integrationsConnectionStatusHeading": { "message": "Connection Status", "description": "Connection status heading" },
+  "integrationsConnectionActive": {
+    "message": "New activity will continue to flow through this integration.",
+    "description": "Connection status when enabled"
+  },
+  "integrationsConnectionInactive": {
+    "message": "New activity will no longer flow through this integration.",
+    "description": "Connection status when disabled"
+  },
+  "integrationsConnectionNote": {
+    "message": "Existing records in your CRM, helpdesk, or other tools are not deleted when disabling this integration.",
+    "description": "Connection status footnote"
+  },
+  "integrationsConfigurationHeading": { "message": "Configuration", "description": "Email config status heading" },
+  "integrationsConfigConfigured": {
+    "message": "CRM outbound email is configured. Users who connect Gmail send as themselves; everyone else uses your provider below (default: Resend).",
+    "description": "Email configured message"
+  },
+  "integrationsConfigNotConfigured": {
+    "message": "CRM outbound is not fully configured. Set a From Email and provider credentials below (Resend API key, OCI SMTP, AWS SES, or custom SMTP).",
+    "description": "Email not configured message"
+  },
+  "integrationsSendingTestEmail": { "message": "Sending…", "description": "Test email in progress" },
+  "integrationsSendTestEmail": { "message": "Send Test Email", "description": "Send test email button" },
+  "integrationsEmailOverviewTitle": { "message": "Tenant email settings (overview)", "description": "Email overview section title" },
+  "integrationsEmailOverviewCrmOutbound": {
+    "message": "CRM outbound — provider + From address (used when users have not connected Gmail).",
+    "description": "Email overview bullet"
+  },
+  "integrationsEmailOverviewSendPolicy": {
+    "message": "Send policy — modules, Inbox rules, suppression, mailbox-only mode.",
+    "description": "Email overview bullet"
+  },
+  "integrationsEmailOverviewGmail": {
+    "message": "Gmail — OAuth app (optional) + user mailbox connections from Inbox.",
+    "description": "Email overview bullet"
+  },
+  "integrationsEmailOverviewInbound": {
+    "message": "Inbound — webhook URL, diagnostics, suppressions (below).",
+    "description": "Email overview bullet"
+  },
+  "integrationsEmailNotificationPlatform": {
+    "message": "Notification emails use platform {provider} (not the CRM provider below).",
+    "description": "Notification provider note"
+  },
+  "integrationsCrmOutboundTitle": { "message": "CRM outbound provider", "description": "CRM outbound section title" },
+  "integrationsCrmOutboundOwnerOnlyHint": {
+    "message": "Critical provider fields are owner-only. You can update non-critical fields like From Name, Reply-To, and SMTP secure mode.",
+    "description": "Owner-only fields hint"
+  },
+  "integrationsProviderLabel": { "message": "Provider", "description": "Email provider label" },
+  "integrationsOwnerOnlyBadge": { "message": "(owner-only)", "description": "Owner-only field badge" },
+  "integrationsProviderOptionResend": { "message": "resend", "description": "Resend provider option" },
+  "integrationsProviderOptionSmtp": { "message": "smtp", "description": "Custom SMTP provider option" },
+  "integrationsProviderOptionGmailSmtp": { "message": "gmail-smtp", "description": "Gmail SMTP provider option" },
+  "integrationsProviderOptionAwsSes": { "message": "aws-ses", "description": "AWS SES provider option" },
+  "integrationsProviderOptionOci": { "message": "oci-email-delivery", "description": "OCI email provider option" },
+  "integrationsResendHintTitle": { "message": "Resend (recommended)", "description": "Resend provider hint title" },
+  "integrationsResendHintBody": {
+    "message": "— default for CRM sends when users have not connected Gmail. Use SMTP user {smtpUser} and your Resend API key as the SMTP password. Verify your sending domain in Resend and in the Sender Domain section below.",
+    "description": "Resend provider hint body"
+  },
+  "integrationsGmailSmtpHintTitle": { "message": "Gmail SMTP", "description": "Gmail SMTP hint title" },
+  "integrationsGmailSmtpHintSetsRelay": { "message": "sets the relay to", "description": "Gmail SMTP hint relay phrase" },
+  "integrationsGmailSmtpHintAppPassword": { "message": "Google App Password", "description": "Gmail SMTP app password label" },
+  "integrationsGmailSmtpHintBody": {
+    "message": "Each user connects their mailbox with a {appPassword} under Inbox → Connect. Inbox sync still uses Gmail API (OAuth) if you also connect “Gmail” separately.",
+    "description": "Gmail SMTP hint body"
+  },
+  "integrationsCustomSmtpHintTitle": { "message": "Custom SMTP", "description": "Custom SMTP hint title" },
+  "integrationsCustomSmtpHintBody": {
+    "message": "— any SMTP-compatible host (Mailgun, SendGrid SMTP, etc.).",
+    "description": "Custom SMTP hint body"
+  },
+  "integrationsOciRegionLabel": { "message": "OCI Region", "description": "OCI region field label" },
+  "integrationsOciRegionHint": {
+    "message": "Used to build the SMTP host ({hostPattern}) when SMTP Host is empty. OCI requires {port465} with TLS (not 587). Create SMTP credentials under Identity → Users → SMTP Credentials; use an approved sender for From Email.",
+    "description": "OCI region help text"
+  },
+  "integrationsOciHostPattern": {
+    "message": "smtp.email.<region>.oci.oraclecloud.com",
+    "description": "OCI SMTP host pattern in hint"
+  },
+  "integrationsOciPort465": { "message": "port 465", "description": "OCI required port in hint" },
+  "integrationsFromEmail": { "message": "From Email", "description": "From email field label" },
+  "integrationsFromName": { "message": "From Name", "description": "From name field label" },
+  "integrationsReplyTo": { "message": "Reply-To", "description": "Reply-to field label" },
+  "integrationsAwsSesHintTitle": { "message": "AWS SES", "description": "AWS SES hint title" },
+  "integrationsAwsSesHintBody": {
+    "message": "sends via the SES API (SMTP fields below are optional). Verify your From domain in SES.",
+    "description": "AWS SES hint body"
+  },
+  "integrationsSmtpHost": { "message": "SMTP Host", "description": "SMTP host field label" },
+  "integrationsSmtpPort": { "message": "SMTP Port", "description": "SMTP port field label" },
+  "integrationsSmtpUser": { "message": "SMTP User", "description": "SMTP user field label" },
+  "integrationsSmtpPassword": { "message": "SMTP Password / API Key", "description": "SMTP password field label" },
+  "integrationsSavedMask": { "message": "saved", "description": "Masked secret saved indicator" },
+  "integrationsAwsRegion": { "message": "AWS region", "description": "AWS region field label" },
+  "integrationsAwsAccessKeyId": { "message": "AWS access key ID", "description": "AWS access key field label" },
+  "integrationsAwsSecretAccessKey": { "message": "AWS secret access key", "description": "AWS secret key field label" },
+  "integrationsSecretKeepBlank": { "message": "Leave blank to keep existing secret", "description": "Secret field placeholder" },
+  "integrationsUseSecureSmtp": { "message": "Use secure SMTP (TLS)", "description": "SMTP secure checkbox label" },
+  "integrationsOciSecureRequired": { "message": "(required on port 465 for OCI)", "description": "OCI TLS required note" },
+  "integrationsSavingEmailSettings": { "message": "Saving...", "description": "Save email settings in progress" },
+  "integrationsSaveEmailSettings": { "message": "Save Email Settings", "description": "Save email settings button" },
+  "integrationsPlaceholderOciRegion": { "message": "us-phoenix-1", "description": "OCI region placeholder" },
+  "integrationsPlaceholderFromEmail": { "message": "hello@yourdomain.com", "description": "From email placeholder" },
+  "integrationsPlaceholderFromName": { "message": "Your Company", "description": "From name placeholder" },
+  "integrationsPlaceholderReplyTo": { "message": "support@yourdomain.com", "description": "Reply-to placeholder" },
+  "integrationsPlaceholderAwsRegion": { "message": "us-east-1", "description": "AWS region placeholder" },
+  "integrationsPlaceholderGmailRedirect": {
+    "message": "https://your-api.example.com/api/mailboxes/inbox-sync/google/callback",
+    "description": "Gmail OAuth redirect URI placeholder"
+  },
+  "integrationsPlaceholderSearchEmail": { "message": "name@example.com", "description": "Suppression search placeholder" },
+  "integrationsPlaceholderWebhookProvider": { "message": "simulator", "description": "Webhook simulator provider placeholder" },
+  "integrationsPlaceholderSmtpHostOci": {
+    "message": "smtp.email.us-phoenix-1.oci.oraclecloud.com",
+    "description": "OCI SMTP host placeholder"
+  },
+  "integrationsPlaceholderSmtpHostResend": { "message": "smtp.resend.com", "description": "Resend SMTP host placeholder" },
+  "integrationsPlaceholderSmtpPortOci": { "message": "465", "description": "OCI SMTP port placeholder" },
+  "integrationsPlaceholderSmtpPortDefault": { "message": "587", "description": "Default SMTP port placeholder" },
+  "integrationsPlaceholderSmtpUserOci": { "message": "OCI SMTP username", "description": "OCI SMTP user placeholder" },
+  "integrationsPlaceholderSmtpUserResend": { "message": "resend", "description": "Resend SMTP user placeholder" },
+  "integrationsWebhookSimulatorTitle": { "message": "Webhook Simulator", "description": "Webhook simulator section title" },
+  "integrationsWebhookSimulatorDesc": {
+    "message": "Trigger delivery lifecycle events without waiting for provider callbacks.",
+    "description": "Webhook simulator description"
+  },
+  "integrationsEventType": { "message": "Event Type", "description": "Webhook event type label" },
+  "integrationsProviderLabelSim": { "message": "Provider Label", "description": "Webhook provider label field" },
+  "integrationsTargetMessage": { "message": "Target Message", "description": "Webhook target message label" },
+  "integrationsNoSentMessageYet": { "message": "No sent message yet", "description": "Webhook target empty state" },
+  "integrationsSimulatingWebhook": { "message": "Simulating...", "description": "Webhook simulation in progress" },
+  "integrationsSimulateWebhook": { "message": "Simulate Webhook Event", "description": "Simulate webhook button" },
+  "integrationsOutboundPolicyTitle": { "message": "Outbound send policy", "description": "Outbound policy section title" },
+  "integrationsOutboundPolicyOwnerOnly": {
+    "message": "Communication policy is owner-only.",
+    "description": "Communication policy owner-only hint"
+  },
+  "integrationsEnableOutboundApi": {
+    "message": "Enable outbound email from Communication API",
+    "description": "Enable outbound API checkbox"
+  },
+  "integrationsAllowInboxStandalone": {
+    "message": "Allow Inbox standalone send (workspace-scoped mail without a person/deal record)",
+    "description": "Allow workspace email checkbox"
+  },
+  "integrationsMailboxVsPlatform": { "message": "Mailbox vs platform send", "description": "Mailbox vs platform subsection title" },
+  "integrationsInboxRequiresMailbox": { "message": "Inbox requires connected mailbox", "description": "Inbox mailbox required option title" },
+  "integrationsInboxRequiresMailboxHint": {
+    "message": "Disallow Resend/platform SMTP for Inbox. Users must connect Gmail (OAuth or SMTP App Password).",
+    "description": "Inbox mailbox required option hint"
+  },
+  "integrationsAllCrmRequiresMailbox": {
+    "message": "All CRM sends require connected mailbox",
+    "description": "CRM mailbox required option title"
+  },
+  "integrationsAllCrmRequiresMailboxHint": {
+    "message": "Applies to people, deals, tasks, etc. — not only Inbox.",
+    "description": "CRM mailbox required option hint"
+  },
+  "integrationsRequireIdempotency": {
+    "message": "Require idempotency key on send API",
+    "description": "Idempotency key option title"
+  },
+  "integrationsRequireIdempotencyHint": {
+    "message": "Clients must send {header} header to prevent duplicate sends.",
+    "description": "Idempotency key option hint"
+  },
+  "integrationsIdempotencyHeader": { "message": "Idempotency-Key", "description": "Idempotency header name" },
+  "integrationsMaxRecipients": { "message": "Max recipients per message", "description": "Max recipients field label" },
+  "integrationsAllowedModules": { "message": "Allowed modules for outbound emails", "description": "Allowed modules label" },
+  "integrationsSuppressionPolicy": { "message": "Suppression policy", "description": "Suppression policy label" },
+  "integrationsAutoSuppressBounce": {
+    "message": "Auto-suppress recipients on bounce events",
+    "description": "Auto-suppress bounce checkbox"
+  },
+  "integrationsAutoSuppressComplaint": {
+    "message": "Auto-suppress recipients on complaint events",
+    "description": "Auto-suppress complaint checkbox"
+  },
+  "integrationsGmailMailboxesTitle": { "message": "Gmail inbox & user mailboxes", "description": "Gmail mailboxes section title" },
+  "integrationsGmailAdvancedTitle": {
+    "message": "Advanced: custom Google Cloud OAuth app (workspace owner or platform admin)",
+    "description": "Gmail advanced section summary"
+  },
+  "integrationsGmailReady": { "message": "Ready for users.", "description": "Gmail OAuth ready title" },
+  "integrationsGmailReadyBody": {
+    "message": "Each person connects their own mailbox from {inboxPath} (same pattern as other CRMs—no Google Cloud forms here).",
+    "description": "Gmail OAuth ready body"
+  },
+  "integrationsGmailInboxPath": { "message": "Inbox → Connect Gmail", "description": "Inbox connect path in Gmail ready message" },
+  "integrationsGmailNotEnabled": { "message": "Not enabled on this API server.", "description": "Gmail OAuth not enabled title" },
+  "integrationsGmailNotEnabledBody": {
+    "message": "For SaaS or shared hosting, your operator sets {clientId}, {clientSecret}, and {redirectUri} once on the API process, then users only use Connect Gmail.",
+    "description": "Gmail OAuth not enabled body"
+  },
+  "integrationsGmailNotEnabledNote": {
+    "message": "You do {emphasis} fill Client ID / secret here for every user—only one registration per deployment (env), unless you open Advanced for a rare tenant-specific Google project.",
+    "description": "Gmail OAuth not enabled footnote"
+  },
+  "integrationsGmailNotEnabledEmphasis": { "message": "not", "description": "Emphasis word in Gmail not enabled note" },
+  "integrationsGmailAdvancedSummary": {
+    "message": "Advanced: custom Google Cloud OAuth app (workspace owner or platform admin)",
+    "description": "Gmail advanced section summary"
+  },
+  "integrationsGmailAdvancedSkip": { "message": "Skip this", "description": "Gmail advanced skip label" },
+  "integrationsGmailAdvancedBody": {
+    "message": "if the API already has {envVars} in environment variables. Use Advanced only when this workspace must use its own Google Cloud OAuth client instead of the host’s. Optional tenant overrides are stored in the database. Redirect URI must match Google Cloud → Credentials → OAuth 2.0 Web client → Authorized redirect URIs, ending with {callbackPath}.",
+    "description": "Gmail advanced section body"
+  },
+  "integrationsGmailEnvVars": { "message": "GOOGLE_GMAIL_*", "description": "Gmail env var prefix in advanced text" },
+  "integrationsGmailCallbackPath": {
+    "message": "/api/mailboxes/inbox-sync/google/callback",
+    "description": "Gmail OAuth callback path"
+  },
+  "integrationsClientId": { "message": "Client ID", "description": "OAuth client ID label" },
+  "integrationsClientSecret": { "message": "Client secret", "description": "OAuth client secret label" },
+  "integrationsClientSecretReplace": {
+    "message": "•••••••• (enter new secret to replace)",
+    "description": "OAuth client secret replace placeholder"
+  },
+  "integrationsClientSecretRequired": { "message": "Required to save overrides", "description": "OAuth client secret required placeholder" },
+  "integrationsRedirectUri": { "message": "Redirect URI", "description": "OAuth redirect URI label" },
+  "integrationsSavingGmailOAuth": { "message": "Saving…", "description": "Save Gmail OAuth in progress" },
+  "integrationsSaveGmailOAuthOnly": { "message": "Save custom OAuth app only", "description": "Save Gmail OAuth button" },
+  "integrationsSenderDomainTitle": { "message": "Sender Domain Verification", "description": "Sender domain section title" },
+  "integrationsCheckingStatus": { "message": "Checking...", "description": "Domain check in progress" },
+  "integrationsCheckStatus": { "message": "Check Status", "description": "Check domain status button" },
+  "integrationsSenderDomainDnsHint": {
+    "message": "Live DNS check for sender domain authentication records.",
+    "description": "Sender domain DNS hint"
+  },
+  "integrationsDomainLabel": { "message": "Domain:", "description": "Sender domain label" },
+  "integrationsDomainNotSet": { "message": "Not set", "description": "Domain not set fallback" },
+  "integrationsLastChecked": { "message": "Last checked:", "description": "Domain last checked prefix" },
+  "integrationsSenderIdentity": { "message": "Sender Identity", "description": "Sender identity DNS row" },
+  "integrationsSpf": { "message": "SPF", "description": "SPF DNS row" },
+  "integrationsDkim": { "message": "DKIM", "description": "DKIM DNS row" },
+  "integrationsDmarc": { "message": "DMARC", "description": "DMARC DNS row" },
+  "integrationsDeliveryDiagnosticsTitle": { "message": "Delivery Diagnostics (24h)", "description": "Outbound diagnostics title" },
+  "integrationsRefreshing": { "message": "Refreshing...", "description": "Refresh in progress" },
+  "integrationsRefresh": { "message": "Refresh", "description": "Refresh button" },
+  "integrationsFailureCategories": { "message": "Failure categories", "description": "Failure categories label" },
+  "integrationsNoFailures24h": { "message": "No failures recorded in the last 24h.", "description": "No failures empty state" },
+  "integrationsRecentLifecycleEvents": { "message": "Recent lifecycle events", "description": "Recent events label" },
+  "integrationsNoCommunicationEvents": {
+    "message": "No communication events found for this window.",
+    "description": "No outbound events empty state"
+  },
+  "integrationsEventSourcePrefix": { "message": "source:", "description": "Event source label prefix" },
+  "integrationsEventFailurePrefix": { "message": "failure:", "description": "Event failure label prefix" },
+  "integrationsEventErrorPrefix": { "message": "error:", "description": "Event error label prefix" },
+  "integrationsInboundMimeTitle": { "message": "Inbound MIME webhook", "description": "Inbound webhook section title" },
+  "integrationsInboundMimeDescIntro": {
+    "message": "Point SES, Lambda, Mailgun-style relays, etc. here. Raw {mimeType} body or JSON {jsonShape}.",
+    "description": "Inbound webhook intro"
+  },
+  "integrationsInboundMimeDescRouting": {
+    "message": "Tenant routing uses the Reply-To token in the message. Optional headers: {orgHeader} (or {orgHeaderAlt}) for inbound lifecycle stamps; Bearer or {tokenHeader} when server env {secretEnv} is set.",
+    "description": "Inbound webhook routing"
+  },
+  "integrationsMimeType": { "message": "message/rfc822", "description": "MIME type in inbound hint" },
+  "integrationsJsonShape": { "message": "{ rawMime }", "description": "JSON shape in inbound hint" },
+  "integrationsOrgHeader": { "message": "X-Organization-Id", "description": "Organization header name" },
+  "integrationsOrgHeaderAlt": { "message": "X-Arivu-Organization-Id", "description": "Alternate organization header" },
+  "integrationsTokenHeader": { "message": "X-Email-Inbound-Webhook-Token", "description": "Inbound webhook token header" },
+  "integrationsSecretEnv": { "message": "EMAIL_INBOUND_WEBHOOK_SECRET", "description": "Inbound webhook secret env var" },
+  "integrationsCopyUrl": { "message": "Copy URL", "description": "Copy inbound webhook URL" },
+  "integrationsCopyCurl": { "message": "Copy curl (JSON + secret)", "description": "Copy curl example button" },
+  "integrationsInboundDiagnosticsTitle": { "message": "Inbound Diagnostics (24h)", "description": "Inbound diagnostics title" },
+  "integrationsInboundDiagnosticsHint": {
+    "message": "Webhook URL, headers, and a sample curl are in the “Inbound MIME webhook” section above.",
+    "description": "Inbound diagnostics hint"
+  },
+  "integrationsQueueWaiting": { "message": "Queue waiting", "description": "Inbound queue waiting metric" },
+  "integrationsQueueActive": { "message": "Queue active", "description": "Inbound queue active metric" },
+  "integrationsOpenDeadLetters": { "message": "Open dead-letters", "description": "Open dead letters metric" },
+  "integrationsClickOpenInspector": { "message": "Click to open inspector", "description": "Dead letters card hint" },
+  "integrationsRecentOpenDeadLetters": { "message": "Recent open dead-letters", "description": "Recent dead letters label" },
+  "integrationsOpenInspector": { "message": "Open inspector", "description": "Open inspector link" },
+  "integrationsFocus": { "message": "Focus", "description": "Focus dead letter row" },
+  "integrationsThreadStrategyBreakdown": { "message": "Thread strategy breakdown", "description": "Thread strategy label" },
+  "integrationsNoInboundThreading": {
+    "message": "No inbound threading activity found for this window.",
+    "description": "No inbound threading empty state"
+  },
+  "integrationsRecentInboundEvents": { "message": "Recent inbound lifecycle events", "description": "Recent inbound events label" },
+  "integrationsNoInboundEvents": {
+    "message": "No inbound lifecycle events found for this window.",
+    "description": "No inbound events empty state"
+  },
+  "integrationsEventStrategyPrefix": { "message": "strategy:", "description": "Inbound event strategy prefix" },
+  "integrationsDeadLetterInspectorTitle": { "message": "Inbound Dead-Letter Inspector", "description": "Dead letter inspector title" },
+  "integrationsIncludeResolved": { "message": "Include resolved", "description": "Include resolved checkbox" },
+  "integrationsExportCsv": { "message": "Export CSV", "description": "Export dead letters CSV" },
+  "integrationsDeadLetterReviewHint": {
+    "message": "Review failed inbound jobs and replay recoverable ones.",
+    "description": "Dead letter inspector hint"
+  },
+  "integrationsReplayCount": { "message": "replay:", "description": "Replay count badge prefix" },
+  "integrationsResolvedBadge": { "message": "resolved", "description": "Resolved dead letter badge" },
+  "integrationsReplayOk": { "message": "replay ok", "description": "Replay success badge" },
+  "integrationsReplayFailed": { "message": "replay failed", "description": "Replay failed badge" },
+  "integrationsLastReplaySucceeded": { "message": "Last replay succeeded", "description": "Replay success tooltip" },
+  "integrationsNoDeadLetterEntries": { "message": "No inbound dead-letter entries found.", "description": "No dead letters empty state" },
+  "integrationsOwnerOnlyReplay": {
+    "message": "Only workspace owner can replay dead-letter entries.",
+    "description": "Owner-only replay hint"
+  },
+  "integrationsReplaying": { "message": "Replaying...", "description": "Replay in progress" },
+  "integrationsReplay": { "message": "Replay", "description": "Replay dead letter button" },
+  "integrationsNoReasonProvided": { "message": "No reason provided", "description": "Dead letter no reason fallback" },
+  "integrationsCreatedPrefix": { "message": "created:", "description": "Dead letter created prefix" },
+  "integrationsLastReplayPrefix": { "message": "last replay:", "description": "Dead letter last replay prefix" },
+  "integrationsSuppressedRecipientsTitle": { "message": "Suppressed Recipients", "description": "Suppressions section title" },
+  "integrationsSuppressedDesc": {
+    "message": "Recipients are auto-suppressed when delivery events report bounce or complaint.",
+    "description": "Suppressions description"
+  },
+  "integrationsActiveTotal": { "message": "Active total", "description": "Active suppressions metric" },
+  "integrationsBounced": { "message": "Bounced", "description": "Bounced suppressions metric" },
+  "integrationsComplained": { "message": "Complained", "description": "Complained suppressions metric" },
+  "integrationsSearchEmail": { "message": "Search email", "description": "Suppression search label" },
+  "integrationsReasonFilter": { "message": "Reason filter", "description": "Suppression reason filter label" },
+  "integrationsReasonAll": { "message": "all", "description": "Suppression reason filter all" },
+  "integrationsReasonBounced": { "message": "bounced", "description": "Suppression reason bounced" },
+  "integrationsReasonComplained": { "message": "complained", "description": "Suppression reason complained" },
+  "integrationsShowingCount": {
+    "message": "Showing {shown} of {total}",
+    "description": "Suppression list count"
+  },
+  "integrationsSuppressionReasonPrefix": { "message": "reason:", "description": "Suppression row reason prefix" },
+  "integrationsSuppressionLastEventPrefix": { "message": "last event:", "description": "Suppression row last event prefix" },
+  "integrationsNoSuppressedMatch": {
+    "message": "No suppressed recipients match the current filter.",
+    "description": "No suppressions match filter"
+  },
+  "integrationsOwnerOnlyRemoveSuppression": {
+    "message": "Only workspace owner can remove suppression entries.",
+    "description": "Owner-only remove suppression hint"
+  },
+  "integrationsRemoving": { "message": "Removing...", "description": "Remove suppression in progress" },
+  "integrationsDataSharedTitle": { "message": "What data is shared", "description": "Data sharing section title" },
+  "integrationsNotifyResendSelected": {
+    "message": "Resend selected — use your Resend API key as the SMTP password.",
+    "description": "Toast when Resend provider selected"
+  },
+  "integrationsNotifyGmailSmtpSelected": {
+    "message": "Gmail SMTP selected. Save settings, then users connect mailboxes with App Passwords in Inbox.",
+    "description": "Toast when Gmail SMTP provider selected"
+  },
+  "integrationsNotifyOciProviderChanged": {
+    "message": "Provider changed to OCI Email Delivery. Enter your OCI SMTP username and password, then save.",
+    "description": "Toast when OCI provider selected"
+  },
+  "integrationsNotifyWebhookUrlCopied": { "message": "Inbound webhook URL copied", "description": "Copy URL success" },
+  "integrationsNotifyUnableCopyUrl": { "message": "Unable to copy URL", "description": "Copy URL error" },
+  "integrationsNotifyCurlCopied": {
+    "message": "Sample curl copied — replace placeholders",
+    "description": "Copy curl success"
+  },
+  "integrationsNotifyUnableCopyCurl": { "message": "Unable to copy curl example", "description": "Copy curl error" },
+  "integrationsNotifyDomainRefreshFailed": {
+    "message": "Failed to refresh sender domain verification status",
+    "description": "Domain check error"
+  },
+  "integrationsNotifyOwnerOnlyRemoveSuppression": {
+    "message": "Only workspace owner can remove suppression entries",
+    "description": "Remove suppression permission error"
+  },
+  "integrationsConfirmRemoveSuppression": {
+    "message": "Remove \"{email}\" from suppression list?",
+    "description": "Confirm remove suppression"
+  },
+  "integrationsNotifySuppressionRemoved": { "message": "Suppression removed", "description": "Remove suppression success" },
+  "integrationsNotifyRemoveSuppressionFailed": {
+    "message": "Failed to remove suppression entry",
+    "description": "Remove suppression error"
+  },
+  "integrationsNotifyNoDeadLettersExport": {
+    "message": "No dead-letter rows to export. Refresh the list first.",
+    "description": "Export dead letters empty warning"
+  },
+  "integrationsNotifyDeadLettersExported": { "message": "Exported dead-letter list", "description": "Export dead letters success" },
+  "integrationsNotifyOwnerOnlyReplay": {
+    "message": "Only workspace owner can replay inbound dead-letters",
+    "description": "Replay permission error"
+  },
+  "integrationsNotifyDeadLetterReplayed": {
+    "message": "Dead-letter replayed successfully",
+    "description": "Replay dead letter success"
+  },
+  "integrationsNotifyReplayFailed": { "message": "Replay failed", "description": "Replay dead letter error fallback" },
+  "integrationsNotifyNoOutboundForWebhook": {
+    "message": "No eligible outbound communication found yet. Send at least one email first.",
+    "description": "Webhook simulation prerequisite warning"
+  },
+  "integrationsNotifyWebhookSimulated": {
+    "message": "Simulated webhook event: {eventType}",
+    "description": "Webhook simulation success"
+  },
+  "integrationsNotifyWebhookSimFailed": { "message": "Webhook simulation failed", "description": "Webhook simulation error" },
+  "integrationsNotifyGmailOAuthSaveDenied": {
+    "message": "Only the workspace owner or a platform administrator can save the Gmail OAuth app here. Or set GOOGLE_GMAIL_* on the API server.",
+    "description": "Gmail OAuth save permission error"
+  },
+  "integrationsNotifyGmailOAuthSaved": { "message": "Custom Gmail OAuth app saved", "description": "Gmail OAuth save success" },
+  "integrationsNotifyEmailSettingsSaved": { "message": "Email provider settings saved", "description": "Email settings save success" },
+  "integrationsNotifySaveEmailFailed": { "message": "Failed to save email settings", "description": "Email settings save error" },
+  "integrationsConfirmEnable": {
+    "message": "Enable this integration? This will start sending and receiving data as described. You can disable it at any time.",
+    "description": "Confirm enable integration"
+  },
+  "integrationsConfirmDisable": {
+    "message": "Disable this integration? New data will stop flowing, but existing records in your tools will not be deleted.",
+    "description": "Confirm disable integration"
+  },
+  "integrationsNotifyEnableFailed": { "message": "Failed to enable integration", "description": "Enable integration error" },
+  "integrationsNotifyDisableFailed": { "message": "Failed to disable integration", "description": "Disable integration error" },
+  "integrationsNotifyTestEmailSent": {
+    "message": "Test email sent. Check your inbox (or Mailtrap in dev).",
+    "description": "Test email success fallback"
+  },
+  "integrationsNotifyTestEmailFailed": { "message": "Failed to send test email", "description": "Test email error fallback" },
+  "integrationsSmtpUserResend": { "message": "resend", "description": "Resend SMTP username in hint" }
+}

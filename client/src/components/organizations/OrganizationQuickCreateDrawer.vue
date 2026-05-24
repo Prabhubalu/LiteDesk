@@ -84,7 +84,7 @@
                           @click="closeDrawer"
                         >
                           <span class="absolute -inset-2.5"></span>
-                          <span class="sr-only">Close panel</span>
+                          <span class="sr-only">{{ t('forms.previewClosePanelSr') }}</span>
                           <XMarkIcon class="size-6" aria-hidden="true" />
                         </button>
                       </div>
@@ -142,7 +142,7 @@
                           <template v-else>
                             <div v-if="moduleDefinition && !moduleLoading" class="space-y-6">
                               <div v-if="fullQuickCreateFields.length">
-                                <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Quick create fields</h3>
+                                <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('organizations.organizationQuickCreateDrawerQuickCreateFields') }}</h3>
                                 <DynamicForm
                                   module-key="organizations"
                                   context="platform"
@@ -159,7 +159,7 @@
                               </div>
 
                               <div v-if="fullOtherFields.length" class="border-t border-gray-200 dark:border-gray-700 pt-6">
-                                <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Other fields</h3>
+                                <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('organizations.organizationQuickCreateDrawerOtherFields') }}</h3>
                                 <DynamicForm
                                   module-key="organizations"
                                   context="platform"
@@ -176,7 +176,7 @@
                               </div>
 
                               <div v-if="fullParticipationFields.length" class="border-t border-gray-200 dark:border-gray-700 pt-6">
-                                <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">App participation</h3>
+                                <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('records.genericAppParticipation') }}</h3>
                                 <DynamicForm
                                   module-key="organizations"
                                   context="platform"
@@ -210,17 +210,13 @@
                         type="button" 
                         class="rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" 
                         @click="switchToFull"
-                      >
-                        Full form
-                      </button>
+                      >{{ t('organizations.organizationQuickCreateDrawerFullForm') }}</button>
                       <button 
                         v-else
                         type="button" 
                         class="rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" 
                         @click="switchToQuick"
-                      >
-                        Back to quick
-                      </button>
+                      >{{ t('organizations.organizationQuickCreateDrawerBackToQuick') }}</button>
                     </div>
                     <span v-else />
 
@@ -230,9 +226,7 @@
                         type="button" 
                         class="rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" 
                         @click="closeDrawer"
-                      >
-                        Cancel
-                      </button>
+                      >{{ t('performance.cancelWizard') }}</button>
                       <button 
                         type="submit" 
                         :disabled="saving || !formData.name" 
@@ -253,6 +247,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, computed, watch, nextTick } from 'vue';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
@@ -285,6 +280,8 @@ const props = defineProps({
     default: null
   }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['close', 'saved']);
 

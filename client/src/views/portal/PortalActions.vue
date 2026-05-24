@@ -12,8 +12,8 @@
 
     <!-- Page Header -->
     <div class="mb-6">
-      <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">Corrective Actions</h1>
-      <p class="text-gray-600 dark:text-gray-400">Track and manage all corrective actions</p>
+      <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ t('forms.reportCorrectiveActions') }}</h1>
+      <p class="text-gray-600 dark:text-gray-400">{{ t('audit.portalActionsTrackAndManageAllCorrectiveActions') }}</p>
     </div>
 
     <!-- Filters -->
@@ -23,19 +23,17 @@
         @change="applyFilters"
         class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
       >
-        <option value="">All Statuses</option>
-        <option value="OPEN">Open</option>
-        <option value="IN_PROGRESS">In Progress</option>
-        <option value="COMPLETED">Completed</option>
+        <option value="">{{ t('audit.portalActionsAllStatuses') }}</option>
+        <option value="OPEN">{{ t('settings.salesPipeStatusOpen') }}</option>
+        <option value="IN_PROGRESS">{{ t('forms.hubExecutionInProgress') }}</option>
+        <option value="COMPLETED">{{ t('process.execCompleted') }}</option>
       </select>
 
       <button
         v-if="hasFilters"
         @click="resetFilters"
         class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-      >
-        Clear Filters
-      </button>
+      >{{ t('audit.portalActionsClearFilters') }}</button>
     </div>
 
     <!-- Loading State -->
@@ -48,7 +46,7 @@
       <svg class="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
-      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No corrective actions</h3>
+      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">{{ t('audit.portalActionsNoCorrectiveActions') }}</h3>
       <p class="text-gray-600 dark:text-gray-400">
         {{ hasFilters ? 'Try adjusting your filters' : 'All corrective actions have been completed' }}
       </p>
@@ -103,13 +101,11 @@
             v-if="canUploadEvidence && action.status === 'OPEN'"
             class="pt-4 border-t border-gray-200 dark:border-gray-700"
           >
-            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Upload Evidence</h4>
+            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('audit.portalActionsUploadEvidence2') }}</h4>
             
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Files
-                </label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('audit.portalActionsFiles') }}</label>
                 <input
                   type="file"
                   :ref="el => fileInputs[action._id || action.id] = el"
@@ -120,14 +116,12 @@
               </div>
               
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Comments
-                </label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('records.activityFilterComments') }}</label>
                 <textarea
                   v-model="actionComments[action._id || action.id]"
                   rows="3"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
-                  placeholder="Add any additional comments..."
+                  :placeholder="t('audit.portalActionsAddAnyAdditionalComments')"
                 ></textarea>
               </div>
 
@@ -136,15 +130,15 @@
                 :disabled="uploadingEvidence[action._id || action.id]"
                 class="w-full lg:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                <span v-if="uploadingEvidence[action._id || action.id]">Uploading...</span>
-                <span v-else>Upload Evidence</span>
+                <span v-if="uploadingEvidence[action._id || action.id]">{{ t('common.formUploading') }}</span>
+                <span v-else>{{ t('audit.portalActionsUploadEvidence') }}</span>
               </button>
             </div>
           </div>
 
           <!-- Evidence List -->
           <div v-if="action.evidence && action.evidence.length > 0" class="pt-4 border-t border-gray-200 dark:border-gray-700">
-            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Uploaded Evidence</h4>
+            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('audit.portalActionsUploadedEvidence') }}</h4>
             <div class="space-y-2">
               <div
                 v-for="(evidence, idx) in action.evidence"
@@ -165,9 +159,7 @@
                   :href="evidence.url"
                   target="_blank"
                   class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
-                >
-                  Download
-                </a>
+                >{{ t('audit.portalActionsDownload') }}</a>
               </div>
             </div>
           </div>
@@ -177,9 +169,7 @@
             <router-link
               :to="`/portal/audits/${action.auditId || action.eventId}`"
               class="inline-flex items-center text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
-            >
-              View Audit
-              <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            >{{ t('audit.portalActionsViewAudit') }}<svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
             </router-link>
@@ -191,6 +181,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';

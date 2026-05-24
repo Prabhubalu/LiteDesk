@@ -18,8 +18,7 @@
         <form @submit.prevent="handleSubmit" class="p-6 space-y-6">
           <!-- Phase 2B: Type selector (only if multiple types allowed) -->
           <div v-if="!isEditing && showTypeSelector && isPlatformOwned" class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Record type <span class="text-gray-500 dark:text-gray-400 text-xs">(based on app configuration)</span>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('people.contactFormModalRecordType') }}<span class="text-gray-500 dark:text-gray-400 text-xs">(based on app configuration)</span>
             </label>
             <select
               v-model="form.type"
@@ -52,9 +51,7 @@
               type="button" 
               @click="$emit('close')" 
               class="px-6 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
-            >
-              Cancel
-            </button>
+            >{{ t('performance.cancelWizard') }}</button>
             <button 
               type="submit" 
               :disabled="saving || !moduleDefinition" 
@@ -70,6 +67,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, computed, watch, onMounted } from 'vue';
 import apiClient from '@/utils/apiClient';
 import DynamicForm from '@/components/common/DynamicForm.vue';
@@ -82,6 +80,8 @@ const props = defineProps({
     default: null
   }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['close', 'saved']);
 
@@ -315,7 +315,7 @@ const handleSubmit = async (event) => {
       response: error.response,
       stack: error.stack
     });
-    alert(error.message || 'Failed to save contact. Please check the console for details.');
+    alert(error.message || t('people.contactFormModalToastFailedToSaveContactPlease'));
   } finally {
     saving.value = false;
   }

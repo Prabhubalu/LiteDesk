@@ -26,7 +26,7 @@
               v-if="!disabled"
               type="button"
               class="rounded p-0.5 hover:bg-black/10 dark:hover:bg-white/10"
-              aria-label="Remove tag"
+              :aria-label="t('common.tagsRemoveTag')"
               @click.stop="toggleTagForRecord(tagName)"
             >
               <XMarkIcon class="h-3.5 w-3.5" />
@@ -55,14 +55,14 @@
       >
         <div class="px-3 py-2 border-b border-gray-200 dark:border-gray-700 shrink-0">
           <div class="flex items-center justify-between gap-2">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Tags</h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('common.tagsTitle') }}</h3>
             <button
               v-if="canEdit"
               type="button"
               class="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
               @click="openCreateTagEditor()"
             >
-              New Tag
+              {{ t('common.tagsNewTag') }}
             </button>
           </div>
           <div class="mt-2">
@@ -70,7 +70,7 @@
               ref="tagSearchInputRef"
               v-model="tagSearchQuery"
               type="text"
-              placeholder="Search or create a tag"
+              :placeholder="t('common.tagsSearchPlaceholder')"
               class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               @focus="tagListOpen = true"
               @click="tagListOpen = true"
@@ -86,26 +86,26 @@
             class="mb-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-200"
           >
             <div class="flex items-center justify-between gap-2">
-              <span>Removed "{{ pendingTagRemovalTagName }}".</span>
+              <span>{{ t('common.tagsRemovedNamed', { name: pendingTagRemovalTagName }) }}</span>
               <button type="button" class="font-medium hover:underline" @click="undoPendingTagRemoval">
-                Undo ({{ pendingTagRemovalSecondsLeft }})
+                {{ t('common.tagsUndoSeconds', { seconds: pendingTagRemovalSecondsLeft }) }}
               </button>
             </div>
           </div>
 
           <div v-if="!tagListOpen && !isTagEditorOpen" class="px-2 py-2 text-sm text-gray-500 dark:text-gray-400">
-            Click the search box to view available tags.
+            {{ t('common.tagsClickSearchHint') }}
           </div>
 
           <div v-else-if="!hasInstanceTags && !isTagEditorOpen" class="px-2 py-2 text-sm text-gray-500 dark:text-gray-400">
-            <p>No tags in this workspace yet.</p>
+            <p>{{ t('common.tagsNoTagsYet') }}</p>
             <button
               v-if="canEdit"
               type="button"
               class="mt-2 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
               @click="openCreateTagEditor(tagSearchQuery)"
             >
-              Create first tag
+              {{ t('common.tagsCreateFirst') }}
             </button>
           </div>
 
@@ -116,7 +116,7 @@
               class="w-full rounded-lg px-3 py-2 text-left text-sm text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
               @click="openCreateTagEditor(tagSearchQuery)"
             >
-              Create "{{ normalizedTagSearch }}"
+              {{ t('common.tagsCreateNamed', { name: normalizedTagSearch }) }}
             </button>
 
             <div
@@ -135,7 +135,7 @@
                   v-if="tagDef.isPublic"
                   class="rounded px-1.5 py-0.5 text-[10px] font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300"
                 >
-                  Public
+                  {{ t('common.tagsPublic') }}
                 </span>
                 <CheckIcon
                   v-if="isTagAssigned(tagDef.name)"
@@ -147,7 +147,7 @@
                 type="button"
                 class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 shrink-0"
                 @click.stop="openEditTagEditor(tagDef)"
-                aria-label="Edit tag"
+                :aria-label="t('common.tagsEditTag')"
               >
                 <PencilSquareIcon class="w-4 h-4" />
               </button>
@@ -157,7 +157,7 @@
                   class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                   @click.stop
                   @click="prepareMenuPlacement(`list-${tagDef.name}`, $event)"
-                  aria-label="Tag actions"
+                  :aria-label="t('common.tagsTagActions')"
                 >
                   <EllipsisVerticalIcon class="w-4 h-4" />
                 </MenuButton>
@@ -176,7 +176,7 @@
                         :class="['w-full px-3 py-1.5 text-left text-xs text-gray-900 dark:text-gray-100', active ? 'bg-gray-100 dark:bg-gray-800' : '']"
                         @click.stop="toggleTagForRecord(tagDef.name)"
                       >
-                        {{ isTagAssigned(tagDef.name) ? 'Remove from selection' : 'Add to selection' }}
+                        {{ isTagAssigned(tagDef.name) ? t('common.tagsRemoveFromSelection') : t('common.tagsAddToSelection') }}
                       </button>
                     </MenuItem>
                     <MenuItem v-slot="{ active }">
@@ -185,7 +185,7 @@
                         :class="['w-full px-3 py-1.5 text-left text-xs text-gray-900 dark:text-gray-100', active ? 'bg-gray-100 dark:bg-gray-800' : '']"
                         @click.stop="openTagEditorByName(tagDef.name)"
                       >
-                        Edit tag
+                        {{ t('common.tagsEditTag') }}
                       </button>
                     </MenuItem>
                     <MenuItem v-slot="{ active }">
@@ -194,7 +194,7 @@
                         :class="['w-full px-3 py-1.5 text-left text-xs text-red-600 dark:text-red-400', active ? 'bg-gray-100 dark:bg-gray-800' : '']"
                         @click.stop="handleDeleteTagDefinition(tagDef.name)"
                       >
-                        Delete tag from module
+                        {{ t('common.tagsDeleteFromModule') }}
                       </button>
                     </MenuItem>
                   </MenuItems>
@@ -206,17 +206,17 @@
           <template v-else>
             <div class="px-2 py-2 space-y-3">
               <div>
-                <label class="text-xs text-gray-500 dark:text-gray-400">Tag Name</label>
+                <label class="text-xs text-gray-500 dark:text-gray-400">{{ t('common.tagsTagName') }}</label>
                 <input
                   v-model="tagEditor.name"
                   type="text"
                   maxlength="50"
                   class="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="Enter tag name"
+                  :placeholder="t('common.tagsEnterTagName')"
                 />
               </div>
               <div>
-                <label class="text-xs text-gray-500 dark:text-gray-400">Color</label>
+                <label class="text-xs text-gray-500 dark:text-gray-400">{{ t('common.tagsColor') }}</label>
                 <div class="mt-1 flex items-center gap-2 flex-wrap">
                   <button
                     v-for="option in TAG_COLOR_OPTIONS"
@@ -233,7 +233,7 @@
               </div>
               <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                 <HeadlessCheckbox v-model="tagEditor.isPublic" checkbox-class="h-4 w-4" />
-                Make tag public
+                {{ t('common.tagsMakePublic') }}
               </label>
               <div class="flex items-center justify-end gap-2 pt-1">
                 <button
@@ -241,7 +241,7 @@
                   class="rounded-md px-2.5 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                   @click="closeTagEditor"
                 >
-                  Cancel
+                  {{ t('actions.cancel') }}
                 </button>
                 <button
                   type="button"
@@ -249,7 +249,7 @@
                   :disabled="!canSaveTagEditor || isSavingTagState"
                   @click="saveTagEditor"
                 >
-                  {{ tagEditorMode === 'create' ? 'Create' : 'Save' }}
+                  {{ tagEditorMode === 'create' ? t('actions.create') : t('actions.save') }}
                 </button>
               </div>
             </div>
@@ -262,6 +262,9 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import type { Directive, DirectiveBinding } from 'vue';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
 import { CheckIcon, PencilSquareIcon, EllipsisVerticalIcon, XMarkIcon } from '@heroicons/vue/24/outline';

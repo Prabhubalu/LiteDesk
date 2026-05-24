@@ -1,14 +1,14 @@
 <template>
   <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
     <div class="flex items-center justify-between gap-2">
-      <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Tags</h3>
+      <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('records.tagsTitle') }}</h3>
       <button
         v-if="canEdit"
         type="button"
         class="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
         @click="openCreateTagEditor()"
       >
-        New Tag
+        {{ t('records.tagsNewTag') }}
       </button>
     </div>
 
@@ -17,7 +17,7 @@
         ref="tagSearchInputRef"
         v-model="tagSearchQuery"
         type="text"
-        placeholder="Search or create a tag"
+        :placeholder="t('records.tagsSearchPh')"
         class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
         :readonly="!canEdit"
         @focus="tagListOpen = true"
@@ -28,7 +28,7 @@
         v-if="!canEdit"
         class="mt-2 text-xs text-gray-500 dark:text-gray-400"
       >
-        You don't have permission to edit tags.
+        {{ t('records.tagsNoPermission') }}
       </p>
       <p
         v-if="tagSaveError"
@@ -68,7 +68,7 @@
                   :class="['w-full px-3 py-1.5 text-left text-xs text-gray-900 dark:text-gray-100', active ? 'bg-gray-100 dark:bg-gray-800' : '']"
                   @click="removeTagFromRecord(tagName)"
                 >
-                  Remove from this record
+                  {{ t('records.tagsRemoveFromRecord') }}
                 </button>
               </MenuItem>
               <MenuItem v-slot="{ active }">
@@ -77,7 +77,7 @@
                   :class="['w-full px-3 py-1.5 text-left text-xs text-gray-900 dark:text-gray-100', active ? 'bg-gray-100 dark:bg-gray-800' : '']"
                   @click="openTagEditorByName(tagName)"
                 >
-                  Edit tag
+                  {{ t('records.tagsEditTag') }}
                 </button>
               </MenuItem>
               <MenuItem v-slot="{ active }">
@@ -86,7 +86,7 @@
                   :class="['w-full px-3 py-1.5 text-left text-xs text-red-600 dark:text-red-400', active ? 'bg-gray-100 dark:bg-gray-800' : '']"
                   @click="handleDeleteTagDefinition(tagName)"
                 >
-                  Delete tag from module
+                  {{ t('records.tagsDeleteFromModule') }}
                 </button>
               </MenuItem>
             </MenuItems>
@@ -102,26 +102,26 @@
       class="mb-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-200"
     >
       <div class="flex items-center justify-between gap-2">
-        <span>Removed "{{ pendingTagRemovalTagName }}" from this record.</span>
+        <span>{{ t('common.tagsRemovedNamed', { name: pendingTagRemovalTagName }) }}</span>
         <button type="button" class="font-medium hover:underline" @click="undoPendingTagRemoval">
-          Undo ({{ pendingTagRemovalSecondsLeft }})
+          {{ t('common.tagsUndoSeconds', { seconds: pendingTagRemovalSecondsLeft }) }}
         </button>
       </div>
     </div>
 
     <div v-if="!tagListOpen && !isTagEditorOpen" class="px-2 py-3 text-sm text-gray-500 dark:text-gray-400">
-      Click the search box to view available tags.
+      {{ t('records.tagsSearchHint') }}
     </div>
 
     <div v-else-if="!hasInstanceTags && !isTagEditorOpen" class="px-2 py-3 text-sm text-gray-500 dark:text-gray-400">
-      <p>No tags created yet in this instance.</p>
+      <p>{{ t('records.tagsNoneYet') }}</p>
       <button
         v-if="canEdit"
         type="button"
         class="mt-2 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
         @click="openCreateTagEditor(tagSearchQuery)"
       >
-        Create first tag
+        {{ t('records.tagsCreateFirst') }}
       </button>
     </div>
 
@@ -132,7 +132,7 @@
         class="w-full rounded-lg px-3 py-2 text-left text-sm text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
         @click="openCreateTagEditor(tagSearchQuery)"
       >
-        Create "{{ normalizedTagSearch }}"
+        {{ t('common.tagsCreateNamed', { name: normalizedTagSearch }) }}
       </button>
 
       <div
@@ -151,7 +151,7 @@
             v-if="tagDef.isPublic"
             class="rounded px-1.5 py-0.5 text-[10px] font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300"
           >
-            Public
+            {{ t('records.tagsPublic') }}
           </span>
           <CheckIcon
             v-if="isTagAssigned(tagDef.name)"
@@ -163,7 +163,7 @@
           type="button"
           class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
           @click.stop="openEditTagEditor(tagDef)"
-          aria-label="Edit tag"
+          :aria-label="t('records.tagsEditTag')"
         >
           <PencilSquareIcon class="w-4 h-4" />
         </button>
@@ -173,7 +173,7 @@
             class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             @click.stop
             @click="prepareMenuPlacement(`list-${tagDef.name}`, $event)"
-            aria-label="Tag actions"
+            :aria-label="t('records.tagsTagActions')"
           >
             <EllipsisVerticalIcon class="w-4 h-4" />
           </MenuButton>
@@ -192,7 +192,7 @@
                   :class="['w-full px-3 py-1.5 text-left text-xs text-gray-900 dark:text-gray-100', active ? 'bg-gray-100 dark:bg-gray-800' : '']"
                   @click.stop="removeTagFromRecord(tagDef.name)"
                 >
-                  Remove from this record
+                  {{ t('records.tagsRemoveFromRecord') }}
                 </button>
               </MenuItem>
               <MenuItem v-slot="{ active }">
@@ -201,7 +201,7 @@
                   :class="['w-full px-3 py-1.5 text-left text-xs text-gray-900 dark:text-gray-100', active ? 'bg-gray-100 dark:bg-gray-800' : '']"
                   @click.stop="openTagEditorByName(tagDef.name)"
                 >
-                  Edit tag
+                  {{ t('records.tagsEditTag') }}
                 </button>
               </MenuItem>
               <MenuItem v-slot="{ active }">
@@ -210,7 +210,7 @@
                   :class="['w-full px-3 py-1.5 text-left text-xs text-red-600 dark:text-red-400', active ? 'bg-gray-100 dark:bg-gray-800' : '']"
                   @click.stop="handleDeleteTagDefinition(tagDef.name)"
                 >
-                  Delete tag from module
+                  {{ t('records.tagsDeleteFromModule') }}
                 </button>
               </MenuItem>
             </MenuItems>
@@ -222,18 +222,18 @@
     <template v-else>
       <div class="px-2 py-2 space-y-3">
         <div>
-          <label class="text-xs text-gray-500 dark:text-gray-400">Tag Name</label>
+          <label class="text-xs text-gray-500 dark:text-gray-400">{{ t('records.tagsTagName') }}</label>
           <input
             v-model="tagEditor.name"
             type="text"
             maxlength="50"
             class="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="Enter tag name"
+            :placeholder="t('records.tagsNamePh')"
           />
         </div>
 
         <div>
-          <label class="text-xs text-gray-500 dark:text-gray-400">Color</label>
+          <label class="text-xs text-gray-500 dark:text-gray-400">{{ t('records.tagsColor') }}</label>
           <div class="mt-1 flex items-center gap-2">
             <button
               v-for="option in TAG_COLOR_OPTIONS"
@@ -254,7 +254,7 @@
             v-model="tagEditor.isPublic"
             checkbox-class="h-4 w-4"
           />
-          Make tag public
+          {{ t('records.tagsMakePublic') }}
         </label>
 
         <div class="flex items-center justify-between gap-2 pt-1">
@@ -264,7 +264,7 @@
               class="rounded-md px-2.5 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
               @click="closeTagEditor"
             >
-              Cancel
+              {{ t('actions.cancel') }}
             </button>
             <button
               type="button"
@@ -272,7 +272,7 @@
               :disabled="!canSaveTagEditor || isSavingTagState"
               @click="saveTagEditor"
             >
-              {{ tagEditorMode === 'create' ? 'Create' : 'Save' }}
+              {{ tagEditorMode === 'create' ? t('actions.create') : t('actions.save') }}
             </button>
           </div>
         </div>
@@ -283,10 +283,13 @@
 
 <script setup>
 import { computed, ref, watch, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
 import { CheckIcon, PencilSquareIcon, EllipsisVerticalIcon } from '@heroicons/vue/24/outline';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { useRecordTags } from './composables/useRecordTags';
+
+const { t } = useI18n();
 
 const props = defineProps({
   /** Reactive record with _id and tags */

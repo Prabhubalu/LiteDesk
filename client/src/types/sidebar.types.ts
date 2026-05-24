@@ -32,6 +32,8 @@ export type AppSummary = {
   id: string;
   /** Human-friendly app name. */
   name: string;
+  /** Optional i18n key (navigation.app*) when registry name should not be shown verbatim. */
+  nameKey?: string;
   /**
    * Dashboard route for this app lens.
    * Required so the App Switcher can change context explicitly without guessing routes.
@@ -43,27 +45,30 @@ export type AppSummary = {
   order?: number;
 };
 
+/** Optional vue-i18n key (navigation.*); `label` is English fallback for tests and registry names. */
+type SidebarLabelFields = {
+  label: string;
+  labelKey?: string;
+};
+
 export type SidebarItem =
-  | {
+  | ({
       kind: 'surface';
       id: 'home' | 'inbox' | 'attention' | 'search' | 'trash' | 'approvals';
-      label: string;
       route: string;
       icon?: string;
-    }
-  | {
+    } & SidebarLabelFields)
+  | ({
       kind: 'coreModule';
       id: string; // moduleKey (e.g., 'people', 'organizations', 'tasks', etc.)
-      label: string;
       route: string;
       icon?: string;
       moduleKey: string;
       order?: number;
-    }
-  | {
+    } & SidebarLabelFields)
+  | ({
       kind: 'app';
       id: string;
-      label: string;
       route: string;
       icon?: string;
       /**
@@ -71,14 +76,13 @@ export type SidebarItem =
        * Present for modules; omitted for an app dashboard link.
        */
       moduleKey?: string;
-    }
-  | {
+    } & SidebarLabelFields)
+  | ({
       kind: 'platform';
       id: string;
-      label: string;
       route: string;
       icon?: string;
-    };
+    } & SidebarLabelFields);
 
 export interface SidebarStructure {
   /**

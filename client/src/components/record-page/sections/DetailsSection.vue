@@ -6,7 +6,7 @@
       isCompact ? 'space-y-3' : 'space-y-2'
     ]"
   >
-    <h3 v-if="!hideHeader" class="text-sm font-normal text-gray-900 dark:text-white">Details</h3>
+    <h3 v-if="!hideHeader" class="text-sm font-normal text-gray-900 dark:text-white">{{ t('records.detailsTitle') }}</h3>
     <div
       :class="[
         isCompact
@@ -50,11 +50,11 @@
             <span class="flex-shrink-0 text-gray-400 dark:text-gray-500" aria-hidden="true">
               <component :is="getFieldIcon(field)" class="h-4 w-4" />
             </span>
-            <span class="min-w-[12rem] flex-shrink-0 text-sm text-gray-700 dark:text-gray-300">{{ field.label }}</span>
+            <span class="min-w-[12rem] flex-shrink-0 text-sm text-gray-700 dark:text-gray-300">{{ displayFieldLabel(field) }}</span>
           </template>
           <div v-else class="flex min-w-0 items-center gap-1.5">
             <component :is="getFieldIcon(field)" class="h-3.5 w-3.5 shrink-0 text-gray-400 dark:text-gray-500" aria-hidden="true" />
-            <span class="truncate text-sm font-normal text-gray-600 dark:text-gray-400">{{ field.label }}</span>
+            <span class="truncate text-sm font-normal text-gray-600 dark:text-gray-400">{{ displayFieldLabel(field) }}</span>
           </div>
 
           <Listbox
@@ -90,7 +90,7 @@
                   v-else
                   class="text-sm min-w-0 flex-1 truncate text-record-empty"
                 >
-                  Select an option
+                  {{ t('records.detailsSelectOption') }}
                 </span>
               </ListboxButton>
               <Transition
@@ -103,11 +103,11 @@
                 >
                   <ListboxOption :value="null" v-slot="{ active }">
                     <li :class="['relative cursor-default select-none py-2 pl-4 pr-10', active ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100']">
-                      <span :class="['block truncate', active ? '' : 'text-record-empty']">Select an option</span>
+                      <span :class="['block truncate', active ? '' : 'text-record-empty']">{{ t('records.detailsSelectOption') }}</span>
                     </li>
                   </ListboxOption>
                   <ListboxOption
-                    v-for="opt in (field.options || [])"
+                    v-for="opt in displayFieldOptions(field)"
                     :key="opt.value"
                     :value="opt.value"
                     v-slot="{ active, selected }"
@@ -149,7 +149,7 @@
                 {{ field.displayValue }}
               </span>
             </span>
-            <span v-else class="text-record-empty">Click to link record</span>
+            <span v-else class="text-record-empty">{{ t('records.detailsLinkRecord') }}</span>
           </button>
 
           <div
@@ -186,11 +186,11 @@
             <span class="flex-shrink-0 text-gray-400 dark:text-gray-500" aria-hidden="true">
               <component :is="getFieldIcon(field)" class="h-4 w-4" />
             </span>
-            <span class="min-w-[12rem] flex-shrink-0 text-sm text-gray-700 dark:text-gray-300">{{ field.label }}</span>
+            <span class="min-w-[12rem] flex-shrink-0 text-sm text-gray-700 dark:text-gray-300">{{ displayFieldLabel(field) }}</span>
           </template>
           <div v-else class="flex min-w-0 items-center gap-1.5">
             <component :is="getFieldIcon(field)" class="h-3.5 w-3.5 shrink-0 text-gray-400 dark:text-gray-500" aria-hidden="true" />
-            <span class="truncate text-sm font-normal text-gray-600 dark:text-gray-400">{{ field.label }}</span>
+            <span class="truncate text-sm font-normal text-gray-600 dark:text-gray-400">{{ displayFieldLabel(field) }}</span>
           </div>
           <button
             type="button"
@@ -225,12 +225,12 @@
 
         <div v-else :class="isCompact ? 'px-3 py-2.5' : ''">
           <EditableLabeledValue
-            :label="field.label"
+            :label="displayFieldLabel(field)"
             :value="field.value"
             :type="field.type || 'text'"
             :prefix-icon="isCompact ? null : (field.prefixIcon || null)"
             :can-edit="field.canEdit === true"
-            :options="Array.isArray(field.options) ? field.options : []"
+            :options="displayFieldOptions(field)"
             :min="field.min"
             :step="field.step"
             :multiline="field.multiline === true"
@@ -251,7 +251,7 @@
         class="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
         @click="expanded ? collapse() : expand()"
       >
-        {{ expanded ? 'View less' : `View all (${fields.length})` }}
+        {{ expanded ? t('records.sectionViewLess') : t('records.sectionViewAll', { count: fields.length }) }}
       </button>
     </div>
   </section>
@@ -259,7 +259,12 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue';
+
+const { t, te } = useI18n();
+import { resolveFieldLabel } from '@/utils/fieldLabelResolver';
+import { localizeSelectOptions } from '@/utils/configurableLabelResolver';
 import {
   CurrencyDollarIcon,
   CalendarDaysIcon,
@@ -317,6 +322,15 @@ const props = defineProps({
     default: true
   }
 });
+
+function displayFieldLabel(field) {
+  const mk = String(props.context?.module || '').toLowerCase();
+  return resolveFieldLabel(mk, field, t, te);
+}
+
+function displayFieldOptions(field) {
+  return localizeSelectOptions(field?.options, t, te);
+}
 
 const isCompact = computed(() => props.variant === 'compact');
 

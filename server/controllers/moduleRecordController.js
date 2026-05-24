@@ -139,6 +139,13 @@ function peopleEmbeddedActivityMessage(log) {
     return `Joined ${app} as ${typePart}`;
   }
   if (a === 'created this record' || a === 'record_created') return 'Created this person';
+  if (a === 'process_completed' || a === 'process_failed' || a === 'process_waiting_approval' || a === 'process_waiting') {
+    const name = d.processName || 'Process';
+    if (a === 'process_completed') return `Process "${name}" completed`;
+    if (a === 'process_failed') return d.error ? `Process "${name}" failed: ${d.error}` : `Process "${name}" failed`;
+    if (a === 'process_waiting_approval') return `Process "${name}" is waiting for approval`;
+    if (a === 'process_waiting') return `Process "${name}" is paused until a scheduled time`;
+  }
   return '';
 }
 
@@ -296,7 +303,7 @@ exports.getActivity = async (req, res) => {
             events.push({
               id: `activity-${log.timestamp}-${log._id || ''}`,
               type: 'system',
-              actor,
+              actor: log.user && log.user !== 'Unknown' ? log.user : actor,
               createdAt: log.timestamp ? new Date(log.timestamp).toISOString() : null,
               payload: { action: log.action || 'updated', message: log.message || '', details: log.details || {} }
             });

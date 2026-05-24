@@ -6,10 +6,13 @@
 
 <script setup>
 import { ref, onMounted, watch, onBeforeUnmount, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Chart, registerables } from 'chart.js';
 import apiClient from '@/utils/apiClient';
 
 Chart.register(...registerables);
+
+const { t } = useI18n();
 
 const props = defineProps({
   formId: {
@@ -105,7 +108,7 @@ const renderChart = () => {
       labels: chartData.value.labels,
       datasets: [
         {
-          label: 'Average Score %',
+          label: t('forms.analyticsChartAvgScorePct'),
           data: chartData.value.scores,
           backgroundColor: 'rgba(79, 70, 229, 0.8)', // indigo-600
           borderColor: 'rgb(79, 70, 229)',
@@ -124,7 +127,7 @@ const renderChart = () => {
         tooltip: {
           callbacks: {
             label: function(context) {
-              return `Score: ${context.parsed.x}%`;
+              return t('forms.analyticsTooltipScore', { value: context.parsed.x });
             }
           }
         }

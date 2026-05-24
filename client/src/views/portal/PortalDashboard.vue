@@ -24,9 +24,7 @@
             <p class="text-sm font-medium text-blue-900 dark:text-blue-200">
               Trial Period: {{ trialDaysRemaining }} days remaining
             </p>
-            <p class="text-xs text-blue-700 dark:text-blue-300 mt-1">
-              Your trial will expire soon. Contact your administrator for subscription options.
-            </p>
+            <p class="text-xs text-blue-700 dark:text-blue-300 mt-1">{{ t('audit.portalDashboardYourTrialWillExpireSoonContact') }}</p>
           </div>
         </div>
       </div>
@@ -37,9 +35,7 @@
       <h1 class="text-2xl lg:text-3xl font-bold text-white mb-2">
         Welcome back, {{ userName }}!
       </h1>
-      <p class="text-blue-100 text-lg">
-        Track your audits and manage corrective actions
-      </p>
+      <p class="text-blue-100 text-lg">{{ t('audit.portalDashboardTrackYourAuditsAndManageCorrective') }}</p>
     </div>
 
     <!-- Summary Cards -->
@@ -55,7 +51,7 @@
         </div>
         <div v-if="loading" class="h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-2"></div>
         <p v-else class="text-3xl font-bold text-gray-900 dark:text-white mb-1">{{ stats.totalAudits || 0 }}</p>
-        <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Audits</p>
+        <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('audit.portalDashboardTotalAudits') }}</p>
       </div>
 
       <!-- Open Corrective Actions Card -->
@@ -69,7 +65,7 @@
         </div>
         <div v-if="loading" class="h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-2"></div>
         <p v-else class="text-3xl font-bold text-gray-900 dark:text-white mb-1">{{ stats.openActions || 0 }}</p>
-        <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Open Corrective Actions</p>
+        <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('audit.portalDashboardOpenCorrectiveActions') }}</p>
       </div>
 
       <!-- Closed Audits Card -->
@@ -83,20 +79,18 @@
         </div>
         <div v-if="loading" class="h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-2"></div>
         <p v-else class="text-3xl font-bold text-gray-900 dark:text-white mb-1">{{ stats.closedAudits || 0 }}</p>
-        <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Completed Audits</p>
+        <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('audit.portalDashboardCompletedAudits') }}</p>
       </div>
     </div>
 
     <!-- Recent Activity -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-xl font-bold text-gray-900 dark:text-white">Recent Audit Activity</h2>
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ t('audit.portalDashboardRecentAuditActivity') }}</h2>
         <router-link
           to="/portal/audits"
           class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
-        >
-          View All
-        </router-link>
+        >{{ t('audit.portalDashboardViewAll') }}</router-link>
       </div>
 
       <!-- Loading State -->
@@ -109,8 +103,8 @@
         <svg class="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
-        <p class="text-gray-600 dark:text-gray-400 mb-2">No audit activity yet</p>
-        <p class="text-sm text-gray-500 dark:text-gray-500">Audits will appear here once they are available</p>
+        <p class="text-gray-600 dark:text-gray-400 mb-2">{{ t('audit.portalDashboardNoAuditActivityYet') }}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-500">{{ t('audit.portalDashboardAuditsWillAppearHereOnceThey') }}</p>
       </div>
 
       <!-- Activity List -->
@@ -152,6 +146,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';

@@ -4,9 +4,11 @@
   >
     <div class="min-w-0">
       <p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-        {{ label }}
+        {{ resolvedLabel }}
       </p>
-      <p v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Loading schedule…</p>
+      <p v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+        {{ t('settings.settingsBhLoadingSchedule') }}
+      </p>
       <template v-else-if="resolved">
         <p class="text-sm font-medium text-gray-900 dark:text-white mt-0.5 truncate">
           {{ resolved.name }}
@@ -15,7 +17,9 @@
           {{ resolved.sourceLabel }} · {{ resolved.summary }}
         </p>
       </template>
-      <p v-else class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">No schedule configured</p>
+      <p v-else class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+        {{ t('settings.settingsBhNoScheduleConfigured') }}
+      </p>
     </div>
     <button
       v-if="showSettingsLink && canManage"
@@ -23,7 +27,7 @@
       class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 shrink-0"
       @click="goToSettings"
     >
-      Change in Settings
+      {{ t('settings.settingsBhChangeInSettings') }}
     </button>
   </div>
 </template>
@@ -31,18 +35,24 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useBusinessHours } from '@/composables/useBusinessHours';
 import { useAuthStore } from '@/stores/authRegistry';
 
 const props = defineProps({
-  label: { type: String, default: 'Using schedule' },
+  label: { type: String, default: '' },
   userId: { type: String, default: null },
   showSettingsLink: { type: Boolean, default: true }
 });
 
+const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
 const { resolveSchedule } = useBusinessHours();
+
+const resolvedLabel = computed(
+  () => props.label || t('settings.settingsBhUsingScheduleLabel')
+);
 
 const loading = ref(true);
 const resolved = ref(null);

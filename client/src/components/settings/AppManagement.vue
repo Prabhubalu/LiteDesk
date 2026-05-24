@@ -8,14 +8,14 @@
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
       </svg>
-      <span>Back to Applications</span>
+      <span>{{ t('settings.settingsAppMgmtBack') }}</span>
     </button>
 
     <!-- Header -->
     <div>
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">App Management</h2>
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.settingsAppMgmtTitle') }}</h2>
       <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        Enable or disable apps for your organization. Manage seat usage and app access.
+        {{ t('settings.settingsAppMgmtSubtitle') }}
       </p>
     </div>
 
@@ -65,7 +65,7 @@
             <!-- Seat Usage Info (for PER_USER apps) -->
             <div v-if="app.seatInfo && app.seatInfo.limit !== null" class="mb-4">
               <div class="flex items-center gap-2 text-sm">
-                <span class="text-gray-600 dark:text-gray-400">Seat Usage:</span>
+                <span class="text-gray-600 dark:text-gray-400">{{ t('settings.settingsAppMgmtSeatUsage') }}</span>
                 <span class="font-medium text-gray-900 dark:text-white">
                   {{ app.seatInfo.used }}/{{ app.seatInfo.limit }}
                 </span>
@@ -77,7 +77,7 @@
                       : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                   ]"
                 >
-                  {{ app.seatInfo.available === null ? 'Unlimited' : `${app.seatInfo.available} available` }}
+                  {{ app.seatInfo.available === null ? t('settings.settingsAppMgmtUnlimited') : t('settings.settingsAppMgmtSeatsAvailable', { count: app.seatInfo.available }) }}
                 </span>
               </div>
             </div>
@@ -93,10 +93,10 @@
                 </svg>
                 <div>
                   <p class="text-sm font-medium text-yellow-800 dark:text-yellow-300">
-                    App Suspended
+                    {{ t('settings.settingsAppMgmtSuspendedTitle') }}
                   </p>
                   <p class="text-xs text-yellow-700 dark:text-yellow-400 mt-1">
-                    This app has been suspended. Users will not be able to access it. Contact support to reactivate.
+                    {{ t('settings.settingsAppMgmtSuspendedBody') }}
                   </p>
                 </div>
               </div>
@@ -108,7 +108,7 @@
               class="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
             >
               <p class="text-sm text-red-800 dark:text-red-300">
-                <strong>Cannot enable:</strong> {{ app.seatInfo.reason }}
+                <strong>{{ t('settings.settingsAppMgmtCannotEnable') }}</strong> {{ app.seatInfo.reason }}
               </p>
             </div>
           </div>
@@ -122,8 +122,8 @@
               :disabled="processing === app.appKey || (app.seatInfo && !app.seatInfo.canAdd)"
               class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
-              <span v-if="processing === app.appKey">Enabling...</span>
-              <span v-else>Enable</span>
+              <span v-if="processing === app.appKey">{{ t('settings.settingsAppMgmtEnabling') }}</span>
+              <span v-else>{{ t('settings.salesPlayEnable') }}</span>
             </button>
 
             <!-- Disable Button (hidden for Sales) -->
@@ -133,8 +133,8 @@
               :disabled="processing === app.appKey"
               class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
-              <span v-if="processing === app.appKey">Disabling...</span>
-              <span v-else>Disable</span>
+              <span v-if="processing === app.appKey">{{ t('settings.settingsAppMgmtDisabling') }}</span>
+              <span v-else>{{ t('settings.settingsAppMgmtDisable') }}</span>
             </button>
           </div>
         </div>
@@ -142,7 +142,7 @@
 
       <!-- Empty State -->
       <div v-if="allApps.length === 0" class="text-center py-12">
-        <p class="text-gray-500 dark:text-gray-400">No apps available</p>
+        <p class="text-gray-500 dark:text-gray-400">{{ t('settings.settingsAppMgmtEmpty') }}</p>
       </div>
     </div>
   </div>
@@ -151,11 +151,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useAppShellStore } from '@/stores/appShell';
 import { invalidateTenantSchemaCaches } from '@/utils/tenantSchemaApiCache';
 
+const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
 const appShellStore = useAppShellStore();
@@ -180,24 +182,28 @@ const organization = ref(null);
 const capabilities = ref([]);
 const processing = ref(null);
 
-// App display names (keep in sync with server organization enable/disable VALID_APPS)
-const appDisplayNames = {
-  SALES: 'Sales',
-  HELPDESK: 'Helpdesk',
-  PROJECTS: 'Projects',
-  PORTAL: 'Portal',
-  AUDIT: 'Audit',
-  LMS: 'LMS'
+const APP_NAME_KEYS = {
+  SALES: 'settings.appsNameSales',
+  HELPDESK: 'settings.appsNameHelpdesk',
+  PROJECTS: 'settings.appsNameProjects',
+  PORTAL: 'settings.appsNamePortal',
+  AUDIT: 'settings.appsNameAudit',
+  LMS: 'settings.appsNameLms'
 };
 
-// App descriptions
-const appDescriptions = {
-  SALES: 'Sales - Manage contacts, pipeline entities, and customer interactions.',
-  HELPDESK: 'Helpdesk - Support tickets, cases, and customer service workflows.',
-  PROJECTS: 'Projects - Plan and track project work across your organization.',
-  PORTAL: 'Customer Portal - Provide external users access to their information and services.',
-  AUDIT: 'Audit & Compliance - Conduct audits, track findings, and manage corrective actions.',
-  LMS: 'LMS - Learning management and training content.'
+const APP_DESC_KEYS = {
+  SALES: 'settings.settingsAppMgmtDescSales',
+  HELPDESK: 'settings.settingsAppMgmtDescHelpdesk',
+  PROJECTS: 'settings.settingsAppMgmtDescProjects',
+  PORTAL: 'settings.settingsAppMgmtDescPortal',
+  AUDIT: 'settings.settingsAppMgmtDescAudit',
+  LMS: 'settings.settingsAppMgmtDescLms'
+};
+
+const STATUS_KEYS = {
+  ACTIVE: 'settings.settingsSubsPlanActive',
+  SUSPENDED: 'settings.settingsAppsStatusSuspended',
+  DISABLED: 'settings.settingsAppsStatusDisabled'
 };
 
 // All tenant-manageable apps (must match server: settingsController enable/disable VALID_APPS)
@@ -252,7 +258,7 @@ const fetchOrganization = async () => {
     }
   } catch (err) {
     console.error('Error fetching organization:', err);
-    error.value = 'Failed to load organization data';
+    error.value = t('settings.settingsAppMgmtLoadFailed');
   }
 };
 
@@ -271,20 +277,18 @@ const fetchCapabilities = async () => {
 };
 
 const getAppDisplayName = (appKey) => {
-  return appDisplayNames[appKey] || appKey;
+  const key = APP_NAME_KEYS[appKey];
+  return key ? t(key) : appKey;
 };
 
 const getAppDescription = (appKey) => {
-  return appDescriptions[appKey] || 'No description available.';
+  const key = APP_DESC_KEYS[appKey];
+  return key ? t(key) : t('settings.settingsAppMgmtNoDesc');
 };
 
 const getStatusDisplay = (status) => {
-  const statusMap = {
-    ACTIVE: 'Active',
-    SUSPENDED: 'Suspended',
-    DISABLED: 'Disabled'
-  };
-  return statusMap[status] || status;
+  const key = STATUS_KEYS[status];
+  return key ? t(key) : status;
 };
 
 const getStatusBadgeClass = (status) => {
@@ -297,7 +301,7 @@ const getStatusBadgeClass = (status) => {
 };
 
 const handleEnable = async (app) => {
-  if (!confirm(`Enable ${getAppDisplayName(app.appKey)}? Users will be able to access this app.`)) {
+  if (!confirm(t('settings.settingsAppMgmtEnableConfirm', { app: getAppDisplayName(app.appKey) }))) {
     return;
   }
 
@@ -316,11 +320,11 @@ const handleEnable = async (app) => {
       await fetchCapabilities();
       await syncAppEntitlementCaches();
     } else {
-      error.value = response.message || 'Failed to enable app';
+      error.value = response.message || t('settings.settingsAppMgmtEnableFailed');
     }
   } catch (err) {
     console.error('Error enabling app:', err);
-    error.value = err.message || 'Failed to enable app';
+    error.value = err.message || t('settings.settingsAppMgmtEnableFailed');
     if (err.response?.data?.message) {
       error.value = err.response.data.message;
     }
@@ -330,7 +334,7 @@ const handleEnable = async (app) => {
 };
 
 const handleDisable = async (app) => {
-  if (!confirm(`Disable ${getAppDisplayName(app.appKey)}? Users will lose access to this app. This action can be reversed by enabling the app again.`)) {
+  if (!confirm(t('settings.settingsAppMgmtDisableConfirm', { app: getAppDisplayName(app.appKey) }))) {
     return;
   }
 
@@ -349,11 +353,11 @@ const handleDisable = async (app) => {
       await fetchCapabilities();
       await syncAppEntitlementCaches();
     } else {
-      error.value = response.message || 'Failed to disable app';
+      error.value = response.message || t('settings.settingsAppMgmtDisableFailed');
     }
   } catch (err) {
     console.error('Error disabling app:', err);
-    error.value = err.message || 'Failed to disable app';
+    error.value = err.message || t('settings.settingsAppMgmtDisableFailed');
     if (err.response?.data?.message) {
       error.value = err.response.data.message;
     }
@@ -366,4 +370,3 @@ const goBack = () => {
   router.push({ path: '/settings', query: { tab: 'applications' } });
 };
 </script>
-

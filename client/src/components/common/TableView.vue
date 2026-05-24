@@ -49,7 +49,7 @@
                   <span
                     v-if="selectionColumnVariant === 'numbered-hover'"
                     class="sr-only"
-                  >Row number and select rows</span>
+                  >{{ t('common.tableRowSelectSr') }}</span>
                   <div class="absolute top-1/2 left-4 -mt-2">
                     <HeadlessCheckbox
                       :checked="allSelected"
@@ -96,7 +96,7 @@
                           }"
                           role="button"
                           tabindex="-1"
-                          :aria-label="`Toggle sort for ${columnLabel(column)}`"
+                          :aria-label="t('common.tableToggleSort', { column: columnLabel(column) })"
                           @click.stop="toggleSort(column)"
                         >
                           <template v-if="isColumnSorted(column)">
@@ -130,7 +130,7 @@
                             @click="applyExplicitSort(column, 'asc')"
                           >
                             <ChevronUpIcon class="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                            <span>Sort ascending</span>
+                            <span>{{ t('common.tableSortAscending') }}</span>
                             <CheckIcon
                               v-if="isColumnSorted(column) && sortOrderValue === 'asc'"
                               class="ml-auto h-4 w-4 flex-shrink-0 text-indigo-600 dark:text-indigo-400"
@@ -145,7 +145,7 @@
                             @click="applyExplicitSort(column, 'desc')"
                           >
                             <ChevronDownIcon class="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                            <span>Sort descending</span>
+                            <span>{{ t('common.tableSortDescending') }}</span>
                             <CheckIcon
                               v-if="isColumnSorted(column) && sortOrderValue === 'desc'"
                               class="ml-auto h-4 w-4 flex-shrink-0 text-indigo-600 dark:text-indigo-400"
@@ -160,7 +160,7 @@
                             @click="clearSort(column)"
                           >
                             <XMarkIcon class="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                            <span>Clear sort</span>
+                            <span>{{ t('common.tableClearSort') }}</span>
                           </button>
                         </MenuItem>
                       </MenuItems>
@@ -347,7 +347,7 @@
                 <tr v-if="displayColumns.length === 0" class="border-0">
                   <td :colspan="tableBodyColspan" class="border-0 px-5 py-10">
                     <div class="space-y-3" role="status" aria-live="polite" aria-busy="true">
-                      <span class="sr-only">Loading table</span>
+                      <span class="sr-only">{{ t('common.tableLoadingSr') }}</span>
                       <div
                         v-for="n in loadingSkeletonRowCount"
                         :key="`sk-block-${n}`"
@@ -408,8 +408,8 @@
                 <td :colspan="tableBodyColspan" class="px-5 py-10 text-center">
                   <slot name="empty">
                     <div class="flex flex-col items-center justify-center py-8">
-                      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ emptyTitle || 'No data available' }}</h3>
-                      <p class="text-sm text-gray-600 dark:text-gray-400">{{ emptyMessage || 'No records found.' }}</p>
+                      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ emptyTitle || t('common.listNoDataAvailable') }}</h3>
+                      <p class="text-sm text-gray-600 dark:text-gray-400">{{ emptyMessage || t('common.listNoRecordsFound') }}</p>
                     </div>
                   </slot>
                 </td>
@@ -424,6 +424,9 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { ArrowsUpDownIcon, ChevronDownIcon, ChevronUpIcon, CheckIcon, XMarkIcon } from '@heroicons/vue/20/solid'
 import { formatRawValueForDisplay } from '@/utils/fieldDisplay'

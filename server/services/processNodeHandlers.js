@@ -15,6 +15,7 @@
 
 const { createLogger } = require('./automationLogger');
 const { resolveApprovers } = require('./approvalApproverResolver');
+const { computeResumeAt, formatWaitLabel } = require('../utils/processWaitUtils');
 
 const log = createLogger('processNodeHandlers');
 
@@ -32,7 +33,11 @@ function executeAction(...args) {
  */
 async function executeTrigger(node, context) {
   const { config } = node;
-  const { event, trigger } = context;
+  const { event, trigger, webhookInvocation } = context;
+
+  if (webhookInvocation) {
+    return { ok: true, matched: true };
+  }
 
   if (!event) {
     return { ok: false, matched: false, error: 'Trigger node requires domain event' };
@@ -679,6 +684,34 @@ async function executeApprovalGate(node, context) {
 }
 
 /**
+ * Execute wait node — pause until resumeAt (scheduler resumes).
+ * Config: { duration: number, unit: 'minutes'|'hours'|'days' }
+ *
+ * @param {Object} node - ProcessNode
+ * @returns {Promise<{ ok: boolean, paused?: boolean, resumeAt?: Date, error?: string }>}
+ */
+async function executeWait(node) {
+  const { config = {} } = node;
+  const duration = Number(config.duration);
+  const unit = config.unit || 'hours';
+
+  if (!Number.isFinite(duration) || duration < 1) {
+    return { ok: false, error: 'wait requires duration >= 1' };
+  }
+  if (!['minutes', 'hours', 'days'].includes(unit)) {
+    return { ok: false, error: `wait unit must be minutes, hours, or days (got ${unit})` };
+  }
+
+  const resumeAt = computeResumeAt(duration, unit);
+  return {
+    ok: true,
+    paused: true,
+    resumeAt,
+    waitLabel: formatWaitLabel(duration, unit)
+  };
+}
+
+/**
  * Execute a node by type.
  *
  * @param {Object} node - ProcessNode
@@ -714,6 +747,8 @@ async function executeNode(node, context, edges) {
       return await executeStatusGuard(node, context);
     case 'approval_gate':
       return await executeApprovalGate(node, context);
+    case 'wait':
+      return await executeWait(node, context);
     default:
       return { ok: false, error: `Unsupported node type: ${type}` };
   }
@@ -729,5 +764,6 @@ module.exports = {
   executeFieldRule,
   executeOwnershipRule,
   executeStatusGuard,
-  executeApprovalGate
+  executeApprovalGate,
+  executeWait
 };

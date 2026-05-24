@@ -5,7 +5,7 @@
         <!-- Header -->
         <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between z-10">
           <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-            {{ isEditing ? 'Edit Group' : 'New Group' }}
+            {{ isEditing ? t('settings.groupsEditGroupBtn') : t('settings.groupsNewGroup') }}
           </h2>
           <button @click="$emit('close')" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -19,13 +19,13 @@
           <!-- Name -->
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Group Name <span class="text-red-500">*</span>
+              {{ t('settings.groupsLabelGroupName') }} <span class="text-red-500">*</span>
             </label>
             <input
               v-model="form.name"
               type="text"
               required
-              placeholder="e.g., Sales Team, Engineering Department"
+              :placeholder="t('settings.groupFormNamePh')"
               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               :class="{ 'border-red-500': formErrors.name }"
             />
@@ -35,12 +35,12 @@
           <!-- Description -->
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Description
+              {{ t('settings.groupsLabelDescription') }}
             </label>
             <textarea
               v-model="form.description"
               rows="3"
-              placeholder="Describe the purpose of this group..."
+              :placeholder="t('settings.groupFormDescriptionPh')"
               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
@@ -50,14 +50,14 @@
             <!-- Type -->
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Type
+                {{ t('settings.groupsLabelType') }}
               </label>
               <Combobox v-model="form.type" nullable>
                 <div class="relative">
                   <ComboboxButton
                     class="relative w-full cursor-default rounded-lg bg-white dark:bg-gray-700 py-2 pl-3 pr-10 text-left text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm"
                   >
-                    <span class="block truncate">{{ form.type || 'Select type...' }}</span>
+                    <span class="block truncate">{{ selectedTypeLabel }}</span>
                     <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                       <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
                     </span>
@@ -99,7 +99,7 @@
             <!-- Color -->
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Color
+                {{ t('settings.groupFormColor') }}
               </label>
               <div class="flex items-center gap-3">
                 <input
@@ -110,7 +110,7 @@
                 <input
                   v-model="form.color"
                   type="text"
-                  placeholder="#3B82F6"
+                  :placeholder="t('settings.groupFormColorPh')"
                   class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
@@ -120,7 +120,7 @@
           <!-- Role & Permissions -->
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Roles & Permissions
+              {{ t('settings.groupsLabelRoles') }}
             </label>
             <div 
               class="relative"
@@ -134,7 +134,7 @@
                 <div class="flex items-center justify-between">
                   <div class="flex-1 min-w-0">
                     <div v-if="selectedRoles.length === 0" class="text-gray-500 dark:text-gray-400">
-                      Select roles...
+                      {{ t('settings.groupFormSelectRoles') }}
                     </div>
                     <div v-else class="flex flex-wrap gap-2">
                       <span
@@ -189,7 +189,7 @@
                         @click.stop
                         type="text"
                         class="w-full rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 py-2 pl-3 pr-10 text-left text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        placeholder="Search roles..."
+                        :placeholder="t('settings.groupFormSearchRolesPh')"
                       />
                       <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
                         <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -226,7 +226,7 @@
                       </label>
                       
                       <div v-if="filteredRoles.length === 0" class="p-3 text-sm text-gray-500 dark:text-gray-400 text-center">
-                        No roles found
+                        {{ t('settings.groupFormNoRolesFound') }}
                       </div>
                     </div>
                   </div>
@@ -234,14 +234,14 @@
               </Transition>
             </div>
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Assign one or more roles to this group to apply permissions to all members
+              {{ t('settings.groupFormRolesHint') }}
             </p>
           </div>
 
           <!-- Lead -->
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Group Lead
+              {{ t('settings.groupFormGroupLead') }}
             </label>
             <Combobox v-model="form.lead" nullable>
               <div class="relative">
@@ -250,7 +250,7 @@
                     class="w-full rounded-lg bg-white dark:bg-gray-700 py-2 pl-3 pr-10 text-left text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm cursor-pointer"
                     :display-value="() => getSelectedLeadDisplay()"
                     @change="leadSearchQuery = $event.target.value"
-                    placeholder="Search users..."
+                    :placeholder="t('settings.groupFormSearchUsersPh')"
                   />
                   <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                     <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
@@ -270,7 +270,7 @@
                       ]"
                     >
                       <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">
-                        No lead assigned
+                        {{ t('settings.groupFormNoLeadAssigned') }}
                       </span>
                       <span
                         v-if="selected"
@@ -324,7 +324,7 @@
                     </li>
                   </ComboboxOption>
                   <div v-if="filteredAvailableUsers.length === 0" class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
-                    No users found
+                    {{ t('settings.groupFormNoUsersFound') }}
                   </div>
                 </ComboboxOptions>
               </div>
@@ -334,7 +334,7 @@
           <!-- Members -->
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Members
+              {{ t('settings.groupsLabelMembers') }}
             </label>
             <div class="space-y-2">
               <!-- Selected Members -->
@@ -382,11 +382,11 @@
                     type="text"
                     @click.stop
                     @mousedown.stop
-                    placeholder="Search and add members..."
+                    :placeholder="t('settings.groupFormSearchMembersPh')"
                     class="w-full bg-transparent border-0 focus:ring-0 p-0 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 outline-none"
                     autocomplete="off"
                   />
-                  <span v-else class="block truncate text-gray-500 dark:text-gray-400">Search and add members...</span>
+                  <span v-else class="block truncate text-gray-500 dark:text-gray-400">{{ t('settings.groupFormSearchMembersPh') }}</span>
                   <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                     <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
                   </span>
@@ -403,7 +403,7 @@
                 >
                   <div
                     v-if="showMemberDropdown"
-                    v-click-outside="() => { showMemberDropdown = false; console.log('🔽 Dropdown closed by click outside'); }"
+                    v-click-outside="() => { showMemberDropdown = false; }"
                     @click.stop
                     class="absolute z-50 mt-1 w-full max-h-60 overflow-auto rounded-lg bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm"
                   >
@@ -411,7 +411,7 @@
                     <!-- Options list -->
                     <div class="max-h-48 overflow-auto">
                       <div v-if="filteredAvailableUsersForMembers.length === 0" class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
-                        No users available to add
+                        {{ t('settings.groupFormNoUsersToAdd') }}
                       </div>
                       <button
                         v-for="user in filteredAvailableUsersForMembers"
@@ -463,9 +463,9 @@
                 v-model="form.isActive"
                 checkbox-class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
               />
-              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Active</span>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('settings.groupsFilterActive') }}</span>
             </label>
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Inactive groups will be hidden from most views</p>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.groupFormInactiveHint') }}</p>
           </div>
 
           <!-- Form Actions -->
@@ -475,14 +475,14 @@
               @click="$emit('close')" 
               class="px-6 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
             >
-              Cancel
+              {{ t('actions.cancel') }}
             </button>
             <button 
               type="submit" 
               :disabled="saving || !form.name" 
               class="px-6 py-2.5 rounded-lg bg-indigo-600 dark:bg-indigo-700 text-white font-medium hover:bg-indigo-700 dark:hover:bg-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {{ saving ? 'Saving...' : (isEditing ? 'Update Group' : 'Create Group') }}
+              {{ saving ? t('states.saving') : (isEditing ? t('settings.groupFormUpdateGroup') : t('settings.groupsCreate')) }}
             </button>
           </div>
         </form>
@@ -494,12 +494,15 @@
 <script setup>
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { ref, computed, watch, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOptions, ComboboxOption } from '@headlessui/vue';
 import { CheckIcon } from '@heroicons/vue/24/solid';
 import { ChevronUpDownIcon } from '@heroicons/vue/24/outline';
 import { Transition } from 'vue';
 import apiClient from '@/utils/apiClient';
 import clickOutside from '@/directives/clickOutside';
+
+const { t } = useI18n();
 
 const vClickOutside = clickOutside;
 
@@ -524,13 +527,17 @@ const showMemberDropdown = ref(false);
 const roleSearchQuery = ref('');
 const showRoleDropdown = ref(false);
 
-// Type options for Combobox
-const typeOptions = [
-  { value: 'Team', label: 'Team' },
-  { value: 'Department', label: 'Department' },
-  { value: 'Project', label: 'Project' },
-  { value: 'Custom', label: 'Custom' }
-];
+const typeOptions = computed(() => [
+  { value: 'Team', label: t('settings.groupsTypeTeam') },
+  { value: 'Department', label: t('settings.groupsTypeDepartment') },
+  { value: 'Project', label: t('settings.groupsTypeProject') },
+  { value: 'Custom', label: t('settings.groupsTypeCustom') }
+]);
+
+const selectedTypeLabel = computed(() => {
+  const match = typeOptions.value.find((opt) => opt.value === form.value.type);
+  return match?.label ?? t('settings.groupFormSelectType');
+});
 
 const form = ref({
   name: '',
@@ -586,27 +593,16 @@ const filteredAvailableUsersForMembers = computed(() => {
 
 // Get selected lead display text
 const getSelectedLeadDisplay = () => {
-  if (!form.value.lead) return 'No lead assigned';
+  if (!form.value.lead) return t('settings.groupFormNoLeadAssigned');
   const lead = availableUsers.value.find(u => u._id === form.value.lead);
-  return lead ? getUserDisplayName(lead) : 'No lead assigned';
+  return lead ? getUserDisplayName(lead) : t('settings.groupFormNoLeadAssigned');
 };
 
 // Fetch available users
 const fetchUsers = async () => {
   try {
-    console.log('🔍 Fetching users from /users/list...');
-    const response = await apiClient.get('/users/list'); // apiClient already prepends /api
-    console.log('📦 Users API response:', {
-      hasResponse: !!response,
-      isArray: Array.isArray(response),
-      hasSuccess: response?.success,
-      hasData: !!response?.data,
-      dataIsArray: Array.isArray(response?.data),
-      dataLength: Array.isArray(response?.data) ? response.data.length : response?.data?.length || 0,
-      fullResponse: response
-    });
+    const response = await apiClient.get('/users/list');
     
-    // Handle different response formats
     let users = [];
     if (Array.isArray(response)) {
       users = response;
@@ -615,40 +611,19 @@ const fetchUsers = async () => {
     } else if (Array.isArray(response?.data)) {
       users = response.data;
     } else if (response?.data && typeof response.data === 'object') {
-      // Handle case where data might be an object with a users array
       users = response.data.users || response.data.data || [];
     }
     
     availableUsers.value = users;
-    console.log(`✅ Loaded ${users.length} users:`, users.map(u => ({ 
-      id: u._id, 
-      name: getUserDisplayName(u),
-      email: u.email 
-    })));
-    
-    // If still no users, log warning
-    if (users.length === 0) {
-      console.warn('⚠️ No users found. Check if:');
-      console.warn('   1. Users exist in the organization');
-      console.warn('   2. Users have status: "active"');
-      console.warn('   3. User is authenticated and has organizationId');
-    }
   } catch (error) {
-    console.error('❌ Error fetching users:', error);
-    console.error('Error details:', {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status,
-      stack: error.stack
-    });
+    console.error('Error fetching users:', error);
     availableUsers.value = [];
   }
 };
 
 // Watch for lead changes and auto-add to members
-watch(() => form.value.lead, (newLead, oldLead) => {
+watch(() => form.value.lead, (newLead) => {
   if (newLead && !form.value.members.includes(newLead)) {
-    // Automatically add lead to members if not already a member
     form.value.members.push(newLead);
   }
 });
@@ -712,16 +687,13 @@ watch(() => props.group, (newGroup) => {
     const leadId = newGroup.lead?._id || newGroup.lead || null;
     const memberIds = newGroup.members?.map(m => m._id || m) || [];
     
-    // Handle roleIds - could be array of objects or array of IDs
     let roleIds = [];
     if (newGroup.roleIds) {
       roleIds = newGroup.roleIds.map(r => r._id || r).filter(Boolean);
     } else if (newGroup.roleId) {
-      // Backward compatibility with old roleId field
       roleIds = [newGroup.roleId._id || newGroup.roleId].filter(Boolean);
     }
     
-    // Ensure lead is in members if lead is set
     if (leadId && !memberIds.includes(leadId)) {
       memberIds.push(leadId);
     }
@@ -737,7 +709,6 @@ watch(() => props.group, (newGroup) => {
       isActive: newGroup.isActive !== undefined ? newGroup.isActive : true
     };
   } else {
-    // Reset form
     form.value = {
       name: '',
       description: '',
@@ -753,30 +724,20 @@ watch(() => props.group, (newGroup) => {
 
 const toggleMemberDropdown = () => {
   showMemberDropdown.value = !showMemberDropdown.value;
-  console.log('🔽 Toggle member dropdown:', showMemberDropdown.value);
 };
 
 const handleMemberSelected = (userId) => {
   if (!userId) return;
   
-  console.log('👤 Member selected:', userId);
-  
-  // Toggle member selection (add if not present, remove if present)
   const memberIndex = form.value.members.indexOf(userId);
   if (memberIndex > -1) {
-    // Remove member
     form.value.members.splice(memberIndex, 1);
   } else {
-    // Add member
     form.value.members.push(userId);
   }
-  
-  // Keep search query for continued searching
-  // Don't clear newMemberId or memberSearchQuery - keep combobox open
 };
 
 const addMember = () => {
-  // Fallback for direct calls
   if (newMemberId.value && !form.value.members.includes(newMemberId.value)) {
     form.value.members.push(newMemberId.value);
     newMemberId.value = '';
@@ -786,7 +747,6 @@ const addMember = () => {
 
 const removeMember = (userId) => {
   form.value.members = form.value.members.filter(id => id !== userId);
-  // If removed member was the lead, clear lead
   if (form.value.lead === userId) {
     form.value.lead = null;
   }
@@ -797,14 +757,12 @@ const handleSubmit = async () => {
   formErrors.value = {};
 
   try {
-    // Validate
     if (!form.value.name || form.value.name.trim() === '') {
-      formErrors.value.name = 'Group name is required';
+      formErrors.value.name = t('settings.groupFormNameRequired');
       saving.value = false;
       return;
     }
 
-    // Prepare submit data
     const submitData = {
       name: form.value.name.trim(),
       description: form.value.description?.trim() || '',
@@ -831,7 +789,7 @@ const handleSubmit = async () => {
     if (error.response?.data?.errors) {
       formErrors.value = error.response.data.errors;
     } else {
-      alert(error.message || 'Failed to save group');
+      alert(error.message || t('settings.groupFormSaveFailed'));
     }
   } finally {
     saving.value = false;
@@ -839,13 +797,13 @@ const handleSubmit = async () => {
 };
 
 const getUserDisplayName = (user) => {
-  if (!user) return 'Unknown';
+  if (!user) return t('settings.groupFormUnknown');
   if (user.firstName && user.lastName) {
     return `${user.firstName} ${user.lastName}`.trim();
   }
   if (user.username) return user.username;
   if (user.email) return user.email;
-  return 'Unknown User';
+  return t('settings.groupFormUnknownUser');
 };
 
 const getUserInitials = (user) => {

@@ -1,20 +1,20 @@
 <template>
   <section class="flex h-full min-h-[250px] flex-col rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
     <div class="mb-3 flex items-center justify-between">
-      <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Rep Performance</h2>
-      <span class="text-xs text-indigo-600 dark:text-indigo-300">View all reps</span>
+      <h2 class="text-lg font-semibold text-slate-900 dark:text-white">{{ t('dashboard.repPerformanceLeaderboardRepPerformance') }}</h2>
+      <span class="text-xs text-indigo-600 dark:text-indigo-300">{{ t('dashboard.repPerformanceLeaderboardViewAllReps') }}</span>
     </div>
     <div class="flex-1 overflow-x-auto">
       <table class="min-w-full text-sm">
         <thead>
           <tr class="text-left text-xs text-slate-500 dark:text-slate-400">
-            <th class="py-2 pr-3">Rank</th>
-            <th class="py-2 pr-3">Rep</th>
-            <th class="py-2 pr-3">Quota Attainment</th>
-            <th class="py-2 pr-3">Revenue Closed</th>
-            <th class="py-2 pr-3">Pipeline Owned</th>
-            <th class="py-2 pr-3">Win Rate</th>
-            <th class="py-2 pr-3">Activity</th>
+            <th class="py-2 pr-3">{{ t('dashboard.repPerformanceLeaderboardRank') }}</th>
+            <th class="py-2 pr-3">{{ t('dashboard.repPerformanceLeaderboardRep') }}</th>
+            <th class="py-2 pr-3">{{ t('dashboard.repPerformanceLeaderboardQuotaAttainment') }}</th>
+            <th class="py-2 pr-3">{{ t('dashboard.repPerformanceLeaderboardRevenueClosed') }}</th>
+            <th class="py-2 pr-3">{{ t('dashboard.repPerformanceLeaderboardPipelineOwned') }}</th>
+            <th class="py-2 pr-3">{{ t('dashboard.repPerformanceLeaderboardWinRate') }}</th>
+            <th class="py-2 pr-3">{{ t('records.genericTabActivity') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -71,11 +71,14 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 
 const props = defineProps({
   rows: { type: Array, required: true }
 });
+
+const { t } = useI18n();
 
 const MIN_ROWS = 5;
 const displayRows = computed(() => {

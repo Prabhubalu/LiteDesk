@@ -1,0 +1,102 @@
+{
+  "save": {
+    "message": "Sauvegarder",
+    "description": "Primary save action button"
+  },
+  "cancel": {
+    "message": "Annuler",
+    "description": "Dismiss without saving"
+  },
+  "delete": {
+    "message": "Supprimer",
+    "description": "Permanently remove the selected item"
+  },
+  "confirm": {
+    "message": "Confirmer",
+    "description": "Confirm a destructive or important action"
+  },
+  "retry": {
+    "message": "Réessayer",
+    "description": "Retry a failed network or load operation"
+  },
+  "close": {
+    "message": "Fermer",
+    "description": "Close a modal or panel"
+  },
+  "edit": {
+    "message": "Modifier",
+    "description": "Enter edit mode for the current record"
+  },
+  "create": {
+    "message": "Créer",
+    "description": "Create a new record"
+  },
+  "search": {
+    "message": "Recherche",
+    "description": "Submit or focus global search"
+  },
+  "back": {
+    "message": "Dos",
+    "description": "Navigate to the previous screen"
+  },
+  "update": {
+    "message": "Mise à jour",
+    "description": "Update an existing saved entity"
+  },
+  "apply": {
+    "message": "Appliquer",
+    "description": "Apply pending settings or filters"
+  },
+  "previous": {
+    "message": "Précédent",
+    "description": "Previous page or step"
+  },
+  "next": {
+    "message": "Suivant",
+    "description": "Next page or step"
+  },
+  "remove": {
+    "message": "Retirer",
+    "description": "Remove a selected item or tag"
+  },
+  "select": {
+    "message": "Sélectionner",
+    "description": "Select a record or option"
+  },
+  "refresh": {
+    "message": "Rafraîchir",
+    "description": "Reload data from the server"
+  },
+  "add": {
+    "message": "Ajouter",
+    "description": "Add an item or relation"
+  },
+  "link": {
+    "message": "Lien",
+    "description": "Link an existing record"
+  },
+  "duplicate": {
+    "message": "Double",
+    "description": "Duplicate the current record"
+  },
+  "archive": {
+    "message": "Archive",
+    "description": "Archive the current record"
+  },
+  "follow": {
+    "message": "Suivre",
+    "description": "Follow record updates"
+  },
+  "unfollow": {
+    "message": "Ne plus suivre",
+    "description": "Stop following record updates"
+  },
+  "copy": {
+    "message": "Copie",
+    "description": "Copy text or link to clipboard"
+  },
+  "export": {
+    "message": "Exporter",
+    "description": "Export record or list data"
+  }
+}

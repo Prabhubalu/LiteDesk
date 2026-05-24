@@ -64,9 +64,7 @@
 
       <!-- Custom Stock Quantity Cell with low stock warning -->
       <template #cell-stock_quantity="{ row }">
-        <div v-if="row.item_type === 'Service' || row.item_type === 'Non-Stock Product'" class="text-sm text-gray-500 dark:text-gray-400">
-          N/A
-        </div>
+        <div v-if="row.item_type === 'Service' || row.item_type === 'Non-Stock Product'" class="text-sm text-gray-500 dark:text-gray-400">{{ t('forms.rbpMetricNa') }}</div>
         <div v-else class="flex items-center gap-2">
           <span :class="[
             'text-sm font-medium',
@@ -157,6 +155,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, onActivated } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';

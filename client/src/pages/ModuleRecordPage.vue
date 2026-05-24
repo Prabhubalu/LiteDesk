@@ -24,6 +24,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { computed, defineAsyncComponent } from 'vue';
 import { useRoute } from 'vue-router';
 import { getRecordAdapterKey } from '@/components/record-page/adapters/adapterRegistry';
@@ -44,6 +45,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close']);
+
+const { t } = useI18n();
 
 const route = useRoute();
 

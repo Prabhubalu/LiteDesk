@@ -1,0 +1,3778 @@
+{
+  "analyticsAllQuestionsPassing": {
+    "message": "सभी प्रश्न गुजर रहे हैं!",
+    "description": "Empty failed questions subtext"
+  },
+  "analyticsChartAvgScorePct": {
+    "message": "औसत स्कोर %",
+    "description": "Section scores chart dataset label"
+  },
+  "analyticsChartCompliancePct": {
+    "message": "अनुपालन %",
+    "description": "Compliance trend chart dataset label"
+  },
+  "analyticsChartNumResponses": {
+    "message": "प्रतिक्रियाओं की संख्या",
+    "description": "Rating distribution chart dataset label"
+  },
+  "analyticsChartResponsesPerDay": {
+    "message": "प्रति दिन प्रतिक्रियाएँ",
+    "description": "Response rate chart dataset label"
+  },
+  "analyticsComplianceTrend": {
+    "message": "अनुपालन प्रवृत्ति",
+    "description": "Analytics chart section title"
+  },
+  "analyticsFailRateLabel": {
+    "message": "विफलता दर:",
+    "description": "Fail rate prefix"
+  },
+  "analyticsFailedQuestionsLoading": {
+    "message": "असफल प्रश्न लोड हो रहे हैं...",
+    "description": "Top failed questions loading"
+  },
+  "analyticsFailedTimes": {
+    "message": "विफल: {count} बार",
+    "description": "Failed question count label"
+  },
+  "analyticsLoading": {
+    "message": "विश्लेषण लोड हो रहा है...",
+    "description": "Form analytics loading state"
+  },
+  "analyticsNoFailedQuestions": {
+    "message": "कोई असफल प्रश्न नहीं मिला",
+    "description": "Empty failed questions state"
+  },
+  "analyticsRatingDistribution": {
+    "message": "रेटिंग वितरण",
+    "description": "Analytics chart section title"
+  },
+  "analyticsResponseRate": {
+    "message": "समय के साथ प्रतिक्रिया दर",
+    "description": "Analytics chart section title"
+  },
+  "analyticsSectionLabel": {
+    "message": "अनुभाग:",
+    "description": "Section name prefix in failed questions list"
+  },
+  "analyticsSectionScores": {
+    "message": "अनुभाग स्कोर तुलना",
+    "description": "Analytics chart section title"
+  },
+  "analyticsStar1": {
+    "message": "1 सितारा",
+    "description": "Rating bucket label"
+  },
+  "analyticsStar2": {
+    "message": "2 सितारे",
+    "description": "Rating bucket label"
+  },
+  "analyticsStar3": {
+    "message": "3 सितारे",
+    "description": "Rating bucket label"
+  },
+  "analyticsStar4": {
+    "message": "4 सितारे",
+    "description": "Rating bucket label"
+  },
+  "analyticsStar5": {
+    "message": "5 सितारे",
+    "description": "Rating bucket label"
+  },
+  "analyticsTooltipCompliance": {
+    "message": "अनुपालन: {value}%",
+    "description": "Compliance chart tooltip"
+  },
+  "analyticsTooltipResponses": {
+    "message": "{count} प्रतिक्रियाएँ",
+    "description": "Chart tooltip response count"
+  },
+  "analyticsTooltipScore": {
+    "message": "स्कोर: {value}%",
+    "description": "Section score chart tooltip"
+  },
+  "analyticsTopFailedQuestions": {
+    "message": "शीर्ष असफल प्रश्न",
+    "description": "Analytics section title"
+  },
+  "analyticsUnknownQuestion": {
+    "message": "अज्ञात प्रश्न",
+    "description": "Fallback question title in analytics"
+  },
+  "analyticsUnknownSection": {
+    "message": "अज्ञात अनुभाग",
+    "description": "Fallback section name in analytics"
+  },
+  "answerNo": {
+    "message": "नहीं",
+    "description": "Yes/No question no label"
+  },
+  "answerYes": {
+    "message": "हाँ",
+    "description": "Yes/No question yes label"
+  },
+  "auditorApprove": {
+    "message": "मंज़ूरी देना",
+    "description": "Approve verification button"
+  },
+  "auditorApproved": {
+    "message": "अनुमत",
+    "description": "Approved verification badge"
+  },
+  "auditorManagersAction": {
+    "message": "प्रबंधक की कार्रवाई:",
+    "description": "Manager action label in verification"
+  },
+  "auditorNoActionsNeedVerification": {
+    "message": "किसी भी सुधारात्मक कार्रवाई के लिए सत्यापन की आवश्यकता नहीं है।",
+    "description": "Empty auditor verification state"
+  },
+  "auditorNoComments": {
+    "message": "कोई टिप्पणी नहीं",
+    "description": "Empty manager comment"
+  },
+  "auditorProofLabel": {
+    "message": "सबूत:",
+    "description": "Proof files label"
+  },
+  "auditorReject": {
+    "message": "अस्वीकार करना",
+    "description": "Reject verification button"
+  },
+  "auditorRejected": {
+    "message": "अस्वीकार कर दिया",
+    "description": "Rejected verification badge"
+  },
+  "auditorStatusPending": {
+    "message": "लंबित",
+    "description": "Legacy status badge"
+  },
+  "auditorStatusResolved": {
+    "message": "हल किया",
+    "description": "Legacy status badge"
+  },
+  "auditorVerificationComments": {
+    "message": "सत्यापन टिप्पणियाँ",
+    "description": "Verification comments field label"
+  },
+  "auditorVerificationCommentsPh": {
+    "message": "अपनी सत्यापन टिप्पणियाँ जोड़ें...",
+    "description": "Verification comments placeholder"
+  },
+  "auditorVerificationHeading": {
+    "message": "लेखा परीक्षक सत्यापन",
+    "description": "Auditor verification panel heading"
+  },
+  "auditorVerificationStatus": {
+    "message": "सत्यापन स्थिति:",
+    "description": "Verification status label"
+  },
+  "auditorVerificationSubtitle": {
+    "message": "सुधारात्मक कार्रवाइयों की समीक्षा और सत्यापन करें",
+    "description": "Auditor verification panel subtitle"
+  },
+  "auditorVerifiedBy": {
+    "message": "द्वारा सत्यापित: {name} पर {date}",
+    "description": "Verification attribution line"
+  },
+  "auditorVerifyFailed": {
+    "message": "कार्रवाई सत्यापित करने में विफल. कृपया पुन: प्रयास करें।",
+    "description": "Verification failure alert"
+  },
+  "auditorVerifying": {
+    "message": "सत्यापन किया जा रहा है...",
+    "description": "Verify button in progress"
+  },
+  "builderAddFirstQuestion": {
+    "message": "अपना पहला प्रश्न जोड़ें",
+    "description": "Empty state add first question"
+  },
+  "builderAddFirstSection": {
+    "message": "अपना पहला अनुभाग जोड़ें",
+    "description": "Empty state add first section"
+  },
+  "builderAddInline": {
+    "message": "+ जोड़ें",
+    "description": "Inline add subsection control"
+  },
+  "builderAddOption": {
+    "message": "विकल्प जोड़ें",
+    "description": "Add dropdown option button"
+  },
+  "builderAddOptionsFirst": {
+    "message": "पहले ऊपर दिए गए विकल्प जोड़ें",
+    "description": "Empty dropdown pass options hint"
+  },
+  "builderAddQuestion": {
+    "message": "प्रश्न जोड़ें",
+    "description": "Add question palette heading"
+  },
+  "builderAddQuestionTypeTitle": {
+    "message": "{type} प्रश्न जोड़ें",
+    "description": "Add question palette button tooltip"
+  },
+  "builderAddRule": {
+    "message": "नियम जोड़ें",
+    "description": "Add evidence rule button"
+  },
+  "builderAddSection": {
+    "message": "अनुभाग जोड़ें",
+    "description": "Add section button label"
+  },
+  "builderAddSectionOptional": {
+    "message": "अनुभाग जोड़ें (वैकल्पिक)",
+    "description": "Empty state optional section button"
+  },
+  "builderAddSubsection": {
+    "message": "+ उपधारा जोड़ें",
+    "description": "Add subsection button"
+  },
+  "builderAdvanced": {
+    "message": "विकसित",
+    "description": "Advanced settings section"
+  },
+  "builderAllowMultipleFiles": {
+    "message": "एकाधिक फ़ाइलों की अनुमति दें",
+    "description": "Allow multiple files checkbox"
+  },
+  "builderAlwaysVisible": {
+    "message": "सदैव दृश्य",
+    "description": "Conditional visibility default option"
+  },
+  "builderAnswerNo": {
+    "message": "नहीं",
+    "description": "No answer option label"
+  },
+  "builderAnswerYes": {
+    "message": "हाँ",
+    "description": "Yes answer option label"
+  },
+  "builderBannerActiveAfter": {
+    "message": "और उपयोग में है. केवल कॉस्मेटिक परिवर्तन (शीर्षक, लेबल, सहायता पाठ) की अनुमति है।",
+    "description": "Active form banner text after status"
+  },
+  "builderBannerActiveBefore": {
+    "message": "ये फॉर्म है",
+    "description": "Active form banner lead-in before status"
+  },
+  "builderBannerArchivedAfter": {
+    "message": "और केवल पढ़ने के लिए। बदलाव करने के लिए, फॉर्म की डुप्लिकेट कॉपी बनाएं।",
+    "description": "Archived form banner text after status"
+  },
+  "builderBannerArchivedBefore": {
+    "message": "ये फॉर्म है",
+    "description": "Archived form banner lead-in"
+  },
+  "builderBannerDraftBefore": {
+    "message": "यह फॉर्म अंदर है",
+    "description": "Draft form banner lead-in"
+  },
+  "builderBannerDraftEnd": {
+    "message": ".",
+    "description": "Draft form banner closing period"
+  },
+  "builderBannerDraftMiddle": {
+    "message": "स्थिति। फॉर्म पूरा करें और इसे सेट करने के लिए सेव करें",
+    "description": "Draft form banner between status labels"
+  },
+  "builderBannerStructuralNote": {
+    "message": "डेटा अखंडता की सुरक्षा के लिए संरचनात्मक परिवर्तन (अनुभागों या प्रश्नों को जोड़ना/हटाना, प्रश्न प्रकार बदलना, स्कोरिंग को संशोधित करना) अवरुद्ध हैं।",
+    "description": "Active form structural changes note"
+  },
+  "builderBasics": {
+    "message": "मूल बातें",
+    "description": "Question basics settings section"
+  },
+  "builderCanvas": {
+    "message": "कैनवास",
+    "description": "Canvas panel heading"
+  },
+  "builderCanvasQuestionCount": {
+    "message": "{count, plural, one {# question} other {# questions}}",
+    "description": "Canvas subtitle question count"
+  },
+  "builderCondContains": {
+    "message": "रोकना",
+    "description": "Conditional operator contains"
+  },
+  "builderCondEquals": {
+    "message": "के बराबर होती है",
+    "description": "Conditional operator equals"
+  },
+  "builderCondGreaterThan": {
+    "message": "से बड़ा है",
+    "description": "Conditional operator greater than"
+  },
+  "builderCondLessThan": {
+    "message": "मै रुक जाना",
+    "description": "Conditional operator less than"
+  },
+  "builderCondNotContains": {
+    "message": "शामिल नहीं है",
+    "description": "Conditional operator not contains"
+  },
+  "builderCondNotEquals": {
+    "message": "बराबर नहीं करते",
+    "description": "Conditional operator not equals"
+  },
+  "builderCondition": {
+    "message": "स्थिति",
+    "description": "Conditional operator label"
+  },
+  "builderCriticalQuestion": {
+    "message": "गंभीर प्रश्न",
+    "description": "Critical question checkbox"
+  },
+  "builderCriticalQuestionHint": {
+    "message": "यदि कोई महत्वपूर्ण प्रश्न विफल हो जाता है, तो उसका मूल अनुभाग स्कोर की परवाह किए बिना तुरंत विफल हो जाता है।",
+    "description": "Critical question hint"
+  },
+  "builderDefaultOption1": {
+    "message": "विकल्प 1",
+    "description": "Default dropdown option 1"
+  },
+  "builderDefaultOption2": {
+    "message": "विकल्प 2",
+    "description": "Default dropdown option 2"
+  },
+  "builderDefaultSectionName": {
+    "message": "सामान्य अनुपालन",
+    "description": "Default audit section name"
+  },
+  "builderDelete": {
+    "message": "मिटाना",
+    "description": "Delete menu action"
+  },
+  "builderDescriptionHelpText": {
+    "message": "विवरण/सहायता पाठ",
+    "description": "Help text field label"
+  },
+  "builderDisplayOrder": {
+    "message": "आदेश को प्रदर्शित करें",
+    "description": "Display order field label"
+  },
+  "builderDisplayOrderHint": {
+    "message": "निचली संख्याएँ पहले आती हैं (0 = पहले)",
+    "description": "Display order hint"
+  },
+  "builderDuplicate": {
+    "message": "डुप्लिकेट",
+    "description": "Duplicate menu action"
+  },
+  "builderEmptyAuditLead": {
+    "message": "अपना पहला अनुभाग बनाकर प्रारंभ करें.",
+    "description": "Empty state audit mode"
+  },
+  "builderEmptyFlatLead": {
+    "message": "अपना पहला प्रश्न जोड़कर प्रारंभ करें.",
+    "description": "Empty state flat mode"
+  },
+  "builderEnableEvidence": {
+    "message": "साक्ष्य कैप्चर सक्षम करें",
+    "description": "Enable evidence checkbox"
+  },
+  "builderEnableScoring": {
+    "message": "स्कोरिंग सक्षम करें",
+    "description": "Enable scoring checkbox label"
+  },
+  "builderEnterEmailPh": {
+    "message": "ईमेल दर्ज करें",
+    "description": "Conditional email placeholder"
+  },
+  "builderEnterMaxValuePh": {
+    "message": "अधिकतम मान दर्ज करें",
+    "description": "Number pass max placeholder"
+  },
+  "builderEnterMinValuePh": {
+    "message": "न्यूनतम मान दर्ज करें",
+    "description": "Number pass min placeholder"
+  },
+  "builderEnterNumberPh": {
+    "message": "नंबर दर्ज करें",
+    "description": "Conditional number placeholder"
+  },
+  "builderEnterSectionNamePh": {
+    "message": "अनुभाग का नाम दर्ज करें",
+    "description": "Section name placeholder in inspector"
+  },
+  "builderEnterSubsectionNamePh": {
+    "message": "उपधारा नाम दर्ज करें",
+    "description": "Subsection name placeholder in inspector"
+  },
+  "builderEnterValuePh": {
+    "message": "मान दर्ज करें",
+    "description": "Conditional text placeholder"
+  },
+  "builderEvidence": {
+    "message": "प्रमाण",
+    "description": "Evidence settings section"
+  },
+  "builderEvidenceComment": {
+    "message": "टिप्पणी",
+    "description": "Evidence type comment"
+  },
+  "builderEvidenceImage": {
+    "message": "छवि अपलोड करें",
+    "description": "Evidence type image"
+  },
+  "builderEvidenceNotRequired": {
+    "message": "आवश्यक नहीं",
+    "description": "Evidence requirement hidden"
+  },
+  "builderEvidenceOptional": {
+    "message": "वैकल्पिक",
+    "description": "Evidence requirement optional"
+  },
+  "builderEvidenceRequired": {
+    "message": "आवश्यक",
+    "description": "Evidence requirement required"
+  },
+  "builderEvidenceRuleNumber": {
+    "message": "नियम {number}",
+    "description": "Evidence rule heading"
+  },
+  "builderEvidenceRulesHint": {
+    "message": "प्रति उत्तर विकल्प के अनुसार साक्ष्य आवश्यकताओं को कॉन्फ़िगर करें। जब चयनित उत्तर किसी नियम से मेल खाता है तो साक्ष्य इनपुट ऑडिट निष्पादन के दौरान दिखाई देंगे।",
+    "description": "Evidence rules intro"
+  },
+  "builderEvidenceValidation": {
+    "message": "जब किसी नियम को आवश्यक के रूप में चिह्नित किया जाता है तो कम से कम एक साक्ष्य प्रकार सक्षम होना चाहिए।",
+    "description": "Evidence validation error"
+  },
+  "builderEvidenceVideo": {
+    "message": "वीडियो अपलोड",
+    "description": "Evidence type video"
+  },
+  "builderFileSettings": {
+    "message": "फ़ाइल सेटिंग्स",
+    "description": "File question settings section"
+  },
+  "builderHelpTextInspectorPh": {
+    "message": "प्रश्न के अंतर्गत वैकल्पिक संकेत या स्पष्टीकरण दिखाया गया है",
+    "description": "Help text placeholder in inspector"
+  },
+  "builderHelpTextLabel": {
+    "message": "सहायता पाठ",
+    "description": "Help text label in structured inspector"
+  },
+  "builderHelpTextPh": {
+    "message": "वैकल्पिक विवरण या मार्गदर्शन",
+    "description": "Question help text placeholder on card"
+  },
+  "builderHelpTextStructuredPh": {
+    "message": "प्रश्न के अंतर्गत वैकल्पिक संकेत दिखाया गया है",
+    "description": "Help text placeholder structured mode"
+  },
+  "builderInspector": {
+    "message": "इंस्पेक्टर",
+    "description": "Inspector panel title"
+  },
+  "builderMaxValuePh": {
+    "message": "अधिकतम मूल्य",
+    "description": "Between rule max placeholder"
+  },
+  "builderMinRating": {
+    "message": "न्यूनतम रेटिंग:",
+    "description": "Minimum rating label"
+  },
+  "builderMinValuePh": {
+    "message": "न्यूनतम मूल्य",
+    "description": "Between rule min placeholder"
+  },
+  "builderNewQuestionPh": {
+    "message": "नया प्रश्न",
+    "description": "Default question text placeholder"
+  },
+  "builderNoSubsectionSelected": {
+    "message": "कोई उपधारा चयनित नहीं",
+    "description": "Canvas title when nothing selected"
+  },
+  "builderOptionNumber": {
+    "message": "विकल्प {number}",
+    "description": "Dropdown option placeholder"
+  },
+  "builderOptions": {
+    "message": "विकल्प",
+    "description": "Dropdown options section heading"
+  },
+  "builderPaletteDate": {
+    "message": "तारीख",
+    "description": "Question palette date"
+  },
+  "builderPaletteDropdown": {
+    "message": "ड्रॉप डाउन",
+    "description": "Question palette dropdown"
+  },
+  "builderPaletteEmail": {
+    "message": "ईमेल",
+    "description": "Question palette email"
+  },
+  "builderPaletteFileUpload": {
+    "message": "फ़ाइल अपलोड करें",
+    "description": "Question palette file"
+  },
+  "builderPaletteLongText": {
+    "message": "लंबा पाठ",
+    "description": "Question palette long text"
+  },
+  "builderPaletteNumber": {
+    "message": "संख्या",
+    "description": "Question palette number"
+  },
+  "builderPaletteRating": {
+    "message": "रेटिंग",
+    "description": "Question palette rating"
+  },
+  "builderPaletteShortText": {
+    "message": "लघु पाठ",
+    "description": "Question palette short text"
+  },
+  "builderPaletteSignature": {
+    "message": "हस्ताक्षर",
+    "description": "Question palette signature"
+  },
+  "builderPaletteYesNo": {
+    "message": "हां नहीं",
+    "description": "Question palette yes no"
+  },
+  "builderPassFailDefinition": {
+    "message": "उत्तीर्ण/असफल परिभाषा",
+    "description": "Pass fail definition label"
+  },
+  "builderPassFailDefinitionPh": {
+    "message": "वैकल्पिक: परिभाषित करें कि इस प्रश्न के लिए पास या फेल क्या है",
+    "description": "Pass fail definition placeholder"
+  },
+  "builderPassIfAnswer": {
+    "message": "यदि उत्तर है तो पास करें",
+    "description": "Pass condition label"
+  },
+  "builderPassOptionsHint": {
+    "message": "पास बनाने वाले एक या अधिक विकल्प चुनें:",
+    "description": "Dropdown pass options hint"
+  },
+  "builderPassThreshold": {
+    "message": "पास सीमा (%)",
+    "description": "Pass threshold percent label"
+  },
+  "builderPreview": {
+    "message": "पूर्व दर्शन",
+    "description": "Preview form button"
+  },
+  "builderQtDate": {
+    "message": "तारीख",
+    "description": "Question type display: Date"
+  },
+  "builderQtDropdown": {
+    "message": "ड्रॉप डाउन",
+    "description": "Question type display: Dropdown"
+  },
+  "builderQtEmail": {
+    "message": "ईमेल",
+    "description": "Question type display: Email"
+  },
+  "builderQtFile": {
+    "message": "फ़ाइल",
+    "description": "Question type display: File"
+  },
+  "builderQtNumber": {
+    "message": "संख्या",
+    "description": "Question type display: Number"
+  },
+  "builderQtRating": {
+    "message": "रेटिंग",
+    "description": "Question type display: Rating"
+  },
+  "builderQtSignature": {
+    "message": "हस्ताक्षर",
+    "description": "Question type display: Signature"
+  },
+  "builderQtText": {
+    "message": "मूलपाठ",
+    "description": "Question type display: Text"
+  },
+  "builderQtTextarea": {
+    "message": "पाठ क्षेत्र",
+    "description": "Question type display: Textarea"
+  },
+  "builderQtYesNo": {
+    "message": "हां नहीं",
+    "description": "Question type display: Yes-No"
+  },
+  "builderQuestionCount": {
+    "message": "{count, plural, one {# question} other {# questions}}",
+    "description": "Question count label"
+  },
+  "builderQuestionFallback": {
+    "message": "प्रश्न {number}",
+    "description": "Fallback label for unnamed question in dropdown"
+  },
+  "builderQuestionId": {
+    "message": "प्रश्न आईडी",
+    "description": "Question ID field label"
+  },
+  "builderQuestionIdHint": {
+    "message": "इस प्रश्न के लिए विशिष्ट पहचानकर्ता (सशर्त तर्क में प्रयुक्त)",
+    "description": "Question ID hint"
+  },
+  "builderQuestionIndex": {
+    "message": "प्रश्न {number}",
+    "description": "Selected question index label"
+  },
+  "builderQuestionSettings": {
+    "message": "प्रश्न सेटिंग",
+    "description": "Inspector title when editing question"
+  },
+  "builderQuestionText": {
+    "message": "प्रश्न पाठ",
+    "description": "Question text field label"
+  },
+  "builderQuestionTextLabel": {
+    "message": "प्रश्न पाठ",
+    "description": "Question text label in structured inspector"
+  },
+  "builderQuestionsAvailable": {
+    "message": "({count} प्रश्न उपलब्ध)",
+    "description": "Conditional visibility hint count"
+  },
+  "builderQuestionsHeading": {
+    "message": "प्रश्न",
+    "description": "Flat mode questions panel heading"
+  },
+  "builderRatingPassHint": {
+    "message": "रेटिंग ≥ {min} वाले उत्तर उत्तीर्ण होंगे",
+    "description": "Rating pass threshold hint"
+  },
+  "builderRemove": {
+    "message": "निकालना",
+    "description": "Remove evidence rule button"
+  },
+  "builderRequired": {
+    "message": "आवश्यक",
+    "description": "Required question badge"
+  },
+  "builderRuleBetween": {
+    "message": "के बीच (समावेशी)",
+    "description": "Number scoring rule between"
+  },
+  "builderRuleGte": {
+    "message": "(≥) से बड़ा या उसके बराबर",
+    "description": "Number scoring rule gte"
+  },
+  "builderRuleLte": {
+    "message": "(≤) से कम या उसके बराबर",
+    "description": "Number scoring rule lte"
+  },
+  "builderScoring": {
+    "message": "स्कोरिंग",
+    "description": "Scoring settings section"
+  },
+  "builderSectionName": {
+    "message": "अनुभाग का नाम",
+    "description": "Section name field label"
+  },
+  "builderSectionNamePh": {
+    "message": "अनुभाग का नाम दर्ज करें",
+    "description": "Section name placeholder"
+  },
+  "builderSectionNumber": {
+    "message": "अनुभाग {number} ·",
+    "description": "Section index prefix in structure tree"
+  },
+  "builderSectionSettings": {
+    "message": "अनुभाग सेटिंग्स",
+    "description": "Inspector title when editing section"
+  },
+  "builderSectionSummary": {
+    "message": "{subsectionCount, plural, one {# subsection} other {# subsections}} • {questionCount, plural, one {# question} other {# questions}}",
+    "description": "Section summary in structure panel"
+  },
+  "builderSectionThresholdHint": {
+    "message": "यदि इसका स्कोर प्रतिशत ≥ यह सीमा है तो अनुभाग उत्तीर्ण हो जाता है। डिफ़ॉल्ट 100% है.",
+    "description": "Section threshold hint"
+  },
+  "builderSelectOption": {
+    "message": "कोई विकल्प चुनें",
+    "description": "Conditional value empty option"
+  },
+  "builderSelectQuestionEmpty": {
+    "message": "किसी प्रश्न की सेटिंग संपादित करने के लिए उसका चयन करें",
+    "description": "Flat mode inspector empty state"
+  },
+  "builderSelectRating": {
+    "message": "एक रेटिंग चुनें",
+    "description": "Conditional rating placeholder"
+  },
+  "builderSelectTargetEmpty": {
+    "message": "इसकी सेटिंग संपादित करने के लिए किसी प्रश्न, उपधारा या अनुभाग का चयन करें",
+    "description": "Structured inspector empty state"
+  },
+  "builderShellBackToForms": {
+    "message": "फॉर्म्स पर वापस जाएँ",
+    "description": "Navigate back to forms list"
+  },
+  "builderShellEnablePublicFailed": {
+    "message": "सार्वजनिक लिंक सक्षम करने में विफल. कृपया पुन: प्रयास करें।",
+    "description": "Enable public link error"
+  },
+  "builderShellLoading": {
+    "message": "फॉर्म लोड हो रहा है...",
+    "description": "Form builder page loading"
+  },
+  "builderShellNameRequired": {
+    "message": "फ़ॉर्म का नाम आवश्यक है",
+    "description": "Validation before save"
+  },
+  "builderShellNewForm": {
+    "message": "नए रूप मे",
+    "description": "Default title for unsaved form"
+  },
+  "builderShellPageTitle": {
+    "message": "फॉर्म बिल्डर",
+    "description": "Tab title for form builder"
+  },
+  "builderShellPreview": {
+    "message": "पूर्व दर्शन",
+    "description": "Open preview button"
+  },
+  "builderShellPreviewModalTitle": {
+    "message": "प्रपत्र पूर्वावलोकन",
+    "description": "Preview modal heading"
+  },
+  "builderShellPublicLinkNotInResponse": {
+    "message": "सर्वर प्रतिक्रिया में सार्वजनिक लिंक नहीं मिला.",
+    "description": "Public link error"
+  },
+  "builderShellPublicSlugMissing": {
+    "message": "सार्वजनिक लिंक सक्षम है लेकिन स्लग गायब है।",
+    "description": "Public link error"
+  },
+  "builderShellSaveError": {
+    "message": "फ़ॉर्म सहेजने में त्रुटि. कृपया पुन: प्रयास करें।",
+    "description": "Generic save error"
+  },
+  "builderShellSaveSuccessCreated": {
+    "message": "फॉर्म सफलतापूर्वक बनाया गया!",
+    "description": "Manual save success new form"
+  },
+  "builderShellSaveSuccessUpdated": {
+    "message": "फॉर्म सफलतापूर्वक अपडेट किया गया!",
+    "description": "Manual save success"
+  },
+  "builderShellTabDetails": {
+    "message": "विवरण",
+    "description": "Form builder tab"
+  },
+  "builderShellTabSections": {
+    "message": "अनुभाग एवं प्रश्न",
+    "description": "Form builder tab"
+  },
+  "builderShellTabSettings": {
+    "message": "सेटिंग्स",
+    "description": "Form builder tab"
+  },
+  "builderShellUnexpectedResponse": {
+    "message": "सर्वर से अप्रत्याशित प्रतिक्रिया.",
+    "description": "Public link error"
+  },
+  "builderShowQuestionIf": {
+    "message": "यदि यह प्रश्न दिखाएँ",
+    "description": "Conditional visibility label"
+  },
+  "builderStructure": {
+    "message": "संरचना",
+    "description": "Structure panel heading"
+  },
+  "builderStructureSectionNamePh": {
+    "message": "अनुभाग का नाम",
+    "description": "Structure tree section name placeholder"
+  },
+  "builderStructureSubsectionNamePh": {
+    "message": "उपधारा का नाम",
+    "description": "Structure tree subsection name placeholder"
+  },
+  "builderSubsectionActions": {
+    "message": "उपधारा क्रियाएँ",
+    "description": "Subsection menu button title"
+  },
+  "builderSubsectionName": {
+    "message": "उपधारा का नाम",
+    "description": "Subsection name field label"
+  },
+  "builderSubsectionNamePh": {
+    "message": "उपधारा नाम दर्ज करें",
+    "description": "Subsection name placeholder"
+  },
+  "builderSubsectionSettings": {
+    "message": "उपधारा सेटिंग्स",
+    "description": "Inspector title when editing subsection"
+  },
+  "builderSubsectionThresholdHint": {
+    "message": "यदि इसका स्कोर प्रतिशत ≥ यह सीमा है तो उपधारा उत्तीर्ण हो जाती है। डिफ़ॉल्ट 100% है.",
+    "description": "Subsection threshold hint"
+  },
+  "builderThresholdDefaultPh": {
+    "message": "100",
+    "description": "Default threshold placeholder"
+  },
+  "builderTitleAddSection": {
+    "message": "नया अनुभाग जोड़ें",
+    "description": "Add section button tooltip"
+  },
+  "builderTitleDeleteSubsection": {
+    "message": "उपधारा हटाएँ",
+    "description": "Delete subsection menu tooltip"
+  },
+  "builderTitleDuplicateSubsection": {
+    "message": "डुप्लिकेट उपखंड",
+    "description": "Duplicate subsection menu tooltip"
+  },
+  "builderTitleRemoveQuestion": {
+    "message": "प्रश्न हटाएँ",
+    "description": "Remove question tooltip"
+  },
+  "builderTitleRemoveSection": {
+    "message": "अनुभाग हटाएँ",
+    "description": "Remove section tooltip"
+  },
+  "builderType": {
+    "message": "प्रकार",
+    "description": "Question type field label"
+  },
+  "builderUntitledSection": {
+    "message": "शीर्षक रहित अनुभाग",
+    "description": "Fallback section title"
+  },
+  "builderUntitledSubsection": {
+    "message": "शीर्षकहीन उपधारा",
+    "description": "Fallback subsection title"
+  },
+  "builderValue": {
+    "message": "कीमत",
+    "description": "Conditional value label"
+  },
+  "builderVisibility": {
+    "message": "दृश्यता",
+    "description": "Visibility settings section"
+  },
+  "builderWeight": {
+    "message": "वज़न",
+    "description": "Scoring weight label"
+  },
+  "builderWeightDefaultPh": {
+    "message": "1",
+    "description": "Default weight input placeholder"
+  },
+  "builderWeightQuestionHint": {
+    "message": "डिफ़ॉल्ट वजन 1 है। अधिक वजन समग्र स्कोर में अधिक योगदान देता है।",
+    "description": "Question weight hint"
+  },
+  "builderWeightSectionHint": {
+    "message": "डिफ़ॉल्ट वजन 1 है। अधिक वजन समग्र ऑडिट स्कोर में अधिक योगदान देता है।",
+    "description": "Section weight hint"
+  },
+  "builderWeightSubsectionHint": {
+    "message": "डिफ़ॉल्ट वजन 1 है। अधिक वजन सेक्शन स्कोर में अधिक योगदान देता है।",
+    "description": "Subsection weight hint"
+  },
+  "builderWhenAnswerIs": {
+    "message": "जब उत्तर है:",
+    "description": "Evidence rule when label"
+  },
+  "comparisonAverage": {
+    "message": "औसत से तुलना करें",
+    "description": "Comparison type option"
+  },
+  "comparisonAverageLabel": {
+    "message": "औसत",
+    "description": "Comparison label"
+  },
+  "comparisonAverageScore": {
+    "message": "औसत स्कोर",
+    "description": "Comparison score label"
+  },
+  "comparisonChange": {
+    "message": "परिवर्तन",
+    "description": "Comparison change column"
+  },
+  "comparisonChangeValue": {
+    "message": "परिवर्तन: {value}",
+    "description": "Section comparison change prefix"
+  },
+  "comparisonCurrent": {
+    "message": "मौजूदा",
+    "description": "Comparison column label"
+  },
+  "comparisonCurrentScore": {
+    "message": "वर्तमान स्कोर",
+    "description": "Comparison metric label"
+  },
+  "comparisonFailedLoad": {
+    "message": "तुलना डेटा लोड करने में विफल",
+    "description": "Comparison load error"
+  },
+  "comparisonHeading": {
+    "message": "प्रतिक्रिया तुलना",
+    "description": "Comparison panel heading"
+  },
+  "comparisonLastAudit": {
+    "message": "पिछले ऑडिट से तुलना करें",
+    "description": "Comparison type option"
+  },
+  "comparisonLastAuditLabel": {
+    "message": "अंतिम ऑडिट",
+    "description": "Comparison label"
+  },
+  "comparisonLastAuditScore": {
+    "message": "अंतिम ऑडिट स्कोर",
+    "description": "Comparison score label"
+  },
+  "comparisonLoading": {
+    "message": "तुलना लोड हो रही है...",
+    "description": "Comparison loading"
+  },
+  "comparisonNoMeaningful": {
+    "message": "कोई सार्थक तुलना डेटा उपलब्ध नहीं है.",
+    "description": "Empty comparison data state"
+  },
+  "comparisonNoPrevious": {
+    "message": "तुलना के लिए कोई पिछला ऑडिट उपलब्ध नहीं है.",
+    "description": "Comparison empty state"
+  },
+  "comparisonScoreDefault": {
+    "message": "तुलना स्कोर",
+    "description": "Default comparison score label"
+  },
+  "comparisonSectionHeading": {
+    "message": "अनुभाग तुलना",
+    "description": "Section comparison heading"
+  },
+  "comparisonSpecific": {
+    "message": "विशिष्ट ऑडिट के साथ तुलना करें",
+    "description": "Comparison type option"
+  },
+  "comparisonSpecificAuditScore": {
+    "message": "विशिष्ट ऑडिट स्कोर",
+    "description": "Comparison score label"
+  },
+  "comparisonSpecificLabel": {
+    "message": "विशिष्ट लेखापरीक्षा",
+    "description": "Comparison label"
+  },
+  "comparisonTrendAnalysis": {
+    "message": "प्रवृत्ति विश्लेषण",
+    "description": "Trend analysis section heading"
+  },
+  "correctiveActionNoun": {
+    "message": "सुधारात्मक कार्रवाई",
+    "description": "Corrective action noun in buttons"
+  },
+  "correctiveActionTitle": {
+    "message": "कार्रवाई",
+    "description": "Corrective action block title"
+  },
+  "correctiveActionTitleField": {
+    "message": "क्रिया शीर्षक",
+    "description": "Corrective action form field label"
+  },
+  "correctiveActionTitlePh": {
+    "message": "की जाने वाली सुधारात्मक कार्रवाई का वर्णन करें...",
+    "description": "Corrective action description placeholder"
+  },
+  "correctiveActionsHeading": {
+    "message": "सुधारात्मक कार्रवाई",
+    "description": "Corrective actions panel heading"
+  },
+  "correctiveAllPassed": {
+    "message": "सभी प्रश्न उत्तीर्ण हुए। किसी सुधारात्मक कार्रवाई की आवश्यकता नहीं है.",
+    "description": "No failed questions success message"
+  },
+  "correctiveAnswerLabel": {
+    "message": "उत्तर:",
+    "description": "Failed question answer prefix"
+  },
+  "correctiveDueDate": {
+    "message": "नियत तारीख",
+    "description": "Corrective action due date label"
+  },
+  "correctiveEditAction": {
+    "message": "सुधारात्मक कार्रवाई संपादित करें",
+    "description": "Edit corrective action button"
+  },
+  "correctiveLastUpdatedBy": {
+    "message": "अंतिम बार अद्यतन किया गया",
+    "description": "Corrective action metadata label"
+  },
+  "correctiveLoadingPermissions": {
+    "message": "अनुमतियाँ लोड हो रही हैं...",
+    "description": "Permissions loading state"
+  },
+  "correctiveNoAnswer": {
+    "message": "कोई जवाब नहीं",
+    "description": "Empty answer display"
+  },
+  "correctiveNoDescription": {
+    "message": "कोई विवरण नहीं दिया गया",
+    "description": "Empty corrective action description"
+  },
+  "correctiveNotSet": {
+    "message": "सेट नहीं",
+    "description": "Missing due date placeholder"
+  },
+  "correctiveOwnersField": {
+    "message": "सुधारात्मक कार्रवाई के स्वामी",
+    "description": "Event field name in read-only message"
+  },
+  "correctivePassFailFail": {
+    "message": "असफल",
+    "description": "Pass/fail badge fail label"
+  },
+  "correctiveProofFiles": {
+    "message": "प्रमाण फ़ाइलें",
+    "description": "Proof files section label"
+  },
+  "correctiveReadOnly": {
+    "message": "यह अनुभाग केवल पढ़ने योग्य है. केवल इवेंट के {ownersField} में निर्दिष्ट उपयोगकर्ता ही सुधारात्मक कार्रवाइयों को अपडेट कर सकते हैं।",
+    "description": "Read-only corrective actions message"
+  },
+  "correctiveSaveFailed": {
+    "message": "सुधारात्मक कार्रवाई सहेजने में विफल",
+    "description": "Save failure message"
+  },
+  "correctiveSaveFailedRetry": {
+    "message": "सुधारात्मक कार्रवाई सहेजने में विफल. कृपया पुन: प्रयास करें।",
+    "description": "Save failure alert"
+  },
+  "correctiveServerError": {
+    "message": "सर्वर त्रुटि ({status}). कृपया पुन: प्रयास करें।",
+    "description": "Non-JSON server error"
+  },
+  "correctiveStatusCompleted": {
+    "message": "पुरा होना।",
+    "description": "Corrective action status display"
+  },
+  "correctiveStatusInProgress": {
+    "message": "प्रगति पर है",
+    "description": "Corrective action status display"
+  },
+  "correctiveStatusOpen": {
+    "message": "खुला",
+    "description": "Corrective action status display"
+  },
+  "correctiveTitleRequired": {
+    "message": "कृपया कार्रवाई का शीर्षक/विवरण प्रदान करें",
+    "description": "Validation alert before save"
+  },
+  "correctiveUnknownUser": {
+    "message": "अज्ञात उपयोगकर्ता",
+    "description": "Fallback user name"
+  },
+  "correctiveUploadProof": {
+    "message": "प्रमाण अपलोड करें (वैकल्पिक)",
+    "description": "Proof upload field label"
+  },
+  "createFormSubmit": {
+    "message": "फॉर्म बनाएं",
+    "description": "Create form submit button"
+  },
+  "createNewFormSubtitle": {
+    "message": "अपना फ़ॉर्म बनाने के लिए चरणों का पालन करें",
+    "description": "Form creation modal subtitle"
+  },
+  "createNewFormTitle": {
+    "message": "नया फॉर्म बनाएं",
+    "description": "Form creation modal title"
+  },
+  "dupActiveBody": {
+    "message": "यह फॉर्म वर्तमान में सक्रिय और उपयोग में है. यह परिवर्तन करने के लिए, एक नया संस्करण बनाएं.",
+    "description": "Duplicate dialog explanation"
+  },
+  "dupActiveTitle": {
+    "message": "प्रपत्र सक्रिय है",
+    "description": "Duplicate dialog title when form is active"
+  },
+  "dupBulletDraft": {
+    "message": "ड्राफ्ट स्थिति में एक नया फॉर्म बनाया जाएगा",
+    "description": "Duplicate benefit bullet"
+  },
+  "dupBulletEditable": {
+    "message": "आप नए फॉर्म में सभी बदलाव कर सकते हैं",
+    "description": "Duplicate benefit bullet"
+  },
+  "dupBulletOriginal": {
+    "message": "मूल सक्रिय स्वरूप अपरिवर्तित रहता है",
+    "description": "Duplicate benefit bullet"
+  },
+  "dupDuplicateEdit": {
+    "message": "डुप्लिकेट और संपादित करें",
+    "description": "Duplicate dialog confirm button"
+  },
+  "dupFailed": {
+    "message": "प्रपत्र की नकल बनाने में विफल",
+    "description": "Duplicate form error"
+  },
+  "dupFormIdRequired": {
+    "message": "फॉर्म आईडी आवश्यक है",
+    "description": "Duplicate without form id error"
+  },
+  "dupWhatHappensHeading": {
+    "message": "जब आप नकल करते हैं तो क्या होता है?",
+    "description": "Duplicate dialog bullets heading"
+  },
+  "editFormSubtitle": {
+    "message": "अपना फॉर्म विवरण अपडेट करें",
+    "description": "Form edit modal subtitle"
+  },
+  "editFormTitle": {
+    "message": "प्रपत्र संपादित करें",
+    "description": "Form edit modal title"
+  },
+  "emailExamplePh": {
+    "message": "email@example.com",
+    "description": "Email question placeholder"
+  },
+  "evidenceAddRequiredHint": {
+    "message": "जारी रखने के लिए कृपया आवश्यक साक्ष्य जोड़ें",
+    "description": "Evidence validation banner"
+  },
+  "evidenceCommentLabel": {
+    "message": "टिप्पणी",
+    "description": "Evidence comment field label"
+  },
+  "evidenceCommentPh": {
+    "message": "एक टिप्पणी जोड़ने…",
+    "description": "Evidence comment placeholder"
+  },
+  "evidenceCommentRequired": {
+    "message": "टिप्पणी आवश्यक है",
+    "description": "Evidence comment validation"
+  },
+  "evidenceImageRequired": {
+    "message": "छवि आवश्यक है",
+    "description": "Evidence image validation"
+  },
+  "evidenceImageUploadLabel": {
+    "message": "छवि अपलोड करें",
+    "description": "Evidence image field label"
+  },
+  "evidenceImageUploaded": {
+    "message": "छवि अपलोड की गई",
+    "description": "Evidence image fallback name"
+  },
+  "evidenceRequiredHeading": {
+    "message": "साक्ष्य आवश्यक",
+    "description": "Audit evidence section heading"
+  },
+  "evidenceSelectedPrefix": {
+    "message": "चयनित:",
+    "description": "Evidence file selected prefix"
+  },
+  "evidenceVideoRequired": {
+    "message": "वीडियो आवश्यक है",
+    "description": "Evidence video validation"
+  },
+  "evidenceVideoUploadLabel": {
+    "message": "वीडियो अपलोड करें",
+    "description": "Evidence video field label"
+  },
+  "evidenceVideoUploaded": {
+    "message": "वीडियो अपलोड किया गया",
+    "description": "Evidence video fallback name"
+  },
+  "fieldAddTagPh": {
+    "message": "टैग जोड़ें...",
+    "description": "Add tag input placeholder"
+  },
+  "fieldApprovalRequired": {
+    "message": "अनुमोदन की आवश्यकता",
+    "description": "Approval required checkbox"
+  },
+  "fieldDescription": {
+    "message": "विवरण",
+    "description": "Form description field label"
+  },
+  "fieldDescriptionPh": {
+    "message": "इस फॉर्म का उद्देश्य बताएं...",
+    "description": "Form description placeholder"
+  },
+  "fieldExpiryDate": {
+    "message": "समाप्ति तिथि",
+    "description": "Survey expiry date label"
+  },
+  "fieldFormDescriptionPh": {
+    "message": "प्रपत्र विवरण दर्ज करें",
+    "description": "Form description placeholder in builder tab"
+  },
+  "fieldFormId": {
+    "message": "फॉर्म आईडी",
+    "description": "Read-only form id label"
+  },
+  "fieldFormName": {
+    "message": "फ़ार्म का नाम",
+    "description": "Form name field label"
+  },
+  "fieldFormNamePh": {
+    "message": "फॉर्म का नाम दर्ज करें",
+    "description": "Form name placeholder"
+  },
+  "fieldFormType": {
+    "message": "प्रपत्र प्रकार",
+    "description": "Form type field label"
+  },
+  "fieldNotes": {
+    "message": "टिप्पणियाँ",
+    "description": "Internal notes field label"
+  },
+  "fieldNotesPh": {
+    "message": "इस फॉर्म के बारे में आंतरिक नोट्स",
+    "description": "Notes placeholder"
+  },
+  "fieldStatus": {
+    "message": "स्थिति",
+    "description": "Form status field label"
+  },
+  "fieldTags": {
+    "message": "टैग",
+    "description": "Form tags field label"
+  },
+  "fieldVisibility": {
+    "message": "दृश्यता",
+    "description": "Form visibility field label"
+  },
+  "fileChooseFile": {
+    "message": "फाइलें चुनें",
+    "description": "File upload choose link"
+  },
+  "fileDragDropOr": {
+    "message": "फ़ाइल को यहां खींचें और छोड़ें या",
+    "description": "File upload drop zone lead-in"
+  },
+  "fileMaxSize": {
+    "message": "अधिकतम आकार: 25एमबी",
+    "description": "File upload max size"
+  },
+  "fileRemoveAria": {
+    "message": "फ़ाइल हटाएँ",
+    "description": "Remove uploaded file button"
+  },
+  "fileSupportedAllTypes": {
+    "message": "सभी फ़ाइल प्रकार",
+    "description": "Supported formats all types"
+  },
+  "fileSupportedFormats": {
+    "message": "समर्थित प्रारूप: {formats}",
+    "description": "File upload formats line"
+  },
+  "fileSupportedMultiple": {
+    "message": "एकाधिक फ़ाइलें",
+    "description": "Supported formats when multiple allowed"
+  },
+  "formBuilderTabTitle": {
+    "message": "फॉर्म बिल्डर",
+    "description": "Tab title for form builder route"
+  },
+  "hubActionAddCorrective": {
+    "message": "सुधारात्मक कार्रवाई जोड़ें",
+    "description": "Form responses row action"
+  },
+  "hubActionApprove": {
+    "message": "मंज़ूरी देना",
+    "description": "Form responses row action"
+  },
+  "hubActionReject": {
+    "message": "अस्वीकार करना",
+    "description": "Form responses row action"
+  },
+  "hubActionViewDetails": {
+    "message": "विवरण देखें",
+    "description": "Form responses row action"
+  },
+  "hubActionViewForm": {
+    "message": "प्रपत्र विवरण देखें",
+    "description": "Forms list row action tooltip"
+  },
+  "hubActionViewResponses": {
+    "message": "प्रतिक्रियाएँ देखें",
+    "description": "Forms list row action tooltip"
+  },
+  "hubAnonymous": {
+    "message": "गुमनाम",
+    "description": "Anonymous submitter label"
+  },
+  "hubApproveFailed": {
+    "message": "प्रतिक्रिया स्वीकृत करने में विफल. कृपया पुन: प्रयास करें।",
+    "description": "Approve response error"
+  },
+  "hubBackToResponses": {
+    "message": "प्रतिक्रियाओं पर वापस जाएँ",
+    "description": "Response detail back navigation"
+  },
+  "hubBulkActionError": {
+    "message": "बल्क कार्रवाई करने में त्रुटि. कृपया पुन: प्रयास करें।",
+    "description": "Forms bulk action failure alert"
+  },
+  "hubColAssignedTo": {
+    "message": "को सौंपना",
+    "description": "Forms list column"
+  },
+  "hubColCreated": {
+    "message": "बनाया था",
+    "description": "Forms list column"
+  },
+  "hubColExecution": {
+    "message": "कार्यान्वयन",
+    "description": "Form responses column"
+  },
+  "hubColKpis": {
+    "message": "केपीआई",
+    "description": "Form responses column"
+  },
+  "hubColLinkedTo": {
+    "message": "से जुड़ा हुआ",
+    "description": "Form responses column"
+  },
+  "hubColName": {
+    "message": "नाम",
+    "description": "Forms list column"
+  },
+  "hubColReview": {
+    "message": "समीक्षा",
+    "description": "Form responses column"
+  },
+  "hubColScore": {
+    "message": "अंक",
+    "description": "Form responses column"
+  },
+  "hubColSubmitted": {
+    "message": "प्रस्तुत किया गया",
+    "description": "Form responses column"
+  },
+  "hubColSubmittedBy": {
+    "message": "द्वारा प्रस्तुत किया गया",
+    "description": "Form responses column"
+  },
+  "hubColType": {
+    "message": "प्रकार",
+    "description": "Forms list column"
+  },
+  "hubColVisibility": {
+    "message": "दृश्यता",
+    "description": "Forms list column"
+  },
+  "hubConfirmApprove": {
+    "message": "क्या आप वाकई इस प्रतिक्रिया को स्वीकृत करना चाहते हैं?",
+    "description": "Approve response confirm"
+  },
+  "hubConfirmDeleteResponse": {
+    "message": "क्या आप वाकई इस प्रतिक्रिया को हटाना चाहते हैं?",
+    "description": "Delete response confirm"
+  },
+  "hubConfirmReject": {
+    "message": "क्या आप वाकई इस प्रतिक्रिया को अस्वीकार करना चाहते हैं?",
+    "description": "Reject response confirm"
+  },
+  "hubCreateLabel": {
+    "message": "नए रूप मे",
+    "description": "Create form button on forms list"
+  },
+  "hubDeleteFormFailed": {
+    "message": "फ़ॉर्म हटाने में विफल. कृपया पुन: प्रयास करें।",
+    "description": "Delete form error"
+  },
+  "hubDeleteResponseFailed": {
+    "message": "प्रतिक्रिया हटाने में विफल. कृपया पुन: प्रयास करें।",
+    "description": "Delete response error"
+  },
+  "hubDescription": {
+    "message": "फॉर्म, सर्वेक्षण, ऑडिट और फीडबैक बनाएं और प्रबंधित करें",
+    "description": "Forms hub list description"
+  },
+  "hubEmptyMessage": {
+    "message": "फ़ॉर्म आपको ग्राहकों और टीम के सदस्यों से जानकारी एकत्र करने देते हैं। प्रतिक्रियाएँ एकत्र करना शुरू करने के लिए अपना पहला फ़ॉर्म बनाएँ।",
+    "description": "Empty forms list body"
+  },
+  "hubEmptyTitle": {
+    "message": "अभी तक कोई फॉर्म नहीं",
+    "description": "Empty forms list heading"
+  },
+  "hubExecutionInProgress": {
+    "message": "प्रगति पर है",
+    "description": "Response execution status"
+  },
+  "hubExecutionNotStarted": {
+    "message": "शुरू नहीं",
+    "description": "Response execution status"
+  },
+  "hubExecutionSubmitted": {
+    "message": "प्रस्तुत किया गया",
+    "description": "Response execution status"
+  },
+  "hubExportResponsesError": {
+    "message": "प्रतिक्रियाएँ निर्यात करने में त्रुटि: {detail}",
+    "description": "Export responses error with detail"
+  },
+  "hubExportResponsesFailed": {
+    "message": "निर्यात के दौरान एक त्रुटि उत्पन्न हुई.",
+    "description": "Export responses generic error"
+  },
+  "hubFilterAllAssignees": {
+    "message": "सभी समनुदेशिती",
+    "description": "Assignee filter group label"
+  },
+  "hubFilterAllStatus": {
+    "message": "सभी स्थिति",
+    "description": "Form status filter group label"
+  },
+  "hubFilterAllTypes": {
+    "message": "सभी प्रकार",
+    "description": "Form type filter group label"
+  },
+  "hubFilterExecutionStatus": {
+    "message": "निष्पादन स्थिति",
+    "description": "Form responses filter label"
+  },
+  "hubFilterFromDate": {
+    "message": "की तिथि से",
+    "description": "Form responses date filter"
+  },
+  "hubFilterMyForms": {
+    "message": "मेरे प्रपत्र",
+    "description": "Assigned-to-me filter option"
+  },
+  "hubFilterReviewStatus": {
+    "message": "स्थिति की समीक्षा करें",
+    "description": "Form responses filter label"
+  },
+  "hubFilterToDate": {
+    "message": "तारीख तक",
+    "description": "Form responses date filter"
+  },
+  "hubFormNotFound": {
+    "message": "फॉर्म नहीं मिला",
+    "description": "Form detail load error"
+  },
+  "hubKpiCompliance": {
+    "message": "अनुपालन: {value}%",
+    "description": "Response KPI cell"
+  },
+  "hubKpiPassRate": {
+    "message": "पास दर: {value}%",
+    "description": "Response KPI cell"
+  },
+  "hubKpiRating": {
+    "message": "रेटिंग: {value}/5",
+    "description": "Response KPI cell"
+  },
+  "hubLinkedContact": {
+    "message": "संपर्क",
+    "description": "Linked record type badge"
+  },
+  "hubLinkedLead": {
+    "message": "नेतृत्व करना",
+    "description": "Linked record type badge"
+  },
+  "hubLoadFormFailed": {
+    "message": "फॉर्म लोड करने में विफल",
+    "description": "Form detail load error fallback"
+  },
+  "hubNotInReview": {
+    "message": "समीक्षा में नहीं",
+    "description": "Review column empty state"
+  },
+  "hubPickerDefault": {
+    "message": "गलती करना",
+    "description": "Default form type badge in picker"
+  },
+  "hubPickerHeading": {
+    "message": "एक फॉर्म प्रकार चुनें",
+    "description": "New form type picker modal heading"
+  },
+  "hubPickerSubheading": {
+    "message": "अपने वर्कफ़्लो के लिए सही टेम्पलेट से शुरुआत करें।",
+    "description": "New form type picker modal subheading"
+  },
+  "hubRejectFailed": {
+    "message": "प्रतिक्रिया अस्वीकार करने में विफल. कृपया पुन: प्रयास करें।",
+    "description": "Reject response error"
+  },
+  "hubRelatedRecords": {
+    "message": "संबंधित अभिलेख",
+    "description": "Form detail related records heading"
+  },
+  "hubResponseDetailApprove": {
+    "message": "प्रतिक्रिया स्वीकृत करें",
+    "description": "Approve response action button"
+  },
+  "hubResponseDetailApproved": {
+    "message": "प्रतिक्रिया स्वीकृत.",
+    "description": "Approve response success alert"
+  },
+  "hubResponseDetailAttachments": {
+    "message": "अनुलग्नक:",
+    "description": "Question attachments label"
+  },
+  "hubResponseDetailAuditor": {
+    "message": "लेखा परीक्षक:",
+    "description": "Linked event auditor label"
+  },
+  "hubResponseDetailCannotClose": {
+    "message": "प्रतिक्रिया बंद नहीं की जा सकती. सभी सुधारात्मक कार्रवाइयां पूरी की जानी चाहिए और अनुमोदित की जानी चाहिए।",
+    "description": "Close response blocked alert"
+  },
+  "hubResponseDetailClose": {
+    "message": "प्रतिक्रिया बंद करें",
+    "description": "Close response action button"
+  },
+  "hubResponseDetailCloseConfirm": {
+    "message": "क्या आप वाकई इस प्रतिक्रिया को बंद करना चाहते हैं? इस एक्शन को वापस नहीं किया जा सकता।",
+    "description": "Close response confirm"
+  },
+  "hubResponseDetailCloseFailed": {
+    "message": "प्रतिक्रिया बंद करने में विफल. कृपया पुन: प्रयास करें।",
+    "description": "Close response error alert"
+  },
+  "hubResponseDetailClosedHint": {
+    "message": "प्रतिक्रिया बंद है",
+    "description": "Closed response read-only hint"
+  },
+  "hubResponseDetailClosedSuccess": {
+    "message": "प्रतिक्रिया सफलतापूर्वक बंद हुई.",
+    "description": "Close response success alert"
+  },
+  "hubResponseDetailComplianceHint": {
+    "message": "अनिवार्य जांचों का % उत्तीर्ण हुआ",
+    "description": "Compliance KPI help text"
+  },
+  "hubResponseDetailContradictionHint": {
+    "message": "मान्य: अनुपालन अनिवार्य जांच को मापता है, जबकि समग्र स्कोर भारित स्कोर योग्य प्रश्नों पर आधारित होता है। यदि सभी अनिवार्य जांचें पास हो जाती हैं तो एक फॉर्म में 100% अनुपालन हो सकता है, लेकिन यदि स्कोर करने योग्य प्रश्नों को महत्व नहीं दिया जाता है या उत्तर नहीं दिया जाता है तो कुल स्कोर 0% हो सकता है।",
+    "description": "Compliance vs overall score explanation"
+  },
+  "hubResponseDetailCorrectiveOwner": {
+    "message": "सुधारात्मक स्वामी:",
+    "description": "Linked event corrective owner label"
+  },
+  "hubResponseDetailJumpToSection": {
+    "message": "अनुभाग पर जाएँ...",
+    "description": "Mobile section navigation placeholder"
+  },
+  "hubResponseDetailLoadFailed": {
+    "message": "प्रतिक्रिया लोड करने में विफल",
+    "description": "Response fetch error"
+  },
+  "hubResponseDetailLoadFormFailed": {
+    "message": "प्रपत्र विवरण लोड करने में विफल",
+    "description": "Form fetch error on response detail"
+  },
+  "hubResponseDetailLoading": {
+    "message": "प्रतिक्रिया लोड हो रही है...",
+    "description": "Response detail loading message"
+  },
+  "hubResponseDetailNoAnswerProvided": {
+    "message": "कोई उत्तर नहीं दिया गया",
+    "description": "Empty answer placeholder"
+  },
+  "hubResponseDetailNotApplicable": {
+    "message": "एन/ए",
+    "description": "Pass/fail badge not applicable label"
+  },
+  "hubResponseDetailNotClosedYet": {
+    "message": "प्रतिक्रिया अभी बंद नहीं की जा सकती. कृपया सुनिश्चित करें कि सभी सुधारात्मक कार्रवाइयां सत्यापित और अनुमोदित हैं।",
+    "description": "Close response incomplete alert"
+  },
+  "hubResponseDetailOverallScoreHint": {
+    "message": "स्कोरयोग्य प्रश्नों के आधार पर भारित अंक",
+    "description": "Overall score KPI help text"
+  },
+  "hubResponseDetailPass": {
+    "message": "उत्तीर्ण",
+    "description": "Pass/fail badge pass label"
+  },
+  "hubResponseDetailPassRateHint": {
+    "message": "उत्तीर्ण स्कोरयोग्य प्रश्न/कुल स्कोरयोग्य प्रश्न",
+    "description": "Pass rate KPI help text"
+  },
+  "hubResponseDetailQuestionScore": {
+    "message": "स्कोर: {score}",
+    "description": "Question score in response body"
+  },
+  "hubResponseDetailRejected": {
+    "message": "प्रतिक्रिया अस्वीकृत.",
+    "description": "Reject response success alert"
+  },
+  "hubResponseDetailReviewer": {
+    "message": "समीक्षक:",
+    "description": "Linked event reviewer label"
+  },
+  "hubResponseDetailReviewerOnly": {
+    "message": "केवल निर्दिष्ट समीक्षक ही इस ऑडिट प्रतिक्रिया को स्वीकृत या वापस भेज सकता है।",
+    "description": "Reviewer-only actions hint"
+  },
+  "hubResponseDetailSectionScore": {
+    "message": "स्कोर: {score}%",
+    "description": "Section score in response body"
+  },
+  "hubResponseDetailSectionsNav": {
+    "message": "धारा",
+    "description": "Section navigation sidebar heading"
+  },
+  "hubResponseDetailSelfReviewBadge": {
+    "message": "स्व-समीक्षा लेखापरीक्षा",
+    "description": "Self-reviewed audit badge label"
+  },
+  "hubResponseDetailSelfReviewTitle": {
+    "message": "इस ऑडिट की समीक्षा उसी उपयोगकर्ता द्वारा की गई जिसने इसे संचालित किया था।",
+    "description": "Self-reviewed audit badge tooltip"
+  },
+  "hubResponseDetailSendBack": {
+    "message": "सुधार के लिए वापस भेजें",
+    "description": "Send response back for correction"
+  },
+  "hubResponseDetailSendBackConfirm": {
+    "message": "क्या आप वाकई इस प्रतिक्रिया को सुधार के लिए वापस भेजना चाहते हैं? यह वर्तमान प्रतिक्रिया को अस्वीकार कर देगा.",
+    "description": "Send back for correction confirm"
+  },
+  "hubResponseDetailSubmittedAt": {
+    "message": "सबमिट किया गया {date}",
+    "description": "Response submission timestamp line"
+  },
+  "hubResponseDetailSubsectionPrefix": {
+    "message": "└ {label}",
+    "description": "Subsection option prefix in mobile nav"
+  },
+  "hubResponseDetailTabResponse": {
+    "message": "प्रतिक्रिया",
+    "description": "Tab title fallback segment for response detail"
+  },
+  "hubResponseDetailTitle": {
+    "message": "प्रतिक्रिया विवरण",
+    "description": "Response detail page heading"
+  },
+  "hubResponseDetailWhyDifferent": {
+    "message": "अलग क्यों?",
+    "description": "Compliance vs score info link"
+  },
+  "hubResponsesDescription": {
+    "message": "{formId} के लिए प्रतिक्रियाएँ",
+    "description": "Form responses list description fallback"
+  },
+  "hubResponsesEmptyMessage": {
+    "message": "जब लोग इस फॉर्म को भरना शुरू करेंगे तो प्रतिक्रियाएं यहां दिखाई देंगी। जानकारी एकत्रित करना प्रारंभ करने के लिए फ़ॉर्म लिंक साझा करें.",
+    "description": "Empty form responses body"
+  },
+  "hubResponsesEmptyTitle": {
+    "message": "अभी तक कोई प्रतिक्रिया नहीं",
+    "description": "Empty form responses heading"
+  },
+  "hubResponsesFormIdFallback": {
+    "message": "यह फॉर्म",
+    "description": "Form ID placeholder when form has no formId"
+  },
+  "hubResponsesSearchPlaceholder": {
+    "message": "प्रतिक्रियाएँ खोजें...",
+    "description": "Form responses search placeholder"
+  },
+  "hubResponsesTitleFallback": {
+    "message": "प्रपत्र प्रतिक्रियाएँ",
+    "description": "Form responses list title fallback"
+  },
+  "hubReviewClosed": {
+    "message": "बंद किया हुआ",
+    "description": "Response review status"
+  },
+  "hubReviewNeedsAuditor": {
+    "message": "लेखापरीक्षक समीक्षा की आवश्यकता है",
+    "description": "Response review status"
+  },
+  "hubReviewPendingCorrective": {
+    "message": "लंबित सुधारात्मक कार्रवाई",
+    "description": "Response review status"
+  },
+  "hubSearchPlaceholder": {
+    "message": "प्रपत्र खोजें...",
+    "description": "Forms list search placeholder"
+  },
+  "hubSectionCount": {
+    "message": "{count, plural, one {# section} other {# sections}}",
+    "description": "Score cell section count"
+  },
+  "hubStatApproved": {
+    "message": "अनुमत",
+    "description": "Form responses KPI label"
+  },
+  "hubStatNeedsAction": {
+    "message": "कार्रवाई की जरूरत है",
+    "description": "Form responses KPI label"
+  },
+  "hubStatNew": {
+    "message": "नया",
+    "description": "Form responses KPI label"
+  },
+  "hubStatTotalForms": {
+    "message": "कुल प्रपत्र",
+    "description": "Forms list KPI label"
+  },
+  "hubStatTotalResponses": {
+    "message": "कुल प्रतिक्रियाएँ",
+    "description": "Forms list KPI label"
+  },
+  "hubSubtitleForm": {
+    "message": "{typeLabel} • {status}",
+    "description": "Form detail summary subtitle"
+  },
+  "hubTabDuplicateForm": {
+    "message": "डुप्लिकेट: {name}",
+    "description": "Tab title when duplicating a form"
+  },
+  "hubTabEditForm": {
+    "message": "संपादित करें: {name}",
+    "description": "Tab title when editing a form"
+  },
+  "hubTabFormBuilder": {
+    "message": "फॉर्म बिल्डर",
+    "description": "Tab title for form builder"
+  },
+  "hubTabFormDetails": {
+    "message": "प्रपत्र विवरण",
+    "description": "Tab title for form detail view"
+  },
+  "hubTabNewForm": {
+    "message": "नया {type}",
+    "description": "Tab title when creating a form"
+  },
+  "hubTabResponsesTitle": {
+    "message": "{name} - प्रतिक्रियाएँ",
+    "description": "Tab title for form responses list"
+  },
+  "hubTitle": {
+    "message": "फार्म",
+    "description": "Forms hub list page title"
+  },
+  "hubTypeAuditDesc": {
+    "message": "स्कोरिंग, साक्ष्य कैप्चर और अनुमोदन के साथ संरचित ऑडिट।",
+    "description": "Audit type picker description"
+  },
+  "hubTypeAuditSubtitle": {
+    "message": "जाँच सूचियाँ एवं अनुपालन",
+    "description": "Audit type picker subtitle"
+  },
+  "hubTypeFeedbackDesc": {
+    "message": "रेटिंग, टिप्पणियों और वैकल्पिक अनुवर्ती के साथ त्वरित प्रतिक्रिया।",
+    "description": "Feedback type picker description"
+  },
+  "hubTypeFeedbackSubtitle": {
+    "message": "एनपीएस/सीएसएटी/सीईएस",
+    "description": "Feedback type picker subtitle"
+  },
+  "hubTypeFormFallback": {
+    "message": "रूप",
+    "description": "Form type label fallback on detail view"
+  },
+  "hubTypeSurveyDesc": {
+    "message": "तर्क, शाखा और स्कोरिंग के साथ बहु-प्रश्न सर्वेक्षण।",
+    "description": "Survey type picker description"
+  },
+  "hubTypeSurveySubtitle": {
+    "message": "ग्राहक एवं कर्मचारी अंतर्दृष्टि",
+    "description": "Survey type picker subtitle"
+  },
+  "hubUntitledForm": {
+    "message": "शीर्षक रहित प्रपत्र",
+    "description": "Form detail name fallback"
+  },
+  "nextStepBlockedTitle": {
+    "message": "कृपया वर्तमान चरण में सभी अनिवार्य फ़ील्ड भरें",
+    "description": "Next button disabled tooltip"
+  },
+  "outcomesAuditRulesDesc": {
+    "message": "चुनें कि अंतिम ऑडिट परिणाम कैसे निर्धारित किया जाता है।",
+    "description": "Audit result rules description"
+  },
+  "outcomesAuditRulesHeading": {
+    "message": "लेखापरीक्षा परिणाम नियम",
+    "description": "Audit result rules section"
+  },
+  "outcomesEmitAuditFail": {
+    "message": "ऑडिट विफल होने पर ईवेंट उत्सर्जित करें",
+    "description": "Post-submission signal checkbox"
+  },
+  "outcomesEmitAuditFailHint": {
+    "message": "जब समग्र ऑडिट परिणाम विफल हो तो एक घटना को ट्रिगर करें",
+    "description": "Post-submission signal hint"
+  },
+  "outcomesEmitCriticalFail": {
+    "message": "जब कोई महत्वपूर्ण प्रश्न विफल हो जाता है तो ईवेंट उत्सर्जित करें",
+    "description": "Post-submission signal checkbox"
+  },
+  "outcomesEmitCriticalFailHint": {
+    "message": "जब महत्वपूर्ण के रूप में चिह्नित कोई भी प्रश्न विफल हो जाता है तो एक ईवेंट ट्रिगर करें",
+    "description": "Post-submission signal hint"
+  },
+  "outcomesEmitMissingEvidence": {
+    "message": "आवश्यक साक्ष्य गायब होने पर घटना को उजागर करें",
+    "description": "Post-submission signal checkbox"
+  },
+  "outcomesEmitMissingEvidenceHint": {
+    "message": "जब आवश्यक फ़ाइल अनुलग्नक या साक्ष्य उपलब्ध नहीं कराए जाते हैं तो एक घटना को ट्रिगर करें",
+    "description": "Post-submission signal hint"
+  },
+  "outcomesEmitSectionFail": {
+    "message": "जब कोई अनुभाग विफल हो जाता है तो ईवेंट उत्सर्जित करें",
+    "description": "Post-submission signal checkbox"
+  },
+  "outcomesEmitSectionFailHint": {
+    "message": "जब कोई व्यक्तिगत अनुभाग अपनी पास सीमा को पूरा नहीं करता है तो एक घटना को ट्रिगर करें",
+    "description": "Post-submission signal hint"
+  },
+  "outcomesGovernanceDesc": {
+    "message": "प्रपत्र मेटाडेटा और संस्करण जानकारी.",
+    "description": "Governance section description"
+  },
+  "outcomesGovernanceHeading": {
+    "message": "शासन",
+    "description": "Governance section heading"
+  },
+  "outcomesHeading": {
+    "message": "परिणाम और नियम",
+    "description": "Form builder step 3 heading"
+  },
+  "outcomesMetricAvgRatingHint": {
+    "message": "सभी रेटिंग-प्रकार के प्रश्नों से औसत रेटिंग स्कोर",
+    "description": "Average rating metric hint"
+  },
+  "outcomesMetricEvidence": {
+    "message": "साक्ष्य पूर्णता %",
+    "description": "Reporting metric checkbox"
+  },
+  "outcomesMetricEvidenceHint": {
+    "message": "आवश्यक साक्ष्य वस्तुओं का प्रतिशत जो प्रदान किया गया है",
+    "description": "Reporting metric hint"
+  },
+  "outcomesMetricOverallCompliance": {
+    "message": "कुल मिलाकर अनुपालन %",
+    "description": "Reporting metric checkbox"
+  },
+  "outcomesMetricOverallComplianceHint": {
+    "message": "सभी अनुभागों में समग्र अनुपालन प्रतिशत",
+    "description": "Reporting metric hint"
+  },
+  "outcomesMetricSectionWise": {
+    "message": "अनुभाग-वार अनुपालन",
+    "description": "Reporting metric checkbox"
+  },
+  "outcomesMetricSectionWiseHint": {
+    "message": "प्रत्येक अनुभाग के लिए व्यक्तिगत अनुपालन प्रतिशत",
+    "description": "Reporting metric hint"
+  },
+  "outcomesOverallScoreCalc": {
+    "message": "समग्र स्कोर गणना:",
+    "description": "Read-only formula label"
+  },
+  "outcomesOverallScoreCalcHint": {
+    "message": "इस सूत्र की गणना पिछले चरणों में कॉन्फ़िगर किए गए अनुभाग और उपधारा स्कोरिंग से की जाती है।",
+    "description": "Formula hint"
+  },
+  "outcomesPostSubmissionAutomationHint": {
+    "message": "उपयोगकर्ता असाइनमेंट और सूचनाएं स्वचालन वर्कफ़्लो में अलग से कॉन्फ़िगर की जाती हैं।",
+    "description": "Post-submission automation hint"
+  },
+  "outcomesPostSubmissionDesc": {
+    "message": "परिभाषित करें कि ऑडिट सबमिट करते समय कौन सी घटनाएं उत्सर्जित होती हैं। ये इवेंट स्वचालन नियमों द्वारा भस्म हो जाएंगे।",
+    "description": "Post-submission description"
+  },
+  "outcomesPostSubmissionHeading": {
+    "message": "सबमिशन के बाद के संकेत",
+    "description": "Post-submission signals section"
+  },
+  "outcomesReportingDesc": {
+    "message": "चुनें कि रिपोर्ट, डैशबोर्ड और निर्यात के लिए कौन से परिणाम मेट्रिक्स उपलब्ध होंगे।",
+    "description": "Reporting metrics description"
+  },
+  "outcomesReportingHeading": {
+    "message": "रिपोर्टिंग मेट्रिक्स",
+    "description": "Reporting metrics section"
+  },
+  "outcomesReportingTemplateHint": {
+    "message": "प्रेजेंटेशन और लेआउट को रिस्पांस टेम्पलेट चरण में कॉन्फ़िगर किया गया है।",
+    "description": "Reporting metrics template hint"
+  },
+  "outcomesRuleAnySectionFails": {
+    "message": "यदि कोई अनुभाग विफल रहता है तो ऑडिट विफल हो जाता है",
+    "description": "Audit result rule option"
+  },
+  "outcomesRuleAnySectionFailsHint": {
+    "message": "अनुशंसित डिफ़ॉल्ट. यदि कोई अनुभाग अपनी उत्तीर्ण सीमा को पूरा नहीं करता है तो ऑडिट विफल हो जाता है।",
+    "description": "Audit result rule hint"
+  },
+  "outcomesRuleOverallScore": {
+    "message": "ऑडिट परिणाम केवल समग्र स्कोर पर आधारित है",
+    "description": "Audit result rule option"
+  },
+  "outcomesRuleOverallScoreHint": {
+    "message": "ऑडिट परिणाम व्यक्तिगत अनुभाग परिणामों की परवाह किए बिना, केवल समग्र अनुपालन प्रतिशत द्वारा निर्धारित किया जाता है।",
+    "description": "Audit result rule hint"
+  },
+  "outcomesSubtitle": {
+    "message": "परिभाषित करें कि ऑडिट परिणामों का मूल्यांकन कैसे किया जाता है और प्रस्तुत करने के बाद कौन सा परिणाम डेटा सामने आता है।",
+    "description": "Step 3 subtitle"
+  },
+  "permBlockingActive": {
+    "message": "यह फॉर्म वर्तमान में सक्रिय और उपयोग में है.\nयह परिवर्तन करने के लिए, एक नया संस्करण बनाएं.",
+    "description": "Tooltip when structural edit blocked on active form"
+  },
+  "permBlockingArchived": {
+    "message": "यह फॉर्म संग्रहीत है और इसे संपादित नहीं किया जा सकता है।\nबदलाव करने के लिए, फॉर्म की डुप्लिकेट कॉपी बनाएं।",
+    "description": "Tooltip when edit blocked on archived form"
+  },
+  "previewActiveTemplate": {
+    "message": "सक्रिय टेम्पलेट: {name}",
+    "description": "Active report template label"
+  },
+  "previewAuditFailAnySection": {
+    "message": "यदि कोई अनुभाग विफल रहता है तो ऑडिट विफल हो जाता है",
+    "description": "Audit result rule label"
+  },
+  "previewAuditFailAnySectionDesc": {
+    "message": "यदि कोई अनुभाग अपनी उत्तीर्ण सीमा को पूरा नहीं करता है तो ऑडिट विफल हो जाता है।",
+    "description": "Audit result rule description"
+  },
+  "previewAuditOverallScoreOnly": {
+    "message": "ऑडिट परिणाम केवल समग्र स्कोर पर आधारित है",
+    "description": "Audit result rule label"
+  },
+  "previewAuditOverallScoreOnlyDesc": {
+    "message": "ऑडिट परिणाम व्यक्तिगत अनुभाग परिणामों की परवाह किए बिना, केवल समग्र अनुपालन प्रतिशत द्वारा निर्धारित किया जाता है।",
+    "description": "Audit result rule description"
+  },
+  "previewAuditResultRules": {
+    "message": "लेखापरीक्षा परिणाम नियम",
+    "description": "Audit result rules section heading"
+  },
+  "previewChecklistOutcome": {
+    "message": "परिणाम नियम चयनित है",
+    "description": "Readiness outcome item"
+  },
+  "previewChecklistOutcomeMissing": {
+    "message": "एक ऑडिट परिणाम नियम का चयन किया जाना चाहिए",
+    "description": "Readiness outcome incomplete"
+  },
+  "previewChecklistScoring": {
+    "message": "स्कोरिंग नियम कॉन्फ़िगर किए गए हैं",
+    "description": "Readiness scoring item"
+  },
+  "previewChecklistScoringMissing": {
+    "message": "स्कोर योग्य प्रश्नों में पास होने की शर्तें और वेटेज ≥ 1 होना चाहिए",
+    "description": "Readiness scoring incomplete"
+  },
+  "previewChecklistScoringOk": {
+    "message": "सभी स्कोर योग्य प्रश्नों में पास होने की शर्तें और वेटेज होते हैं",
+    "description": "Readiness scoring ok"
+  },
+  "previewChecklistSections": {
+    "message": "अनुभाग और प्रश्न परिभाषित हैं",
+    "description": "Readiness checklist item"
+  },
+  "previewChecklistSectionsMissing": {
+    "message": "प्रश्नों वाला कम से कम एक अनुभाग आवश्यक है",
+    "description": "Readiness sections incomplete"
+  },
+  "previewChecklistSectionsOkAudit": {
+    "message": "{count} अनुभाग कॉन्फ़िगर किया गया",
+    "description": "Readiness sections ok audit"
+  },
+  "previewChecklistSectionsOkSurvey": {
+    "message": "प्रश्न कॉन्फ़िगर किए गए",
+    "description": "Readiness sections ok survey"
+  },
+  "previewChecklistTemplate": {
+    "message": "प्रतिक्रिया टेम्पलेट चयनित है",
+    "description": "Readiness template item"
+  },
+  "previewChecklistTemplateDefaultSuffix": {
+    "message": "(गलती करना)",
+    "description": "Default template suffix in readiness"
+  },
+  "previewChecklistUsingTemplate": {
+    "message": "टेम्पलेट का उपयोग करना: {name}{suffix}",
+    "description": "Readiness template message"
+  },
+  "previewClosePanelSr": {
+    "message": "पैनल बंद करें",
+    "description": "Preview drawer close screen reader"
+  },
+  "previewDefaultReportHeading": {
+    "message": "परीक्षण विवरण",
+    "description": "Default report template heading block"
+  },
+  "previewDefaultTemplateName": {
+    "message": "डिफ़ॉल्ट टेम्पलेट",
+    "description": "Default report template name"
+  },
+  "previewDrawerSubtitle": {
+    "message": "अपने फ़ॉर्म का पूर्वावलोकन करें क्योंकि यह उपयोगकर्ताओं को दिखाई देगा",
+    "description": "Preview drawer subtitle"
+  },
+  "previewDrawerTitle": {
+    "message": "प्रपत्र पूर्वावलोकन",
+    "description": "Preview drawer title"
+  },
+  "previewExecutionIntro": {
+    "message": "निष्पादित होने पर फॉर्म इस प्रकार दिखाई देगा। पूर्वावलोकन केवल पढ़ने योग्य है.",
+    "description": "Execution preview panel intro"
+  },
+  "previewExecutionTitle": {
+    "message": "निष्पादन पूर्वावलोकन",
+    "description": "Execution preview panel title"
+  },
+  "previewFixIssuesHeading": {
+    "message": "कृपया सहेजने से पहले निम्नलिखित समस्याएं ठीक करें:",
+    "description": "Validation errors heading"
+  },
+  "previewFormReadySaved": {
+    "message": "फॉर्म सहेजने के लिए तैयार है.",
+    "description": "Readiness success message"
+  },
+  "previewFormSavedNotLiveYet": {
+    "message": "यह फॉर्म सहेजा गया है लेकिन अभी तक लाइव नहीं है।",
+    "description": "Readiness success hint"
+  },
+  "previewMetricAverageRating": {
+    "message": "औसत श्रेणी",
+    "description": "Reporting metric label"
+  },
+  "previewMetricEvidenceCompletion": {
+    "message": "साक्ष्य पूर्णता %",
+    "description": "Reporting metric label"
+  },
+  "previewMetricOverallCompliance": {
+    "message": "कुल मिलाकर अनुपालन %",
+    "description": "Reporting metric label"
+  },
+  "previewMetricSectionWise": {
+    "message": "अनुभाग-वार अनुपालन",
+    "description": "Reporting metric label"
+  },
+  "previewNoBlocksInTemplate": {
+    "message": "टेम्प्लेट में कोई ब्लॉक नहीं (डिफ़ॉल्ट टेम्प्लेट का उपयोग किया जाएगा)",
+    "description": "Empty report template blocks"
+  },
+  "previewNoData": {
+    "message": "पूर्वावलोकन के लिए कोई प्रपत्र डेटा उपलब्ध नहीं है",
+    "description": "Empty form preview state"
+  },
+  "previewNoMetricsEnabled": {
+    "message": "कोई रिपोर्टिंग मेट्रिक्स सक्षम नहीं है",
+    "description": "Empty reporting metrics state"
+  },
+  "previewOutcomeIntro": {
+    "message": "ऑडिट परिणाम नियमों, रिपोर्टिंग मेट्रिक्स और रिपोर्ट टेम्पलेट कॉन्फ़िगरेशन की समीक्षा करें।",
+    "description": "Outcome preview panel intro"
+  },
+  "previewOutcomeTitle": {
+    "message": "परिणाम एवं रिपोर्ट पूर्वावलोकन",
+    "description": "Outcome preview panel title"
+  },
+  "previewReadinessIntro": {
+    "message": "पुष्टि करें कि सभी आवश्यक घटक कॉन्फ़िगर किए गए हैं।",
+    "description": "Readiness checklist intro"
+  },
+  "previewReadinessTitle": {
+    "message": "अंतिम तैयारी जांच",
+    "description": "Readiness checklist title"
+  },
+  "previewReportTemplate": {
+    "message": "रिपोर्ट टेम्पलेट",
+    "description": "Report template section heading"
+  },
+  "previewReportingMetrics": {
+    "message": "रिपोर्टिंग मेट्रिक्स",
+    "description": "Reporting metrics section heading"
+  },
+  "previewSaveHeading": {
+    "message": "पूर्वावलोकन करें और सहेजें",
+    "description": "Preview and save step heading"
+  },
+  "previewSaveIntro": {
+    "message": "अपने फॉर्म की परिभाषा की समीक्षा करें और पुष्टि करें कि यह उपयोग के लिए तैयार है। यह चरण प्रपत्र प्रकाशित नहीं करता है.",
+    "description": "Preview and save step intro"
+  },
+  "previewSubmitForm": {
+    "message": "फार्म जमा करें",
+    "description": "Form preview submit button"
+  },
+  "previewTabExecution": {
+    "message": "कार्यान्वयन",
+    "description": "Preview save execution tab"
+  },
+  "previewTabOutcome": {
+    "message": "नतीजा",
+    "description": "Preview save outcome tab"
+  },
+  "rbActionItemsNoteBody": {
+    "message": "डेटा सुधारात्मक कार्रवाइयों से आता है। केवल प्रदर्शन और फ़िल्टरिंग विकल्प कॉन्फ़िगर किए जा सकते हैं।",
+    "description": "Action items notice"
+  },
+  "rbBlockType": {
+    "message": "ब्लॉक प्रकार",
+    "description": "Block settings block type label"
+  },
+  "rbBottomAreasCount": {
+    "message": "निचले क्षेत्रों की गिनती",
+    "description": "Number input label"
+  },
+  "rbBrandingNoteBody": {
+    "message": "लोगो और रंग टेम्पलेट ब्रांडिंग सेटिंग्स में कॉन्फ़िगर किए गए हैं, प्रति ब्लॉक नहीं।",
+    "description": "Report identity branding note"
+  },
+  "rbChartArea": {
+    "message": "क्षेत्र चार्ट",
+    "description": "Chart type option"
+  },
+  "rbChartBar": {
+    "message": "बार चार्ट",
+    "description": "Chart type option"
+  },
+  "rbChartDonut": {
+    "message": "डोनट चार्ट",
+    "description": "Chart type option"
+  },
+  "rbChartGauge": {
+    "message": "गेज",
+    "description": "Chart type option"
+  },
+  "rbChartLine": {
+    "message": "लाइन चार्ट",
+    "description": "Chart type option"
+  },
+  "rbChartNone": {
+    "message": "कोई चार्ट नहीं",
+    "description": "Chart type option"
+  },
+  "rbChartTitle": {
+    "message": "चार्ट शीर्षक",
+    "description": "Chart block label"
+  },
+  "rbChartTitlePh": {
+    "message": "चार्ट शीर्षक दर्ज करें",
+    "description": "Chart title placeholder"
+  },
+  "rbChartType": {
+    "message": "चार्ट प्रकार",
+    "description": "Chart type select label"
+  },
+  "rbComparePreviousAudit": {
+    "message": "पिछले ऑडिट से तुलना करें",
+    "description": "Checkbox label"
+  },
+  "rbComparisonPeriod": {
+    "message": "तुलना अवधि",
+    "description": "Comparison settings label"
+  },
+  "rbCoreBlock": {
+    "message": "कोर ब्लॉक",
+    "description": "Core block badge"
+  },
+  "rbCoreOverallPerformanceBody": {
+    "message": "यह ब्लॉक समग्र प्रदर्शन मेट्रिक्स प्रदर्शित करता है। केवल प्रस्तुतिकरण विकल्प कॉन्फ़िगर किए जा सकते हैं.",
+    "description": "Overall performance core notice"
+  },
+  "rbCorePresentationOnly": {
+    "message": "यह एक कोर रिपोर्ट ब्लॉक है. केवल प्रेजेंटेशन सेटिंग्स को संशोधित किया जा सकता है।",
+    "description": "Core block settings hint"
+  },
+  "rbCoreReportIdentityBody": {
+    "message": "यह ब्लॉक रिपोर्ट पहचान जानकारी प्रदर्शित करता है। केवल प्रस्तुतिकरण विकल्प कॉन्फ़िगर किए जा सकते हैं.",
+    "description": "Report identity core notice body"
+  },
+  "rbCoreSectionBreakdownBody": {
+    "message": "यह ब्लॉक अनुभाग-दर-अनुभाग प्रदर्शन प्रदर्शित करता है. केवल प्रस्तुतिकरण विकल्प कॉन्फ़िगर किए जा सकते हैं.",
+    "description": "Section breakdown core notice"
+  },
+  "rbDataSourceMetric": {
+    "message": "डेटा स्रोत (मीट्रिक)",
+    "description": "Chart metric select label"
+  },
+  "rbDetailedFindingsNoteBody": {
+    "message": "डेटा प्रतिक्रिया विवरण से आता है। केवल फ़िल्टरिंग और कॉलम डिस्प्ले विकल्प कॉन्फ़िगर किए जा सकते हैं।",
+    "description": "Detailed findings notice"
+  },
+  "rbFailedPoints": {
+    "message": "असफल अंक",
+    "description": "Metric checkbox label"
+  },
+  "rbGroupByCategory": {
+    "message": "श्रेणी के अनुसार समूह",
+    "description": "Checkbox label"
+  },
+  "rbGroupByDepartment": {
+    "message": "विभाग द्वारा समूह",
+    "description": "Checkbox label"
+  },
+  "rbHeadingText": {
+    "message": "शीर्षक पाठ",
+    "description": "Heading block settings label"
+  },
+  "rbHeadingTextPh": {
+    "message": "शीर्षक पाठ दर्ज करें",
+    "description": "Heading text placeholder"
+  },
+  "rbHighlightCurrentAudit": {
+    "message": "वर्तमान ऑडिट पर प्रकाश डालें",
+    "description": "Checkbox label"
+  },
+  "rbHighlightFailedSections": {
+    "message": "विफल अनुभागों को हाइलाइट करें",
+    "description": "Checkbox label"
+  },
+  "rbIncludeItemsFromPreviousAudits": {
+    "message": "पिछले ऑडिट से आइटम शामिल करें",
+    "description": "Checkbox label"
+  },
+  "rbIncludeScoreContext": {
+    "message": "स्कोर संदर्भ शामिल करें",
+    "description": "Checkbox label"
+  },
+  "rbIncludeTrendInfo": {
+    "message": "रुझान संबंधी जानकारी शामिल करें",
+    "description": "Checkbox label"
+  },
+  "rbLabelCoreBlock": {
+    "message": "कोर ब्लॉक:",
+    "description": "Core block notice label"
+  },
+  "rbLabelNote": {
+    "message": "टिप्पणी:",
+    "description": "Note label in block settings"
+  },
+  "rbLayout": {
+    "message": "लेआउट",
+    "description": "Layout select label"
+  },
+  "rbLayoutGrid": {
+    "message": "ग्रिड",
+    "description": "Layout option"
+  },
+  "rbLayoutList": {
+    "message": "सूची",
+    "description": "Layout option"
+  },
+  "rbLayoutSideBySide": {
+    "message": "अगल बगल",
+    "description": "Layout option"
+  },
+  "rbLayoutStacked": {
+    "message": "स्टैक्ड",
+    "description": "Layout option"
+  },
+  "rbLayoutTable": {
+    "message": "मेज़",
+    "description": "Layout option"
+  },
+  "rbLevel": {
+    "message": "स्तर",
+    "description": "Heading level label"
+  },
+  "rbLevel1": {
+    "message": "स्तर 1 (सबसे बड़ा)",
+    "description": "Heading level option"
+  },
+  "rbLevel2": {
+    "message": "लेवल 2",
+    "description": "Heading level option"
+  },
+  "rbLevel3": {
+    "message": "लेवल 3 (सबसे छोटा)",
+    "description": "Heading level option"
+  },
+  "rbMentionBottomAreas": {
+    "message": "सुधार की आवश्यकता वाले क्षेत्रों का उल्लेख करें",
+    "description": "Checkbox label"
+  },
+  "rbMentionTopAreas": {
+    "message": "शीर्ष प्रदर्शन करने वाले क्षेत्रों का उल्लेख करें",
+    "description": "Checkbox label"
+  },
+  "rbMetrics": {
+    "message": "मेट्रिक्स",
+    "description": "Metrics label"
+  },
+  "rbMetricsStep3Hint": {
+    "message": "केवल चरण 3 में सक्षम मेट्रिक्स ही उपलब्ध हैं",
+    "description": "Chart metric hint"
+  },
+  "rbMetricsToCompare": {
+    "message": "तुलना करने के लिए मेट्रिक्स",
+    "description": "Comparison metrics label"
+  },
+  "rbNarrativeNoteBody": {
+    "message": "प्रतिक्रिया डेटा से कथा स्वतः उत्पन्न होती है। केवल प्रस्तुतिकरण विकल्प कॉन्फ़िगर किए जा सकते हैं.",
+    "description": "Narrative summary notice"
+  },
+  "rbNonComplianceNoteBody": {
+    "message": "डेटा की गणना असफल प्रश्नों से की जाती है। केवल समूहीकरण और प्रदर्शन विकल्प कॉन्फ़िगर किए जा सकते हैं।",
+    "description": "Non-compliance notice"
+  },
+  "rbNumberOfAudits": {
+    "message": "ऑडिट की संख्या",
+    "description": "Trend settings label"
+  },
+  "rbPerformanceTrendsNoteBody": {
+    "message": "डेटा ऐतिहासिक प्रतिक्रियाओं से प्राप्त किया जाता है। केवल चार्ट प्रदर्शन विकल्प कॉन्फ़िगर किए जा सकते हैं।",
+    "description": "Performance trends notice"
+  },
+  "rbPeriodLast3Audits": {
+    "message": "पिछले 3 ऑडिट",
+    "description": "Comparison period option"
+  },
+  "rbPeriodPreviousAudit": {
+    "message": "पिछला ऑडिट",
+    "description": "Comparison period option"
+  },
+  "rbReportTitle": {
+    "message": "रिपोर्ट शीर्षक",
+    "description": "Report identity report title label"
+  },
+  "rbSelectMetricPh": {
+    "message": "मीट्रिक चुनें...",
+    "description": "Chart metric placeholder"
+  },
+  "rbShowActionItemStatus": {
+    "message": "कार्रवाई आइटम स्थिति दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowAddress": {
+    "message": "पता दिखाएँ",
+    "description": "Report identity checkbox"
+  },
+  "rbShowAssignedUser": {
+    "message": "निर्दिष्ट उपयोगकर्ता दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowAuditId": {
+    "message": "ऑडिट आईडी दिखाएं",
+    "description": "Report identity checkbox"
+  },
+  "rbShowAverageTrendLine": {
+    "message": "औसत रुझान रेखा दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowBenchmarkComparison": {
+    "message": "बेंचमार्क तुलना दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowChangeFromPrevious": {
+    "message": "पिछले ऑडिट से परिवर्तन दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowChangeIndicators": {
+    "message": "परिवर्तन संकेतक दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowCheckInOutDates": {
+    "message": "चेक-इन/चेक-आउट तिथियां दिखाएं",
+    "description": "Report identity checkbox"
+  },
+  "rbShowCompliancePercentage": {
+    "message": "अनुपालन प्रतिशत दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowCreationDueDates": {
+    "message": "निर्माण/नियत तिथियाँ दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowCurrentAuditScores": {
+    "message": "वर्तमान ऑडिट स्कोर दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowDates": {
+    "message": "दिनांक दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowEvidenceAttachments": {
+    "message": "साक्ष्य संलग्नक दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowEvidenceStatus": {
+    "message": "साक्ष्य स्थिति दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowGeneralManager": {
+    "message": "महाप्रबंधक दिखाएँ",
+    "description": "Report identity checkbox"
+  },
+  "rbShowIndividualQuestionScores": {
+    "message": "व्यक्तिगत प्रश्न स्कोर दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowLabel": {
+    "message": "लेबल दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowOnlyFailedQuestions": {
+    "message": "केवल असफल प्रश्न दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowOverallScore": {
+    "message": "समग्र स्कोर दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowPassFailCounts": {
+    "message": "उत्तीर्ण/असफल प्रश्नों की संख्या दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowPercentage": {
+    "message": "प्रतिशत दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowPerformanceHistoryChart": {
+    "message": "प्रदर्शन इतिहास चार्ट दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowPreviousAuditScores": {
+    "message": "पिछला ऑडिट स्कोर दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowQuestionComments": {
+    "message": "प्रश्न टिप्पणियाँ दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowRatingClassificationTable": {
+    "message": "रेटिंग वर्गीकरण तालिका दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowResultPassFail": {
+    "message": "परिणाम दिखाएँ (उत्तीर्ण/असफल)",
+    "description": "Audit summary checkbox"
+  },
+  "rbShowRoundNumber": {
+    "message": "गोल संख्या दिखाएँ",
+    "description": "Report identity checkbox"
+  },
+  "rbShowScoreBreakdown": {
+    "message": "स्कोर ब्रेकडाउन दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowScorePercentages": {
+    "message": "स्कोर प्रतिशत दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowSectionName": {
+    "message": "अनुभाग का नाम दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowStarRating": {
+    "message": "स्टार रेटिंग दिखाएँ",
+    "description": "Checkbox label"
+  },
+  "rbShowStatusFixedPending": {
+    "message": "स्थिति दिखाएँ (निश्चित/लंबित/प्रतिगामी)",
+    "description": "Corrective actions checkbox"
+  },
+  "rbShowThumbnails": {
+    "message": "थंबनेल दिखाओ",
+    "description": "Checkbox label"
+  },
+  "rbSortBy": {
+    "message": "इसके अनुसार क्रमबद्ध करें",
+    "description": "Sort select label"
+  },
+  "rbSortChangeAmount": {
+    "message": "परिवर्तन राशि",
+    "description": "Sort option"
+  },
+  "rbSortDate": {
+    "message": "तारीख",
+    "description": "Sort option"
+  },
+  "rbSortDefaultOrder": {
+    "message": "डिफ़ॉल्ट आदेश",
+    "description": "Sort option"
+  },
+  "rbSortDepartment": {
+    "message": "विभाग",
+    "description": "Sort option"
+  },
+  "rbSortDepartmentName": {
+    "message": "विभाग का नाम",
+    "description": "Sort option"
+  },
+  "rbSortNonComplianceCount": {
+    "message": "गैर-अनुपालन गणना",
+    "description": "Sort option"
+  },
+  "rbSortPriority": {
+    "message": "प्राथमिकता",
+    "description": "Sort option"
+  },
+  "rbSortQuestionId": {
+    "message": "प्रश्न आईडी",
+    "description": "Sort option"
+  },
+  "rbSortScore": {
+    "message": "अंक",
+    "description": "Sort option"
+  },
+  "rbSortScoreHighLow": {
+    "message": "स्कोर (उच्च से निम्न)",
+    "description": "Sort option"
+  },
+  "rbSortSection": {
+    "message": "अनुभाग",
+    "description": "Sort option"
+  },
+  "rbSortSectionName": {
+    "message": "अनुभाग का नाम",
+    "description": "Sort option"
+  },
+  "rbSortStatus": {
+    "message": "स्थिति",
+    "description": "Sort option"
+  },
+  "rbSystemDrivenVisibility": {
+    "message": "सिस्टम-संचालित दृश्यता",
+    "description": "Visibility notice heading"
+  },
+  "rbTextContent": {
+    "message": "पाठ सामग्री",
+    "description": "Text block label"
+  },
+  "rbTextContentPh": {
+    "message": "पाठ्य सामग्री दर्ज करें",
+    "description": "Text block placeholder"
+  },
+  "rbTopAreasCount": {
+    "message": "शीर्ष क्षेत्रों की गिनती",
+    "description": "Number input label"
+  },
+  "rbTopBottomNoteBody": {
+    "message": "डेटा की गणना सेक्शन स्कोर से की जाती है। केवल प्रदर्शन विकल्प कॉन्फ़िगर किए जा सकते हैं.",
+    "description": "Top bottom areas notice"
+  },
+  "rbTypeAuditSummary": {
+    "message": "लेखापरीक्षा सारांश",
+    "description": "Block type label"
+  },
+  "rbTypeBarChart": {
+    "message": "बार चार्ट",
+    "description": "Block type label"
+  },
+  "rbTypeComparison": {
+    "message": "वर्तमान बनाम पिछला",
+    "description": "Block type label"
+  },
+  "rbTypeCorrectiveActions": {
+    "message": "सुधारात्मक कार्रवाई",
+    "description": "Block type label"
+  },
+  "rbTypeEvidenceGallery": {
+    "message": "साक्ष्य गैलरी",
+    "description": "Block type label"
+  },
+  "rbTypeFailedQuestions": {
+    "message": "असफल प्रश्न",
+    "description": "Block type label"
+  },
+  "rbTypeLineChart": {
+    "message": "लाइन चार्ट",
+    "description": "Block type label"
+  },
+  "rbTypeOverallPerformance": {
+    "message": "समग्र प्रदर्शन",
+    "description": "Block type label"
+  },
+  "rbTypeOverallScore": {
+    "message": "समग्र प्राप्तांक",
+    "description": "Block type label"
+  },
+  "rbTypePieChart": {
+    "message": "पाई चार्ट",
+    "description": "Block type label"
+  },
+  "rbTypeReportIdentity": {
+    "message": "रिपोर्ट पहचान",
+    "description": "Block type label"
+  },
+  "rbTypeSectionBreakdown": {
+    "message": "अनुभाग प्रदर्शन विश्लेषण",
+    "description": "Block type label"
+  },
+  "rbTypeSectionResults": {
+    "message": "अनुभाग परिणाम",
+    "description": "Block type label"
+  },
+  "rbTypeTrend": {
+    "message": "लेखापरीक्षा रुझान",
+    "description": "Block type label"
+  },
+  "rbVisibilityAlways": {
+    "message": "हमेशा दिखाएं",
+    "description": "Visibility option"
+  },
+  "rbVisibilityDefault": {
+    "message": "इस ब्लॉक में सिस्टम-संचालित दृश्यता नियम हैं जिन्हें ओवरराइड नहीं किया जा सकता है।",
+    "description": "System visibility fallback"
+  },
+  "rbVisibilityHideNoActionItems": {
+    "message": "यह ब्लॉक केवल तभी दिखाई देगा जब सुधारात्मक कार्रवाइयां जोड़ी गई हों।",
+    "description": "System visibility rule"
+  },
+  "rbVisibilityHideNoComparison": {
+    "message": "यदि कोई तुलना डेटा नहीं है तो छुपाएं",
+    "description": "Visibility option"
+  },
+  "rbVisibilityHideNoHistory": {
+    "message": "यह ब्लॉक केवल तभी दिखाई देगा जब तुलना के लिए ऐतिहासिक प्रतिक्रियाएँ मौजूद हों।",
+    "description": "System visibility rule"
+  },
+  "rbVisibilityHideNoNonCompliance": {
+    "message": "यह ब्लॉक केवल तभी दिखाई देगा जब असफल प्रश्न या गैर-अनुपालन संबंधी समस्याएं होंगी।",
+    "description": "System visibility rule"
+  },
+  "rbVisibilityHideNoQuestions": {
+    "message": "यह ब्लॉक केवल तभी दिखाई देगा जब प्रतिक्रिया में प्रश्न डेटा शामिल होगा।",
+    "description": "System visibility rule"
+  },
+  "rbVisibilityRule": {
+    "message": "दृश्यता नियम",
+    "description": "Visibility rule select label"
+  },
+  "rbVisibilityShowIfData": {
+    "message": "यदि डेटा मौजूद है तो ही दिखाएं",
+    "description": "Visibility option"
+  },
+  "rbpActionItemsDesc": {
+    "message": "सुधारात्मक कार्रवाई और स्थिति",
+    "description": "Action items preview description"
+  },
+  "rbpChartSuffix": {
+    "message": "({chartType} चार्ट)",
+    "description": "Chart type suffix in preview"
+  },
+  "rbpComparisonDesc": {
+    "message": "वर्तमान ऑडिट की तुलना पिछले ऑडिट से करता है",
+    "description": "Comparison preview description"
+  },
+  "rbpCoreBlockTitle": {
+    "message": "कोर ब्लॉक - हटाया या छिपाया नहीं जा सकता",
+    "description": "Core block lock icon title"
+  },
+  "rbpCoreSuffix": {
+    "message": "(मुख्य)",
+    "description": "Core block suffix in preview"
+  },
+  "rbpCorrectiveActionsDesc": {
+    "message": "पिछले ऑडिट के मुद्दों को स्थिति के साथ दिखाता है",
+    "description": "Corrective actions preview description"
+  },
+  "rbpCorrectiveActionsShortDesc": {
+    "message": "पिछले ऑडिट के मुद्दे दिखाता है",
+    "description": "Corrective actions preview in ReportBlockPreview"
+  },
+  "rbpDetailedFindingsDesc": {
+    "message": "संपूर्ण प्रश्न-दर-प्रश्न परिणाम",
+    "description": "Detailed findings preview description"
+  },
+  "rbpEvidenceGalleryDesc": {
+    "message": "प्रस्तुत साक्ष्य फ़ाइलें प्रदर्शित करता है",
+    "description": "Evidence gallery preview description"
+  },
+  "rbpFailedOnlySuffix": {
+    "message": "(केवल विफल)",
+    "description": "Detailed findings preview suffix"
+  },
+  "rbpFailedQuestionsDesc": {
+    "message": "उन प्रश्नों को सूचीबद्ध करता है जो आवश्यकताओं को पूरा नहीं करते",
+    "description": "Failed questions preview description"
+  },
+  "rbpFromPreviousAuditsSuffix": {
+    "message": "(पिछले ऑडिट शामिल हैं)",
+    "description": "Preview suffix"
+  },
+  "rbpGroupByCategory": {
+    "message": "वर्ग",
+    "description": "Non-compliance group by value"
+  },
+  "rbpGroupByDepartment": {
+    "message": "विभाग",
+    "description": "Non-compliance group by value"
+  },
+  "rbpIncludesFailedSections": {
+    "message": "असफल अनुभाग शामिल हैं",
+    "description": "Section results preview suffix"
+  },
+  "rbpIncludesScoreContext": {
+    "message": "(स्कोर संदर्भ शामिल है)",
+    "description": "Narrative preview suffix"
+  },
+  "rbpLayoutSuffix": {
+    "message": "({layout} लेआउट)",
+    "description": "Layout suffix in preview"
+  },
+  "rbpMentionsTopAreas": {
+    "message": "(शीर्ष क्षेत्रों का उल्लेख है)",
+    "description": "Narrative preview suffix"
+  },
+  "rbpMetricLabel": {
+    "message": "मीट्रिक: {metric}",
+    "description": "Chart block metric preview"
+  },
+  "rbpMetricNa": {
+    "message": "एन/ए",
+    "description": "Chart metric not set"
+  },
+  "rbpMetricsInline": {
+    "message": "(मेट्रिक्स: {metrics})",
+    "description": "Inline metrics in preview"
+  },
+  "rbpMetricsSuffix": {
+    "message": "- मेट्रिक्स: {metrics}",
+    "description": "Metrics list suffix in preview"
+  },
+  "rbpMoveDown": {
+    "message": "नीचे की ओर",
+    "description": "Move block down button title"
+  },
+  "rbpMoveUp": {
+    "message": "बढ़ाना",
+    "description": "Move block up button title"
+  },
+  "rbpNarrativeDesc": {
+    "message": "मुख्य निष्कर्षों के साथ कार्यकारी सारांश",
+    "description": "Narrative summary preview description"
+  },
+  "rbpNonComplianceBy": {
+    "message": "{groupBy} द्वारा अनुपालन मुद्दे",
+    "description": "Non-compliance preview description"
+  },
+  "rbpPerformanceTrendsDesc": {
+    "message": "पिछले {count} ऑडिट रुझान",
+    "description": "Performance trends preview description"
+  },
+  "rbpPeriodInline": {
+    "message": "(अवधि: {period})",
+    "description": "Period inline in preview"
+  },
+  "rbpSampleAuditId": {
+    "message": "ऑडिट आईडी: RSP-001",
+    "description": "Report identity preview sample"
+  },
+  "rbpSampleBenchmark": {
+    "message": "बेंचमार्क: 80%",
+    "description": "Overall performance preview sample"
+  },
+  "rbpSampleDates": {
+    "message": "दिनांक: 1 जनवरी, 2024",
+    "description": "Report identity preview sample"
+  },
+  "rbpSampleOverallScore": {
+    "message": "कुल स्कोर: 85%",
+    "description": "Audit summary preview sample"
+  },
+  "rbpSampleRating": {
+    "message": "रेटिंग: ⭐⭐⭐",
+    "description": "Overall performance preview sample"
+  },
+  "rbpSampleResultPass": {
+    "message": "परिणाम: उत्तीर्ण",
+    "description": "Audit summary preview sample"
+  },
+  "rbpSampleRound": {
+    "message": "राउंड: पहला राउंड 2024",
+    "description": "Report identity preview sample"
+  },
+  "rbpSampleScore": {
+    "message": "स्कोर: 85%",
+    "description": "Overall performance preview sample"
+  },
+  "rbpSampleScorePercent": {
+    "message": "85%",
+    "description": "Overall score preview value"
+  },
+  "rbpSectionBreakdownDesc": {
+    "message": "अनुभाग के अनुसार अनुपालन स्कोर दिखाता है",
+    "description": "Section breakdown preview description"
+  },
+  "rbpSectionResultsDesc": {
+    "message": "अनुभाग द्वारा अनुपालन दर्शाता है",
+    "description": "Section results preview description"
+  },
+  "rbpShowsComplianceBySection": {
+    "message": "अनुभाग द्वारा अनुपालन प्रतिशत दिखाता है",
+    "description": "Section results preview in ReportBlockPreview"
+  },
+  "rbpTopBottomDesc": {
+    "message": "शीर्ष {top} और निचला {bottom} स्कोरिंग अनुभाग",
+    "description": "Top bottom areas preview description"
+  },
+  "rbpTrendAuditsCount": {
+    "message": "पिछले {count} ऑडिट के रुझान दिखाता है",
+    "description": "Trend block preview description"
+  },
+  "rbpTrendDesc": {
+    "message": "पिछले ऑडिट के रुझान दिखाता है",
+    "description": "Trend preview description"
+  },
+  "rbpUnknownBlockType": {
+    "message": "अज्ञात ब्लॉक प्रकार: {type}",
+    "description": "Unknown block type message"
+  },
+  "rbpWithCommentsSuffix": {
+    "message": "(टिप्पणियों के साथ)",
+    "description": "Preview suffix"
+  },
+  "rbpWithDatesSuffix": {
+    "message": "(तारीखों के साथ)",
+    "description": "Preview suffix"
+  },
+  "rbpWithEvidenceSuffix": {
+    "message": "(साक्ष्य सहित)",
+    "description": "Preview suffix"
+  },
+  "rbpWithPassFailCounts": {
+    "message": "उत्तीर्ण/असफल गिनती के साथ",
+    "description": "Section breakdown preview suffix"
+  },
+  "rbpWithPreviousComparison": {
+    "message": "(पिछली तुलना के साथ)",
+    "description": "Non-compliance preview suffix"
+  },
+  "rbpWithSectionNames": {
+    "message": "(अनुभाग नामों के साथ)",
+    "description": "Failed questions preview suffix"
+  },
+  "rbpWithStatusSuffix": {
+    "message": "(हैसियत से)",
+    "description": "Preview suffix"
+  },
+  "rbpWithThumbnailsSuffix": {
+    "message": "(थंबनेल के साथ)",
+    "description": "Evidence gallery preview suffix"
+  },
+  "reportBlockedHint": {
+    "message": "प्रतिक्रिया स्वीकृत होने के बाद रिपोर्ट तैयार की जा सकती है।",
+    "description": "Report blocked hint"
+  },
+  "reportCompliance": {
+    "message": "अनुपालन",
+    "description": "Report summary metric"
+  },
+  "reportComprehensive": {
+    "message": "व्यापक रिपोर्ट तैयार करें",
+    "description": "Comprehensive report button"
+  },
+  "reportComprehensiveSuccess": {
+    "message": "व्यापक रिपोर्ट सफलतापूर्वक तैयार की गई!",
+    "description": "Comprehensive report success alert"
+  },
+  "reportComprehensiveTitle": {
+    "message": "चार्ट, तालिकाओं और विस्तृत विश्लेषण के साथ विश्व स्तरीय व्यापक पीडीएफ रिपोर्ट तैयार करें",
+    "description": "Comprehensive report button title"
+  },
+  "reportCorrectiveActions": {
+    "message": "सुधारात्मक कार्रवाई",
+    "description": "Report corrective actions heading"
+  },
+  "reportDownloadComprehensivePdf": {
+    "message": "व्यापक पीडीएफ डाउनलोड करें",
+    "description": "Download comprehensive PDF"
+  },
+  "reportDownloadPdf": {
+    "message": "पीडीएफ डाउनलोड करें",
+    "description": "Download PDF button"
+  },
+  "reportExportExcel": {
+    "message": "एक्सेल निर्यात करें",
+    "description": "Export Excel button"
+  },
+  "reportExporting": {
+    "message": "निर्यात किया जा रहा है...",
+    "description": "Export in progress"
+  },
+  "reportFailedComprehensive": {
+    "message": "व्यापक रिपोर्ट तैयार करने में विफल",
+    "description": "Comprehensive report error"
+  },
+  "reportFailedExport": {
+    "message": "Excel में निर्यात करने में विफल",
+    "description": "Excel export error"
+  },
+  "reportFailedGenerate": {
+    "message": "रिपोर्ट तैयार करने में विफल",
+    "description": "Report generation error"
+  },
+  "reportGenerate": {
+    "message": "रिपोर्ट तैयार करें",
+    "description": "Generate report button"
+  },
+  "reportGeneratedOn": {
+    "message": "{date} पर उत्पन्न",
+    "description": "Report generated date"
+  },
+  "reportGenerating": {
+    "message": "उत्पन्न हो रहा है...",
+    "description": "Generate report in progress"
+  },
+  "reportHeading": {
+    "message": "फॉर्म रिपोर्ट",
+    "description": "Form report panel heading"
+  },
+  "reportNoComment": {
+    "message": "कोई टिप्पणी नहीं",
+    "description": "Empty corrective action comment"
+  },
+  "reportNoReportYet": {
+    "message": "अभी तक कोई रिपोर्ट तैयार नहीं हुई. एक बनाने के लिए \"रिपोर्ट जनरेट करें\" पर क्लिक करें।",
+    "description": "Empty report state"
+  },
+  "reportOverallScore": {
+    "message": "समग्र प्राप्तांक",
+    "description": "Report summary metric"
+  },
+  "reportPassRate": {
+    "message": "पास दर",
+    "description": "Report pass rate metric"
+  },
+  "reportRating": {
+    "message": "रेटिंग",
+    "description": "Report summary metric"
+  },
+  "reportSectionScores": {
+    "message": "अनुभाग स्कोर",
+    "description": "Report section scores heading"
+  },
+  "rtAlignCenter": {
+    "message": "केंद्र",
+    "description": "Alignment option"
+  },
+  "rtAlignLeft": {
+    "message": "बाएं",
+    "description": "Alignment option"
+  },
+  "rtAlignRight": {
+    "message": "सही",
+    "description": "Alignment option"
+  },
+  "rtBaseFontSize": {
+    "message": "बेस फ़ॉन्ट आकार (px)",
+    "description": "Base font size label"
+  },
+  "rtBlockActionItems": {
+    "message": "कार्य आइटम सारांश",
+    "description": "Report block library name"
+  },
+  "rtBlockActionItemsDesc": {
+    "message": "सुधारात्मक कार्रवाइयां और उनकी स्थिति",
+    "description": "Report block library description"
+  },
+  "rtBlockCategoryContent": {
+    "message": "सामग्री",
+    "description": "Block library category"
+  },
+  "rtBlockCategoryDetails": {
+    "message": "विवरण",
+    "description": "Block library category"
+  },
+  "rtBlockCategoryInsights": {
+    "message": "इनसाइट्स",
+    "description": "Block library category"
+  },
+  "rtBlockCategoryTrends": {
+    "message": "प्रवृत्तियों",
+    "description": "Block library category"
+  },
+  "rtBlockDetailedFindings": {
+    "message": "विस्तृत निष्कर्ष",
+    "description": "Report block library name"
+  },
+  "rtBlockDetailedFindingsDesc": {
+    "message": "संपूर्ण प्रश्न-दर-प्रश्न ऑडिट परिणाम",
+    "description": "Report block library description"
+  },
+  "rtBlockDivider": {
+    "message": "डिवाइडर",
+    "description": "Report block library name"
+  },
+  "rtBlockDividerDesc": {
+    "message": "क्षैतिज रेखा",
+    "description": "Report block library description"
+  },
+  "rtBlockHeading": {
+    "message": "शीर्षक",
+    "description": "Report block library name"
+  },
+  "rtBlockHeadingDesc": {
+    "message": "एक शीर्षक जोड़ें",
+    "description": "Report block library description"
+  },
+  "rtBlockLibrary": {
+    "message": "ब्लॉक लाइब्रेरी",
+    "description": "Block library panel heading"
+  },
+  "rtBlockNarrativeSummary": {
+    "message": "कथा सारांश",
+    "description": "Report block library name"
+  },
+  "rtBlockNarrativeSummaryDesc": {
+    "message": "कार्यकारी सारांश और मुख्य निष्कर्ष",
+    "description": "Report block library description"
+  },
+  "rtBlockNonCompliance": {
+    "message": "गैर-अनुपालन सारांश",
+    "description": "Report block library name"
+  },
+  "rtBlockNonComplianceDesc": {
+    "message": "विभाग द्वारा अनुपालन मुद्दों का सारांश",
+    "description": "Report block library description"
+  },
+  "rtBlockPerformanceTrends": {
+    "message": "प्रदर्शन रुझान",
+    "description": "Report block library name"
+  },
+  "rtBlockPerformanceTrendsDesc": {
+    "message": "अनेक ऑडिट में ऐतिहासिक प्रदर्शन",
+    "description": "Report block library description"
+  },
+  "rtBlockSettings": {
+    "message": "ब्लॉक सेटिंग्स",
+    "description": "Block settings panel heading"
+  },
+  "rtBlockText": {
+    "message": "मूलपाठ",
+    "description": "Report block library name"
+  },
+  "rtBlockTextDesc": {
+    "message": "पाठ्य सामग्री जोड़ें",
+    "description": "Report block library description"
+  },
+  "rtBlockTopBottom": {
+    "message": "शीर्ष एवं निचले क्षेत्र",
+    "description": "Report block library name"
+  },
+  "rtBlockTopBottomDesc": {
+    "message": "उच्चतम और निम्नतम स्कोरिंग अनुभाग",
+    "description": "Report block library description"
+  },
+  "rtBuilderSubtitle": {
+    "message": "डिज़ाइन करें कि फॉर्म जमा करने के बाद अंतिम प्रतिक्रिया रिपोर्ट कैसी दिखेगी। यह चरण केवल प्रस्तुति को नियंत्रित करता है, तर्क को नहीं।",
+    "description": "Response template builder subtitle"
+  },
+  "rtCannotDeleteCore": {
+    "message": "यह एक मुख्य रिपोर्ट ब्लॉक है और इसे हटाया नहीं जा सकता।",
+    "description": "Core block delete alert"
+  },
+  "rtCannotDeleteDefault": {
+    "message": "डिफ़ॉल्ट टेम्पलेट को हटाया नहीं जा सकता",
+    "description": "Default template delete alert"
+  },
+  "rtCannotDeleteLast": {
+    "message": "अंतिम टेम्पलेट हटाया नहीं जा सकता",
+    "description": "Last template delete alert"
+  },
+  "rtColorDanger": {
+    "message": "खतरा",
+    "description": "Danger color label"
+  },
+  "rtColorPalette": {
+    "message": "रंगो की पटिया",
+    "description": "Color palette label"
+  },
+  "rtColorPrimary": {
+    "message": "प्राथमिक",
+    "description": "Primary color label"
+  },
+  "rtColorSecondary": {
+    "message": "माध्यमिक",
+    "description": "Secondary color label"
+  },
+  "rtColorSuccess": {
+    "message": "सफलता",
+    "description": "Success color label"
+  },
+  "rtConfirmDeleteTemplate": {
+    "message": "क्या आप वाकई \"{name}\" को हटाना चाहते हैं?",
+    "description": "Delete template confirm"
+  },
+  "rtDefaultDistributionTitle": {
+    "message": "वितरण",
+    "description": "Default pie chart title"
+  },
+  "rtDefaultHeadingContent": {
+    "message": "शीर्षक",
+    "description": "Default heading block content"
+  },
+  "rtDefaultSectionComparisonTitle": {
+    "message": "अनुभाग तुलना",
+    "description": "Default bar chart title"
+  },
+  "rtDefaultTextContent": {
+    "message": "पाठ यहां लिखें...",
+    "description": "Default text block content"
+  },
+  "rtDefaultTrendTitle": {
+    "message": "समय के साथ रुझान",
+    "description": "Default line chart title"
+  },
+  "rtDeleteTitle": {
+    "message": "टेम्प्लेट हटाएँ",
+    "description": "Delete template button title"
+  },
+  "rtDisclaimerPh": {
+    "message": "जीडीआई की गोपनीय संपत्ति",
+    "description": "Disclaimer placeholder example"
+  },
+  "rtDisclaimerText": {
+    "message": "अस्वीकरण पाठ",
+    "description": "Disclaimer text label"
+  },
+  "rtDragBlocksHint": {
+    "message": "अपनी रिपोर्ट बनाने के लिए ब्लॉकों को यहां खींचें",
+    "description": "Empty canvas hint"
+  },
+  "rtDuplicateTitle": {
+    "message": "डुप्लिकेट टेम्पलेट",
+    "description": "Duplicate template button title"
+  },
+  "rtFontFamily": {
+    "message": "फुहारा परिवार",
+    "description": "Font family label"
+  },
+  "rtFontFamilyPh": {
+    "message": "एरियल, सैन्स-सेरिफ़",
+    "description": "Font family placeholder example"
+  },
+  "rtFooterAlignment": {
+    "message": "पाद लेख संरेखण",
+    "description": "Footer alignment label"
+  },
+  "rtFooterLayout": {
+    "message": "फ़ुटर लेआउट",
+    "description": "Footer layout section"
+  },
+  "rtHeaderAlignment": {
+    "message": "शीर्ष लेख संरेखण",
+    "description": "Header alignment label"
+  },
+  "rtHeaderLayout": {
+    "message": "हेडर लेआउट",
+    "description": "Header layout section"
+  },
+  "rtHideBranding": {
+    "message": "ब्रांडिंग सेटिंग छिपाएँ",
+    "description": "Toggle branding settings off"
+  },
+  "rtLogo": {
+    "message": "प्रतीक चिन्ह",
+    "description": "Logo field label"
+  },
+  "rtLogoAlt": {
+    "message": "प्रतीक चिन्ह",
+    "description": "Logo preview alt text"
+  },
+  "rtLogoPh": {
+    "message": "लोगो यूआरएल या पथ",
+    "description": "Logo URL placeholder"
+  },
+  "rtRenameLabel": {
+    "message": "नाम बदलें:",
+    "description": "Inline rename label"
+  },
+  "rtRenameTitle": {
+    "message": "टेम्प्लेट का नाम बदलें",
+    "description": "Rename template button title"
+  },
+  "rtReportBranding": {
+    "message": "ब्रांडिंग की रिपोर्ट करें",
+    "description": "Report branding section"
+  },
+  "rtReportBrandingDesc": {
+    "message": "ब्रांडिंग कॉन्फ़िगर करें जो इस टेम्पलेट के सभी ब्लॉकों पर विश्व स्तर पर लागू होती है",
+    "description": "Report branding description"
+  },
+  "rtSelectBlock": {
+    "message": "कॉन्फ़िगर करने के लिए एक ब्लॉक का चयन करें",
+    "description": "No block selected hint"
+  },
+  "rtShowBranding": {
+    "message": "ब्रांडिंग सेटिंग दिखाएं",
+    "description": "Toggle branding settings on"
+  },
+  "rtShowCompanyHeader": {
+    "message": "हेडर में कंपनी का नाम दिखाएँ",
+    "description": "Header company checkbox"
+  },
+  "rtShowDisclaimer": {
+    "message": "अस्वीकरण पाठ दिखाएँ",
+    "description": "Footer disclaimer checkbox"
+  },
+  "rtShowLogoHeader": {
+    "message": "हेडर में लोगो दिखाएँ",
+    "description": "Header logo checkbox"
+  },
+  "rtTemplateDefaultSuffix": {
+    "message": "(गलती करना)",
+    "description": "Default template suffix in dropdown"
+  },
+  "rtTemplateDuplicateName": {
+    "message": "{name} (प्रतिलिपि)",
+    "description": "Duplicated template name"
+  },
+  "rtTemplateNamePh": {
+    "message": "टेम्पलेट का नाम",
+    "description": "Template name input placeholder"
+  },
+  "rtTypography": {
+    "message": "टाइपोग्राफी",
+    "description": "Typography section label"
+  },
+  "saveFormFailed": {
+    "message": "फ़ॉर्म सहेजने में विफल",
+    "description": "Save form error"
+  },
+  "selectOption": {
+    "message": "कोई विकल्प चुनें",
+    "description": "Dropdown empty option"
+  },
+  "settingsApprover": {
+    "message": "स्वीकृति प्रदान करने वाले",
+    "description": "Approver select label"
+  },
+  "settingsAssignedTo": {
+    "message": "को सौंपना",
+    "description": "Assigned to field label"
+  },
+  "settingsAutoAssignment": {
+    "message": "ऑटो असाइनमेंट",
+    "description": "Auto assignment checkbox"
+  },
+  "settingsCreateTask": {
+    "message": "कार्य बनाएँ",
+    "description": "Create task on submit checkbox"
+  },
+  "settingsFormVersion": {
+    "message": "प्रपत्र संस्करण",
+    "description": "Form version read-only label"
+  },
+  "settingsKpiAvgRating": {
+    "message": "औसत श्रेणी",
+    "description": "KPI metric checkbox label"
+  },
+  "settingsKpiCompliance": {
+    "message": "अनुपालन प्रतिशत",
+    "description": "KPI metric checkbox label"
+  },
+  "settingsKpiMetrics": {
+    "message": "केपीआई मेट्रिक्स",
+    "description": "KPI metrics section label"
+  },
+  "settingsKpiSatisfaction": {
+    "message": "संतुष्टि प्रतिशत",
+    "description": "KPI metric checkbox label"
+  },
+  "settingsLinkDeal": {
+    "message": "सौदा",
+    "description": "Auto assignment link target"
+  },
+  "settingsLinkEvent": {
+    "message": "आयोजन",
+    "description": "Auto assignment link target"
+  },
+  "settingsLinkOrganization": {
+    "message": "संगठन",
+    "description": "Auto assignment link target"
+  },
+  "settingsLinkTask": {
+    "message": "काम",
+    "description": "Auto assignment link target"
+  },
+  "settingsPartialThreshold": {
+    "message": "आंशिक सीमा (%)",
+    "description": "Partial threshold label"
+  },
+  "settingsPassThreshold": {
+    "message": "सीमा पार करें (%)",
+    "description": "Pass threshold label"
+  },
+  "settingsPublicLink": {
+    "message": "सार्वजनिक लिंक",
+    "description": "Public link section label"
+  },
+  "settingsPublicLinkCopied": {
+    "message": "सार्वजनिक लिंक क्लिपबोर्ड पर कॉपी किया गया!",
+    "description": "Copy public link success"
+  },
+  "settingsRequireApproval": {
+    "message": "अनुमोदन की आवश्यकता है",
+    "description": "Approval workflow checkbox"
+  },
+  "settingsScoringFormula": {
+    "message": "स्कोरिंग फॉर्मूला",
+    "description": "Scoring formula label"
+  },
+  "settingsScoringFormulaHint": {
+    "message": "समग्र फॉर्म स्कोर की गणना के लिए सूत्र",
+    "description": "Scoring formula hint"
+  },
+  "settingsScoringFormulaPh": {
+    "message": "उदाहरण के लिए, (उत्तीर्ण / कुल) × 100",
+    "description": "Scoring formula placeholder"
+  },
+  "settingsSelectApprover": {
+    "message": "अनुमोदनकर्ता का चयन करें",
+    "description": "Approver empty option"
+  },
+  "settingsUpdateField": {
+    "message": "फ़ील्ड अद्यतन करें",
+    "description": "Update field sub-label"
+  },
+  "settingsUpdateFieldCustom": {
+    "message": "अनुकूलित field",
+    "description": "Update field custom option"
+  },
+  "settingsUpdateFieldNone": {
+    "message": "कोई नहीं",
+    "description": "Update field none option"
+  },
+  "settingsUpdateFieldStage": {
+    "message": "अवस्था",
+    "description": "Update field stage option"
+  },
+  "settingsUpdateFieldStatus": {
+    "message": "स्थिति",
+    "description": "Update field status option"
+  },
+  "settingsWorkflowOnSubmit": {
+    "message": "सबमिट पर वर्कफ़्लो",
+    "description": "Workflow on submit section"
+  },
+  "signatureClear": {
+    "message": "स्पष्ट",
+    "description": "Clear signature button"
+  },
+  "signatureDefaultLabel": {
+    "message": "हस्ताक्षर",
+    "description": "Signature pad default label"
+  },
+  "signatureSignHere": {
+    "message": "यहाँ हस्ताक्षर कीजिए",
+    "description": "Signature pad empty hint"
+  },
+  "statusActive": {
+    "message": "सक्रिय",
+    "description": "Form status option"
+  },
+  "statusArchived": {
+    "message": "संग्रहीत",
+    "description": "Form status option"
+  },
+  "statusClosed": {
+    "message": "बंद किया हुआ",
+    "description": "Form status option (closed)"
+  },
+  "statusDraft": {
+    "message": "मसौदा",
+    "description": "Form status option"
+  },
+  "statusReady": {
+    "message": "तैयार",
+    "description": "Form status option"
+  },
+  "tabDetailsHeading": {
+    "message": "प्रपत्र विवरण",
+    "description": "Form details tab heading"
+  },
+  "tabSettingsHeading": {
+    "message": "फॉर्म सेटिंग्स",
+    "description": "Form settings tab heading"
+  },
+  "tabTemplateHeading": {
+    "message": "प्रतिक्रिया टेम्पलेट",
+    "description": "Response template tab heading"
+  },
+  "templateCreate": {
+    "message": "टेम्प्लेट बनाएं",
+    "description": "Create template button"
+  },
+  "templateCreateModalBody": {
+    "message": "ड्रैग-ड्रॉप कार्यक्षमता वाला उन्नत टेम्पलेट बिल्डर भविष्य के अपडेट में उपलब्ध होगा।",
+    "description": "Create template modal body"
+  },
+  "templateCreateModalTitle": {
+    "message": "प्रतिक्रिया टेम्पलेट बनाएँ",
+    "description": "Create template modal title"
+  },
+  "templateCustomSettings": {
+    "message": "कस्टम टेम्पलेट सेटिंग्स",
+    "description": "Custom template settings heading"
+  },
+  "templateIncludeCharts": {
+    "message": "KPI चार्ट शामिल करें",
+    "description": "Template option"
+  },
+  "templateIncludeComparison": {
+    "message": "पिछली प्रतिक्रियाओं के साथ तुलना शामिल करें",
+    "description": "Template option"
+  },
+  "templateIncludeCorrectiveActions": {
+    "message": "सुधारात्मक कार्रवाई अनुभाग शामिल करें",
+    "description": "Template option"
+  },
+  "templateIncludeTrends": {
+    "message": "रुझान चार्ट शामिल करें",
+    "description": "Template option"
+  },
+  "templatePreviewButton": {
+    "message": "पूर्वावलोकन टेम्पलेट",
+    "description": "Preview template button"
+  },
+  "templatePreviewHint": {
+    "message": "एक बार टेम्प्लेट चयनित या निर्मित हो जाने पर पूर्वावलोकन यहां दिखाई देगा",
+    "description": "Template preview placeholder hint"
+  },
+  "templatePreviewTitle": {
+    "message": "टेम्पलेट पूर्वावलोकन",
+    "description": "Template preview placeholder title"
+  },
+  "templateSelect": {
+    "message": "टेम्प्लेट चुनें",
+    "description": "Select template label"
+  },
+  "templateSelectHint": {
+    "message": "रिपोर्ट में फ़ॉर्म प्रतिक्रियाएँ कैसे दिखाई दें, इसे अनुकूलित करने के लिए एक टेम्पलेट चुनें",
+    "description": "Template select hint"
+  },
+  "templateUseDefault": {
+    "message": "डिफ़ॉल्ट टेम्पलेट का उपयोग करें",
+    "description": "Default template option"
+  },
+  "textAnswerPh": {
+    "message": "अपना उत्तर दर्ज करें",
+    "description": "Text question placeholder"
+  },
+  "trendsChartCompliance": {
+    "message": "अनुपालन %",
+    "description": "Trends chart dataset label"
+  },
+  "trendsChartScore": {
+    "message": "अंक %",
+    "description": "Trends chart dataset label"
+  },
+  "typeAudit": {
+    "message": "अंकेक्षण",
+    "description": "Form type option label"
+  },
+  "typeCustom": {
+    "message": "रिवाज़",
+    "description": "Form type option label"
+  },
+  "typeFeedback": {
+    "message": "प्रतिक्रिया",
+    "description": "Form type option label"
+  },
+  "typeInspection": {
+    "message": "निरीक्षण",
+    "description": "Form type option label"
+  },
+  "typeSurvey": {
+    "message": "सर्वे",
+    "description": "Form type option label"
+  },
+  "updateFormSubmit": {
+    "message": "प्रपत्र अद्यतन करें",
+    "description": "Update form submit button"
+  },
+  "visibilityInternal": {
+    "message": "आंतरिक",
+    "description": "Form visibility option"
+  },
+  "visibilityPartner": {
+    "message": "साथी",
+    "description": "Form visibility option"
+  },
+  "visibilityPublic": {
+    "message": "जनता",
+    "description": "Form visibility option"
+  },
+  "widgetAnalytics": {
+    "message": "एनालिटिक्स",
+    "description": "Analytics widget fallback title"
+  },
+  "widgetAvgCompliance": {
+    "message": "औसत अनुपालन",
+    "description": "Analytics widget title"
+  },
+  "widgetAvgRating": {
+    "message": "औसत रेटिंग",
+    "description": "Analytics widget title"
+  },
+  "widgetLoadFailed": {
+    "message": "विश्लेषण लोड करने में विफल",
+    "description": "Widget error message"
+  },
+  "widgetResponseRate": {
+    "message": "प्रतिक्रिया दर",
+    "description": "Analytics widget title"
+  },
+  "widgetSubtitlePercent": {
+    "message": "को PERCENTAGE",
+    "description": "Percent metric subtitle"
+  },
+  "widgetSubtitleStars": {
+    "message": "5 सितारों में से",
+    "description": "Rating widget subtitle"
+  },
+  "widgetTotalResponses": {
+    "message": "कुल प्रतिक्रियाएँ",
+    "description": "Analytics widget title"
+  },
+  "wizardFormDetailsIntro": {
+    "message": "अपने फॉर्म के बारे में बुनियादी जानकारी प्रदान करके प्रारंभ करें।",
+    "description": "Step 1 intro"
+  },
+  "wizardPreviewIntro": {
+    "message": "अपना फ़ॉर्म बनाने से पहले उसकी समीक्षा करें.",
+    "description": "Step 4 intro"
+  },
+  "wizardProgressAria": {
+    "message": "प्रगति",
+    "description": "Form wizard stepper aria label"
+  },
+  "wizardSectionsIntro": {
+    "message": "अनुभाग और प्रश्न जोड़कर अपनी फॉर्म संरचना बनाएं।",
+    "description": "Step 2 intro"
+  },
+  "wizardSettingsIntro": {
+    "message": "स्कोरिंग, थ्रेशोल्ड और वर्कफ़्लो सेटिंग्स कॉन्फ़िगर करें।",
+    "description": "Step 3 intro"
+  },
+  "wizardStep0RequiredAlert": {
+    "message": "कृपया आगे बढ़ने से पहले सभी अनिवार्य फ़ील्ड (फ़ॉर्म का नाम और फॉर्म प्रकार) भरें।",
+    "description": "Wizard step 1 validation alert"
+  },
+  "wizardStep1RequiredAlert": {
+    "message": "कृपया सभी अनुभागों, उपखंडों और प्रश्नों को पूरा करें। प्रत्येक अनुभाग में कम से कम एक प्रश्न के साथ कम से कम एक उपधारा होनी चाहिए, और सभी प्रश्नों में पाठ होना चाहिए।",
+    "description": "Wizard step 2 validation alert"
+  },
+  "wizardStepFormDetails": {
+    "message": "प्रपत्र विवरण",
+    "description": "Wizard step name"
+  },
+  "wizardStepPreview": {
+    "message": "पूर्व दर्शन",
+    "description": "Wizard step name"
+  },
+  "wizardStepSectionsQuestions": {
+    "message": "अनुभाग एवं प्रश्न",
+    "description": "Wizard step name"
+  },
+  "wizardStepSettingsLogic": {
+    "message": "सेटिंग्स और तर्क",
+    "description": "Wizard step name"
+  },
+  "hubCreateOutcomesAuditOnly": {
+    "message": "परिणाम और नियम केवल ऑडिट फॉर्म के लिए उपलब्ध हैं।",
+    "description": "Form create wizard step 3 non-audit message"
+  },
+  "hubCreateOutcomesSkipped": {
+    "message": "सर्वेक्षण और फीडबैक फॉर्म के लिए यह चरण छोड़ दिया गया है।",
+    "description": "Form create wizard step 3 skipped hint"
+  },
+  "hubCreateStep1RequiredAlert": {
+    "message": "कृपया सभी अनुभागों और प्रश्नों को पूरा करें। सभी प्रश्नों में पाठ होना चाहिए.",
+    "description": "Form create wizard sections step validation"
+  },
+  "hubCreateAuditRuleRequired": {
+    "message": "कृपया आगे बढ़ने से पहले एक ऑडिट परिणाम नियम चुनें।",
+    "description": "Form create wizard outcomes step validation"
+  },
+  "hubCreateValidationFixPrefix": {
+    "message": "कृपया सहेजने से पहले निम्नलिखित समस्याएं ठीक करें:\n\n{issues}",
+    "description": "Form create final save validation alert prefix"
+  },
+  "hubCreateDraftSaved": {
+    "message": "ड्राफ्ट सहेजा गया",
+    "description": "Form create auto-save indicator"
+  },
+  "hubCreateUnsavedTitle": {
+    "message": "सहेजे न गए परिवर्तन",
+    "description": "Form create close confirmation title"
+  },
+  "hubCreateUnsavedBody": {
+    "message": "आपके पास सहेजे नहीं गए परिवर्तन हैं. क्या आपकी वाकई छोड़ने की इच्छा है? आपके परिवर्तन खो जायेंगे.",
+    "description": "Form create close confirmation body"
+  },
+  "hubCreateLeaveWithoutSaving": {
+    "message": "बिना सहेजे छोड़ें",
+    "description": "Form create discard changes button"
+  },
+  "hubCreateLoadEditFailed": {
+    "message": "संपादन के लिए फ़ॉर्म लोड करने में विफल",
+    "description": "Form create edit load error"
+  },
+  "hubCreateLoadDuplicateFailed": {
+    "message": "नकल के लिए फॉर्म लोड करने में विफल",
+    "description": "Form create duplicate load error"
+  },
+  "hubCreateSaveError": {
+    "message": "फ़ॉर्म सहेजने में त्रुटि: {detail}",
+    "description": "Form create save error alert"
+  },
+  "hubCreateFormIdRequired": {
+    "message": "संपादन के लिए फॉर्म आईडी आवश्यक है",
+    "description": "Form create edit without id error"
+  },
+  "hubCreateVisibilityExternal": {
+    "message": "बाहरी",
+    "description": "Form create visibility option (external)"
+  },
+  "hubCreateSubsectionDefault": {
+    "message": "उपधारा {number}",
+    "description": "Default subsection name on save"
+  },
+  "hubFillLoadingSubtext": {
+    "message": "कृपया प्रतीक्षा करें जब तक हम आपका फॉर्म तैयार कर रहे हैं",
+    "description": "Form fill loading subtext"
+  },
+  "hubFillNotFoundTitle": {
+    "message": "फॉर्म नहीं मिला",
+    "description": "Form fill error heading"
+  },
+  "hubFillSubmitSuccessTitle": {
+    "message": "फॉर्म सफलतापूर्वक सबमिट हो गया!",
+    "description": "Form fill success heading"
+  },
+  "hubFillSubmitSuccessBody": {
+    "message": "आपकी प्रतिक्रिया सहेज ली गई है और रिकॉर्ड कर ली गई है.",
+    "description": "Form fill success body"
+  },
+  "hubFillReturnToEventHint": {
+    "message": "अब आप ऑडिट प्रक्रिया को पूरा करने के लिए इवेंट में वापस आ सकते हैं।",
+    "description": "Form fill success event hint"
+  },
+  "hubFillReturnToEvent": {
+    "message": "इवेंट पर लौटें",
+    "description": "Form fill return to event button"
+  },
+  "hubFillEventLinked": {
+    "message": "इवेंट लिंक किया गया",
+    "description": "Form fill event linked badge"
+  },
+  "hubFillBackToEventTitle": {
+    "message": "इवेंट पर वापस जाएँ",
+    "description": "Form fill back to event tooltip"
+  },
+  "hubFillQuestionsProgress": {
+    "message": "{answered} / {total} प्रश्नों के उत्तर दिए गए",
+    "description": "Form fill header progress"
+  },
+  "hubFillPercentComplete": {
+    "message": "{percent}% पूर्ण",
+    "description": "Form fill completion percentage"
+  },
+  "hubFillAutoSaveSaved": {
+    "message": "सभी परिवर्तन सहेजे गए",
+    "description": "Form fill auto-save saved state"
+  },
+  "hubFillSectionQuestions": {
+    "message": "{total} में से {answered} प्रश्नों के उत्तर दिए गए",
+    "description": "Form fill section progress"
+  },
+  "hubFillSectionFallback": {
+    "message": "अनुभाग {number}",
+    "description": "Form fill unnamed section title"
+  },
+  "hubFillCriticalBadge": {
+    "message": "गंभीर",
+    "description": "Form fill critical question badge"
+  },
+  "hubFillCriticalTitle": {
+    "message": "गंभीर प्रश्न",
+    "description": "Form fill critical question tooltip"
+  },
+  "hubFillRequiredTitle": {
+    "message": "आवश्यक",
+    "description": "Form fill required question tooltip"
+  },
+  "hubFillScoringPts": {
+    "message": "{points} अंक",
+    "description": "Form fill question scoring weight"
+  },
+  "hubFillNumberPh": {
+    "message": "एक नंबर दर्ज करें",
+    "description": "Form fill number input placeholder"
+  },
+  "hubFillDropdownPh": {
+    "message": "कोई विकल्प चुनें...",
+    "description": "Form fill dropdown empty option"
+  },
+  "hubFillFileUploadPrompt": {
+    "message": "अपलोड करने या खींचने और छोड़ने के लिए क्लिक करें",
+    "description": "Form fill file upload prompt"
+  },
+  "hubFillFileFormats": {
+    "message": "पीडीएफ, डीओसी, जेपीजी, पीएनजी 10 एमबी तक",
+    "description": "Form fill file upload formats hint"
+  },
+  "hubFillEvidenceAttachHint": {
+    "message": "कृपया इस उत्तर के लिए सहायक दस्तावेज़ या फ़ोटो संलग्न करें।",
+    "description": "Form fill evidence attachment hint"
+  },
+  "hubFillSubmitErrorHeading": {
+    "message": "फॉर्म सबमिट करने में त्रुटि",
+    "description": "Form fill submit error heading"
+  },
+  "hubFillRequiredRemaining": {
+    "message": "{count, plural, one {# required question remaining} other {# required questions remaining}}",
+    "description": "Form fill required questions remaining"
+  },
+  "hubFillAllRequiredAnswered": {
+    "message": "✓ सभी आवश्यक प्रश्नों के उत्तर दिए गए",
+    "description": "Form fill all required complete"
+  },
+  "hubFillSubmitting": {
+    "message": "सबमिट किया जा रहा है...",
+    "description": "Form fill submit in progress"
+  },
+  "hubFillNotFoundDenied": {
+    "message": "फॉर्म नहीं मिला या प्रवेश नहीं मिला",
+    "description": "Form fill fetch not found"
+  },
+  "hubFillLoadFailed": {
+    "message": "फॉर्म लोड करने में विफल",
+    "description": "Form fill fetch error"
+  },
+  "hubFillRequiredAnswerAlert": {
+    "message": "कृपया सभी आवश्यक प्रश्नों के उत्तर दें ({count} शेष)",
+    "description": "Form fill validation before submit"
+  },
+  "hubFillSubmitFailed": {
+    "message": "फॉर्म सबमिट करने में विफल",
+    "description": "Form fill submit error"
+  },
+  "hubFillSubmitFailedRetry": {
+    "message": "फॉर्म सबमिट करने में विफल. कृपया पुन: प्रयास करें।",
+    "description": "Form fill submit error with retry hint"
+  },
+  "hubPublicFormIdLabel": {
+    "message": "फॉर्म आईडी: {id}",
+    "description": "Public form header form id"
+  },
+  "hubPublicTypeLabel": {
+    "message": "प्रकार: {type}",
+    "description": "Public form header type"
+  },
+  "hubPublicThankYou": {
+    "message": "आपके निवेदन के लिए धन्यवाद।",
+    "description": "Public form success message"
+  },
+  "hubPublicFormNotFound": {
+    "message": "फॉर्म नहीं मिला",
+    "description": "Public form fetch not found"
+  },
+  "hubPublicLoadFailed": {
+    "message": "फॉर्म लोड करने में विफल. कृपया पुन: प्रयास करें।",
+    "description": "Public form fetch error"
+  },
+  "hubPublicSubmitFailed": {
+    "message": "फॉर्म सबमिट करने में विफल. कृपया पुन: प्रयास करें।",
+    "description": "Public form submit error"
+  }
+}

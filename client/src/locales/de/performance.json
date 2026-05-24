@@ -1,0 +1,350 @@
+{
+  "settingsTitle": {
+    "message": "Leistung",
+    "description": "Settings performance section title"
+  },
+  "settingsDescription": {
+    "message": "Setzen Sie sich Ziele, verfolgen Sie den Fortschritt im Vertrieb und im Helpdesk und sehen Sie, wie Ihr Team abschneidet.",
+    "description": "Settings performance section description"
+  },
+  "targetsQuotasTitle": {
+    "message": "Ziele und Quoten",
+    "description": "Targets hub title"
+  },
+  "targetsQuotasDescription": {
+    "message": "Ziele, die automatisch anhand von Deals, Kundenvorgängen und Aufgaben aktualisiert werden.",
+    "description": "Targets hub description"
+  },
+  "dashboardsTitle": {
+    "message": "Dashboards",
+    "description": "Dashboards card title"
+  },
+  "dashboardsDescription": {
+    "message": "Fortschritte auf einen Blick und Team-Rangliste.",
+    "description": "Dashboards description"
+  },
+  "configure": {
+    "message": "Offen",
+    "description": "Card action"
+  },
+  "newTarget": {
+    "message": "Ziel erstellen",
+    "description": "Primary CTA"
+  },
+  "noTargetsTitle": {
+    "message": "Noch keine Ziele",
+    "description": "Empty state title"
+  },
+  "noTargets": {
+    "message": "Erstellen Sie ein Ziel, um Umsätze, Lösungen oder Abschlüsse in Echtzeit zu verfolgen.",
+    "description": "Legacy key kept for compat"
+  },
+  "filterAll": {
+    "message": "Alle",
+    "description": "Filter tab"
+  },
+  "filterActive": {
+    "message": "Aktiv",
+    "description": "Filter tab"
+  },
+  "filterDraft": {
+    "message": "Entwürfe",
+    "description": "Filter tab"
+  },
+  "searchPlaceholder": {
+    "message": "Suchziele…",
+    "description": "Search input"
+  },
+  "lifecycleDraft": {
+    "message": "Entwurf",
+    "description": "Lifecycle"
+  },
+  "lifecycleActive": {
+    "message": "Aktiv",
+    "description": "Lifecycle"
+  },
+  "lifecycleLocked": {
+    "message": "Gesperrt",
+    "description": "Lifecycle"
+  },
+  "lifecycleCompleted": {
+    "message": "Vollendet",
+    "description": "Lifecycle"
+  },
+  "lifecycleClosed": {
+    "message": "Geschlossen",
+    "description": "Lifecycle"
+  },
+  "statusNotStarted": {
+    "message": "Nicht gestartet",
+    "description": "Status"
+  },
+  "statusOnTrack": {
+    "message": "Auf dem richtigen Weg",
+    "description": "Status"
+  },
+  "statusAtRisk": {
+    "message": "Gefährdet",
+    "description": "Status"
+  },
+  "statusAchieved": {
+    "message": "Erreicht",
+    "description": "Status"
+  },
+  "statusOverachieved": {
+    "message": "Übertroffen",
+    "description": "Status"
+  },
+  "achievedOfTarget": {
+    "message": "{achieved} von {target}",
+    "description": "Progress label"
+  },
+  "periodLabel": {
+    "message": "Zeitraum",
+    "description": "Period label"
+  },
+  "wizardTitle": {
+    "message": "Ziel erstellen",
+    "description": "Wizard page title"
+  },
+  "wizardSubtitle": {
+    "message": "Eine kurze geführte Einrichtung – Sie können die Details jederzeit vor der Aktivierung bearbeiten.",
+    "description": "Wizard subtitle"
+  },
+  "wizardStepOf": {
+    "message": "Schritt {current} von {total}",
+    "description": "Step counter"
+  },
+  "wizardStepType": {
+    "message": "Was messen Sie?",
+    "description": "Wizard step"
+  },
+  "wizardStepTypeHint": {
+    "message": "Wählen Sie einen Zieltyp. Wir schlagen Ihnen die richtigen Datenquellen vor.",
+    "description": "Step hint"
+  },
+  "wizardStepModules": {
+    "message": "Woher kommen die Daten?",
+    "description": "Wizard step"
+  },
+  "wizardStepModulesHint": {
+    "message": "Wählen Sie aus, welche Apps diese Zielgruppe versorgen.",
+    "description": "Step hint"
+  },
+  "wizardStepRules": {
+    "message": "Wie zählen Datensätze?",
+    "description": "Wizard step"
+  },
+  "wizardStepRulesHint": {
+    "message": "Wir wenden intelligente Vorgaben an (z. B. gewonnene Geschäfte, gelöste Fälle).",
+    "description": "Step hint"
+  },
+  "wizardStepValue": {
+    "message": "Setzen Sie Ihr Ziel",
+    "description": "Wizard step"
+  },
+  "wizardStepValueHint": {
+    "message": "Benennen Sie Ihr Ziel und geben Sie die zu treffende Zahl ein.",
+    "description": "Step hint"
+  },
+  "wizardStepPeriod": {
+    "message": "Zeitraum",
+    "description": "Wizard step"
+  },
+  "wizardStepPeriodHint": {
+    "message": "Wann soll dieses Ziel beginnen und enden?",
+    "description": "Step hint"
+  },
+  "wizardStepDistribution": {
+    "message": "Auf das Team verteilt",
+    "description": "Wizard step"
+  },
+  "wizardStepDistributionHint": {
+    "message": "Wie soll das Ziel zwischen den Menschen aufgeteilt werden?",
+    "description": "Step hint"
+  },
+  "wizardStepAssign": {
+    "message": "Eigentum",
+    "description": "Wizard step"
+  },
+  "wizardStepAssignHint": {
+    "message": "Sie sind standardmäßig der Eigentümer. Später von der Zielseite aus neu zuweisen.",
+    "description": "Step hint"
+  },
+  "wizardStepThresholds": {
+    "message": "Meilensteine",
+    "description": "Wizard step"
+  },
+  "wizardStepThresholdsHint": {
+    "message": "Lassen Sie sich bei wichtigen Fortschrittspunkten benachrichtigen.",
+    "description": "Step hint"
+  },
+  "wizardStepForecast": {
+    "message": "Prognose",
+    "description": "Wizard step"
+  },
+  "wizardStepForecastHint": {
+    "message": "Beziehen Sie Pipeline-Daten ein, um die Ergebnisse am Ende des Zeitraums vorherzusagen.",
+    "description": "Step hint"
+  },
+  "wizardStepReview": {
+    "message": "Rezension",
+    "description": "Wizard step"
+  },
+  "wizardStepReviewHint": {
+    "message": "Bestätigen Sie, dass alles richtig aussieht, und gehen Sie dann live.",
+    "description": "Step hint"
+  },
+  "targetNameLabel": {
+    "message": "Zielname",
+    "description": "Form label"
+  },
+  "targetNamePlaceholder": {
+    "message": "z.B. Unternehmensumsatz im 2. Quartal",
+    "description": "Placeholder"
+  },
+  "targetValueLabel": {
+    "message": "Zielbetrag",
+    "description": "Form label"
+  },
+  "periodStartLabel": {
+    "message": "Beginnt",
+    "description": "Date label"
+  },
+  "periodEndLabel": {
+    "message": "Endet",
+    "description": "Date label"
+  },
+  "periodThisMonth": {
+    "message": "Diesen Monat",
+    "description": "Period preset"
+  },
+  "periodThisQuarter": {
+    "message": "Dieses Quartal",
+    "description": "Period preset"
+  },
+  "periodCustom": {
+    "message": "Benutzerdefinierte Termine",
+    "description": "Period preset"
+  },
+  "distributionEqual": {
+    "message": "Gleiche Aufteilung",
+    "description": "Distribution"
+  },
+  "distributionEqualDesc": {
+    "message": "Gleicher Anteil für alle am Ziel.",
+    "description": "Distribution desc"
+  },
+  "distributionWeighted": {
+    "message": "Gewichtet",
+    "description": "Distribution"
+  },
+  "distributionWeightedDesc": {
+    "message": "Aufgeteilt nach zugewiesenen Gewichtungen.",
+    "description": "Distribution desc"
+  },
+  "distributionManual": {
+    "message": "Handbuch",
+    "description": "Distribution"
+  },
+  "distributionManualDesc": {
+    "message": "Sie legen den Betrag für jede Person fest.",
+    "description": "Distribution desc"
+  },
+  "distributionCapacity": {
+    "message": "Nach Kapazität",
+    "description": "Distribution"
+  },
+  "distributionCapacityDesc": {
+    "message": "Basierend auf den Fähigkeiten jeder Person.",
+    "description": "Distribution desc"
+  },
+  "threshold80": {
+    "message": "80 % – Achtung",
+    "description": "Threshold"
+  },
+  "threshold100": {
+    "message": "100 % – Ziel erreicht",
+    "description": "Threshold"
+  },
+  "threshold120": {
+    "message": "120 % – überschritten",
+    "description": "Threshold"
+  },
+  "forecastEnable": {
+    "message": "Aktivieren Sie die Prognose mithilfe einer offenen Pipeline",
+    "description": "Forecast toggle"
+  },
+  "activateTarget": {
+    "message": "Ziel aktivieren",
+    "description": "Activate CTA"
+  },
+  "saveDraft": {
+    "message": "Als Entwurf speichern",
+    "description": "Save draft CTA"
+  },
+  "back": {
+    "message": "Zurück",
+    "description": "Back button"
+  },
+  "next": {
+    "message": "Weitermachen",
+    "description": "Next button"
+  },
+  "cancelWizard": {
+    "message": "Stornieren",
+    "description": "Cancel wizard"
+  },
+  "conflictWarning": {
+    "message": "Ein weiteres Ziel überschneidet sich mit diesem Zeitraum und diesen Datenquellen. Sie können die Funktion bei Bedarf trotzdem aktivieren.",
+    "description": "Conflict warning"
+  },
+  "detailAchieved": {
+    "message": "Erreicht",
+    "description": "Metric"
+  },
+  "detailGoal": {
+    "message": "Ziel",
+    "description": "Metric"
+  },
+  "detailForecast": {
+    "message": "Vorhersage",
+    "description": "Metric"
+  },
+  "detailContributions": {
+    "message": "Aktuelle Beiträge",
+    "description": "Section"
+  },
+  "detailRecalculate": {
+    "message": "Gesamtsummen synchronisieren",
+    "description": "Recalc button"
+  },
+  "detailVersions": {
+    "message": "Versionsgeschichte",
+    "description": "Section"
+  },
+  "detailLock": {
+    "message": "Schlossstruktur",
+    "description": "Lock action"
+  },
+  "detailPartialData": {
+    "message": "Einige Apps sind deaktiviert – die Daten sind möglicherweise unvollständig.",
+    "description": "Warning"
+  },
+  "leaderboard": {
+    "message": "Top-Performer",
+    "description": "Leaderboard"
+  },
+  "leaderboardEmpty": {
+    "message": "Ranglisten werden angezeigt, sobald Ziele Fortschritte gemacht haben.",
+    "description": "Empty leaderboard"
+  },
+  "widgetSalesTitle": {
+    "message": "Verkaufsziele",
+    "description": "Widget title"
+  },
+  "widgetHelpdeskTitle": {
+    "message": "Auflösungsziele",
+    "description": "Widget title"
+  }
+}

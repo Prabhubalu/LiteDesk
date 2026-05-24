@@ -10,7 +10,7 @@
         <ComboboxButton
           class="relative w-full cursor-default rounded-lg bg-white dark:bg-gray-700 py-2 pl-3 pr-10 text-left text-sm text-gray-900 dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
         >
-          <span class="block truncate">{{ modelValue || placeholder }}</span>
+          <span class="block truncate">{{ modelValue || resolvedPlaceholder }}</span>
           <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
           </span>
@@ -34,7 +34,7 @@
                   ref="searchInputRef"
                   v-model="searchQuery"
                   type="search"
-                  placeholder="Search Africa, America, or city…"
+                  :placeholder="t('settings.settingsBhTzSearchPh')"
                   autocomplete="off"
                   class="w-full pl-9 pr-3 py-2 text-sm rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   @keydown.enter.stop
@@ -52,7 +52,7 @@
                     v-if="groupName"
                     class="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
                   >
-                    {{ groupName }}
+                    {{ translateGroup(groupName) }}
                   </div>
                   <ComboboxOption
                     v-for="opt in group"
@@ -82,7 +82,7 @@
                 </template>
               </template>
               <p v-else class="px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">
-                No timezones match your search
+                {{ t('settings.settingsBhTzNoMatch') }}
               </p>
             </div>
           </ComboboxOptions>
@@ -90,13 +90,14 @@
       </div>
     </Combobox>
     <p v-if="showLiveClock" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-      Now in this zone: {{ liveTime }}
+      {{ t('settings.settingsBhTzNowInZone', { time: liveTime }) }}
     </p>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
   Combobox,
   ComboboxButton,
@@ -109,14 +110,31 @@ import { buildTimezonePickerOptions, formatTimeInZone } from '@/utils/ianaTimezo
 const props = defineProps({
   modelValue: { type: String, default: 'UTC' },
   label: { type: String, default: '' },
-  placeholder: { type: String, default: 'Select timezone…' },
+  placeholder: { type: String, default: '' },
   showLiveClock: { type: Boolean, default: true }
 });
 
 defineEmits(['update:modelValue']);
 
+const { t } = useI18n();
+
+const resolvedPlaceholder = computed(
+  () => props.placeholder || t('settings.settingsBhTzSelectPh')
+);
+
 const searchQuery = ref('');
 const searchInputRef = ref(null);
+
+const GROUP_KEYS = {
+  'Current selection': 'settingsBhTzGroupCurrent',
+  Popular: 'settingsBhTzGroupPopular',
+  Other: 'settingsBhTzGroupOther'
+};
+
+function translateGroup(name) {
+  const key = GROUP_KEYS[name];
+  return key ? t(`settings.${key}`) : name;
+}
 
 const allOptions = computed(() => buildTimezonePickerOptions(props.modelValue));
 

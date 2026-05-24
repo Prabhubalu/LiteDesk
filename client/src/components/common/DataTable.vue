@@ -7,7 +7,7 @@
           <div class="flex items-center gap-3">
             <InformationCircleIcon class="w-5 h-5 text-blue-600 dark:text-blue-400" />
             <p class="text-sm font-medium text-blue-900 dark:text-blue-100">
-              All {{ displayData.length }} items on this page are selected.
+              {{ t('common.tableAllPageSelected', { count: displayData.length }) }}
             </p>
           </div>
           <div class="flex items-center gap-3">
@@ -15,13 +15,13 @@
               @click="selectAllAcrossPages"
               class="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline transition-colors"
             >
-              Select all {{ totalRecords || data.length }} items
+              {{ t('common.tableSelectAllItems', { count: totalRecords || data.length }) }}
             </button>
             <button
               @click="clearSelection"
               class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
             >
-              Clear selection
+              {{ t('common.tableClearSelection') }}
             </button>
           </div>
         </div>
@@ -37,16 +37,16 @@
             <div class="flex items-center gap-2">
               <div class="bg-white/20 px-3 py-1.5 rounded-lg font-semibold">
                 <span v-if="selectAllPages">
-                  All {{ totalRecords || data.length }} selected
+                  {{ t('common.tableAllSelected', { count: totalRecords || data.length }) }}
                 </span>
                 <span v-else>
-                  {{ selectedRows.length }} selected
+                  {{ t('common.tableSelectedCount', { count: selectedRows.length }) }}
                 </span>
               </div>
               <button
                 @click="clearSelection"
                 class="p-2 hover:bg-white/20 rounded-lg transition-all"
-                title="Clear selection"
+                :title="t('common.tableClearSelection')"
               >
                 <XMarkIcon class="w-5 h-5" />
               </button>
@@ -84,7 +84,7 @@
                 class="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg font-medium transition-all hover:scale-105 flex items-center gap-2"
               >
                 <TrashIcon class="w-4 h-4" />
-                Delete Selected
+                {{ t('common.tableDeleteSelected') }}
               </button>
             </div>
           </div>
@@ -117,10 +117,10 @@
       <button
         @click="showColumnSettings = !showColumnSettings"
         class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition-all shadow-sm"
-        title="Column Settings"
+        :title="t('common.tableColumnSettings')"
       >
         <Cog6ToothIcon class="w-5 h-5" />
-        <span>Columns</span>
+        <span>{{ t('common.tableColumns') }}</span>
       </button>
     </div>
 
@@ -135,7 +135,7 @@
           <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col">
             <!-- Modal Header -->
             <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Column Settings</h3>
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('common.tableColumnSettings') }}</h3>
               <button
                 @click="showColumnSettings = false"
                 class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -149,11 +149,11 @@
               <div>
                 <div class="flex items-center justify-between mb-4">
                   <div>
-                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Manage Columns</h4>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Toggle visibility and drag to reorder</p>
+                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{ t('common.tableManageColumns') }}</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ t('common.tableManageColumnsHint') }}</p>
                   </div>
                   <div class="text-xs text-gray-500 dark:text-gray-400">
-                    {{ visibleColumns.length }} of {{ columns.length }} visible
+                    {{ t('common.tableVisibleCount', { visible: visibleColumns.length, total: columns.length }) }}
                   </div>
                 </div>
                 
@@ -195,7 +195,7 @@
                           : 'text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20',
                         !isColumnFrozen(column.key) && frozenColumns.length >= 2 ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
                       ]"
-                      :title="isColumnFrozen(column.key) ? 'Unfreeze column' : frozenColumns.length >= 2 ? 'Maximum 2 columns can be frozen' : 'Freeze column'"
+                      :title="isColumnFrozen(column.key) ? t('common.tableUnfreezeColumn') : frozenColumns.length >= 2 ? t('common.tableFreezeMax') : t('common.tableFreezeColumn')"
                     >
                       <BookmarkIcon class="w-4 h-4" />
                     </button>
@@ -205,7 +205,7 @@
                       v-if="!isColumnVisible(column.key)"
                       class="text-xs px-2 py-1 bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-full flex-shrink-0"
                     >
-                      Hidden
+                      {{ t('common.listFieldHidden') }}
                     </span>
                     
                     <!-- Frozen Badge -->
@@ -213,7 +213,7 @@
                       v-if="isColumnFrozen(column.key)"
                       class="text-xs px-2 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full flex-shrink-0"
                     >
-                      Frozen
+                      {{ t('common.tableFrozen') }}
                     </span>
                   </div>
                 </div>
@@ -226,20 +226,20 @@
                 @click="resetColumnSettings"
                 class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
               >
-                Reset to Default
+                {{ t('common.tableResetDefault') }}
               </button>
               <div class="flex items-center gap-3">
                 <button
                   @click="showColumnSettings = false"
                   class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
                 >
-                  Cancel
+                  {{ t('actions.cancel') }}
                 </button>
                 <button
                   @click="applyColumnSettings"
                   class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-800 rounded-lg transition-colors"
                 >
-                  Apply
+                  {{ t('actions.apply') }}
                 </button>
               </div>
             </div>
@@ -431,7 +431,7 @@
                     v-if="!hideEdit"
                     @click.stop="$emit('edit', row)"
                     class="p-2 rounded-lg transition-all duration-200 hover:scale-110 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30"
-                    title="Edit"
+                    :title="t('actions.edit')"
                   >
                     <PencilSquareIcon class="w-5 h-5" />
                   </button>
@@ -439,7 +439,7 @@
                     v-if="!hideDelete"
                     @click.stop="$emit('delete', row)"
                     class="p-2 rounded-lg transition-all duration-200 hover:scale-110 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
-                    title="Delete"
+                    :title="t('actions.delete')"
                   >
                     <TrashIcon class="w-5 h-5" />
                   </button>
@@ -456,7 +456,7 @@
     <div v-if="paginated && !loading && data && data.length > 0" class="flex items-center justify-between mt-6 px-6 py-4 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
       <div class="text-sm font-medium text-gray-700 dark:text-gray-300">
         <span>
-          Showing {{ startRecord }} to {{ endRecord }} of {{ totalRecords }} results
+          {{ t('common.tableShowingResults', { start: startRecord, end: endRecord, total: totalRecords }) }}
         </span>
       </div>
       
@@ -467,7 +467,7 @@
           class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-400 dark:hover:border-gray-500 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white dark:disabled:hover:bg-gray-700 transition-all shadow-sm hover:shadow-md hover:scale-105"
         >
           <ChevronLeftIcon class="w-4 h-4" />
-          Previous
+          {{ t('actions.previous') }}
         </button>
 
         <div class="flex items-center gap-1">
@@ -491,7 +491,7 @@
           :disabled="currentPage === totalPages"
           class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-400 dark:hover:border-gray-500 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white dark:disabled:hover:bg-gray-700 transition-all shadow-sm hover:shadow-md hover:scale-105"
         >
-          Next
+          {{ t('actions.next') }}
           <ChevronRightIcon class="w-4 h-4" />
         </button>
       </div>
@@ -501,6 +501,9 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { InformationCircleIcon, XMarkIcon, TrashIcon, PencilSquareIcon, ArrowDownTrayIcon, ArchiveBoxIcon, ChevronLeftIcon, ChevronRightIcon, ArrowsUpDownIcon, EyeIcon, MagnifyingGlassIcon, Cog6ToothIcon, BookmarkIcon, ArchiveBoxXMarkIcon, ChevronUpIcon, ChevronDownIcon } from '@heroicons/vue/24/outline';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';

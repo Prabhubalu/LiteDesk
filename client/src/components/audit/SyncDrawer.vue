@@ -18,7 +18,7 @@
       <!-- Header -->
       <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
         <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Sync Status</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('audit.syncDrawerSyncStatus') }}</h3>
           <button
             @click="close"
             class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
@@ -36,9 +36,7 @@
         <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                Pending Actions
-              </p>
+              <p class="text-sm font-medium text-yellow-800 dark:text-yellow-200">{{ t('audit.syncDrawerPendingActions') }}</p>
               <p class="text-2xl font-bold text-yellow-900 dark:text-yellow-100 mt-1">
                 {{ pendingCount }}
               </p>
@@ -74,16 +72,16 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-red-800 dark:text-red-200">Sync Stopped</p>
+              <p class="text-sm font-medium text-red-800 dark:text-red-200">{{ t('audit.syncDrawerSyncStopped') }}</p>
               <p class="text-sm text-red-700 dark:text-red-300 mt-1">{{ syncError }}</p>
               <div v-if="syncError.includes('state') || syncError.includes('closed') || syncError.includes('ownership')" class="mt-2 text-xs text-red-600 dark:text-red-400">
-                <p class="font-medium mb-1">Possible reasons:</p>
+                <p class="font-medium mb-1">{{ t('audit.syncDrawerPossibleReasons') }}</p>
                 <ul class="list-disc list-inside space-y-0.5">
-                  <li v-if="syncError.includes('closed')">Audit was closed remotely</li>
-                  <li v-if="syncError.includes('ownership')">You no longer have access</li>
-                  <li v-if="syncError.includes('state')">Audit state changed on server</li>
+                  <li v-if="syncError.includes('closed')">{{ t('audit.syncDrawerAuditWasClosedRemotely') }}</li>
+                  <li v-if="syncError.includes('ownership')">{{ t('audit.syncDrawerYouNoLongerHaveAccess') }}</li>
+                  <li v-if="syncError.includes('state')">{{ t('audit.syncDrawerAuditStateChangedOnServer') }}</li>
                 </ul>
-                <p class="mt-2">Please refresh the audit and try again.</p>
+                <p class="mt-2">{{ t('audit.syncDrawerPleaseRefreshTheAuditAndTry') }}</p>
               </div>
             </div>
           </div>
@@ -96,7 +94,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <div class="flex-1">
-              <p class="text-sm font-medium text-green-800 dark:text-green-200">Sync Complete</p>
+              <p class="text-sm font-medium text-green-800 dark:text-green-200">{{ t('audit.syncDrawerSyncComplete') }}</p>
               <p class="text-sm text-green-700 dark:text-green-300 mt-1">
                 {{ syncSuccess.synced }} action(s) synced successfully
               </p>
@@ -111,9 +109,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414m-1.414-1.414L3 10m9.9 2.9a3 3 0 11-5.196-5.196" />
             </svg>
             <div class="flex-1">
-              <p class="text-sm text-gray-700 dark:text-gray-300">
-                You're currently offline. Actions will sync automatically when you're back online.
-              </p>
+              <p class="text-sm text-gray-700 dark:text-gray-300">{{ t('audit.syncDrawerYoureCurrentlyOfflineActionsWillSync') }}</p>
             </div>
           </div>
         </div>
@@ -123,6 +119,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useOffline } from '@/composables/useOffline';
 import { getPendingCount } from '@/services/offlineQueue.js';
@@ -134,6 +131,8 @@ const props = defineProps({
     default: false
   }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['update:modelValue']);
 

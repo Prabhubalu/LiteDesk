@@ -1,0 +1,2762 @@
+{
+  "paletteAddStep": {
+    "message": "Aggiungi passaggio",
+    "description": "Process designer palette heading"
+  },
+  "paletteBlockedDefault": {
+    "message": "Scegli prima cosa avvia questo processo nelle Impostazioni processo (pannello di destra).",
+    "description": "Palette disabled hint when trigger not configured"
+  },
+  "paletteTypeCondition": {
+    "message": "SE",
+    "description": "Condition step palette label"
+  },
+  "paletteTypeConditionDesc": {
+    "message": "Filiale sì/no",
+    "description": "Condition step palette description"
+  },
+  "paletteTypeFieldRule": {
+    "message": "Regola del campo",
+    "description": "Field rule step palette label"
+  },
+  "paletteTypeFieldRuleDesc": {
+    "message": "Obbligatorio, predefinito, visibilità",
+    "description": "Field rule step palette description"
+  },
+  "paletteTypeOwnership": {
+    "message": "Proprietà",
+    "description": "Ownership step palette label"
+  },
+  "paletteTypeOwnershipDesc": {
+    "message": "Assegna proprietario",
+    "description": "Ownership step palette description"
+  },
+  "paletteTypeStatusGuard": {
+    "message": "Guardia di stato",
+    "description": "Status guard step palette label"
+  },
+  "paletteTypeStatusGuardDesc": {
+    "message": "Blocca o consenti le transizioni",
+    "description": "Status guard step palette description"
+  },
+  "paletteTypeApproval": {
+    "message": "Approvazione",
+    "description": "Approval step palette label"
+  },
+  "paletteTypeApprovalDesc": {
+    "message": "Cancello di approvazione umana",
+    "description": "Approval step palette description"
+  },
+  "paletteTypeWait": {
+    "message": "Aspettare",
+    "description": "Wait step palette label"
+  },
+  "paletteTypeWaitDesc": {
+    "message": "Pausa per minuti, ore o giorni",
+    "description": "Wait step palette description"
+  },
+  "paletteTypeAction": {
+    "message": "Azione",
+    "description": "Action step palette label"
+  },
+  "paletteTypeActionDesc": {
+    "message": "Azione automatizzata",
+    "description": "Action step palette description"
+  },
+  "paletteTypeEnd": {
+    "message": "FINE",
+    "description": "End step palette label"
+  },
+  "paletteTypeEndDesc": {
+    "message": "Arrestare il processo",
+    "description": "End step palette description"
+  },
+  "statusActive": {
+    "message": "Attivo",
+    "description": "Process or flow status badge"
+  },
+  "statusDraft": {
+    "message": "Bozza",
+    "description": "Process or flow status badge"
+  },
+  "statusArchived": {
+    "message": "Archiviato",
+    "description": "Process status badge"
+  },
+  "statusEnabled": {
+    "message": "Abilitato",
+    "description": "Automation rule status badge"
+  },
+  "statusDisabled": {
+    "message": "Disabilitato",
+    "description": "Automation rule status badge"
+  },
+  "labelApp": {
+    "message": "Applicazione:",
+    "description": "Metadata label for app key"
+  },
+  "labelTrigger": {
+    "message": "Grilletto:",
+    "description": "Metadata label for trigger"
+  },
+  "labelNodes": {
+    "message": "Nodi:",
+    "description": "Metadata label for node count"
+  },
+  "labelUpdated": {
+    "message": "Aggiornato:",
+    "description": "Metadata label for last updated"
+  },
+  "labelEntity": {
+    "message": "Entità:",
+    "description": "Metadata label for entity type"
+  },
+  "labelAction": {
+    "message": "Azione:",
+    "description": "Metadata label for action type"
+  },
+  "filterApps": {
+    "message": "Tutte le app",
+    "description": "Process list app filter"
+  },
+  "filterStatus": {
+    "message": "Tutti gli stati",
+    "description": "Process list status filter"
+  },
+  "filterEntities": {
+    "message": "Tutte le entità",
+    "description": "Automation rules entity filter"
+  },
+  "filterEntityPeople": {
+    "message": "Persone",
+    "description": "Entity filter option"
+  },
+  "filterEntityOrganization": {
+    "message": "Organizzazione",
+    "description": "Entity filter option"
+  },
+  "filterEntityDeal": {
+    "message": "Affare",
+    "description": "Entity filter option"
+  },
+  "filterEntityEvents": {
+    "message": "Eventi/Appuntamenti",
+    "description": "Entity filter option"
+  },
+  "filterEnabled": {
+    "message": "Abilitato",
+    "description": "Rules enabled filter option"
+  },
+  "filterDisabled": {
+    "message": "Disabilitato",
+    "description": "Rules disabled filter option"
+  },
+  "triggerWebhook": {
+    "message": "Webhook",
+    "description": "Trigger type label in list"
+  },
+  "triggerManual": {
+    "message": "Manuale",
+    "description": "Trigger type label in list"
+  },
+  "triggerManualSummary": {
+    "message": "Innesco manuale",
+    "description": "Trigger summary when manual"
+  },
+  "triggerOnRecordCreated": {
+    "message": "Viene eseguito quando viene creato un record",
+    "description": "Domain event trigger summary"
+  },
+  "triggerOnRecordUpdated": {
+    "message": "Viene eseguito quando un record viene aggiornato",
+    "description": "Domain event trigger summary"
+  },
+  "triggerOnStatusChanged": {
+    "message": "Viene eseguito quando lo stato cambia",
+    "description": "Domain event trigger summary"
+  },
+  "triggerOnStageChanged": {
+    "message": "Funziona quando cambia fase",
+    "description": "Domain event trigger summary"
+  },
+  "triggerOnEvent": {
+    "message": "Funziona su {eventType}",
+    "description": "Generic domain event trigger summary"
+  },
+  "triggerHealthRecordCreated": {
+    "message": "Nel registro creato",
+    "description": "Health view trigger label"
+  },
+  "triggerHealthRecordUpdated": {
+    "message": "Dati aggiornati",
+    "description": "Health view trigger label"
+  },
+  "triggerHealthStatusChanged": {
+    "message": "Sul cambiamento di stato",
+    "description": "Health view trigger label"
+  },
+  "triggerHealthStageChanged": {
+    "message": "Sul cambio di scena",
+    "description": "Health view trigger label"
+  },
+  "eventRecordCreated": {
+    "message": "Registrazione creata",
+    "description": "Timeline domain event label"
+  },
+  "eventRecordUpdated": {
+    "message": "Registrazione aggiornata",
+    "description": "Timeline domain event label"
+  },
+  "eventStatusChanged": {
+    "message": "Stato modificato",
+    "description": "Timeline domain event label"
+  },
+  "eventStageChanged": {
+    "message": "Fase cambiata",
+    "description": "Timeline domain event label"
+  },
+  "eventDescRecordCreated": {
+    "message": "È stato creato un nuovo record",
+    "description": "Timeline domain event description"
+  },
+  "eventDescRecordUpdated": {
+    "message": "Un record è stato aggiornato",
+    "description": "Timeline domain event description"
+  },
+  "eventDescStatusChanged": {
+    "message": "Lo stato di un record è cambiato",
+    "description": "Timeline domain event description"
+  },
+  "eventDescStageChanged": {
+    "message": "La fase di un record è cambiata",
+    "description": "Timeline domain event description"
+  },
+  "eventDescGeneric": {
+    "message": "Evento: {eventType}",
+    "description": "Fallback timeline event description"
+  },
+  "processListTitle": {
+    "message": "Processi",
+    "description": "Processes admin list page title"
+  },
+  "processListDescription": {
+    "message": "I processi controllano il comportamento automatico del sistema.",
+    "description": "Processes admin list page subtitle"
+  },
+  "processNew": {
+    "message": "Nuovo processo",
+    "description": "Create process button"
+  },
+  "processEmptyTitle": {
+    "message": "Nessun processo",
+    "description": "Empty processes list heading"
+  },
+  "processTooltipViewLogs": {
+    "message": "Visualizza registri",
+    "description": "Icon button tooltip"
+  },
+  "processTooltipActivate": {
+    "message": "Attivare",
+    "description": "Icon button tooltip"
+  },
+  "processTooltipDeactivate": {
+    "message": "Disattivare",
+    "description": "Icon button tooltip"
+  },
+  "processLoadFailed": {
+    "message": "Impossibile caricare i processi",
+    "description": "Processes list load error"
+  },
+  "processDuplicateFailed": {
+    "message": "Impossibile duplicare il processo",
+    "description": "Duplicate process error"
+  },
+  "processActivateSuccess": {
+    "message": "Processo attivato con successo",
+    "description": "Activate success alert"
+  },
+  "processDeactivateSuccess": {
+    "message": "Processo disattivato con successo",
+    "description": "Deactivate success alert"
+  },
+  "processActivateFailed": {
+    "message": "Impossibile attivare il processo",
+    "description": "Activate error alert"
+  },
+  "processDeactivateFailed": {
+    "message": "Impossibile disattivare il processo",
+    "description": "Deactivate error alert"
+  },
+  "processListPageTitle": {
+    "message": "Processi | Arivu",
+    "description": "Browser tab title"
+  },
+  "flowListTitle": {
+    "message": "Flussi aziendali",
+    "description": "Business flows list page title"
+  },
+  "flowListDescription": {
+    "message": "Raggruppamento visivo di più processi in storie aziendali end-to-end",
+    "description": "Business flows list subtitle"
+  },
+  "flowStartWithTemplate": {
+    "message": "Inizia con il modello",
+    "description": "Header CTA for templates"
+  },
+  "flowCreateFromScratch": {
+    "message": "Crea da zero",
+    "description": "Header CTA for blank flow"
+  },
+  "flowEmptyTitle": {
+    "message": "Inizia più velocemente con i flussi già pronti",
+    "description": "Empty flows heading"
+  },
+  "flowEmptyMessage": {
+    "message": "Utilizza modelli collaudati per impostare processi aziendali comuni in pochi minuti. Puoi modificare tutto dopo l'importazione.",
+    "description": "Empty flows body"
+  },
+  "flowStartWithTemplateBtn": {
+    "message": "Inizia con un modello",
+    "description": "Empty state primary CTA"
+  },
+  "flowCreateFromScratchBtn": {
+    "message": "Crea da zero",
+    "description": "Empty state secondary CTA"
+  },
+  "flowMetaProcesses": {
+    "message": "Processi:",
+    "description": "Flow card metadata label"
+  },
+  "flowProcessCount": {
+    "message": "{count, plural, one {# process} other {# processes}}",
+    "description": "Flow card process count"
+  },
+  "flowMetaLastUpdated": {
+    "message": "Last updated:",
+    "description": "Flow card metadata label"
+  },
+  "flowDeleteModalTitle": {
+    "message": "Elimina flusso aziendale",
+    "description": "Delete confirmation modal title"
+  },
+  "flowDeleteConfirm": {
+    "message": "Sei sicuro di voler eliminare \"{name}\"? Questa azione non può essere annullata.",
+    "description": "Delete confirmation body"
+  },
+  "flowDeleting": {
+    "message": "Eliminazione...",
+    "description": "Delete button in progress"
+  },
+  "flowTemplateModalTitle": {
+    "message": "Scegli un modello di flusso aziendale",
+    "description": "Template picker modal title"
+  },
+  "flowTemplateModalHint": {
+    "message": "I modelli ti aiutano a pubblicare i tuoi contenuti più velocemente. Puoi modificare tutto dopo l'importazione.",
+    "description": "Template picker modal hint"
+  },
+  "flowLoadingTemplates": {
+    "message": "Loading templates...",
+    "description": "Template picker loading"
+  },
+  "flowTemplateHighlights": {
+    "message": "Cosa configura:",
+    "description": "Template card highlights heading"
+  },
+  "flowTemplateSelect": {
+    "message": "Selezionare →",
+    "description": "Template card select affordance"
+  },
+  "flowNoTemplates": {
+    "message": "Nessun modello disponibile",
+    "description": "Empty template list"
+  },
+  "flowImportTitle": {
+    "message": "Importa \"{name}\"",
+    "description": "Template import confirmation title"
+  },
+  "flowImportBody": {
+    "message": "This will create {count, plural, one {# process} other {# processes}} and a Business Flow.",
+    "description": "Template import confirmation body"
+  },
+  "flowImportWhatCreated": {
+    "message": "Cosa verrà creato:",
+    "description": "Import confirmation highlights heading"
+  },
+  "flowImportNote": {
+    "message": "Puoi modificare tutto dopo l'importazione. Tutti i processi iniziano come Bozza e richiedono la tua revisione prima dell'attivazione.",
+    "description": "Import confirmation note"
+  },
+  "flowImportTemplate": {
+    "message": "Importa modello",
+    "description": "Import confirmation primary button"
+  },
+  "flowImporting": {
+    "message": "Importazione...",
+    "description": "Import button in progress"
+  },
+  "flowImportSuccess": {
+    "message": "Modello importato correttamente. Rivedi e attiva i processi quando sei pronto.",
+    "description": "Template import success toast"
+  },
+  "flowImportFailed": {
+    "message": "Impossibile importare il modello",
+    "description": "Template import error"
+  },
+  "flowDeleteSuccess": {
+    "message": "Flusso aziendale eliminato",
+    "description": "Delete success toast"
+  },
+  "flowDeleteFailed": {
+    "message": "Impossibile eliminare",
+    "description": "Delete error toast"
+  },
+  "flowLoadFailed": {
+    "message": "Impossibile caricare i flussi aziendali",
+    "description": "Flows list load error"
+  },
+  "flowListPageTitle": {
+    "message": "Flussi aziendali | Arivu",
+    "description": "Browser tab title"
+  },
+  "flowDetailPageTitle": {
+    "message": "Flusso aziendale | Arivu",
+    "description": "Browser tab title"
+  },
+  "flowViewHealth": {
+    "message": "Visualizza Salute",
+    "description": "Flow detail action"
+  },
+  "flowTimelineHeading": {
+    "message": "Cronologia del flusso",
+    "description": "Flow detail timeline section"
+  },
+  "flowCompleteLabel": {
+    "message": "Flusso completato",
+    "description": "Timeline outcome label"
+  },
+  "flowCompleteDesc": {
+    "message": "Tutti i processi in questo flusso sono stati eseguiti",
+    "description": "Timeline outcome description"
+  },
+  "flowDomainEventTitle": {
+    "message": "Evento del dominio",
+    "description": "Event drawer title"
+  },
+  "flowEventName": {
+    "message": "Nome dell'evento:",
+    "description": "Event drawer field label"
+  },
+  "flowDescription": {
+    "message": "Descrizione:",
+    "description": "Event drawer field label"
+  },
+  "flowEntityType": {
+    "message": "Tipo di entità:",
+    "description": "Event drawer field label"
+  },
+  "flowDetailLoadFailed": {
+    "message": "Impossibile caricare il flusso aziendale",
+    "description": "Flow detail load error"
+  },
+  "flowActionCreateTask": {
+    "message": "Crea attività: \"{title}\"",
+    "description": "Timeline process action summary"
+  },
+  "flowActionNotifyUser": {
+    "message": "Invia notifica",
+    "description": "Timeline process action summary"
+  },
+  "flowActionStartProcess": {
+    "message": "Avvia un altro processo",
+    "description": "Timeline process action summary"
+  },
+  "flowActionMandatoryField": {
+    "message": "Rendi obbligatorio \"{field}\".",
+    "description": "Timeline process action summary"
+  },
+  "flowActionDefaultField": {
+    "message": "Imposta il valore predefinito \"{field}\".",
+    "description": "Timeline process action summary"
+  },
+  "flowActionAssignOwnership": {
+    "message": "Assegna la proprietà",
+    "description": "Timeline process action summary"
+  },
+  "flowActionStatusGuard": {
+    "message": "Controllare le transizioni di stato",
+    "description": "Timeline process action summary"
+  },
+  "flowActionApproval": {
+    "message": "Richiedi l'approvazione",
+    "description": "Timeline process action summary"
+  },
+  "flowUntitledTask": {
+    "message": "Senza titolo",
+    "description": "Fallback task title in action summary"
+  },
+  "flowFormEditTitle": {
+    "message": "Modifica flusso aziendale",
+    "description": "Flow form page title"
+  },
+  "flowFormCreateTitle": {
+    "message": "Crea flusso aziendale",
+    "description": "Flow form page title"
+  },
+  "flowFormName": {
+    "message": "Nome del flusso",
+    "description": "Flow form field label"
+  },
+  "flowFormNamePh": {
+    "message": "ad esempio, flusso di conversione da lead a deal",
+    "description": "Flow form name placeholder"
+  },
+  "flowFormDescription": {
+    "message": "Descrizione",
+    "description": "Flow form field label"
+  },
+  "flowFormDescriptionPh": {
+    "message": "Descrivi come questi processi lavorano insieme...",
+    "description": "Flow form description placeholder"
+  },
+  "flowFormApp": {
+    "message": "App",
+    "description": "Flow form field label"
+  },
+  "flowFormSelectApp": {
+    "message": "Seleziona App",
+    "description": "Flow form app placeholder"
+  },
+  "flowFormProcesses": {
+    "message": "Processi",
+    "description": "Flow form field label"
+  },
+  "flowFormProcessesHint": {
+    "message": "Seleziona più processi da visualizzare insieme. L'ordine viene dedotto automaticamente.",
+    "description": "Flow form processes hint"
+  },
+  "flowFormLoadingProcesses": {
+    "message": "Caricamento processi...",
+    "description": "Flow form processes loading"
+  },
+  "flowFormNoProcesses": {
+    "message": "Nessun processo trovato per questa app. Creare prima i processi.",
+    "description": "Flow form empty processes"
+  },
+  "flowFormUpdateSuccess": {
+    "message": "Flusso aziendale aggiornato",
+    "description": "Flow form save success"
+  },
+  "flowFormCreateSuccess": {
+    "message": "Flusso aziendale creato",
+    "description": "Flow form save success"
+  },
+  "flowFormSaveFailed": {
+    "message": "Impossibile salvare",
+    "description": "Flow form save error"
+  },
+  "flowFormEditPageTitle": {
+    "message": "Modifica flusso aziendale | Arivu",
+    "description": "Browser tab title"
+  },
+  "flowFormCreatePageTitle": {
+    "message": "Crea flusso aziendale | Arivu",
+    "description": "Browser tab title"
+  },
+  "flowHealthPageTitle": {
+    "message": "Salute del flusso | Arivu",
+    "description": "Browser tab title"
+  },
+  "flowHealthTitleSuffix": {
+    "message": "- Salute",
+    "description": "Health page title suffix after flow name"
+  },
+  "flowHealthSubtitle": {
+    "message": "Visibilità operativa per questo flusso aziendale",
+    "description": "Health page subtitle"
+  },
+  "flowHealthLast7": {
+    "message": "Ultimi 7 giorni",
+    "description": "Health time range filter"
+  },
+  "flowHealthLast30": {
+    "message": "Ultimi 30 giorni",
+    "description": "Health time range filter"
+  },
+  "flowHealthLast90": {
+    "message": "Ultimi 90 giorni",
+    "description": "Health time range filter"
+  },
+  "flowHealthCardStatus": {
+    "message": "Stato",
+    "description": "Health summary card label"
+  },
+  "flowHealthCardExecutions": {
+    "message": "Esecuzioni",
+    "description": "Health summary card label"
+  },
+  "flowHealthCardCompletion": {
+    "message": "Tasso di completamento",
+    "description": "Health summary card label"
+  },
+  "flowHealthCardAvgTime": {
+    "message": "Tempo medio",
+    "description": "Health summary card label"
+  },
+  "flowHealthCardApprovalPauses": {
+    "message": "Pause di approvazione",
+    "description": "Health summary card label"
+  },
+  "flowHealthCardFailureRate": {
+    "message": "Tasso di fallimento",
+    "description": "Health summary card label"
+  },
+  "flowHealthStatusHealthy": {
+    "message": "salutare",
+    "description": "Health status display (API value healthy)"
+  },
+  "flowHealthStatusNeedsAttention": {
+    "message": "ha bisogno di attenzione",
+    "description": "Health status display (API needs_attention)"
+  },
+  "flowHealthStatusUnhealthy": {
+    "message": "malsano",
+    "description": "Health status display fallback"
+  },
+  "flowHealthBottlenecks": {
+    "message": "{count, plural, one {# Bottleneck} other {# Bottlenecks}} Detected",
+    "description": "Bottleneck alert heading"
+  },
+  "flowHealthBottleneckSummary": {
+    "message": "{critical} critico, {warning} avvisi",
+    "description": "Bottleneck alert summary"
+  },
+  "flowHealthProcessMetrics": {
+    "message": "Metriche di processo",
+    "description": "Process metrics section heading"
+  },
+  "flowHealthMetricExecutions": {
+    "message": "Esecuzioni",
+    "description": "Process metric label"
+  },
+  "flowHealthMetricCompletion": {
+    "message": "Completamento",
+    "description": "Process metric label"
+  },
+  "flowHealthMetricAvgTime": {
+    "message": "Tempo medio",
+    "description": "Process metric label"
+  },
+  "flowHealthMetricFailures": {
+    "message": "Fallimenti",
+    "description": "Process metric label"
+  },
+  "flowHealthApprovalGate": {
+    "message": "Cancello di approvazione",
+    "description": "Approval metrics subsection"
+  },
+  "flowHealthPending": {
+    "message": "In attesa di",
+    "description": "Approval metric label"
+  },
+  "flowHealthApproved": {
+    "message": "Approvato",
+    "description": "Approval metric label"
+  },
+  "flowHealthRejected": {
+    "message": "Respinto",
+    "description": "Approval metric label"
+  },
+  "flowHealthAvgWait": {
+    "message": "Attesa media",
+    "description": "Approval metric label"
+  },
+  "flowHealthNoData": {
+    "message": "Nessun dato di processo disponibile per questo periodo.",
+    "description": "Empty process metrics"
+  },
+  "flowHealthBottleneckDetails": {
+    "message": "Dettagli sul collo di bottiglia",
+    "description": "Bottleneck section heading"
+  },
+  "flowHealthExecStats": {
+    "message": "Statistiche di esecuzione",
+    "description": "Process drilldown section"
+  },
+  "flowHealthTotalExecutions": {
+    "message": "Esecuzioni totali",
+    "description": "Drilldown stat label"
+  },
+  "flowHealthCompleted": {
+    "message": "Completato",
+    "description": "Drilldown stat label"
+  },
+  "flowHealthFailed": {
+    "message": "Fallito",
+    "description": "Drilldown stat label"
+  },
+  "flowHealthWaitingApproval": {
+    "message": "In attesa di approvazione",
+    "description": "Drilldown stat label"
+  },
+  "flowHealthApprovalStats": {
+    "message": "Statistiche di approvazione",
+    "description": "Drilldown section"
+  },
+  "flowHealthTotalApprovals": {
+    "message": "Approvazioni totali",
+    "description": "Drilldown stat label"
+  },
+  "flowHealthAvgWaitTime": {
+    "message": "Tempo di attesa medio",
+    "description": "Drilldown stat label"
+  },
+  "flowHealthTimedOut": {
+    "message": "Timeout",
+    "description": "Drilldown stat label"
+  },
+  "flowHealthRejectionRate": {
+    "message": "Tasso di rifiuto",
+    "description": "Drilldown stat label"
+  },
+  "flowHealthViewLogs": {
+    "message": "Visualizza i log di esecuzione",
+    "description": "Drilldown action"
+  },
+  "flowHealthViewProcess": {
+    "message": "Visualizza processo",
+    "description": "Drilldown action"
+  },
+  "flowHealthLoadFailed": {
+    "message": "Impossibile caricare i dati sanitari",
+    "description": "Health page load error"
+  },
+  "durationZero": {
+    "message": "0m",
+    "description": "Zero duration display"
+  },
+  "durationMinutes": {
+    "message": "{minutes}m",
+    "description": "Duration in minutes"
+  },
+  "durationHoursMinutes": {
+    "message": "{hours}h {minutes}m",
+    "description": "Duration hours and minutes"
+  },
+  "durationHours": {
+    "message": "{hours}h",
+    "description": "Duration in hours only"
+  },
+  "durationDaysHours": {
+    "message": "{days}d {hours}h",
+    "description": "Duration days and hours"
+  },
+  "durationDays": {
+    "message": "{days}d",
+    "description": "Duration in days only"
+  },
+  "designerPageTitle": {
+    "message": "Progettista di processi | Arivu",
+    "description": "Browser tab title"
+  },
+  "designerGoBack": {
+    "message": "Torna indietro",
+    "description": "Designer back button aria-label"
+  },
+  "designerNamePh": {
+    "message": "Nome del processo",
+    "description": "Designer title input placeholder"
+  },
+  "designerDuplicateEdit": {
+    "message": "Duplica e modifica",
+    "description": "Designer header action"
+  },
+  "designerTidyLayout": {
+    "message": "Disposizione ordinata",
+    "description": "Designer header action"
+  },
+  "designerNoChanges": {
+    "message": "Nessuna modifica da salvare",
+    "description": "Save button tooltip when clean"
+  },
+  "designerActivate": {
+    "message": "Attivare",
+    "description": "Designer activate button"
+  },
+  "designerLoading": {
+    "message": "Caricamento progettista…",
+    "description": "Designer loading state"
+  },
+  "designerVersionRun": {
+    "message": "Questa esecuzione ha utilizzato la versione {runVersion}.",
+    "description": "Insight version banner part 1"
+  },
+  "designerVersionCurrent": {
+    "message": "Il processo è ora pubblicato come versione {currentVersion}.",
+    "description": "Insight version banner part 2"
+  },
+  "designerVersionCanvas": {
+    "message": "L'area di disegno mostra il grafico dell'inizio dell'esecuzione.",
+    "description": "Insight version banner part 3"
+  },
+  "designerTriggerBannerTitle": {
+    "message": "Scegli cosa avvia questo processo",
+    "description": "Trigger setup banner title"
+  },
+  "designerTriggerBannerBody": {
+    "message": "I trigger definiscono quando viene eseguito il flusso. Aggiungi i passaggi e le azioni IF successivamente, non nel trigger.",
+    "description": "Trigger setup banner body"
+  },
+  "designerTriggerBannerCta": {
+    "message": "Impostare “Inizia quando” →",
+    "description": "Trigger setup banner CTA"
+  },
+  "designerSaveBlockedTrigger": {
+    "message": "Scegli cosa avvia questo processo nelle impostazioni del processo prima di salvare.",
+    "description": "Save blocked message"
+  },
+  "designerSaveBlockedScope": {
+    "message": "L'app e il modulo sono obbligatori: configurali nelle Impostazioni processo, quindi salva.",
+    "description": "Save blocked message"
+  },
+  "designerGraphErrorsTitle": {
+    "message": "Risolvi i problemi del grafico prima di salvare o attivare:",
+    "description": "Graph validation banner"
+  },
+  "designerEmptyCanvasTitle": {
+    "message": "Costruisci il tuo flusso in due passaggi",
+    "description": "Empty canvas overlay title"
+  },
+  "designerEmptyCanvasStep1": {
+    "message": "Scegli Avvia quando in Impostazioni processo →",
+    "description": "Empty canvas step 1"
+  },
+  "designerEmptyCanvasStep2": {
+    "message": "Aggiungi passaggi dalla tavolozza a sinistra",
+    "description": "Empty canvas step 2"
+  },
+  "designerChooseTrigger": {
+    "message": "Scegli il grilletto",
+    "description": "Empty canvas CTA"
+  },
+  "designerInsightFailed": {
+    "message": "Non riuscito dopo {duration}{message}",
+    "description": "Insight node detail failed"
+  },
+  "designerInsightCompleted": {
+    "message": "Completato in {duration}{message}",
+    "description": "Insight node detail completed"
+  },
+  "designerInsightStepFailed": {
+    "message": "Passaggio non riuscito",
+    "description": "Insight fallback failed"
+  },
+  "designerInsightStepCompleted": {
+    "message": "Passaggio completato",
+    "description": "Insight fallback completed"
+  },
+  "designerInsightSkipped": {
+    "message": "Questo passaggio non è stato raggiunto in questa corsa",
+    "description": "Insight skipped step"
+  },
+  "designerInsightRunning": {
+    "message": "Attualmente in esecuzione…",
+    "description": "Insight running step"
+  },
+  "designerModulePeople": {
+    "message": "Persone",
+    "description": "Process designer module option"
+  },
+  "designerModuleOrganization": {
+    "message": "Organizzazione",
+    "description": "Process designer module option"
+  },
+  "designerModuleDeal": {
+    "message": "Affare",
+    "description": "Process designer module option"
+  },
+  "designerModuleUnknown": {
+    "message": "—",
+    "description": "Unknown module label"
+  },
+  "designerWebhookSecret": {
+    "message": "Segreto del webhook (copia ora, mostrato una volta):\n\n{secret}",
+    "description": "Webhook secret alert"
+  },
+  "designerInvalidConnection": {
+    "message": "Connessione non valida",
+    "description": "Connection rejected alert fallback"
+  },
+  "designerLoadExecutionFailed": {
+    "message": "Impossibile caricare l'esecuzione",
+    "description": "Execution overlay error"
+  },
+  "designerTestFailed": {
+    "message": "Prova fallita",
+    "description": "Test simulation error"
+  },
+  "designerNotFound": {
+    "message": "Processo non trovato",
+    "description": "Load process error"
+  },
+  "designerSaveFailed": {
+    "message": "Salvataggio non riuscito",
+    "description": "Save error fallback"
+  },
+  "designerSaved": {
+    "message": "Processo salvato",
+    "description": "Save success toast"
+  },
+  "designerSaveError": {
+    "message": "Impossibile salvare",
+    "description": "Save error toast"
+  },
+  "designerActivated": {
+    "message": "Processo attivato",
+    "description": "Activate success toast fallback"
+  },
+  "designerActivatedVersion": {
+    "message": "Processo attivato e pubblicato come versione {version}",
+    "description": "Activate success with version"
+  },
+  "designerActivateFailed": {
+    "message": "Attivazione non riuscita",
+    "description": "Activate error toast"
+  },
+  "designerDuplicateFailed": {
+    "message": "Duplicazione fallita",
+    "description": "Duplicate error alert"
+  },
+  "designerLoadFailed": {
+    "message": "Impossibile caricare",
+    "description": "Designer load error"
+  },
+  "setupBackToProcesses": {
+    "message": "← Processi",
+    "description": "Setup wizard back link"
+  },
+  "setupTitle": {
+    "message": "Nuovo processo",
+    "description": "Process setup page title"
+  },
+  "setupDescription": {
+    "message": "Definire l'ambito e quando viene eseguito questo processo. Successivamente costruirai il flusso sull'area di disegno.",
+    "description": "Process setup page subtitle"
+  },
+  "setupProcessName": {
+    "message": "Nome del processo",
+    "description": "Setup form field label"
+  },
+  "setupProcessNamePh": {
+    "message": "per esempio. Seguito dell'affare",
+    "description": "Setup form name placeholder"
+  },
+  "setupApp": {
+    "message": "App",
+    "description": "Setup form field label"
+  },
+  "setupSelectApp": {
+    "message": "Seleziona l'app...",
+    "description": "Setup app select placeholder"
+  },
+  "setupModule": {
+    "message": "Modulo",
+    "description": "Setup form field label"
+  },
+  "setupSelectModule": {
+    "message": "Seleziona modulo...",
+    "description": "Setup module select placeholder"
+  },
+  "setupModuleHint": {
+    "message": "A quali record si applica questo processo",
+    "description": "Setup module hint"
+  },
+  "setupStep1": {
+    "message": "Passaggio 1",
+    "description": "Trigger section step badge"
+  },
+  "setupStartsWhen": {
+    "message": "Inizia quando",
+    "description": "Trigger field label"
+  },
+  "setupSelectModuleFirst": {
+    "message": "Seleziona prima il modulo...",
+    "description": "Trigger select disabled placeholder"
+  },
+  "setupChooseTrigger": {
+    "message": "Scegli cosa avvia questo processo...",
+    "description": "Trigger select placeholder"
+  },
+  "setupPickModuleForTrigger": {
+    "message": "Scegli un modulo per scegliere un trigger.",
+    "description": "Trigger hint when no module"
+  },
+  "setupWatchChanges": {
+    "message": "Guarda i cambiamenti",
+    "description": "Record updated watch field label"
+  },
+  "setupWatchHint": {
+    "message": "Successivamente utilizzare i passaggi IF per le regole aziendali.",
+    "description": "Watch field hint"
+  },
+  "setupFrequency": {
+    "message": "Frequenza",
+    "description": "Schedule preset label"
+  },
+  "setupHour": {
+    "message": "Ora (0–23)",
+    "description": "Schedule hour label"
+  },
+  "setupMinute": {
+    "message": "Minuto",
+    "description": "Schedule minute label"
+  },
+  "setupWebhookNote": {
+    "message": "L'URL e il segreto del webhook vengono configurati nella finestra di progettazione dopo aver continuato.",
+    "description": "Webhook trigger note"
+  },
+  "setupSummary": {
+    "message": "Riepilogo",
+    "description": "Setup summary section label"
+  },
+  "setupContinue": {
+    "message": "Continua al designer →",
+    "description": "Setup submit button"
+  },
+  "setupCreating": {
+    "message": "Creazione...",
+    "description": "Setup submit in progress"
+  },
+  "setupUntitled": {
+    "message": "Processo senza titolo",
+    "description": "Default process name on create"
+  },
+  "setupCreateFailed": {
+    "message": "Impossibile creare il processo",
+    "description": "Setup create error"
+  },
+  "setupPageTitle": {
+    "message": "Nuovo processo | Arivu",
+    "description": "Browser tab title"
+  },
+  "rulesTitle": {
+    "message": "Regole di automazione",
+    "description": "Automation rules list title"
+  },
+  "rulesDescription": {
+    "message": "Configura azioni automatizzate attivate da eventi del dominio.",
+    "description": "Automation rules list subtitle"
+  },
+  "rulesNew": {
+    "message": "Nuova regola",
+    "description": "Create rule button"
+  },
+  "rulesEmptyTitle": {
+    "message": "Nessuna regola di automazione",
+    "description": "Empty rules heading"
+  },
+  "rulesEmptyMessage": {
+    "message": "Crea la tua prima regola di automazione per automatizzare le azioni in base agli eventi del dominio.",
+    "description": "Empty rules body"
+  },
+  "rulesTooltipPreview": {
+    "message": "Anteprima",
+    "description": "Rule row action tooltip"
+  },
+  "rulesTooltipEnable": {
+    "message": "Abilitare",
+    "description": "Rule row action tooltip"
+  },
+  "rulesTooltipDisable": {
+    "message": "Disabilita",
+    "description": "Rule row action tooltip"
+  },
+  "rulesLoadFailed": {
+    "message": "Impossibile caricare le regole di automazione",
+    "description": "Rules list load error"
+  },
+  "rulesToggleFailed": {
+    "message": "Impossibile attivare/disattivare la regola",
+    "description": "Toggle rule error"
+  },
+  "rulesDeleteConfirm": {
+    "message": "Eliminare la regola \"{name}\"? Questo lo disabiliterà (eliminazione temporanea).",
+    "description": "Delete rule confirm dialog"
+  },
+  "rulesDeleteFailed": {
+    "message": "Impossibile eliminare la regola",
+    "description": "Delete rule error"
+  },
+  "rulesPageTitle": {
+    "message": "Regole di automazione | Arivu",
+    "description": "Browser tab title"
+  },
+  "wizardCreateHeading": {
+    "message": "Crea processo",
+    "description": "Process creation wizard modal title"
+  },
+  "wizardCreateSubheading": {
+    "message": "Seguire i passaggi per creare un processo che controlli il comportamento del sistema",
+    "description": "Process creation wizard subtitle"
+  },
+  "wizardProgressAria": {
+    "message": "Progressi",
+    "description": "Wizard stepper aria label"
+  },
+  "wizardStepScope": {
+    "message": "Ambito",
+    "description": "Wizard step name"
+  },
+  "wizardStepWhat": {
+    "message": "Che cosa",
+    "description": "Wizard step name"
+  },
+  "wizardStepReview": {
+    "message": "Revisione",
+    "description": "Wizard step name"
+  },
+  "wizardScopeHeading": {
+    "message": "Ambito del processo",
+    "description": "Wizard step 1 heading"
+  },
+  "wizardScopeIntro": {
+    "message": "Scegli l'app, il modulo e cosa avvia questo processo",
+    "description": "Wizard step 1 intro"
+  },
+  "wizardWhatHeading": {
+    "message": "Cosa dovrebbe controllare il sistema?",
+    "description": "Wizard step 2 heading"
+  },
+  "wizardWhatIntro": {
+    "message": "Seleziona quali comportamenti questo processo dovrebbe controllare",
+    "description": "Wizard step 2 intro"
+  },
+  "wizardReviewHeading": {
+    "message": "Rivedi e crea",
+    "description": "Wizard step 3 heading"
+  },
+  "wizardReviewIntro": {
+    "message": "Rivedi la configurazione del processo prima di crearlo",
+    "description": "Wizard step 3 intro"
+  },
+  "wizardReviewScope": {
+    "message": "Ambito",
+    "description": "Review section scope label"
+  },
+  "wizardReviewThen": {
+    "message": "Poi",
+    "description": "Review section then label"
+  },
+  "wizardReviewFieldRule": {
+    "message": "Rendi \"{field}\" {rule}",
+    "description": "Review bullet for field rule"
+  },
+  "wizardReviewOwnership": {
+    "message": "Assegna la proprietà a {target} ({assignment})",
+    "description": "Review bullet for ownership"
+  },
+  "wizardReviewStatusAllow": {
+    "message": "Consenti a {field} di passare da \"{from}\" a \"{to}\"",
+    "description": "Review status guard allow"
+  },
+  "wizardReviewStatusBlock": {
+    "message": "Blocco {field} passaggio da \"{from}\" a \"{to}\": {reason}",
+    "description": "Review status guard block"
+  },
+  "wizardReviewCondition": {
+    "message": "Se {field} {operator} {value}",
+    "description": "Review optional condition line"
+  },
+  "wizardCreating": {
+    "message": "Creazione...",
+    "description": "Create process button loading"
+  },
+  "wizardCreateProcess": {
+    "message": "Crea processo",
+    "description": "Create process button"
+  },
+  "wizardCreateFailed": {
+    "message": "Impossibile creare il processo",
+    "description": "Create process error"
+  },
+  "wizardStartsWhenPhModule": {
+    "message": "Seleziona prima il modulo...",
+    "description": "Starts when placeholder before module"
+  },
+  "wizardStartsWhenPh": {
+    "message": "Scegli cosa avvia questo processo...",
+    "description": "Starts when placeholder"
+  },
+  "wizardStartsWhenHintModule": {
+    "message": "Scegli prima un modulo.",
+    "description": "Starts when hint before module"
+  },
+  "wizardWebhookHint": {
+    "message": "L'URL e il segreto del webhook vengono configurati nella progettazione del flusso dopo aver creato il processo.",
+    "description": "Webhook trigger hint"
+  },
+  "wizardApplySomeCases": {
+    "message": "Applicare solo in alcuni casi",
+    "description": "Optional condition toggle"
+  },
+  "wizardControlFieldBehavior": {
+    "message": "Controllare il comportamento del campo",
+    "description": "Control checkbox title"
+  },
+  "wizardControlFieldBehaviorDesc": {
+    "message": "Rendi i campi obbligatori, imposta valori predefiniti o controlla la visibilità",
+    "description": "Control checkbox description"
+  },
+  "wizardControlOwnership": {
+    "message": "Controlla la proprietà e l'assegnazione",
+    "description": "Control checkbox title"
+  },
+  "wizardControlOwnershipDesc": {
+    "message": "Assegnare o riassegnare la proprietà del record",
+    "description": "Control checkbox description"
+  },
+  "wizardControlStatus": {
+    "message": "Stato di controllo/transizioni di fase",
+    "description": "Control checkbox title"
+  },
+  "wizardControlStatusDesc": {
+    "message": "Consenti o blocca le modifiche allo stato",
+    "description": "Control checkbox description"
+  },
+  "wizardControlActions": {
+    "message": "Esegui azioni",
+    "description": "Control checkbox title"
+  },
+  "wizardControlActionsDesc": {
+    "message": "Crea attività, invia notifiche o altre azioni automatizzate",
+    "description": "Control checkbox description"
+  },
+  "wizardFieldMandatoryHint": {
+    "message": "Questo campo sarà obbligatorio durante l'esecuzione del processo",
+    "description": "Mandatory field rule hint"
+  },
+  "wizardOwnershipHint": {
+    "message": "L'assegnazione seguirà le regole di autorizzazione esistenti.",
+    "description": "Ownership assignment hint"
+  },
+  "wizardActionCreateTask": {
+    "message": "Crea attività: \"{title}\"",
+    "description": "Review action create task"
+  },
+  "wizardActionNotify": {
+    "message": "Avvisa {recipient}",
+    "description": "Review action notify"
+  },
+  "wizardActionNotifyOwner": {
+    "message": "proprietario",
+    "description": "Notify recipient owner shorthand"
+  },
+  "wizardActionNotifyUser": {
+    "message": "utente",
+    "description": "Notify recipient user shorthand"
+  },
+  "wizardActionRun": {
+    "message": "Esegui l'azione",
+    "description": "Review generic action"
+  },
+  "wizardFieldRuleMandatory": {
+    "message": "obbligatorio",
+    "description": "Field rule description mandatory"
+  },
+  "wizardFieldRuleDefault": {
+    "message": "predefinito su \"{value}\"",
+    "description": "Field rule description default"
+  },
+  "wizardFieldRuleVisible": {
+    "message": "visibile",
+    "description": "Field rule description visible"
+  },
+  "wizardFieldRuleHidden": {
+    "message": "nascosto",
+    "description": "Field rule description hidden"
+  },
+  "fieldApp": {
+    "message": "App",
+    "description": "App field label"
+  },
+  "fieldModule": {
+    "message": "Modulo",
+    "description": "Module field label"
+  },
+  "fieldStartsWhen": {
+    "message": "Inizia quando",
+    "description": "Process trigger field label"
+  },
+  "fieldWatchChanges": {
+    "message": "Guarda i cambiamenti",
+    "description": "Record updated watch field label"
+  },
+  "fieldFrequency": {
+    "message": "Frequenza",
+    "description": "Schedule frequency label"
+  },
+  "fieldField": {
+    "message": "Campo",
+    "description": "Generic field label"
+  },
+  "fieldOperator": {
+    "message": "Operatore",
+    "description": "Condition operator label"
+  },
+  "fieldValue": {
+    "message": "Valore",
+    "description": "Value field label"
+  },
+  "fieldRuleType": {
+    "message": "Tipo di regola",
+    "description": "Field rule type label"
+  },
+  "fieldDefaultValue": {
+    "message": "Valore predefinito",
+    "description": "Default value label"
+  },
+  "fieldShowField": {
+    "message": "Mostra campo",
+    "description": "Visibility checkbox label"
+  },
+  "fieldAssignmentType": {
+    "message": "Tipo di assegnazione",
+    "description": "Ownership assignment type"
+  },
+  "fieldTarget": {
+    "message": "Bersaglio",
+    "description": "Ownership target label"
+  },
+  "fieldFrom": {
+    "message": "Da",
+    "description": "Status transition from"
+  },
+  "fieldTo": {
+    "message": "A",
+    "description": "Status transition to"
+  },
+  "fieldBlockReason": {
+    "message": "Motivo del blocco (mostrato agli utenti)",
+    "description": "Status guard block reason"
+  },
+  "fieldActionType": {
+    "message": "Tipo di azione",
+    "description": "Action type label"
+  },
+  "fieldTaskTitle": {
+    "message": "Titolo dell'attività",
+    "description": "Task title label"
+  },
+  "fieldDescription": {
+    "message": "Descrizione",
+    "description": "Description label"
+  },
+  "fieldAssignTo": {
+    "message": "Assegna a",
+    "description": "Task assignee label"
+  },
+  "fieldMessage": {
+    "message": "Messaggio",
+    "description": "Notification message label"
+  },
+  "fieldRecipient": {
+    "message": "Destinatario",
+    "description": "Notification recipient label"
+  },
+  "fieldProcessName": {
+    "message": "Nome del processo",
+    "description": "Process name label"
+  },
+  "fieldDescriptionOptional": {
+    "message": "Descrizione (facoltativa)",
+    "description": "Optional description label"
+  },
+  "fieldEntityType": {
+    "message": "Tipo di entità",
+    "description": "Entity type label"
+  },
+  "fieldRecord": {
+    "message": "Documentazione",
+    "description": "Test record label"
+  },
+  "fieldEventType": {
+    "message": "Tipo di evento",
+    "description": "Automation event type label"
+  },
+  "fieldName": {
+    "message": "Nome",
+    "description": "Rule name label"
+  },
+  "fieldDueInDays": {
+    "message": "Scadenza (giorni)",
+    "description": "Task due days label"
+  },
+  "fieldRelatedEntity": {
+    "message": "Entità correlata",
+    "description": "Related entity label"
+  },
+  "fieldConditionOptional": {
+    "message": "Condizione (facoltativo)",
+    "description": "Optional trigger condition"
+  },
+  "phSelectApp": {
+    "message": "Seleziona un'app...",
+    "description": "App select placeholder"
+  },
+  "phSelectModule": {
+    "message": "Seleziona un modulo...",
+    "description": "Module select placeholder"
+  },
+  "phSelectAction": {
+    "message": "Seleziona azione...",
+    "description": "Action select placeholder"
+  },
+  "phSelectEntityType": {
+    "message": "Seleziona il tipo di entità...",
+    "description": "Entity type placeholder"
+  },
+  "phSelectEvent": {
+    "message": "Seleziona evento...",
+    "description": "Event type placeholder"
+  },
+  "phSelectField": {
+    "message": "Seleziona campo...",
+    "description": "Condition field placeholder"
+  },
+  "phAmount": {
+    "message": "per esempio. quantità",
+    "description": "Condition field example"
+  },
+  "phAmountValue": {
+    "message": "per esempio. 100000",
+    "description": "Condition value example"
+  },
+  "phApproval": {
+    "message": "per esempio. approvazione",
+    "description": "Field key example"
+  },
+  "phDefaultValue": {
+    "message": "Inserisci il valore predefinito",
+    "description": "Default value placeholder"
+  },
+  "phOwnershipTarget": {
+    "message": "ID utente, nome del ruolo o riferimento alla regola",
+    "description": "Ownership target placeholder"
+  },
+  "phStatusFrom": {
+    "message": "per esempio. Aprire",
+    "description": "Status from placeholder"
+  },
+  "phStatusTo": {
+    "message": "per esempio. Chiuso Vinto",
+    "description": "Status to placeholder"
+  },
+  "phBlockReason": {
+    "message": "per esempio. È necessaria l'approvazione",
+    "description": "Block reason placeholder"
+  },
+  "phTaskTitle": {
+    "message": "per esempio. Seguire l'accordo",
+    "description": "Task title placeholder"
+  },
+  "phTaskDescription": {
+    "message": "Descrizione dell'attività...",
+    "description": "Task description placeholder"
+  },
+  "phNotifyMessage": {
+    "message": "Messaggio di notifica...",
+    "description": "Notification placeholder"
+  },
+  "phProcessName": {
+    "message": "per esempio. Processo di approvazione dell'affare",
+    "description": "Process name placeholder"
+  },
+  "phProcessDescription": {
+    "message": "Descrivi cosa fa questo processo...",
+    "description": "Process description placeholder"
+  },
+  "phRuleName": {
+    "message": "ad esempio, Crea attività quando l'affare viene vinto",
+    "description": "Automation rule name placeholder"
+  },
+  "phRuleDescription": {
+    "message": "Descrizione facoltativa",
+    "description": "Automation rule description placeholder"
+  },
+  "phConditionValue": {
+    "message": "Valore",
+    "description": "Condition value placeholder"
+  },
+  "phRecordId": {
+    "message": "Inserisci l'ID del record o cerca...",
+    "description": "Test record id placeholder"
+  },
+  "phRelatedEntityId": {
+    "message": "ID o '__trigger__'",
+    "description": "Related entity id placeholder"
+  },
+  "phNotifyMessageShort": {
+    "message": "Messaggio di notifica",
+    "description": "Notify message placeholder short"
+  },
+  "opEquals": {
+    "message": "Uguale (=)",
+    "description": "Condition operator equals"
+  },
+  "opNotEquals": {
+    "message": "Non uguale (≠)",
+    "description": "Condition operator not equals"
+  },
+  "opGreaterThan": {
+    "message": "Maggiore di (>)",
+    "description": "Condition operator greater"
+  },
+  "opLessThan": {
+    "message": "Meno di (<)",
+    "description": "Condition operator less"
+  },
+  "opContains": {
+    "message": "Contiene",
+    "description": "Condition operator contains"
+  },
+  "opSymbolContains": {
+    "message": "contiene",
+    "description": "Condition operator symbol in summary"
+  },
+  "fieldRuleMandatory": {
+    "message": "Rendi obbligatorio",
+    "description": "Field rule option mandatory"
+  },
+  "fieldRuleDefault": {
+    "message": "Imposta il valore predefinito",
+    "description": "Field rule option default"
+  },
+  "fieldRuleVisibility": {
+    "message": "Mostra/nascondi campo",
+    "description": "Field rule option visibility"
+  },
+  "ownershipSpecificUser": {
+    "message": "Utente specifico",
+    "description": "Ownership assignment user"
+  },
+  "ownershipRole": {
+    "message": "Ruolo",
+    "description": "Ownership assignment role"
+  },
+  "ownershipRuleBased": {
+    "message": "Basato su regole",
+    "description": "Ownership assignment rule"
+  },
+  "statusFieldStatus": {
+    "message": "Stato",
+    "description": "Status guard field status"
+  },
+  "statusFieldLifecycle": {
+    "message": "Ciclo vitale",
+    "description": "Status guard field lifecycle"
+  },
+  "statusFieldStage": {
+    "message": "Palcoscenico",
+    "description": "Status guard field stage"
+  },
+  "actionCreateTask": {
+    "message": "Crea attività",
+    "description": "Action type create task"
+  },
+  "actionCreateTaskLower": {
+    "message": "Crea attività",
+    "description": "Action type create task lowercase"
+  },
+  "actionNotifyUser": {
+    "message": "Invia notifica",
+    "description": "Action type notify"
+  },
+  "actionNotifyUserLower": {
+    "message": "Invia notifica",
+    "description": "Action type notify lowercase"
+  },
+  "actionStartProcess": {
+    "message": "Avvia processo",
+    "description": "Action type start process"
+  },
+  "actionStartProcessLower": {
+    "message": "Avvia il processo",
+    "description": "Action type start process lowercase"
+  },
+  "actionGeneric": {
+    "message": "Azione",
+    "description": "Generic action label"
+  },
+  "assigneeTriggeredBy": {
+    "message": "Utente che ha attivato",
+    "description": "Assignee triggered by user"
+  },
+  "assigneeOwner": {
+    "message": "Proprietario del disco",
+    "description": "Assignee record owner"
+  },
+  "assigneeOwnerTitle": {
+    "message": "Proprietario del disco",
+    "description": "Assignee record owner title case"
+  },
+  "assigneeTriggeredByTitle": {
+    "message": "Utente che ha attivato l'attivazione",
+    "description": "Assignee triggered title case"
+  },
+  "entityAny": {
+    "message": "Qualunque",
+    "description": "Entity type any"
+  },
+  "entityPeople": {
+    "message": "Persone",
+    "description": "Entity type people"
+  },
+  "entityOrganization": {
+    "message": "Organizzazione",
+    "description": "Entity type organization"
+  },
+  "entityDeal": {
+    "message": "Affare",
+    "description": "Entity type deal"
+  },
+  "entityEvents": {
+    "message": "Eventi/Appuntamenti",
+    "description": "Entity type events"
+  },
+  "entityEventAppointment": {
+    "message": "Evento/Appuntamento",
+    "description": "Entity type event single"
+  },
+  "entityNone": {
+    "message": "Nessuno",
+    "description": "Related entity none"
+  },
+  "ruleFormEditHeading": {
+    "message": "Modifica regola di automazione",
+    "description": "Automation rule form edit title"
+  },
+  "ruleFormNewHeading": {
+    "message": "Nuova regola di automazione",
+    "description": "Automation rule form new title"
+  },
+  "ruleFormBasicInfo": {
+    "message": "Informazioni di base",
+    "description": "Automation rule basic section"
+  },
+  "ruleFormEnabled": {
+    "message": "Abilitato",
+    "description": "Rule enabled checkbox"
+  },
+  "ruleFormRespectHours": {
+    "message": "Rispettare gli orari di lavoro",
+    "description": "Business hours checkbox"
+  },
+  "ruleFormRespectHoursHint": {
+    "message": "Esegui questa azione alla finestra aperta successiva quando viene attivata al di fuori dell'orario di lavoro.",
+    "description": "Business hours hint"
+  },
+  "ruleFormApptQuickStart": {
+    "message": "Appuntamento rapido",
+    "description": "Appointment templates section"
+  },
+  "ruleFormApptQuickStartHint": {
+    "message": "Precompila una regola per i flussi di lavoro di prenotazione comuni.",
+    "description": "Appointment templates hint"
+  },
+  "ruleFormTrigger": {
+    "message": "Grilletto",
+    "description": "Trigger section heading"
+  },
+  "ruleFormApptEntityHint": {
+    "message": "Utilizza il tipo di entità {entityType} in modo che le regole si attivino per le riunioni prenotate.",
+    "description": "Appointment entity hint"
+  },
+  "ruleFormConditionHint": {
+    "message": "Aggiungi condizioni per corrispondere a valori di stato specifici (ad esempio, fase = \"Chiuso Vinto\")",
+    "description": "Condition help text"
+  },
+  "ruleFormAddCondition": {
+    "message": "+ Aggiungi condizione",
+    "description": "Add condition button"
+  },
+  "ruleFormActionSection": {
+    "message": "Azione",
+    "description": "Action section heading"
+  },
+  "ruleFormRelatedTriggerHint": {
+    "message": "Utilizza \"__trigger__\" per collegarti all'entità dell'evento",
+    "description": "Related entity trigger hint"
+  },
+  "ruleFormPreview": {
+    "message": "Anteprima",
+    "description": "Preview rule button"
+  },
+  "ruleFormPreviewAlert": {
+    "message": "Anteprima: verranno pianificate azioni {count}",
+    "description": "Preview alert message"
+  },
+  "ruleFormPreviewFailed": {
+    "message": "Anteprima non riuscita",
+    "description": "Preview error"
+  },
+  "ruleFormSaveFailed": {
+    "message": "Impossibile salvare la regola",
+    "description": "Save rule error"
+  },
+  "tplNotifyBooked": {
+    "message": "Avvisare l'host al momento della prenotazione",
+    "description": "Appointment template label"
+  },
+  "tplTaskNoShow": {
+    "message": "Compito in caso di mancata presentazione",
+    "description": "Appointment template label"
+  },
+  "tplNotifyCancelled": {
+    "message": "Avvisa l'host in caso di cancellazione",
+    "description": "Appointment template label"
+  },
+  "rulePreviewHeading": {
+    "message": "Anteprima della regola",
+    "description": "Rule preview modal title"
+  },
+  "rulePreviewTestEvent": {
+    "message": "Evento di prova",
+    "description": "Preview test event heading"
+  },
+  "rulePreviewPlannedActions": {
+    "message": "Azioni pianificate",
+    "description": "Preview planned actions heading"
+  },
+  "rulePreviewNoActions": {
+    "message": "Nessuna azione sarà pianificata per questo evento.",
+    "description": "Preview empty plan"
+  },
+  "rulePreviewRuleLabel": {
+    "message": "Regola: {name}",
+    "description": "Preview rule name label"
+  },
+  "rulePreviewExecuted": {
+    "message": "Eseguito: {count}",
+    "description": "Preview executed count"
+  },
+  "rulePreviewSkipped": {
+    "message": "Saltato: {count}",
+    "description": "Preview skipped count"
+  },
+  "rulePreviewFailed": {
+    "message": "Non riuscito: {count}",
+    "description": "Preview failed count"
+  },
+  "rulePreviewLoadFailed": {
+    "message": "Impossibile visualizzare l'anteprima della regola",
+    "description": "Preview load error"
+  },
+  "execLogsHeading": {
+    "message": "Registri di esecuzione",
+    "description": "Execution logs modal title"
+  },
+  "execLogsEmptyHeading": {
+    "message": "Nessuna esecuzione ancora",
+    "description": "Empty executions heading"
+  },
+  "execLogsEmptyBody": {
+    "message": "Questo processo non è ancora stato eseguito.",
+    "description": "Empty executions body"
+  },
+  "execLogsViewDetails": {
+    "message": "Visualizza dettagli",
+    "description": "View execution details button"
+  },
+  "execLogsBackToList": {
+    "message": "Torna alla lista",
+    "description": "Back to execution list"
+  },
+  "execLogsStatusCompleted": {
+    "message": "Completato",
+    "description": "Execution status completed"
+  },
+  "execLogsStatusFailed": {
+    "message": "Fallito",
+    "description": "Execution status failed"
+  },
+  "execLogsStatusRunning": {
+    "message": "Corsa",
+    "description": "Execution status running"
+  },
+  "execLogsTrigger": {
+    "message": "Grilletto:",
+    "description": "Execution trigger label"
+  },
+  "execLogsEntity": {
+    "message": "Entità:",
+    "description": "Execution entity label"
+  },
+  "execLogsDuration": {
+    "message": "Durata:",
+    "description": "Execution duration label"
+  },
+  "execLogsTriggeredBy": {
+    "message": "Innescato da:",
+    "description": "Triggered by label"
+  },
+  "execLogsTriggeredByUser": {
+    "message": "Utente ({id})",
+    "description": "Triggered by user with id"
+  },
+  "execLogsProcessStarted": {
+    "message": "Processo avviato",
+    "description": "Timeline process started"
+  },
+  "execLogsRuleEvaluated": {
+    "message": "Regola valutata",
+    "description": "Timeline rule evaluated"
+  },
+  "execLogsCondition": {
+    "message": "Condizione:",
+    "description": "Timeline condition label"
+  },
+  "execLogsResult": {
+    "message": "Risultato:",
+    "description": "Timeline result label"
+  },
+  "execLogsPassed": {
+    "message": "Superato",
+    "description": "Condition passed"
+  },
+  "execLogsSkipped": {
+    "message": "Saltato",
+    "description": "Condition skipped"
+  },
+  "execLogsBehaviorProposed": {
+    "message": "Comportamento proposto",
+    "description": "Timeline behavior proposed"
+  },
+  "execLogsFieldRule": {
+    "message": "Regola del campo:",
+    "description": "Timeline field rule label"
+  },
+  "execLogsOwnershipRule": {
+    "message": "Regola di proprietà:",
+    "description": "Timeline ownership rule label"
+  },
+  "execLogsStatusGuard": {
+    "message": "Guardia di stato:",
+    "description": "Timeline status guard label"
+  },
+  "execLogsActionExecuted": {
+    "message": "Azione eseguita",
+    "description": "Timeline action executed"
+  },
+  "execLogsSuccess": {
+    "message": "Successo",
+    "description": "Action success result"
+  },
+  "execLogsProcessCompleted": {
+    "message": "Processo completato",
+    "description": "Timeline process completed"
+  },
+  "execLogsProcessFailed": {
+    "message": "Processo non riuscito",
+    "description": "Timeline process failed"
+  },
+  "execLogsError": {
+    "message": "Errore:",
+    "description": "Timeline error label"
+  },
+  "execLogsUnknownError": {
+    "message": "Errore sconosciuto",
+    "description": "Unknown error fallback"
+  },
+  "execLogsCompletedSuccess": {
+    "message": "Processo completato con successo",
+    "description": "Process completed message"
+  },
+  "testModalHeading": {
+    "message": "Processo di prova",
+    "description": "Test process modal title"
+  },
+  "testModalBanner": {
+    "message": "Questa è una prova. Nessun dato verrà modificato.",
+    "description": "Test mode banner"
+  },
+  "testModalSelectRecordHeading": {
+    "message": "Seleziona Registrazione di prova",
+    "description": "Test step 1 heading"
+  },
+  "testModalSelectRecordIntro": {
+    "message": "Scegli un record rispetto al quale testare questo processo",
+    "description": "Test step 1 intro"
+  },
+  "testModalRecordIdHint": {
+    "message": "Inserisci l'ID di un record {entityType} esistente",
+    "description": "Test record id hint"
+  },
+  "testModalSimulateTrigger": {
+    "message": "Simula trigger",
+    "description": "Simulate trigger label"
+  },
+  "testModalSimulateHint": {
+    "message": "Questo trigger verrà simulato quando si esegue il test",
+    "description": "Simulate trigger hint"
+  },
+  "testModalResultsHeading": {
+    "message": "Risultati dei test",
+    "description": "Test results heading"
+  },
+  "testModalResultsIntro": {
+    "message": "Anteprima di cosa accadrebbe durante l'esecuzione di questo processo",
+    "description": "Test results intro"
+  },
+  "testModalRunning": {
+    "message": "Esecuzione del test...",
+    "description": "Test running message"
+  },
+  "testModalRunTest": {
+    "message": "Esegui prova",
+    "description": "Run test button"
+  },
+  "testModalProcessStartedTest": {
+    "message": "Processo avviato (test)",
+    "description": "Test timeline started"
+  },
+  "testModalTestRecord": {
+    "message": "Registrazione della prova:",
+    "description": "Test record label"
+  },
+  "testModalTriggerManual": {
+    "message": "Manuale",
+    "description": "Manual trigger label"
+  },
+  "testModalWouldPass": {
+    "message": "Risultato: passerebbe",
+    "description": "Test condition would pass"
+  },
+  "testModalActionWouldExecute": {
+    "message": "L'azione verrebbe eseguita",
+    "description": "Test action would execute"
+  },
+  "testModalWouldSucceed": {
+    "message": "Risultato: avrebbe avuto successo",
+    "description": "Test action would succeed"
+  },
+  "testModalWouldComplete": {
+    "message": "Il processo verrebbe completato",
+    "description": "Test would complete title"
+  },
+  "testModalWouldCompleteBody": {
+    "message": "Il processo sarebbe stato completato con successo (nessun dato è stato modificato)",
+    "description": "Test would complete body"
+  },
+  "rulePanelEditHeading": {
+    "message": "Modifica regola",
+    "description": "Rule edit panel title"
+  },
+  "summaryConditionCheck": {
+    "message": "Controllo delle condizioni",
+    "description": "Fallback condition summary"
+  },
+  "summaryFieldMandatory": {
+    "message": "Rendi obbligatorio \"{field}\".",
+    "description": "Field rule mandatory summary"
+  },
+  "summaryFieldDefault": {
+    "message": "Imposta il valore predefinito \"{field}\" su \"{value}\"",
+    "description": "Field rule default summary"
+  },
+  "summaryFieldShow": {
+    "message": "Mostra campo \"{field}\"",
+    "description": "Field rule show summary"
+  },
+  "summaryFieldHide": {
+    "message": "Nascondi campo \"{field}\"",
+    "description": "Field rule hide summary"
+  },
+  "summaryFieldRuleApplied": {
+    "message": "Regola di campo applicata",
+    "description": "Field rule fallback summary"
+  },
+  "summaryOwnership": {
+    "message": "Assegna la proprietà a {target} ({assignment})",
+    "description": "Ownership rule summary"
+  },
+  "summaryStatusGuard": {
+    "message": "Controlla la transizione {field}: {transition}",
+    "description": "Status guard summary"
+  },
+  "summaryActionUntitled": {
+    "message": "Senza titolo",
+    "description": "Untitled task in summary"
+  },
+  "summaryNotifyTo": {
+    "message": "A: {recipient}",
+    "description": "Notify action summary"
+  },
+  "summaryNotifyUserFallback": {
+    "message": "utente",
+    "description": "Notify recipient fallback"
+  },
+  "summaryStartProcess": {
+    "message": "Processo: {processId}",
+    "description": "Start process summary"
+  },
+  "summaryProcessUnknown": {
+    "message": "Sconosciuto",
+    "description": "Unknown process id"
+  },
+  "summaryActionExecuted": {
+    "message": "Azione eseguita",
+    "description": "Action executed fallback"
+  },
+  "appFlowsHeading": {
+    "message": "Come funziona questa app",
+    "description": "App flows section heading"
+  },
+  "appFlowsEmpty": {
+    "message": "Nessun flusso aziendale ancora.",
+    "description": "App flows empty state"
+  },
+  "appFlowsEmptyHint": {
+    "message": "Importa un modello da Impostazioni → Automazione per vedere come funziona questa app.",
+    "description": "App flows empty hint"
+  },
+  "appFlowsGoTo": {
+    "message": "Vai a Flussi aziendali →",
+    "description": "App flows link"
+  },
+  "appFlowsActive": {
+    "message": "Attivo",
+    "description": "Flow active badge"
+  },
+  "appFlowsProcessCount": {
+    "message": "{count, plural, one {# process} other {# processes}}",
+    "description": "Flow process count"
+  },
+  "appFlowsLoadFailed": {
+    "message": "Impossibile caricare i flussi",
+    "description": "App flows load error"
+  },
+  "contextHeading": {
+    "message": "Automazione",
+    "description": "Automation context section"
+  },
+  "contextActive": {
+    "message": "Attivo",
+    "description": "Automation active badge"
+  },
+  "contextInactive": {
+    "message": "Inattivo",
+    "description": "Automation inactive badge"
+  },
+  "contextEmpty": {
+    "message": "Al momento non si applica alcuna automazione a questo record.",
+    "description": "No automation message"
+  },
+  "contextViewProcess": {
+    "message": "Visualizza processo",
+    "description": "View process link"
+  },
+  "contextLoadFailed": {
+    "message": "Impossibile caricare il contesto di automazione",
+    "description": "Context load error"
+  },
+  "badgeTooltip": {
+    "message": "Questo record è regolato dall'automazione (approvazioni, notifiche).",
+    "description": "Automation badge tooltip"
+  },
+  "controlPlaneHeading": {
+    "message": "Piano di controllo",
+    "description": "Control plane page title"
+  },
+  "controlPlaneSubheading": {
+    "message": "Operazioni interne della piattaforma Arivu",
+    "description": "Control plane subtitle"
+  },
+  "controlPlaneDemoRequests": {
+    "message": "Richieste di dimostrazione",
+    "description": "Control plane module demo requests"
+  },
+  "controlPlaneDemoRequestsDesc": {
+    "message": "Gestisci e monitora tutte le richieste di demo da parte di potenziali clienti",
+    "description": "Demo requests description"
+  },
+  "controlPlaneInstances": {
+    "message": "Istanze",
+    "description": "Control plane module instances"
+  },
+  "controlPlaneInstancesDesc": {
+    "message": "Monitora e gestisci tutte le istanze e le distribuzioni dei clienti",
+    "description": "Instances description"
+  },
+  "controlPlaneViewModule": {
+    "message": "Visualizza modulo",
+    "description": "View module link"
+  },
+  "controlPlanePlatformOnly": {
+    "message": "Accesso solo alla piattaforma",
+    "description": "Platform only notice heading"
+  },
+  "controlPlanePlatformOnlyBody": {
+    "message": "Il piano di controllo è accessibile solo agli amministratori della piattaforma. Questi moduli non sono visibili agli utenti tenant e non possono essere automatizzati.",
+    "description": "Platform only notice body"
+  },
+  "controlPlaneDocTitle": {
+    "message": "Piano di controllo | Arivu",
+    "description": "Control plane document title"
+  },
+  "execLogsTriggerDomain": {
+    "message": "Evento del dominio",
+    "description": "Domain event trigger label"
+  },
+  "execLogsTriggerManual": {
+    "message": "Attivazione manuale",
+    "description": "Manual trigger label"
+  },
+  "testModalTestFailed": {
+    "message": "Prova fallita",
+    "description": "Test failed error"
+  },
+  "testModalRunFailed": {
+    "message": "Impossibile eseguire il test",
+    "description": "Run test error"
+  },
+  "testModalEventType": {
+    "message": "Tipo di evento:",
+    "description": "Simulated event type label"
+  },
+  "edgeYes": {
+    "message": "SÌ",
+    "description": "Condition branch edge label on flow canvas"
+  },
+  "edgeNo": {
+    "message": "NO",
+    "description": "Condition branch edge label on flow canvas"
+  },
+  "execCompleted": {
+    "message": "Completato",
+    "description": "Process node execution status label"
+  },
+  "execRunning": {
+    "message": "Corsa",
+    "description": "Process node execution status label"
+  },
+  "execFailed": {
+    "message": "Fallito",
+    "description": "Process node execution status label"
+  },
+  "execSkipped": {
+    "message": "Saltato",
+    "description": "Process node execution status label"
+  },
+  "execCompletedDuration": {
+    "message": "{status} · {durationMs}ms",
+    "description": "Completed execution status with duration"
+  },
+  "inspectorSelectStep": {
+    "message": "Seleziona un passaggio nell'area di disegno per configurarlo.",
+    "description": "Node inspector empty state"
+  },
+  "inspectorProcessSettings": {
+    "message": "Impostazioni del processo",
+    "description": "Link to process settings panel from inspector"
+  },
+  "inspectorSchemaVersion": {
+    "message": "Schema v{version}",
+    "description": "Node schema version subtitle in inspector"
+  },
+  "inspectorSummaryHeading": {
+    "message": "Riepilogo",
+    "description": "Inspector summary section heading"
+  },
+  "inspectorTriggerConfigured": {
+    "message": "Il trigger è configurato in",
+    "description": "Trigger node read-only hint prefix in inspector"
+  },
+  "inspectorOpenProcessSettings": {
+    "message": "Impostazioni del processo",
+    "description": "Inline link to process settings from trigger inspector"
+  },
+  "inspectorAppliesToModule": {
+    "message": "Si applica ai record {module}",
+    "description": "IF condition module scope hint"
+  },
+  "inspectorFieldHeading": {
+    "message": "Campo",
+    "description": "Condition field select heading"
+  },
+  "inspectorSelectField": {
+    "message": "Seleziona il campo...",
+    "description": "Empty option for condition field select"
+  },
+  "inspectorCustomPathPh": {
+    "message": "evento.currentState.importo",
+    "description": "Placeholder for custom condition field path"
+  },
+  "inspectorOperatorHeading": {
+    "message": "Operatore",
+    "description": "Condition operator select heading"
+  },
+  "inspectorValueHeading": {
+    "message": "Valore",
+    "description": "Condition value input heading"
+  },
+  "inspectorSelectValue": {
+    "message": "Seleziona il valore...",
+    "description": "Empty option for condition value select"
+  },
+  "inspectorSelectGeneric": {
+    "message": "Selezionare…",
+    "description": "Generic empty select option in inspector"
+  },
+  "inspectorEnterValuePh": {
+    "message": "Inserisci il valore",
+    "description": "Condition text value placeholder"
+  },
+  "inspectorLoadingFieldOptions": {
+    "message": "Caricamento delle opzioni del campo…",
+    "description": "Condition value options loading hint"
+  },
+  "inspectorNoPicklistOptions": {
+    "message": "Nessuna opzione dell'elenco di selezione trovata. Configura le fasi in Impostazioni → Offerte o utilizza il percorso personalizzato.",
+    "description": "Empty picklist for condition value"
+  },
+  "inspectorConnectHandles": {
+    "message": "Collega le maniglie Sì/No ai passaggi successivi.",
+    "description": "Hint for wiring condition branches"
+  },
+  "inspectorModulePrefix": {
+    "message": "Modulo: {module}",
+    "description": "Field rule module scope line"
+  },
+  "inspectorDefaultValuePh": {
+    "message": "Valore predefinito",
+    "description": "Field rule default value placeholder"
+  },
+  "inspectorOwnerTargetPh": {
+    "message": "ID utente, ruolo o regola",
+    "description": "Ownership rule target placeholder"
+  },
+  "inspectorStatusFromPh": {
+    "message": "Da",
+    "description": "Status guard transition from placeholder"
+  },
+  "inspectorStatusToPh": {
+    "message": "A",
+    "description": "Status guard transition to placeholder"
+  },
+  "inspectorBlockReasonPh": {
+    "message": "Motivo del blocco mostrato agli utenti",
+    "description": "Status guard block reason placeholder"
+  },
+  "inspectorActionHeading": {
+    "message": "Azione",
+    "description": "Action step type select heading"
+  },
+  "inspectorSelectAction": {
+    "message": "Seleziona l'azione",
+    "description": "Empty action type select"
+  },
+  "inspectorApproverRolePh": {
+    "message": "Ruolo di approvatore (ad esempio manager)",
+    "description": "Approval gate approver placeholder"
+  },
+  "inspectorTimeoutHoursPh": {
+    "message": "Timeout (ore)",
+    "description": "Approval gate timeout placeholder"
+  },
+  "inspectorWaitHint": {
+    "message": "Il processo viene sospeso fino allo scadere del ritardo, quindi continua automaticamente.",
+    "description": "Wait step configuration hint"
+  },
+  "inspectorDurationPh": {
+    "message": "Durata",
+    "description": "Wait duration input placeholder"
+  },
+  "inspectorNoConfig": {
+    "message": "Nessuna configurazione aggiuntiva per questo passaggio.",
+    "description": "Inspector fallback when step has no config"
+  },
+  "inspectorRemoveStep": {
+    "message": "Rimuovi passaggio",
+    "description": "Delete step button in inspector"
+  },
+  "inspectorDuplicateToEdit": {
+    "message": "Duplica questo processo per modificare i passaggi.",
+    "description": "Read-only inspector hint for active processes"
+  },
+  "inspectorStepDefault": {
+    "message": "Fare un passo",
+    "description": "Default node label when none provided"
+  },
+  "inspectorCustomPathOption": {
+    "message": "Percorso personalizzato...",
+    "description": "Custom condition field path option"
+  },
+  "inspectorRecordsFallback": {
+    "message": "record",
+    "description": "Fallback module label in inspector"
+  },
+  "boolTrue": {
+    "message": "Sì/vero",
+    "description": "Boolean condition value option"
+  },
+  "boolFalse": {
+    "message": "No/falso",
+    "description": "Boolean condition value option"
+  },
+  "ownershipOwner": {
+    "message": "Utente specifico",
+    "description": "Ownership assignment type"
+  },
+  "ownershipRule": {
+    "message": "Basato su regole",
+    "description": "Ownership assignment type"
+  },
+  "guardFieldStage": {
+    "message": "Palcoscenico",
+    "description": "Status guard field option"
+  },
+  "guardFieldStatus": {
+    "message": "Stato",
+    "description": "Status guard field option"
+  },
+  "guardFieldLifecycle": {
+    "message": "Ciclo vitale",
+    "description": "Status guard field option"
+  },
+  "waitUnitMinutes": {
+    "message": "Minuti",
+    "description": "Wait duration unit"
+  },
+  "waitUnitHours": {
+    "message": "Ore",
+    "description": "Wait duration unit"
+  },
+  "waitUnitDays": {
+    "message": "Giorni",
+    "description": "Wait duration unit"
+  },
+  "waitPreset15Min": {
+    "message": "15 minuti",
+    "description": "Wait step quick preset"
+  },
+  "waitPreset1Hour": {
+    "message": "1 ora",
+    "description": "Wait step quick preset"
+  },
+  "waitPreset2Days": {
+    "message": "2 giorni",
+    "description": "Wait step quick preset"
+  },
+  "waitPreset1Week": {
+    "message": "1 settimana",
+    "description": "Wait step quick preset"
+  },
+  "settingsHeading": {
+    "message": "Impostazioni del processo",
+    "description": "Process settings panel title"
+  },
+  "settingsSubtitle": {
+    "message": "App, modulo e cosa avvia questo processo",
+    "description": "Process settings panel subtitle"
+  },
+  "settingsSummaryHeading": {
+    "message": "Riepilogo",
+    "description": "Process settings summary section heading"
+  },
+  "settingsActiveDuplicate": {
+    "message": "Processo attivo: duplica per modificare le impostazioni.",
+    "description": "Read-only warning on active process settings"
+  },
+  "settingsAppHeading": {
+    "message": "App",
+    "description": "App select field heading"
+  },
+  "settingsSelectApp": {
+    "message": "Seleziona l'app...",
+    "description": "Empty app select option"
+  },
+  "settingsModuleHeading": {
+    "message": "Modulo",
+    "description": "Module select field heading"
+  },
+  "settingsSelectModule": {
+    "message": "Seleziona modulo...",
+    "description": "Empty module select option"
+  },
+  "settingsModuleHint": {
+    "message": "A quali record si applica questo processo",
+    "description": "Module field help text"
+  },
+  "settingsStep1Badge": {
+    "message": "Passaggio 1",
+    "description": "Starts-when setup step badge"
+  },
+  "settingsStep1Hint": {
+    "message": "Quindi aggiungi passaggi sull'area di disegno",
+    "description": "Hint after choosing starts-when"
+  },
+  "settingsStartsWhenHeading": {
+    "message": "Inizia quando",
+    "description": "Core trigger select heading"
+  },
+  "settingsSelectModuleFirst": {
+    "message": "Seleziona prima il modulo...",
+    "description": "Starts-when placeholder before module chosen"
+  },
+  "settingsChooseStart": {
+    "message": "Scegli cosa avvia questo processo...",
+    "description": "Starts-when empty placeholder"
+  },
+  "settingsPickModuleFirst": {
+    "message": "Scegli prima un modulo.",
+    "description": "Starts-when hint before module chosen"
+  },
+  "settingsWatchChangesHeading": {
+    "message": "Guarda i cambiamenti",
+    "description": "Record updated watch field heading"
+  },
+  "settingsWatchIfHint": {
+    "message": "Utilizza i passaggi IF per le regole aziendali (ad esempio fase = Chiuso vinto, affare vinto).",
+    "description": "Hint for record-updated watch configuration"
+  },
+  "settingsFrequencyHeading": {
+    "message": "Frequenza",
+    "description": "Schedule frequency select heading"
+  },
+  "settingsHourHeading": {
+    "message": "Ora (0–23)",
+    "description": "Schedule hour input label"
+  },
+  "settingsMinuteHeading": {
+    "message": "Minuto",
+    "description": "Schedule minute input label"
+  },
+  "settingsScheduleRunnerHint": {
+    "message": "Le esecuzioni pianificate richiedono che il runner della pianificazione del processo sia abilitato sul server.",
+    "description": "Schedule trigger server requirement warning"
+  },
+  "settingsWebhookUrlHeading": {
+    "message": "URL del webhook",
+    "description": "Webhook URL field heading"
+  },
+  "settingsWebhookSaveHint": {
+    "message": "Salva il processo per generare un URL webhook.",
+    "description": "Webhook URL empty state"
+  },
+  "settingsSecretConfigured": {
+    "message": "Segreto configurato",
+    "description": "Webhook secret status when set"
+  },
+  "settingsSecretNotSet": {
+    "message": "Segreto non impostato",
+    "description": "Webhook secret status when missing"
+  },
+  "settingsRotatingSecret": {
+    "message": "Rotazione...",
+    "description": "Webhook secret rotate in progress"
+  },
+  "settingsRotateSecret": {
+    "message": "Ruota segreto",
+    "description": "Webhook secret rotate action"
+  },
+  "settingsWebhookAuthHint": {
+    "message": "Autorizzazione all'invio: Portatore [segreto] su ciascun POST.",
+    "description": "Webhook authentication hint"
+  },
+  "settingsPayloadMappingHeading": {
+    "message": "Carico utile → mappatura dei dati",
+    "description": "Webhook payload mapping section heading"
+  },
+  "settingsDataBagKeyPh": {
+    "message": "chiave dataBag",
+    "description": "Webhook mapping dataBag key placeholder"
+  },
+  "settingsBodyFieldPh": {
+    "message": "corpo.campo",
+    "description": "Webhook mapping source path placeholder"
+  },
+  "settingsAddMapping": {
+    "message": "+ Aggiungi mappatura",
+    "description": "Add webhook payload mapping row"
+  },
+  "settingsDescriptionHeading": {
+    "message": "Descrizione",
+    "description": "Process description field heading"
+  },
+  "settingsDescriptionPh": {
+    "message": "Note facoltative per il tuo team",
+    "description": "Process description textarea placeholder"
+  },
+  "settingsRotateSecretFailed": {
+    "message": "Impossibile ruotare il segreto",
+    "description": "Webhook secret rotation error alert"
+  },
+  "recordPickerSearching": {
+    "message": "Ricerca…",
+    "description": "Record picker search loading state"
+  },
+  "recordPickerSelected": {
+    "message": "Selezionato: {name}",
+    "description": "Record picker selected record line"
+  },
+  "recordPickerSearchPh": {
+    "message": "Cerca per nome...",
+    "description": "Record picker search input placeholder"
+  },
+  "testModalBody": {
+    "message": "Anteprima di cosa accadrebbe. Nessun dato verrà modificato.",
+    "description": "Process test simulation modal intro"
+  },
+  "testModalModuleHeading": {
+    "message": "Modulo",
+    "description": "Test modal module select heading"
+  },
+  "testModalSampleRecordHeading": {
+    "message": "Record di esempio (facoltativo)",
+    "description": "Test modal record picker heading"
+  },
+  "testModalSyntheticHint": {
+    "message": "Lasciare vuoto per utilizzare un record di test sintetico.",
+    "description": "Test modal empty record hint"
+  },
+  "testModalSampleJsonHeading": {
+    "message": "Valori dei campi di esempio (JSON, facoltativo)",
+    "description": "Test modal JSON state heading"
+  },
+  "testModalSampleJsonPh": {
+    "message": "'{ \"stage\": \"Negotiation\", \"amount\": 500000 }'",
+    "description": "Test modal JSON textarea placeholder"
+  },
+  "testModalRunSimulation": {
+    "message": "Esegui la simulazione",
+    "description": "Test modal primary action"
+  },
+  "testModalInvalidJson": {
+    "message": "JSON non valido per i valori dei campi di esempio",
+    "description": "Test modal JSON parse error alert"
+  },
+  "insightTabDesign": {
+    "message": "Progetto",
+    "description": "Process designer mode tab"
+  },
+  "insightTabRun": {
+    "message": "Esegui informazioni approfondite",
+    "description": "Process execution insight mode tab"
+  },
+  "insightSelectRun": {
+    "message": "Seleziona una corsa...",
+    "description": "Execution history empty select"
+  },
+  "insightSimulating": {
+    "message": "Simulazione...",
+    "description": "Test simulation in progress button"
+  },
+  "insightSimulateTest": {
+    "message": "Prova simulata",
+    "description": "Open test simulation button"
+  },
+  "insightDryRunBadge": {
+    "message": "Esecuzione di prova: nessun dato modificato",
+    "description": "Dry-run execution badge"
+  },
+  "insightRunVersion": {
+    "message": "Esegui v{version} · {status}",
+    "description": "Execution version and status line"
+  },
+  "insightRunStatus": {
+    "message": "Stato: {status}",
+    "description": "Execution status without version"
+  },
+  "insightRunUnknownTime": {
+    "message": "Sconosciuto",
+    "description": "Fallback when execution start time missing"
+  },
+  "insightRunOption": {
+    "message": "{status} · {startedAt}",
+    "description": "Execution select option label"
+  },
+  "designerAppSales": {
+    "message": "Saldi",
+    "description": "Process designer app option"
+  },
+  "designerAppAudit": {
+    "message": "Controllo",
+    "description": "Process designer app option"
+  },
+  "designerAppPortal": {
+    "message": "Portale",
+    "description": "Process designer app option"
+  },
+  "designerModulePerson": {
+    "message": "Persona",
+    "description": "Singular module name in scope sentences"
+  },
+  "designerTriggerRecordCreated": {
+    "message": "Registrazione creata",
+    "description": "Core trigger option"
+  },
+  "designerTriggerRecordUpdated": {
+    "message": "Registro aggiornato",
+    "description": "Core trigger option"
+  },
+  "designerTriggerSchedule": {
+    "message": "Programma",
+    "description": "Core trigger option"
+  },
+  "designerTriggerWebhook": {
+    "message": "Webhook",
+    "description": "Core trigger option"
+  },
+  "designerTriggerManual": {
+    "message": "Manuale",
+    "description": "Core trigger option"
+  },
+  "designerTriggerDescRecordCreated": {
+    "message": "Viene eseguito quando viene creato un nuovo record nel modulo selezionato.",
+    "description": "Core trigger description"
+  },
+  "designerTriggerDescRecordUpdated": {
+    "message": "Viene eseguito quando un record esistente viene aggiornato. Utilizza \"Visualizza modifiche\" per limitare quali campi o aggiungere passaggi IF per le regole aziendali (ad esempio fase o affare vinto).",
+    "description": "Core trigger description"
+  },
+  "designerTriggerDescSchedule": {
+    "message": "Viene eseguito secondo una pianificazione ripetitiva (oraria, giornaliera o settimanale). L'esecuzione pianificata utilizza il runner di pianificazione del processo quando abilitato.",
+    "description": "Core trigger description"
+  },
+  "designerTriggerDescWebhook": {
+    "message": "Viene eseguito quando un sistema esterno invia un POST HTTP autenticato all'URL del webhook.",
+    "description": "Core trigger description"
+  },
+  "designerTriggerDescManual": {
+    "message": "Viene eseguito solo se avviato manualmente (esecuzione di test, API o azione operativa).",
+    "description": "Core trigger description"
+  },
+  "designerScheduleHourly": {
+    "message": "Ogni ora",
+    "description": "Schedule preset option"
+  },
+  "designerScheduleDaily": {
+    "message": "Quotidiano",
+    "description": "Schedule preset option"
+  },
+  "designerScheduleWeekly": {
+    "message": "Settimanale",
+    "description": "Schedule preset option"
+  },
+  "designerWatchAnyField": {
+    "message": "Qualsiasi campo",
+    "description": "Record-updated watch any field option"
+  },
+  "designerWatchLifecycle": {
+    "message": "Ciclo vitale",
+    "description": "Watch field option"
+  },
+  "designerWatchSalesRole": {
+    "message": "Ruolo di vendita",
+    "description": "People watch field option"
+  },
+  "designerWatchLeadStatus": {
+    "message": "Stato principale",
+    "description": "People watch field option"
+  },
+  "designerWatchContactStatus": {
+    "message": "Stato del contatto",
+    "description": "People watch field option"
+  },
+  "designerWatchType": {
+    "message": "Tipo",
+    "description": "Organization watch field option"
+  },
+  "designerWatchCustomerStatus": {
+    "message": "Stato del cliente",
+    "description": "Organization watch field option"
+  },
+  "designerWatchPartnerStatus": {
+    "message": "Stato di socio",
+    "description": "Organization watch field option"
+  },
+  "designerWatchVendorStatus": {
+    "message": "Stato del venditore",
+    "description": "Organization watch field option"
+  },
+  "designerWatchStage": {
+    "message": "Palcoscenico",
+    "description": "Deal watch field option"
+  },
+  "designerWatchPipeline": {
+    "message": "Conduttura",
+    "description": "Deal watch field option"
+  },
+  "designerWatchAmount": {
+    "message": "Quantità",
+    "description": "Deal watch field option"
+  },
+  "designerWatchOwner": {
+    "message": "Proprietario",
+    "description": "Deal watch field option"
+  },
+  "designerCondSalesType": {
+    "message": "Tipo di vendita",
+    "description": "IF condition field option"
+  },
+  "designerCondStatus": {
+    "message": "Stato",
+    "description": "IF condition field option"
+  },
+  "designerScopeSelectStart": {
+    "message": "Seleziona cosa avvia questo processo",
+    "description": "Process scope summary when trigger not chosen"
+  },
+  "designerScopeManual": {
+    "message": "Viene eseguito quando attivato manualmente",
+    "description": "Process scope summary for manual trigger"
+  },
+  "designerScopeWebhook": {
+    "message": "Viene eseguito quando viene ricevuta una richiesta webhook",
+    "description": "Process scope summary for webhook trigger"
+  },
+  "designerScopeScheduleHourly": {
+    "message": "Funziona ogni ora",
+    "description": "Process scope summary for hourly schedule"
+  },
+  "designerScopeScheduleWeekly": {
+    "message": "Esegue settimanalmente presso {time}",
+    "description": "Process scope summary for weekly schedule"
+  },
+  "designerScopeScheduleDaily": {
+    "message": "Funziona tutti i giorni presso {time}",
+    "description": "Process scope summary for daily schedule"
+  },
+  "designerScopeRecordCreated": {
+    "message": "Viene eseguito quando viene creata una {module}",
+    "description": "Process scope summary for record created"
+  },
+  "designerScopeRecordUpdated": {
+    "message": "Viene eseguito quando viene aggiornato un {module}",
+    "description": "Process scope summary for record updated"
+  },
+  "designerScopeRecordUpdatedField": {
+    "message": "Viene eseguito quando un {module} viene aggiornato ({field} modificato)",
+    "description": "Process scope summary when watching specific field"
+  },
+  "designerScopeGeneric": {
+    "message": "Procedura per {module}",
+    "description": "Fallback process scope summary"
+  },
+  "designerModuleRecordFallback": {
+    "message": "documentazione",
+    "description": "Fallback singular module in scope sentences"
+  },
+  "appKeySales": {
+    "message": "SALDI",
+    "description": "Sales app key label"
+  },
+  "appKeyAudit": {
+    "message": "VERIFICA",
+    "description": "Audit app key label"
+  },
+  "appKeyPortal": {
+    "message": "PORTALE",
+    "description": "Portal app key label"
+  }
+}

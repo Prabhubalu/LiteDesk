@@ -1,0 +1,334 @@
+{
+  "cSVImportModalDone": {
+    "message": "हो गया",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalImportNowSkipDuplicateCheck": {
+    "message": "अभी आयात करें (डुप्लिकेट चेक छोड़ें)",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalAllRecordsImportedSuccessfully": {
+    "message": "सभी रिकॉर्ड सफलतापूर्वक आयात किए गए!",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalImportErrors": {
+    "message": "आयात त्रुटियाँ:",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalUpdated": {
+    "message": "अद्यतन",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalThisMayTakeAMoment": {
+    "message": "इसमें एक क्षण लग सकता है",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalImportingRecords": {
+    "message": "रिकॉर्ड आयात किया जा रहा है...",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalImportAllCreateDuplicates": {
+    "message": "सभी आयात करें (डुप्लिकेट बनाएं)",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalUpdateExistingRecords": {
+    "message": "मौजूदा रिकॉर्ड अपडेट करें",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalSkipDuplicates": {
+    "message": "डुप्लिकेट छोड़ें",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalTotalRows": {
+    "message": "कुल पंक्तियाँ",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalDuplicatesFound": {
+    "message": "डुप्लिकेट मिले",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalNewRecords": {
+    "message": "नये रिकार्ड",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalCheckingForDuplicates": {
+    "message": "डुप्लिकेट की जाँच की जा रही है...",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalAll": {
+    "message": "सभी",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalARecordIsOnlyConsideredA": {
+    "message": "किसी रिकॉर्ड को केवल तभी डुप्लिकेट माना जाता है यदि वह मेल खाता हो",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalAndLogic": {
+    "message": "तथा तर्क:",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalSelectFieldsToCheck": {
+    "message": "जांचने के लिए फ़ील्ड चुनें...",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalDuplicateCheckFields": {
+    "message": "डुप्लिकेट चेक फ़ील्ड",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalSelectedFieldsWillBeConsideredDuplicates": {
+    "message": "चयनित फ़ील्ड को डुप्लिकेट माना जाएगा.",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalAll2": {
+    "message": "सभी",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalSelectWhichFieldSToUse": {
+    "message": "डुप्लिकेट जाँच के लिए किस फ़ील्ड का उपयोग करना है उसका चयन करें। अभिलेखों का मिलान हो रहा है",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalImportAllRecordsWithoutDuplicateChecking": {
+    "message": "डुप्लिकेट जाँच के बिना सभी रिकॉर्ड आयात करें। यदि आप आश्वस्त हैं कि आपका डेटा साफ़ है तो इसका उपयोग करें।",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalDoNotCheckForDuplicates": {
+    "message": "डुप्लिकेट के लिए जाँच न करें",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalScanYourCsvForDuplicateRecords": {
+    "message": "चयनित फ़ील्ड के आधार पर डुप्लिकेट रिकॉर्ड के लिए अपने सीएसवी को स्कैन करें। आप उन्हें छोड़ना, अपडेट करना या आयात करना चुन सकते हैं।",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalCheckForDuplicates": {
+    "message": "डुप्लिकेट के लिए जाँच करें",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalDuplicateDetectionOptions": {
+    "message": "डुप्लिकेट डिटेक्शन विकल्प",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalDetectedInYourCsvFile": {
+    "message": "आपकी CSV फ़ाइल में पाया गया",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalChooseADifferentFile": {
+    "message": "कोई भिन्न फ़ाइल चुनें",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalFileSelected": {
+    "message": "फ़ाइल चयनित",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalSupportedFormatCsvFilesOnly": {
+    "message": "समर्थित प्रारूप: केवल सीएसवी फ़ाइलें",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalChooseFile": {
+    "message": "फाइलें चुनें",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalDragAndDropYourFileHere": {
+    "message": "अपनी फ़ाइल को यहां खींचें और छोड़ें, या अपने कंप्यूटर से ब्राउज़ करने के लिए क्लिक करें",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalUploadYourCsvFile": {
+    "message": "अपनी सीएसवी फ़ाइल अपलोड करें",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalUploadAndMapYourCsvData": {
+    "message": "अपना सीएसवी डेटा अपलोड करें और मैप करें",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "importDetailModalNoErrorsDuringImport": {
+    "message": "आयात के दौरान कोई त्रुटि नहीं",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalCsvColumnsWereMappedToThe": {
+    "message": "सीएसवी कॉलम को निम्नलिखित सीआरएम फ़ील्ड में मैप किया गया था:",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalCheckedFields": {
+    "message": "चेक किए गए फ़ील्ड",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalDuplicateCheck": {
+    "message": "डुप्लीकेट चेक",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalTotalRowsInCsv": {
+    "message": "सीएसवी में कुल पंक्तियाँ",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalProcessingTime": {
+    "message": "प्रोसेसिंग समय",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalImportedBy": {
+    "message": "द्वारा आयातित",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalUpdated": {
+    "message": "अद्यतन",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalTotalRecords": {
+    "message": "कुल रिकार्ड",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalSuccessRate": {
+    "message": "सफलता दर",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalImportDetails": {
+    "message": "आयात विवरण",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "universalImportModalFieldsNameIndustryWebsitePhoneEtc": {
+    "message": "फ़ील्ड: नाम, उद्योग, वेबसाइट, फ़ोन, आदि।",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalImportCompaniesAndOrganizations": {
+    "message": "कंपनियों और संगठनों को आयात करें",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalFieldsTitleDescriptionStatusPriorityEtc": {
+    "message": "फ़ील्ड: शीर्षक, विवरण, स्थिति, प्राथमिकता, आदि।",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalImportTasksAndToDoItems": {
+    "message": "कार्यों और करने योग्य वस्तुओं को आयात करें",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalFieldsNameAmountStageStatusEtc": {
+    "message": "फ़ील्ड: नाम, राशि, चरण, स्थिति, आदि।",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalImportSalesOpportunitiesAndDeals": {
+    "message": "बिक्री के अवसर और सौदे आयात करें",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalFieldsNameEmailPhoneCompanyEtc": {
+    "message": "फ़ील्ड: नाम, ईमेल, फ़ोन, कंपनी, आदि।",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalImportCustomerContactsLeadsAndProspects": {
+    "message": "ग्राहक संपर्क, लीड और संभावनाएं आयात करें",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalChooseWhichModuleYouWantTo": {
+    "message": "चुनें कि आप किस मॉड्यूल में डेटा आयात करना चाहते हैं",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalSelectModuleToImport": {
+    "message": "आयात करने के लिए मॉड्यूल का चयन करें",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalImportData": {
+    "message": "डेटा आयात करें",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "importsNewImport": {
+    "message": "नया आयात",
+    "description": "Auto-migrated from imports"
+  },
+  "importsNoImportsYet": {
+    "message": "अभी तक कोई आयात नहीं",
+    "description": "Auto-migrated from imports"
+  },
+  "importsSearchByFilename": {
+    "message": "फ़ाइल नाम से खोजें...",
+    "description": "Auto-migrated from imports"
+  },
+  "importsNewImport2": {
+    "message": "नया आयात",
+    "description": "Auto-migrated from imports"
+  },
+  "importsImportHistory": {
+    "message": "आयात इतिहास",
+    "description": "Auto-migrated from imports"
+  },
+  "importDetailNoErrorsDuringImport": {
+    "message": "आयात के दौरान कोई त्रुटि नहीं",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailCsvColumnsWereMappedToThe": {
+    "message": "सीएसवी कॉलम को निम्नलिखित सीआरएम फ़ील्ड में मैप किया गया था:",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailCheckedFields": {
+    "message": "चेक किए गए फ़ील्ड",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailDuplicateCheck": {
+    "message": "डुप्लीकेट चेक",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailTotalRows": {
+    "message": "कुल पंक्तियाँ",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailProcessingTime": {
+    "message": "प्रोसेसिंग समय",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailImportedBy": {
+    "message": "द्वारा आयातित",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailNoErrorDetailsAvailable": {
+    "message": "कोई त्रुटि विवरण उपलब्ध नहीं है.",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailCheckedOn": {
+    "message": "इस पर जाँच की गई:",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailTheseRecordsWereSkippedBecauseThey": {
+    "message": "इन रिकॉर्ड्स को छोड़ दिया गया क्योंकि उन्हें डुप्लिकेट के रूप में पहचाना गया था।",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailRecordsSkipped": {
+    "message": "रिकॉर्ड छोड़ दिए गए",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailUnableToFetchRecordsTheyMay": {
+    "message": "रिकॉर्ड लाने में असमर्थ. हो सकता है कि उन्हें हटा दिया गया हो या संशोधित कर दिया गया हो.",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailUpdated": {
+    "message": "अद्यतन",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailBackToImports": {
+    "message": "आयात पर वापस जाएँ",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailErrorLoadingImport": {
+    "message": "आयात लोड करने में त्रुटि",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailLoadingImport": {
+    "message": "आयात लोड हो रहा है...",
+    "description": "Auto-migrated from importDetail"
+  },
+  "cSVImportModalToastPleaseUploadACsvFile": {
+    "message": "कृपया एक CSV फ़ाइल अपलोड करें",
+    "description": "Toast from CSVImportModal.vue"
+  },
+  "cSVImportModalToastCsvFileIsEmpty": {
+    "message": "सीएसवी फ़ाइल खाली है",
+    "description": "Toast from CSVImportModal.vue"
+  },
+  "cSVImportModalToastErrorParsingCsvFilePlease": {
+    "message": "CSV फ़ाइल को पार्स करने में त्रुटि. कृपया प्रारूप की जाँच करें और पुनः प्रयास करें।",
+    "description": "Toast from CSVImportModal.vue"
+  },
+  "cSVImportModalToastErrorCheckingForDuplicatesPlease": {
+    "message": "डुप्लिकेट की जाँच करने में त्रुटि. कृपया पुन: प्रयास करें।",
+    "description": "Toast from CSVImportModal.vue"
+  },
+  "cSVImportModalToastErrorImportingDataPleaseTry": {
+    "message": "डेटा आयात करने में त्रुटि. कृपया पुन: प्रयास करें।",
+    "description": "Toast from CSVImportModal.vue"
+  }
+}

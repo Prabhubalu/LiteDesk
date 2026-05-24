@@ -1,0 +1,658 @@
+{
+  "attachToAppModalDetailFields": {
+    "message": "विवरण फ़ील्ड",
+    "description": "Auto-migrated from attachToAppModal"
+  },
+  "attachToAppModalStateFields": {
+    "message": "राज्य क्षेत्र",
+    "description": "Auto-migrated from attachToAppModal"
+  },
+  "attachToAppModalValidationErrors": {
+    "message": "सत्यापन त्रुटियाँ",
+    "description": "Auto-migrated from attachToAppModal"
+  },
+  "attachToAppModalAddingParticipation": {
+    "message": "भागीदारी जोड़ना",
+    "description": "Auto-migrated from attachToAppModal"
+  },
+  "attachToAppModalAddThisPersonToTheApp": {
+    "message": "इस व्यक्ति को ऐप में जोड़ें और भागीदारी फ़ील्ड सेट करें",
+    "description": "Auto-migrated from attachToAppModal"
+  },
+  "detachFromAppModalThisWillRemoveThisPersonFrom": {
+    "message": "इससे इस व्यक्ति को हटा दिया जाएगा",
+    "description": "Auto-migrated from detachFromAppModal"
+  },
+  "detachFromAppModalHistoricalRecordsAndActivityLogsWill": {
+    "message": "ऐतिहासिक रिकॉर्ड और गतिविधि लॉग संरक्षित किए जाएंगे",
+    "description": "Auto-migrated from detachFromAppModal"
+  },
+  "historyLayerActivityTimeline": {
+    "message": "गतिविधि समयरेखा",
+    "description": "Auto-migrated from historyLayer"
+  },
+  "historyLayerHistory": {
+    "message": "इतिहास",
+    "description": "Auto-migrated from historyLayer"
+  },
+  "identityLayerFullName": {
+    "message": "पूरा नाम",
+    "description": "Auto-migrated from identityLayer"
+  },
+  "identityLayerEditProfile": {
+    "message": "प्रोफ़ाइल संपादित करें",
+    "description": "Auto-migrated from identityLayer"
+  },
+  "identityLayerRecognitionFirstIdentityInformation": {
+    "message": "पहचान-पहली पहचान की जानकारी",
+    "description": "Auto-migrated from identityLayer"
+  },
+  "momentumLayerAllSystemsAreUpToDate": {
+    "message": "सभी प्रणालियाँ अद्यतित हैं।",
+    "description": "Auto-migrated from momentumLayer"
+  },
+  "momentumLayerNothingNeedsAttentionRightNow": {
+    "message": "अभी किसी भी चीज़ पर ध्यान देने की ज़रूरत नहीं है.",
+    "description": "Auto-migrated from momentumLayer"
+  },
+  "momentumLayerShowLess": {
+    "message": "कम दिखाओ",
+    "description": "Auto-migrated from momentumLayer"
+  },
+  "momentumLayerCurrentActivityAndPriorities": {
+    "message": "वर्तमान गतिविधि और प्राथमिकताएँ",
+    "description": "Auto-migrated from momentumLayer"
+  },
+  "momentumLayerMomentum": {
+    "message": "गति",
+    "description": "Auto-migrated from momentumLayer"
+  },
+  "participationCardNoAdditionalInformationAvailable": {
+    "message": "कोई अतिरिक्त जानकारी उपलब्ध नहीं है.",
+    "description": "Auto-migrated from participationCard"
+  },
+  "participationCardHideDetails": {
+    "message": "विवरण छुपाओ",
+    "description": "Auto-migrated from participationCard"
+  },
+  "participationCardViewDetails": {
+    "message": "विवरण देखें",
+    "description": "Auto-migrated from participationCard"
+  },
+  "participationEditModalDetailFields": {
+    "message": "विवरण फ़ील्ड",
+    "description": "Auto-migrated from participationEditModal"
+  },
+  "participationEditModalChangingTypeUpdatesStatusAutomatically": {
+    "message": "प्रकार बदलने से स्थिति स्वचालित रूप से अपडेट हो जाती है",
+    "description": "Auto-migrated from participationEditModal"
+  },
+  "participationEditModalValidationErrors": {
+    "message": "सत्यापन त्रुटियाँ",
+    "description": "Auto-migrated from participationEditModal"
+  },
+  "participationEditModalEditingParticipationDetails": {
+    "message": "भागीदारी विवरण संपादित करना",
+    "description": "Auto-migrated from participationEditModal"
+  },
+  "participationEditModalUpdateParticipationDetailsForThisPerson": {
+    "message": "इस व्यक्ति के लिए भागीदारी विवरण अपडेट करें",
+    "description": "Auto-migrated from participationEditModal"
+  },
+  "participationLayerAttachToApp": {
+    "message": "ऐप से संलग्न करें",
+    "description": "Auto-migrated from participationLayer"
+  },
+  "participationLayerThisPersonIsNotParticipatingIn": {
+    "message": "यह व्यक्ति अभी तक किसी भी ऐप में भाग नहीं ले रहा है.",
+    "description": "Auto-migrated from participationLayer"
+  },
+  "participationLayerNoAppParticipations": {
+    "message": "कोई ऐप भागीदारी नहीं",
+    "description": "Auto-migrated from participationLayer"
+  },
+  "participationLayerAppParticipationsAndRoles": {
+    "message": "ऐप भागीदारी और भूमिकाएँ",
+    "description": "Auto-migrated from participationLayer"
+  },
+  "participationLayerAttachToApp2": {
+    "message": "ऐप से संलग्न करें",
+    "description": "Auto-migrated from participationLayer"
+  },
+  "participationOverviewPanelAvailableApps": {
+    "message": "उपलब्ध ऐप्स",
+    "description": "Auto-migrated from participationOverviewPanel"
+  },
+  "participationOverviewPanelNoAppParticipationsYet": {
+    "message": "अभी तक कोई ऐप भागीदारी नहीं.",
+    "description": "Auto-migrated from participationOverviewPanel"
+  },
+  "participationOverviewPanelSummaryOfThisPersonsParticipationAcross": {
+    "message": "सभी अनुप्रयोगों में इस व्यक्ति की भागीदारी का सारांश",
+    "description": "Auto-migrated from participationOverviewPanel"
+  },
+  "participationOverviewPanelParticipationOverview": {
+    "message": "भागीदारी अवलोकन",
+    "description": "Auto-migrated from participationOverviewPanel"
+  },
+  "participationOverviewPanelPlatformMediated": {
+    "message": "मंच-मध्यस्थता",
+    "description": "Auto-migrated from participationOverviewPanel"
+  },
+  "peopleQuickCreateDrawerCouldNotLoadPeopleModulePlease": {
+    "message": "लोग मॉड्यूल लोड नहीं किया जा सका. कृपया पुन: प्रयास करें।",
+    "description": "Auto-migrated from peopleQuickCreateDrawer"
+  },
+  "peopleQuickCreateDrawerAddToApp": {
+    "message": "ऐप में जोड़ें",
+    "description": "Auto-migrated from peopleQuickCreateDrawer"
+  },
+  "peopleQuickCreateDrawerCreatesIdentityOnlyNoAppParticipation": {
+    "message": "पहचान ही बनाती है. कोई ऐप भागीदारी नहीं.",
+    "description": "Auto-migrated from peopleQuickCreateDrawer"
+  },
+  "peopleQuickCreateDrawerOptionalChooseAnAppBelowTo": {
+    "message": "वैकल्पिक: भागीदारी जोड़ने के लिए नीचे एक ऐप चुनें, या केवल पहचान के लिए सहेजें।",
+    "description": "Auto-migrated from peopleQuickCreateDrawer"
+  },
+  "peopleQuickCreateDrawerCreatePerson": {
+    "message": "व्यक्ति बनाएँ",
+    "description": "Auto-migrated from peopleQuickCreateDrawer"
+  },
+  "relationshipDrillDownsViewAllCases": {
+    "message": "सभी मामले देखें",
+    "description": "Auto-migrated from relationshipDrillDowns"
+  },
+  "relationshipDrillDownsViewAllMeetings": {
+    "message": "सभी बैठकें देखें",
+    "description": "Auto-migrated from relationshipDrillDowns"
+  },
+  "relationshipDrillDownsViewAllTasks": {
+    "message": "सभी कार्य देखें",
+    "description": "Auto-migrated from relationshipDrillDowns"
+  },
+  "relationshipDrillDownsViewAllDeals": {
+    "message": "सभी सौदे देखें",
+    "description": "Auto-migrated from relationshipDrillDowns"
+  },
+  "salesConvertLeadModalNoContactFieldsAvailable": {
+    "message": "कोई संपर्क फ़ील्ड उपलब्ध नहीं है.",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "salesConvertLeadModalDetailFields": {
+    "message": "विवरण फ़ील्ड",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "salesConvertLeadModalStateFields": {
+    "message": "राज्य क्षेत्र",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "salesConvertLeadModalValidationErrors": {
+    "message": "सत्यापन त्रुटियाँ",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "salesConvertLeadModalCoreIdentityFieldsNameEmailEtc": {
+    "message": "मुख्य पहचान फ़ील्ड (नाम, ईमेल, आदि) संशोधित नहीं हैं। लीड-विशिष्ट फ़ील्ड होंगे\n                              साफ़ किया गया.",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "salesConvertLeadModalConvertingSalesParticipation": {
+    "message": "बिक्री भागीदारी परिवर्तित करना",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "salesConvertLeadModalConvertLeadToContact": {
+    "message": "लीड को संपर्क में बदलें",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "contactFormModalRecordType": {
+    "message": "रिकॉर्ड प्रकार",
+    "description": "Auto-migrated from contactFormModal"
+  },
+  "peopleCreateChooseHowYouWantToAdd": {
+    "message": "चुनें कि आप इस व्यक्ति को कैसे जोड़ना चाहते हैं. यह आशय संपूर्ण निर्माण सत्र के लिए लॉक कर दिया जाएगा.",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreateSelectIntent": {
+    "message": "इरादा चुनें",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreateError": {
+    "message": "गलती",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreateResolvingAppContext": {
+    "message": "ऐप संदर्भ का समाधान किया जा रहा है...",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreatePleaseSelectWhichAppToUse": {
+    "message": "कृपया चुनें कि किस ऐप का उपयोग करना है:",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreateTypeOwnershipAmbiguity": {
+    "message": "प्रकार स्वामित्व अस्पष्टता",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreatePleaseSelectAnAppContextTo": {
+    "message": "कृपया एक व्यक्ति बनाने के लिए एक ऐप संदर्भ चुनें:",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreateAmbiguousAppContext": {
+    "message": "अस्पष्ट ऐप संदर्भ",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleDetailThisActionWillBeLoggedIn": {
+    "message": "यह कार्रवाई गतिविधि टाइमलाइन में लॉग इन की जाएगी",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailContactStatusWillBeSetTo": {
+    "message": "संपर्क स्थिति सक्रिय पर सेट की जाएगी (यदि पहले से सेट नहीं है)",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailLeadSpecificFieldsWillBeCleared": {
+    "message": "लीड-विशिष्ट फ़ील्ड साफ़ कर दिए जाएंगे",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailPersonsRoleChangesFromLeadTo": {
+    "message": "व्यक्ति की भूमिका लीड से संपर्क में बदल जाती है",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailThisWillUpdateThisPersonsRole": {
+    "message": "इससे बिक्री में इस व्यक्ति की भूमिका अपडेट हो जाएगी.",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailConvertSalesLeadToContact": {
+    "message": "विक्रय लीड को संपर्क में बदलें",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailReEngage": {
+    "message": "पुनः मिलना",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailNurturing": {
+    "message": "पोषण",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailDisqualified": {
+    "message": "अयोग्य घोषित कर दिया",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailQualified": {
+    "message": "योग्य",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailContacted": {
+    "message": "व्यक्ति से संपर्क किया",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailSelectStatus": {
+    "message": "स्थिति चुनें...",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailLeadStatus": {
+    "message": "लीड स्थिति",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailInfluencer": {
+    "message": "प्रभावशाली व्यक्ति",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailDecisionMaker": {
+    "message": "निर्णयकर्ता",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailSelectRole": {
+    "message": "भूमिका चुनें...",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailDoNotContact": {
+    "message": "संपर्क न करें",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailSelectStatus2": {
+    "message": "स्थिति चुनें...",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailContactStatus": {
+    "message": "संपर्क स्थिति",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailYouAreAddingThisPersonTo": {
+    "message": "आप इस व्यक्ति को इसमें जोड़ रहे हैं",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailThisPersonIsAlreadyPartOf": {
+    "message": "यह व्यक्ति पहले से ही सभी उपलब्ध ऐप्स का हिस्सा है.",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAllAppsAttached": {
+    "message": "सभी ऐप्स संलग्न हैं",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailChooseHowYouWantToAdd": {
+    "message": "चुनें कि आप इस व्यक्ति को ऐप में कैसे जोड़ना चाहते हैं",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailSelectIntent": {
+    "message": "इरादा चुनें",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailValidationErrors": {
+    "message": "सत्यापन त्रुटियाँ",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAddThisPersonToAnotherApp": {
+    "message": "इस व्यक्ति को दूसरे ऐप में जोड़ें",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAttachToApp": {
+    "message": "ऐप से संलग्न करें",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailImmutableAuditStreamForThisPerson": {
+    "message": "इस व्यक्ति के लिए अपरिवर्तनीय लेखापरीक्षा धारा",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailActivityTimeline": {
+    "message": "गतिविधि समयरेखा",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailEntity": {
+    "message": "इकाई",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAppAwareAttachmentsForThisPerson": {
+    "message": "इस व्यक्ति के लिए ऐप-जागरूक अनुलग्नक",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailFiles": {
+    "message": "फ़ाइलें",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailEntity2": {
+    "message": "इकाई",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAppAwareNotesForThisPerson": {
+    "message": "इस व्यक्ति के लिए ऐप-जागरूक नोट्स",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailEntity3": {
+    "message": "इकाई",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailChangesThisPersonsRoleWithinSales": {
+    "message": "बिक्री के भीतर इस व्यक्ति की भूमिका बदल जाती है",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAppSpecificFields": {
+    "message": "ऐप-विशिष्ट फ़ील्ड",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailDoNotContact2": {
+    "message": "संपर्क न करें",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailMobileNumber": {
+    "message": "मोबाइल नंबर",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailMobile": {
+    "message": "गतिमान",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailLastUpdated": {
+    "message": "आखरी अपडेट",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailDoNotContact3": {
+    "message": "संपर्क न करें",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailCreatedVia": {
+    "message": "के माध्यम से बनाया गया",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailSharedAcrossAllApps": {
+    "message": "सभी ऐप्स पर साझा किया गया",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailCoreInformation": {
+    "message": "मुख्य जानकारी",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailEntity4": {
+    "message": "इकाई",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailThisPersonIsAlreadyPartOf2": {
+    "message": "यह व्यक्ति पहले से ही सभी उपलब्ध ऐप्स का हिस्सा है.",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAddsThisPersonToANew": {
+    "message": "डुप्लिकेट बनाए बिना इस व्यक्ति को एक नए ऐप में जोड़ता है।",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAttachToAnotherApp": {
+    "message": "किसी अन्य ऐप से जोड़ें",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAddThisPersonToAnotherApp2": {
+    "message": "इस व्यक्ति को दूसरे ऐप में जोड़ें",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAttachToApp2": {
+    "message": "ऐप से संलग्न करें",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAppContext": {
+    "message": "ऐप संदर्भ",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailViewingIn": {
+    "message": "में देखना",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailErrorLoadingProfile": {
+    "message": "प्रोफ़ाइल लोड करने में त्रुटि",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleQuickCreateCreatePerson": {
+    "message": "व्यक्ति बनाएँ",
+    "description": "Auto-migrated from peopleQuickCreate"
+  },
+  "peopleQuickCreateError": {
+    "message": "गलती",
+    "description": "Auto-migrated from peopleQuickCreate"
+  },
+  "peopleQuickCreateLoadingFields": {
+    "message": "फ़ील्ड लोड हो रहे हैं...",
+    "description": "Auto-migrated from peopleQuickCreate"
+  },
+  "peopleQuickCreateCreateACorePersonIdentity": {
+    "message": "एक मुख्य व्यक्ति पहचान बनाएं",
+    "description": "Auto-migrated from peopleQuickCreate"
+  },
+  "peopleQuickCreateAddPerson": {
+    "message": "व्यक्ति जोड़ें",
+    "description": "Auto-migrated from peopleQuickCreate"
+  },
+  "peopleSurfaceThisPersonIsAlreadyPartOf": {
+    "message": "यह व्यक्ति पहले से ही सभी उपलब्ध ऐप्स का हिस्सा है.",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceAllAppsAttached": {
+    "message": "सभी ऐप्स संलग्न हैं",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceChooseHowYouWantToAdd": {
+    "message": "चुनें कि आप इस व्यक्ति को ऐप में कैसे जोड़ना चाहते हैं",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceSelectIntent": {
+    "message": "इरादा चुनें",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceValidationErrors": {
+    "message": "सत्यापन त्रुटियाँ",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceAddThisPersonToAnotherApp": {
+    "message": "इस व्यक्ति को दूसरे ऐप में जोड़ें",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceAttachToApp": {
+    "message": "ऐप से संलग्न करें",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceActionAvailability": {
+    "message": "कार्रवाई उपलब्धता",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceErrorLoadingProfile": {
+    "message": "प्रोफ़ाइल लोड करने में त्रुटि",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "contactDetailNoTasks": {
+    "message": "कोई कार्य नहीं",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailNoDeals": {
+    "message": "कोई डील नहीं",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailNoOrg": {
+    "message": "कोई संगठन नहीं",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailRelations": {
+    "message": "संबंध",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailDoNotContact": {
+    "message": "संपर्क न करें",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailBackToContacts": {
+    "message": "संपर्कों पर वापस जाएँ",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailErrorLoadingContact": {
+    "message": "संपर्क लोड करने में त्रुटि",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailLoadingContact": {
+    "message": "संपर्क लोड हो रहा है...",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactFormModalToastFailedToSaveContactPlease": {
+    "message": "संपर्क सहेजने में विफल. विवरण के लिए कृपया कंसोल की जाँच करें।",
+    "description": "Toast from ContactFormModal.vue"
+  },
+  "statusDropdownToastFailedToUpdateStatus": {
+    "message": "स्थिति अपडेट करने में विफल",
+    "description": "Toast from StatusDropdown.vue"
+  },
+  "statusDropdownToastErrorUpdatingStatus": {
+    "message": "स्थिति अद्यतन करने में त्रुटि",
+    "description": "Toast from StatusDropdown.vue"
+  },
+  "sysFieldAssignedTo": {
+    "message": "को सौंपना",
+    "description": "System people field label"
+  },
+  "sysFieldEmail": {
+    "message": "ईमेल",
+    "description": "System people field label"
+  },
+  "sysFieldPhone": {
+    "message": "फ़ोन",
+    "description": "System people field label"
+  },
+  "sysFieldMobile": {
+    "message": "गतिमान",
+    "description": "System people field label"
+  },
+  "sysFieldFirstName": {
+    "message": "पहला नाम",
+    "description": "System people field label"
+  },
+  "sysFieldLastName": {
+    "message": "उपनाम",
+    "description": "System people field label"
+  },
+  "sysFieldName": {
+    "message": "नाम",
+    "description": "System people field label"
+  },
+  "sysFieldOrganization": {
+    "message": "संगठन",
+    "description": "System people field label"
+  },
+  "sysFieldDescription": {
+    "message": "विवरण",
+    "description": "System people field label"
+  },
+  "sysFieldTags": {
+    "message": "टैग",
+    "description": "System people field label"
+  },
+  "sysFieldDoNotContact": {
+    "message": "संपर्क न करें",
+    "description": "System people field label"
+  },
+  "sysFieldTitle": {
+    "message": "शीर्षक",
+    "description": "System people field label"
+  },
+  "sysFieldType": {
+    "message": "प्रकार",
+    "description": "System people field label"
+  },
+  "sysFieldStatus": {
+    "message": "स्थिति",
+    "description": "System people field label"
+  },
+  "sysFieldSource": {
+    "message": "स्रोत",
+    "description": "System people field label"
+  },
+  "sysFieldOwner": {
+    "message": "मालिक",
+    "description": "System people field label"
+  },
+  "sysFieldCreatedBy": {
+    "message": "के द्वारा बनाई गई",
+    "description": "System people field label"
+  },
+  "contextAllApps": {
+    "message": "सभी ऐप",
+    "description": "People list app context tab"
+  },
+  "listViewAll": {
+    "message": "सभी लोग",
+    "description": "People list default view title"
+  },
+  "listViewMy": {
+    "message": "मेरे लोग",
+    "description": "People list assigned-to-me view title"
+  },
+  "listCreate": {
+    "message": "नया व्यक्ति",
+    "description": "People list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "लोग खोजें...",
+    "description": "People list search placeholder"
+  },
+  "listStatTotal": {
+    "message": "कुल लोग",
+    "description": "People list statistics card"
+  },
+  "listStatWithOrganization": {
+    "message": "संगठन के साथ",
+    "description": "People list statistics card"
+  },
+  "listStatWithoutOrganization": {
+    "message": "बिना संगठन",
+    "description": "People list statistics card"
+  }
+}

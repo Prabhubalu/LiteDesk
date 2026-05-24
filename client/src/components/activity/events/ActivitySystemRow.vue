@@ -6,7 +6,7 @@
         <div class="flex items-start justify-between gap-2 max-[480px]:flex-wrap max-[480px]:gap-y-1">
           <p class="text-[12px] leading-[1.4] text-gray-500 dark:text-slate-400">
             <span>{{ ui.getSystemEventActorLabel(event) }}</span>
-            <span> changed </span>
+            <span>{{ t('records.activitySystemChanged') }}</span>
             <span class="font-semibold text-gray-900 dark:text-white">{{ ui.getSystemEventFieldLabel(event) }}</span>
           </p>
           <span
@@ -23,7 +23,7 @@
           v-if="!event.descriptionDiffHtml && isTagsFieldChange"
           class="text-[12px] leading-[1.4] text-gray-700 dark:text-gray-300"
         >
-          <span class="mr-1">Changed {{ ui.getSystemEventFieldLabel(event) }} to</span>
+          <span class="mr-1">{{ t('records.activitySystemChangedTo', { field: ui.getSystemEventFieldLabel(event) }) }}</span>
           <span v-if="parsedToTags.length > 0" class="inline-flex flex-wrap gap-1 align-middle">
             <span
               v-for="(tagName, i) in parsedToTags"
@@ -39,14 +39,16 @@
           v-else-if="!event.descriptionDiffHtml"
           class="text-[12px] leading-[1.4] text-gray-700 dark:text-gray-300"
         >
-          Changed {{ ui.getSystemEventFieldLabel(event) }} from "{{ ui.getSystemEventFromValue(event) }}" to "{{ ui.getSystemEventToValue(event) }}"
+          {{ t('records.activitySystemChangedFromTo', {
+            field: ui.getSystemEventFieldLabel(event),
+            from: ui.getSystemEventFromValue(event),
+            to: ui.getSystemEventToValue(event)
+          }) }}
         </p>
       </template>
       <p v-else class="text-[12px] leading-[1.4] text-gray-500 dark:text-slate-400">
         {{ ui.getSystemEventMessage(event) }}
-        <a v-if="event.showMore" href="#" @click.prevent="ui.handleShowMore(event)" class="ml-1 text-xs text-indigo-600 dark:text-indigo-400 hover:underline">
-          Show more
-        </a>
+        <a v-if="event.showMore" href="#" @click.prevent="ui.handleShowMore(event)" class="ml-1 text-xs text-indigo-600 dark:text-indigo-400 hover:underline">{{ t('records.activitySystemRowShowMore') }}</a>
       </p>
       <div
         v-if="event.descriptionDiffHtml"
@@ -66,12 +68,15 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 
 const props = defineProps({
   event: { type: Object, required: true },
   ui: { type: Object, required: true }
 });
+
+const { t } = useI18n();
 
 const details = computed(() => props.event?.payload?.details || props.event?.details || {});
 const isTagsFieldChange = computed(() => String(details.value?.field || '').toLowerCase() === 'tags');

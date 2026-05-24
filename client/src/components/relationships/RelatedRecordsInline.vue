@@ -11,9 +11,7 @@
         <span
           v-if="relationship.required"
           class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-        >
-          Required
-        </span>
+        >{{ t('settings.coreModDetailRequired') }}</span>
       </div>
       <div class="flex items-center gap-2">
         <div v-if="relationship.linkedRecords.length > 0" class="flex items-center gap-1">
@@ -31,16 +29,12 @@
             +{{ relationship.linkedRecords.length - 3 }} more
           </span>
         </div>
-        <div v-else class="text-xs text-gray-500 dark:text-gray-400">
-          None
-        </div>
+        <div v-else class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.settingsBhNone') }}</div>
         <button
           v-if="canLink"
           @click="openLinkPicker"
           class="ml-2 text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
-        >
-          Link
-        </button>
+        >{{ t('settings.modFieldsPbResourceLink') }}</button>
       </div>
     </div>
 
@@ -67,6 +61,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref } from 'vue';
 import RelationshipLinkPicker from './RelationshipLinkPicker.vue';
 import RelationshipUnlinkConfirm from './RelationshipUnlinkConfirm.vue';
@@ -77,6 +72,8 @@ const props = defineProps({
   canUnlink: { type: Boolean, default: false },
   sourceRecord: { type: Object, required: true }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['link', 'unlink', 'refresh']);
 

@@ -1,0 +1,150 @@
+{
+  "eventExecutionToastFailedToStartEvent": {
+    "message": "Failed to start event",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToStartEvent2": {
+    "message": "Failed to start event: ",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastNoFormIsAssignedTo": {
+    "message": "No form is assigned to this event. Please contact your administrator to assign a form.",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastYouAreOfflineCheckIn": {
+    "message": "You are offline. Check-in will be synced when connection is restored.",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToCheckIn": {
+    "message": "Failed to check in",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToCheckIn2": {
+    "message": "Failed to check in: ",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastNoFormIsAssignedTo2": {
+    "message": "No form is assigned to this event. Please contact your administrator to assign a form.",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToCheckIn3": {
+    "message": "Failed to check in",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToCheckIn4": {
+    "message": "Failed to check in: ",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastCouldNotGetLocationFor": {
+    "message": "Could not get location for check-out. Please try again.",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastYouAreOfflineCheckOut": {
+    "message": "You are offline. Check-out will be synced when connection is restored.",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToCheckOut": {
+    "message": "Failed to check out",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToCheckOut2": {
+    "message": "Failed to check out: ",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastPleaseFillAndSubmitThe": {
+    "message": "Please fill and submit the audit form first",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastAuditSubmittedAndCheckedOut": {
+    "message": "Audit submitted and checked out. Some items require corrective action.",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastAuditSubmittedSuccessfullyAndYou": {
+    "message": "Audit submitted successfully and you have been automatically checked out.",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastYouAreOfflineAuditSubmission": {
+    "message": "You are offline. Audit submission will be synced when connection is restored.",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToSubmitAudit": {
+    "message": "Failed to submit audit",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToSubmitAudit2": {
+    "message": "Failed to submit audit: ",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToMoveToNext": {
+    "message": "Failed to move to next organization",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToMoveToNext2": {
+    "message": "Failed to move to next organization: ",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastThisEventHasBeenChecked": {
+    "message": "This event has been checked out. Form cannot be reopened.",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastEventCompletedSuccessfully": {
+    "message": "Event completed successfully",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastYouAreOfflineEventCompletion": {
+    "message": "You are offline. Event completion will be synced when connection is restored.",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToCompleteEvent": {
+    "message": "Failed to complete event",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToCompleteEvent2": {
+    "message": "Failed to complete event: ",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventFormModalToastEventNameIsRequired": {
+    "message": "Event Name is required",
+    "description": "Toast from EventFormModal.vue"
+  },
+  "eventFormModalToastStartDateTimeIsRequired": {
+    "message": "Start Date/Time is required",
+    "description": "Toast from EventFormModal.vue"
+  },
+  "eventFormModalToastEndDateTimeIsRequired": {
+    "message": "End Date/Time is required",
+    "description": "Toast from EventFormModal.vue"
+  },
+  "eventFormModalToastEventOwnerIsRequired": {
+    "message": "Event Owner is required",
+    "description": "Toast from EventFormModal.vue"
+  },
+  "eventFormModalToastInvalidStartDateTimePlease": {
+    "message": "Invalid start date/time. Please select a valid date and time.",
+    "description": "Toast from EventFormModal.vue"
+  },
+  "eventFormModalToastInvalidEndDateTimePlease": {
+    "message": "Invalid end date/time. Please select a valid date and time.",
+    "description": "Toast from EventFormModal.vue"
+  },
+  "eventFormModalToastEndDateTimeMustBe": {
+    "message": "End date/time must be after start date/time.",
+    "description": "Toast from EventFormModal.vue"
+  },
+  "orderCreationModalToastFailedToCreateOrder": {
+    "message": "Failed to create order",
+    "description": "Toast from OrderCreationModal.vue"
+  },
+  "orderCreationModalToastFailedToCreateOrder2": {
+    "message": "Failed to create order: ",
+    "description": "Toast from OrderCreationModal.vue"
+  },
+  "paymentCollectionModalToastFailedToCollectPayment": {
+    "message": "Failed to collect payment",
+    "description": "Toast from PaymentCollectionModal.vue"
+  },
+  "paymentCollectionModalToastFailedToCollectPayment2": {
+    "message": "Failed to collect payment: ",
+    "description": "Toast from PaymentCollectionModal.vue"
+  }
+}

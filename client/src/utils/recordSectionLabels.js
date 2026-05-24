@@ -1,0 +1,28 @@
+/**
+ * Localized titles/actions for record page section stacks (records.* namespace).
+ * @param {(key: string) => string} t
+ */
+export function createRecordSectionLabels(t) {
+  return {
+    description: t('records.descriptionTitle'),
+    details: t('records.detailsTitle'),
+    related: t('records.relatedRecordsTitle'),
+    stageHistory: t('records.stageHistoryTitle'),
+    subtasks: t('records.subtasksTitle'),
+    subtasksWithCount: (completed, total) =>
+      t('records.subtasksTitleWithCount', { completed, total }),
+    expand: t('records.sectionExpand'),
+    history: t('records.sectionHistory'),
+    linkRecord: t('records.sectionLinkRecord'),
+    addRecord: t('records.sectionAddRecord'),
+    addSubtask: t('records.sectionAddSubtask'),
+    viewMore: t('records.sectionViewMore'),
+    viewLess: t('records.sectionViewLess'),
+    viewAll: (count) => t('records.sectionViewAll', { count }),
+    groupCore: t('records.sectionGroupCore'),
+    groupSystem: t('records.sectionGroupSystem'),
+    groupOther: t('records.sectionGroupOther'),
+    createdVia: t('records.sectionCreatedVia'),
+    groupRecord: t('records.sectionGroupRecord'),
+  };
+}

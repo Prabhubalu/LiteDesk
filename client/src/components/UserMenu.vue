@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref, watch, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useColorMode } from '@/composables/useColorMode';
@@ -29,6 +30,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
+const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
 const { colorMode, toggleColorMode } = useColorMode();
@@ -51,7 +53,7 @@ const {
 } = useUserStatus(userId);
 
 const avatarUrl = computed(() => authStore.user?.avatar || DEFAULT_AVATAR);
-const displayName = computed(() => authStore.user?.username || 'Your account');
+const displayName = computed(() => authStore.user?.username || t('navigation.userAccountFallback'));
 const email = computed(() => authStore.user?.email || '');
 const role = computed(() => authStore.user?.role || '');
 const workspaceName = computed(() => authStore.organization?.name || '');
@@ -163,10 +165,10 @@ function openControlPanel() {
   go(() => router.push('/control'));
 }
 function openSettings() {
-  go(() => openTab('/settings', { title: 'Settings' }));
+  go(() => openTab('/settings', { title: t('navigation.settings') }));
 }
 function openAppointments() {
-  go(() => openTab('/appointments/pages', { title: 'Booking Pages', icon: '📅' }));
+  go(() => openTab('/appointments/pages', { title: t('navigation.tabBookingPages'), icon: '📅' }));
 }
 function openTrash() {
   go(() => router.push('/trash'));
@@ -224,7 +226,7 @@ function chooseStatus(typeId) {
                 'absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full ring-2 ring-white dark:ring-gray-900',
                 currentPreset.dotClass
               ]"
-              :aria-label="`Status: ${displayLabel}`"
+              :aria-label="t('navigation.userStatusLabel', { label: displayLabel })"
             />
           </div>
           <div class="min-w-0 flex-1">
@@ -294,7 +296,7 @@ function chooseStatus(typeId) {
               v-if="statusState.custom"
               type="button"
               class="flex items-center justify-center rounded-r-lg px-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:hover:bg-gray-700 dark:hover:text-gray-200"
-              title="Clear status"
+              :title="t('navigation.userClearStatus')"
               @click.stop="clearCustomStatus"
             >
               <XMarkIcon class="h-4 w-4" />
@@ -313,7 +315,7 @@ function chooseStatus(typeId) {
               v-if="statusPickerOpen"
               class="absolute left-0 right-0 top-full z-30 mt-1.5 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-xl ring-1 ring-black/5 dark:ring-white/5"
               role="listbox"
-              aria-label="Set availability"
+              :aria-label="t('navigation.userSetAvailability')"
             >
               <div class="py-1.5">
                 <button
@@ -354,7 +356,7 @@ function chooseStatus(typeId) {
                   @click="openCustomEditor"
                 >
                   <PencilSquareIcon class="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                  {{ statusState.custom ? 'Edit custom status\u2026' : 'Set custom status\u2026' }}
+                  {{ statusState.custom ? t('navigation.userEditCustomStatus') : t('navigation.userSetCustomStatus') }}
                 </button>
               </div>
             </div>
@@ -371,7 +373,7 @@ function chooseStatus(typeId) {
               <button
                 type="button"
                 class="flex h-9 w-9 items-center justify-center rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-lg hover:bg-gray-50 dark:hover:bg-gray-800"
-                title="Pick emoji"
+                :title="t('navigation.userPickEmoji')"
                 @click="showEmojiQuickPick = !showEmojiQuickPick"
               >
                 {{ customEmoji }}
@@ -396,7 +398,7 @@ function chooseStatus(typeId) {
               v-model="customInput"
               type="text"
               maxlength="100"
-              placeholder="What's your status?"
+              :placeholder="t('navigation.userStatusPlaceholder')"
               class="min-w-0 flex-1 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2 py-1.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               @keydown.enter.prevent="saveCustomStatus"
               @keydown.esc.prevent="cancelCustomEditor"
@@ -408,14 +410,14 @@ function chooseStatus(typeId) {
               class="rounded-md px-2.5 py-1 text-xs font-medium text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
               @click="cancelCustomEditor"
             >
-              Cancel
+              {{ t('actions.cancel') }}
             </button>
             <button
               type="button"
               class="rounded-md bg-indigo-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 dark:focus:ring-offset-gray-900"
               @click="saveCustomStatus"
             >
-              Save
+              {{ t('actions.save') }}
             </button>
           </div>
         </div>
@@ -430,7 +432,7 @@ function chooseStatus(typeId) {
           @click="viewProfile"
         >
           <UserCircleIcon class="h-5 w-5 text-gray-400 dark:text-gray-500" />
-          Your profile
+          {{ t('navigation.userYourProfile') }}
         </button>
         <button
           v-if="isAdmin"
@@ -440,7 +442,7 @@ function chooseStatus(typeId) {
           @click="openControlPanel"
         >
           <ShieldCheckIcon class="h-5 w-5 text-gray-400 dark:text-gray-500" />
-          Control panel
+          {{ t('navigation.userControlPanel') }}
         </button>
         <button
           type="button"
@@ -449,7 +451,7 @@ function chooseStatus(typeId) {
           @click="openAppointments"
         >
           <CalendarDaysIcon class="h-5 w-5 text-gray-400 dark:text-gray-500" />
-          Booking Pages
+          {{ t('navigation.userBookingPages') }}
         </button>
         <button
           v-if="canViewSettings"
@@ -459,7 +461,7 @@ function chooseStatus(typeId) {
           @click="openSettings"
         >
           <Cog6ToothIcon class="h-5 w-5 text-gray-400 dark:text-gray-500" />
-          Settings
+          {{ t('navigation.settings') }}
         </button>
         <button
           v-if="canViewTrash"
@@ -469,7 +471,7 @@ function chooseStatus(typeId) {
           @click="openTrash"
         >
           <TrashIcon class="h-5 w-5 text-gray-400 dark:text-gray-500" />
-          Trash
+          {{ t('navigation.userTrash') }}
         </button>
       </div>
 
@@ -486,7 +488,7 @@ function chooseStatus(typeId) {
         >
           <span class="flex items-center gap-3">
             <component :is="isDark ? SunIcon : MoonIcon" class="h-5 w-5 text-gray-400 dark:text-gray-500" />
-            {{ isDark ? 'Switch to light mode' : 'Switch to dark mode' }}
+            {{ isDark ? t('navigation.userSwitchToLight') : t('navigation.userSwitchToDark') }}
           </span>
           <span
             class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors"
@@ -506,7 +508,7 @@ function chooseStatus(typeId) {
           @click="handleLogout"
         >
           <ArrowRightOnRectangleIcon class="h-5 w-5" />
-          Sign out
+          {{ t('navigation.signOut') }}
         </button>
       </div>
     </div>

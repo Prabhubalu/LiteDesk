@@ -1,17 +1,17 @@
 <template>
-  <CardWidget title="Related Tasks" class="ld-card-group">
+  <CardWidget :title="t('tasks.relatedTasksWidgetRelatedTasks')" class="ld-card-group">
     <template #actions>
       <button
         @click="$emit('link-tasks')"
         class="rounded-md bg-white dark:bg-gray-800 px-2 py-1.5 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-        title="Link Tasks"
+        :title="t('tasks.relatedTasksWidgetLinkTasks')"
       >
         <LinkIcon class="w-4 h-4 text-gray-700 dark:text-gray-300" />
       </button>
       <button
         @click="$emit('create-task')"
         class="rounded-md bg-white dark:bg-gray-800 px-2 py-1.5 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-        title="Add Task"
+        :title="t('tasks.relatedTasksWidgetAddTask')"
       >
         <PlusIcon class="w-4 h-4 text-gray-700 dark:text-gray-300" />
       </button>
@@ -57,7 +57,7 @@
                   <template v-if="getFieldValue(fieldDef, task)">
                     {{ getFieldValue(fieldDef, task) }}
                   </template>
-                  <span v-else class="text-gray-400 dark:text-gray-500 italic">Empty</span>
+                  <span v-else class="text-gray-400 dark:text-gray-500 italic">{{ t('settings.modFieldsQuickCreateEmpty') }}</span>
                 </div>
               </div>
             </div>
@@ -70,10 +70,10 @@
             <transition enter-active-class="transition ease-out duration-100" enter-from-class="transform opacity-0 scale-95" enter-to-class="transform opacity-100 scale-100" leave-active-class="transition ease-in duration-75" leave-from-class="transform opacity-100 scale-100" leave-to-class="transform opacity-0 scale-95">
               <MenuItems class="absolute right-0 mt-2 w-40 rounded-lg shadow-xl py-1 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 z-10">
                 <MenuItem v-slot="{ active }">
-                  <button @click="$emit('unlink-task', task._id)" :class="['w-full text-left px-4 py-2 text-sm', active ? 'bg-gray-100 dark:bg-gray-700' : '']">Unlink</button>
+                  <button @click="$emit('unlink-task', task._id)" :class="['w-full text-left px-4 py-2 text-sm', active ? 'bg-gray-100 dark:bg-gray-700' : '']">{{ t('records.relatedUnlink') }}</button>
                 </MenuItem>
                 <MenuItem v-slot="{ active }" v-if="canDelete">
-                  <button @click="$emit('delete-task', task._id)" :class="['w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400', active ? 'bg-gray-100 dark:bg-gray-700' : '']">Delete</button>
+                  <button @click="$emit('delete-task', task._id)" :class="['w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400', active ? 'bg-gray-100 dark:bg-gray-700' : '']">{{ t('settings.modFieldsDelete') }}</button>
                 </MenuItem>
               </MenuItems>
             </transition>
@@ -85,18 +85,17 @@
       <!-- Empty State -->
       <div v-else class="text-center py-8">
         <ClipboardDocumentListIcon class="mx-auto h-10 w-10 text-gray-400 dark:text-gray-600 mb-2" />
-        <p class="text-sm text-gray-500 dark:text-gray-400">No tasks yet</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('tasks.relatedTasksWidgetNoTasksYet') }}</p>
         <button
           @click="$emit('create-task')"
           class="mt-2 rounded-md bg-white dark:bg-gray-800 px-3 py-1.5 text-xs font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-        >
-          Create first task
-        </button>
+        >{{ t('tasks.relatedTasksWidgetCreateFirstTask') }}</button>
       </div>
   </CardWidget>
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, watch, computed } from 'vue';
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue';
 import { EllipsisVerticalIcon } from '@heroicons/vue/24/outline';
@@ -124,6 +123,8 @@ const props = defineProps({
   },
   canDelete: { type: Boolean, default: false }
 });
+
+const { t } = useI18n();
 
 defineEmits(['create-task', 'view-task', 'link-tasks', 'unlink-task', 'delete-task']);
 

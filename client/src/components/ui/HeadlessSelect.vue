@@ -1,11 +1,13 @@
 <template>
   <Listbox
     :model-value="modelValue"
+    v-slot="{ open }"
     @update:model-value="$emit('update:modelValue', $event)"
     as="div"
     :class="['relative', wrapperClass]"
   >
     <ListboxButton
+      ref="buttonRef"
       :id="id"
       :disabled="disabled"
       :class="[
@@ -15,6 +17,7 @@
         invalid && 'border-red-500 dark:border-red-500',
         buttonClass
       ]"
+      @click="syncTeleportPosition"
     >
       <span
         :class="[
@@ -25,7 +28,7 @@
         {{ buttonText }}
       </span>
       <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-        <ChevronUpDownIcon class="h-5 w-5 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+        <ChevronUpDownIcon class="h-4 w-4 text-gray-400 dark:text-gray-500" aria-hidden="true" />
       </span>
     </ListboxButton>
     <Transition
@@ -33,28 +36,64 @@
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
-      <ListboxOptions
-        :class="[
-          'absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm',
-          optionsClass
-        ]"
-      >
+      <Teleport to="body" :disabled="!teleport">
+        <ListboxOptions
+          v-if="!teleport || open"
+          :style="teleport ? teleportMenuStyle : undefined"
+          @vue:before-mount="syncTeleportPosition"
+          :class="[
+            teleport
+              ? 'fixed z-[250] mt-0 max-h-60 overflow-auto rounded-lg bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm'
+              : 'absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm',
+            optionsClass
+          ]"
+        >
         <ListboxOption
           v-if="allowEmpty"
           :value="emptyValue"
           v-slot="{ active }"
         >
-          <li :class="['relative cursor-default select-none py-2 pl-3 pr-9', active ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100']">
+          <li :class="optionRowClass(active)">
             <span class="block truncate">{{ emptyLabel }}</span>
           </li>
         </ListboxOption>
+        <template v-if="hasGroups">
+          <template v-for="(group, groupIndex) in optionGroups" :key="group.label || groupIndex">
+            <div
+              v-if="group.label"
+              :class="[
+                'px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400',
+                (allowEmpty || groupIndex > 0) && 'mt-1 border-t border-gray-100 dark:border-gray-600'
+              ]"
+              role="presentation"
+            >
+              {{ group.label }}
+            </div>
+            <ListboxOption
+              v-for="opt in group.options"
+              :key="String(opt.value)"
+              :value="opt.value"
+              v-slot="{ active, selected }"
+            >
+              <li :class="optionRowClass(active)">
+                <span :class="['block truncate', selected ? 'font-semibold' : 'font-normal']">{{ opt.label }}</span>
+                <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-indigo-600 dark:text-indigo-400">
+                  <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+                  </svg>
+                </span>
+              </li>
+            </ListboxOption>
+          </template>
+        </template>
         <ListboxOption
+          v-else
           v-for="opt in options"
           :key="String(opt.value)"
           :value="opt.value"
           v-slot="{ active, selected }"
         >
-          <li :class="['relative cursor-default select-none py-2 pl-3 pr-9', active ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100']">
+          <li :class="optionRowClass(active)">
             <span :class="['block truncate', selected ? 'font-semibold' : 'font-normal']">{{ opt.label }}</span>
             <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-indigo-600 dark:text-indigo-400">
               <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -63,13 +102,15 @@
             </span>
           </li>
         </ListboxOption>
-      </ListboxOptions>
+        </ListboxOptions>
+      </Teleport>
     </Transition>
   </Listbox>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue';
 import { ChevronUpDownIcon } from '@heroicons/vue/24/outline';
 
@@ -77,6 +118,8 @@ const props = defineProps({
   modelValue: { type: [String, Number, null], default: null },
   /** Options: { value: string|number, label: string }[] */
   options: { type: Array, default: () => [] },
+  /** Grouped options: { label: string, options: { value, label }[] }[] */
+  optionGroups: { type: Array, default: () => [] },
   placeholder: { type: String, default: 'Select...' },
   allowEmpty: { type: Boolean, default: false },
   emptyLabel: { type: String, default: '—' },
@@ -90,10 +133,72 @@ const props = defineProps({
   /** Merged into ListboxOptions (e.g. z-index above drawers/modals) */
   optionsClass: { type: [String, Array, Object], default: undefined },
   /** Root Listbox wrapper (use mt-2 below a label to match DynamicFormField) */
-  wrapperClass: { type: [String, Array, Object], default: '' }
+  wrapperClass: { type: [String, Array, Object], default: '' },
+  /** Render dropdown in document body (avoids overflow clipping in headers/toolbars) */
+  teleport: { type: Boolean, default: false }
 });
 
+const { t } = useI18n();
+
 defineEmits(['update:modelValue']);
+
+const buttonRef = ref(null);
+const teleportMenuStyle = ref({});
+
+function getButtonElement() {
+  const raw = buttonRef.value;
+  if (!raw) return null;
+  return raw.$el ?? raw;
+}
+
+function syncTeleportPosition() {
+  if (!props.teleport) return;
+  const el = getButtonElement();
+  if (!el?.getBoundingClientRect) return;
+  const rect = el.getBoundingClientRect();
+  teleportMenuStyle.value = {
+    top: `${rect.bottom + 4}px`,
+    left: `${rect.left}px`,
+    width: `${rect.width}px`
+  };
+}
+
+function onViewportChange() {
+  if (props.teleport) syncTeleportPosition();
+}
+
+watch(
+  () => props.teleport,
+  (enabled) => {
+    if (enabled) syncTeleportPosition();
+  }
+);
+
+onMounted(() => {
+  window.addEventListener('scroll', onViewportChange, true);
+  window.addEventListener('resize', onViewportChange);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', onViewportChange, true);
+  window.removeEventListener('resize', onViewportChange);
+});
+
+const hasGroups = computed(() => (props.optionGroups?.length ?? 0) > 0);
+
+const resolvedOptions = computed(() => {
+  if (hasGroups.value) {
+    return props.optionGroups.flatMap((g) => g.options || []);
+  }
+  return props.options;
+});
+
+function optionRowClass(active) {
+  return [
+    'relative cursor-default select-none py-2 pl-3 pr-9',
+    active ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100'
+  ];
+}
 
 const isEmptyValue = computed(() => {
   const v = props.modelValue;
@@ -102,7 +207,7 @@ const isEmptyValue = computed(() => {
 
 const selectedLabel = computed(() => {
   if (isEmptyValue.value) return '';
-  const opt = props.options.find((o) => o.value === props.modelValue);
+  const opt = resolvedOptions.value.find((o) => o.value === props.modelValue);
   return opt ? opt.label : '';
 });
 

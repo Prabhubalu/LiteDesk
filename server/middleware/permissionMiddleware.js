@@ -27,6 +27,14 @@ const SECURITY_DISABLED = process.env.DISABLE_SECURITY === 'true' || process.env
 
 const securityLogger = require('./securityLoggingMiddleware');
 const { APP_KEYS } = require('../constants/appKeys');
+const {
+    resolveRuntimePermission,
+    getOrgPermissionContextForUser,
+    normalizeStorageModuleKey,
+    buildOrgPermissionContext,
+    resolveEffectiveAppKey,
+    passesOrgAuthorizationGuards
+} = require('../services/runtimePermissionResolver');
 
 // Sales-specific modules that should only be accessible from Sales app
 const SALES_MODULES = [
@@ -93,22 +101,20 @@ const checkPermission = (module, action) => {
                 return res.status(401).json({ message: 'Authentication required' });
             }
 
-            // Owner always has all permissions (but still subject to app context)
-            // For Sales modules, owner can access from any app (backward compatibility)
-            if (user.isOwner && (!isSalesModule(module) || req.appKey === APP_KEYS.SALES || !req.appKey)) {
-                return next();
+            const normalizedModule = normalizeStorageModuleKey(module);
+            const orgContext = req.organization
+                ? buildOrgPermissionContext(req.organization)
+                : await getOrgPermissionContextForUser(user);
+
+            if (!user._orgPermissionContext) {
+                user._orgPermissionContext = orgContext;
             }
 
-            // Normalize module aliases (people -> contacts)
-            const normalizedModule = module === 'people' ? 'contacts' : module;
-            
-            // APP-AWARE CHECK: Sales modules are only accessible from Sales app
-            if (isSalesModule(normalizedModule)) {
-                // If requesting Sales module but not from Sales app, deny access
-                if (req.appKey && req.appKey !== APP_KEYS.SALES) {
+            const effectiveAppKey = resolveEffectiveAppKey(normalizedModule, req.appKey);
+            if (!passesOrgAuthorizationGuards(orgContext, normalizedModule, effectiveAppKey)) {
+                if (isSalesModule(normalizedModule) && req.appKey && req.appKey !== APP_KEYS.SALES) {
                     securityLogger.logPermissionDenial(req, normalizedModule, action);
-                    
-                    return res.status(403).json({ 
+                    return res.status(403).json({
                         message: `Sales modules are only accessible from the Sales application`,
                         code: 'SALES_MODULE_NOT_ACCESSIBLE',
                         module: normalizedModule,
@@ -117,28 +123,38 @@ const checkPermission = (module, action) => {
                         requiredApp: APP_KEYS.SALES
                     });
                 }
-                
-                // If no appKey is set, treat as Sales (backward compatibility)
-                // This allows existing routes without app context to work
+
+                securityLogger.logPermissionDenial(req, normalizedModule, action);
+                return res.status(403).json({
+                    message: 'This application or module is not enabled for your organization',
+                    code: 'ORG_MODULE_NOT_ENABLED',
+                    module: normalizedModule,
+                    action: action,
+                    appKey: effectiveAppKey || req.appKey
+                });
             }
-            
-            // Admins have full access to settings area (UI configuration, modules & fields, etc.)
-            // But only from Sales app (settings is a Sales module)
-            if (normalizedModule === 'settings' && String(user.role || '').toLowerCase() === 'admin') {
+
+            if (user.isOwner) {
+                return next();
+            }
+
+            const runtimeAllowed = resolveRuntimePermission(user, module, action, {
+                appKey: req.appKey,
+                orgContext
+            });
+
+            if (
+                normalizedModule === 'settings' &&
+                String(user.role || '').toLowerCase() === 'admin' &&
+                runtimeAllowed
+            ) {
                 if (!req.appKey || req.appKey === APP_KEYS.SALES) {
                     return next();
                 }
             }
-            
-            // Check if user has the specific permission
-            // Existing permissions are treated as Sales-scoped (backward compatibility)
-            let hasPermission = user.permissions?.[normalizedModule]?.[action];
-            
-            // For settings module, also check customizeFields as equivalent to edit
-            if (normalizedModule === 'settings' && action === 'edit' && !hasPermission) {
-                hasPermission = user.permissions?.settings?.customizeFields || false;
-            }
-            
+
+            const hasPermission = runtimeAllowed;
+
             if (!hasPermission) {
                 // Log permission denial
                 securityLogger.logPermissionDenial(req, normalizedModule, action);
@@ -333,25 +349,30 @@ const filterByOwnership = (module) => {
                 return res.status(401).json({ message: 'Authentication required' });
             }
 
-            const normalizedModule = module === 'people' ? 'contacts' : module;
-            
-            // APP-AWARE CHECK: Sales modules only filter from Sales app
-            if (isSalesModule(normalizedModule)) {
-                if (req.appKey && req.appKey !== APP_KEYS.SALES) {
-                    // Non-Sales app trying to filter Sales module - deny
-                    return res.status(403).json({ 
-                        message: `Sales modules are only accessible from the Sales application`,
-                        code: 'SALES_MODULE_NOT_ACCESSIBLE',
-                        module: normalizedModule,
-                        currentApp: req.appKey,
-                        requiredApp: APP_KEYS.SALES
-                    });
-                }
+            const normalizedModule = normalizeStorageModuleKey(module);
+            const orgContext = req.organization
+                ? buildOrgPermissionContext(req.organization)
+                : await getOrgPermissionContextForUser(user);
+
+            if (isSalesModule(normalizedModule) && req.appKey && req.appKey !== APP_KEYS.SALES) {
+                return res.status(403).json({
+                    message: `Sales modules are only accessible from the Sales application`,
+                    code: 'SALES_MODULE_NOT_ACCESSIBLE',
+                    module: normalizedModule,
+                    currentApp: req.appKey,
+                    requiredApp: APP_KEYS.SALES
+                });
             }
-            
-            // Owner and users with viewAll can see everything
-            // For Sales modules, check Sales-scoped permissions (backward compatibility)
-            if (user.isOwner || user.permissions?.[normalizedModule]?.viewAll) {
+
+            const canViewAll =
+                (user.isOwner && orgContext.isAppEnabled(req.appKey || APP_KEYS.SALES)) ||
+                resolveRuntimePermission(user, module, 'viewAll', {
+                    appKey: req.appKey,
+                    orgContext
+                }) ||
+                user.permissions?.[normalizedModule]?.viewAll;
+
+            if (canViewAll) {
                 req.viewAll = true;
                 return next();
             }

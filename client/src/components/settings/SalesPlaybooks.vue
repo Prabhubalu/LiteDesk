@@ -1,8 +1,8 @@
 <template>
   <div class="space-y-6">
     <div>
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Playbooks</h3>
-      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Configure playbooks for each pipeline stage</p>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.salesPlayTitle') }}</h3>
+      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.salesPlaySubtitle') }}</p>
     </div>
 
     <div v-if="loading" class="flex items-center justify-center py-12">
@@ -16,7 +16,7 @@
     <div v-else class="h-full flex flex-col lg:flex-row gap-4">
       <aside class="w-full lg:w-80 flex-none bg-white dark:bg-gray-900/60 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
         <div class="p-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between">
-          <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">Pipelines</div>
+          <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ t('settings.salesPlayPipelines') }}</div>
         </div>
         <div class="flex-1 overflow-y-auto divide-y divide-gray-200 dark:divide-gray-800">
           <div
@@ -35,14 +35,14 @@
                 <span class="w-2.5 h-2.5 rounded-full border border-white shadow" :style="{ backgroundColor: pipeline.color || DEFAULT_PIPELINE_COLOR }"></span>
                 <div class="min-w-0">
                   <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ pipeline.name }}</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ pipeline.stages?.length || 0 }} stage{{ (pipeline.stages?.length || 0) === 1 ? '' : 's' }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ formatStageCount(pipeline.stages?.length || 0) }}</p>
                 </div>
               </div>
-              <span v-if="pipeline.isDefault" class="text-xs font-medium text-indigo-600 dark:text-indigo-300">Default</span>
+              <span v-if="pipeline.isDefault" class="text-xs font-medium text-indigo-600 dark:text-indigo-300">{{ t('settings.salesPlayDefaultBadge') }}</span>
             </div>
           </div>
           <div v-if="!pipelineSettings.length" class="p-6 text-center text-sm text-gray-500 dark:text-gray-400">
-            No pipelines yet. Configure pipelines first in the Pipelines & Stages tab.
+            {{ t('settings.salesPlayNoPipelines') }}
           </div>
         </div>
       </aside>
@@ -50,11 +50,11 @@
         <div class="p-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between gap-3">
           <div class="min-w-0">
             <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">
-              {{ currentPipeline?.name || 'Select a pipeline' }}
+              {{ currentPipeline?.name || t('settings.salesPlaySelectPipeline') }}
             </p>
             <p v-if="currentPipeline" class="text-xs text-gray-500 dark:text-gray-400">
-              {{ currentPipeline.stages?.length || 0 }} stage{{ (currentPipeline.stages?.length || 0) === 1 ? '' : 's' }} ·
-              {{ currentPipeline.isDefault ? 'Default pipeline' : 'Custom pipeline' }}
+              {{ formatStageCount(currentPipeline.stages?.length || 0) }} ·
+              {{ currentPipeline.isDefault ? t('settings.salesPlayDefaultPipeline') : t('settings.salesPlayCustomPipeline') }}
             </p>
           </div>
           <button
@@ -72,13 +72,13 @@
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <span>{{ isSaving ? 'Saving…' : 'Save Playbooks' }}</span>
+            <span>{{ isSaving ? t('settings.salesPlaySaving') : t('settings.salesPlaySavePlaybooks') }}</span>
           </button>
         </div>
         <div v-if="currentPipeline" class="flex-1 flex flex-col gap-6 p-4 overflow-hidden">
           <div>
-            <h4 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Stage Playbooks</h4>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Define guidance and automation for each stage in this pipeline.</p>
+            <h4 class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ t('settings.salesPlayStagePlaybooks') }}</h4>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.salesPlayStagePlaybooksDesc') }}</p>
           </div>
           <div class="flex-1 overflow-x-auto pb-6">
             <div class="flex items-start gap-4 min-w-full">
@@ -92,10 +92,13 @@
                     <div class="flex items-start justify-between gap-3">
                       <div class="min-w-0">
                         <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">
-                          {{ stage.name || `Stage ${stageIndex + 1}` }}
+                          {{ stage.name || t('settings.salesPlayStageFallback', { number: stageIndex + 1 }) }}
                         </p>
                         <p class="text-xs text-gray-500 dark:text-gray-400">
-                          Probability: {{ stage.probability ?? 0 }}% · Status: {{ stage.status || 'open' }}
+                          {{ t('settings.salesPlayStageMeta', {
+                            probability: stage.probability ?? 0,
+                            status: stage.status || t('settings.salesPlayStatusOpen')
+                          }) }}
                         </p>
                       </div>
                       <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer flex-shrink-0">
@@ -104,7 +107,7 @@
                           @change="handlePlaybookToggle(stage)"
                           checkbox-class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
                         />
-                        <span>Enable</span>
+                        <span>{{ t('settings.salesPlayEnable') }}</span>
                       </label>
                     </div>
                     <button
@@ -124,7 +127,7 @@
                       >
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                       </svg>
-                      <span>Stage settings</span>
+                      <span>{{ t('settings.salesPlayStageSettings') }}</span>
                     </button>
                     <transition name="fade">
                       <div
@@ -133,38 +136,38 @@
                       >
                         <div class="grid grid-cols-1 gap-3">
                           <div>
-                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Playbook Mode</label>
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.salesPlayPlaybookMode') }}</label>
                             <select v-model="stage.playbook.mode" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm">
-                              <option v-for="option in PLAYBOOK_MODE_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
+                              <option v-for="option in playbookModeOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
                             </select>
                           </div>
                           <div>
-                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Exit Criteria</label>
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.salesPlayExitCriteria') }}</label>
                             <select v-model="stage.playbook.exitCriteria.type" @change="onPlaybookExitCriteriaChange(stage)" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm">
-                              <option v-for="option in PLAYBOOK_EXIT_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
+                              <option v-for="option in playbookExitOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
                             </select>
                           </div>
                           <div>
                             <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
                               <HeadlessCheckbox v-model="stage.playbook.autoAdvance" @change="onPlaybookAutoAdvanceChange(stage)" checkbox-class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500" />
-                              Auto-move to next stage when criteria met
+                              {{ t('settings.salesPlayAutoAdvance') }}
                             </label>
-                            <p class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">Automatically progress when conditions are satisfied.</p>
+                            <p class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">{{ t('settings.salesPlayAutoAdvanceHint') }}</p>
                           </div>
                           <div v-if="stage.playbook.autoAdvance">
-                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Next Stage</label>
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.salesPlayNextStage') }}</label>
                             <select v-model="stage.playbook.exitCriteria.nextStageKey" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm">
-                              <option value="">Select stage...</option>
+                              <option value="">{{ t('settings.salesPlaySelectStagePh') }}</option>
                               <option v-for="option in getNextStageOptions(currentPipeline, stage)" :key="option.value" :value="option.value">{{ option.label }}</option>
                             </select>
                           </div>
                           <div v-if="stage.playbook.exitCriteria.type === 'custom'">
-                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Custom Trigger Description</label>
-                            <textarea v-model="stage.playbook.exitCriteria.customDescription" rows="2" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm" placeholder="Describe the conditions that should move this deal to the next stage"></textarea>
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.salesPlayCustomTriggerDesc') }}</label>
+                            <textarea v-model="stage.playbook.exitCriteria.customDescription" rows="2" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm" :placeholder="t('settings.salesPlayCustomTriggerPh')"></textarea>
                           </div>
                           <div>
-                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Internal Notes (optional)</label>
-                            <textarea v-model="stage.playbook.notes" rows="2" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm" placeholder="Provide additional guidance for your team"></textarea>
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.salesPlayInternalNotes') }}</label>
+                            <textarea v-model="stage.playbook.notes" rows="2" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm" :placeholder="t('settings.salesPlayInternalNotesPh')"></textarea>
                           </div>
                         </div>
                       </div>
@@ -173,8 +176,8 @@
                   <div class="flex-1 flex flex-col gap-4 p-4">
                     <div class="flex items-start justify-between gap-3">
                       <div>
-                        <h6 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Activities</h6>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Add and orchestrate the work your team completes in this stage.</p>
+                        <h6 class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ t('settings.salesPlayActivities') }}</h6>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.salesPlayActivitiesDesc') }}</p>
                       </div>
                       <button
                         class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors shadow-sm hover:shadow"
@@ -185,15 +188,15 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                         </svg>
-                        Add Activity
+                        {{ t('settings.salesPlayAddActivity') }}
                       </button>
                     </div>
                     <div v-if="!stage.playbook.enabled" class="flex-1 rounded-lg border border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 p-4 text-xs text-gray-500 dark:text-gray-400">
-                      Enable this playbook to manage activities for the stage.
+                      {{ t('settings.salesPlayEnableToManage') }}
                     </div>
                     <div v-else class="flex-1 flex flex-col gap-3 overflow-y-auto pr-1">
                       <div v-if="!stage.playbook.actions.length" class="flex-1 rounded-lg border border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 px-4 py-8 text-center text-xs text-gray-500 dark:text-gray-400">
-                        No activities yet. Click "Add Activity" to build a guided checklist.
+                        {{ t('settings.salesPlayNoActivities') }}
                       </div>
                       <div v-else class="space-y-3">
                         <div
@@ -204,17 +207,17 @@
                           <div class="flex items-start justify-between gap-2">
                             <div class="min-w-0">
                               <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                                {{ action.title || `Action ${actionIndex + 1}` }}
+                                {{ action.title || t('settings.salesPlayActionFallback', { number: actionIndex + 1 }) }}
                               </p>
                               <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                 {{ getPlaybookActionTypeLabel(action.actionType) }}
-                                <span v-if="action.dueInDays !== null && action.dueInDays !== undefined" class="ml-1">• Due in {{ action.dueInDays }} day{{ action.dueInDays === 1 ? '' : 's' }}</span>
+                                <span v-if="action.dueInDays !== null && action.dueInDays !== undefined" class="ml-1">• {{ formatDueIn(action.dueInDays) }}</span>
                               </p>
                             </div>
                             <button
                               class="p-1 rounded text-red-500 hover:text-red-600 transition-colors"
                               @click="removePlaybookAction(stage, actionIndex)"
-                              title="Remove activity"
+                              :title="t('settings.salesPlayRemoveActivity')"
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
                                 <path fill-rule="evenodd" d="M8.75 3a.75.75 0 00-.75.75V5H5.5a.75.75 0 000 1.5h.538l.599 9.27A1.75 1.75 0 008.382 17.5h3.236a1.75 1.75 0 001.745-1.73l.599-9.27h.538a.75.75 0 000-1.5H12v-1.25A.75.75 0 0011.25 3h-2.5zM9.5 6.5v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0zm-2 0v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0z" clip-rule="evenodd" />
@@ -222,10 +225,10 @@
                             </button>
                           </div>
                           <div class="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400">
-                            <span v-if="action.required" class="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">Required</span>
-                            <span v-if="action.autoCreate" class="px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">Auto-create</span>
+                            <span v-if="action.required" class="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">{{ t('settings.salesPlayRequired') }}</span>
+                            <span v-if="action.autoCreate" class="px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">{{ t('settings.salesPlayAutoCreate') }}</span>
                             <span class="truncate">
-                              Assigned to {{ getPlaybookAssignmentLabel(action.assignment?.type) }}
+                              {{ t('settings.salesPlayAssignedTo', { assignment: getPlaybookAssignmentLabel(action.assignment?.type) }) }}
                             </span>
                           </div>
                         </div>
@@ -238,7 +241,7 @@
           </div>
         </div>
         <div v-else class="flex-1 flex items-center justify-center p-6 text-sm text-gray-500 dark:text-gray-400">
-          Select a pipeline on the left to configure playbooks.
+          {{ t('settings.salesPlaySelectPipelineHint') }}
         </div>
       </section>
     </div>
@@ -248,9 +251,11 @@
 <script setup>
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { ref, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
 
+const { t } = useI18n();
 const authStore = useAuthStore();
 const loading = ref(true);
 const error = ref('');
@@ -263,31 +268,31 @@ const stageSettingsExpanded = ref({});
 
 const DEFAULT_PIPELINE_COLOR = '#2563EB';
 
-const PLAYBOOK_MODE_OPTIONS = [
-  { value: 'sequential', label: 'Sequential (one at a time)' },
-  { value: 'parallel', label: 'Parallel (all at once)' }
-];
+const playbookModeOptions = computed(() => [
+  { value: 'sequential', label: t('settings.salesPlayModeSequential') },
+  { value: 'parallel', label: t('settings.salesPlayModeParallel') }
+]);
 
-const PLAYBOOK_EXIT_OPTIONS = [
-  { value: 'manual', label: 'Manual (user decides)' },
-  { value: 'all_actions_completed', label: 'All actions completed' },
-  { value: 'custom', label: 'Custom conditions' }
-];
+const playbookExitOptions = computed(() => [
+  { value: 'manual', label: t('settings.salesPlayExitManual') },
+  { value: 'all_actions_completed', label: t('settings.salesPlayExitAllActions') },
+  { value: 'custom', label: t('settings.salesPlayExitCustom') }
+]);
 
-const PLAYBOOK_ACTION_TYPES = [
-  { value: 'task', label: 'Task' },
-  { value: 'call', label: 'Call' },
-  { value: 'meeting', label: 'Meeting' },
-  { value: 'email', label: 'Email' },
-  { value: 'event', label: 'Event' }
-];
+const playbookActionTypes = computed(() => [
+  { value: 'task', label: t('settings.salesPlayActionTask') },
+  { value: 'call', label: t('settings.salesPlayActionCall') },
+  { value: 'meeting', label: t('settings.salesPlayActionMeeting') },
+  { value: 'email', label: t('settings.salesPlayActionEmail') },
+  { value: 'event', label: t('settings.salesPlayActionEvent') }
+]);
 
-const PLAYBOOK_ASSIGNMENT_OPTIONS = [
-  { value: 'deal_owner', label: 'Deal Owner' },
-  { value: 'contact_owner', label: 'Contact Owner' },
-  { value: 'specific_user', label: 'Specific User' },
-  { value: 'team', label: 'Team' }
-];
+const playbookAssignmentOptions = computed(() => [
+  { value: 'deal_owner', label: t('settings.salesPlayAssignDealOwner') },
+  { value: 'contact_owner', label: t('settings.salesPlayAssignContactOwner') },
+  { value: 'specific_user', label: t('settings.salesPlayAssignSpecificUser') },
+  { value: 'team', label: t('settings.salesPlayAssignTeam') }
+]);
 
 const currentPipeline = computed(() => {
   if (!pipelineSettings.value.length) return null;
@@ -301,6 +306,18 @@ const isDirty = computed(() => {
   if (!originalSnapshot.value) return false;
   return JSON.stringify(normalizePipelineSettings(pipelineSettings.value)) !== originalSnapshot.value;
 });
+
+function formatStageCount(count) {
+  return count === 1
+    ? t('settings.salesPlayStageCountOne', { count })
+    : t('settings.salesPlayStageCountOther', { count });
+}
+
+function formatDueIn(days) {
+  return days === 1
+    ? t('settings.salesPlayDueInOne', { days })
+    : t('settings.salesPlayDueInOther', { days });
+}
 
 function slugify(str) {
   if (!str) return '';
@@ -346,7 +363,7 @@ async function fetchDealsModule() {
     if (data.success) {
       const deals = data.data.find(m => m.key === 'deals');
       if (!deals) {
-        error.value = 'Deals module not found. Please ensure the Sales app is properly configured.';
+        error.value = t('settings.salesPlayDealsModuleNotFound');
         return;
       }
       dealsModule.value = deals;
@@ -357,11 +374,11 @@ async function fetchDealsModule() {
       }
       originalSnapshot.value = JSON.stringify(normalizePipelineSettings(pipelineSettings.value));
     } else {
-      error.value = data.message || 'Failed to load playbooks';
+      error.value = data.message || t('settings.salesPlayLoadFailed');
     }
   } catch (err) {
     console.error('Error fetching deals module:', err);
-    error.value = err.message || 'Failed to load playbooks';
+    error.value = err.message || t('settings.salesPlayLoadFailed');
   } finally {
     loading.value = false;
   }
@@ -381,14 +398,14 @@ async function savePlaybooks() {
     });
     const data = await res.json();
     if (!res.ok || !data.success) {
-      alert(data.message || 'Failed to save playbooks');
+      alert(data.message || t('settings.salesPlaySaveFailed'));
       return;
     }
     await fetchDealsModule();
-    alert('Playbooks saved successfully');
+    alert(t('settings.salesPlaySaveSuccess'));
   } catch (e) {
     console.error('Save playbooks failed', e);
-    alert('Failed to save: ' + (e.message || 'Unknown error'));
+    alert(t('settings.salesPlaySaveFailedWithReason', { reason: e.message || t('settings.salesPlayUnknownError') }));
   } finally {
     isSaving.value = false;
   }
@@ -458,7 +475,7 @@ function addPlaybookAction(stage) {
     };
   }
   const index = stage.playbook.actions.length;
-  const title = `Action ${index + 1}`;
+  const title = t('settings.salesPlayActionFallback', { number: index + 1 });
   let key = slugify(`${stage.key}-${title}-${Date.now()}`);
   const existingKeys = new Set(stage.playbook.actions.map(action => action.key));
   while (existingKeys.has(key)) {
@@ -493,13 +510,13 @@ function removePlaybookAction(stage, actionIndex) {
 }
 
 function getPlaybookActionTypeLabel(actionType) {
-  const option = PLAYBOOK_ACTION_TYPES.find(opt => opt.value === actionType);
-  return option ? option.label : 'Task';
+  const option = playbookActionTypes.value.find(opt => opt.value === actionType);
+  return option ? option.label : t('settings.salesPlayActionTask');
 }
 
 function getPlaybookAssignmentLabel(assignmentType) {
-  const option = PLAYBOOK_ASSIGNMENT_OPTIONS.find(opt => opt.value === assignmentType);
-  return option ? option.label : 'Deal Owner';
+  const option = playbookAssignmentOptions.value.find(opt => opt.value === assignmentType);
+  return option ? option.label : t('settings.salesPlayAssignDealOwner');
 }
 
 onMounted(() => {
@@ -515,4 +532,3 @@ onMounted(() => {
   opacity: 0;
 }
 </style>
-

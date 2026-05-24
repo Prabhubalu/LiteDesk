@@ -1,4 +1,7 @@
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -303,12 +306,8 @@ onMounted(() => {
     <div class="max-w-7xl mx-auto">
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          App Registry
-        </h1>
-        <p class="text-gray-600 dark:text-gray-400">
-          Discover and manage your applications
-        </p>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ t('platform.appRegistryAppRegistry') }}</h1>
+        <p class="text-gray-600 dark:text-gray-400">{{ t('platform.appRegistryDiscoverAndManageYourApplications') }}</p>
       </div>
 
       <!-- Loading State -->
@@ -327,7 +326,7 @@ onMounted(() => {
 
       <!-- Empty State -->
       <div v-else-if="allApps.length === 0" class="text-center py-12">
-        <p class="text-gray-500 dark:text-gray-400">No applications available.</p>
+        <p class="text-gray-500 dark:text-gray-400">{{ t('platform.appRegistryNoApplicationsAvailable') }}</p>
       </div>
 
       <!-- App Grid -->
@@ -456,9 +455,7 @@ onMounted(() => {
 
             <!-- Capabilities -->
             <div v-if="selectedApp.capabilities">
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                Capabilities
-              </h4>
+              <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.roleDrawerTabCapabilities') }}</h4>
               <div class="flex flex-wrap gap-2">
                 <span
                   v-for="capability in getCapabilityLabels(selectedApp.capabilities)"
@@ -473,8 +470,7 @@ onMounted(() => {
             <!-- Read-only Warning -->
             <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
               <p class="text-sm text-yellow-800 dark:text-yellow-200">
-                <strong>Installation coming soon.</strong> This app is available for discovery. Installation and configuration features will be available in a future update.
-              </p>
+                <strong>{{ t('platform.appRegistryInstallationComingSoon') }}</strong>{{ t('platform.appRegistryThisAppIsAvailableForDiscovery') }}</p>
             </div>
           </div>
         </DialogPanel>

@@ -1,0 +1,2382 @@
+{
+  "recordsCount": {
+    "message": "{count, plural, one {# record} other {# records}}",
+    "description": "Record list count with ICU pluralization"
+  },
+  "itemsSelected": {
+    "message": "{count, plural, one {# item selected} other {# items selected}}",
+    "description": "Bulk selection count in list views"
+  },
+  "welcomeUser": {
+    "message": "Добро пожаловать, {name}",
+    "description": "Personalized greeting with interpolation"
+  },
+  "assignedToUser": {
+    "message": "Assigned to {gender, select, female {her} male {him} other {them}}",
+    "description": "ICU select example for gendered copy (platform chrome only)"
+  },
+  "localeDevTitle": {
+    "message": "Контроль качества локализации",
+    "description": "Developer settings section for i18n tools"
+  },
+  "pseudoLocaleHint": {
+    "message": "Псевдолокали расширяют текст и выявляют проблемы с макетом перед переводом.",
+    "description": "Help text for pseudo-locale developer toggle"
+  },
+  "moreActions": {
+    "message": "Дополнительные действия",
+    "description": "Overflow menu trigger aria-label"
+  },
+  "loadingList": {
+    "message": "Загрузка списка",
+    "description": "List skeleton aria-label"
+  },
+  "viewRecord": {
+    "message": "Вид",
+    "description": "Row action: open record"
+  },
+  "importData": {
+    "message": "Импорт",
+    "description": "Module header import action"
+  },
+  "exportData": {
+    "message": "Экспорт",
+    "description": "Module header export action"
+  },
+  "listSaveView": {
+    "message": "Сохранить вид",
+    "description": "List view: save current filters/columns"
+  },
+  "listFilters": {
+    "message": "Фильтры",
+    "description": "List view filters panel title"
+  },
+  "listAllRecords": {
+    "message": "Все",
+    "description": "List filter tab: all records"
+  },
+  "listClearFilters": {
+    "message": "Очистить фильтры",
+    "description": "Reset active list filters"
+  },
+  "listLoadingOptions": {
+    "message": "Загрузка вариантов…",
+    "description": "Filter dropdown loading state"
+  },
+  "listClear": {
+    "message": "Прозрачный",
+    "description": "Clear single filter or selection"
+  },
+  "listViewName": {
+    "message": "Посмотреть имя",
+    "description": "Saved view name field label"
+  },
+  "listDeleteView": {
+    "message": "Удалить представление",
+    "description": "Delete saved list view action"
+  },
+  "listCustomizeView": {
+    "message": "Настроить вид",
+    "description": "Open list view customization drawer"
+  },
+  "listLayoutOptions": {
+    "message": "Варианты макета",
+    "description": "List layout section title"
+  },
+  "listRowHeight": {
+    "message": "Высота строки",
+    "description": "Table row height setting"
+  },
+  "listReset": {
+    "message": "Перезагрузить",
+    "description": "Reset view settings to defaults"
+  },
+  "listColumnWidths": {
+    "message": "Ширина столбца",
+    "description": "Column width customization section"
+  },
+  "listDefaultView": {
+    "message": "Вид по умолчанию",
+    "description": "Mark view as org default"
+  },
+  "listManageFields": {
+    "message": "Управление полями",
+    "description": "Open field visibility manager"
+  },
+  "listFieldRequired": {
+    "message": "Необходимый",
+    "description": "Field cannot be hidden"
+  },
+  "listFieldLocked": {
+    "message": "Заблокировано",
+    "description": "Field locked from reorder"
+  },
+  "listFieldHidden": {
+    "message": "Скрытый",
+    "description": "Hidden fields section"
+  },
+  "listNoHiddenFields": {
+    "message": "Никаких скрытых полей",
+    "description": "Empty hidden fields state"
+  },
+  "listNewCustomField": {
+    "message": "Новое настраиваемое поле",
+    "description": "Create custom field from list manager"
+  },
+  "listCustomizeKanban": {
+    "message": "Настройте Канбан",
+    "description": "Kanban board customization"
+  },
+  "deleteTitleBulk": {
+    "message": "Удалить {count} {recordTypePlural}",
+    "description": "Bulk delete dialog title"
+  },
+  "deleteTitleSingle": {
+    "message": "Удалить {recordType}",
+    "description": "Single delete dialog title"
+  },
+  "deleteConfirmBulk": {
+    "message": "Вы уверены, что хотите удалить {count} {recordTypeLabel}? Это действие невозможно отменить.",
+    "description": "Bulk delete confirmation"
+  },
+  "deleteConfirmSingle": {
+    "message": "Вы уверены, что хотите удалить {target}? Это действие невозможно отменить.",
+    "description": "Single delete confirmation; target is quoted name or type"
+  },
+  "deleteInProgress": {
+    "message": "Удаление…",
+    "description": "Delete button in progress"
+  },
+  "listEditView": {
+    "message": "Редактировать вид",
+    "description": "Edit saved list view action title"
+  },
+  "listDeleteViewAction": {
+    "message": "Удалить представление",
+    "description": "Delete saved list view action title"
+  },
+  "listSaveViewHint": {
+    "message": "Сохранить текущий вид как новый сохраненный вид",
+    "description": "Save view button tooltip"
+  },
+  "listHideStatistics": {
+    "message": "Скрыть статистику",
+    "description": "Stats panel toggle tooltip when visible"
+  },
+  "listShowStatistics": {
+    "message": "Показать статистику",
+    "description": "Stats panel toggle tooltip when hidden"
+  },
+  "listStatsShort": {
+    "message": "Статистика",
+    "description": "Short stats toggle label"
+  },
+  "listHideShort": {
+    "message": "Скрывать",
+    "description": "Short hide label for stats toggle"
+  },
+  "listSuggestedLabel": {
+    "message": "Предложенный:",
+    "description": "Suggested filters section prefix"
+  },
+  "listSuggestedHint": {
+    "message": "Предложения, основанные на общем употреблении. Ничего не применяется автоматически.",
+    "description": "Suggested filters tooltip"
+  },
+  "listSuggestedConfigure": {
+    "message": "Нажмите, чтобы настроить фильтр {filter}",
+    "description": "Suggested filter chip tooltip"
+  },
+  "listClearSearch": {
+    "message": "Очистить поиск для {title}",
+    "description": "Clear search input aria-label"
+  },
+  "listViewNameExample": {
+    "message": "например, Лидеры продаж",
+    "description": "Saved view name placeholder"
+  },
+  "listViewDescOptional": {
+    "message": "Описание (необязательно)",
+    "description": "Saved view description field label"
+  },
+  "listViewDescPlaceholder": {
+    "message": "Дополнительное описание для этого представления",
+    "description": "Saved view description placeholder"
+  },
+  "listSaveCurrentView": {
+    "message": "Сохранить текущий вид",
+    "description": "Save view modal title"
+  },
+  "listEditViewTitle": {
+    "message": "Редактировать вид",
+    "description": "Edit view modal title"
+  },
+  "listDeleteViewConfirm": {
+    "message": "Вы уверены, что хотите удалить «{viewName}»? Это действие невозможно отменить.",
+    "description": "Delete saved view confirmation"
+  },
+  "listClearSelection": {
+    "message": "Очистить выбор",
+    "description": "Bulk selection clear button tooltip"
+  },
+  "listRowsSelected": {
+    "message": "{count, plural, one {# {singular} selected} other {# {plural} selected}}",
+    "description": "Bulk row selection count in list"
+  },
+  "listSearchFields": {
+    "message": "Поля поиска",
+    "description": "Field manager search placeholder"
+  },
+  "listShownCount": {
+    "message": "Показано ({count})",
+    "description": "Visible fields section header"
+  },
+  "listKanbanOptions": {
+    "message": "Варианты канбана",
+    "description": "Kanban settings section title"
+  },
+  "listCardSize": {
+    "message": "Размер карты",
+    "description": "Kanban card size setting"
+  },
+  "listStackFields": {
+    "message": "Поля стека",
+    "description": "Kanban stack fields toggle"
+  },
+  "listCollapseEmpty": {
+    "message": "Свернуть пустые столбцы",
+    "description": "Kanban collapse empty columns toggle"
+  },
+  "listShowEmptyFields": {
+    "message": "Показать пустые поля",
+    "description": "Kanban show empty fields toggle"
+  },
+  "listShowClosedRecords": {
+    "message": "Показать закрытые записи",
+    "description": "Kanban show closed records toggle"
+  },
+  "darkMode": {
+    "message": "Темный режим",
+    "description": "Dark color mode menu option"
+  },
+  "lightMode": {
+    "message": "Светлый режим",
+    "description": "Light color mode menu option"
+  },
+  "tableClearSelection": {
+    "message": "Очистить выбор",
+    "description": "Clear bulk row selection"
+  },
+  "tableAllPageSelected": {
+    "message": "Все элементы {count} на этой странице выбраны.",
+    "description": "Select-all banner when current page is fully selected"
+  },
+  "tableSelectAllItems": {
+    "message": "Выбрать все элементы {count}",
+    "description": "Expand selection to all pages"
+  },
+  "tableAllSelected": {
+    "message": "Выбраны все {count}",
+    "description": "All records across pages selected"
+  },
+  "tableSelectedCount": {
+    "message": "{count, plural, one {# selected} other {# selected}}",
+    "description": "Bulk selection count in data table"
+  },
+  "tableDeleteSelected": {
+    "message": "Удалить выбранное",
+    "description": "Bulk delete action label"
+  },
+  "tableColumns": {
+    "message": "Столбцы",
+    "description": "Column settings button label"
+  },
+  "tableColumnSettings": {
+    "message": "Настройки столбца",
+    "description": "Column settings modal title"
+  },
+  "tableManageColumns": {
+    "message": "Управление столбцами",
+    "description": "Column manager section title"
+  },
+  "tableManageColumnsHint": {
+    "message": "Переключите видимость и перетащите, чтобы изменить порядок",
+    "description": "Column manager help text"
+  },
+  "tableVisibleCount": {
+    "message": "{visible} из {total} виден",
+    "description": "Visible column count in settings"
+  },
+  "tableUnfreezeColumn": {
+    "message": "Разморозить столбец",
+    "description": "Unfreeze sticky column tooltip"
+  },
+  "tableFreezeColumn": {
+    "message": "Заморозить столбец",
+    "description": "Freeze sticky column tooltip"
+  },
+  "tableFreezeMax": {
+    "message": "Можно заморозить максимум 2 столбца",
+    "description": "Freeze limit tooltip"
+  },
+  "tableFrozen": {
+    "message": "Замороженный",
+    "description": "Frozen column badge"
+  },
+  "tableResetDefault": {
+    "message": "Сбросить настройки по умолчанию",
+    "description": "Reset column settings"
+  },
+  "tableShowingResults": {
+    "message": "Показаны результаты от {start} до {end} из {total}.",
+    "description": "Pagination summary"
+  },
+  "tableSortAscending": {
+    "message": "Сортировать по возрастанию",
+    "description": "Table column sort ascending"
+  },
+  "tableSortDescending": {
+    "message": "Сортировать по убыванию",
+    "description": "Table column sort descending"
+  },
+  "tableClearSort": {
+    "message": "Очистить сортировку",
+    "description": "Remove column sort"
+  },
+  "tableToggleSort": {
+    "message": "Переключить сортировку для {column}",
+    "description": "Sort toggle aria-label"
+  },
+  "tableRowSelectSr": {
+    "message": "Номер строки и выбор строк",
+    "description": "Screen reader label for selection column"
+  },
+  "tableLoadingSr": {
+    "message": "Загрузочный стол",
+    "description": "Screen reader label for table loading skeleton"
+  },
+  "metricsTitle": {
+    "message": "Метрики",
+    "description": "Metrics widget card title"
+  },
+  "metricsConfigure": {
+    "message": "Настройка показателей",
+    "description": "Open metrics configuration"
+  },
+  "metricsEmptyYet": {
+    "message": "Метрики пока не настроены.",
+    "description": "Empty metrics widget state"
+  },
+  "metricsEmptyPanel": {
+    "message": "Метрики не настроены.",
+    "description": "Empty metrics config panel"
+  },
+  "metricsAdd": {
+    "message": "Добавить показатель",
+    "description": "Add a new metric row"
+  },
+  "metricsLabel": {
+    "message": "Этикетка",
+    "description": "Metric label column"
+  },
+  "metricsSource": {
+    "message": "Источник",
+    "description": "Metric data source column"
+  },
+  "metricsField": {
+    "message": "Поле",
+    "description": "Metric field column"
+  },
+  "metricsAggregation": {
+    "message": "Агрегация",
+    "description": "Metric aggregation column"
+  },
+  "metricsDragReorder": {
+    "message": "Перетащите, чтобы изменить порядок",
+    "description": "Metric row drag handle tooltip"
+  },
+  "metricsDelete": {
+    "message": "Удалить показатель",
+    "description": "Remove metric row"
+  },
+  "metricsClosePanel": {
+    "message": "Закрыть панель",
+    "description": "Close metrics config drawer"
+  },
+  "keyFieldsTitle": {
+    "message": "Ключевые поля",
+    "description": "Key fields widget title"
+  },
+  "keyFieldsEmptyValue": {
+    "message": "Пустой",
+    "description": "Empty key field value placeholder"
+  },
+  "keyFieldsNone": {
+    "message": "Ключевые поля не настроены",
+    "description": "No key fields empty state"
+  },
+  "keyFieldsHint": {
+    "message": "Отметьте поля как «Ключевое поле» в настройках модуля.",
+    "description": "Key fields configuration hint"
+  },
+  "closePanel": {
+    "message": "Закрыть панель",
+    "description": "Screen reader label for closing a side panel"
+  },
+  "formAssignToMe": {
+    "message": "Назначьте мне",
+    "description": "Assign current user to a reviewer field"
+  },
+  "formNoOptions": {
+    "message": "Нет доступных вариантов.",
+    "description": "Empty picklist dropdown"
+  },
+  "formNoMatchingRecords": {
+    "message": "Соответствующих записей не найдено.",
+    "description": "Empty lookup combobox search results"
+  },
+  "formNoRecordsFound": {
+    "message": "Записи не найдены",
+    "description": "Empty lookup modal list"
+  },
+  "formSelected": {
+    "message": "Выбрано",
+    "description": "Lookup row already selected badge"
+  },
+  "formCreateNew": {
+    "message": "Создать новый",
+    "description": "Create related record from lookup footer"
+  },
+  "formSearchOptions": {
+    "message": "Варианты поиска...",
+    "description": "Picklist search placeholder"
+  },
+  "formSearchRecords": {
+    "message": "Поиск записей...",
+    "description": "Lookup combobox search placeholder"
+  },
+  "formBrowseRecords": {
+    "message": "Просмотр записей",
+    "description": "Open lookup record picker modal"
+  },
+  "formCreateAndSelect": {
+    "message": "Создать и выбрать",
+    "description": "Create new lookup record shortcut"
+  },
+  "formUploading": {
+    "message": "Загрузка...",
+    "description": "Image upload in progress"
+  },
+  "formUploadImage": {
+    "message": "Загрузить изображение",
+    "description": "Image upload trigger button"
+  },
+  "formRefreshing": {
+    "message": "Освежающий...",
+    "description": "Lookup modal refresh in progress"
+  },
+  "formLookupSelectTitle": {
+    "message": "Выберите {label}",
+    "description": "Lookup modal title"
+  },
+  "formLookupChooseOne": {
+    "message": "Выберите один {module} для заполнения {field}.",
+    "description": "Lookup modal subtitle"
+  },
+  "formLookupSearchModule": {
+    "message": "Найдите {module}...",
+    "description": "Lookup modal search placeholder"
+  },
+  "formLookupNoMatch": {
+    "message": "Нет {module}, соответствующего \"{query}\".",
+    "description": "Lookup modal empty state with search query"
+  },
+  "formLookupNoRecordsYet": {
+    "message": "Пока нет {module} для выбора.",
+    "description": "Lookup modal empty state without query"
+  },
+  "formLookupCreateModule": {
+    "message": "Создать новый {module}",
+    "description": "Lookup modal create CTA with module name"
+  },
+  "lifecycleStageTitle": {
+    "message": "Этап жизненного цикла",
+    "description": "Lifecycle stage widget title"
+  },
+  "lifecycleType": {
+    "message": "Тип:",
+    "description": "Lifecycle widget type label"
+  },
+  "lifecycleAge": {
+    "message": "Возраст:",
+    "description": "Lifecycle widget age label"
+  },
+  "lifecycleJustCreated": {
+    "message": "Только что создано",
+    "description": "Record age when created today"
+  },
+  "lifecycleAgeDays": {
+    "message": "{days, plural, one {# day} other {# days}}",
+    "description": "Record age in days"
+  },
+  "lifecycleAgeZero": {
+    "message": "0 дней",
+    "description": "Record age fallback when no createdAt"
+  },
+  "searchPlaceholder": {
+    "message": "Поиск...",
+    "description": "Generic search input placeholder"
+  },
+  "filterAll": {
+    "message": "Все",
+    "description": "Filter option: no restriction"
+  },
+  "filterAllNamed": {
+    "message": "Все {label}",
+    "description": "Filter option: all values for a named field"
+  },
+  "filterDays": {
+    "message": "Дни",
+    "description": "Relative date filter days input label"
+  },
+  "filterDate": {
+    "message": "Дата",
+    "description": "Single date filter input label"
+  },
+  "filterFrom": {
+    "message": "От",
+    "description": "Date range filter start label"
+  },
+  "filterTo": {
+    "message": "К",
+    "description": "Date range filter end label"
+  },
+  "filterDaysPlaceholder": {
+    "message": "например 7",
+    "description": "Relative date filter days input placeholder"
+  },
+  "dependencyNoFields": {
+    "message": "Нет полей для отображения",
+    "description": "Dependency popup empty state"
+  },
+  "drawerBackQuickCreate": {
+    "message": "Вернуться к быстрому созданию",
+    "description": "Toggle from full create form to quick create"
+  },
+  "drawerShowAllFields": {
+    "message": "Показать все поля",
+    "description": "Expand quick create drawer to full form"
+  },
+  "formQuickCreateFields": {
+    "message": "Быстрое создание полей",
+    "description": "Section heading for quick-create field group"
+  },
+  "taskDescriptionPlaceholder": {
+    "message": "Напишите или введите '/' для команд",
+    "description": "Task description editor placeholder"
+  },
+  "taskDescriptionFallback": {
+    "message": "Описание",
+    "description": "Task description field fallback label"
+  },
+  "taskRelatedToFallback": {
+    "message": "Связано с",
+    "description": "Task related-to field fallback label"
+  },
+  "taskSubtasksLabel": {
+    "message": "Подзадачи",
+    "description": "Task subtasks field label"
+  },
+  "tagsTitle": {
+    "message": "Теги",
+    "description": "Tags picker panel title"
+  },
+  "tagsNewTag": {
+    "message": "Новый тег",
+    "description": "Create a new tag definition"
+  },
+  "tagsSearchPlaceholder": {
+    "message": "Найдите или создайте тег",
+    "description": "Tags picker search input"
+  },
+  "tagsClickSearchHint": {
+    "message": "Нажмите на поле поиска, чтобы просмотреть доступные теги.",
+    "description": "Tags picker collapsed hint"
+  },
+  "tagsNoTagsYet": {
+    "message": "В этой рабочей области пока нет тегов.",
+    "description": "Empty workspace tags list"
+  },
+  "tagsCreateFirst": {
+    "message": "Создать первый тег",
+    "description": "CTA when no tags exist"
+  },
+  "tagsCreateNamed": {
+    "message": "Создать \"{name}\"",
+    "description": "Create tag from search query"
+  },
+  "tagsPublic": {
+    "message": "Общественный",
+    "description": "Public tag badge"
+  },
+  "tagsRemoveTag": {
+    "message": "Удалить тег",
+    "description": "Remove tag from selection aria-label"
+  },
+  "tagsEditTag": {
+    "message": "Изменить тег",
+    "description": "Edit tag definition action"
+  },
+  "tagsTagActions": {
+    "message": "Действия с тегами",
+    "description": "Tag row overflow menu aria-label"
+  },
+  "tagsTagName": {
+    "message": "Имя тега",
+    "description": "Tag editor name field label"
+  },
+  "tagsEnterTagName": {
+    "message": "Введите имя тега",
+    "description": "Tag editor name placeholder"
+  },
+  "tagsColor": {
+    "message": "Цвет",
+    "description": "Tag editor color field label"
+  },
+  "tagsMakePublic": {
+    "message": "Сделать тег общедоступным",
+    "description": "Tag editor public toggle label"
+  },
+  "tagsRemoveFromSelection": {
+    "message": "Удалить из выбора",
+    "description": "Unassign tag from current record"
+  },
+  "tagsAddToSelection": {
+    "message": "Добавить в выбор",
+    "description": "Assign tag to current record"
+  },
+  "tagsDeleteFromModule": {
+    "message": "Удалить тег из модуля",
+    "description": "Delete tag definition from module"
+  },
+  "tagsRemovedNamed": {
+    "message": "Удален \"{name}\".",
+    "description": "Tag removal pending undo banner"
+  },
+  "tagsUndoSeconds": {
+    "message": "Отменить ({seconds})",
+    "description": "Undo tag removal countdown"
+  },
+  "linkRecordsBackToType": {
+    "message": "Вернуться к типу записи",
+    "description": "Return to link records type selector"
+  },
+  "linkRecordsLinked": {
+    "message": "Связано",
+    "description": "Already-linked record type badge"
+  },
+  "linkRecordsNoTypes": {
+    "message": "Для этого модуля не настроены типы связанных записей. Настройте отношения в Настройках → Модули.",
+    "description": "Empty linkable types state"
+  },
+  "linkRecordsNoMatch": {
+    "message": "Соответствующих записей не найдено. Попробуйте настроить поиск или фильтры.",
+    "description": "Empty link records search results"
+  },
+  "linkRecordsCreateNew": {
+    "message": "Создать новый",
+    "description": "Create record from link drawer"
+  },
+  "linkRecordsSelectedCount": {
+    "message": "{count, plural, one {# selected} other {# selected}}",
+    "description": "Link drawer multi-select count"
+  },
+  "linkRecordsLink": {
+    "message": "Связь",
+    "description": "Confirm link records action"
+  },
+  "kanbanExpandColumn": {
+    "message": "Развернуть столбец",
+    "description": "Expand collapsed kanban column"
+  },
+  "kanbanNoItems": {
+    "message": "Нет товаров",
+    "description": "Empty kanban column placeholder"
+  },
+  "summaryLoadingRecord": {
+    "message": "Загрузка {type}...",
+    "description": "Record summary page loading state"
+  },
+  "summaryErrorLoadingTitle": {
+    "message": "Ошибка загрузки {type}",
+    "description": "Record summary page error headline"
+  },
+  "summaryNoTagsYet": {
+    "message": "Тегов пока нет",
+    "description": "Empty tags on record header"
+  },
+  "summaryManageTags": {
+    "message": "Управление тегами",
+    "description": "Open tag manager when tags exist"
+  },
+  "summaryAddTag": {
+    "message": "Добавить тег",
+    "description": "Add a tag to the record"
+  },
+  "summaryAddAnotherTag": {
+    "message": "Добавить еще один тег",
+    "description": "Add another tag when some exist"
+  },
+  "summaryCopyLink": {
+    "message": "Копировать ссылку",
+    "description": "Copy record URL to clipboard"
+  },
+  "summarySelectPlaceholder": {
+    "message": "Выбирать...",
+    "description": "Unset lifecycle/status dropdown value"
+  },
+  "summaryAddRelation": {
+    "message": "Добавить отношение",
+    "description": "Add related record menu"
+  },
+  "summaryViewResponses": {
+    "message": "Посмотреть ответы",
+    "description": "Open form responses list"
+  },
+  "summaryDeleteRecord": {
+    "message": "Удалить запись",
+    "description": "Delete current record action"
+  },
+  "summaryFormNotActive": {
+    "message": "Форма еще не активна",
+    "description": "Inactive form empty state title"
+  },
+  "summaryFormNotActiveHint": {
+    "message": "Эта форма еще не использовалась. Назначьте его через события, чтобы начать собирать ответы.",
+    "description": "Inactive form empty state body"
+  },
+  "summaryAddWidget": {
+    "message": "Добавить виджет",
+    "description": "Add dashboard widget CTA"
+  },
+  "summaryAddCustomWidget": {
+    "message": "Добавить пользовательский виджет",
+    "description": "Add widget floating button tooltip"
+  },
+  "summaryShowEmptyFields": {
+    "message": "Показать пустые поля",
+    "description": "Toggle empty fields in details tab"
+  },
+  "summaryTenantFields": {
+    "message": "Поля арендатора",
+    "description": "Tenant details tab section title"
+  },
+  "summaryTenantFieldsHint": {
+    "message": "Настройки подписки, лимитов и организации",
+    "description": "Tenant details tab subtitle"
+  },
+  "summaryTenantFieldsNoMatch": {
+    "message": "Ни одно поле арендатора не соответствует вашему запросу.",
+    "description": "Tenant fields search empty"
+  },
+  "summaryTenantFieldsNoValues": {
+    "message": "Нет полей клиента со значениями для отображения.",
+    "description": "Tenant fields all empty hidden"
+  },
+  "summaryTenantFieldsNone": {
+    "message": "Нет доступных полей арендаторов.",
+    "description": "No tenant fields configured"
+  },
+  "summaryManageFields": {
+    "message": "Управление полями",
+    "description": "Open field management settings"
+  },
+  "summaryNotAvailable": {
+    "message": "Нет в наличии",
+    "description": "Field value unavailable placeholder"
+  },
+  "summaryFieldsNoMatch": {
+    "message": "Нет полей, соответствующих вашему запросу.",
+    "description": "Details tab search empty"
+  },
+  "summaryFieldsNoValues": {
+    "message": "Нет полей со значениями для отображения.",
+    "description": "Details tab all empty hidden"
+  },
+  "summaryFieldsNone": {
+    "message": "Нет доступных полей.",
+    "description": "No fields configured on module"
+  },
+  "summaryFormUsage": {
+    "message": "Использование формы",
+    "description": "Form submissions section title"
+  },
+  "summaryFormUsageHint": {
+    "message": "Список отправленных форм со статусом, оценкой и датой отправки.",
+    "description": "Form submissions section subtitle"
+  },
+  "summaryLoadingSubmissions": {
+    "message": "Загрузка материалов...",
+    "description": "Form submissions table loading"
+  },
+  "summaryColSubmitted": {
+    "message": "Поданный",
+    "description": "Submission date column"
+  },
+  "summaryColSubmittedBy": {
+    "message": "Отправлено",
+    "description": "Submitter column"
+  },
+  "summaryColStatus": {
+    "message": "Статус",
+    "description": "Status column header"
+  },
+  "summaryColScore": {
+    "message": "Счет",
+    "description": "Score column header"
+  },
+  "summaryColActions": {
+    "message": "Действия",
+    "description": "Actions column header"
+  },
+  "summaryColKpis": {
+    "message": "КПЭ",
+    "description": "KPI column header"
+  },
+  "summaryAnonymous": {
+    "message": "Анонимный",
+    "description": "Anonymous submitter label"
+  },
+  "summaryNoSubmissions": {
+    "message": "Пока нет заявок",
+    "description": "Empty form submissions state"
+  },
+  "summaryNoSubmissionsHint": {
+    "message": "Эта форма еще не получила ни одной заявки.",
+    "description": "Empty form submissions body"
+  },
+  "summaryFormPreview": {
+    "message": "Предварительный просмотр формы",
+    "description": "Form preview section title"
+  },
+  "summaryFormPreviewHint": {
+    "message": "Предварительный просмотр того, как эта форма будет выглядеть для пользователей при ее заполнении.",
+    "description": "Form preview section subtitle"
+  },
+  "summaryFormResponses": {
+    "message": "Формировать ответы",
+    "description": "Form responses section title"
+  },
+  "summaryFormResponsesHint": {
+    "message": "Просматривайте и управляйте всеми ответами, отправленными в эту форму.",
+    "description": "Form responses section subtitle"
+  },
+  "summaryLoadingResponses": {
+    "message": "Загрузка ответов...",
+    "description": "Form responses table loading"
+  },
+  "summaryNoResponses": {
+    "message": "Пока нет ответов",
+    "description": "Empty form responses state"
+  },
+  "summaryNoResponsesHint": {
+    "message": "Эта форма еще не получила ни одного ответа.",
+    "description": "Empty form responses body"
+  },
+  "summaryViewAllResponses": {
+    "message": "Просмотреть все ответы",
+    "description": "Navigate to full responses list"
+  },
+  "summaryUser": {
+    "message": "Пользователь",
+    "description": "Activity filter user label"
+  },
+  "summaryAllUsers": {
+    "message": "Все пользователи",
+    "description": "Activity filter all users option"
+  },
+  "summaryType": {
+    "message": "Тип",
+    "description": "Activity filter type label"
+  },
+  "summaryAllTypes": {
+    "message": "Все типы",
+    "description": "Activity filter all types option"
+  },
+  "summaryComments": {
+    "message": "Комментарии",
+    "description": "Activity type filter comments"
+  },
+  "summaryFieldChanges": {
+    "message": "Изменения полей",
+    "description": "Activity type filter field changes"
+  },
+  "summaryNoActivity": {
+    "message": "Пока нет активности",
+    "description": "Empty activity feed"
+  },
+  "summarySelectWidget": {
+    "message": "Выберите виджет, который хотите добавить на свою панель управления.",
+    "description": "Add widget drawer subtitle"
+  },
+  "summaryResetToDefault": {
+    "message": "Сбросить настройки по умолчанию",
+    "description": "Reset widget layout action"
+  },
+  "summaryResetWidgetLayout": {
+    "message": "Сбросить макет виджета",
+    "description": "Reset layout confirmation title"
+  },
+  "summaryResetLayoutConfirmBody": {
+    "message": "Вы уверены, что хотите сбросить макет виджета по умолчанию? При этом будут удалены все настройки, включая положение и размеры виджетов, а также все виджеты, которые вы добавили или удалили.",
+    "description": "Reset layout confirmation body"
+  },
+  "summaryResetLayoutTooltip": {
+    "message": "Сбросить макет виджета в порядок по умолчанию",
+    "description": "Reset layout button tooltip"
+  },
+  "summaryNoMetrics": {
+    "message": "Нет доступных показателей.",
+    "description": "Empty metrics widget fallback"
+  },
+  "summaryKeyFieldsPlaceholder": {
+    "message": "Здесь будут отображаться ключевые поля.",
+    "description": "Empty key fields widget fallback"
+  },
+  "summaryWidgetContent": {
+    "message": "Содержимое виджета",
+    "description": "Generic widget placeholder"
+  },
+  "summaryTabsAria": {
+    "message": "Вкладки",
+    "description": "Record summary tab list aria-label"
+  },
+  "summarySearchTenantFields": {
+    "message": "Поиск полей арендатора...",
+    "description": "Tenant fields search placeholder"
+  },
+  "summarySearchFields": {
+    "message": "Поля поиска...",
+    "description": "Details fields search placeholder"
+  },
+  "summarySearchActivities": {
+    "message": "Поисковая деятельность...",
+    "description": "Activity feed search placeholder"
+  },
+  "summaryUrlCopied": {
+    "message": "URL-адрес скопирован в буфер обмена!",
+    "description": "Copy link success toast"
+  },
+  "summaryResetLayoutFailed": {
+    "message": "Не удалось сбросить макет. Пожалуйста, попробуйте еще раз.",
+    "description": "Reset layout error toast"
+  },
+  "summarySaveFieldsFailed": {
+    "message": "Не удалось сохранить обновления полей. Пожалуйста, попробуйте еще раз.",
+    "description": "Inline field save error toast"
+  },
+  "moduleListTheListForThisModuleIs": {
+    "message": "Список для этого модуля недоступен.",
+    "description": "Auto-migrated from moduleList"
+  },
+  "moduleListListNotFound": {
+    "message": "Список не найден",
+    "description": "Auto-migrated from moduleList"
+  },
+  "targetWizardStepperTargetCreationProgress": {
+    "message": "Ход создания цели",
+    "description": "Auto-migrated from targetWizardStepper"
+  },
+  "trashRestore": {
+    "message": "Восстановить",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAutoDeleteIn": {
+    "message": "Автоматическое удаление в",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedBy": {
+    "message": "Удален пользователем",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedItemsWillAppearHereYou": {
+    "message": "Здесь появятся удаленные элементы. Вы можете восстановить их или окончательно удалить до истечения срока их действия.",
+    "description": "Auto-migrated from trash"
+  },
+  "trashTrashIsEmpty": {
+    "message": "Корзина пуста",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletePermanently": {
+    "message": "Удалить навсегда",
+    "description": "Auto-migrated from trash"
+  },
+  "trashRestoreSelected": {
+    "message": "Восстановить выбранное",
+    "description": "Auto-migrated from trash"
+  },
+  "trashEmptyTrash": {
+    "message": "Пустой мусор",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedTo": {
+    "message": "Удалено в",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedFrom": {
+    "message": "Удалено из",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAllUsers": {
+    "message": "Все пользователи",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAllModules": {
+    "message": "Все модули",
+    "description": "Auto-migrated from trash"
+  },
+  "trashSearchNameModuleDeletedBy": {
+    "message": "Искать имя, модуль, удалено...",
+    "description": "Auto-migrated from trash"
+  },
+  "trashRetention": {
+    "message": "Удержание",
+    "description": "Auto-migrated from trash"
+  },
+  "trashOldestItem": {
+    "message": "Самый старый предмет",
+    "description": "Auto-migrated from trash"
+  },
+  "trashExpiringIn7Days": {
+    "message": "Срок действия истекает через 7 дней",
+    "description": "Auto-migrated from trash"
+  },
+  "trashTotalInTrash": {
+    "message": "Всего в корзине",
+    "description": "Auto-migrated from trash"
+  },
+  "approvalDetailEnterRejectionReason": {
+    "message": "Введите причину отклонения...",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailReason": {
+    "message": "Причина",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailRejectingWillBlockThisAction": {
+    "message": "Отказ заблокирует это действие.",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailRejectApproval": {
+    "message": "Отклонить одобрение",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailYouAreNotAuthorizedToApprove": {
+    "message": "Вы не имеете права одобрять или отклонять этот запрос.",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailReason2": {
+    "message": "Причина:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecidedAt": {
+    "message": "Принято решение в:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecidedBy": {
+    "message": "Решено:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecisionAlreadyMade": {
+    "message": "Решение уже принято",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailYourDecision": {
+    "message": "Ваше решение",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailThisApprovalWasEscalatedDueTo": {
+    "message": "Это утверждение было передано на более высокий уровень из-за отсутствия ответа в течение установленного срока. Новые утверждающие были уведомлены.",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailEscalated": {
+    "message": "Эскалация",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailIfRejected": {
+    "message": "Если отклонено",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailIfApproved": {
+    "message": "Если одобрено",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailWhatWillHappen": {
+    "message": "Что произойдет",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailWhyApprovalIsRequired": {
+    "message": "Почему требуется одобрение",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailEntity": {
+    "message": "Сущность",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailContext": {
+    "message": "Контекст",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailBackToApprovals": {
+    "message": "Вернуться к одобрениям",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalInboxEnterRejectionReason": {
+    "message": "Введите причину отклонения...",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxReason": {
+    "message": "Причина",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRejectingWillBlockThisActionPlease": {
+    "message": "Отказ заблокирует это действие. Пожалуйста, укажите причину.",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRejectApproval": {
+    "message": "Отклонить одобрение",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxDueIn": {
+    "message": "Срок оплаты:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRequestedAt": {
+    "message": "Запрошено по адресу:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRequestedBy": {
+    "message": "Запрошено:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxAllCaughtUpYouHaveNo": {
+    "message": "Все схвачено! У вас нет ожидающих рассмотрения запросов на одобрение.",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxNoApprovalsPending": {
+    "message": "Никаких одобрений не ожидается",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxReviewAndApprovePendingRequests": {
+    "message": "Просмотрите и утвердите ожидающие запросы",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxApprovals": {
+    "message": "Разрешения",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "demoRequestsEnterprise": {
+    "message": "Предприятие",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsProfessional": {
+    "message": "Профессиональный",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsStarter": {
+    "message": "Стартер",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsTrial15Days": {
+    "message": "Пробная версия (15 дней)",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSubscriptionTier": {
+    "message": "Уровень подписки",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsEnterTemporaryPasswordForOwner": {
+    "message": "Введите временный пароль владельца",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvert": {
+    "message": "Конвертировать",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvertToOrganization": {
+    "message": "Преобразовать в организацию",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted": {
+    "message": "Преобразовано",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoCompleted": {
+    "message": "Демо завершено",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoScheduled": {
+    "message": "Демо запланировано",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContacted": {
+    "message": "Связались",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsUpdateStatus": {
+    "message": "Обновить статус",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisContactExistsInASeparate": {
+    "message": "Этот контакт существует в отдельной организации. Они увидят свои собственные данные CRM при входе в систему.",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactPhone": {
+    "message": "Контактный телефон:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactEmail": {
+    "message": "Контактный адрес электронной почты:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContact": {
+    "message": "Контакт:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsOrganization": {
+    "message": "Организация:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisProspectIsAlreadyInYour": {
+    "message": "Этот потенциальный клиент уже есть в вашей CRM!",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsJobTitle": {
+    "message": "Должность:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsPhone": {
+    "message": "Телефон:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsEmail": {
+    "message": "Электронная почта:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactName": {
+    "message": "Контактное имя:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactInformation": {
+    "message": "Контактная информация",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanySize": {
+    "message": "Размер компании:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsIndustry": {
+    "message": "Отрасль:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanyName": {
+    "message": "Название компании:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanyInformation": {
+    "message": "Информация о компании",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoRequestDetails": {
+    "message": "Детали запроса на демонстрацию",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsNoDemoRequestsFound": {
+    "message": "Демо-запросов не найдено",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvert2": {
+    "message": "Конвертировать",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvertToOrganization2": {
+    "message": "Преобразовать в организацию",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSize": {
+    "message": "Размер",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsLoadingDemoRequests": {
+    "message": "Загрузка запросов на демонстрацию...",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted2": {
+    "message": "Преобразовано",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoCompleted2": {
+    "message": "Демо завершено",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoScheduled2": {
+    "message": "Демо запланировано",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContacted2": {
+    "message": "Связались",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSearchDemoRequests": {
+    "message": "Поиск запросов на демонстрацию...",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted3": {
+    "message": "Преобразовано",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisMonth": {
+    "message": "В этом месяце",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsTotalRequests": {
+    "message": "Всего запросов",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "publicBookingViewPoweredByYourCrm": {
+    "message": "На базе вашей CRM",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYourDetails": {
+    "message": "Ваши данные",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYourTime": {
+    "message": "Ваше время",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewAvailableTimes": {
+    "message": "Доступное время",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewPickADate": {
+    "message": "Выберите дату",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewBookWithOurTeam": {
+    "message": "Бронируйте с нашей командой",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewRescheduleOrCancel": {
+    "message": "Перенести или отменить",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewAConfirmationHasBeenSentTo": {
+    "message": "На вашу электронную почту отправлено подтверждение. Перед записью вы получите напоминание.",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYoureBooked": {
+    "message": "Вы забронированы!",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewPageUnavailable": {
+    "message": "Страница недоступна",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewLoadingCalendar": {
+    "message": "Загрузка календаря…",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "notificationOverviewOpenHealthDashboard": {
+    "message": "Открыть панель здоровья",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewViewDeliveryStatisticsChannelHealthEvent": {
+    "message": "Просматривайте статистику доставки, состояние канала, объем событий и шаблоны уведомлений пользователей. Выявляйте потенциальные проблемы до того, как они повлияют на вашу команду.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewHealthDashboard": {
+    "message": "Панель мониторинга здоровья",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewMonitorNotificationDeliveryHealthAndAnalytics": {
+    "message": "Отслеживайте работоспособность доставки уведомлений и аналитику в вашей организации.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAdminTools": {
+    "message": "Инструменты администратора",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageDigests": {
+    "message": "Управление дайджестами",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewReceiveDailyOrWeeklySummariesOf": {
+    "message": "Получайте ежедневные или еженедельные сводки ваших уведомлений вместо оповещений в реальном времени. Уменьшите шум уведомлений, оставаясь при этом в курсе.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewDigests": {
+    "message": "Дайджесты",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageRules": {
+    "message": "Управление правилами",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewCreateCustomNotificationConditionsSetUp": {
+    "message": "Создавайте собственные условия уведомлений. Настраивайте правила на основе назначений, приоритетов, статусов и т. д.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManagePreferences": {
+    "message": "Управление настройками",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewToggleWhatTypesOfNotificationsYou": {
+    "message": "Переключите типы уведомлений, которые вы получаете для каждого события. Контролируйте, какие каналы используются для каждого типа уведомлений.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewPreferences": {
+    "message": "Предпочтения",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewCustomizeYourNotificationExperienceToMatch": {
+    "message": "Настройте способ уведомлений в соответствии со своим рабочим процессом.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewYourNotificationControl": {
+    "message": "Ваш контроль уведомлений",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageDeliveryChannels": {
+    "message": "Управляйте каналами доставки",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable": {
+    "message": "Настраиваемый",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable2": {
+    "message": "Настраиваемый",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhatsapp": {
+    "message": "WhatsApp",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable3": {
+    "message": "Настраиваемый",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewPush": {
+    "message": "Толкать",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable4": {
+    "message": "Настраиваемый",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAlwaysOn": {
+    "message": "Всегда включен",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewChooseWhereAndHowYouReceive": {
+    "message": "Выберите, где и как вы будете получать уведомления по различным каналам доставки.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewHowYoureNotified": {
+    "message": "Как вы получаете уведомления",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined": {
+    "message": "Определяется системой",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAccountActivitySystemUpdatesAndCompliance": {
+    "message": "Действия учетной записи, обновления системы и уведомления, связанные с соблюдением требований.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined2": {
+    "message": "Определяется системой",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewActivityThatInvolvesCollaborationAndReview": {
+    "message": "Деятельность, предполагающая сотрудничество и обзор.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConversations": {
+    "message": "Разговоры",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewRemindersForUpcomingOrOverdueItems": {
+    "message": "Напоминания о предстоящих или просроченных товарах.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewDeadlines": {
+    "message": "Сроки",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewStatusChangesSubmissionsApprovalsAndOther": {
+    "message": "Изменения статуса, отправки, утверждения и другие важные обновления.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined3": {
+    "message": "Определяется системой",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhenTasksAuditsOrCorrectiveActions": {
+    "message": "Когда вам назначаются задачи, проверки или корректирующие действия.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAssignments": {
+    "message": "Задания",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewNotificationsAreOrganizedByIntentTo": {
+    "message": "Уведомления организованы таким образом, чтобы помочь вам оставаться в курсе событий и не отвлекаться.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhatYoureNotifiedAbout": {
+    "message": "О чем вас уведомляют",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewLearnHowNotificationsWorkAndWhat": {
+    "message": "Узнайте, как работают уведомления и чем вы можете управлять.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewNotificationOverview": {
+    "message": "Обзор уведомлений",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationHealthHighVolume": {
+    "message": "Большой объем",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoUserDataAvailable": {
+    "message": "Нет доступных пользовательских данных",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthFlag": {
+    "message": "Флаг",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthReceived": {
+    "message": "Полученный",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthHighVolumeUsers": {
+    "message": "Крупные пользователи",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoEventDataAvailable": {
+    "message": "Нет данных о событии",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthTopEventTypes": {
+    "message": "Топ типов событий",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoChannelDataAvailable": {
+    "message": "Нет данных о канале",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthLastFailure": {
+    "message": "Последняя неудача",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthSent": {
+    "message": "Отправил",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthChannelHealth": {
+    "message": "Здоровье канала",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthDegradedChannels": {
+    "message": "Деградированные каналы",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthActiveChannels": {
+    "message": "Активные каналы",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthReadRate": {
+    "message": "Скорость чтения",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthTotalNotifications": {
+    "message": "Всего уведомлений",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthMonitorNotificationDeliveryAndChannelHealth": {
+    "message": "Отслеживайте доставку уведомлений и состояние канала",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNotificationHealth": {
+    "message": "Состояние уведомлений",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthHealth": {
+    "message": "Здоровье",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationPreferencesReceiveAWeeklySummaryViaEmail": {
+    "message": "Получайте еженедельный отчет по электронной почте. Идеально подходит для того, чтобы оставаться в курсе без ежедневных перерывов.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWeeklyDigest": {
+    "message": "Еженедельный дайджест",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesReceiveADailySummaryOfYour": {
+    "message": "Получайте ежедневную сводку ваших уведомлений. Уменьшает шум уведомлений, сохраняя при этом вас в курсе.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesDailyDigest": {
+    "message": "Ежедневный дайджест",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesReceiveSummariesInsteadOfRealTime": {
+    "message": "Получайте сводки вместо уведомлений в реальном времени.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationDigests": {
+    "message": "Дайджесты уведомлений",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSmsIsOnlyUsedAsA": {
+    "message": "SMS используется только в крайнем случае, когда другие каналы недоступны. Сообщения должны быть короткими и по возможности включать глубокие ссылки.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSmsNotifications": {
+    "message": "СМС-уведомления",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWhatsappNotificationsAreOnlySentFor": {
+    "message": "Уведомления WhatsApp отправляются только о событиях с высоким приоритетом в приложениях «Аудит» и «Портал».",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWhatsappNotifications": {
+    "message": "Уведомления WhatsApp",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPushNotificationsAreBlockedEnableThem": {
+    "message": "Push-уведомления заблокированы. Включите их в настройках вашего браузера.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesTestNotification": {
+    "message": "Тестовое уведомление",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesEnablePushNotifications": {
+    "message": "Включить push-уведомления",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPushNotifications": {
+    "message": "Push-уведомления",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesThereAreNoConfigurableNotificationEvents": {
+    "message": "Для этого приложения пока нет настраиваемых событий уведомлений.\n          Уведомления продолжат использовать безопасные настройки по умолчанию.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesInApp": {
+    "message": "В приложении",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSystemEventManagedByArivu": {
+    "message": "Системное событие (управляется Arivu)",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesClickAChannelToJumpTo": {
+    "message": "Нажмите канал, чтобы перейти к его настройкам. Отключенные каналы недоступны для этого приложения.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationDelivery": {
+    "message": "Доставка уведомлений",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWeCouldntLoadYourNotificationPreferences": {
+    "message": "Нам не удалось загрузить ваши настройки уведомлений прямо сейчас. Уведомления будут\n        продолжать использовать значения по умолчанию. Вы можете продолжать безопасно использовать приложение.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesCouldntSaveChangesPleaseTryAgain": {
+    "message": "Не удалось сохранить изменения. Пожалуйста, попробуйте еще раз.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesHealthDashboard": {
+    "message": "Панель управления здоровьем",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationRules": {
+    "message": "Правила уведомления",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesControlInAppAndEmailNotifications": {
+    "message": "Управляйте уведомлениями в приложении и по электронной почте для этой рабочей области.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationPreferences": {
+    "message": "Настройки уведомлений",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPreferences": {
+    "message": "Предпочтения",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationRulesDeleteRule": {
+    "message": "Удалить правило",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesEditRule": {
+    "message": "Изменить правило",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesCreateYourFirstRule": {
+    "message": "Создайте свое первое правило",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesGetStartedByCreatingYourFirst": {
+    "message": "Начните с создания первого правила уведомления.",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesNoNotificationRulesYet": {
+    "message": "Правил уведомлений пока нет.",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesFailedToLoadNotificationRules": {
+    "message": "Не удалось загрузить правила уведомлений.",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesDeleteAnExistingRuleToCreate": {
+    "message": "Удалите существующее правило, чтобы создать новое.",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesCreateCustomNotificationTriggersForModules": {
+    "message": "Создавайте собственные триггеры уведомлений для интересующих вас модулей.",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesNotificationRules": {
+    "message": "Правила уведомления",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "contactDetailToastFailedToDeleteContact": {
+    "message": "Не удалось удалить контакт",
+    "description": "Toast from ContactDetail.vue"
+  },
+  "contactDetailToastFailedToUnlinkOrganization": {
+    "message": "Не удалось отменить связь с организацией.",
+    "description": "Toast from ContactDetail.vue"
+  },
+  "dealDetailToastFailedToDeleteDeal": {
+    "message": "Не удалось удалить сделку.",
+    "description": "Toast from DealDetail.vue"
+  },
+  "dealDetailToastFailedToAddNote": {
+    "message": "Не удалось добавить заметку",
+    "description": "Toast from DealDetail.vue"
+  },
+  "dealsToastErrorDeletingDealPleaseTry": {
+    "message": "Ошибка удаления сделки. Пожалуйста, попробуйте еще раз.",
+    "description": "Toast from Deals.vue"
+  },
+  "dealsToastErrorPerformingBulkActionPlease": {
+    "message": "Ошибка выполнения массового действия. Пожалуйста, попробуйте еще раз.",
+    "description": "Toast from Deals.vue"
+  },
+  "dealsToastFailedToExportDeals": {
+    "message": "Не удалось экспортировать сделки.",
+    "description": "Toast from Deals.vue"
+  },
+  "demoRequestsToastFailedToUpdateStatus": {
+    "message": "Не удалось обновить статус",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "demoRequestsToastSuccessfullyConvertedToOrganization": {
+    "message": "Успешно преобразовано в организацию!",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "demoRequestsToastFailedToConvertRequest": {
+    "message": "Не удалось преобразовать запрос",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "eventDetailToastFailedToDeleteEvent": {
+    "message": "Не удалось удалить мероприятие",
+    "description": "Toast from EventDetail.vue"
+  },
+  "eventDetailToastFailedToAddNote": {
+    "message": "Не удалось добавить заметку",
+    "description": "Toast from EventDetail.vue"
+  },
+  "eventExecutionSurfaceToastLocationIsRequiredForCheck": {
+    "message": "Для регистрации заезда необходимо указать местоположение. Разрешите доступ к местоположению и повторите попытку.",
+    "description": "Toast from EventExecutionSurface.vue"
+  },
+  "eventsToastErrorPerformingBulkActionPlease": {
+    "message": "Ошибка выполнения массового действия. Пожалуйста, попробуйте еще раз.",
+    "description": "Toast from Events.vue"
+  },
+  "eventsToastErrorExportingEventsPleaseTry": {
+    "message": "Ошибка экспорта событий. Пожалуйста, попробуйте еще раз.",
+    "description": "Toast from Events.vue"
+  },
+  "groupDetailToastFailedToLoadGroup": {
+    "message": "Не удалось загрузить группу.",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToAddMember": {
+    "message": "Не удалось добавить участника",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToRemoveMember": {
+    "message": "Не удалось удалить участника",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToDeleteGroup": {
+    "message": "Не удалось удалить группу",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupsToastErrorPerformingBulkActionPlease": {
+    "message": "Ошибка выполнения массового действия. Пожалуйста, попробуйте еще раз.",
+    "description": "Toast from Groups.vue"
+  },
+  "groupsToastErrorDeletingGroupPleaseTry": {
+    "message": "Ошибка удаления группы. Пожалуйста, попробуйте еще раз.",
+    "description": "Toast from Groups.vue"
+  },
+  "organizationDetailToastFailedToDeleteOrganizationPlease": {
+    "message": "Не удалось удалить организацию. Пожалуйста, попробуйте еще раз.",
+    "description": "Toast from OrganizationDetail.vue"
+  },
+  "organizationsToastUnknownError": {
+    "message": "Неизвестная ошибка",
+    "description": "Toast from Organizations.vue"
+  },
+  "organizationsToastErrorExportingOrganizationsPleaseTry": {
+    "message": "Ошибка экспортирующей организации. Пожалуйста, попробуйте еще раз.",
+    "description": "Toast from Organizations.vue"
+  },
+  "organizationsToastErrorExportingOrganizationsPleaseTry2": {
+    "message": "Ошибка экспортирующей организации. Пожалуйста, попробуйте еще раз.",
+    "description": "Toast from Organizations.vue"
+  },
+  "peopleToastUnknownError": {
+    "message": "Неизвестная ошибка",
+    "description": "Toast from People.vue"
+  },
+  "peopleToastErrorExportingPeoplePleaseTry": {
+    "message": "Ошибка экспорта людей. Пожалуйста, попробуйте еще раз.",
+    "description": "Toast from People.vue"
+  },
+  "peopleToastErrorExportingContactsPleaseTry": {
+    "message": "Ошибка экспорта контактов. Пожалуйста, попробуйте еще раз.",
+    "description": "Toast from People.vue"
+  },
+  "responsesToastFormIdNotFoundPlease": {
+    "message": "Идентификатор формы не найден. Пожалуйста, обновите страницу и повторите попытку.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToApproveResponsePlease": {
+    "message": "Не удалось утвердить ответ. Пожалуйста, попробуйте еще раз.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease2": {
+    "message": "Идентификатор формы не найден. Пожалуйста, обновите страницу и повторите попытку.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToRejectResponsePlease": {
+    "message": "Не удалось отклонить ответ. Пожалуйста, попробуйте еще раз.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease3": {
+    "message": "Идентификатор формы не найден. Пожалуйста, обновите страницу и повторите попытку.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease4": {
+    "message": "Идентификатор формы не найден. Пожалуйста, обновите страницу и повторите попытку.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToRestoreResponsePlease": {
+    "message": "Не удалось восстановить ответ. Пожалуйста, попробуйте еще раз.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastSubmittedResponsesCannotBeDeleted": {
+    "message": "Отправленные ответы не могут быть удалены. Вместо этого используйте архив или сделайте его недействительным.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease5": {
+    "message": "Идентификатор формы не найден. Пожалуйста, обновите страницу и повторите попытку.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToDeleteResponsePlease": {
+    "message": "Не удалось удалить ответ. Пожалуйста, попробуйте еще раз.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastExportFunctionalityForAllResponses": {
+    "message": "Скоро появится функция экспорта для всех ответов!",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastAnErrorOccurredDuringExport": {
+    "message": "Во время экспорта произошла ошибка.",
+    "description": "Toast from Responses.vue"
+  },
+  "tasksToastFailedToUpdateTaskStatus": {
+    "message": "Не удалось обновить статус задачи.",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastFailedToDeleteTask": {
+    "message": "Не удалось удалить задачу.",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastErrorPerformingBulkActionPlease": {
+    "message": "Ошибка выполнения массового действия. Пожалуйста, попробуйте еще раз.",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastErrorExportingTasksPleaseTry": {
+    "message": "Ошибка экспорта задач. Пожалуйста, попробуйте еще раз.",
+    "description": "Toast from Tasks.vue"
+  },
+  "trashToastRestoredSomeParentRecordsWere": {
+    "message": "Восстановлен. Некоторые родительские записи были удалены без возможности восстановления.",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToRestore": {
+    "message": "Не удалось восстановить",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToRestore2": {
+    "message": "Не удалось восстановить",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToDelete": {
+    "message": "Не удалось удалить",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToDelete2": {
+    "message": "Не удалось удалить",
+    "description": "Toast from Trash.vue"
+  },
+  "notificationPreferencesToastPushNotificationsAreNotSupported": {
+    "message": "Push-уведомления не поддерживаются в этом браузере.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastEnablePushNotifications": {
+    "message": "Включить push-уведомления",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastNotificationsAreNotSupportedIn": {
+    "message": "Уведомления не поддерживаются в этом браузере.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationTriggeredCheckYour": {
+    "message": "Сработало тестовое уведомление. Проверьте системные уведомления.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationTriggeredIfYou": {
+    "message": "Сработало тестовое уведомление. Если вы его не видите, проверьте Центр уведомлений/настройки ОС браузера.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastUnknownError": {
+    "message": "Неизвестная ошибка",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationFailedSeeConsole": {
+    "message": "Тестовое уведомление не удалось. Подробности смотрите в консоли.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationRulesToastFailedToDeleteRulePlease": {
+    "message": "Не удалось удалить правило. Пожалуйста, попробуйте еще раз.",
+    "description": "Toast from NotificationRules.vue"
+  },
+  "pronounYou": {
+    "message": "Ты",
+    "description": "First-person actor label in activity feed"
+  },
+  "relativeJustNow": {
+    "message": "только что",
+    "description": "Relative time under one minute"
+  },
+  "relativeOneMinuteAgo": {
+    "message": "1 минуту назад",
+    "description": "Relative time one minute"
+  },
+  "relativeManyMinutesAgo": {
+    "message": "{count} мин. назад",
+    "description": "Relative time multiple minutes"
+  },
+  "relativeOneHourAgo": {
+    "message": "1 час назад",
+    "description": "Relative time one hour"
+  },
+  "relativeManyHoursAgo": {
+    "message": "{count} ч. назад",
+    "description": "Relative time multiple hours"
+  },
+  "relativeOneDayAgo": {
+    "message": "1 день назад",
+    "description": "Relative time one day"
+  },
+  "relativeManyDaysAgo": {
+    "message": "{count} дн. назад",
+    "description": "Relative time multiple days"
+  },
+  "relativeOneMonthAgo": {
+    "message": "1 месяц назад",
+    "description": "Relative time one month"
+  },
+  "relativeManyMonthsAgo": {
+    "message": "{count} мес. назад",
+    "description": "Relative time multiple months"
+  },
+  "relativeOneYearAgo": {
+    "message": "1 год назад",
+    "description": "Relative time one year"
+  },
+  "relativeManyYearsAgo": {
+    "message": "{count} лет назад",
+    "description": "Relative time multiple years"
+  },
+  "phraseAnnualRevenue": {
+    "message": "Годовой доход",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLeadSource": {
+    "message": "Ведущий источник",
+    "description": "Common tenant custom field label"
+  },
+  "phraseIndustry": {
+    "message": "Промышленность",
+    "description": "Common tenant custom field label"
+  },
+  "phraseWebsite": {
+    "message": "Веб-сайт",
+    "description": "Common tenant custom field label"
+  },
+  "phraseFax": {
+    "message": "Факс",
+    "description": "Common tenant custom field label"
+  },
+  "phraseAddress": {
+    "message": "Адрес",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCity": {
+    "message": "Город",
+    "description": "Common tenant custom field label"
+  },
+  "phraseState": {
+    "message": "Состояние",
+    "description": "Common tenant custom field label"
+  },
+  "phraseZipCode": {
+    "message": "Почтовый индекс",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCountry": {
+    "message": "Страна",
+    "description": "Common tenant custom field label"
+  },
+  "phraseDepartment": {
+    "message": "Отделение",
+    "description": "Common tenant custom field label"
+  },
+  "phraseJobTitle": {
+    "message": "Должность",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLinkedin": {
+    "message": "LinkedIn",
+    "description": "Common tenant custom field label"
+  },
+  "phrasePriority": {
+    "message": "Приоритет",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRating": {
+    "message": "Рейтинг",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCategory": {
+    "message": "Категория",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSubcategory": {
+    "message": "Подкатегория",
+    "description": "Common tenant custom field label"
+  },
+  "phraseProduct": {
+    "message": "Продукт",
+    "description": "Common tenant custom field label"
+  },
+  "phraseQuantity": {
+    "message": "Количество",
+    "description": "Common tenant custom field label"
+  },
+  "phraseUnitPrice": {
+    "message": "Цена за единицу товара",
+    "description": "Common tenant custom field label"
+  },
+  "phraseDiscount": {
+    "message": "Скидка",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTax": {
+    "message": "Налог",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTotal": {
+    "message": "Общий",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSubtotal": {
+    "message": "Итого",
+    "description": "Common tenant custom field label"
+  },
+  "phraseContractStart": {
+    "message": "Начало контракта",
+    "description": "Common tenant custom field label"
+  },
+  "phraseContractEnd": {
+    "message": "Конец контракта",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRenewalDate": {
+    "message": "Дата продления",
+    "description": "Common tenant custom field label"
+  },
+  "phraseMrr": {
+    "message": "МРР",
+    "description": "Common tenant custom field label"
+  },
+  "phraseArr": {
+    "message": "ARR",
+    "description": "Common tenant custom field label"
+  },
+  "phraseEmployees": {
+    "message": "Сотрудники",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRevenue": {
+    "message": "Доход",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTerritory": {
+    "message": "Территория",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRegion": {
+    "message": "Область",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTimezone": {
+    "message": "Часовой пояс",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCurrency": {
+    "message": "Валюта",
+    "description": "Common tenant custom field label"
+  },
+  "phrasePoNumber": {
+    "message": "Номер заказа",
+    "description": "Common tenant custom field label"
+  },
+  "phraseInvoiceNumber": {
+    "message": "Номер счета",
+    "description": "Common tenant custom field label"
+  },
+  "phraseOrderNumber": {
+    "message": "Номер заказа",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSerialNumber": {
+    "message": "Серийный номер",
+    "description": "Common tenant custom field label"
+  },
+  "phraseExternalId": {
+    "message": "Внешний идентификатор",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLastActivity": {
+    "message": "Последняя активность",
+    "description": "Common tenant custom field label"
+  },
+  "phraseNextFollowUp": {
+    "message": "Следующее наблюдение",
+    "description": "Common tenant custom field label"
+  },
+  "phraseInfluencer": {
+    "message": "Влиятельный человек",
+    "description": "Common tenant custom field label"
+  },
+  "phraseMobile": {
+    "message": "мобильный",
+    "description": "Common tenant custom field label"
+  },
+  "phraseColor": {
+    "message": "Цвет",
+    "description": "Common tenant custom field label"
+  },
+  "phraseEmoji": {
+    "message": "Эмодзи",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTrend": {
+    "message": "Тренд",
+    "description": "Common tenant custom field label"
+  },
+  "phraseAccount": {
+    "message": "Счет",
+    "description": "Common tenant custom field label"
+  },
+  "phraseHelpdesk": {
+    "message": "Служба поддержки",
+    "description": "App/product name"
+  },
+  "phrasePortal": {
+    "message": "Портал",
+    "description": "App/product name"
+  },
+  "fieldRequiredBadge": {
+    "message": "Required",
+    "description": "Badge on required fields in settings and forms"
+  },
+  "required": {
+    "message": "Required",
+    "description": "Required field indicator (alias for settings badges)"
+  },
+  "listSearchModule": {
+    "message": "Search {module}...",
+    "description": "Module list search placeholder"
+  },
+  "listCreateModule": {
+    "message": "New {module}",
+    "description": "Generic module list create button"
+  },
+  "listViewAllModule": {
+    "message": "All {module}",
+    "description": "Generic all-records list view title"
+  },
+  "listViewMyModule": {
+    "message": "My {module}",
+    "description": "Generic assigned-to-me list view title"
+  },
+  "listViewCustom": {
+    "message": "Custom",
+    "description": "List view title when filters or search are applied"
+  },
+  "listStatAssignedToMe": {
+    "message": "Assigned to Me",
+    "description": "List statistics card label"
+  },
+  "listStatUnassigned": {
+    "message": "Unassigned",
+    "description": "List statistics card label"
+  },
+  "listStatCompleted": {
+    "message": "Completed",
+    "description": "List statistics card label"
+  },
+  "listStatOverdue": {
+    "message": "Overdue",
+    "description": "List statistics card label"
+  },
+  "listDefaultViewTooltip": {
+    "message": "Default list (loads when opening)",
+    "description": "Tooltip on active default saved list view"
+  },
+  "listSetDefaultViewTooltip": {
+    "message": "Set as default list",
+    "description": "Tooltip to mark a saved list view as default"
+  },
+  "listCoreFields": {
+    "message": "Core Fields",
+    "description": "Customize list field group label"
+  },
+  "listParticipationFields": {
+    "message": "Participation",
+    "description": "Customize list field group label"
+  },
+  "listSystemFields": {
+    "message": "System Fields",
+    "description": "Customize list field group label"
+  },
+  "listParticipationApp": {
+    "message": "Participation: {app}",
+    "description": "Customize list participation field group label"
+  },
+  "listRowHeightSmall": {
+    "message": "Small",
+    "description": "List row height option"
+  },
+  "listRowHeightMedium": {
+    "message": "Medium",
+    "description": "List row height option"
+  },
+  "listRowHeightLarge": {
+    "message": "Large",
+    "description": "List row height option"
+  },
+  "listRowHeightHuge": {
+    "message": "Huge",
+    "description": "List row height option"
+  },
+  "listEmptyTitle": {
+    "message": "No records yet",
+    "description": "Default list empty state title"
+  },
+  "listEmptyMessage": {
+    "message": "Start by adding your first record",
+    "description": "Default list empty state description"
+  },
+  "listEmptyNoModuleYet": {
+    "message": "No {module} yet",
+    "description": "Module list empty state title"
+  },
+  "listEmptyModuleWillAppear": {
+    "message": "{module} will appear here as you add them.",
+    "description": "Module list empty state description"
+  },
+  "listEmptyNoMatchFilters": {
+    "message": "No {module} match your filters",
+    "description": "List empty title when filters are active"
+  },
+  "listEmptyNoMatchSearchAndFilters": {
+    "message": "No {module} match your search or filters. Try adjusting them or clear everything to start over.",
+    "description": "List empty message when search and filters are active"
+  },
+  "listEmptyNoMatchSearch": {
+    "message": "We couldn't find any {module} matching \"{query}\". Try a different keyword or clear the search.",
+    "description": "List empty message when search is active"
+  },
+  "listEmptyNoMatchFiltersOnly": {
+    "message": "No {module} match your filters. Try adjusting or clearing them to see more results.",
+    "description": "List empty message when only filters are active"
+  },
+  "listClearSearchAndFilters": {
+    "message": "Clear search & filters",
+    "description": "Button to reset list search and filters"
+  },
+  "listFilterAll": {
+    "message": "All {filter}",
+    "description": "Filter dropdown placeholder when no value selected"
+  },
+  "listUnknown": {
+    "message": "Unknown",
+    "description": "Fallback label for unknown filter option"
+  },
+  "listNoDataAvailable": {
+    "message": "No data available",
+    "description": "Table empty state title fallback"
+  },
+  "listNoRecordsFound": {
+    "message": "No records found.",
+    "description": "Table empty state message fallback"
+  },
+  "listEmptyIllustrationAlt": {
+    "message": "No records illustration",
+    "description": "Alt text for list empty state illustration"
+  },
+  "phraseDefaultInParens": {
+    "message": "(Default)",
+    "description": "Suffix for default pipeline or option"
+  }
+}

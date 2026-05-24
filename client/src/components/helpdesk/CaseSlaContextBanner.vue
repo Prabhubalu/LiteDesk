@@ -14,12 +14,15 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 
 const props = defineProps({
   slaContext: { type: Object, default: null },
   cycleStatus: { type: String, default: null }
 });
+
+const { t } = useI18n();
 
 const showBanner = computed(() => {
   if (!props.slaContext?.useBusinessHours) return false;

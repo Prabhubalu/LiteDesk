@@ -1,0 +1,422 @@
+{
+  "settings": {
+    "message": "सेटिंग्स",
+    "description": "Settings area navigation label"
+  },
+  "home": {
+    "message": "घर",
+    "description": "Home dashboard navigation label"
+  },
+  "profile": {
+    "message": "प्रोफ़ाइल",
+    "description": "User profile settings navigation label"
+  },
+  "inbox": {
+    "message": "इनबॉक्स",
+    "description": "Communications inbox navigation label"
+  },
+  "signOut": {
+    "message": "साइन आउट",
+    "description": "Sign out of the application"
+  },
+  "noNav": {
+    "message": "कोई नेविगेशन उपलब्ध नहीं है",
+    "description": "Empty sidebar when no modules are configured"
+  },
+  "userMenu": {
+    "message": "उपयोगकर्ता मेनू",
+    "description": "User avatar menu aria-label"
+  },
+  "toggleMenu": {
+    "message": "मेनू टॉगल करें",
+    "description": "Mobile navigation menu toggle"
+  },
+  "closeSidebar": {
+    "message": "साइडबार बंद करें",
+    "description": "Screen reader label for mobile drawer close"
+  },
+  "openSidebar": {
+    "message": "साइडबार खोलें",
+    "description": "Screen reader label for mobile drawer open"
+  },
+  "syncStatus": {
+    "message": "सिंक स्थिति",
+    "description": "Audit offline sync status button"
+  },
+  "portalAudits": {
+    "message": "ऑडिट",
+    "description": "Portal bottom nav audits tab"
+  },
+  "portalActions": {
+    "message": "कार्रवाई",
+    "description": "Portal bottom nav actions tab"
+  },
+  "collapseSidebar": {
+    "message": "साइडबार को संक्षिप्त करें",
+    "description": "Collapse app sidebar tooltip"
+  },
+  "coreModules": {
+    "message": "अंतर्भाग मापदंड",
+    "description": "Core modules section tooltip"
+  },
+  "coreSection": {
+    "message": "मुख्य",
+    "description": "Core modules section heading"
+  },
+  "help": {
+    "message": "मदद",
+    "description": "Sidebar help link"
+  },
+  "loadingNavigation": {
+    "message": "नेविगेशन लोड हो रहा है",
+    "description": "Sidebar skeleton aria-label"
+  },
+  "salesAppFallback": {
+    "message": "बिक्री",
+    "description": "Default app name when active app is unset"
+  },
+  "tabClose": {
+    "message": "बंद करना",
+    "description": "Close single tab context menu item"
+  },
+  "tabCloseOthers": {
+    "message": "अन्य को बंद करें",
+    "description": "Close other tabs context menu item"
+  },
+  "tabCloseToRight": {
+    "message": "दाईं ओर के टैब बंद करें",
+    "description": "Close tabs to the right context menu item"
+  },
+  "tabCloseAll": {
+    "message": "सभी टैब को बंद करें",
+    "description": "Close all tabs context menu item"
+  },
+  "tabAccount": {
+    "message": "खाता",
+    "description": "Tab bar account menu tooltip"
+  },
+  "tabCloseTab": {
+    "message": "टैब बंद करें",
+    "description": "Close tab button aria-label"
+  },
+  "globalSearchPlaceholder": {
+    "message": "कोई आदेश खोजें या चलाएँ...",
+    "description": "Global search modal input placeholder"
+  },
+  "globalSearchSearching": {
+    "message": "खोज रहे हैं...",
+    "description": "Global search loading state"
+  },
+  "globalSearchNoCommands": {
+    "message": "कोई मिलान आदेश नहीं",
+    "description": "Command palette no matches"
+  },
+  "globalSearchNoCommandsHint": {
+    "message": "कोई भिन्न आदेश आज़माएँ या बाहर निकलने के लिए ESC दबाएँ।",
+    "description": "Command palette no matches hint"
+  },
+  "globalSearchNoResults": {
+    "message": "कोई परिणाम नहीं मिला",
+    "description": "Global search no entity results"
+  },
+  "globalSearchNoResultsHint": {
+    "message": "नाम, ईमेल या कीवर्ड द्वारा खोजने का प्रयास करें।",
+    "description": "Global search no results hint"
+  },
+  "globalSearchConfirmTitle": {
+    "message": "क्या आपको यकीन है?",
+    "description": "Destructive command confirmation title"
+  },
+  "globalSearchToCancel": {
+    "message": "निरस्त करना",
+    "description": "Keyboard hint fragment after ESC"
+  },
+  "globalSearchToConfirm": {
+    "message": "पुष्टि करने के लिए",
+    "description": "Keyboard hint fragment after Enter"
+  },
+  "globalSearchCommandsHeader": {
+    "message": "आदेश",
+    "description": "Command palette section header"
+  },
+  "globalSearchTypeToFind": {
+    "message": "कमांड ढूंढने के लिए टाइप करें",
+    "description": "Command palette empty query hint"
+  },
+  "globalSearchStartTyping": {
+    "message": "खोजने के लिए टाइप करना प्रारंभ करें",
+    "description": "Search mode empty state"
+  },
+  "globalSearchSlashHint": {
+    "message": "बनाने, लिंक करने या नेविगेट करने के लिए / का उपयोग करें",
+    "description": "Discoverability hint for command mode trigger"
+  },
+  "globalSearchGroupPeople": {
+    "message": "लोग",
+    "description": "Search results group label"
+  },
+  "globalSearchGroupOrganizations": {
+    "message": "संगठनों",
+    "description": "Search results group label"
+  },
+  "globalSearchGroupWork": {
+    "message": "काम",
+    "description": "Search results group label"
+  },
+  "globalSearchGroupConfiguration": {
+    "message": "विन्यास",
+    "description": "Search results group label"
+  },
+  "globalSearchUnknownUser": {
+    "message": "अज्ञात उपयोगकर्ता",
+    "description": "Fallback display name in search"
+  },
+  "globalSearchLinkModule": {
+    "message": "लिंक {module}",
+    "description": "Link drawer title when module name capitalized"
+  },
+  "userAccountFallback": {
+    "message": "आपका खाता",
+    "description": "User menu display name fallback"
+  },
+  "userStatusLabel": {
+    "message": "स्थिति: {label}",
+    "description": "User menu status dot aria-label"
+  },
+  "userClearStatus": {
+    "message": "स्पष्ट स्थिति",
+    "description": "Clear custom status button title"
+  },
+  "userSetAvailability": {
+    "message": "उपलब्धता निर्धारित करें",
+    "description": "Availability picker listbox aria-label"
+  },
+  "userSetCustomStatus": {
+    "message": "कस्टम स्थिति सेट करें...",
+    "description": "Open custom status editor"
+  },
+  "userEditCustomStatus": {
+    "message": "कस्टम स्थिति संपादित करें...",
+    "description": "Edit existing custom status"
+  },
+  "userStatusPlaceholder": {
+    "message": "आपकी स्थिति क्या है?",
+    "description": "Custom status input placeholder"
+  },
+  "userPickEmoji": {
+    "message": "इमोजी चुनें",
+    "description": "Emoji picker button title"
+  },
+  "userYourProfile": {
+    "message": "आपकी प्रोफ़ाइल",
+    "description": "User menu profile link"
+  },
+  "userControlPanel": {
+    "message": "कंट्रोल पैनल",
+    "description": "Admin control panel link"
+  },
+  "userBookingPages": {
+    "message": "बुकिंग पेज",
+    "description": "User menu appointments link"
+  },
+  "userTrash": {
+    "message": "कचरा",
+    "description": "User menu trash link"
+  },
+  "userSwitchToLight": {
+    "message": "लाइट मोड पर स्विच करें",
+    "description": "Theme toggle label when dark"
+  },
+  "userSwitchToDark": {
+    "message": "डार्क मोड पर स्विच करें",
+    "description": "Theme toggle label when light"
+  },
+  "tabBookingPages": {
+    "message": "बुकिंग पेज",
+    "description": "Tab title for appointments pages"
+  },
+  "approvals": {
+    "message": "स्वीकृति",
+    "description": "Approvals shell navigation label"
+  },
+  "attention": {
+    "message": "ध्यान",
+    "description": "Attention shell navigation label"
+  },
+  "search": {
+    "message": "खोज",
+    "description": "Search shell navigation label"
+  },
+  "dashboard": {
+    "message": "अवलोकन",
+    "description": "App dashboard navigation label"
+  },
+  "modulePeople": {
+    "message": "लोग",
+    "description": "People module navigation label"
+  },
+  "moduleContacts": {
+    "message": "संपर्क",
+    "description": "Contacts module navigation label"
+  },
+  "moduleOrganizations": {
+    "message": "संगठनों",
+    "description": "Organizations module navigation label"
+  },
+  "moduleTasks": {
+    "message": "कार्य",
+    "description": "Tasks module navigation label"
+  },
+  "moduleEvents": {
+    "message": "घटनाएँ",
+    "description": "Events module navigation label"
+  },
+  "moduleForms": {
+    "message": "फार्म",
+    "description": "Forms module navigation label"
+  },
+  "moduleItems": {
+    "message": "सामान",
+    "description": "Items module navigation label"
+  },
+  "moduleDeals": {
+    "message": "सौदे",
+    "description": "Deals module navigation label"
+  },
+  "moduleResponses": {
+    "message": "जवाब",
+    "description": "Form responses module navigation label"
+  },
+  "moduleImports": {
+    "message": "आयात",
+    "description": "Imports module navigation label"
+  },
+  "moduleCases": {
+    "message": "मामलों",
+    "description": "Helpdesk cases module navigation label"
+  },
+  "moduleFindings": {
+    "message": "निष्कर्ष",
+    "description": "Audit findings module navigation label"
+  },
+  "moduleAudits": {
+    "message": "ऑडिट",
+    "description": "Audits module navigation label"
+  },
+  "appSales": {
+    "message": "बिक्री",
+    "description": "Sales app name in app switcher"
+  },
+  "appAudit": {
+    "message": "अंकेक्षण",
+    "description": "Audit app name in app switcher"
+  },
+  "appHelpdesk": {
+    "message": "सहायता केंद्र",
+    "description": "Helpdesk app name in app switcher"
+  },
+  "appProjects": {
+    "message": "परियोजनाओं",
+    "description": "Projects app name in app switcher"
+  },
+  "appPortal": {
+    "message": "पोर्टल",
+    "description": "Portal app name in app switcher"
+  },
+  "salesDashboard": {
+    "message": "बिक्री डैशबोर्ड",
+    "description": "Sales dashboard tab title"
+  },
+  "auditDashboard": {
+    "message": "ऑडिट डैशबोर्ड",
+    "description": "Audit dashboard tab title"
+  },
+  "appDashboard": {
+    "message": "{app} डैशबोर्ड",
+    "description": "App-scoped dashboard tab title"
+  },
+  "tabDemoRequests": {
+    "message": "डेमो अनुरोध",
+    "description": "Demo requests tab title"
+  },
+  "tabInstances": {
+    "message": "उदाहरण",
+    "description": "Instances tab title"
+  },
+  "tabAutomationRules": {
+    "message": "स्वचालन नियम",
+    "description": "Automation rules tab title"
+  },
+  "tabProcesses": {
+    "message": "प्रक्रियाओं",
+    "description": "Processes tab title"
+  },
+  "tabBusinessFlows": {
+    "message": "व्यापार प्रवाह",
+    "description": "Business flows tab title"
+  },
+  "tabAutomation": {
+    "message": "स्वचालन",
+    "description": "Automation settings tab title"
+  },
+  "tabFlowHealth": {
+    "message": "प्रवाह स्वास्थ्य",
+    "description": "Business flow health tab title"
+  },
+  "tabEditBusinessFlow": {
+    "message": "व्यवसाय प्रवाह संपादित करें",
+    "description": "Edit business flow tab title"
+  },
+  "tabCreateBusinessFlow": {
+    "message": "व्यवसाय प्रवाह बनाएँ",
+    "description": "Create business flow tab title"
+  },
+  "tabBusinessFlow": {
+    "message": "व्यवसाय प्रवाह",
+    "description": "Business flow detail tab title"
+  },
+  "tabMyAudits": {
+    "message": "मेरे ऑडिट",
+    "description": "My audits tab title"
+  },
+  "tabAuditDetail": {
+    "message": "लेखापरीक्षा विवरण",
+    "description": "Audit detail tab title"
+  },
+  "tabPersonalBooking": {
+    "message": "व्यक्तिगत बुकिंग पृष्ठ",
+    "description": "Personal booking page tab title"
+  },
+  "tabTeamBooking": {
+    "message": "टीम बुकिंग पेज",
+    "description": "Team booking page tab title"
+  },
+  "tabNewTeamPage": {
+    "message": "नया टीम पेज",
+    "description": "New team booking page tab title"
+  },
+  "tabBookingPage": {
+    "message": "बुकिंग पेज",
+    "description": "User booking page tab title"
+  },
+  "tabCaseDetail": {
+    "message": "मामले का विवरण",
+    "description": "Helpdesk case detail tab title"
+  },
+  "tabFormResponseDetail": {
+    "message": "({id}) विवरण",
+    "description": "Form response detail tab title"
+  },
+  "tabRecordNamed": {
+    "message": "__आईसीयू_0__: __आईसीयू_1__",
+    "description": "Record tab with entity name"
+  },
+  "tabRecordDetail": {
+    "message": "{module} विवरण",
+    "description": "Record detail tab title without name"
+  },
+  "tabPage": {
+    "message": "पेज",
+    "description": "Generic fallback tab title"
+  }
+}

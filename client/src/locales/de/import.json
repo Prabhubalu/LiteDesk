@@ -1,0 +1,334 @@
+{
+  "cSVImportModalDone": {
+    "message": "Erledigt",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalImportNowSkipDuplicateCheck": {
+    "message": "Jetzt importieren (Duplikatprüfung überspringen)",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalAllRecordsImportedSuccessfully": {
+    "message": "Alle Datensätze erfolgreich importiert!",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalImportErrors": {
+    "message": "Importfehler:",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalUpdated": {
+    "message": "Aktualisiert",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalThisMayTakeAMoment": {
+    "message": "Dies kann einen Moment dauern",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalImportingRecords": {
+    "message": "Datensätze werden importiert...",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalImportAllCreateDuplicates": {
+    "message": "Alle importieren (Duplikate erstellen)",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalUpdateExistingRecords": {
+    "message": "Vorhandene Datensätze aktualisieren",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalSkipDuplicates": {
+    "message": "Duplikate überspringen",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalTotalRows": {
+    "message": "Gesamtzahl der Zeilen",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalDuplicatesFound": {
+    "message": "Duplikate gefunden",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalNewRecords": {
+    "message": "Neue Rekorde",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalCheckingForDuplicates": {
+    "message": "Suche nach Duplikaten...",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalAll": {
+    "message": "ALLE",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalARecordIsOnlyConsideredA": {
+    "message": "Ein Datensatz gilt nur dann als Duplikat, wenn er übereinstimmt",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalAndLogic": {
+    "message": "UND-Logik:",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalSelectFieldsToCheck": {
+    "message": "Wählen Sie die zu überprüfenden Felder aus...",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalDuplicateCheckFields": {
+    "message": "Doppelte Prüffelder",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalSelectedFieldsWillBeConsideredDuplicates": {
+    "message": "Ausgewählte Felder werden als Duplikate betrachtet.",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalAll2": {
+    "message": "ALLE",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalSelectWhichFieldSToUse": {
+    "message": "Wählen Sie aus, welche Felder für die Duplikatprüfung verwendet werden sollen. Übereinstimmung der Datensätze",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalImportAllRecordsWithoutDuplicateChecking": {
+    "message": "Importieren Sie alle Datensätze ohne Dublettenprüfung. Verwenden Sie diese Option, wenn Sie sicher sind, dass Ihre Daten sauber sind.",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalDoNotCheckForDuplicates": {
+    "message": "Nicht auf Duplikate prüfen",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalScanYourCsvForDuplicateRecords": {
+    "message": "Scannen Sie Ihre CSV-Datei auf Grundlage der ausgewählten Felder nach doppelten Datensätzen. Sie können sie überspringen, aktualisieren oder importieren.",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalCheckForDuplicates": {
+    "message": "Suchen Sie nach Duplikaten",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalDuplicateDetectionOptions": {
+    "message": "Optionen zur Duplikaterkennung",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalDetectedInYourCsvFile": {
+    "message": "in Ihrer CSV-Datei erkannt",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalChooseADifferentFile": {
+    "message": "Wählen Sie eine andere Datei",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalFileSelected": {
+    "message": "Datei ausgewählt",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalSupportedFormatCsvFilesOnly": {
+    "message": "Unterstütztes Format: Nur CSV-Dateien",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalChooseFile": {
+    "message": "Wählen Sie Datei",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalDragAndDropYourFileHere": {
+    "message": "Ziehen Sie Ihre Datei per Drag-and-Drop hierher oder klicken Sie, um sie von Ihrem Computer aus zu durchsuchen",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalUploadYourCsvFile": {
+    "message": "Laden Sie Ihre CSV-Datei hoch",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "cSVImportModalUploadAndMapYourCsvData": {
+    "message": "Laden Sie Ihre CSV-Daten hoch und ordnen Sie sie zu",
+    "description": "Auto-migrated from cSVImportModal"
+  },
+  "importDetailModalNoErrorsDuringImport": {
+    "message": "Keine Fehler beim Import",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalCsvColumnsWereMappedToThe": {
+    "message": "CSV-Spalten wurden den folgenden CRM-Feldern zugeordnet:",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalCheckedFields": {
+    "message": "Geprüfte Felder",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalDuplicateCheck": {
+    "message": "Duplikatsprüfung",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalTotalRowsInCsv": {
+    "message": "Gesamtzahl der Zeilen in CSV",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalProcessingTime": {
+    "message": "Bearbeitungszeit",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalImportedBy": {
+    "message": "Importiert von",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalUpdated": {
+    "message": "Aktualisiert",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalTotalRecords": {
+    "message": "Gesamtaufzeichnungen",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalSuccessRate": {
+    "message": "Erfolgsquote",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "importDetailModalImportDetails": {
+    "message": "Details importieren",
+    "description": "Auto-migrated from importDetailModal"
+  },
+  "universalImportModalFieldsNameIndustryWebsitePhoneEtc": {
+    "message": "Felder: Name, Branche, Website, Telefon usw.",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalImportCompaniesAndOrganizations": {
+    "message": "Importunternehmen und Organisationen",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalFieldsTitleDescriptionStatusPriorityEtc": {
+    "message": "Felder: Titel, Beschreibung, Status, Priorität usw.",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalImportTasksAndToDoItems": {
+    "message": "Importieren Sie Aufgaben und Aufgaben",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalFieldsNameAmountStageStatusEtc": {
+    "message": "Felder: Name, Betrag, Phase, Status usw.",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalImportSalesOpportunitiesAndDeals": {
+    "message": "Importieren Sie Verkaufschancen und Angebote",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalFieldsNameEmailPhoneCompanyEtc": {
+    "message": "Felder: Name, E-Mail, Telefon, Firma usw.",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalImportCustomerContactsLeadsAndProspects": {
+    "message": "Importieren Sie Kundenkontakte, Leads und Interessenten",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalChooseWhichModuleYouWantTo": {
+    "message": "Wählen Sie aus, in welches Modul Sie Daten importieren möchten",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalSelectModuleToImport": {
+    "message": "Wählen Sie das zu importierende Modul aus",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "universalImportModalImportData": {
+    "message": "Daten importieren",
+    "description": "Auto-migrated from universalImportModal"
+  },
+  "importsNewImport": {
+    "message": "Neuer Import",
+    "description": "Auto-migrated from imports"
+  },
+  "importsNoImportsYet": {
+    "message": "Noch keine Importe",
+    "description": "Auto-migrated from imports"
+  },
+  "importsSearchByFilename": {
+    "message": "Nach Dateinamen suchen...",
+    "description": "Auto-migrated from imports"
+  },
+  "importsNewImport2": {
+    "message": "Neuer Import",
+    "description": "Auto-migrated from imports"
+  },
+  "importsImportHistory": {
+    "message": "Historie importieren",
+    "description": "Auto-migrated from imports"
+  },
+  "importDetailNoErrorsDuringImport": {
+    "message": "Keine Fehler beim Import",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailCsvColumnsWereMappedToThe": {
+    "message": "CSV-Spalten wurden den folgenden CRM-Feldern zugeordnet:",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailCheckedFields": {
+    "message": "Geprüfte Felder",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailDuplicateCheck": {
+    "message": "Duplikatsprüfung",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailTotalRows": {
+    "message": "Gesamtzahl der Zeilen",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailProcessingTime": {
+    "message": "Bearbeitungszeit",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailImportedBy": {
+    "message": "Importiert von",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailNoErrorDetailsAvailable": {
+    "message": "Keine Fehlerdetails verfügbar.",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailCheckedOn": {
+    "message": "Geprüft am:",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailTheseRecordsWereSkippedBecauseThey": {
+    "message": "Diese Datensätze wurden übersprungen, da sie als Duplikate identifiziert wurden.",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailRecordsSkipped": {
+    "message": "Datensätze übersprungen",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailUnableToFetchRecordsTheyMay": {
+    "message": "Datensätze können nicht abgerufen werden. Möglicherweise wurden sie gelöscht oder geändert.",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailUpdated": {
+    "message": "Aktualisiert",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailBackToImports": {
+    "message": "Zurück zu Importen",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailErrorLoadingImport": {
+    "message": "Fehler beim Laden des Imports",
+    "description": "Auto-migrated from importDetail"
+  },
+  "importDetailLoadingImport": {
+    "message": "Import wird geladen...",
+    "description": "Auto-migrated from importDetail"
+  },
+  "cSVImportModalToastPleaseUploadACsvFile": {
+    "message": "Bitte laden Sie eine CSV-Datei hoch",
+    "description": "Toast from CSVImportModal.vue"
+  },
+  "cSVImportModalToastCsvFileIsEmpty": {
+    "message": "CSV-Datei ist leer",
+    "description": "Toast from CSVImportModal.vue"
+  },
+  "cSVImportModalToastErrorParsingCsvFilePlease": {
+    "message": "Fehler beim Parsen der CSV-Datei. Bitte überprüfen Sie das Format und versuchen Sie es erneut.",
+    "description": "Toast from CSVImportModal.vue"
+  },
+  "cSVImportModalToastErrorCheckingForDuplicatesPlease": {
+    "message": "Fehler bei der Suche nach Duplikaten. Bitte versuchen Sie es erneut.",
+    "description": "Toast from CSVImportModal.vue"
+  },
+  "cSVImportModalToastErrorImportingDataPleaseTry": {
+    "message": "Fehler beim Importieren der Daten. Bitte versuchen Sie es erneut.",
+    "description": "Toast from CSVImportModal.vue"
+  }
+}

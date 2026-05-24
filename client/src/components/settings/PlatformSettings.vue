@@ -2,8 +2,8 @@
   <div class="space-y-6">
     <!-- Header with Sub-tabs -->
     <div>
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Platform</h2>
-      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Platform-wide settings and core entities</p>
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.settingsPlatformTitle') }}</h2>
+      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.settingsPlatformSubtitle') }}</p>
       
       <!-- Sub-tabs -->
       <div class="mt-4 border-b border-gray-200 dark:border-gray-700">
@@ -34,16 +34,19 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import CoreEntities from './CoreEntities.vue';
+
+const { t } = useI18n();
 
 const activeTab = ref('core-entities');
 
-const tabs = [
-  { id: 'core-entities', name: 'Core Entities', component: CoreEntities }
-];
+const tabs = computed(() => [
+  { id: 'core-entities', name: t('settings.settingsPlatformTabCoreEntities'), component: CoreEntities }
+]);
 
 const currentTabComponent = computed(() => {
-  const tab = tabs.find(t => t.id === activeTab.value);
-  return tab?.component || tabs[0].component;
+  const tab = tabs.value.find((item) => item.id === activeTab.value);
+  return tab?.component || tabs.value[0].component;
 });
 </script>

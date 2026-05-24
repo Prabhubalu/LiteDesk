@@ -110,9 +110,7 @@
           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
         </svg>
         <div class="flex-1">
-          <h3 class="text-sm font-semibold text-danger-800 dark:text-danger-200 mb-2">
-            Error Loading Profile
-          </h3>
+          <h3 class="text-sm font-semibold text-danger-800 dark:text-danger-200 mb-2">{{ t('people.peopleDetailErrorLoadingProfile') }}</h3>
           <p class="text-sm text-danger-700 dark:text-danger-300">{{ error }}</p>
         </div>
       </div>
@@ -125,14 +123,12 @@
         <div class="flex items-center justify-between">
           <div>
             <div class="flex items-center gap-2 mb-2">
-              <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Person</span>
+              <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ t('process.designerModulePerson') }}</span>
             </div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
               {{ getPersonDisplayName() }}
             </h1>
-            <p v-if="appContext" class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              Viewing in <span class="font-medium">{{ appContext.appKey }}</span> app context
-            </p>
+            <p v-if="appContext" class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ t('people.peopleDetailViewingIn') }}<span class="font-medium">{{ appContext.appKey }}</span>{{ t('people.peopleDetailAppContext') }}</p>
           </div>
           <div class="flex items-center gap-2">
             <!-- Other header actions can go here -->
@@ -153,14 +149,10 @@
       <div class="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow border-2 border-gray-200 dark:border-gray-700 overflow-hidden">
         <div class="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-b-2 border-gray-200 dark:border-gray-700">
           <div class="flex items-center gap-2 mb-2">
-            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">App</span>
+            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ t('settings.modFieldsBadgeApp') }}</span>
           </div>
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-            Attach to App
-          </h2>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-            Add this person to another app
-          </p>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('people.peopleDetailAttachToApp2') }}</h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">{{ t('people.peopleDetailAddThisPersonToAnotherApp2') }}</p>
         </div>
         <div class="px-6 py-4">
           <div class="flex items-start gap-2">
@@ -170,16 +162,10 @@
               :class="hasAvailableAttachIntents
                 ? 'text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 underline decoration-dotted underline-offset-2 transition-colors py-2 px-2 min-h-[40px] flex items-center'
                 : 'text-sm text-gray-400 dark:text-gray-500 cursor-not-allowed py-2 px-2 min-h-[40px] flex items-center'"
-            >
-              Attach to another app
-            </button>
+            >{{ t('people.peopleDetailAttachToAnotherApp') }}</button>
             <span v-if="hasAvailableAttachIntents" class="text-xs text-gray-400 dark:text-gray-500">·</span>
-            <p v-if="hasAvailableAttachIntents" class="text-xs text-gray-500 dark:text-gray-400">
-              Adds this person to a new app without creating a duplicate.
-            </p>
-            <p v-else class="text-xs text-gray-500 dark:text-gray-400 italic">
-              This person is already part of all available apps.
-            </p>
+            <p v-if="hasAvailableAttachIntents" class="text-xs text-gray-500 dark:text-gray-400">{{ t('people.peopleDetailAddsThisPersonToANew') }}</p>
+            <p v-else class="text-xs text-gray-500 dark:text-gray-400 italic">{{ t('people.peopleDetailThisPersonIsAlreadyPartOf2') }}</p>
           </div>
         </div>
       </div>
@@ -190,14 +176,10 @@
           <div class="flex items-center justify-between">
             <div>
               <div class="flex items-center gap-2 mb-2">
-                <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Entity</span>
+                <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ t('people.peopleDetailEntity4') }}</span>
               </div>
-              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-                Core Information
-              </h2>
-              <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                Shared across all apps
-              </p>
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('people.peopleDetailCoreInformation') }}</h2>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">{{ t('people.peopleDetailSharedAcrossAllApps') }}</p>
             </div>
             <!-- Edit Controls (Only when canEdit is true) -->
             <div v-if="profileData.core.canEdit && !isEditingCore" class="flex items-center gap-2">
@@ -207,17 +189,13 @@
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                Edit
-              </button>
+                </svg>{{ t('settings.groupsEditTitle') }}</button>
             </div>
             <div v-else-if="profileData.core.canEdit && isEditingCore" class="flex items-center gap-2">
               <button
                 @click="cancelEdit"
                 class="px-2 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors min-h-[40px]"
-              >
-                Cancel
-              </button>
+              >{{ t('performance.cancelWizard') }}</button>
               <button
                 @click="saveCoreFields"
                 :disabled="saving"
@@ -232,22 +210,20 @@
                 {{ saving ? 'Saving...' : 'Save' }}
               </button>
             </div>
-            <div v-else-if="!profileData.core.canEdit" class="text-xs text-gray-500 dark:text-gray-400 italic">
-              Read-only
-            </div>
+            <div v-else-if="!profileData.core.canEdit" class="text-xs text-gray-500 dark:text-gray-400 italic">{{ t('settings.modFieldsDepReadonly') }}</div>
           </div>
         </div>
         <div class="px-6 py-4">
           <!-- Read-only View -->
           <dl v-if="!isEditingCore" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div v-if="profileData.core.fields.first_name || profileData.core.fields.last_name">
-              <dt class="text-sm text-gray-500 dark:text-gray-400">Name</dt>
+              <dt class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.settingsBhFieldName') }}</dt>
               <dd class="mt-2 text-sm text-gray-900 dark:text-white">
                 {{ profileData.core.fields.first_name }} {{ profileData.core.fields.last_name }}
               </dd>
             </div>
             <div v-if="profileData.core.fields.email">
-              <dt class="text-sm text-gray-500 dark:text-gray-400">Email</dt>
+              <dt class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.settingsAddFieldTypeEmail') }}</dt>
               <dd class="mt-2 text-sm text-gray-900 dark:text-white">
                 <a :href="`mailto:${profileData.core.fields.email}`" class="text-indigo-600 dark:text-indigo-400 hover:underline">
                   {{ profileData.core.fields.email }}
@@ -255,13 +231,13 @@
               </dd>
             </div>
             <div v-if="profileData.core.fields.phone || profileData.core.fields.mobile">
-              <dt class="text-sm text-gray-500 dark:text-gray-400">Phone</dt>
+              <dt class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.settingsAddFieldTypePhone') }}</dt>
               <dd class="mt-2 text-sm text-gray-900 dark:text-white">
                 {{ profileData.core.fields.phone || profileData.core.fields.mobile }}
               </dd>
             </div>
             <div v-if="profileData.core.fields.source">
-              <dt class="text-sm text-gray-500 dark:text-gray-400">Created via</dt>
+              <dt class="text-sm text-gray-500 dark:text-gray-400">{{ t('people.peopleDetailCreatedVia') }}</dt>
               <dd class="mt-2 text-sm text-gray-900 dark:text-white">
                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
                   {{ profileData.core.fields.source }}
@@ -269,7 +245,7 @@
               </dd>
             </div>
             <div v-if="profileData.core.fields.organization">
-              <dt class="text-sm text-gray-500 dark:text-gray-400">Organization</dt>
+              <dt class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.profileMetaOrg') }}</dt>
               <dd class="mt-2 text-sm text-gray-900 dark:text-white">
                 <template v-if="typeof profileData.core.fields.organization === 'object'">
                   {{ profileData.core.fields.organization.name || '-' }}
@@ -280,7 +256,7 @@
               </dd>
             </div>
             <div v-if="profileData.core.fields.tags && profileData.core.fields.tags.length > 0">
-              <dt class="text-sm text-gray-500 dark:text-gray-400">Tags</dt>
+              <dt class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.assignRulesCondFieldTags') }}</dt>
               <dd class="mt-2 flex flex-wrap gap-2">
                 <span
                   v-for="tag in profileData.core.fields.tags"
@@ -292,7 +268,7 @@
               </dd>
             </div>
             <div v-if="profileData.core.fields.do_not_contact !== undefined">
-              <dt class="text-sm text-gray-500 dark:text-gray-400">Do Not Contact</dt>
+              <dt class="text-sm text-gray-500 dark:text-gray-400">{{ t('people.peopleDetailDoNotContact3') }}</dt>
               <dd class="mt-2 text-sm text-gray-900 dark:text-white">
                 <span :class="profileData.core.fields.do_not_contact ? 'text-danger-600 dark:text-danger-400' : 'text-success-600 dark:text-success-400'">
                   {{ profileData.core.fields.do_not_contact ? 'Yes' : 'No' }}
@@ -300,13 +276,13 @@
               </dd>
             </div>
             <div v-if="profileData.core.fields.createdAt">
-              <dt class="text-sm text-gray-500 dark:text-gray-400">Created</dt>
+              <dt class="text-sm text-gray-500 dark:text-gray-400">{{ t('forms.hubColCreated') }}</dt>
               <dd class="mt-2 text-sm text-gray-900 dark:text-white">
                 {{ formatDate(profileData.core.fields.createdAt) }}
               </dd>
             </div>
             <div v-if="profileData.core.fields.updatedAt">
-              <dt class="text-sm text-gray-500 dark:text-gray-400">Last Updated</dt>
+              <dt class="text-sm text-gray-500 dark:text-gray-400">{{ t('people.peopleDetailLastUpdated') }}</dt>
               <dd class="mt-2 text-sm text-gray-900 dark:text-white">
                 {{ formatDate(profileData.core.fields.updatedAt) }}
               </dd>
@@ -321,9 +297,7 @@
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <!-- First Name -->
               <div>
-                <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">
-                  First Name
-                </label>
+                <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">{{ t('settings.inviteFirstName') }}</label>
                 <input
                   v-model="editForm.first_name"
                   type="text"
@@ -332,9 +306,7 @@
               </div>
               <!-- Last Name -->
               <div>
-                <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">
-                  Last Name
-                </label>
+                <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">{{ t('settings.inviteLastName') }}</label>
                 <input
                   v-model="editForm.last_name"
                   type="text"
@@ -343,9 +315,7 @@
               </div>
               <!-- Email -->
               <div>
-                <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">
-                  Email
-                </label>
+                <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">{{ t('settings.settingsAddFieldTypeEmail') }}</label>
                 <input
                   v-model="editForm.email"
                   type="email"
@@ -354,24 +324,20 @@
               </div>
               <!-- Phone -->
               <div>
-                <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">
-                  Phone
-                </label>
+                <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">{{ t('settings.settingsAddFieldTypePhone') }}</label>
                 <PhoneInput
                   :model-value="editForm.phone"
-                  placeholder="Phone number"
+                  :placeholder="t('settings.profilePhone')"
                   input-class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   @update:model-value="editForm.phone = $event"
                 />
               </div>
               <!-- Mobile -->
               <div>
-                <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">
-                  Mobile
-                </label>
+                <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">{{ t('people.peopleDetailMobile') }}</label>
                 <PhoneInput
                   :model-value="editForm.mobile"
-                  placeholder="Mobile number"
+                  :placeholder="t('people.peopleDetailMobileNumber')"
                   input-class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   @update:model-value="editForm.mobile = $event"
                 />
@@ -383,9 +349,7 @@
                     v-model="editForm.do_not_contact"
                     checkbox-class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                   />
-                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Do Not Contact
-                  </span>
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('people.peopleDetailDoNotContact2') }}</span>
                 </label>
               </div>
             </div>
@@ -404,14 +368,12 @@
           <div class="flex items-center justify-between">
             <div>
               <div class="flex items-center gap-2 mb-2">
-                <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">App</span>
+                <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ t('settings.modFieldsBadgeApp') }}</span>
               </div>
               <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
                 {{ appKey }} Information
               </h2>
-              <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                App-specific fields
-              </p>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">{{ t('people.peopleDetailAppSpecificFields') }}</p>
             </div>
             <!-- Action Controls -->
             <div class="flex items-start gap-2">
@@ -423,12 +385,8 @@
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                  </svg>
-                  Convert to Contact
-                </button>
-                <p class="text-xs text-gray-600 dark:text-gray-400 font-medium">
-                  Changes this person's role within Sales
-                </p>
+                  </svg>{{ t('records.genericConvertToContact') }}</button>
+                <p class="text-xs text-gray-600 dark:text-gray-400 font-medium">{{ t('people.peopleDetailChangesThisPersonsRoleWithinSales') }}</p>
               </div>
               <!-- Edit button (only if canEdit) -->
               <button
@@ -438,17 +396,13 @@
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                Edit
-              </button>
+                </svg>{{ t('settings.groupsEditTitle') }}</button>
               <!-- Edit mode buttons -->
               <template v-if="appSection.canEdit && isEditingApp[appKey]">
                 <button
                   @click="cancelAppEdit(appKey)"
                   class="px-2 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors min-h-[40px]"
-                >
-                  Cancel
-                </button>
+                >{{ t('performance.cancelWizard') }}</button>
                 <button
                   @click="saveAppFields(appKey)"
                   :disabled="savingApp[appKey]"
@@ -464,9 +418,7 @@
                 </button>
               </template>
               <!-- Read-only indicator (only if no buttons shown) -->
-              <div v-if="!appSection.canEdit && appKey !== 'SALES' && (!appSection.fields || !isPeopleSalesLeadFromFields(appSection.fields))" class="text-xs text-gray-500 dark:text-gray-400 italic">
-                Read-only
-              </div>
+              <div v-if="!appSection.canEdit && appKey !== 'SALES' && (!appSection.fields || !isPeopleSalesLeadFromFields(appSection.fields))" class="text-xs text-gray-500 dark:text-gray-400 italic">{{ t('settings.modFieldsDepReadonly') }}</div>
             </div>
           </div>
         </div>
@@ -534,9 +486,9 @@
                   v-model="appEditForms[appKey][fieldKey]"
                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
-                  <option value="">Select type...</option>
-                  <option value="Lead">Lead</option>
-                  <option value="Contact">Contact</option>
+                  <option value="">{{ t('settings.groupFormSelectType') }}</option>
+                  <option value="Lead">{{ t('forms.hubLinkedLead') }}</option>
+                  <option value="Contact">{{ t('forms.hubLinkedContact') }}</option>
                 </select>
                 <!-- Date Input -->
                 <input
@@ -578,12 +530,10 @@
       <div v-if="profileData.core?.canView && personId" class="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow border-2 border-gray-200 dark:border-gray-700 overflow-hidden">
         <div class="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-b-2 border-gray-200 dark:border-gray-700">
           <div class="flex items-center gap-2 mb-2">
-            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Entity</span>
+            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ t('people.peopleDetailEntity3') }}</span>
           </div>
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Notes</h2>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-            App-aware notes for this person
-          </p>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('forms.fieldNotes') }}</h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">{{ t('people.peopleDetailAppAwareNotesForThisPerson') }}</p>
         </div>
         <div class="px-6 py-4">
           <Notes
@@ -600,12 +550,10 @@
       <div v-if="profileData.core?.canView && personId" class="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow border-2 border-gray-200 dark:border-gray-700 overflow-hidden">
         <div class="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-b-2 border-gray-200 dark:border-gray-700">
           <div class="flex items-center gap-2 mb-2">
-            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Entity</span>
+            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ t('people.peopleDetailEntity2') }}</span>
           </div>
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Files</h2>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-            App-aware attachments for this person
-          </p>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('people.peopleDetailFiles') }}</h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">{{ t('people.peopleDetailAppAwareAttachmentsForThisPerson') }}</p>
         </div>
         <div class="px-6 py-4">
           <Files
@@ -622,12 +570,10 @@
       <div v-if="profileData.core?.canView && personId" class="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow border-2 border-gray-200 dark:border-gray-700 overflow-hidden">
         <div class="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-b-2 border-gray-200 dark:border-gray-700">
           <div class="flex items-center gap-2 mb-2">
-            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Entity</span>
+            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ t('people.peopleDetailEntity') }}</span>
           </div>
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Activity Timeline</h2>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-            Immutable audit stream for this person
-          </p>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('people.peopleDetailActivityTimeline') }}</h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">{{ t('people.peopleDetailImmutableAuditStreamForThisPerson') }}</p>
         </div>
         <div class="px-6 py-4">
           <ActivityTimeline
@@ -659,10 +605,8 @@
             <!-- Header -->
             <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
               <div>
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Attach to App</h2>
-                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                  Add this person to another app
-                </p>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('people.peopleDetailAttachToApp') }}</h2>
+                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ t('people.peopleDetailAddThisPersonToAnotherApp') }}</p>
               </div>
               <button
                 @click="closeAttachModal"
@@ -694,9 +638,7 @@
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                   </svg>
                   <div class="flex-1">
-                    <h3 class="text-sm font-semibold text-danger-800 dark:text-danger-200 mb-2">
-                      Validation Errors
-                    </h3>
+                    <h3 class="text-sm font-semibold text-danger-800 dark:text-danger-200 mb-2">{{ t('people.peopleDetailValidationErrors') }}</h3>
                     <ul class="list-disc list-inside space-y-2">
                       <li v-for="(message, field) in attachValidationErrors" :key="field" class="text-sm text-danger-700 dark:text-danger-300">
                         <span class="font-medium">{{ field }}:</span> {{ message }}
@@ -710,12 +652,8 @@
               <div v-if="!selectedAttachIntent">
                 <div v-if="hasAvailableAttachIntents">
                   <div class="mb-4">
-                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-2">
-                      Select Intent
-                    </h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">
-                      Choose how you want to add this person to an app
-                    </p>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-2">{{ t('people.peopleDetailSelectIntent') }}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('people.peopleDetailChooseHowYouWantToAdd') }}</p>
                   </div>
 
                   <div class="grid grid-cols-1 gap-2">
@@ -744,12 +682,8 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <p class="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                    All Apps Attached
-                  </p>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">
-                    This person is already part of all available apps.
-                  </p>
+                  <p class="text-sm font-medium text-gray-900 dark:text-white mb-2">{{ t('people.peopleDetailAllAppsAttached') }}</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('people.peopleDetailThisPersonIsAlreadyPartOf') }}</p>
                 </div>
               </div>
 
@@ -762,7 +696,7 @@
                       <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                     </svg>
                     <div>
-                      <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">You are adding this person to</div>
+                      <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ t('people.peopleDetailYouAreAddingThisPersonTo') }}</div>
                       <div class="text-sm font-semibold text-gray-900 dark:text-white">
                         {{ getAttachIntentDisplayName(selectedAttachIntent) }}
                       </div>
@@ -777,7 +711,7 @@
                       <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                     </svg>
                     <div>
-                      <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Participation</div>
+                      <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ t('settings.modFieldsGroupParticipation') }}</div>
                       <div class="text-sm font-semibold text-gray-900 dark:text-white">
                         {{ formatAppName(selectedAttachIntent.appKey) }} — {{ selectedAttachIntent.participationType }}
                       </div>
@@ -789,17 +723,15 @@
                 <form @submit.prevent="handleAttachSubmit" class="space-y-4">
                   <!-- Contact Status (if type is CONTACT) -->
                   <div v-if="selectedAttachIntent.appKey === 'SALES' && selectedAttachIntent.participationType === 'CONTACT'">
-                    <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">
-                      Contact Status
-                    </label>
+                    <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">{{ t('people.peopleDetailContactStatus') }}</label>
                     <select
                       v-model="attachFormData.contact_status"
                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                     >
-                      <option value="">Select status...</option>
-                      <option value="Active">Active</option>
-                      <option value="Inactive">Inactive</option>
-                      <option value="DoNotContact">Do Not Contact</option>
+                      <option value="">{{ t('people.peopleDetailSelectStatus2') }}</option>
+                      <option value="Active">{{ t('settings.settingsBhStatusActive') }}</option>
+                      <option value="Inactive">{{ t('settings.settingsBhStatusInactive') }}</option>
+                      <option value="DoNotContact">{{ t('people.peopleDetailDoNotContact') }}</option>
                     </select>
                     <p v-if="attachValidationErrors.contact_status" class="mt-2 text-sm text-danger-600 dark:text-danger-400">
                       {{ attachValidationErrors.contact_status }}
@@ -808,18 +740,16 @@
 
                   <!-- Role (if type is CONTACT) -->
                   <div v-if="selectedAttachIntent.appKey === 'SALES' && selectedAttachIntent.participationType === 'CONTACT'">
-                    <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">
-                      Role
-                    </label>
+                    <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">{{ t('settings.modFieldsPbAssignRole') }}</label>
                     <select
                       v-model="attachFormData.role"
                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                     >
-                      <option value="">Select role...</option>
-                      <option value="Decision Maker">Decision Maker</option>
-                      <option value="Influencer">Influencer</option>
-                      <option value="Support">Support</option>
-                      <option value="Other">Other</option>
+                      <option value="">{{ t('people.peopleDetailSelectRole') }}</option>
+                      <option value="Decision Maker">{{ t('people.peopleDetailDecisionMaker') }}</option>
+                      <option value="Influencer">{{ t('people.peopleDetailInfluencer') }}</option>
+                      <option value="Support">{{ t('appointments.typeSupport') }}</option>
+                      <option value="Other">{{ t('settings.settingsBhTzGroupOther') }}</option>
                     </select>
                     <p v-if="attachValidationErrors.role" class="mt-2 text-sm text-danger-600 dark:text-danger-400">
                       {{ attachValidationErrors.role }}
@@ -828,20 +758,18 @@
 
                   <!-- Lead Status (if type is LEAD) -->
                   <div v-if="selectedAttachIntent.appKey === 'SALES' && selectedAttachIntent.participationType === 'LEAD'">
-                    <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">
-                      Lead Status
-                    </label>
+                    <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">{{ t('people.peopleDetailLeadStatus') }}</label>
                     <select
                       v-model="attachFormData.lead_status"
                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                     >
-                      <option value="">Select status...</option>
-                      <option value="New">New</option>
-                      <option value="Contacted">Contacted</option>
-                      <option value="Qualified">Qualified</option>
-                      <option value="Disqualified">Disqualified</option>
-                      <option value="Nurturing">Nurturing</option>
-                      <option value="Re-Engage">Re-Engage</option>
+                      <option value="">{{ t('people.peopleDetailSelectStatus') }}</option>
+                      <option value="New">{{ t('settings.salesPipeStageNew') }}</option>
+                      <option value="Contacted">{{ t('people.peopleDetailContacted') }}</option>
+                      <option value="Qualified">{{ t('people.peopleDetailQualified') }}</option>
+                      <option value="Disqualified">{{ t('people.peopleDetailDisqualified') }}</option>
+                      <option value="Nurturing">{{ t('people.peopleDetailNurturing') }}</option>
+                      <option value="Re-Engage">{{ t('people.peopleDetailReEngage') }}</option>
                     </select>
                     <p v-if="attachValidationErrors.lead_status" class="mt-2 text-sm text-danger-600 dark:text-danger-400">
                       {{ attachValidationErrors.lead_status }}
@@ -854,9 +782,7 @@
                       type="button"
                       @click="closeAttachModal"
                       class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors min-h-[40px]"
-                    >
-                      Cancel
-                    </button>
+                    >{{ t('performance.cancelWizard') }}</button>
                     <button
                       type="submit"
                       :disabled="attachLoading"
@@ -901,11 +827,9 @@
                 <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                 </svg>
-                <h2 class="text-lg font-bold text-gray-900 dark:text-white">Convert Sales Lead to Contact</h2>
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ t('people.peopleDetailConvertSalesLeadToContact') }}</h2>
               </div>
-              <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                This will update this person's role in Sales.
-              </p>
+              <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('people.peopleDetailThisWillUpdateThisPersonsRole') }}</p>
             </div>
 
             <!-- Content -->
@@ -920,10 +844,10 @@
                       What happens when you convert?
                     </h3>
                     <ul class="text-sm text-warning-700 dark:text-warning-300 space-y-2 list-disc list-inside">
-                      <li>Person's role changes from Lead to Contact</li>
-                      <li>Lead-specific fields will be cleared</li>
-                      <li>Contact status will be set to Active (if not already set)</li>
-                      <li>This action will be logged in the activity timeline</li>
+                      <li>{{ t('people.peopleDetailPersonsRoleChangesFromLeadTo') }}</li>
+                      <li>{{ t('people.peopleDetailLeadSpecificFieldsWillBeCleared') }}</li>
+                      <li>{{ t('people.peopleDetailContactStatusWillBeSetTo') }}</li>
+                      <li>{{ t('people.peopleDetailThisActionWillBeLoggedIn') }}</li>
                     </ul>
                   </div>
                 </div>
@@ -940,9 +864,7 @@
                 @click="showConvertModal = false"
                 :disabled="converting"
                 class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[40px]"
-              >
-                Cancel
-              </button>
+              >{{ t('performance.cancelWizard') }}</button>
               <button
                 @click="handleConvertLeadToContact"
                 :disabled="converting"
@@ -965,6 +887,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { ref, computed, watch, nextTick } from 'vue';
 import { useRoute } from 'vue-router';

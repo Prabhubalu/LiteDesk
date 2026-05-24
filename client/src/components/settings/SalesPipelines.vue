@@ -1,8 +1,8 @@
 <template>
   <div class="space-y-6">
     <div>
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Pipelines & Stages</h3>
-      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Configure sales pipelines and their stages</p>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.salesPipeTitle') }}</h3>
+      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.salesPipeSubtitle') }}</p>
     </div>
 
     <div v-if="loading" class="flex items-center justify-center py-12">
@@ -16,9 +16,9 @@
     <div v-else class="h-full flex flex-col lg:flex-row gap-4">
       <aside class="w-full lg:w-80 flex-none bg-white dark:bg-gray-900/60 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
         <div class="p-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between">
-          <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">Pipelines</div>
+          <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ t('settings.salesPipeSidebarPipelines') }}</div>
           <button @click="addPipeline" class="px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors shadow-sm hover:shadow">
-            Add
+            {{ t('actions.add') }}
           </button>
         </div>
         <div
@@ -45,14 +45,14 @@
           >
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3 min-w-0">
-                <div class="cursor-grab active:cursor-grabbing select-none text-gray-400 dark:text-gray-500 flex-shrink-0" title="Drag to reorder">⋮⋮</div>
+                <div class="cursor-grab active:cursor-grabbing select-none text-gray-400 dark:text-gray-500 flex-shrink-0" :title="t('settings.salesPipeDragReorder')">⋮⋮</div>
                 <span class="w-2.5 h-2.5 rounded-full border border-white shadow flex-shrink-0" :style="{ backgroundColor: pipeline.color || DEFAULT_PIPELINE_COLOR }"></span>
                 <div class="min-w-0">
                   <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ pipeline.name }}</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ pipeline.stages?.length || 0 }} stage{{ (pipeline.stages?.length || 0) === 1 ? '' : 's' }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.salesPipeStageCount', { count: pipeline.stages?.length || 0 }) }}</p>
                 </div>
               </div>
-              <span v-if="pipelineSettings.length > 1 && pipeline.isDefault" class="inline-flex px-2 py-0.5 text-xs font-medium rounded bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 flex-shrink-0">Default</span>
+              <span v-if="pipelineSettings.length > 1 && pipeline.isDefault" class="inline-flex px-2 py-0.5 text-xs font-medium rounded bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 flex-shrink-0">{{ t('settings.salesPipeDefaultBadge') }}</span>
             </div>
             <div v-if="pipelineSettings.length > 1" class="flex items-center gap-2 mt-3">
               <label class="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
@@ -63,13 +63,13 @@
                   :checked="pipeline.isDefault"
                   @change.stop="setDefaultPipeline(pipeline.key)"
                 />
-                Default
+                {{ t('settings.salesPipeDefaultBadge') }}
               </label>
               <div class="ml-auto flex items-center gap-1">
                 <button
                   class="p-1 rounded text-red-500 hover:text-red-600 transition-colors"
                   @click.stop="removePipeline(pipeline.key)"
-                  title="Remove pipeline"
+                  :title="t('settings.salesPipeRemovePipelineTitle')"
                 >
                   <TrashIcon class="w-4 h-4" />
                 </button>
@@ -83,10 +83,10 @@
             @dragover.prevent="onPipelineDragOver(pipelineSettings.length)"
             @drop.prevent="onPipelineDrop(pipelineSettings.length)"
           >
-            Drop here to move pipeline to the end
+            {{ t('settings.salesPipeDropPipelineEnd') }}
           </div>
           <div v-if="!pipelineSettings.length" class="p-6 text-center text-sm text-gray-500 dark:text-gray-400">
-            No pipelines yet.
+            {{ t('settings.salesPipeEmptyPipelines') }}
           </div>
         </div>
       </aside>
@@ -94,11 +94,11 @@
         <div class="p-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between gap-3">
           <div class="min-w-0">
             <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">
-              {{ currentPipeline?.name || 'Select a pipeline' }}
+              {{ currentPipeline?.name || t('settings.salesPipeSelectPipeline') }}
             </p>
             <p v-if="currentPipeline" class="text-xs text-gray-500 dark:text-gray-400">
-              {{ currentPipeline.stages?.length || 0 }} stage{{ (currentPipeline.stages?.length || 0) === 1 ? '' : 's' }}
-              <template v-if="pipelineSettings.length > 1"> · {{ currentPipeline.isDefault ? 'Default pipeline' : 'Custom pipeline' }}</template>
+              {{ t('settings.salesPipeStageCount', { count: currentPipeline.stages?.length || 0 }) }}
+              <template v-if="pipelineSettings.length > 1"> · {{ currentPipeline.isDefault ? t('settings.salesPipeDefaultPipelineLabel') : t('settings.salesPipeCustomPipelineLabel') }}</template>
             </p>
           </div>
           <div v-if="isDirty" class="flex items-center gap-2">
@@ -107,7 +107,7 @@
               @click="discardChanges"
               class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-colors bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
-              Cancel
+              {{ t('actions.cancel') }}
             </button>
             <button
               type="button"
@@ -124,43 +124,43 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              <span>{{ isSaving ? 'Saving…' : 'Save Pipeline' }}</span>
+              <span>{{ isSaving ? t('states.saving') : t('settings.salesPipeSavePipeline') }}</span>
             </button>
           </div>
         </div>
         <div v-if="currentPipeline" class="p-4 space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Pipeline Name</label>
+              <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.salesPipeLabelPipelineName') }}</label>
               <input v-model="currentPipeline.name" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm" />
             </div>
             <div>
-              <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Color</label>
+              <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.salesPipeLabelColor') }}</label>
               <div class="flex items-center gap-3">
                 <input type="color" v-model="currentPipeline.color" class="w-14 h-10 border border-gray-300 dark:border-gray-600 rounded focus:outline-none" />
-                <span class="text-xs text-gray-500 dark:text-gray-400">Used for visual indicators in the UI.</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.salesPipeColorHint') }}</span>
               </div>
             </div>
             <div v-if="pipelineSettings.length > 1" class="md:col-span-2 flex items-center gap-3">
-              <span v-if="currentPipeline.isDefault" class="px-2 py-0.5 text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded">Default pipeline</span>
+              <span v-if="currentPipeline.isDefault" class="px-2 py-0.5 text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded">{{ t('settings.salesPipeDefaultPipelineLabel') }}</span>
               <button
                 v-else
                 @click="setDefaultPipeline(currentPipeline.key)"
                 class="px-3 py-1.5 text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-white/20 transition-colors"
               >
-                Set as default
+                {{ t('settings.salesPipeSetAsDefault') }}
               </button>
             </div>
           </div>
 
           <div class="flex items-center justify-between gap-3">
             <div>
-              <h4 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Stages</h4>
-              <p class="text-xs text-gray-500 dark:text-gray-400">Configure the stages available in this pipeline.</p>
+              <h4 class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ t('settings.salesPipeStagesTitle') }}</h4>
+              <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.salesPipeStagesSubtitle') }}</p>
             </div>
             <div class="flex items-center gap-2">
               <button @click="addStageToPipeline(currentPipeline)" class="px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors shadow-sm hover:shadow">
-                Add Stage
+                {{ t('settings.salesPipeAddStage') }}
               </button>
             </div>
           </div>
@@ -184,14 +184,14 @@
             >
               <div class="flex items-center justify-between gap-3">
                 <div class="flex items-center gap-2 min-w-0">
-                  <div class="cursor-grab select-none text-gray-400 dark:text-gray-500 flex-shrink-0" title="Drag to reorder">⋮⋮</div>
-                  <span class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">Stage {{ stageIndex + 1 }}</span>
+                  <div class="cursor-grab select-none text-gray-400 dark:text-gray-500 flex-shrink-0" :title="t('settings.salesPipeDragReorder')">⋮⋮</div>
+                  <span class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{{ t('settings.salesPipeStageNumber', { number: stageIndex + 1 }) }}</span>
                 </div>
                 <div class="flex items-center gap-1 flex-shrink-0">
                   <button
                     class="p-1 rounded text-red-500 hover:text-red-600 transition-colors"
                     @click="removeStageFromPipeline(currentPipeline, stageIndex)"
-                    title="Remove stage"
+                    :title="t('settings.salesPipeRemoveStageTitle')"
                   >
                     <TrashIcon class="w-4 h-4" />
                   </button>
@@ -199,28 +199,28 @@
               </div>
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mt-3">
                 <div>
-                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Stage Name</label>
+                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.salesPipeLabelStageName') }}</label>
                   <input v-model="stage.name" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm" />
                 </div>
                 <div>
-                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Color</label>
+                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.salesPipeLabelColor') }}</label>
                   <div class="flex items-center gap-2">
                     <input
                       type="color"
                       :value="stage.color || DEFAULT_STAGE_COLOR"
                       @input="stage.color = $event.target.value"
                       class="h-9 w-12 cursor-pointer rounded border border-gray-300 dark:border-gray-600 bg-white p-0.5 dark:bg-gray-800"
-                      title="Stage color"
+                      :title="t('settings.salesPipeStageColorTitle')"
                     />
-                    <span class="px-2.5 py-1 rounded-full text-xs font-medium text-white truncate max-w-[6rem]" :style="{ backgroundColor: stage.color || DEFAULT_STAGE_COLOR }">{{ stage.name || 'Stage' }}</span>
+                    <span class="px-2.5 py-1 rounded-full text-xs font-medium text-white truncate max-w-[6rem]" :style="{ backgroundColor: stage.color || DEFAULT_STAGE_COLOR }">{{ stage.name || t('settings.salesPipeStageFallback') }}</span>
                   </div>
                 </div>
                 <div>
-                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Probability (%)</label>
+                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.salesPipeLabelProbability') }}</label>
                   <input type="number" min="0" max="100" v-model.number="stage.probability" @change="clampStageProbability(stage)" @blur="clampStageProbability(stage)" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm" />
                 </div>
                 <div>
-                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Status</label>
+                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.salesPipeLabelStatus') }}</label>
                   <select v-model="stage.status" @change="onStageStatusChange(stage)" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm">
                     <option v-for="option in pipelineStageStatusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
                   </select>
@@ -234,14 +234,14 @@
               @dragover.prevent="onStageDragOver(currentPipeline.stages.length)"
               @drop.prevent="onStageDrop(currentPipeline.stages.length)"
             >
-              Drop here to move stage to the end
+              {{ t('settings.salesPipeDropStageEnd') }}
             </div>
           </div>
         </div>
         <div v-else class="flex-1 flex items-center justify-center text-sm text-gray-500 dark:text-gray-400">
           <div class="text-center space-y-3">
-            <p>No pipeline selected.</p>
-            <button @click="addPipeline" class="px-4 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">Create Pipeline</button>
+            <p>{{ t('settings.salesPipeNoPipelineSelected') }}</p>
+            <button @click="addPipeline" class="px-4 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">{{ t('settings.salesPipeCreatePipeline') }}</button>
           </div>
         </div>
       </section>
@@ -251,10 +251,12 @@
 
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { TrashIcon } from '@heroicons/vue/24/outline';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
 
+const { t } = useI18n();
 const authStore = useAuthStore();
 const loading = ref(true);
 const error = ref('');
@@ -274,22 +276,25 @@ const highlightedStageKey = ref(null);
 const DEFAULT_PIPELINE_COLOR = '#2563EB';
 const DEFAULT_STAGE_COLOR = '#6B7280';
 const DEFAULT_STAGE_COLORS = ['#6B7280', '#3B82F6', '#8B5CF6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444'];
-const DEFAULT_STAGE_DEFINITIONS = [
-  { name: 'New', probability: 0, status: 'open', color: DEFAULT_STAGE_COLORS[0] },
-  { name: 'Qualification', probability: 25, status: 'open', color: DEFAULT_STAGE_COLORS[1] },
-  { name: 'Proposal', probability: 50, status: 'open', color: DEFAULT_STAGE_COLORS[2] },
-  { name: 'Negotiation', probability: 70, status: 'open', color: DEFAULT_STAGE_COLORS[3] },
-  { name: 'Contract Sent', probability: 85, status: 'open', color: DEFAULT_STAGE_COLORS[4] },
-  { name: 'Closed Won', probability: 100, status: 'won', color: DEFAULT_STAGE_COLORS[5] },
-  { name: 'Closed Lost', probability: 0, status: 'lost', color: DEFAULT_STAGE_COLORS[6] }
-];
 
-const pipelineStageStatusOptions = [
-  { value: 'open', label: 'Open' },
-  { value: 'won', label: 'Won (Closed)' },
-  { value: 'lost', label: 'Lost (Closed)' },
-  { value: 'stalled', label: 'Stalled' }
-];
+function getDefaultStageDefinitions() {
+  return [
+    { name: t('settings.salesPipeStageNew'), probability: 0, status: 'open', color: DEFAULT_STAGE_COLORS[0] },
+    { name: t('settings.salesPipeStageQualification'), probability: 25, status: 'open', color: DEFAULT_STAGE_COLORS[1] },
+    { name: t('settings.salesPipeStageProposal'), probability: 50, status: 'open', color: DEFAULT_STAGE_COLORS[2] },
+    { name: t('settings.salesPipeStageNegotiation'), probability: 70, status: 'open', color: DEFAULT_STAGE_COLORS[3] },
+    { name: t('settings.salesPipeStageContractSent'), probability: 85, status: 'open', color: DEFAULT_STAGE_COLORS[4] },
+    { name: t('settings.salesPipeStageClosedWon'), probability: 100, status: 'won', color: DEFAULT_STAGE_COLORS[5] },
+    { name: t('settings.salesPipeStageClosedLost'), probability: 0, status: 'lost', color: DEFAULT_STAGE_COLORS[6] }
+  ];
+}
+
+const pipelineStageStatusOptions = computed(() => [
+  { value: 'open', label: t('settings.salesPipeStatusOpen') },
+  { value: 'won', label: t('settings.salesPipeStatusWon') },
+  { value: 'lost', label: t('settings.salesPipeStatusLost') },
+  { value: 'stalled', label: t('settings.salesPipeStatusStalled') }
+]);
 
 const currentPipeline = computed(() => {
   if (!pipelineSettings.value.length) return null;
@@ -313,23 +318,24 @@ function slugify(str) {
 }
 
 function normalizePipelineSettings(settings = []) {
+  const defaultStageDefs = getDefaultStageDefinitions();
   const source = Array.isArray(settings) && settings.length ? settings : getDefaultPipelineSettingsLocal();
   const normalized = source.map((pipeline, pipelineIndex) => {
-    const name = (pipeline.name || `Pipeline ${pipelineIndex + 1}`).trim();
+    const name = (pipeline.name || t('settings.salesPipeDefaultNameNumbered', { number: pipelineIndex + 1 })).trim();
     let key = pipeline.key ? slugify(pipeline.key) : slugify(name);
     if (!key) key = `pipeline-${pipelineIndex + 1}`;
     const color = pipeline.color || DEFAULT_PIPELINE_COLOR;
-    const stagesSource = Array.isArray(pipeline.stages) && pipeline.stages.length ? pipeline.stages : DEFAULT_STAGE_DEFINITIONS;
+    const stagesSource = Array.isArray(pipeline.stages) && pipeline.stages.length ? pipeline.stages : defaultStageDefs;
     const stages = stagesSource.map((stage, stageIndex) => {
-      const stageName = (stage.name || DEFAULT_STAGE_DEFINITIONS[stageIndex]?.name || `Stage ${stageIndex + 1}`).trim();
+      const stageName = (stage.name || defaultStageDefs[stageIndex]?.name || t('settings.salesPipeDefaultStageNumbered', { number: stageIndex + 1 })).trim();
       let stageKeyRaw = stage.key ? slugify(stage.key) : slugify(`${key}-${stageName}`);
       if (!stageKeyRaw) stageKeyRaw = `${key}-stage-${stageIndex + 1}`;
-      const status = ['open', 'won', 'lost', 'stalled'].includes(stage.status) ? stage.status : (DEFAULT_STAGE_DEFINITIONS[stageIndex]?.status || 'open');
-      let probability = typeof stage.probability === 'number' ? stage.probability : (DEFAULT_STAGE_DEFINITIONS[stageIndex]?.probability ?? 0);
+      const status = ['open', 'won', 'lost', 'stalled'].includes(stage.status) ? stage.status : (defaultStageDefs[stageIndex]?.status || 'open');
+      let probability = typeof stage.probability === 'number' ? stage.probability : (defaultStageDefs[stageIndex]?.probability ?? 0);
       if (status === 'won') probability = 100;
       if (status === 'lost') probability = 0;
       probability = Math.min(100, Math.max(0, Number(probability) || 0));
-      const color = stage.color && /^#[0-9A-Fa-f]{6}$/.test(stage.color) ? stage.color : (DEFAULT_STAGE_DEFINITIONS[stageIndex]?.color || DEFAULT_STAGE_COLOR);
+      const color = stage.color && /^#[0-9A-Fa-f]{6}$/.test(stage.color) ? stage.color : (defaultStageDefs[stageIndex]?.color || DEFAULT_STAGE_COLOR);
       return {
         key: stageKeyRaw,
         name: stageName,
@@ -385,12 +391,13 @@ function normalizePipelineSettings(settings = []) {
 }
 
 function getDefaultPipelineSettingsLocal() {
-  return [createDefaultPipeline('Sales Pipeline', { isDefault: true })];
+  return [createDefaultPipeline(t('settings.salesPipeDefaultNameSales'), { isDefault: true })];
 }
 
-function createDefaultPipeline(name = 'Default Pipeline', { isDefault = false } = {}) {
+function createDefaultPipeline(name = t('settings.salesPipeDefaultNamePipeline'), { isDefault = false } = {}) {
+  const defaultStageDefs = getDefaultStageDefinitions();
   const pipelineKey = slugify(name) || `pipeline-${Date.now()}`;
-  const stages = DEFAULT_STAGE_DEFINITIONS.map((def, index) => {
+  const stages = defaultStageDefs.map((def, index) => {
     const status = ['open', 'won', 'lost', 'stalled'].includes(def.status) ? def.status : 'open';
     let probability = typeof def.probability === 'number' ? def.probability : 0;
     if (status === 'won') probability = 100;
@@ -430,7 +437,7 @@ async function fetchDealsModule() {
     if (data.success) {
       const deals = data.data.find(m => m.key === 'deals');
       if (!deals) {
-        error.value = 'Deals module not found. Please ensure the Sales app is properly configured.';
+        error.value = t('settings.salesPipeErrDealsModule');
         return;
       }
       dealsModule.value = deals;
@@ -441,11 +448,11 @@ async function fetchDealsModule() {
       }
       originalSnapshot.value = JSON.stringify(normalizePipelineSettings(pipelineSettings.value));
     } else {
-      error.value = data.message || 'Failed to load pipelines';
+      error.value = data.message || t('settings.salesPipeErrLoadFailed');
     }
   } catch (err) {
     console.error('Error fetching deals module:', err);
-    error.value = err.message || 'Failed to load pipelines';
+    error.value = err.message || t('settings.salesPipeErrLoadFailed');
   } finally {
     loading.value = false;
   }
@@ -479,15 +486,15 @@ async function savePipelines() {
     });
     const data = await res.json();
     if (!res.ok || !data.success) {
-      alert(data.message || 'Failed to save pipelines');
+      alert(data.message || t('settings.salesPipeAlertSaveFailed'));
       return;
     }
     await fetchDealsModule();
     highlightedStageKey.value = null;
-    alert('Pipelines saved successfully');
+    alert(t('settings.salesPipeAlertSaveSuccess'));
   } catch (e) {
     console.error('Save pipelines failed', e);
-    alert('Failed to save: ' + (e.message || 'Unknown error'));
+    alert(t('settings.salesPipeAlertSaveError', { message: e.message || t('settings.salesPipeUnknownError') }));
   } finally {
     isSaving.value = false;
   }
@@ -504,7 +511,7 @@ function refreshPipelineOrders() {
 
 function addPipeline() {
   const count = pipelineSettings.value.length;
-  const name = count === 0 ? 'Sales Pipeline' : `Pipeline ${count + 1}`;
+  const name = count === 0 ? t('settings.salesPipeDefaultNameSales') : t('settings.salesPipeDefaultNameNumbered', { number: count + 1 });
   const isDefault = count === 0 && !pipelineSettings.value.some(p => p.isDefault);
   const pipeline = createDefaultPipeline(name, { isDefault });
   pipeline.order = count;
@@ -517,15 +524,15 @@ function removePipeline(pipelineKey) {
   const pipeline = pipelineSettings.value.find(p => p.key === pipelineKey);
   if (!pipeline) return;
   if (pipeline.isDefault) {
-    alert('Set another pipeline as default before removing this one.');
+    alert(t('settings.salesPipeAlertSetDefaultFirst'));
     return;
   }
   if (pipelineSettings.value.length <= 1) {
-    alert('At least one pipeline is required.');
+    alert(t('settings.salesPipeAlertMinOnePipeline'));
     return;
   }
   const index = pipelineSettings.value.findIndex(p => p.key === pipelineKey);
-  const [removed] = pipelineSettings.value.splice(index, 1);
+  pipelineSettings.value.splice(index, 1);
   refreshPipelineOrders();
   if (selectedPipelineKey.value === pipelineKey) {
     selectedPipelineKey.value = pipelineSettings.value[0]?.key || '';
@@ -586,13 +593,13 @@ function setDefaultPipeline(pipelineKey) {
 function addStageToPipeline(pipeline) {
   if (!pipeline) return;
   const stageIndex = pipeline.stages.length;
-  const baseDef = { name: `Stage ${stageIndex + 1}`, probability: 0, status: 'open' };
+  const stageName = t('settings.salesPipeDefaultStageNumbered', { number: stageIndex + 1 });
   const status = 'open';
   const probability = 0;
-  const key = slugify(`${pipeline.key}-${baseDef.name}-${stageIndex}`) || `${pipeline.key}-stage-${stageIndex + 1}`;
+  const key = slugify(`${pipeline.key}-${stageName}-${stageIndex}`) || `${pipeline.key}-stage-${stageIndex + 1}`;
   const newStage = {
     key,
-    name: baseDef.name,
+    name: stageName,
     description: '',
     probability,
     status,
@@ -613,7 +620,7 @@ function addStageToPipeline(pipeline) {
 function removeStageFromPipeline(pipeline, stageIndex) {
   if (!pipeline) return;
   if (pipeline.stages.length <= 1) {
-    alert('A pipeline must contain at least one stage.');
+    alert(t('settings.salesPipeAlertMinOneStage'));
     return;
   }
   pipeline.stages.splice(stageIndex, 1);
@@ -705,4 +712,3 @@ onMounted(() => {
   fetchDealsModule();
 });
 </script>
-

@@ -2,9 +2,9 @@
   <div class="space-y-6">
     <!-- Header -->
     <div>
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Settings</h2>
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('navigation.settings') }}</h2>
       <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        Manage your company settings and platform configuration
+        {{ t('settings.landingSubtitle') }}
       </p>
     </div>
 
@@ -23,12 +23,12 @@
 
         <!-- Title -->
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-          {{ section.name }}
+          {{ t(section.nameKey) }}
         </h3>
 
         <!-- Description -->
         <p class="text-sm text-gray-600 dark:text-gray-400">
-          {{ section.description }}
+          {{ t(section.descriptionKey) }}
         </p>
       </div>
     </div>
@@ -37,7 +37,10 @@
 
 <script setup>
 import { computed, h } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
+
+const { t } = useI18n();
 import { useAuthStore } from '@/stores/authRegistry';
 import { canAccessSettingsTab } from '@/utils/settingsTabAccess';
 
@@ -149,6 +152,20 @@ const AutomationIcon = () => h('svg', {
   })
 ]);
 
+const PerformanceIcon = () => h('svg', {
+  fill: 'none',
+  stroke: 'currentColor',
+  viewBox: '0 0 24 24',
+  xmlns: 'http://www.w3.org/2000/svg'
+}, [
+  h('path', {
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    'stroke-width': '2',
+    d: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'
+  })
+]);
+
 const SubscriptionsIcon = () => h('svg', {
   fill: 'none',
   stroke: 'currentColor',
@@ -210,78 +227,85 @@ const sections = computed(() => {
   const all = [
     {
       id: 'profile',
-      name: 'Your Profile',
-      description: 'Update your name, photo, password, and personal preferences',
+      nameKey: 'settings.tabProfile',
+      descriptionKey: 'settings.tabProfileDesc',
       icon: ProfileIcon,
       route: '/settings?tab=profile',
     },
     {
       id: 'organization',
-      name: 'Company Details',
-      description: 'Manage your company information, branding, and company-wide preferences',
+      nameKey: 'settings.tabCompany',
+      descriptionKey: 'settings.tabCompanyDesc',
       icon: OrganizationIcon,
       route: '/settings?tab=organization',
     },
     {
       id: 'business-hours',
-      name: 'Business Hours & Availability',
-      description: 'Set company, team, and personal working hours for booking, SLAs, and assignments',
+      nameKey: 'settings.tabBusinessHoursFull',
+      descriptionKey: 'settings.tabBusinessHoursDesc',
       icon: BusinessHoursIcon,
       route: '/settings?tab=business-hours',
     },
     {
       id: 'users-access',
-      name: 'Users & Access',
-      description: "Control who can use the platform and what they're allowed to do",
+      nameKey: 'settings.tabUsersAccess',
+      descriptionKey: 'settings.tabUsersAccessDesc',
       icon: UsersAccessIcon,
       route: '/settings?tab=users-access',
     },
     {
       id: 'core-modules',
-      name: 'Core Modules',
-      description: 'Manage shared platform capabilities used across all applications',
+      nameKey: 'settings.tabCoreModules',
+      descriptionKey: 'settings.tabCoreModulesDesc',
       icon: CoreModulesIcon,
       route: '/settings?tab=core-modules',
     },
     {
       id: 'applications',
-      name: 'Applications',
-      description: 'Install and configure the business applications your organization uses',
+      nameKey: 'settings.tabApplications',
+      descriptionKey: 'settings.tabApplicationsDesc',
       icon: ApplicationsIcon,
       route: '/settings?tab=applications',
     },
     {
       id: 'automation',
-      name: 'Automation',
-      description: 'Assignment rules: route records to groups, distribute work, run on a schedule, and notify new owners when automation applies',
+      nameKey: 'settings.tabAutomation',
+      descriptionKey: 'settings.tabAutomationDesc',
       icon: AutomationIcon,
       route: '/settings?tab=automation',
     },
     {
+      id: 'performance',
+      nameKey: 'settings.tabPerformance',
+      descriptionKey: 'settings.tabPerformanceDesc',
+      icon: PerformanceIcon,
+      route: '/settings?tab=performance',
+    },
+    {
       id: 'subscriptions',
-      name: 'Subscriptions',
-      description: 'Manage your subscription plan, payment method, and usage limits',
+      nameKey: 'settings.tabSubscriptions',
+      descriptionKey: 'settings.tabSubscriptionsDesc',
       icon: SubscriptionsIcon,
       route: '/settings?tab=subscriptions',
     },
     {
       id: 'notifications',
-      name: 'Notifications',
-      description: 'Choose how you are notified about activity in your workspace',
+      nameKey: 'settings.tabNotifications',
+      descriptionKey: 'settings.tabNotificationsDesc',
       icon: BellIcon,
       route: '/settings?tab=notifications',
     },
     {
       id: 'security',
-      name: 'Security',
-      description: 'Configure authentication, password policies, and security settings',
+      nameKey: 'settings.tabSecurity',
+      descriptionKey: 'settings.tabSecurityDesc',
       icon: SecurityIcon,
       route: '/settings?tab=security',
     },
     {
       id: 'integrations',
-      name: 'Integrations',
-      description: 'Connect external services and tools to extend platform capabilities',
+      nameKey: 'settings.tabIntegrations',
+      descriptionKey: 'settings.tabIntegrationsDesc',
       icon: IntegrationsIcon,
       route: '/settings?tab=integrations',
     },

@@ -1,0 +1,46 @@
+{
+  "auth_required": {
+    "message": "Sign in to continue",
+    "description": "API error AUTH_REQUIRED"
+  },
+  "auth_token_invalid": {
+    "message": "Your session expired. Sign in again.",
+    "description": "API error AUTH_TOKEN_INVALID"
+  },
+  "auth_token_missing": {
+    "message": "Sign in to continue",
+    "description": "API error AUTH_TOKEN_MISSING"
+  },
+  "permission_denied": {
+    "message": "You do not have permission to perform this action",
+    "description": "API error PERMISSION_DENIED"
+  },
+  "org_not_found": {
+    "message": "Organization not found",
+    "description": "API error ORG_NOT_FOUND"
+  },
+  "user_not_found": {
+    "message": "User not found",
+    "description": "API error USER_NOT_FOUND"
+  },
+  "validation_failed": {
+    "message": "Check the highlighted fields and try again",
+    "description": "API error VALIDATION_FAILED"
+  },
+  "resource_not_found": {
+    "message": "That record could not be found",
+    "description": "API error RESOURCE_NOT_FOUND"
+  },
+  "conflict": {
+    "message": "This action conflicts with another change. Refresh and try again.",
+    "description": "API error CONFLICT"
+  },
+  "rate_limited": {
+    "message": "Too many requests. Wait a moment and try again.",
+    "description": "API error RATE_LIMITED"
+  },
+  "server_error": {
+    "message": "Something went wrong on our side. Try again later.",
+    "description": "Generic server error fallback"
+  }
+}

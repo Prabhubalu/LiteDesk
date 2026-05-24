@@ -2,7 +2,7 @@
   <div
     class="list-page-skeleton w-full pb-12"
     aria-busy="true"
-    aria-label="Loading list"
+    :aria-label="t('common.loadingList')"
   >
     <!-- Header -->
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -87,6 +87,9 @@
 
 <script setup>
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
   /** Number of fake table rows */

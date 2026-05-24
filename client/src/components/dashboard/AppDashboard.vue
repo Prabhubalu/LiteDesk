@@ -85,7 +85,7 @@
 
       <template v-else>
         <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <h2 class="text-sm font-semibold text-slate-900 dark:text-white">Quick Access</h2>
+          <h2 class="text-sm font-semibold text-slate-900 dark:text-white">{{ t('dashboard.appDashboardQuickAccess') }}</h2>
           <div class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
             <button
               v-for="module in (dashboardDefinition.modules || [])"
@@ -96,9 +96,7 @@
             >
               {{ module.label }}
             </button>
-            <p v-if="(dashboardDefinition.modules || []).length === 0" class="text-xs text-slate-500 dark:text-slate-400">
-              No dashboard widgets configured for this app yet.
-            </p>
+            <p v-if="(dashboardDefinition.modules || []).length === 0" class="text-xs text-slate-500 dark:text-slate-400">{{ t('dashboard.appDashboardNoDashboardWidgetsConfiguredForThis') }}</p>
           </div>
         </section>
       </template>
@@ -108,15 +106,14 @@
 
   <div v-else class="flex items-center justify-center min-h-[60vh]">
     <div class="text-center">
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Dashboard Not Found</h2>
-      <p class="text-gray-600 dark:text-gray-400">
-        The dashboard for this app is not available.
-      </p>
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ t('dashboard.appDashboardDashboardNotFound') }}</h2>
+      <p class="text-gray-600 dark:text-gray-400">{{ t('dashboard.appDashboardTheDashboardForThisAppIs') }}</p>
     </div>
   </div>
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { toRef } from 'vue';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
@@ -135,6 +132,8 @@ const props = defineProps({
     required: true
   }
 });
+
+const { t } = useI18n();
 
 const authStore = useAuthStore();
 const { openTab } = useTabs();

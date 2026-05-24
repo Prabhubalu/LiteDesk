@@ -18,7 +18,7 @@
             type="button"
             @click="showUserMenu = !showUserMenu"
             class="rounded-full overflow-hidden w-8 h-8 flex-shrink-0 ring-1 ring-gray-200 dark:ring-gray-600 hover:ring-gray-300 dark:hover:ring-gray-500 transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-            aria-label="User menu"
+            :aria-label="t('navigation.userMenu')"
           >
             <img :src="portalAvatarUrl" alt="" class="w-full h-full object-cover" />
           </button>
@@ -38,7 +38,7 @@
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="colorMode === 'light' ? 'M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z' : 'M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z'" />
             </svg>
-            {{ colorMode === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode' }}
+            {{ colorMode === 'light' ? `🌙 ${t('common.darkMode')}` : `☀️ ${t('common.lightMode')}` }}
           </button>
           <button
             @click="handleLogout"
@@ -47,7 +47,7 @@
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
-            Sign Out
+            {{ t('navigation.signOut') }}
           </button>
         </div>
       </div>
@@ -71,7 +71,7 @@
             type="button"
             @click="showUserMenu = !showUserMenu"
             class="rounded-full overflow-hidden w-8 h-8 flex-shrink-0 ring-1 ring-gray-200 dark:ring-gray-600 hover:ring-gray-300 dark:hover:ring-gray-500 transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-            aria-label="User menu"
+            :aria-label="t('navigation.userMenu')"
           >
             <img :src="portalAvatarUrl" alt="" class="w-full h-full object-cover" />
           </button>
@@ -87,7 +87,7 @@
                 @click="showUserMenu = false"
                 class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
               >
-                Profile
+                {{ t('navigation.profile') }}
               </router-link>
               <button
                 @click="toggleColorMode(colorMode === 'light' ? 'dark' : 'light'); showUserMenu = false"
@@ -96,7 +96,7 @@
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="colorMode === 'light' ? 'M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z' : 'M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z'" />
                 </svg>
-                {{ colorMode === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode' }}
+                {{ colorMode === 'light' ? `🌙 ${t('common.darkMode')}` : `☀️ ${t('common.lightMode')}` }}
               </button>
               <button
                 @click="handleLogout"
@@ -105,7 +105,7 @@
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
-                Sign Out
+                {{ t('navigation.signOut') }}
               </button>
             </div>
           </div>
@@ -171,7 +171,7 @@
           v-else-if="!loadingSidebar && !sidebarStructure"
           class="px-3 py-4 text-center text-sm text-gray-500 dark:text-gray-400"
         >
-          No navigation available
+          {{ t('navigation.noNav') }}
         </div>
       </div>
     </aside>
@@ -216,7 +216,7 @@
           ]"
         >
           <component :is="$route.path === '/portal/dashboard' ? HomeIconSolid : HomeIcon" class="w-6 h-6 mb-1" />
-          <span class="text-xs font-medium">Home</span>
+          <span class="text-xs font-medium">{{ t('navigation.home') }}</span>
         </router-link>
         <router-link
           to="/portal/audits"
@@ -228,7 +228,7 @@
           ]"
         >
           <component :is="$route.path.startsWith('/portal/audits') ? DocumentTextIconSolid : DocumentTextIcon" class="w-6 h-6 mb-1" />
-          <span class="text-xs font-medium">Audits</span>
+          <span class="text-xs font-medium">{{ t('navigation.portalAudits') }}</span>
         </router-link>
         <router-link
           to="/portal/actions"
@@ -240,7 +240,7 @@
           ]"
         >
           <component :is="$route.path.startsWith('/portal/actions') ? ClipboardDocumentCheckIconSolid : ClipboardDocumentCheckIcon" class="w-6 h-6 mb-1" />
-          <span class="text-xs font-medium">Actions</span>
+          <span class="text-xs font-medium">{{ t('navigation.portalActions') }}</span>
         </router-link>
       </div>
     </nav>
@@ -249,6 +249,9 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { RouterView, useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useAppShellStore } from '@/stores/appShell';

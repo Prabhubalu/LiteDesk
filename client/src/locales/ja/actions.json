@@ -1,0 +1,102 @@
+{
+  "save": {
+    "message": "Save",
+    "description": "Primary save action button"
+  },
+  "cancel": {
+    "message": "Cancel",
+    "description": "Dismiss without saving"
+  },
+  "delete": {
+    "message": "Delete",
+    "description": "Permanently remove the selected item"
+  },
+  "confirm": {
+    "message": "Confirm",
+    "description": "Confirm a destructive or important action"
+  },
+  "retry": {
+    "message": "Retry",
+    "description": "Retry a failed network or load operation"
+  },
+  "close": {
+    "message": "Close",
+    "description": "Close a modal or panel"
+  },
+  "edit": {
+    "message": "Edit",
+    "description": "Enter edit mode for the current record"
+  },
+  "create": {
+    "message": "Create",
+    "description": "Create a new record"
+  },
+  "search": {
+    "message": "Search",
+    "description": "Submit or focus global search"
+  },
+  "back": {
+    "message": "Back",
+    "description": "Navigate to the previous screen"
+  },
+  "update": {
+    "message": "Update",
+    "description": "Update an existing saved entity"
+  },
+  "apply": {
+    "message": "Apply",
+    "description": "Apply pending settings or filters"
+  },
+  "previous": {
+    "message": "Previous",
+    "description": "Previous page or step"
+  },
+  "next": {
+    "message": "Next",
+    "description": "Next page or step"
+  },
+  "remove": {
+    "message": "Remove",
+    "description": "Remove a selected item or tag"
+  },
+  "select": {
+    "message": "Select",
+    "description": "Select a record or option"
+  },
+  "refresh": {
+    "message": "Refresh",
+    "description": "Reload data from the server"
+  },
+  "add": {
+    "message": "Add",
+    "description": "Add an item or relation"
+  },
+  "link": {
+    "message": "Link",
+    "description": "Link an existing record"
+  },
+  "duplicate": {
+    "message": "Duplicate",
+    "description": "Duplicate the current record"
+  },
+  "archive": {
+    "message": "Archive",
+    "description": "Archive the current record"
+  },
+  "follow": {
+    "message": "Follow",
+    "description": "Follow record updates"
+  },
+  "unfollow": {
+    "message": "Unfollow",
+    "description": "Stop following record updates"
+  },
+  "copy": {
+    "message": "Copy",
+    "description": "Copy text or link to clipboard"
+  },
+  "export": {
+    "message": "Export",
+    "description": "Export record or list data"
+  }
+}

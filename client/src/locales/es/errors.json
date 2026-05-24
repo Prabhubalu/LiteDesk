@@ -1,0 +1,46 @@
+{
+  "auth_required": {
+    "message": "Inicia sesión para continuar",
+    "description": "API error AUTH_REQUIRED"
+  },
+  "auth_token_invalid": {
+    "message": "Tu sesión expiró. Inicia sesión nuevamente.",
+    "description": "API error AUTH_TOKEN_INVALID"
+  },
+  "auth_token_missing": {
+    "message": "Inicia sesión para continuar",
+    "description": "API error AUTH_TOKEN_MISSING"
+  },
+  "permission_denied": {
+    "message": "No tienes permiso para realizar esta acción",
+    "description": "API error PERMISSION_DENIED"
+  },
+  "org_not_found": {
+    "message": "Organización no encontrada",
+    "description": "API error ORG_NOT_FOUND"
+  },
+  "user_not_found": {
+    "message": "Usuario no encontrado",
+    "description": "API error USER_NOT_FOUND"
+  },
+  "validation_failed": {
+    "message": "Verifique los campos resaltados e intente nuevamente",
+    "description": "API error VALIDATION_FAILED"
+  },
+  "resource_not_found": {
+    "message": "Ese registro no se pudo encontrar.",
+    "description": "API error RESOURCE_NOT_FOUND"
+  },
+  "conflict": {
+    "message": "Esta acción entra en conflicto con otro cambio. Actualiza e inténtalo de nuevo.",
+    "description": "API error CONFLICT"
+  },
+  "rate_limited": {
+    "message": "Demasiadas solicitudes. Espere un momento y vuelva a intentarlo.",
+    "description": "API error RATE_LIMITED"
+  },
+  "server_error": {
+    "message": "Algo salió mal de nuestro lado. Vuelve a intentarlo más tarde.",
+    "description": "Generic server error fallback"
+  }
+}

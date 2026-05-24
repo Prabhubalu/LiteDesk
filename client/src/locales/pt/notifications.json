@@ -1,0 +1,378 @@
+{
+  "panelAria": {
+    "message": "Notifications",
+    "description": "Notifications drawer/sheet dialog aria-label"
+  },
+  "drawerHeading": {
+    "message": "Notifications",
+    "description": "Notifications panel heading"
+  },
+  "markAllRead": {
+    "message": "Mark all as read",
+    "description": "Mark all notifications read action"
+  },
+  "markAllReadAria": {
+    "message": "Mark all notifications as read",
+    "description": "Mark all notifications read button aria-label"
+  },
+  "closePanelAria": {
+    "message": "Close notifications",
+    "description": "Close notifications panel aria-label"
+  },
+  "offlineBanner": {
+    "message": "Offline — notifications may be outdated.",
+    "description": "Offline state banner in notification panel"
+  },
+  "caughtUp": {
+    "message": "You're all caught up",
+    "description": "Empty state headline when no unread notifications"
+  },
+  "emptyList": {
+    "message": "No notifications yet.",
+    "description": "Empty state body when notification list is empty"
+  },
+  "noUpdatesDigest": {
+    "message": "No updates — you have no new notifications.",
+    "description": "Digest placeholder when there are no new items"
+  },
+  "settingsLink": {
+    "message": "Notification settings",
+    "description": "Link to notification settings from panel footer"
+  },
+  "itemNew": {
+    "message": "New",
+    "description": "Badge on unread notification item"
+  },
+  "itemUnavailable": {
+    "message": "This item is no longer available.",
+    "description": "Warning when linked record is gone"
+  },
+  "whyReceived": {
+    "message": "Why you received this notification",
+    "description": "Explainability popover heading"
+  },
+  "whyIntro": {
+    "message": "A quick explanation based on the notification details.",
+    "description": "Explainability popover subheading"
+  },
+  "happenedBecause": {
+    "message": "This happened because",
+    "description": "Explainability trigger section label"
+  },
+  "receivedBecause": {
+    "message": "You received this because you are",
+    "description": "Explainability role section label"
+  },
+  "deliveredVia": {
+    "message": "Delivered via",
+    "description": "Explainability delivery channel label"
+  },
+  "controlHeading": {
+    "message": "Control",
+    "description": "Explainability control section label"
+  },
+  "controlBody": {
+    "message": "You can manage notifications like this in Notification settings.",
+    "description": "Explainability control section body"
+  },
+  "openSettings": {
+    "message": "Open Notification settings",
+    "description": "Link to notification settings"
+  },
+  "reviewRules": {
+    "message": "Review notification rules",
+    "description": "Link to notification rules list"
+  },
+  "markRead": {
+    "message": "Mark as read",
+    "description": "Mark single notification read tooltip"
+  },
+  "markReadAria": {
+    "message": "Mark notification as read",
+    "description": "Mark read button aria-label"
+  },
+  "dismiss": {
+    "message": "Dismiss",
+    "description": "Dismiss notification tooltip"
+  },
+  "dismissAria": {
+    "message": "Dismiss notification",
+    "description": "Dismiss button aria-label"
+  },
+  "snooze": {
+    "message": "Snooze",
+    "description": "Snooze notification tooltip"
+  },
+  "snoozeAria": {
+    "message": "Snooze options",
+    "description": "Snooze button aria-label"
+  },
+  "acknowledge": {
+    "message": "Acknowledge — Marks this notification as handled. Does not change the underlying record.",
+    "description": "Acknowledge notification tooltip"
+  },
+  "acknowledgeAria": {
+    "message": "Acknowledge notification (does not change record)",
+    "description": "Acknowledge button aria-label"
+  },
+  "whyAmISeeing": {
+    "message": "Why am I seeing this?",
+    "description": "Open explainability popover aria-label"
+  },
+  "channelComingSoon": {
+    "message": "Coming soon",
+    "description": "Unavailable notification channel section state"
+  },
+  "channelUnavailable": {
+    "message": "Not available for this app",
+    "description": "Disabled channel option hint"
+  },
+  "channelToggleAria": {
+    "message": "Toggle {channel} notifications",
+    "description": "Channel section global toggle aria-label"
+  },
+  "channelOptionAria": {
+    "message": "{channel} notifications",
+    "description": "Channel checkbox aria-label in rule builder"
+  },
+  "assignToMe": {
+    "message": "Assigned to me",
+    "description": "Notification rule assigned-to condition"
+  },
+  "assignAnyone": {
+    "message": "Assigned to anyone",
+    "description": "Notification rule assigned-to anyone condition"
+  },
+  "noStatusOptions": {
+    "message": "No status options available for this module",
+    "description": "Empty status condition picker"
+  },
+  "ruleCreateHeading": {
+    "message": "Create Notification Rule",
+    "description": "Rule builder modal title when creating"
+  },
+  "ruleEditHeading": {
+    "message": "Edit Notification Rule",
+    "description": "Rule builder modal title when editing"
+  },
+  "ruleStepAria": {
+    "message": "Step {index}: {step}",
+    "description": "Rule builder step button aria-label"
+  },
+  "ruleStepModule": {
+    "message": "Module",
+    "description": "Rule builder step: module"
+  },
+  "ruleStepEvent": {
+    "message": "Event",
+    "description": "Rule builder step: event"
+  },
+  "ruleStepConditions": {
+    "message": "Conditions",
+    "description": "Rule builder step: conditions"
+  },
+  "ruleStepChannels": {
+    "message": "Channels",
+    "description": "Rule builder step: channels"
+  },
+  "ruleStepReview": {
+    "message": "Review",
+    "description": "Rule builder step: review"
+  },
+  "ruleModule": {
+    "message": "Module",
+    "description": "Rule builder module field label"
+  },
+  "ruleSelectModule": {
+    "message": "Select a module...",
+    "description": "Rule builder module select placeholder"
+  },
+  "ruleModuleHint": {
+    "message": "Choose which module this rule applies to.",
+    "description": "Rule builder module field help"
+  },
+  "ruleMaxReached": {
+    "message": "You've reached the maximum of 5 rules for this module.",
+    "description": "Rule limit warning per module"
+  },
+  "ruleEventType": {
+    "message": "Event Type",
+    "description": "Rule builder event type label"
+  },
+  "ruleConditionsOptional": {
+    "message": "Conditions (Optional)",
+    "description": "Rule builder conditions section label"
+  },
+  "ruleAddCondition": {
+    "message": "+ Add Condition",
+    "description": "Add another rule condition"
+  },
+  "ruleNoConditions": {
+    "message": "No conditions. This rule will trigger for all {module} {event} events.",
+    "description": "Rule builder empty conditions explanation"
+  },
+  "ruleSelectCondition": {
+    "message": "Select condition...",
+    "description": "Condition field select placeholder"
+  },
+  "ruleRemoveCondition": {
+    "message": "Remove condition {index}",
+    "description": "Remove condition button aria-label"
+  },
+  "ruleSelectEvent": {
+    "message": "Select {event}",
+    "description": "Select event type radio aria-label"
+  },
+  "ruleChannels": {
+    "message": "Notification Channels",
+    "description": "Rule builder channels section label"
+  },
+  "ruleChannelsHint": {
+    "message": "Select how you want to receive notifications for this rule. At least one channel must be selected.",
+    "description": "Rule builder channels help text"
+  },
+  "ruleChannelsRequired": {
+    "message": "Please select at least one notification channel.",
+    "description": "Rule builder channels validation hint"
+  },
+  "ruleSummary": {
+    "message": "Rule Summary",
+    "description": "Rule builder review summary heading"
+  },
+  "ruleWhen": {
+    "message": "When:",
+    "description": "Rule summary when label"
+  },
+  "ruleNotifyVia": {
+    "message": "Notify via:",
+    "description": "Rule summary channels label"
+  },
+  "ruleFixIssues": {
+    "message": "Please fix the following issues:",
+    "description": "Rule builder validation errors heading"
+  },
+  "ruleUpdate": {
+    "message": "Update Rule",
+    "description": "Save button when editing rule"
+  },
+  "ruleCreate": {
+    "message": "Create Rule",
+    "description": "Save button when creating rule"
+  },
+  "groupMarkAllAria": {
+    "message": "Mark all {count} notifications as read",
+    "description": "Mark grouped notifications read aria-label"
+  },
+  "countInGroupAria": {
+    "message": "{count} notifications",
+    "description": "Notification group count aria-label"
+  },
+  "groupEntryAria": {
+    "message": "{label} ({count} items)",
+    "description": "Grouped notification section aria-label"
+  },
+  "groupLatest": {
+    "message": "Latest: {title} – {time}",
+    "description": "Grouped notification preview line"
+  },
+  "snoozeOneHour": {
+    "message": "1 hour",
+    "description": "Snooze option: one hour"
+  },
+  "snoozeOneHourHelp": {
+    "message": "Hide this notification for 1 hour. Reappears automatically.",
+    "description": "Snooze one hour help text"
+  },
+  "snoozeTomorrow": {
+    "message": "Until tomorrow",
+    "description": "Snooze option: until tomorrow"
+  },
+  "snoozeTomorrowHelp": {
+    "message": "Hide this notification until tomorrow. Reappears automatically.",
+    "description": "Snooze until tomorrow help"
+  },
+  "snoozeNextWeek": {
+    "message": "Until next week",
+    "description": "Snooze option: until next week"
+  },
+  "snoozeNextWeekHelp": {
+    "message": "Hide this notification until next week. Reappears automatically.",
+    "description": "Snooze until next week help"
+  },
+  "snoozeDueDate": {
+    "message": "Until due date",
+    "description": "Snooze option: until due date"
+  },
+  "snoozeDueDateHelp": {
+    "message": "Hide this notification until its due date. Reappears automatically.",
+    "description": "Snooze until due date help"
+  },
+  "snoozeOptionAria": {
+    "message": "Snooze for {label}",
+    "description": "Snooze menu item aria-label"
+  },
+  "loadMore": {
+    "message": "Load more",
+    "description": "Load more notifications button"
+  },
+  "sectionToday": {
+    "message": "Today",
+    "description": "Notification list section: today"
+  },
+  "sectionYesterday": {
+    "message": "Yesterday",
+    "description": "Notification list section: yesterday"
+  },
+  "sectionEarlier": {
+    "message": "Earlier",
+    "description": "Notification list section: earlier"
+  },
+  "sectionNew": {
+    "message": "New",
+    "description": "Notification list section: new since opened"
+  },
+  "bellAria": {
+    "message": "Notifications",
+    "description": "Notification bell button aria-label when no unread"
+  },
+  "bellAriaUnread": {
+    "message": "Notifications, unread items present",
+    "description": "Notification bell aria-label when unread exist"
+  },
+  "feedbackMarkedRead": {
+    "message": "Marked read",
+    "description": "Inline feedback after marking notification read"
+  },
+  "feedbackDismissed": {
+    "message": "Dismissed",
+    "description": "Inline feedback after dismissing notification"
+  },
+  "feedbackAcknowledged": {
+    "message": "Acknowledged",
+    "description": "Inline feedback after acknowledging notification"
+  },
+  "ruleErrorModuleRequired": {
+    "message": "Module is required",
+    "description": "Rule builder validation"
+  },
+  "ruleErrorEventRequired": {
+    "message": "Event type is required",
+    "description": "Rule builder validation"
+  },
+  "ruleErrorChannelRequired": {
+    "message": "At least one notification channel must be selected",
+    "description": "Rule builder validation"
+  },
+  "ruleErrorConditionField": {
+    "message": "Condition {index} is missing a field",
+    "description": "Rule builder validation for incomplete condition"
+  },
+  "bellTooltipUnreadOne": {
+    "message": "{count} notificação não lida",
+    "description": "Notification bell tooltip when one unread item"
+  },
+  "bellTooltipUnreadMany": {
+    "message": "{count} notificações não lidas",
+    "description": "Notification bell tooltip when multiple unread items"
+  }
+}

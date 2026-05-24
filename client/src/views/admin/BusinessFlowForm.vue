@@ -9,12 +9,12 @@
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
-        Back
+        {{ t('actions.back') }}
       </button>
     </div>
 
     <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-6">
-      {{ isEdit ? 'Edit Business Flow' : 'Create Business Flow' }}
+      {{ isEdit ? t('process.flowFormEditTitle') : t('process.flowFormCreateTitle') }}
     </h1>
 
     <!-- Form -->
@@ -22,12 +22,12 @@
       <!-- Flow Name -->
       <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Flow Name <span class="text-red-500">*</span>
+          {{ t('process.flowFormName') }} <span class="text-red-500">*</span>
         </label>
         <input
           v-model="formData.name"
           type="text"
-          placeholder="e.g., Lead to Deal Conversion Flow"
+          :placeholder="t('process.flowFormNamePh')"
           class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-indigo-500"
         />
       </div>
@@ -35,12 +35,12 @@
       <!-- Description -->
       <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Description
+          {{ t('process.flowFormDescription') }}
         </label>
         <textarea
           v-model="formData.description"
           rows="3"
-          placeholder="Describe how these processes work together..."
+          :placeholder="t('process.flowFormDescriptionPh')"
           class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-indigo-500"
         ></textarea>
       </div>
@@ -48,31 +48,31 @@
       <!-- App -->
       <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          App <span class="text-red-500">*</span>
+          {{ t('process.flowFormApp') }} <span class="text-red-500">*</span>
         </label>
         <select
           v-model="formData.appKey"
           class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-indigo-500"
         >
-          <option value="">Select App</option>
-          <option value="SALES">SALES</option>
-          <option value="AUDIT">AUDIT</option>
-          <option value="PORTAL">PORTAL</option>
+          <option value="">{{ t('process.flowFormSelectApp') }}</option>
+          <option value="SALES">{{ t('process.appKeySales') }}</option>
+          <option value="AUDIT">{{ t('process.appKeyAudit') }}</option>
+          <option value="PORTAL">{{ t('process.appKeyPortal') }}</option>
         </select>
       </div>
 
       <!-- Process Selector -->
       <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Processes <span class="text-red-500">*</span>
+          {{ t('process.flowFormProcesses') }} <span class="text-red-500">*</span>
         </label>
         <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
-          Select multiple processes to visualize together. Order is inferred automatically.
+          {{ t('process.flowFormProcessesHint') }}
         </p>
 
         <!-- Loading -->
         <div v-if="loadingProcesses" class="text-sm text-gray-500 dark:text-gray-400">
-          Loading processes...
+          {{ t('process.flowFormLoadingProcesses') }}
         </div>
 
         <!-- Process List -->
@@ -104,7 +104,7 @@
                       : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                   ]"
                 >
-                  {{ process.status === 'active' ? 'Active' : process.status === 'draft' ? 'Draft' : 'Archived' }}
+                  {{ processStatusLabel(process.status) }}
                 </span>
                 <span class="text-xs text-gray-500 dark:text-gray-400">{{ process.appKey }}</span>
               </div>
@@ -112,7 +112,7 @@
           </div>
 
           <div v-if="availableProcesses.length === 0" class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
-            No processes found for this app. Create processes first.
+            {{ t('process.flowFormNoProcesses') }}
           </div>
         </div>
       </div>
@@ -123,14 +123,14 @@
           @click="$router.back()"
           class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         >
-          Cancel
+          {{ t('actions.cancel') }}
         </button>
         <button
           @click="handleSave"
           :disabled="!isValid || processing"
           class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {{ processing ? 'Saving...' : isEdit ? 'Update' : 'Create' }}
+          {{ processing ? t('states.saving') : isEdit ? t('actions.update') : t('actions.create') }}
         </button>
       </div>
     </div>
@@ -141,14 +141,16 @@
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
 
+const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
 const { success: showSuccess, error: showError } = useNotifications();
 
-const isEdit = computed(() => route.name === 'control-flows-edit');
+const isEdit = computed(() => route.name === 'settings-automation-flows-edit');
 const flowId = computed(() => route.params.id);
 
 const formData = ref({
@@ -167,6 +169,25 @@ const isValid = computed(() => {
          formData.value.appKey &&
          formData.value.processIds.length > 0;
 });
+
+function processStatusLabel(status) {
+  if (status === 'active') return t('process.statusActive');
+  if (status === 'draft') return t('process.statusDraft');
+  return t('process.statusArchived');
+}
+
+const getTriggerSummary = (process) => {
+  const trigger = process.trigger || {};
+  if (trigger.type === 'domain_event') {
+    const eventType = trigger.eventType || '';
+    if (eventType === 'record.created') return t('process.triggerOnRecordCreated');
+    if (eventType === 'record.updated') return t('process.triggerOnRecordUpdated');
+    if (eventType === 'status.changed') return t('process.triggerOnStatusChanged');
+    if (eventType === 'stage.changed') return t('process.triggerOnStageChanged');
+    return t('process.triggerOnEvent', { eventType });
+  }
+  return t('process.triggerManualSummary');
+};
 
 const loadProcesses = async (appKey) => {
   loadingProcesses.value = true;
@@ -195,22 +216,9 @@ const loadFlow = async () => {
     };
     await loadProcesses(flow.appKey);
   } catch (err) {
-    showError(err.message || 'Failed to load business flow');
+    showError(err.message || t('process.flowDetailLoadFailed'));
     router.back();
   }
-};
-
-const getTriggerSummary = (process) => {
-  const trigger = process.trigger || {};
-  if (trigger.type === 'domain_event') {
-    const eventType = trigger.eventType || '';
-    if (eventType === 'record.created') return 'Runs when a record is created';
-    if (eventType === 'record.updated') return 'Runs when a record is updated';
-    if (eventType === 'status.changed') return 'Runs when status changes';
-    if (eventType === 'stage.changed') return 'Runs when stage changes';
-    return `Runs on ${eventType}`;
-  }
-  return 'Manual trigger';
 };
 
 const toggleProcessSelection = (processId, event) => {
@@ -243,19 +251,18 @@ const handleSave = async () => {
     }
 
     if (response.success) {
-      showSuccess(isEdit.value ? 'Business flow updated' : 'Business flow created');
-      router.push(`/control/flows/${response.data._id}`);
+      showSuccess(isEdit.value ? t('process.flowFormUpdateSuccess') : t('process.flowFormCreateSuccess'));
+      router.push(`/settings/automation/flows/${response.data._id}`);
     } else {
-      showError(response.message || 'Failed to save');
+      showError(response.message || t('process.flowFormSaveFailed'));
     }
   } catch (err) {
-    showError(err.message || 'Failed to save');
+    showError(err.message || t('process.flowFormSaveFailed'));
   } finally {
     processing.value = false;
   }
 };
 
-// Watch appKey to reload processes
 watch(() => formData.value.appKey, (newAppKey) => {
   if (newAppKey) {
     loadProcesses(newAppKey);
@@ -263,7 +270,7 @@ watch(() => formData.value.appKey, (newAppKey) => {
 });
 
 onMounted(async () => {
-  document.title = isEdit.value ? 'Edit Business Flow | Arivu' : 'Create Business Flow | Arivu';
+  document.title = isEdit.value ? t('process.flowFormEditPageTitle') : t('process.flowFormCreatePageTitle');
   if (isEdit.value) {
     await loadFlow();
   } else {

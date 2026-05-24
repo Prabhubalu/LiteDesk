@@ -1,0 +1,30 @@
+{
+  "required": {
+    "message": "Questo campo è obbligatorio",
+    "description": "Generic required field validation"
+  },
+  "emailInvalid": {
+    "message": "Inserisci un indirizzo email valido",
+    "description": "Email format validation"
+  },
+  "minLength": {
+    "message": "Deve contenere almeno {min, number} caratteri",
+    "description": "Minimum length validation with ICU number"
+  },
+  "maxLength": {
+    "message": "Deve contenere al massimo {max, number} caratteri",
+    "description": "Maximum length validation with ICU number"
+  },
+  "imageFileRequired": {
+    "message": "Seleziona un file immagine",
+    "description": "Image upload wrong file type"
+  },
+  "imageMaxSize": {
+    "message": "La dimensione dell'immagine deve essere inferiore a 10 MB",
+    "description": "Image upload exceeds size limit"
+  },
+  "imageUploadFailed": {
+    "message": "Impossibile caricare l'immagine. Per favore riprova.",
+    "description": "Image upload network or server error"
+  }
+}

@@ -6,10 +6,13 @@
 
 <script setup>
 import { ref, onMounted, watch, onBeforeUnmount } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Chart, registerables } from 'chart.js';
 import apiClient from '@/utils/apiClient';
 
 Chart.register(...registerables);
+
+const { t } = useI18n();
 
 const props = defineProps({
   formId: {
@@ -65,7 +68,7 @@ const renderChart = () => {
       labels: chartData.value.labels,
       datasets: [
         {
-          label: 'Compliance %',
+          label: t('forms.analyticsChartCompliancePct'),
           data: chartData.value.compliance,
           borderColor: '#4F46E5', // indigo-600
           backgroundColor: 'rgba(79, 70, 229, 0.1)',
@@ -92,7 +95,7 @@ const renderChart = () => {
           intersect: false,
           callbacks: {
             label: function(context) {
-              return `Compliance: ${context.parsed.y}%`;
+              return t('forms.analyticsTooltipCompliance', { value: context.parsed.y });
             }
           }
         }

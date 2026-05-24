@@ -4,7 +4,7 @@
       <!-- Loading State -->
       <div v-if="loading" class="text-center py-12">
         <div class="w-16 h-16 border-4 border-gray-200 dark:border-gray-700 border-t-indigo-600 dark:border-t-indigo-500 rounded-full animate-spin mx-auto mb-4"></div>
-        <p class="text-gray-600 dark:text-gray-400">Loading form...</p>
+        <p class="text-gray-600 dark:text-gray-400">{{ t('forms.builderShellLoading') }}</p>
       </div>
 
       <!-- Error State -->
@@ -12,7 +12,7 @@
         <svg class="w-12 h-12 text-red-600 dark:text-red-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <h2 class="text-xl font-semibold text-red-800 dark:text-red-200 mb-2">Form Not Found</h2>
+        <h2 class="text-xl font-semibold text-red-800 dark:text-red-200 mb-2">{{ t('forms.hubFillNotFoundTitle') }}</h2>
         <p class="text-red-600 dark:text-red-400">{{ error }}</p>
       </div>
 
@@ -23,8 +23,8 @@
           <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ form.name }}</h1>
           <p v-if="form.description" class="text-gray-600 dark:text-gray-400">{{ form.description }}</p>
           <div class="flex items-center gap-4 mt-4 text-sm text-gray-500 dark:text-gray-400">
-            <span>Form ID: {{ form.formId }}</span>
-            <span v-if="form.formType">Type: {{ form.formType }}</span>
+            <span>{{ t('forms.hubPublicFormIdLabel', { id: form.formId }) }}</span>
+            <span v-if="form.formType">{{ t('forms.hubPublicTypeLabel', { type: form.formType }) }}</span>
           </div>
         </div>
 
@@ -65,7 +65,7 @@
                         :required="question.mandatory"
                         class="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
                       />
-                      <span class="ml-2 text-gray-700 dark:text-gray-300">Yes</span>
+                      <span class="ml-2 text-gray-700 dark:text-gray-300">{{ t('forms.answerYes') }}</span>
                     </label>
                     <label class="flex items-center">
                       <input
@@ -76,7 +76,7 @@
                         :required="question.mandatory"
                         class="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
                       />
-                      <span class="ml-2 text-gray-700 dark:text-gray-300">No</span>
+                      <span class="ml-2 text-gray-700 dark:text-gray-300">{{ t('forms.answerNo') }}</span>
                     </label>
                   </div>
                   
@@ -87,7 +87,7 @@
                     :required="question.mandatory"
                     class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   >
-                    <option value="">Select an option</option>
+                    <option value="">{{ t('forms.selectOption') }}</option>
                     <option v-for="option in question.options" :key="option" :value="option">{{ option }}</option>
                   </select>
                   
@@ -156,8 +156,8 @@
               :disabled="submitting"
               class="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <span v-if="submitting">Submitting...</span>
-              <span v-else>Submit Form</span>
+              <span v-if="submitting">{{ t('forms.hubFillSubmitting') }}</span>
+              <span v-else>{{ t('forms.previewSubmitForm') }}</span>
             </button>
           </div>
         </form>
@@ -167,8 +167,8 @@
           <svg class="w-12 h-12 text-green-600 dark:text-green-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <h2 class="text-xl font-semibold text-green-800 dark:text-green-200 mb-2">Form Submitted Successfully!</h2>
-          <p class="text-green-600 dark:text-green-400">Thank you for your submission.</p>
+          <h2 class="text-xl font-semibold text-green-800 dark:text-green-200 mb-2">{{ t('forms.hubFillSubmitSuccessTitle') }}</h2>
+          <p class="text-green-600 dark:text-green-400">{{ t('forms.hubPublicThankYou') }}</p>
         </div>
       </div>
     </div>
@@ -178,10 +178,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import SignaturePad from '@/components/forms/SignaturePad.vue';
-import apiClient from '@/utils/apiClient';
 import { openDatePicker } from '@/utils/dateUtils';
 
+const { t } = useI18n();
 const route = useRoute();
 const slug = route.params.slug;
 
@@ -221,11 +222,11 @@ const fetchForm = async () => {
         });
       }
     } else {
-      error.value = response.message || 'Form not found';
+      error.value = response.message || t('forms.hubPublicFormNotFound');
     }
   } catch (err) {
     console.error('Error fetching form:', err);
-    error.value = err.message || 'Failed to load form. Please try again.';
+    error.value = err.message || t('forms.hubPublicLoadFailed');
   } finally {
     loading.value = false;
   }
@@ -327,7 +328,7 @@ const submitForm = async () => {
     }
   } catch (err) {
     console.error('Error submitting form:', err);
-    error.value = err.message || 'Failed to submit form. Please try again.';
+    error.value = err.message || t('forms.hubPublicSubmitFailed');
     // Clear error after 5 seconds
     setTimeout(() => {
       error.value = null;
@@ -341,4 +342,3 @@ onMounted(() => {
   fetchForm();
 });
 </script>
-

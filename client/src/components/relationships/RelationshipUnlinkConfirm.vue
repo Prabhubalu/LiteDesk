@@ -38,9 +38,7 @@
                       Unlink {{ relationship.label }}?
                     </DialogTitle>
                     <div class="mt-2">
-                      <p class="text-sm text-gray-500 dark:text-gray-400">
-                        Are you sure you want to unlink
-                        <span class="font-medium text-gray-900 dark:text-white">
+                      <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('records.relationshipUnlinkConfirmAreYouSureYouWantTo') }}<span class="font-medium text-gray-900 dark:text-white">
                           {{ getRecordLabelForDisplay(record) }}
                         </span>
                         from this record?
@@ -59,16 +57,12 @@
                     type="button"
                     class="rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
                     @click="handleClose"
-                  >
-                    Cancel
-                  </button>
+                  >{{ t('performance.cancelWizard') }}</button>
                   <button
                     type="button"
                     class="inline-flex justify-center rounded-md bg-red-600 dark:bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-500 dark:hover:bg-red-600"
                     @click="confirmUnlink"
-                  >
-                    Unlink
-                  </button>
+                  >{{ t('records.relatedUnlink') }}</button>
                 </div>
               </div>
             </DialogPanel>
@@ -80,6 +74,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref } from 'vue';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { ExclamationTriangleIcon } from '@heroicons/vue/24/outline';
@@ -91,6 +86,8 @@ const props = defineProps({
   record: { type: Object, required: true },
   sourceRecord: { type: Object, default: null }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['close', 'confirmed']);
 

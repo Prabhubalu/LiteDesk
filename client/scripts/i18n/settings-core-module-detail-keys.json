@@ -1,0 +1,128 @@
+{
+  "coreModDetailBack": { "message": "Back to Core Modules", "description": "Back navigation" },
+  "coreModDetailLoadFailed": { "message": "Failed to load core module", "description": "Core module load error fallback" },
+  "coreModDetailModuleKeyRequired": { "message": "Module key is required", "description": "Missing module key error" },
+  "coreModDetailInvalidResponse": { "message": "Invalid response from server", "description": "Invalid API response" },
+  "coreModDetailUpdateFailed": { "message": "Failed to update application participation", "description": "Toggle app participation error" },
+  "coreModDetailUpdateFailedRetry": {
+    "message": "Failed to update application participation. Please try again.",
+    "description": "Toggle app participation error with retry hint"
+  },
+  "coreModDetailPlatformOwnedBadge": { "message": "Platform-Owned", "description": "Platform-owned module badge" },
+  "coreModDetailSharedBy": {
+    "message": "Shared by {count, plural, one {# application} other {# applications}}",
+    "description": "Shared across applications badge"
+  },
+  "coreModDetailAppsUsingTitle": { "message": "Apps Using This Module", "description": "Apps using module section title" },
+  "coreModDetailApplicationsUsingTitle": {
+    "message": "Applications Using This Module",
+    "description": "Applications using module section (standard view)"
+  },
+  "coreModDetailRequired": { "message": "Required", "description": "Required application badge" },
+  "coreModDetailOptional": { "message": "Optional", "description": "Optional applications section" },
+  "coreModDetailApplicationCount": {
+    "message": "({count, plural, one {# application} other {# applications}})",
+    "description": "Application count in section header"
+  },
+  "coreModDetailAppRequiredLock": {
+    "message": "This application requires this module and cannot be disabled",
+    "description": "Lock icon tooltip for required app"
+  },
+  "coreModDetailNoApps": {
+    "message": "This module is not currently used by any applications.",
+    "description": "Empty applications list"
+  },
+  "coreModDetailDescription": { "message": "Description", "description": "Module description heading" },
+  "coreModDetailAboutSharedTitle": { "message": "About Shared Capabilities", "description": "Shared capabilities info title" },
+  "coreModDetailAboutSharedBody1": {
+    "message": "Core modules are shared platform capabilities that can be used by multiple applications. When an application uses a core module, it gains access to the module's functionality without needing to implement it separately.",
+    "description": "Shared capabilities info paragraph 1"
+  },
+  "coreModDetailAboutSharedBody2": {
+    "message": "Some applications require certain core modules to function properly. These required modules cannot be disabled. Other applications may use core modules optionally, allowing you to control which applications have access to each capability.",
+    "description": "Shared capabilities info paragraph 2"
+  },
+  "coreModDetailToggleEnable": { "message": "Enable {appName}", "description": "App toggle switch aria label enable" },
+  "coreModDetailToggleDisable": { "message": "Disable {appName}", "description": "App toggle switch aria label disable" },
+  "coreModDetailEnable": { "message": "Enable", "description": "Enable action label" },
+  "coreModDetailDisable": { "message": "Disable", "description": "Disable action label" },
+  "coreModDetailConfirmEnableTitle": { "message": "Enable {appName}?", "description": "Confirm enable app modal title" },
+  "coreModDetailConfirmDisableTitle": { "message": "Disable {appName}?", "description": "Confirm disable app modal title" },
+  "coreModDetailConfirmEnableBody": {
+    "message": "You're about to enable {appName}'s use of this module.",
+    "description": "Confirm enable app modal body"
+  },
+  "coreModDetailConfirmDisableBody": {
+    "message": "You're about to disable {appName}'s use of this module.",
+    "description": "Confirm disable app modal body"
+  },
+  "coreModDetailImpact": { "message": "Impact:", "description": "Toggle impact list heading" },
+  "coreModDetailImpactEnableUse": {
+    "message": "{appName} will be able to use this module",
+    "description": "Impact when enabling app"
+  },
+  "coreModDetailImpactEnableAccess": {
+    "message": "Users with {appName} access will see this module's functionality",
+    "description": "Impact when enabling app (users)"
+  },
+  "coreModDetailImpactDisableUse": {
+    "message": "{appName} will no longer be able to use this module",
+    "description": "Impact when disabling app"
+  },
+  "coreModDetailImpactDisableAccess": {
+    "message": "Users with {appName} access will lose access to this module's functionality",
+    "description": "Impact when disabling app (users)"
+  },
+  "coreModDetailImpactDisableData": {
+    "message": "No data will be deleted - existing data remains but cannot be accessed",
+    "description": "Impact when disabling app (data)"
+  },
+  "coreModDetailModulePeople": { "message": "People", "description": "People module title for ModulesAndFields" },
+  "coreModDetailModuleOrganizations": { "message": "Organizations", "description": "Organizations module title" },
+  "coreModDetailModuleTasks": { "message": "Tasks", "description": "Tasks module title" },
+  "coreModDetailModuleEvents": { "message": "Events", "description": "Events module title" },
+  "coreModDetailEventsIntro": {
+    "message": "Events define time-based work across the platform. This settings area configures event structure and constraints, not scheduling or execution.",
+    "description": "Events module header intro"
+  },
+  "coreModDetailModuleForms": { "message": "Forms", "description": "Forms module title" },
+  "coreModDetailModuleItems": { "message": "Items", "description": "Items module title" },
+  "coreModDetailNoteOrganizations": {
+    "message": "Organizations are shared business entities (Customer, Partner, Vendor, etc.) used across applications. App participation is controlled at the application level, not here. This view is read-only for transparency.",
+    "description": "Organizations module apps note"
+  },
+  "coreModDetailNoteTasks": {
+    "message": "Tasks are shared work objects used across applications. App participation is controlled at the application level, not here. This view is read-only for transparency.",
+    "description": "Tasks module apps note"
+  },
+  "coreModDetailNoteEvents": {
+    "message": "Events are shared time-based work objects used across applications (Audit, Sales, Calendar). App participation is controlled at the application level, not here. This view is read-only for transparency. Events cannot be disabled per app as they are core platform capabilities.",
+    "description": "Events module apps note"
+  },
+  "coreModDetailNoteForms": {
+    "message": "Forms are shared data collection structures used across applications. App participation is controlled at the application level, not here. This view is read-only for transparency.",
+    "description": "Forms module apps note"
+  },
+  "coreModDetailFormsIntro": {
+    "message": "Forms define data collection structures across the platform. This settings area configures form behavior, lifecycle, and outcomes. Form content is edited in the Form Builder.",
+    "description": "Forms module header intro"
+  },
+  "coreModDetailFormConfigTitle": { "message": "Form Configuration", "description": "Forms configuration section title" },
+  "coreModDetailFormConfigHelp": {
+    "message": "Configure form behavior, lifecycle, and outcomes. Form content is edited in the Form Builder.",
+    "description": "Forms configuration section help"
+  },
+  "coreModDetailFormCapabilitiesTitle": { "message": "Form Settings Capabilities", "description": "Form capabilities box title" },
+  "coreModDetailFormCapabilitiesCan": {
+    "message": "Can: Configure fields, lifecycle, access, behavior rules, and outcomes",
+    "description": "Form capabilities can list"
+  },
+  "coreModDetailFormCapabilitiesCannot": {
+    "message": "Cannot: Edit form structure, content, scoring weights, or execute workflows",
+    "description": "Form capabilities cannot list"
+  },
+  "coreModDetailFormCapabilitiesSee": {
+    "message": "See: client/src/platform/forms/formSettingsCapabilities.ts",
+    "description": "Form capabilities reference path"
+  }
+}

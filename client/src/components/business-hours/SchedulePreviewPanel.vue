@@ -1,18 +1,18 @@
 <template>
   <div class="rounded-xl border border-indigo-200 dark:border-indigo-800/50 bg-indigo-50/50 dark:bg-indigo-950/30 p-4 space-y-3">
-    <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Live preview</h4>
-    <p v-if="loading" class="text-sm text-gray-500 dark:text-gray-400">Calculating…</p>
+    <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.settingsBhLivePreview') }}</h4>
+    <p v-if="loading" class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.settingsBhCalculating') }}</p>
     <template v-else-if="preview">
       <p class="text-sm text-gray-700 dark:text-gray-300">
-        <span class="font-medium">Now:</span>
-        {{ preview.isOpen ? 'Within business hours' : preview.pauseReason }}
+        <span class="font-medium">{{ t('settings.settingsBhPreviewNow') }}</span>
+        {{ preview.isOpen ? t('settings.settingsBhWithinBusinessHours') : preview.pauseReason }}
       </p>
       <p v-if="preview.targetAfterMinutes" class="text-sm text-gray-700 dark:text-gray-300">
-        <span class="font-medium">4h SLA from now:</span>
+        <span class="font-medium">{{ t('settings.settingsBhSlaFromNow') }}</span>
         {{ formatInstant(preview.targetAfterMinutes) }}
       </p>
       <p v-if="preview.nextOpenAt && !preview.isOpen" class="text-xs text-gray-600 dark:text-gray-400">
-        Next open: {{ formatInstant(preview.nextOpenAt) }}
+        {{ t('settings.settingsBhNextOpen', { time: formatInstant(preview.nextOpenAt) }) }}
       </p>
     </template>
   </div>
@@ -20,6 +20,7 @@
 
 <script setup>
 import { ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useBusinessHours } from '@/composables/useBusinessHours';
 
 const props = defineProps({
@@ -27,6 +28,7 @@ const props = defineProps({
   timezone: { type: String, default: 'UTC' }
 });
 
+const { t } = useI18n();
 const { simulate } = useBusinessHours();
 const loading = ref(false);
 const preview = ref(null);

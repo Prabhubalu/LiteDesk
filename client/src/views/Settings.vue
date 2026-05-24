@@ -4,19 +4,9 @@
       <!-- Header -->
       <div class="mb-6 flex items-center justify-between">
         <div class="flex items-center gap-4">
-          <!-- Back Button -->
-          <!-- <button
-            @click="goBack"
-            class="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-            title="Go back"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button> -->
           <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Manage your account and company settings</p>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ t('navigation.settings') }}</h1>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.pageSubtitle') }}</p>
           </div>
         </div>
         <!-- User Menu (mode + sign out) -->
@@ -75,12 +65,12 @@
           <!-- Header with collapse/expand button -->
           <div class="flex items-center justify-between p-3 border-b border-gray-200 dark:border-white/10 min-h-[3rem]">
             <transition enter-active-class="transition-all duration-300" enter-from-class="opacity-0 w-0" enter-to-class="opacity-100 w-auto" leave-active-class="transition-all duration-300" leave-from-class="opacity-100 w-auto" leave-to-class="opacity-0 w-0">
-              <h2 v-if="shouldShowExpanded" class="text-sm font-semibold text-gray-900 dark:text-white truncate">Settings</h2>
+              <h2 v-if="shouldShowExpanded" class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ t('navigation.settings') }}</h2>
             </transition>
             <button
               type="button"
               @click="toggleSidebar"
-              :title="isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+              :title="isCollapsed ? t('settings.expandSidebar') : t('settings.collapseSidebar')"
               class="flex-shrink-0 p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
             >
               <svg :class="shouldShowExpanded ? 'w-5 h-5' : 'w-6 h-6'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,7 +86,7 @@
               <li>
                 <button
                   @click="activeTab = null; router.push('/settings')"
-                  :title="!shouldShowExpanded ? 'Overview' : ''"
+                  :title="!shouldShowExpanded ? t('settings.navOverview') : ''"
                   :class="[
                     'w-full flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
                     !activeTab
@@ -110,7 +100,7 @@
                     </svg>
                   </div>
                   <transition enter-active-class="transition-all duration-300 ease-out" enter-from-class="opacity-0 max-w-0" enter-to-class="opacity-100 max-w-xs" leave-active-class="transition-all duration-300 ease-in" leave-from-class="opacity-100 max-w-xs" leave-to-class="opacity-0 max-w-0">
-                    <span v-if="shouldShowExpanded" class="truncate">Overview</span>
+                    <span v-if="shouldShowExpanded" class="truncate">{{ t('settings.navOverview') }}</span>
                   </transition>
                 </button>
               </li>
@@ -118,7 +108,7 @@
                 <li>
                   <button
                     @click="handleTabClick(tab)"
-                    :title="!shouldShowExpanded ? tab.name : ''"
+                    :title="!shouldShowExpanded ? t(tab.nameKey) : ''"
                     :class="[
                       'w-full flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
                       activeTab === tab.id || (tab.id === 'notifications' && route.path.includes('/notifications'))
@@ -130,7 +120,7 @@
                       <component :is="tab.icon" class="w-5 h-5" />
                     </div>
                     <transition enter-active-class="transition-all duration-300 ease-out" enter-from-class="opacity-0 max-w-0" enter-to-class="opacity-100 max-w-xs" leave-active-class="transition-all duration-300 ease-in" leave-from-class="opacity-100 max-w-xs" leave-to-class="opacity-0 max-w-0">
-                      <span v-if="shouldShowExpanded" class="truncate">{{ tab.name }}</span>
+                      <span v-if="shouldShowExpanded" class="truncate">{{ t(tab.nameKey) }}</span>
                     </transition>
                   </button>
                 </li>
@@ -141,7 +131,7 @@
                 <li v-if="tab.id === 'profile' && idx < tabs.length - 1">
                   <hr class="my-2 border-gray-200 dark:border-gray-700" />
                   <div v-if="shouldShowExpanded" class="px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Workspace
+                    {{ t('settings.navWorkspace') }}
                   </div>
                 </li>
               </template>
@@ -153,13 +143,13 @@
                 </li>
                 <li>
                   <div v-if="shouldShowExpanded" class="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Internal
+                    {{ t('settings.navInternal') }}
                   </div>
                 </li>
                 <li v-for="internalTab in internalTabs" :key="internalTab.id">
                   <button
                     @click="handleTabClick(internalTab)"
-                    :title="!shouldShowExpanded ? internalTab.name : ''"
+                    :title="!shouldShowExpanded ? t(internalTab.nameKey) : ''"
                     :class="[
                       'w-full flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
                       activeTab === internalTab.id || route.path.includes(internalTab.path)
@@ -171,7 +161,7 @@
                       <component :is="internalTab.icon" class="w-5 h-5" />
                     </div>
                     <transition enter-active-class="transition-all duration-300 ease-out" enter-from-class="opacity-0 max-w-0" enter-to-class="opacity-100 max-w-xs" leave-active-class="transition-all duration-300 ease-in" leave-from-class="opacity-100 max-w-xs" leave-to-class="opacity-0 max-w-0">
-                      <span v-if="shouldShowExpanded" class="truncate">{{ internalTab.name }}</span>
+                      <span v-if="shouldShowExpanded" class="truncate">{{ t(internalTab.nameKey) }}</span>
                     </transition>
                   </button>
                 </li>
@@ -198,7 +188,10 @@
 
 <script setup>
 import { ref, computed, h, watch, defineAsyncComponent } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
+
+const { t } = useI18n();
 import { useAuthStore } from '@/stores/authRegistry';
 import { canAccessSettingsTab } from '@/utils/settingsTabAccess';
 import { useColorMode } from '@/composables/useColorMode';
@@ -221,7 +214,8 @@ const SubscriptionDetail = defineAsyncComponent(() => import('@/components/setti
 const NotificationSettings = defineAsyncComponent(() => import('@/components/settings/NotificationSettings.vue'));
 const DemoRequests = defineAsyncComponent(() => import('@/views/DemoRequests.vue'));
 const InstanceManagement = defineAsyncComponent(() => import('@/views/InstanceManagement.vue'));
-const AssignmentRulesSettings = defineAsyncComponent(() => import('@/components/settings/AssignmentRulesSettings.vue'));
+const AutomationSettings = defineAsyncComponent(() => import('@/components/settings/AutomationSettings.vue'));
+const PerformanceSettings = defineAsyncComponent(() => import('@/components/settings/PerformanceSettings.vue'));
 const BusinessHoursSettings = defineAsyncComponent(() => import('@/components/settings/BusinessHoursSettings.vue'));
 
 const authStore = useAuthStore();
@@ -391,6 +385,20 @@ const AutomationIcon = () => h('svg', {
   })
 ]);
 
+const PerformanceIcon = () => h('svg', {
+  fill: 'none',
+  stroke: 'currentColor',
+  viewBox: '0 0 24 24',
+  xmlns: 'http://www.w3.org/2000/svg'
+}, [
+  h('path', {
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    'stroke-width': '2',
+    d: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'
+  })
+]);
+
 const BellIcon = () => h('svg', {
   fill: 'none',
   stroke: 'currentColor',
@@ -413,20 +421,21 @@ const settingsAccessCtx = computed(() => ({
 
 const tabs = computed(() => {
   const all = [
-    { id: 'profile', name: 'Your Profile', icon: ProfileIcon, component: ProfileSettings },
-    { id: 'organization', name: 'Company Details', icon: PlatformIcon, component: OrganizationSettings },
-    { id: 'business-hours', name: 'Business Hours', icon: BusinessHoursIcon, component: BusinessHoursSettings },
-    { id: 'users-access', name: 'Users & Access', icon: UsersIcon, component: UsersAccessSettings },
-    { id: 'core-modules', name: 'Core Modules', icon: CoreModulesIcon, component: CoreModulesList },
-    { id: 'applications', name: 'Applications', icon: AppsIcon, component: ApplicationsList },
-    { id: 'automation', name: 'Automation', icon: AutomationIcon, component: AssignmentRulesSettings },
-    { id: 'subscriptions', name: 'Subscriptions', icon: SubscriptionsIcon, component: SubscriptionsList },
-    { id: 'notifications', name: 'Notifications', icon: BellIcon, component: NotificationSettings },
-    { id: 'security', name: 'Security', icon: SecurityIcon, component: SecuritySettings },
-    { id: 'integrations', name: 'Integrations', icon: IntegrationsIcon, component: IntegrationsSettings },
+    { id: 'profile', nameKey: 'settings.tabProfile', icon: ProfileIcon, component: ProfileSettings },
+    { id: 'organization', nameKey: 'settings.tabCompany', icon: PlatformIcon, component: OrganizationSettings },
+    { id: 'business-hours', nameKey: 'settings.tabBusinessHours', icon: BusinessHoursIcon, component: BusinessHoursSettings },
+    { id: 'users-access', nameKey: 'settings.tabUsersAccess', icon: UsersIcon, component: UsersAccessSettings },
+    { id: 'core-modules', nameKey: 'settings.tabCoreModules', icon: CoreModulesIcon, component: CoreModulesList },
+    { id: 'applications', nameKey: 'settings.tabApplications', icon: AppsIcon, component: ApplicationsList },
+    { id: 'automation', nameKey: 'settings.tabAutomation', icon: AutomationIcon, component: AutomationSettings },
+    { id: 'performance', nameKey: 'settings.tabPerformance', icon: PerformanceIcon, component: PerformanceSettings },
+    { id: 'subscriptions', nameKey: 'settings.tabSubscriptions', icon: SubscriptionsIcon, component: SubscriptionsList },
+    { id: 'notifications', nameKey: 'settings.tabNotifications', icon: BellIcon, component: NotificationSettings },
+    { id: 'security', nameKey: 'settings.tabSecurity', icon: SecurityIcon, component: SecuritySettings },
+    { id: 'integrations', nameKey: 'settings.tabIntegrations', icon: IntegrationsIcon, component: IntegrationsSettings },
   ];
   const ctx = settingsAccessCtx.value;
-  return all.filter((t) => canAccessSettingsTab(t.id, ctx));
+  return all.filter((tab) => canAccessSettingsTab(tab.id, ctx));
 });
 
 const SubscriptionsIcon = () => h('svg', {
@@ -510,17 +519,17 @@ const internalTabs = computed(() => {
   if (!isInternalEnvironment.value) return [];
   
   return [
-    { 
-      id: 'demo-requests', 
-      name: 'Demo Requests', 
-      icon: DemoRequestsIcon, 
+    {
+      id: 'demo-requests',
+      nameKey: 'settings.tabDemoRequests',
+      icon: DemoRequestsIcon,
       component: DemoRequests,
       path: '/settings/demo-requests'
     },
-    { 
-      id: 'instances', 
-      name: 'Instances', 
-      icon: InstancesIcon, 
+    {
+      id: 'instances',
+      nameKey: 'settings.tabInstances',
+      icon: InstancesIcon,
       component: InstanceManagement,
       path: '/settings/instances'
     }
@@ -550,6 +559,12 @@ function handleTabClick(tab) {
     activeTab.value = 'notifications';
     // Use query parameters instead of route paths to stay within Settings
     router.replace({ path: '/settings', query: { ...route.query, tab: 'notifications', notificationPage: 'overview' } });
+  } else if (tab.id === 'automation') {
+    activeTab.value = 'automation';
+    router.replace({ path: '/settings', query: { tab: 'automation' } });
+  } else if (tab.id === 'performance') {
+    activeTab.value = 'performance';
+    router.replace({ path: '/settings', query: { tab: 'performance' } });
   } else if (tab.path) {
     // Internal tabs use query parameters to stay within Settings layout
     activeTab.value = tab.id;

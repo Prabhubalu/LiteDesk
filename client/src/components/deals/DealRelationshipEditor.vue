@@ -8,7 +8,7 @@
     <!-- A. People on this Deal -->
     <section class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 overflow-hidden">
       <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-        <h3 class="text-sm font-semibold text-gray-900 dark:text-white">People on this Deal</h3>
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('deals.dealRelationshipEditorPeopleOnThisDeal') }}</h3>
       </div>
       <div class="p-4 space-y-3">
         <ul v-if="sortedPeople.length" class="space-y-2">
@@ -26,9 +26,7 @@
                 <span
                   v-if="entry.isPrimary"
                   class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
-                >
-                  Primary
-                </span>
+                >{{ t('forms.rtColorPrimary') }}</span>
               </div>
             </div>
             <div v-if="!readOnly" class="flex items-center gap-1 shrink-0">
@@ -37,7 +35,7 @@
                 @click="setPrimaryPerson(entry)"
                 :disabled="entry.isPrimary"
                 class="p-1.5 rounded text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 disabled:opacity-40 disabled:cursor-not-allowed"
-                title="Set as primary contact"
+                :title="t('deals.dealRelationshipEditorSetAsPrimaryContact')"
               >
                 <StarIconSolid v-if="entry.isPrimary" class="w-4 h-4 text-indigo-600" />
                 <StarIcon v-else class="w-4 h-4" />
@@ -46,14 +44,14 @@
                 type="button"
                 @click="removePerson(entry)"
                 class="p-1.5 rounded text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                title="Remove from deal"
+                :title="t('deals.dealRelationshipEditorRemoveFromDeal2')"
               >
                 <TrashIcon class="w-4 h-4" />
               </button>
             </div>
           </li>
         </ul>
-        <p v-else class="text-sm text-gray-500 dark:text-gray-400 py-2">No people linked yet.</p>
+        <p v-else class="text-sm text-gray-500 dark:text-gray-400 py-2">{{ t('deals.dealRelationshipEditorNoPeopleLinkedYet') }}</p>
 
         <div v-if="!readOnly" class="pt-2 border-t border-gray-200 dark:border-gray-700">
           <div class="flex flex-wrap gap-3">
@@ -62,14 +60,12 @@
                 v-model="addPersonForm.personId"
                 class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
               >
-                <option value="">Select person...</option>
+                <option value="">{{ t('deals.dealRelationshipEditorSelectPerson') }}</option>
                 <option v-for="p in peopleOptions" :key="p._id" :value="p._id">
                   {{ (p.first_name || '') + ' ' + (p.last_name || '') }} {{ p.email ? `(${p.email})` : '' }}
                 </option>
               </select>
-              <p v-if="contextOrgIdForPeopleFilter" class="text-xs text-gray-500 dark:text-gray-400">
-                Showing contacts for
-                <span class="font-medium text-gray-700 dark:text-gray-300">{{ orgNameForFilterHint }}</span>
+              <p v-if="contextOrgIdForPeopleFilter" class="text-xs text-gray-500 dark:text-gray-400">{{ t('deals.dealRelationshipEditorShowingContactsFor') }}<span class="font-medium text-gray-700 dark:text-gray-300">{{ orgNameForFilterHint }}</span>
                 . Choose or change the account in Organizations below, or clear that selection to see everyone.
               </p>
             </div>
@@ -83,7 +79,7 @@
             </div>
             <label class="flex items-center gap-2" :class="{ 'opacity-50': !canMarkAddPersonPrimary }">
               <HeadlessCheckbox v-model="addPersonForm.isPrimary" :disabled="!canMarkAddPersonPrimary" />
-              <span class="text-sm text-gray-700 dark:text-gray-300">Primary</span>
+              <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('forms.rtColorPrimary') }}</span>
             </label>
             <span v-if="addPersonForm.isPrimary" class="text-xs text-gray-500 self-center">(Primary contact)</span>
             <span
@@ -97,9 +93,7 @@
               @click="addPerson"
               :disabled="!addPersonForm.personId"
               class="px-3 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Add
-            </button>
+            >{{ t('actions.add') }}</button>
           </div>
         </div>
       </div>
@@ -111,7 +105,7 @@
     <!-- B. Organizations on this Deal -->
     <section class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 overflow-hidden">
       <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-        <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Organizations on this Deal</h3>
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('deals.dealRelationshipEditorOrganizationsOnThisDeal') }}</h3>
       </div>
       <div class="p-4 space-y-3">
         <ul v-if="sortedOrgs.length" class="space-y-2">
@@ -129,9 +123,7 @@
                 <span
                   v-if="entry.isPrimary"
                   class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
-                >
-                  Primary
-                </span>
+                >{{ t('forms.rtColorPrimary') }}</span>
               </div>
             </div>
             <div v-if="!readOnly" class="flex items-center gap-1 shrink-0">
@@ -141,7 +133,7 @@
                 @click="setPrimaryOrg(entry)"
                 :disabled="entry.isPrimary"
                 class="p-1.5 rounded text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 disabled:opacity-40 disabled:cursor-not-allowed"
-                title="Set as primary customer"
+                :title="t('deals.dealRelationshipEditorSetAsPrimaryCustomer')"
               >
                 <StarIconSolid v-if="entry.isPrimary" class="w-4 h-4 text-indigo-600" />
                 <StarIcon v-else class="w-4 h-4" />
@@ -150,14 +142,14 @@
                 type="button"
                 @click="removeOrg(entry)"
                 class="p-1.5 rounded text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                title="Remove from deal"
+                :title="t('deals.dealRelationshipEditorRemoveFromDeal')"
               >
                 <TrashIcon class="w-4 h-4" />
               </button>
             </div>
           </li>
         </ul>
-        <p v-else class="text-sm text-gray-500 dark:text-gray-400 py-2">No organizations linked yet.</p>
+        <p v-else class="text-sm text-gray-500 dark:text-gray-400 py-2">{{ t('deals.dealRelationshipEditorNoOrganizationsLinkedYet') }}</p>
 
         <div v-if="!readOnly" class="pt-2 border-t border-gray-200 dark:border-gray-700">
           <div class="flex flex-wrap gap-3">
@@ -166,7 +158,7 @@
                 v-model="addOrgForm.organizationId"
                 class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
               >
-                <option value="">Select organization...</option>
+                <option value="">{{ t('deals.dealRelationshipEditorSelectOrganization') }}</option>
                 <option v-for="o in organizationOptions" :key="o._id" :value="o._id">
                   {{ o.name }}
                 </option>
@@ -182,7 +174,7 @@
             </div>
             <label class="flex items-center gap-2" :class="{ 'opacity-50': !canMarkAddOrgPrimary }">
               <HeadlessCheckbox v-model="addOrgForm.isPrimary" :disabled="!canMarkAddOrgPrimary" />
-              <span class="text-sm text-gray-700 dark:text-gray-300">Primary</span>
+              <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('forms.rtColorPrimary') }}</span>
             </label>
             <span v-if="addOrgForm.role !== 'customer'" class="text-xs text-gray-500 self-center">(Customer only)</span>
             <span
@@ -196,9 +188,7 @@
               @click="addOrganization"
               :disabled="!addOrgForm.organizationId"
               class="px-3 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Add
-            </button>
+            >{{ t('actions.add') }}</button>
           </div>
         </div>
       </div>
@@ -210,6 +200,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, computed, watch, nextTick } from 'vue';
 import { StarIcon } from '@heroicons/vue/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/vue/24/solid';
@@ -238,6 +229,8 @@ const props = defineProps({
   organizations: { type: Array, default: () => [] },
   readOnly: { type: Boolean, default: false },
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['update:modelValue', 'validate']);
 

@@ -3,7 +3,7 @@
     class="record-context-tabs"
     role="tablist"
     aria-orientation="vertical"
-    aria-label="Context panel tabs"
+    :aria-label="t('records.contextTabsAria')"
   >
     <button
       v-for="tab in tabs"
@@ -55,6 +55,9 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 /**
  * RecordContextTabs – vertical tab rail for context panel.

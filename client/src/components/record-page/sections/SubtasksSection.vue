@@ -1,7 +1,7 @@
 <template>
   <section class="space-y-2">
     <h3 v-if="showHeader" class="text-base font-semibold text-gray-900 dark:text-white">
-      Subtasks ({{ completedCount }}/{{ subtasks.length }})
+      {{ t('records.subtasksHeader', { completed: completedCount, total: subtasks.length }) }}
     </h3>
     <div
       v-if="subtasks.length || isCreatingSubtask"
@@ -29,7 +29,7 @@
               @keydown.esc.prevent="cancelSubtaskEdit"
             />
             <span v-else :class="subtask.completed ? 'line-through text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-gray-100'" class="text-sm">
-              {{ subtask.title || 'Untitled subtask' }}
+              {{ subtask.title || t('records.subtasksUntitled') }}
             </span>
           </div>
           <div v-if="canEditSubtasks" class="ml-auto flex items-center gap-1">
@@ -39,22 +39,22 @@
                 class="px-2 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
                 @click="saveSubtaskEdit(subtask)"
               >
-                Save
+                {{ t('actions.save') }}
               </button>
               <button
                 type="button"
                 class="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                 @click="cancelSubtaskEdit"
               >
-                Cancel
+                {{ t('actions.cancel') }}
               </button>
             </template>
             <template v-else>
               <button
                 type="button"
                 class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 lg:opacity-0 lg:group-hover/subtask-row:opacity-100 transition-opacity"
-                title="Edit subtask"
-                aria-label="Edit subtask"
+                :title="t('records.subtasksEditAria')"
+                :aria-label="t('records.subtasksEditAria')"
                 @click="startSubtaskEdit(subtask)"
               >
                 <PencilSquareIcon class="h-4 w-4" />
@@ -62,8 +62,8 @@
               <button
                 type="button"
                 class="p-1.5 rounded text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 lg:opacity-0 lg:group-hover/subtask-row:opacity-100 transition-opacity"
-                title="Delete subtask"
-                aria-label="Delete subtask"
+                :title="t('records.subtasksDeleteAria')"
+                :aria-label="t('records.subtasksDeleteAria')"
                 :disabled="isDeletingSubtask && deletingSubtaskId === subtask.id"
                 @click="deleteSubtask(subtask)"
               >
@@ -85,7 +85,7 @@
             ref="newSubtaskInputRef"
             :value="newSubtaskTitle"
             type="text"
-            placeholder="Task Name"
+            :placeholder="t('records.subtasksNamePh')"
             class="flex-1 min-w-0 px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             @input="setNewSubtaskTitle($event?.target?.value || '')"
             @keydown.enter.prevent="saveNewSubtask"
@@ -96,7 +96,7 @@
             class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600"
             @click="cancelCreateSubtask"
           >
-            Cancel
+            {{ t('actions.cancel') }}
           </button>
           <button
             type="button"
@@ -104,7 +104,7 @@
             class="px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
             @click="saveNewSubtask"
           >
-            Save
+            {{ t('actions.save') }}
           </button>
         </div>
       </div>
@@ -115,15 +115,18 @@
         class="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
         @click="viewAll"
       >
-        View all ({{ subtasksTotalCount }})
+        {{ t('records.subtasksViewAll', { count: subtasksTotalCount }) }}
       </button>
     </div>
-    <p v-else-if="!subtasks.length && !isCreatingSubtask && !isViewingAllSubtasks" class="text-sm text-gray-500 dark:text-gray-400">No subtasks yet.</p>
+    <p v-else-if="!subtasks.length && !isCreatingSubtask && !isViewingAllSubtasks" class="text-sm text-gray-500 dark:text-gray-400">{{ t('records.subtasksEmpty') }}</p>
   </section>
 </template>
 
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { PencilSquareIcon, TrashIcon } from '@heroicons/vue/24/outline';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 

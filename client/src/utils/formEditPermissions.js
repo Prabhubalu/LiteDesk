@@ -1,6 +1,8 @@
+import { i18n } from '@/i18n';
+
 /**
  * Form Edit Permissions Utility
- * 
+ *
  * Enforces edit permissions based on form status:
  * - Draft & Ready: Full editing allowed
  * - Active: Only cosmetic changes (titles, labels, help text)
@@ -113,10 +115,10 @@ export const canMakeCosmeticChanges = (status) => {
  */
 export const getBlockingMessage = (status) => {
   if (status === 'Active') {
-    return 'This form is currently active and in use.\nTo make this change, create a new version.';
+    return i18n.global.t('forms.permBlockingActive');
   }
   if (status === 'Archived') {
-    return 'This form is archived and cannot be edited.\nTo make changes, duplicate the form.';
+    return i18n.global.t('forms.permBlockingArchived');
   }
   return null;
 };
@@ -146,32 +148,41 @@ export const isEditAllowed = (status, action) => {
  * @param {string} status - Form status
  * @returns {{label: string, color: string, icon: string}}
  */
+const STATUS_LABEL_KEYS = {
+  Draft: 'forms.statusDraft',
+  Ready: 'forms.statusReady',
+  Active: 'forms.statusActive',
+  Archived: 'forms.statusArchived',
+};
+
 export const getStatusInfo = (status) => {
   const statusMap = {
-    'Draft': {
-      label: 'Draft',
+    Draft: {
       color: 'gray',
-      icon: 'document-text'
+      icon: 'document-text',
     },
-    'Ready': {
-      label: 'Ready',
+    Ready: {
       color: 'blue',
-      icon: 'check-circle'
+      icon: 'check-circle',
     },
-    'Active': {
-      label: 'Active',
+    Active: {
       color: 'green',
       icon: 'play-circle',
-      locked: true
+      locked: true,
     },
-    'Archived': {
-      label: 'Archived',
+    Archived: {
       color: 'gray',
       icon: 'archive',
-      locked: true
-    }
+      locked: true,
+    },
   };
-  
-  return statusMap[status] || statusMap['Draft'];
+
+  const resolved = statusMap[status] || statusMap.Draft;
+  const labelKey = STATUS_LABEL_KEYS[status] || STATUS_LABEL_KEYS.Draft;
+
+  return {
+    ...resolved,
+    label: i18n.global.t(labelKey),
+  };
 };
 

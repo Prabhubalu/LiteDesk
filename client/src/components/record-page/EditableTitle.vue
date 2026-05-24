@@ -24,6 +24,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, watch, nextTick } from 'vue';
 
 const props = defineProps({
@@ -38,6 +39,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:title', 'save']);
+
+const { t } = useI18n();
 
 const isEditing = ref(false);
 const localTitle = ref(props.title);

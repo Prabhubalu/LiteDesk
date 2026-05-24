@@ -1,4 +1,7 @@
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -76,14 +79,14 @@ const handleRegistration = async () => {
 
 <template>
 
-        <h2 class="mb-2 text-center text-2xl/9 font-bold tracking-tight text-gray-900 dark:text-white">Register Your Business</h2>
+        <h2 class="mb-2 text-center text-2xl/9 font-bold tracking-tight text-gray-900 dark:text-white">{{ t('auth.registrationFormRegisterYourBusiness') }}</h2>
         <p class="mb-6 text-center text-sm text-gray-600 dark:text-gray-400">Start your 15-day free trial • No credit card required</p>
 
   <form class="space-y-6" @submit.prevent="handleRegistration">
     <div>
           <label for="organizationName" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Organization Name *</label>
           <div class="mt-2">
-            <input type="text" id="organizationName" v-model="organizationName" required placeholder="Acme Corporation" 
+            <input type="text" id="organizationName" v-model="organizationName" required :placeholder="t('auth.registrationFormAcmeCorporation')" 
             class="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-gray-900 outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 
             dark:text-white dark:bg-gray-700 dark:focus:bg-gray-800"/>
           </div>
@@ -91,7 +94,7 @@ const handleRegistration = async () => {
     <div>
           <label for="username" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Your Name *</label>
           <div class="mt-2">
-            <input type="text" id="username" v-model="username" autocomplete="name" required placeholder="John Smith" 
+            <input type="text" id="username" v-model="username" autocomplete="name" required :placeholder="t('auth.registrationFormJohnSmith')" 
             class="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-gray-900 outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 
             dark:text-white dark:bg-gray-700 dark:focus:bg-gray-800"/>
           </div>
@@ -99,7 +102,7 @@ const handleRegistration = async () => {
     <div>
           <label for="email" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Email *</label>
           <div class="mt-2">
-            <input type="email" id="email" v-model="email" autocomplete="email" required placeholder="Email" 
+            <input type="email" id="email" v-model="email" autocomplete="email" required :placeholder="t('settings.settingsAddFieldTypeEmail')" 
             class="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-gray-900 outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 
             dark:text-white dark:bg-gray-700 dark:focus:bg-gray-800"/>
           </div>
@@ -107,7 +110,7 @@ const handleRegistration = async () => {
     <div>
           <label for="password" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Password * <span class="text-xs text-gray-500">(min. 6 characters)</span></label>
           <div class="mt-2">
-            <input type="password" id="password" v-model="password" autocomplete="password" required placeholder="Password" 
+            <input type="password" id="password" v-model="password" autocomplete="password" required :placeholder="t('settings.invitePassword')" 
             class="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-gray-900 outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 
             dark:text-white dark:bg-gray-700 dark:focus:bg-gray-800"/>
           </div>
@@ -115,7 +118,7 @@ const handleRegistration = async () => {
     <div>
           <label for="passwordConfirm" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Confirm Password *</label>
           <div class="mt-2">
-            <input type="password" id="passwordConfirm" v-model="passwordConfirm" required placeholder="Confirm Password" 
+            <input type="password" id="passwordConfirm" v-model="passwordConfirm" required :placeholder="t('auth.registrationFormConfirmPassword')" 
             class="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-gray-900 outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 
             dark:text-white dark:bg-gray-700 dark:focus:bg-gray-800"/>
           </div>
@@ -126,7 +129,7 @@ const handleRegistration = async () => {
             <select id="vertical" v-model="vertical" required 
             class="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-gray-900 outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 
             dark:text-white dark:bg-gray-700 dark:focus:bg-gray-800">
-            <option value="" disabled>Select your industry</option>
+            <option value="" disabled>{{ t('auth.registrationFormSelectYourIndustry2') }}</option>
             <option v-for="option in verticalOptions" :key="option" :value="option">
                 {{ option }}
             </option>
@@ -137,9 +140,9 @@ const handleRegistration = async () => {
 
 
     <!-- <div class="form-group">
-        <label for="vertical" class="input-label">Business Vertical</label>
+        <label for="vertical" class="input-label">{{ t('auth.registrationFormBusinessVertical') }}</label>
         <select id="vertical" class="text-input" v-model="vertical" required>
-            <option value="" disabled>Select your industry</option>
+            <option value="" disabled>{{ t('auth.registrationFormSelectYourIndustry') }}</option>
             <option v-for="option in verticalOptions" :key="option" :value="option">
                 {{ option }}
             </option>
@@ -153,9 +156,7 @@ const handleRegistration = async () => {
           </button>
           <p v-if="authStore.error" class="error-message mt-2 text-center text-sm text-red-600 dark:text-red-400">{{ authStore.error }}</p>
           
-          <div class="mt-4 text-center text-xs text-gray-500 dark:text-gray-400">
-            By registering, you'll become the Owner of your organization with full access to all trial features.
-          </div>
+          <div class="mt-4 text-center text-xs text-gray-500 dark:text-gray-400">{{ t('auth.registrationFormByRegisteringYoullBecomeTheOwner') }}</div>
         </div>
 
   </form>

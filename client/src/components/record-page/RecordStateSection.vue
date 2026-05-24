@@ -1,6 +1,6 @@
 <template>
   <section class="record-state-section mb-8 mt-4" aria-labelledby="record-state-heading">
-    <h2 id="record-state-heading" class="sr-only">{{ heading }}</h2>
+    <h2 id="record-state-heading" class="sr-only">{{ resolvedHeading }}</h2>
     <div
       v-if="hasConfiguredFields"
       :class="[
@@ -16,7 +16,7 @@
         <template v-for="field in columnFields" :key="field.key">
           <EditableLabeledValue
             v-if="shouldRenderEditableField(field)"
-            :label="field.label"
+            :label="displayFieldLabel(field)"
             :value="getFieldRawValue(field)"
             :type="field.type || 'text'"
             :prefix-icon="field.icon || null"
@@ -39,7 +39,7 @@
                 :is="field.icon"
                 class="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0"
               />
-              <span class="text-sm text-gray-700 dark:text-gray-300">{{ field.label }}</span>
+              <span class="text-sm text-gray-700 dark:text-gray-300">{{ displayFieldLabel(field) }}</span>
             </div>
             <div class="flex-1 min-w-0 min-h-8 flex">
               <button
@@ -88,7 +88,7 @@
                 :is="field.icon"
                 class="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0"
               />
-              <span class="text-sm text-gray-700 dark:text-gray-300">{{ field.label }}</span>
+              <span class="text-sm text-gray-700 dark:text-gray-300">{{ displayFieldLabel(field) }}</span>
             </div>
             <div class="flex-1 min-w-0 min-h-8 flex items-center rounded px-2 -mx-2 -my-1 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
               <slot :name="field.slotKey || field.key">
@@ -134,7 +134,11 @@
 
 <script setup>
 import { computed, useSlots, inject } from 'vue';
+import { useI18n } from 'vue-i18n';
 import EditableLabeledValue from '@/components/record-page/EditableLabeledValue.vue';
+import { resolveFieldLabel } from '@/utils/fieldLabelResolver';
+
+const { t, te } = useI18n();
 
 /**
  * RecordStateSection – Key fields in two-column layout (or single-column when embed/quick preview).
@@ -145,12 +149,19 @@ import EditableLabeledValue from '@/components/record-page/EditableLabeledValue.
  * Optional: slots by field key for custom cell content; signals + nextActionHint below grid.
  */
 const props = defineProps({
-  heading: { type: String, default: 'Record state' },
+  heading: { type: String, default: '' },
+  moduleKey: { type: String, default: '' },
   fields: { type: Array, default: () => [] },
   fieldValues: { type: Object, default: () => ({}) },
   signals: { type: Array, default: () => [] },
   nextActionHint: { type: String, default: null }
 });
+
+const resolvedHeading = computed(() => props.heading || t('records.stateHeadingSr'));
+
+function displayFieldLabel(field) {
+  return resolveFieldLabel(props.moduleKey, field, t, te);
+}
 
 const recordLayoutIsMobile = inject('recordLayoutIsMobile', null);
 const singleColumn = computed(() => Boolean(recordLayoutIsMobile?.value));

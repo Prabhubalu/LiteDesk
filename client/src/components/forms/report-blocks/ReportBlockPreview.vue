@@ -11,13 +11,13 @@
           'text-lg': block.level === 3
         }"
       >
-        {{ block.content || 'Heading' }}
+        {{ block.content || t('forms.rtDefaultHeadingContent') }}
       </component>
     </div>
 
     <!-- Text Block -->
     <div v-else-if="block.type === 'text'" class="text-gray-700 dark:text-gray-300">
-      {{ block.content || 'Enter text here...' }}
+      {{ block.content || t('forms.rtDefaultTextContent') }}
     </div>
 
     <!-- Divider Block -->
@@ -27,11 +27,11 @@
     <div v-else-if="block.type === 'audit_summary'" class="space-y-2">
       <div class="flex items-center gap-2">
         <DocumentCheckIcon class="w-5 h-5 text-indigo-500" />
-        <span class="text-sm font-semibold text-gray-900 dark:text-white">Audit Summary</span>
+        <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('forms.rbTypeAuditSummary') }}</span>
       </div>
       <div class="text-xs text-gray-500 dark:text-gray-400">
-        <span v-if="block.showOverallScore">Overall Score: 85%</span>
-        <span v-if="block.showResult" class="ml-2">Result: Pass</span>
+        <span v-if="block.showOverallScore">{{ t('forms.rbpSampleOverallScore') }}</span>
+        <span v-if="block.showResult" class="ml-2">{{ t('forms.rbpSampleResultPass') }}</span>
       </div>
     </div>
 
@@ -39,20 +39,20 @@
     <div v-else-if="block.type === 'overall_score'" class="space-y-2">
       <div class="flex items-center gap-2">
         <ChartBarIcon class="w-5 h-5 text-indigo-500" />
-        <span class="text-sm font-semibold text-gray-900 dark:text-white">Overall Score</span>
+        <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('forms.rbTypeOverallScore') }}</span>
       </div>
-      <div class="text-lg font-bold text-indigo-600 dark:text-indigo-400">85%</div>
+      <div class="text-lg font-bold text-indigo-600 dark:text-indigo-400">{{ t('forms.rbpSampleScorePercent') }}</div>
     </div>
 
     <!-- Section Results Block -->
     <div v-else-if="block.type === 'section_results'" class="space-y-2">
       <div class="flex items-center gap-2">
         <ClipboardDocumentListIcon class="w-5 h-5 text-indigo-500" />
-        <span class="text-sm font-semibold text-gray-900 dark:text-white">Section Results</span>
+        <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('forms.rbTypeSectionResults') }}</span>
       </div>
       <div class="text-xs text-gray-500 dark:text-gray-400">
-        <span v-if="block.showCompliancePercentage">Shows compliance percentage by section</span>
-        <span v-if="block.showFailedSections" class="ml-2">Includes failed sections</span>
+        <span v-if="block.showCompliancePercentage">{{ t('forms.rbpShowsComplianceBySection') }}</span>
+        <span v-if="block.showFailedSections" class="ml-2">{{ t('forms.rbpIncludesFailedSections') }}</span>
       </div>
     </div>
 
@@ -60,12 +60,12 @@
     <div v-else-if="block.type === 'failed_questions'" class="space-y-2">
       <div class="flex items-center gap-2">
         <XCircleIcon class="w-5 h-5 text-red-500" />
-        <span class="text-sm font-semibold text-gray-900 dark:text-white">Failed Questions</span>
+        <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('forms.rbTypeFailedQuestions') }}</span>
       </div>
       <div class="text-xs text-gray-500 dark:text-gray-400">
-        Lists questions that did not meet requirements
-        <span v-if="block.showSectionName"> (with section names)</span>
-        <span v-if="block.showEvidence"> (with evidence)</span>
+        {{ t('forms.rbpFailedQuestionsDesc') }}
+        <span v-if="block.showSectionName">{{ t('forms.rbpWithSectionNames') }}</span>
+        <span v-if="block.showEvidence">{{ t('forms.rbpWithEvidenceSuffix') }}</span>
       </div>
     </div>
 
@@ -73,12 +73,12 @@
     <div v-else-if="block.type === 'evidence_gallery'" class="space-y-2">
       <div class="flex items-center gap-2">
         <PhotoIcon class="w-5 h-5 text-indigo-500" />
-        <span class="text-sm font-semibold text-gray-900 dark:text-white">Evidence Gallery</span>
+        <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('forms.rbTypeEvidenceGallery') }}</span>
       </div>
       <div class="text-xs text-gray-500 dark:text-gray-400">
-        Displays submitted evidence files
-        <span v-if="block.layout"> ({{ block.layout }} layout)</span>
-        <span v-if="block.showThumbnails"> (with thumbnails)</span>
+        {{ t('forms.rbpEvidenceGalleryDesc') }}
+        <span v-if="block.layout">{{ t('forms.rbpLayoutSuffix', { layout: block.layout }) }}</span>
+        <span v-if="block.showThumbnails">{{ t('forms.rbpWithThumbnailsSuffix') }}</span>
       </div>
     </div>
 
@@ -86,12 +86,12 @@
     <div v-else-if="block.type === 'corrective_actions'" class="space-y-2">
       <div class="flex items-center gap-2">
         <ArrowPathIcon class="w-5 h-5 text-blue-500" />
-        <span class="text-sm font-semibold text-gray-900 dark:text-white">Corrective Actions</span>
+        <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('forms.rbTypeCorrectiveActions') }}</span>
       </div>
       <div class="text-xs text-gray-500 dark:text-gray-400">
-        Shows issues from previous audits
-        <span v-if="block.showStatus"> (with status)</span>
-        <span v-if="block.showDates"> (with dates)</span>
+        {{ t('forms.rbpCorrectiveActionsShortDesc') }}
+        <span v-if="block.showStatus">{{ t('forms.rbpWithStatusSuffix') }}</span>
+        <span v-if="block.showDates">{{ t('forms.rbpWithDatesSuffix') }}</span>
       </div>
     </div>
 
@@ -99,12 +99,12 @@
     <div v-else-if="block.type === 'comparison'" class="space-y-2">
       <div class="flex items-center gap-2">
         <ArrowTrendingUpIcon class="w-5 h-5 text-blue-500" />
-        <span class="text-sm font-semibold text-gray-900 dark:text-white">Current vs Previous</span>
+        <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('forms.rbTypeComparison') }}</span>
       </div>
       <div class="text-xs text-gray-500 dark:text-gray-400">
-        Compares current audit with previous
-        <span v-if="block.metrics"> (metrics: {{ block.metrics.join(', ') }})</span>
-        <span v-if="block.period"> (period: {{ block.period }})</span>
+        {{ t('forms.rbpComparisonDesc') }}
+        <span v-if="block.metrics">{{ t('forms.rbpMetricsInline', { metrics: block.metrics.join(', ') }) }}</span>
+        <span v-if="block.period">{{ t('forms.rbpPeriodInline', { period: block.period }) }}</span>
       </div>
     </div>
 
@@ -112,11 +112,11 @@
     <div v-else-if="block.type === 'trend'" class="space-y-2">
       <div class="flex items-center gap-2">
         <ChartBarIcon class="w-5 h-5 text-blue-500" />
-        <span class="text-sm font-semibold text-gray-900 dark:text-white">Audit Trends</span>
+        <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('forms.rbTypeTrend') }}</span>
       </div>
       <div class="text-xs text-gray-500 dark:text-gray-400">
-        Shows trends across last {{ block.periodCount || 5 }} audits
-        <span v-if="block.metrics"> (metrics: {{ block.metrics.join(', ') }})</span>
+        {{ t('forms.rbpTrendAuditsCount', { count: block.periodCount || 5 }) }}
+        <span v-if="block.metrics">{{ t('forms.rbpMetricsInline', { metrics: block.metrics.join(', ') }) }}</span>
       </div>
     </div>
 
@@ -126,22 +126,23 @@
         <ChartBarIcon v-if="block.type === 'line_chart' || block.type === 'bar_chart'" class="w-5 h-5 text-green-500" />
         <ChartPieIcon v-else class="w-5 h-5 text-green-500" />
         <span class="text-sm font-semibold text-gray-900 dark:text-white">
-          {{ block.title || block.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) }}
+          {{ block.title || chartBlockTypeLabel(block.type) }}
         </span>
       </div>
       <div class="text-xs text-gray-500 dark:text-gray-400">
-        Metric: {{ block.metric || 'N/A' }}
+        {{ t('forms.rbpMetricLabel', { metric: block.metric || t('forms.rbpMetricNa') }) }}
       </div>
     </div>
 
     <!-- Unknown Block Type -->
     <div v-else class="text-sm text-gray-500 dark:text-gray-400 italic">
-      Unknown block type: {{ block.type }}
+      {{ t('forms.rbpUnknownBlockType', { type: block.type }) }}
     </div>
   </div>
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import {
   DocumentCheckIcon,
   ChartBarIcon,
@@ -153,11 +154,23 @@ import {
   ArrowPathIcon
 } from '@heroicons/vue/24/outline';
 
-const props = defineProps({
+const { t } = useI18n();
+
+defineProps({
   block: {
     type: Object,
     required: true
   }
 });
-</script>
 
+const CHART_BLOCK_TYPE_KEYS = {
+  line_chart: 'rbTypeLineChart',
+  bar_chart: 'rbTypeBarChart',
+  pie_chart: 'rbTypePieChart'
+};
+
+const chartBlockTypeLabel = (type) => {
+  const key = CHART_BLOCK_TYPE_KEYS[type];
+  return key ? t(`forms.${key}`) : type;
+};
+</script>

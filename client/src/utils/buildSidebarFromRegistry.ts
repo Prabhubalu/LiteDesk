@@ -28,6 +28,11 @@ import { validateAppRegistryOrThrow } from '@/utils/validateAppRegistry';
 import { assertValidSidebarStructure } from '@/utils/assertValidSidebarStructure';
 import { getActivePinia } from 'pinia';
 import { fetchCoreModulesSettingsCached } from '@/utils/tenantSchemaApiCache';
+import {
+  getAppNameKey,
+  getModuleLabelKey,
+  getSurfaceLabelKey,
+} from '@/utils/navigationLabels';
 
 const LAST_ACTIVE_APP_ID_KEY = 'arivu-sidebar-last-active-app-id';
 
@@ -122,6 +127,10 @@ function resolveActiveAppId(
   return sorted[0]?.appKey || '';
 }
 
+function sidebarLabel(labelKey: string | undefined, fallback: string): { label: string; labelKey?: string } {
+  return labelKey ? { label: fallback, labelKey } : { label: fallback };
+}
+
 function buildShell(snapshot: PermissionSnapshot): SidebarItem[] {
   // These are stable surfaces (not registry-driven modules).
   const shell: SidebarItem[] = [];
@@ -129,7 +138,7 @@ function buildShell(snapshot: PermissionSnapshot): SidebarItem[] {
   shell.push({
     kind: 'surface',
     id: 'home',
-    label: 'Home',
+    ...sidebarLabel(getSurfaceLabelKey('home'), 'Home'),
     route: '/platform/home',
     icon: 'home',
   });
@@ -137,7 +146,7 @@ function buildShell(snapshot: PermissionSnapshot): SidebarItem[] {
   shell.push({
     kind: 'surface',
     id: 'inbox',
-    label: 'Inbox',
+    ...sidebarLabel(getSurfaceLabelKey('inbox'), 'Inbox'),
     route: '/inbox',
     icon: 'inbox',
   });
@@ -145,7 +154,7 @@ function buildShell(snapshot: PermissionSnapshot): SidebarItem[] {
   shell.push({
     kind: 'surface',
     id: 'approvals',
-    label: 'Approvals',
+    ...sidebarLabel(getSurfaceLabelKey('approvals'), 'Approvals'),
     route: '/approvals',
     icon: 'check-circle',
   });
@@ -153,7 +162,7 @@ function buildShell(snapshot: PermissionSnapshot): SidebarItem[] {
   shell.push({
     kind: 'surface',
     id: 'attention',
-    label: 'Attention',
+    ...sidebarLabel(getSurfaceLabelKey('attention'), 'Attention'),
     route: '/platform/attention',
     icon: 'exclamation-triangle',
   });
@@ -162,7 +171,7 @@ function buildShell(snapshot: PermissionSnapshot): SidebarItem[] {
   shell.push({
     kind: 'surface',
     id: 'search',
-    label: 'Search',
+    ...sidebarLabel(getSurfaceLabelKey('search'), 'Search'),
     route: '/search', // Intentionally not a real route; the renderer handles this surface explicitly.
     icon: 'magnifying-glass',
   });
@@ -190,10 +199,12 @@ function buildCoreModulesFromRegistry(appRegistry: AppRegistry, snapshot: Permis
     .map((module) => {
       const moduleKey = module.moduleKey?.toLowerCase() || '';
 
+      const fallbackLabel = module.label || moduleKey;
+      const labelKey = getModuleLabelKey(moduleKey);
       return {
         kind: 'coreModule',
         id: moduleKey,
-        label: module.label || moduleKey,
+        ...sidebarLabel(labelKey, fallbackLabel),
         route: module.route || `/${moduleKey}`,
         icon: module.icon && module.icon !== 'module' ? module.icon : moduleKey,
         moduleKey,
@@ -261,10 +272,12 @@ async function fetchCoreModulesFromSettings(snapshot: PermissionSnapshot): Promi
         // The API returns icon as 'module', so we'll use moduleKey for icon lookup
         const icon = module.icon && module.icon !== 'module' ? module.icon : moduleKey;
 
+        const fallbackLabel = module.name || module.label || moduleKey;
+        const labelKey = getModuleLabelKey(moduleKey);
         return {
           kind: 'coreModule',
           id: moduleKey,
-          label: module.name || module.label || moduleKey,
+          ...sidebarLabel(labelKey, fallbackLabel),
           route,
           icon,
           moduleKey,
@@ -316,6 +329,7 @@ function buildAppSwitcherApps(appRegistry: AppRegistry, snapshot: PermissionSnap
         ({
           id: app.appKey,
           name: app.label,
+          nameKey: getAppNameKey(app.appKey),
           dashboardRoute: app.dashboardRoute,
           icon: app.icon,
           order: app.order ?? 999,
@@ -344,7 +358,7 @@ function buildAppNav(appRegistry: AppRegistry, activeAppId: string, snapshot: Pe
         ({
           kind: 'app',
           id: `${activeAppId}:${m.moduleKey}`,
-          label: m.label,
+          ...sidebarLabel(getModuleLabelKey(m.moduleKey) || undefined, m.label),
           route: m.route,
           icon:
             String(activeAppId || '').toUpperCase() === 'HELPDESK' &&
@@ -360,7 +374,7 @@ function buildAppNav(appRegistry: AppRegistry, activeAppId: string, snapshot: Pe
     id: activeAppId,
     // The first app-nav entry is always the app dashboard.
     // Displayed as "Dashboard" to avoid duplicating the app name in the nav list.
-    label: 'Dashboard',
+    ...sidebarLabel(getModuleLabelKey('dashboard'), 'Dashboard'),
     route: app.dashboardRoute,
     // Use route-context-aware dashboard icons so tab and sidebar stay visually aligned.
     // Audit dashboard gets a distinct analytics icon; others keep the generic grid icon.

@@ -1,0 +1,6 @@
+{
+  "dealFormModalToastFailedToSaveDeal": {
+    "message": "Failed to save deal",
+    "description": "Toast from DealFormModal.vue"
+  }
+}

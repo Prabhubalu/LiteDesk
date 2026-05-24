@@ -92,7 +92,7 @@
     <div v-if="loading" class="flex items-center justify-center min-h-screen">
       <div class="text-center">
         <div class="w-16 h-16 border-4 border-gray-200 dark:border-gray-700 border-t-indigo-600 dark:border-t-indigo-500 rounded-full animate-spin mx-auto mb-4"></div>
-        <p class="text-gray-600 dark:text-gray-400 font-medium">Loading event execution context...</p>
+        <p class="text-gray-600 dark:text-gray-400 font-medium">{{ t('events.eventExecutionSurfaceLoadingEventExecutionContext') }}</p>
       </div>
     </div>
 
@@ -102,11 +102,9 @@
         <svg class="mx-auto h-12 w-12 text-red-500 dark:text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Error Loading Event</h2>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ t('events.eventExecutionSurfaceErrorLoadingEvent') }}</h2>
         <p class="text-gray-600 dark:text-gray-400 mb-6">{{ error }}</p>
-        <button @click="$router.push('/events')" class="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium">
-          Back to Events
-        </button>
+        <button @click="$router.push('/events')" class="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium">{{ t('events.eventExecutionSurfaceBackToEvents') }}</button>
       </div>
     </div>
 
@@ -157,8 +155,7 @@
             <span v-else :class="statusBadgeClass">
               {{ normalizedExecutionState }}
             </span>
-            <span v-if="executionContext.userRole" class="text-xs text-gray-500 dark:text-gray-400">
-              Your role: <span class="font-medium">{{ formatUserRole(executionContext.userRole) }}</span>
+            <span v-if="executionContext.userRole" class="text-xs text-gray-500 dark:text-gray-400">{{ t('events.eventExecutionSurfaceYourRole2') }}<span class="font-medium">{{ formatUserRole(executionContext.userRole) }}</span>
             </span>
           </div>
         </div>
@@ -204,7 +201,7 @@
         <div v-if="executionMode === 'generic'" class="space-y-6">
           <!-- Execution Readiness Section (Read-Only) -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Execution Readiness</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('events.eventExecutionSurfaceExecutionReadiness2') }}</h3>
             
             <!-- Ready State -->
             <div v-if="executionBlockers.length === 0" class="flex items-start gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
@@ -212,9 +209,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div class="flex-1">
-                <p class="text-sm font-medium text-green-900 dark:text-green-300">
-                  This event is ready for execution.
-                </p>
+                <p class="text-sm font-medium text-green-900 dark:text-green-300">{{ t('events.eventExecutionSurfaceThisEventIsReadyForExecution') }}</p>
               </div>
             </div>
             
@@ -225,9 +220,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
                 <div class="flex-1">
-                  <p class="text-sm font-medium text-yellow-900 dark:text-yellow-300 mb-2">
-                    Execution may be blocked by the following conditions:
-                  </p>
+                  <p class="text-sm font-medium text-yellow-900 dark:text-yellow-300 mb-2">{{ t('events.eventExecutionSurfaceExecutionMayBeBlockedByThe2') }}</p>
                   <ul class="space-y-1.5">
                     <li v-for="blocker in executionBlockers" :key="blocker.code" class="text-sm text-yellow-800 dark:text-yellow-400 flex items-start gap-2">
                       <span class="text-yellow-600 dark:text-yellow-500 mt-0.5">•</span>
@@ -247,7 +240,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div class="flex-1">
-                <p class="text-sm font-medium text-red-900 dark:text-red-300 mb-1">Execution Error</p>
+                <p class="text-sm font-medium text-red-900 dark:text-red-300 mb-1">{{ t('events.eventExecutionSurfaceExecutionError2') }}</p>
                 <p class="text-sm text-red-800 dark:text-red-400">{{ executionError }}</p>
               </div>
               <button
@@ -269,10 +262,8 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">Ready to Start</h2>
-                <p class="text-gray-600 dark:text-gray-400">
-                  This event is scheduled and ready to begin execution.
-                </p>
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">{{ t('events.eventExecutionSurfaceReadyToStart') }}</h2>
+                <p class="text-gray-600 dark:text-gray-400">{{ t('events.eventExecutionSurfaceThisEventIsScheduledAndReady') }}</p>
               </div>
               <button
                 v-if="canStart"
@@ -286,14 +277,10 @@
                 </svg>
                 {{ starting ? 'Starting...' : 'Start Event' }}
               </button>
-              <p v-else class="text-sm text-gray-500 dark:text-gray-400">
-                You do not have permission to start this event.
-              </p>
+              <p v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('events.eventExecutionSurfaceYouDoNotHavePermissionTo2') }}</p>
               
               <!-- Contextual helper text -->
-              <p v-if="executionBlockers.length > 0" class="text-xs text-gray-500 dark:text-gray-400 mt-3">
-                Execution may be blocked until the above conditions are resolved.
-              </p>
+              <p v-if="executionBlockers.length > 0" class="text-xs text-gray-500 dark:text-gray-400 mt-3">{{ t('events.eventExecutionSurfaceExecutionMayBeBlockedUntilThe3') }}</p>
             </div>
           </div>
 
@@ -301,7 +288,7 @@
         <div v-else-if="executionMode === 'audit-workflow'" class="space-y-6">
           <!-- Execution Readiness Section (Read-Only) -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Execution Readiness</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('events.eventExecutionSurfaceExecutionReadiness') }}</h3>
             
             <!-- Ready State -->
             <div v-if="executionBlockers.length === 0" class="flex items-start gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
@@ -309,9 +296,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div class="flex-1">
-                <p class="text-sm font-medium text-green-900 dark:text-green-300">
-                  This audit is ready for execution.
-                </p>
+                <p class="text-sm font-medium text-green-900 dark:text-green-300">{{ t('events.eventExecutionSurfaceThisAuditIsReadyForExecution') }}</p>
               </div>
             </div>
             
@@ -322,9 +307,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
                 <div class="flex-1">
-                  <p class="text-sm font-medium text-yellow-900 dark:text-yellow-300 mb-2">
-                    Execution may be blocked by the following conditions:
-                  </p>
+                  <p class="text-sm font-medium text-yellow-900 dark:text-yellow-300 mb-2">{{ t('events.eventExecutionSurfaceExecutionMayBeBlockedByThe') }}</p>
                   <ul class="space-y-1.5">
                     <li v-for="blocker in executionBlockers" :key="blocker.code" class="text-sm text-yellow-800 dark:text-yellow-400 flex items-start gap-2">
                       <span class="text-yellow-600 dark:text-yellow-500 mt-0.5">•</span>
@@ -343,7 +326,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div class="flex-1">
-                <p class="text-sm font-medium text-red-900 dark:text-red-300 mb-1">Execution Error</p>
+                <p class="text-sm font-medium text-red-900 dark:text-red-300 mb-1">{{ t('events.eventExecutionSurfaceExecutionError') }}</p>
                 <p class="text-sm text-red-800 dark:text-red-400">{{ executionError }}</p>
               </div>
               <button
@@ -359,7 +342,7 @@
           
           <!-- Who Can Do What Section (Read-Only Explanation) -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Who Can Do What</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('events.eventExecutionSurfaceWhoCanDoWhat2') }}</h3>
             <div class="space-y-3">
               <div v-for="permission in permissions" :key="permission.action" class="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                 <div class="flex-1">
@@ -383,15 +366,13 @@
                   </p>
                 </div>
               </div>
-              <div v-if="permissions.length === 0" class="text-center py-4 text-sm text-gray-500 dark:text-gray-400">
-                No permission information available.
-              </div>
+              <div v-if="permissions.length === 0" class="text-center py-4 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsNoPermissionInfo') }}</div>
             </div>
           </div>
           
           <!-- Who Can Do What Section (Read-Only Explanation) -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Who Can Do What</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('events.eventExecutionSurfaceWhoCanDoWhat') }}</h3>
             <div class="space-y-3">
               <div v-for="permission in permissions" :key="permission.action" class="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                 <div class="flex-1">
@@ -415,9 +396,7 @@
                   </p>
                 </div>
               </div>
-              <div v-if="permissions.length === 0" class="text-center py-4 text-sm text-gray-500 dark:text-gray-400">
-                No permission information available.
-              </div>
+              <div v-if="permissions.length === 0" class="text-center py-4 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsNoPermissionInfo') }}</div>
             </div>
           </div>
           
@@ -429,10 +408,8 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">Ready to Start Audit</h2>
-                <p class="text-gray-600 dark:text-gray-400 mb-4">
-                  Check in to begin the audit execution process.
-                </p>
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">{{ t('events.eventExecutionSurfaceReadyToStartAudit') }}</h2>
+                <p class="text-gray-600 dark:text-gray-400 mb-4">{{ t('events.eventExecutionSurfaceCheckInToBeginTheAudit') }}</p>
                 
                 <!-- Geo Requirement Notice -->
                 <div v-if="geoRequired" class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 text-left max-w-md mx-auto mb-4">
@@ -441,13 +418,9 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                     <div>
-                      <p class="text-sm font-medium text-yellow-800 dark:text-yellow-200">Location Required</p>
-                      <p class="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
-                        This audit requires location verification. Please allow location access when prompted.
-                      </p>
-                      <p v-if="!currentLocation" class="text-xs text-yellow-600 dark:text-yellow-400 mt-2 font-medium">
-                        Waiting for GPS location...
-                      </p>
+                      <p class="text-sm font-medium text-yellow-800 dark:text-yellow-200">{{ t('events.eventExecutionSurfaceLocationRequired2') }}</p>
+                      <p class="text-xs text-yellow-700 dark:text-yellow-300 mt-1">{{ t('events.eventExecutionSurfaceThisAuditRequiresLocationVerificationPlease') }}</p>
+                      <p v-if="!currentLocation" class="text-xs text-yellow-600 dark:text-yellow-400 mt-2 font-medium">{{ t('events.eventExecutionSurfaceWaitingForGpsLocation') }}</p>
                     </div>
                   </div>
                 </div>
@@ -465,14 +438,10 @@
                 </svg>
                 {{ checkingIn ? 'Checking In...' : 'Check In' }}
               </button>
-              <p v-else class="text-sm text-gray-500 dark:text-gray-400">
-                Only the assigned Auditor can check in to this audit.
-              </p>
+              <p v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('events.eventExecutionSurfaceOnlyTheAssignedAuditorCanCheck') }}</p>
               
               <!-- Contextual helper text -->
-              <p v-if="executionBlockers.length > 0" class="text-xs text-gray-500 dark:text-gray-400 mt-3">
-                Execution may be blocked until the above conditions are resolved.
-              </p>
+              <p v-if="executionBlockers.length > 0" class="text-xs text-gray-500 dark:text-gray-400 mt-3">{{ t('events.eventExecutionSurfaceExecutionMayBeBlockedUntilThe2') }}</p>
             </div>
           </div>
         </div>
@@ -487,22 +456,20 @@
                 </svg>
               </div>
               <div>
-                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Audit In Progress</h2>
-                <p class="text-sm text-gray-600 dark:text-gray-400">Checked in successfully</p>
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('events.eventExecutionSurfaceAuditInProgress') }}</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('events.eventExecutionSurfaceCheckedInSuccessfully') }}</p>
               </div>
             </div>
             
             <!-- Form Status -->
             <div v-if="executionContext.linkedFormId" class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
               <div class="flex items-center justify-between mb-2">
-                <p class="text-sm font-medium text-blue-800 dark:text-blue-200">Linked Form Status</p>
+                <p class="text-sm font-medium text-blue-800 dark:text-blue-200">{{ t('events.eventExecutionSurfaceLinkedFormStatus') }}</p>
                 <span :class="formStatusBadgeClass">
                   {{ formStatus }}
                 </span>
               </div>
-              <p class="text-sm text-blue-700 dark:text-blue-300 mb-3">
-                Complete the audit form to proceed with the audit execution.
-              </p>
+              <p class="text-sm text-blue-700 dark:text-blue-300 mb-3">{{ t('events.eventExecutionSurfaceCompleteTheAuditFormToProceed') }}</p>
               <button
                 v-if="formStatus === 'Not Started' || formStatus === 'In Progress'"
                 @click="launchFormResponse"
@@ -515,20 +482,20 @@
           
           <!-- Next Action Guidance -->
           <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">What to do next:</h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('events.eventExecutionSurfaceWhatToDoNext') }}</h3>
             <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
               <li v-if="executionContext.linkedFormId && formStatus !== 'Submitted'" class="flex items-start gap-2">
                 <svg class="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                <span>Complete the linked audit form</span>
+                <span>{{ t('events.eventExecutionSurfaceCompleteTheLinkedAuditForm') }}</span>
               </li>
               <li v-if="formStatus === 'Submitted'" class="flex items-start gap-2">
                 <svg class="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <span>Check out when audit is complete</span>
+                <span>{{ t('events.eventExecutionSurfaceCheckOutWhenAuditIsComplete') }}</span>
               </li>
             </ul>
           </div>
@@ -544,8 +511,8 @@
                 </svg>
               </div>
               <div>
-                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Event In Progress</h2>
-                <p class="text-sm text-gray-600 dark:text-gray-400">Execution is currently active</p>
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('events.eventExecutionSurfaceEventInProgress') }}</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('events.eventExecutionSurfaceExecutionIsCurrentlyActive') }}</p>
               </div>
             </div>
           </div>
@@ -563,9 +530,7 @@
               </svg>
               {{ completing ? 'Completing...' : 'Complete Event' }}
             </button>
-            <p v-else class="text-sm text-gray-500 dark:text-gray-400">
-              You do not have permission to complete this event.
-            </p>
+            <p v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('events.eventExecutionSurfaceYouDoNotHavePermissionTo') }}</p>
             
             <!-- Cancel Execution Button -->
             <div v-if="canCancel">
@@ -575,15 +540,11 @@
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                Cancel Execution
-              </button>
+                </svg>{{ t('events.eventExecutionSurfaceCancelExecution') }}</button>
             </div>
             
             <!-- Contextual helper text -->
-            <p v-if="executionBlockers.length > 0" class="text-xs text-gray-500 dark:text-gray-400 mt-3">
-              Execution may be blocked until the above conditions are resolved.
-            </p>
+            <p v-if="executionBlockers.length > 0" class="text-xs text-gray-500 dark:text-gray-400 mt-3">{{ t('events.eventExecutionSurfaceExecutionMayBeBlockedUntilThe') }}</p>
           </div>
         </div>
 
@@ -596,16 +557,12 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">Event Completed</h2>
-              <p class="text-gray-600 dark:text-gray-400">
-                This event has been successfully completed.
-              </p>
+              <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">{{ t('events.eventExecutionSurfaceEventCompleted') }}</h2>
+              <p class="text-gray-600 dark:text-gray-400">{{ t('events.eventExecutionSurfaceThisEventHasBeenSuccessfullyCompleted') }}</p>
             </div>
             <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 text-left max-w-md mx-auto">
-              <p class="text-sm font-medium text-green-800 dark:text-green-200 mb-2">Completion Summary</p>
-              <p class="text-sm text-green-700 dark:text-green-300">
-                All required work has been completed. The event is now in a completed state.
-              </p>
+              <p class="text-sm font-medium text-green-800 dark:text-green-200 mb-2">{{ t('events.eventExecutionSurfaceCompletionSummary') }}</p>
+              <p class="text-sm text-green-700 dark:text-green-300">{{ t('events.eventExecutionSurfaceAllRequiredWorkHasBeenCompleted') }}</p>
             </div>
           </div>
         </div>
@@ -619,27 +576,23 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </div>
-                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">Event Cancelled</h2>
-                <p class="text-gray-600 dark:text-gray-400">
-                  This event has been cancelled and cannot be executed.
-                </p>
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">{{ t('events.eventExecutionSurfaceEventCancelled') }}</h2>
+                <p class="text-gray-600 dark:text-gray-400">{{ t('events.eventExecutionSurfaceThisEventHasBeenCancelledAnd') }}</p>
               </div>
             </div>
           </div>
           
           <!-- Audit Workflow Explanation (Read-Only) -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Audit Workflow Control</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('events.eventExecutionSurfaceAuditWorkflowControl') }}</h3>
             <div class="space-y-4">
               <div class="flex items-start gap-3">
                 <svg class="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <div class="flex-1">
-                  <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">Execution Controlled by Audit Workflow</p>
-                  <p class="text-sm text-gray-600 dark:text-gray-400">
-                    Audit events follow a controlled execution workflow. Completion occurs only when the audit workflow reaches a closed state.
-                  </p>
+                  <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">{{ t('events.eventExecutionSurfaceExecutionControlledByAuditWorkflow') }}</p>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('events.eventExecutionSurfaceAuditEventsFollowAControlledExecution') }}</p>
                 </div>
               </div>
               
@@ -648,10 +601,8 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
                 <div class="flex-1">
-                  <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">Location Tracking Required</p>
-                  <p class="text-sm text-gray-600 dark:text-gray-400">
-                    Location tracking is mandatory for audit events and is automatically enabled. This requirement cannot be changed.
-                  </p>
+                  <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">{{ t('events.eventExecutionSurfaceLocationTrackingRequired') }}</p>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('events.eventExecutionSurfaceLocationTrackingIsMandatoryForAudit') }}</p>
                 </div>
               </div>
               
@@ -660,10 +611,8 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
                 <div class="flex-1">
-                  <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">No Manual Completion</p>
-                  <p class="text-sm text-gray-600 dark:text-gray-400">
-                    Audit events cannot be manually completed. They are completed automatically when the audit workflow reaches a closed state.
-                  </p>
+                  <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">{{ t('events.eventExecutionSurfaceNoManualCompletion') }}</p>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('events.eventExecutionSurfaceAuditEventsCannotBeManuallyCompleted') }}</p>
                 </div>
               </div>
             </div>
@@ -685,31 +634,31 @@
         No editing controls here - this is read-only context information.
       -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Event Details</h3>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('events.eventExecutionSurfaceEventDetails') }}</h3>
         <dl class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div>
-            <dt class="text-gray-500 dark:text-gray-400 font-medium mb-1">Event Type</dt>
+            <dt class="text-gray-500 dark:text-gray-400 font-medium mb-1">{{ t('settings.integrationsEventType') }}</dt>
             <dd class="text-gray-900 dark:text-white">{{ executionContext.eventType }}</dd>
           </div>
           <div>
-            <dt class="text-gray-500 dark:text-gray-400 font-medium mb-1">Scheduled Time</dt>
+            <dt class="text-gray-500 dark:text-gray-400 font-medium mb-1">{{ t('events.eventExecutionSurfaceScheduledTime') }}</dt>
             <dd class="text-gray-900 dark:text-white">{{ formattedTimeRange }}</dd>
           </div>
           <div v-if="executionContext.userRole">
-            <dt class="text-gray-500 dark:text-gray-400 font-medium mb-1">Your Role</dt>
+            <dt class="text-gray-500 dark:text-gray-400 font-medium mb-1">{{ t('events.eventExecutionSurfaceYourRole') }}</dt>
             <dd class="text-gray-900 dark:text-white">{{ formatUserRole(executionContext.userRole) }}</dd>
           </div>
           <div v-if="executionContext.linkedFormId">
-            <dt class="text-gray-500 dark:text-gray-400 font-medium mb-1">Linked Form</dt>
+            <dt class="text-gray-500 dark:text-gray-400 font-medium mb-1">{{ t('events.eventExecutionSurfaceLinkedForm') }}</dt>
             <dd class="text-gray-900 dark:text-white">Form linked (ID: {{ executionContext.linkedFormId }})</dd>
           </div>
           <div v-if="isAuditEvent">
-            <dt class="text-gray-500 dark:text-gray-400 font-medium mb-1">Audit State</dt>
+            <dt class="text-gray-500 dark:text-gray-400 font-medium mb-1">{{ t('events.eventExecutionSurfaceAuditState') }}</dt>
             <dd class="text-gray-900 dark:text-white">{{ formattedAuditState }}</dd>
           </div>
           <div v-if="isAuditEvent && geoRequired">
-            <dt class="text-gray-500 dark:text-gray-400 font-medium mb-1">Location Required</dt>
-            <dd class="text-gray-900 dark:text-white">Yes (for check-in/check-out)</dd>
+            <dt class="text-gray-500 dark:text-gray-400 font-medium mb-1">{{ t('events.eventExecutionSurfaceLocationRequired') }}</dt>
+            <dd class="text-gray-900 dark:text-white">{{ t('events.eventExecutionSurfaceYesForCheckInCheckOut') }}</dd>
           </div>
         </dl>
       </div>
@@ -718,6 +667,9 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 // Type declaration for process.env (used in DEV-ONLY guards)
 declare const process: {
   env: {
@@ -1675,7 +1627,7 @@ const handleCheckIn = async () => {
             accuracy: position.coords.accuracy || undefined
           };
         } catch (geoError) {
-          alert('Location is required for check-in. Please allow location access and try again.');
+          alert(t('common.eventExecutionSurfaceToastLocationIsRequiredForCheck'));
           checkingIn.value = false;
           return;
         }

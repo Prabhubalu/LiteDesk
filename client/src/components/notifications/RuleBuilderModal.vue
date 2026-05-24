@@ -20,12 +20,12 @@
         <div class="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-4 rounded-t-xl">
           <div class="flex items-center justify-between">
             <h2 id="rule-builder-title" class="text-xl font-semibold text-gray-900 dark:text-white">
-              {{ isEditing ? 'Edit Notification Rule' : 'Create Notification Rule' }}
+              {{ isEditing ? t('notifications.ruleEditHeading') : t('notifications.ruleCreateHeading') }}
             </h2>
             <button
               @click="$emit('close')"
               class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              aria-label="Close"
+              :aria-label="t('common.closePanel')"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -53,7 +53,7 @@
                       : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400',
                     currentStep >= index ? 'cursor-pointer hover:opacity-80' : 'cursor-not-allowed'
                   ]"
-                  :aria-label="`Step ${index + 1}: ${step.label}`"
+                  :aria-label="t('notifications.ruleStepAria', { index: index + 1, step: step.label })"
                 >
                   <svg v-if="currentStep > index" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
@@ -90,7 +90,7 @@
           <div v-if="currentStep === 0" class="space-y-4">
             <div>
               <label for="module-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Module <span class="text-red-500">*</span>
+                {{ t('notifications.ruleModule') }} <span class="text-red-500">*</span>
               </label>
               <select
                 id="module-select"
@@ -101,7 +101,7 @@
                 aria-required="true"
                 aria-describedby="module-help"
               >
-                <option value="">Select a module...</option>
+                <option value="">{{ t('notifications.ruleSelectModule') }}</option>
                 <option
                   v-for="module in eligibleModules"
                   :key="module.key"
@@ -111,10 +111,10 @@
                 </option>
               </select>
               <p id="module-help" class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Choose which module this rule applies to.
+                {{ t('notifications.ruleModuleHint') }}
               </p>
               <p v-if="moduleLimitReached" class="mt-2 text-sm text-amber-600 dark:text-amber-400">
-                You've reached the maximum of 5 rules for this module.
+                {{ t('notifications.ruleMaxReached') }}
               </p>
             </div>
           </div>
@@ -123,7 +123,7 @@
           <div v-if="currentStep === 1" class="space-y-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                Event Type <span class="text-red-500">*</span>
+                {{ t('notifications.ruleEventType') }} <span class="text-red-500">*</span>
               </label>
               <div class="space-y-2">
                 <label
@@ -141,7 +141,7 @@
                     :value="eventType"
                     v-model="form.eventType"
                     class="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
-                    :aria-label="`Select ${formatEventType(eventType)}`"
+                    :aria-label="t('notifications.ruleSelectEvent', { event: formatEventType(eventType) })"
                   />
                   <div class="ml-3 flex-1">
                     <div class="text-sm font-medium text-gray-900 dark:text-white">
@@ -161,7 +161,7 @@
             <div>
               <div class="flex items-center justify-between mb-3">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Conditions (Optional)
+                  {{ t('notifications.ruleConditionsOptional') }}
                 </label>
                 <button
                   v-if="supportedConditions.length > 0 && form.conditions.length < supportedConditions.length"
@@ -169,12 +169,15 @@
                   type="button"
                   class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
                 >
-                  + Add Condition
+                  {{ t('notifications.ruleAddCondition') }}
                 </button>
               </div>
               
               <div v-if="form.conditions.length === 0" class="text-sm text-gray-500 dark:text-gray-400 py-4 text-center border border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
-                No conditions. This rule will trigger for all {{ selectedModule?.name || 'module' }} {{ form.eventType?.toLowerCase().replace('_', ' ') }} events.
+                {{ t('notifications.ruleNoConditions', {
+                  module: selectedModule?.name || t('notifications.ruleModule').toLowerCase(),
+                  event: form.eventType?.toLowerCase().replace('_', ' ') || ''
+                }) }}
               </div>
 
               <div v-else class="space-y-3">
@@ -188,7 +191,7 @@
                     @change="handleConditionFieldChange(index)"
                     class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500"
                   >
-                    <option value="">Select condition...</option>
+                    <option value="">{{ t('notifications.ruleSelectCondition') }}</option>
                     <option
                       v-for="field in getAvailableConditionFields(index)"
                       :key="field"
@@ -210,7 +213,7 @@
                     @click="removeCondition(index)"
                     type="button"
                     class="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-                    :aria-label="`Remove condition ${index + 1}`"
+                    :aria-label="t('notifications.ruleRemoveCondition', { index: index + 1 })"
                   >
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -225,10 +228,10 @@
           <div v-if="currentStep === 3" class="space-y-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                Notification Channels <span class="text-red-500">*</span>
+                {{ t('notifications.ruleChannels') }} <span class="text-red-500">*</span>
               </label>
               <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                Select how you want to receive notifications for this rule. At least one channel must be selected.
+                {{ t('notifications.ruleChannelsHint') }}
               </p>
               
               <div class="space-y-3">
@@ -243,7 +246,7 @@
               </div>
               
               <p v-if="!hasAnyChannelSelected" class="mt-3 text-sm text-amber-600 dark:text-amber-400">
-                Please select at least one notification channel.
+                {{ t('notifications.ruleChannelsRequired') }}
               </p>
             </div>
           </div>
@@ -252,15 +255,15 @@
           <div v-if="currentStep === 4" class="space-y-4">
             <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
               <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                Rule Summary
+                {{ t('notifications.ruleSummary') }}
               </h3>
               <div class="text-sm text-gray-700 dark:text-gray-300 space-y-2">
                 <div class="flex items-start">
-                  <span class="font-medium w-24 flex-shrink-0">When:</span>
+                  <span class="font-medium w-24 flex-shrink-0">{{ t('notifications.ruleWhen') }}</span>
                   <span>{{ formatRuleSentence() }}</span>
                 </div>
                 <div class="flex items-start">
-                  <span class="font-medium w-24 flex-shrink-0">Notify via:</span>
+                  <span class="font-medium w-24 flex-shrink-0">{{ t('notifications.ruleNotifyVia') }}</span>
                   <span>{{ formatChannels() }}</span>
                 </div>
               </div>
@@ -272,7 +275,7 @@
                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                 </svg>
                 <div class="ml-3">
-                  <h4 class="text-sm font-medium text-red-800 dark:text-red-200">Please fix the following issues:</h4>
+                  <h4 class="text-sm font-medium text-red-800 dark:text-red-200">{{ t('notifications.ruleFixIssues') }}</h4>
                   <ul class="mt-2 text-sm text-red-700 dark:text-red-300 list-disc list-inside">
                     <li v-for="error in validationErrors" :key="error">{{ error }}</li>
                   </ul>
@@ -291,7 +294,7 @@
               type="button"
               class="px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors min-h-[44px]"
             >
-              Back
+              {{ t('actions.back') }}
             </button>
             <div v-else></div>
             
@@ -301,7 +304,7 @@
                 type="button"
                 class="px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors min-h-[44px]"
               >
-                Cancel
+                {{ t('actions.cancel') }}
               </button>
               <button
                 @click="handleNext"
@@ -310,7 +313,7 @@
                 :disabled="!canProceed"
                 class="px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[44px] flex items-center justify-center"
               >
-                Next
+                {{ t('actions.next') }}
                 <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
@@ -327,9 +330,9 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Saving...
+                  {{ t('states.saving') }}
                 </span>
-                <span v-else>{{ isEditing ? 'Update Rule' : 'Create Rule' }}</span>
+                <span v-else>{{ isEditing ? t('notifications.ruleUpdate') : t('notifications.ruleCreate') }}</span>
               </button>
             </div>
           </div>
@@ -341,7 +344,10 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useNotificationRules } from '@/composables/useNotificationRules';
+
+const { t } = useI18n();
 import ChannelOption from './ChannelOption.vue';
 import ConditionInput from './ConditionInput.vue';
 
@@ -369,13 +375,13 @@ const {
 const getRuleLimits = () => rulesComposable.getRuleLimits();
 
 // Step management
-const steps = [
-  { id: 'module', label: 'Module' },
-  { id: 'event', label: 'Event' },
-  { id: 'conditions', label: 'Conditions' },
-  { id: 'channels', label: 'Channels' },
-  { id: 'review', label: 'Review' }
-];
+const steps = computed(() => [
+  { id: 'module', label: t('notifications.ruleStepModule') },
+  { id: 'event', label: t('notifications.ruleStepEvent') },
+  { id: 'conditions', label: t('notifications.ruleStepConditions') },
+  { id: 'channels', label: t('notifications.ruleStepChannels') },
+  { id: 'review', label: t('notifications.ruleStepReview') }
+]);
 
 const currentStep = ref(0);
 const saving = ref(false);
@@ -454,26 +460,25 @@ const canSave = computed(() => {
 
 const validationErrors = computed(() => {
   const errors = [];
-  
+
   if (!form.value.moduleKey) {
-    errors.push('Module is required');
+    errors.push(t('notifications.ruleErrorModuleRequired'));
   }
-  
+
   if (!form.value.eventType) {
-    errors.push('Event type is required');
+    errors.push(t('notifications.ruleErrorEventRequired'));
   }
-  
+
   if (!hasAnyChannelSelected.value) {
-    errors.push('At least one notification channel must be selected');
+    errors.push(t('notifications.ruleErrorChannelRequired'));
   }
-  
-  // Validate conditions
+
   form.value.conditions.forEach((condition, index) => {
     if (!condition.field) {
-      errors.push(`Condition ${index + 1} is missing a field`);
+      errors.push(t('notifications.ruleErrorConditionField', { index: index + 1 }));
     }
   });
-  
+
   return errors;
 });
 
@@ -585,13 +590,13 @@ function formatRuleSentence() {
 }
 
 function goToStep(stepIndex) {
-  if (stepIndex >= 0 && stepIndex < steps.length) {
+  if (stepIndex >= 0 && stepIndex < steps.value.length) {
     currentStep.value = stepIndex;
   }
 }
 
 function handleNext() {
-  if (canProceed.value && currentStep.value < steps.length - 1) {
+  if (canProceed.value && currentStep.value < steps.value.length - 1) {
     currentStep.value++;
   }
 }

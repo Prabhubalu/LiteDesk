@@ -3,9 +3,9 @@
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">User Management</h2>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.usersTabManagement') }}</h2>
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-          Manage users, roles, and permissions for your organization
+          {{ t('settings.usersPageSubtitle') }}
         </p>
       </div>
       <button
@@ -15,7 +15,7 @@
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        <span>Invite User</span>
+        <span>{{ t('settings.usersInvite') }}</span>
       </button>
     </div>
 
@@ -24,7 +24,7 @@
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">Total Users</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">{{ t('settings.usersStatTotal') }}</p>
             <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ stats.total || 0 }}</p>
           </div>
           <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
@@ -38,7 +38,7 @@
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">Active</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">{{ t('settings.usersStatActive') }}</p>
             <p class="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{{ stats.active || 0 }}</p>
           </div>
           <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
@@ -52,7 +52,7 @@
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">Inactive</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">{{ t('settings.usersStatInactive') }}</p>
             <p class="text-2xl font-bold text-gray-600 dark:text-gray-400 mt-1">{{ stats.inactive || 0 }}</p>
           </div>
           <div class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
@@ -66,7 +66,7 @@
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">Admins</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">{{ t('settings.usersStatAdmins') }}</p>
             <p class="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">{{ stats.admins || 0 }}</p>
           </div>
           <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
@@ -163,10 +163,13 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import DataTable from '@/components/common/DataTable.vue';
 import InviteUserModal from './InviteUserModal.vue';
 import EditUserModal from './EditUserModal.vue';
+
+const { t } = useI18n();
 
 const users = ref([]);
 const loading = ref(false);
@@ -182,34 +185,34 @@ const showInviteModal = ref(false);
 const showEditModal = ref(false);
 const selectedUser = ref(null);
 
-// Table columns
-const tableColumns = [
-  { key: 'user', label: 'User', sortable: true },
-  { key: 'role', label: 'Role', sortable: true },
-  { key: 'status', label: 'Status', sortable: true },
-  { key: 'lastLogin', label: 'Last Login', sortable: true },
-  { key: 'createdAt', label: 'Joined', sortable: true }
-];
+const tableColumns = computed(() => [
+  { key: 'user', label: t('settings.usersColUser'), sortable: true },
+  { key: 'role', label: t('settings.usersColRole'), sortable: true },
+  { key: 'status', label: t('settings.usersColStatus'), sortable: true },
+  { key: 'lastLogin', label: t('settings.usersColLastLogin'), sortable: true },
+  { key: 'createdAt', label: t('settings.usersColJoined'), sortable: true }
+]);
 
-// Mass actions
-const massActions = [
+const massActions = computed(() => [
   {
-    label: 'Activate',
+    label: t('settings.usersBulkActivate'),
     action: 'bulk-activate',
     variant: 'success'
   },
   {
-    label: 'Deactivate',
+    label: t('settings.usersBulkDeactivate'),
     action: 'bulk-deactivate',
     variant: 'warning'
   },
   {
-    label: 'Delete',
+    label: t('actions.delete'),
     icon: 'trash',
     action: 'bulk-delete',
     variant: 'danger'
   }
-];
+]);
+
+const userDisplayName = (user) => `${user.firstName || ''} ${user.lastName || ''}`.trim();
 
 // Fetch users
 const fetchUsers = async () => {
@@ -306,7 +309,7 @@ const handleUserUpdated = () => {
 };
 
 const handleDeleteUser = async (user) => {
-  if (!confirm(`Delete user ${user.firstName} ${user.lastName}? This action cannot be undone.`)) return;
+  if (!confirm(t('settings.usersDeleteConfirm', { name: userDisplayName(user) }))) return;
   
   try {
     const response = await apiClient.delete(`/users/${user._id}`);
@@ -314,11 +317,11 @@ const handleDeleteUser = async (user) => {
     if (response.success) {
       fetchUsers();
     } else {
-      alert('Failed to delete user');
+      alert(t('settings.usersDeleteFailed'));
     }
   } catch (error) {
     console.error('Error deleting user:', error);
-    alert('Failed to delete user');
+    alert(t('settings.usersDeleteFailed'));
   }
 };
 
@@ -341,7 +344,7 @@ const handleBulkAction = ({ action, selectedRows }) => {
 
 // Bulk actions
 const bulkActivate = async (selectedRows) => {
-  if (!confirm(`Activate ${selectedRows.length} user(s)?`)) return;
+  if (!confirm(t('settings.usersBulkActivateConfirm', { count: selectedRows.length }))) return;
   
   try {
     await Promise.all(
@@ -352,12 +355,12 @@ const bulkActivate = async (selectedRows) => {
     fetchUsers();
   } catch (error) {
     console.error('Error activating users:', error);
-    alert('Failed to activate users');
+    alert(t('settings.usersBulkActivateFailed'));
   }
 };
 
 const bulkDeactivate = async (selectedRows) => {
-  if (!confirm(`Deactivate ${selectedRows.length} user(s)?`)) return;
+  if (!confirm(t('settings.usersBulkDeactivateConfirm', { count: selectedRows.length }))) return;
   
   try {
     await Promise.all(
@@ -368,12 +371,12 @@ const bulkDeactivate = async (selectedRows) => {
     fetchUsers();
   } catch (error) {
     console.error('Error deactivating users:', error);
-    alert('Failed to deactivate users');
+    alert(t('settings.usersBulkDeactivateFailed'));
   }
 };
 
 const bulkDelete = async (selectedRows) => {
-  if (!confirm(`Delete ${selectedRows.length} user(s)? This action cannot be undone.`)) return;
+  if (!confirm(t('settings.usersBulkDeleteConfirm', { count: selectedRows.length }))) return;
   
   try {
     await Promise.all(
@@ -384,7 +387,7 @@ const bulkDelete = async (selectedRows) => {
     fetchUsers();
   } catch (error) {
     console.error('Error deleting users:', error);
-    alert('Failed to delete users');
+    alert(t('settings.usersBulkDeleteFailed'));
   }
 };
 
@@ -410,7 +413,7 @@ const getStatusBadgeClass = (status) => {
 };
 
 const formatDate = (date) => {
-  if (!date) return 'Never';
+  if (!date) return t('settings.usersLastLoginNever');
   return new Date(date).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
@@ -422,4 +425,3 @@ onMounted(() => {
   fetchUsers();
 });
 </script>
-

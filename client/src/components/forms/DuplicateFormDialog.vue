@@ -13,12 +13,14 @@
         </div>
         <div class="flex-1">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-            Form is Active
+            {{ t('forms.dupActiveTitle') }}
           </h3>
         </div>
         <button
-          @click="handleCancel"
+          type="button"
+          :aria-label="t('actions.close')"
           class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          @click="handleCancel"
         >
           <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -27,49 +29,51 @@
       </div>
 
       <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-        This form is currently active and in use. To make this change, create a new version.
+        {{ t('forms.dupActiveBody') }}
       </p>
 
       <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 mb-6">
         <p class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
-          What happens when you duplicate?
+          {{ t('forms.dupWhatHappensHeading') }}
         </p>
         <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
           <li class="flex items-start gap-2">
             <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
-            <span>A new form will be created in Draft status</span>
+            <span>{{ t('forms.dupBulletDraft') }}</span>
           </li>
           <li class="flex items-start gap-2">
             <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
-            <span>You can make all changes to the new form</span>
+            <span>{{ t('forms.dupBulletEditable') }}</span>
           </li>
           <li class="flex items-start gap-2">
             <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
-            <span>The original active form remains unchanged</span>
+            <span>{{ t('forms.dupBulletOriginal') }}</span>
           </li>
         </ul>
       </div>
 
       <div class="flex justify-end gap-3">
         <button
-          @click="handleCancel"
+          type="button"
           class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+          @click="handleCancel"
         >
-          Cancel
+          {{ t('actions.cancel') }}
         </button>
         <button
-          @click="handleDuplicate"
+          type="button"
           :disabled="duplicating"
           class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          @click="handleDuplicate"
         >
-          <span v-if="duplicating">Duplicating...</span>
-          <span v-else>Duplicate & Edit</span>
+          <span v-if="duplicating">{{ t('states.saving') }}</span>
+          <span v-else>{{ t('forms.dupDuplicateEdit') }}</span>
         </button>
       </div>
     </div>
@@ -78,9 +82,12 @@
 
 <script setup>
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { useRouter } from 'vue-router';
 import { useTabs } from '@/composables/useTabs';
+
+const { t } = useI18n();
 
 const props = defineProps({
   isOpen: {
@@ -109,40 +116,37 @@ const handleCancel = () => {
 
 const handleDuplicate = async () => {
   if (!props.formId) {
-    alert('Form ID is required');
+    alert(t('forms.dupFormIdRequired'));
     return;
   }
 
   duplicating.value = true;
   try {
     const response = await apiClient.post(`/forms/${props.formId}/duplicate`);
-    
+
     if (response.success && response.data) {
       const duplicatedForm = response.data;
-      
-      // Navigate to form builder for the duplicated form
       const formId = duplicatedForm._id;
       openTab(`/forms/builder/${formId}`, {
         name: `form-builder-${formId}`,
-        title: duplicatedForm.name || 'Form Builder',
+        title: duplicatedForm.name || t('forms.formBuilderTabTitle'),
         component: 'FormBuilder',
         params: { formId },
         insertAdjacent: true
       });
       router.push(`/forms/builder/${formId}`);
-      
+
       emit('duplicated', duplicatedForm);
       emit('close');
     } else {
-      alert(response.message || 'Failed to duplicate form');
+      alert(response.message || t('forms.dupFailed'));
     }
   } catch (error) {
     console.error('Error duplicating form:', error);
-    const errorMessage = error.response?.data?.message || error.message || 'Failed to duplicate form';
+    const errorMessage = error.response?.data?.message || error.message || t('forms.dupFailed');
     alert(errorMessage);
   } finally {
     duplicating.value = false;
   }
 };
 </script>
-

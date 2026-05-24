@@ -2,9 +2,9 @@
   <div class="space-y-8">
     <!-- Step 3 Header -->
     <div>
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Outcomes & Rules</h3>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('forms.outcomesHeading') }}</h3>
       <p class="text-sm text-gray-600 dark:text-gray-400">
-        Define how audit results are evaluated and what outcome data is exposed after submission.
+        {{ t('forms.outcomesSubtitle') }}
       </p>
     </div>
 
@@ -12,10 +12,10 @@
     <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-800">
       <div class="mb-4">
         <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">
-          Audit Result Rules
+          {{ t('forms.outcomesAuditRulesHeading') }}
         </h4>
         <p class="text-sm text-gray-600 dark:text-gray-400">
-          Choose how the final audit result is determined.
+          {{ t('forms.outcomesAuditRulesDesc') }}
         </p>
       </div>
 
@@ -29,10 +29,10 @@
           />
           <div class="flex-1">
             <span class="block text-sm font-medium text-gray-900 dark:text-white">
-              Audit fails if any section fails
+              {{ t('forms.outcomesRuleAnySectionFails') }}
             </span>
             <span class="block text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Recommended default. The audit fails if any section does not meet its pass threshold.
+              {{ t('forms.outcomesRuleAnySectionFailsHint') }}
             </span>
           </div>
         </label>
@@ -46,10 +46,10 @@
           />
           <div class="flex-1">
             <span class="block text-sm font-medium text-gray-900 dark:text-white">
-              Audit result based only on overall score
+              {{ t('forms.outcomesRuleOverallScore') }}
             </span>
             <span class="block text-xs text-gray-500 dark:text-gray-400 mt-1">
-              The audit result is determined solely by the overall compliance percentage, regardless of individual section results.
+              {{ t('forms.outcomesRuleOverallScoreHint') }}
             </span>
           </div>
         </label>
@@ -57,12 +57,12 @@
 
       <!-- Overall Score Calculation (Read-only) -->
       <div class="mt-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
-        <p class="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Overall Score Calculation:</p>
+        <p class="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('forms.outcomesOverallScoreCalc') }}</p>
         <p class="text-sm text-gray-600 dark:text-gray-400 font-mono">
           {{ scoringFormulaDisplay }}
         </p>
         <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
-          This formula is calculated from section and subsection scoring configured in previous steps.
+          {{ t('forms.outcomesOverallScoreCalcHint') }}
         </p>
       </div>
     </div>
@@ -71,13 +71,13 @@
     <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-800">
       <div class="mb-4">
         <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">
-          Reporting Metrics
+          {{ t('forms.outcomesReportingHeading') }}
         </h4>
         <p class="text-sm text-gray-600 dark:text-gray-400">
-          Select which result metrics will be available for reports, dashboards, and exports.
+          {{ t('forms.outcomesReportingDesc') }}
         </p>
         <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
-          Presentation and layout are configured in the Response Template step.
+          {{ t('forms.outcomesReportingTemplateHint') }}
         </p>
       </div>
 
@@ -89,10 +89,10 @@
           />
           <div>
             <span class="text-sm font-medium text-gray-900 dark:text-white">
-              Overall Compliance %
+              {{ t('forms.outcomesMetricOverallCompliance') }}
             </span>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-              Overall compliance percentage across all sections
+              {{ t('forms.outcomesMetricOverallComplianceHint') }}
             </p>
           </div>
         </label>
@@ -104,10 +104,10 @@
           />
           <div>
             <span class="text-sm font-medium text-gray-900 dark:text-white">
-              Section-wise Compliance
+              {{ t('forms.outcomesMetricSectionWise') }}
             </span>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-              Individual compliance percentage for each section
+              {{ t('forms.outcomesMetricSectionWiseHint') }}
             </p>
           </div>
         </label>
@@ -119,10 +119,10 @@
           />
           <div>
             <span class="text-sm font-medium text-gray-900 dark:text-white">
-              Evidence Completion %
+              {{ t('forms.outcomesMetricEvidence') }}
             </span>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-              Percentage of required evidence items that have been provided
+              {{ t('forms.outcomesMetricEvidenceHint') }}
             </p>
           </div>
         </label>
@@ -137,10 +137,10 @@
           />
           <div>
             <span class="text-sm font-medium text-gray-900 dark:text-white">
-              Average Rating
+              {{ t('forms.settingsKpiAvgRating') }}
             </span>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-              Average rating score from all rating-type questions
+              {{ t('forms.outcomesMetricAvgRatingHint') }}
             </p>
           </div>
         </label>
@@ -151,13 +151,13 @@
     <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-800">
       <div class="mb-4">
         <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">
-          Post-Submission Signals
+          {{ t('forms.outcomesPostSubmissionHeading') }}
         </h4>
         <p class="text-sm text-gray-600 dark:text-gray-400">
-          Define which events are emitted when an audit is submitted. These events will be consumed by automation rules.
+          {{ t('forms.outcomesPostSubmissionDesc') }}
         </p>
         <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
-          User assignments and notifications are configured separately in automation workflows.
+          {{ t('forms.outcomesPostSubmissionAutomationHint') }}
         </p>
       </div>
 
@@ -169,10 +169,10 @@
           />
           <div>
             <span class="text-sm font-medium text-gray-900 dark:text-white">
-              Emit event when audit fails
+              {{ t('forms.outcomesEmitAuditFail') }}
             </span>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-              Trigger an event when the overall audit result is a failure
+              {{ t('forms.outcomesEmitAuditFailHint') }}
             </p>
           </div>
         </label>
@@ -184,10 +184,10 @@
           />
           <div>
             <span class="text-sm font-medium text-gray-900 dark:text-white">
-              Emit event when a section fails
+              {{ t('forms.outcomesEmitSectionFail') }}
             </span>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-              Trigger an event when any individual section does not meet its pass threshold
+              {{ t('forms.outcomesEmitSectionFailHint') }}
             </p>
           </div>
         </label>
@@ -199,10 +199,10 @@
           />
           <div>
             <span class="text-sm font-medium text-gray-900 dark:text-white">
-              Emit event when a critical question fails
+              {{ t('forms.outcomesEmitCriticalFail') }}
             </span>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-              Trigger an event when any question marked as critical fails
+              {{ t('forms.outcomesEmitCriticalFailHint') }}
             </p>
           </div>
         </label>
@@ -214,10 +214,10 @@
           />
           <div>
             <span class="text-sm font-medium text-gray-900 dark:text-white">
-              Emit event when required evidence is missing
+              {{ t('forms.outcomesEmitMissingEvidence') }}
             </span>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-              Trigger an event when required file attachments or evidence are not provided
+              {{ t('forms.outcomesEmitMissingEvidenceHint') }}
             </p>
           </div>
         </label>
@@ -228,17 +228,17 @@
     <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-gray-50 dark:bg-gray-700/30">
       <div class="mb-4">
         <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">
-          Governance
+          {{ t('forms.outcomesGovernanceHeading') }}
         </h4>
         <p class="text-sm text-gray-600 dark:text-gray-400">
-          Form metadata and version information.
+          {{ t('forms.outcomesGovernanceDesc') }}
         </p>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Form Type
+            {{ t('forms.fieldFormType') }}
           </label>
           <input
             :value="formType"
@@ -249,7 +249,7 @@
         </div>
         <div>
           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Form Version
+            {{ t('forms.settingsFormVersion') }}
           </label>
           <input
             :value="formVersion"
@@ -265,6 +265,9 @@
 
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
   form: {

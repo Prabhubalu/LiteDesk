@@ -1,0 +1,750 @@
+{
+  "syncDrawerYoureCurrentlyOfflineActionsWillSync": {
+    "message": "Al momento sei offline. Le azioni verranno sincronizzate automaticamente quando sarai di nuovo online.",
+    "description": "Auto-migrated from syncDrawer"
+  },
+  "syncDrawerSyncComplete": {
+    "message": "Sincronizzazione completata",
+    "description": "Auto-migrated from syncDrawer"
+  },
+  "syncDrawerPleaseRefreshTheAuditAndTry": {
+    "message": "Aggiorna il controllo e riprova.",
+    "description": "Auto-migrated from syncDrawer"
+  },
+  "syncDrawerAuditStateChangedOnServer": {
+    "message": "Lo stato di controllo è cambiato sul server",
+    "description": "Auto-migrated from syncDrawer"
+  },
+  "syncDrawerYouNoLongerHaveAccess": {
+    "message": "Non hai più accesso",
+    "description": "Auto-migrated from syncDrawer"
+  },
+  "syncDrawerAuditWasClosedRemotely": {
+    "message": "L'audit è stato chiuso da remoto",
+    "description": "Auto-migrated from syncDrawer"
+  },
+  "syncDrawerPossibleReasons": {
+    "message": "Possibili ragioni:",
+    "description": "Auto-migrated from syncDrawer"
+  },
+  "syncDrawerSyncStopped": {
+    "message": "Sincronizzazione interrotta",
+    "description": "Auto-migrated from syncDrawer"
+  },
+  "syncDrawerPendingActions": {
+    "message": "Azioni in sospeso",
+    "description": "Auto-migrated from syncDrawer"
+  },
+  "syncDrawerSyncStatus": {
+    "message": "Stato di sincronizzazione",
+    "description": "Auto-migrated from syncDrawer"
+  },
+  "auditDashboardNoAuditsAssignedYet": {
+    "message": "Nessun audit ancora assegnato",
+    "description": "Auto-migrated from auditDashboard"
+  },
+  "auditDashboardRecentAudits": {
+    "message": "Audit recenti",
+    "description": "Auto-migrated from auditDashboard"
+  },
+  "auditDashboardNeedsReview": {
+    "message": "Necessita di revisione",
+    "description": "Auto-migrated from auditDashboard"
+  },
+  "auditDashboardOverdue": {
+    "message": "In ritardo",
+    "description": "Auto-migrated from auditDashboard"
+  },
+  "auditDashboardDueToday": {
+    "message": "Scadenza oggi",
+    "description": "Auto-migrated from auditDashboard"
+  },
+  "auditDashboardAssigned": {
+    "message": "Assegnato",
+    "description": "Auto-migrated from auditDashboard"
+  },
+  "auditDashboardViewYourAssignedAuditsAndTrack": {
+    "message": "Visualizza gli audit assegnati e monitora i progressi",
+    "description": "Auto-migrated from auditDashboard"
+  },
+  "auditDashboardAuditDashboard": {
+    "message": "Pannello di controllo",
+    "description": "Auto-migrated from auditDashboard"
+  },
+  "auditDetailNoTimelineEventsYet": {
+    "message": "Nessun evento nella cronologia ancora",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditDetailTimeline": {
+    "message": "Cronologia",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditDetailViewOnMap": {
+    "message": "Visualizza sulla mappa",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditDetailLocation": {
+    "message": "Posizione:",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditDetailCheckedOut": {
+    "message": "Controllato:",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditDetailCheckedIn": {
+    "message": "Check-in:",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditDetailExecutionContext": {
+    "message": "Contesto di esecuzione",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditDetailRefreshAccess": {
+    "message": "Aggiorna accesso",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditDetailRequestSeat": {
+    "message": "Richiedi posto",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditDetailNextStep": {
+    "message": "Prossimo passo",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditDetailYourAuditFormSubmissionWasApplied": {
+    "message": "Il modulo di audit inviato è stato applicato e l'audit è stato inviato per la revisione.",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditDetailSubmittedAutomatically": {
+    "message": "Inviato automaticamente",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditDetailSavedLocally": {
+    "message": "Salvato localmente",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditListAuditsWillAppearHereOnceTheyre": {
+    "message": "Gli audit verranno visualizzati qui una volta creati. Prova a modificare i filtri se prevedi di visualizzare controlli.",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListNoAuditsYet": {
+    "message": "Nessun audit ancora",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListApplyFilters": {
+    "message": "Applica filtri",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListComplianceAudit": {
+    "message": "Controllo di conformità",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListExternalAudit": {
+    "message": "Revisione esterna",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListNeedsReview": {
+    "message": "Necessita di revisione",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListCheckedIn": {
+    "message": "Check-in",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListReadyToStart": {
+    "message": "Pronto per iniziare",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListAllStates": {
+    "message": "Tutti gli Stati",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListState": {
+    "message": "Stato",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListSortByStatus": {
+    "message": "Ordina per stato",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListSortByCreated": {
+    "message": "Ordina per Creato",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListSortByDueDate": {
+    "message": "Ordina per data di scadenza",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListComplianceAudit2": {
+    "message": "Controllo di conformità",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListExternalAudit2": {
+    "message": "Revisione esterna",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListNeedsReview2": {
+    "message": "Necessita di revisione",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListCheckedIn2": {
+    "message": "Check-in",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListReadyToStart2": {
+    "message": "Pronto per iniziare",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListAllStates2": {
+    "message": "Tutti gli Stati",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListViewAndManageYourAuditAssignments": {
+    "message": "Visualizza e gestisci i tuoi incarichi di audit",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListMyAudits": {
+    "message": "I miei audit",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditScheduleSurfaceScheduling": {
+    "message": "Pianificazione...",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceUnableToScheduleAudit": {
+    "message": "Impossibile pianificare il controllo",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceNoFormSelected": {
+    "message": "Nessun modulo selezionato",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceImmutable": {
+    "message": "Immutabile",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceLinkedForm": {
+    "message": "Modulo collegato",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceEnd": {
+    "message": "FINE:",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceStart": {
+    "message": "Inizio:",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceImmutable2": {
+    "message": "Immutabile",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceImmutable3": {
+    "message": "Immutabile",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceRoles": {
+    "message": "Ruoli",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceImmutable4": {
+    "message": "Immutabile",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceImmutable5": {
+    "message": "Immutabile",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceAuditType": {
+    "message": "Tipo di controllo",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceAuditTitlesAreGeneratedAutomaticallyFor": {
+    "message": "I titoli degli audit vengono generati automaticamente per coerenza.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceOnceScheduledTheseSettingsCannotBe": {
+    "message": "Una volta pianificate, queste impostazioni non possono essere modificate.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceReviewYourAuditConfigurationBeforeScheduling": {
+    "message": "Rivedi la configurazione del tuo audit prima della pianificazione.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceSearchForAnAuditFormTo": {
+    "message": "Cerca un modulo di controllo da collegare",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceTheAuditorWillFillOutThis": {
+    "message": "Il revisore compilerà questo modulo durante l'esecuzione dell'audit",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceOnceTheAuditIsScheduledThe": {
+    "message": "Una volta pianificato l'audit, il modulo non può essere modificato",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceReadyFormsWillAutomaticallyBecomeActive": {
+    "message": "I moduli pronti diventeranno automaticamente attivi una volta collegati",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceTheFormWillBeExecutedDuring": {
+    "message": "Il modulo verrà eseguito durante l'audit",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceWhatHappensAfterLinking": {
+    "message": "Cosa succede dopo il collegamento:",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceChangeForm": {
+    "message": "Cambia modulo",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceSelectedForm": {
+    "message": "Modulo selezionato",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceTypeToSearchForms": {
+    "message": "Digita per cercare moduli...",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceSearchForAuditFormsOnlyReady": {
+    "message": "Cerca moduli di audit. Sono disponibili solo i moduli Pronti e Attivi.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceSearchForms": {
+    "message": "Moduli di ricerca",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceTheFormWillBeExecutedDuring2": {
+    "message": "Il modulo verrà eseguito durante l'audit. Una volta collegato e pianificato, il modulo non può essere modificato.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceLinkAnAuditFormToThis": {
+    "message": "Collega un modulo di controllo a questo evento di controllo.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceWhenTheAuditIsScheduledTo": {
+    "message": "Quando è prevista la fine dell'audit.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceWhenTheAuditIsScheduledTo2": {
+    "message": "Quando è previsto l'inizio dell'audit.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceTimesAreInYourLocalTimezone": {
+    "message": "Gli orari sono nel fuso orario locale. L'audit non può essere programmato nel passato.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceScheduleTheAuditStartAndEnd": {
+    "message": "Pianificare gli orari di inizio e fine dell'audit.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceTheUserResponsibleForAddressingAudit": {
+    "message": "L'utente responsabile della gestione dei risultati dell'audit e dell'implementazione di azioni correttive. Obbligatorio per tutti i tipi di controllo.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceCorrectiveOwner": {
+    "message": "Proprietario correttivo",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceOptionalReviewerForInternalAuditsSelf": {
+    "message": "Revisore facoltativo per gli audit interni. È consentita l'autorevisione.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceIndependentReviewerWhoCannotBeThe": {
+    "message": "Revisore indipendente che non può coincidere con il revisore. Necessario per gli audit esterni.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceReviewer": {
+    "message": "Recensore",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceTheUserWhoWillConductThe": {
+    "message": "L'utente che condurrà l'audit. Obbligatorio per tutti i tipi di controllo.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceAuditor": {
+    "message": "Revisore dei conti",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceSelfReviewIsAllowedForInternal": {
+    "message": "L'autovalutazione è consentita per gli audit interni.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceReviewerIsRequiredAndCannotBe": {
+    "message": "Il revisore è obbligatorio e non può coincidere con il revisore.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceRoleAssignmentsDetermineWhoConductsReviews": {
+    "message": "Le assegnazioni di ruolo determinano chi conduce, esamina e affronta i risultati dell'audit.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceSearchForOrganizationsToSelect": {
+    "message": "Cerca le organizzazioni da selezionare",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceAddressRequiredForAudits": {
+    "message": "Indirizzo richiesto per gli audit",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceSelectedOrganizations": {
+    "message": "Organizzazioni selezionate",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceTypeToSearchOrganizations": {
+    "message": "Digita per cercare organizzazioni...",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceSearchOrganizations": {
+    "message": "Cerca organizzazioni",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceStreetCityStateCountry": {
+    "message": "Strada, città, stato, paese",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceAddress": {
+    "message": "Indirizzo",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceCloseAddressEditor": {
+    "message": "Chiudi l'editor degli indirizzi",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceOrganization": {
+    "message": "Organizzazione:",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceAddAddress": {
+    "message": "Aggiungi indirizzo",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceCancelScheduling": {
+    "message": "Annulla la pianificazione",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceAddAddress2": {
+    "message": "Aggiungi indirizzo",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceMissingAddress": {
+    "message": "Indirizzo mancante:",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceAuditsRequireAPhysicalLocationPlease": {
+    "message": "Gli audit richiedono una sede fisica. Aggiungi un indirizzo per questa organizzazione per continuare.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceOrganizationAddressRequired": {
+    "message": "Indirizzo dell'organizzazione obbligatorio",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceInternalAuditsAreAutomaticallyScopedTo": {
+    "message": "Gli audit interni vengono automaticamente limitati alla tua organizzazione.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceInternalAuditsTargetYourOrganizationOnly": {
+    "message": "Gli audit interni sono rivolti solo alla tua organizzazione.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceSelectMultipleOrganizationsMinimum2For": {
+    "message": "Seleziona più organizzazioni (minimo 2) per il percorso di audit.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceSelectExactlyOneOrganizationToAudit": {
+    "message": "Seleziona esattamente un'organizzazione da controllare.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceTargetOrganizationsDetermineTheScopeOf": {
+    "message": "Le organizzazioni target determinano l'ambito dell'audit.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceRequirements": {
+    "message": "Requisiti:",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceChooseTheTypeThatMatchesYour": {
+    "message": "Scegli il tipo che corrisponde alle tue esigenze di audit.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceAuditTypeDeterminesRolesGeoRules": {
+    "message": "Il tipo di controllo determina ruoli, regole geografiche e requisiti dei moduli.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceAuditSchedulingSteps": {
+    "message": "Passaggi di pianificazione dell'audit",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfacePlanAndConfigureAnAuditBefore": {
+    "message": "Pianificare e configurare un audit prima che inizi l'esecuzione.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceScheduleAudit": {
+    "message": "Pianifica l'audit",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "portalActionsViewAudit": {
+    "message": "Visualizza controllo",
+    "description": "Auto-migrated from portalActions"
+  },
+  "portalActionsDownload": {
+    "message": "Scaricamento",
+    "description": "Auto-migrated from portalActions"
+  },
+  "portalActionsUploadedEvidence": {
+    "message": "Prove caricate",
+    "description": "Auto-migrated from portalActions"
+  },
+  "portalActionsUploadEvidence": {
+    "message": "Carica prove",
+    "description": "Auto-migrated from portalActions"
+  },
+  "portalActionsAddAnyAdditionalComments": {
+    "message": "Aggiungi eventuali commenti aggiuntivi...",
+    "description": "Auto-migrated from portalActions"
+  },
+  "portalActionsFiles": {
+    "message": "File",
+    "description": "Auto-migrated from portalActions"
+  },
+  "portalActionsUploadEvidence2": {
+    "message": "Carica prove",
+    "description": "Auto-migrated from portalActions"
+  },
+  "portalActionsNoCorrectiveActions": {
+    "message": "Nessuna azione correttiva",
+    "description": "Auto-migrated from portalActions"
+  },
+  "portalActionsClearFilters": {
+    "message": "Cancella filtri",
+    "description": "Auto-migrated from portalActions"
+  },
+  "portalActionsAllStatuses": {
+    "message": "Tutti gli stati",
+    "description": "Auto-migrated from portalActions"
+  },
+  "portalActionsTrackAndManageAllCorrectiveActions": {
+    "message": "Traccia e gestisci tutte le azioni correttive",
+    "description": "Auto-migrated from portalActions"
+  },
+  "portalAuditDetailNoTimelineEvents": {
+    "message": "Nessun evento nella sequenza temporale",
+    "description": "Auto-migrated from portalAuditDetail"
+  },
+  "portalAuditDetailTimeline": {
+    "message": "Cronologia",
+    "description": "Auto-migrated from portalAuditDetail"
+  },
+  "portalAuditDetailDownload": {
+    "message": "Scaricamento",
+    "description": "Auto-migrated from portalAuditDetail"
+  },
+  "portalAuditDetailUploadedEvidence": {
+    "message": "Prove caricate",
+    "description": "Auto-migrated from portalAuditDetail"
+  },
+  "portalAuditDetailUploadEvidence": {
+    "message": "Carica prove",
+    "description": "Auto-migrated from portalAuditDetail"
+  },
+  "portalAuditDetailAddAnyAdditionalComments": {
+    "message": "Aggiungi eventuali commenti aggiuntivi...",
+    "description": "Auto-migrated from portalAuditDetail"
+  },
+  "portalAuditDetailFiles": {
+    "message": "File",
+    "description": "Auto-migrated from portalAuditDetail"
+  },
+  "portalAuditDetailUploadEvidence2": {
+    "message": "Carica prove",
+    "description": "Auto-migrated from portalAuditDetail"
+  },
+  "portalAuditDetailAllFindingsHaveBeenAddressed": {
+    "message": "Tutti i risultati sono stati affrontati",
+    "description": "Auto-migrated from portalAuditDetail"
+  },
+  "portalAuditDetailNoCorrectiveActions": {
+    "message": "Nessuna azione correttiva",
+    "description": "Auto-migrated from portalAuditDetail"
+  },
+  "portalAuditDetailTotalFindings": {
+    "message": "Risultati totali",
+    "description": "Auto-migrated from portalAuditDetail"
+  },
+  "portalAuditDetailFindingsSummary": {
+    "message": "Riepilogo dei risultati",
+    "description": "Auto-migrated from portalAuditDetail"
+  },
+  "portalAuditListClearFilters": {
+    "message": "Cancella filtri",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalAuditListNoAuditsYet": {
+    "message": "Nessun audit ancora",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalAuditListClearFilters2": {
+    "message": "Cancella filtri",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalAuditListComplianceAudit": {
+    "message": "Controllo di conformità",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalAuditListExternalAudit": {
+    "message": "Revisione esterna",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalAuditListWaitingForCorrectiveActions": {
+    "message": "In attesa di azioni correttive",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalAuditListAllStatuses": {
+    "message": "Tutti gli stati",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalAuditListClearFilters3": {
+    "message": "Cancella filtri",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalAuditListComplianceAudit2": {
+    "message": "Controllo di conformità",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalAuditListExternalAudit2": {
+    "message": "Revisione esterna",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalAuditListWaitingForCorrectiveActions2": {
+    "message": "In attesa di azioni correttive",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalAuditListAllStatuses2": {
+    "message": "Tutti gli stati",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalAuditListViewAuditsConductedOnYourOrganization": {
+    "message": "Visualizza gli audit condotti sulla tua organizzazione",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalDashboardAuditsWillAppearHereOnceThey": {
+    "message": "Gli audit verranno visualizzati qui non appena saranno disponibili",
+    "description": "Auto-migrated from portalDashboard"
+  },
+  "portalDashboardNoAuditActivityYet": {
+    "message": "Nessuna attività di audit ancora",
+    "description": "Auto-migrated from portalDashboard"
+  },
+  "portalDashboardViewAll": {
+    "message": "Visualizza tutto",
+    "description": "Auto-migrated from portalDashboard"
+  },
+  "portalDashboardRecentAuditActivity": {
+    "message": "Attività di revisione recente",
+    "description": "Auto-migrated from portalDashboard"
+  },
+  "portalDashboardCompletedAudits": {
+    "message": "Audit completati",
+    "description": "Auto-migrated from portalDashboard"
+  },
+  "portalDashboardOpenCorrectiveActions": {
+    "message": "Azioni correttive aperte",
+    "description": "Auto-migrated from portalDashboard"
+  },
+  "portalDashboardTotalAudits": {
+    "message": "Audit totali",
+    "description": "Auto-migrated from portalDashboard"
+  },
+  "portalDashboardTrackYourAuditsAndManageCorrective": {
+    "message": "Tieni traccia dei tuoi audit e gestisci le azioni correttive",
+    "description": "Auto-migrated from portalDashboard"
+  },
+  "portalDashboardYourTrialWillExpireSoonContact": {
+    "message": "Il tuo periodo di prova scadrà a breve. Contatta il tuo amministratore per le opzioni di abbonamento.",
+    "description": "Auto-migrated from portalDashboard"
+  },
+  "portalProfileAccountInformation": {
+    "message": "Informazioni sull'account",
+    "description": "Auto-migrated from portalProfile"
+  },
+  "portalProfileYourAccountInformation": {
+    "message": "Informazioni sul tuo account",
+    "description": "Auto-migrated from portalProfile"
+  },
+  "responsesEnterReasonForArchivingInvalidatingThis": {
+    "message": "Inserisci il motivo per archiviare/invalidare questa risposta...",
+    "description": "Auto-migrated from responses"
+  },
+  "responsesReason": {
+    "message": "Motivo",
+    "description": "Auto-migrated from responses"
+  },
+  "responsesMarkAsInvalidWithReasonFor": {
+    "message": "Contrassegna come non valido con motivo (per audit trail)",
+    "description": "Auto-migrated from responses"
+  },
+  "responsesInvalidate": {
+    "message": "Invalidare",
+    "description": "Auto-migrated from responses"
+  },
+  "responsesHideFromActiveListsWhilePreserving": {
+    "message": "Nasconditi dagli elenchi attivi preservando i dati",
+    "description": "Auto-migrated from responses"
+  },
+  "responsesAuditResponsesCannotBeDeletedUse": {
+    "message": "Le risposte di controllo non possono essere cancellate. Utilizza Archivia per nasconderlo dagli elenchi attivi o Invalida per contrassegnarlo come non valido con un motivo. Tutti i dati vengono conservati per la traccia di controllo.",
+    "description": "Auto-migrated from responses"
+  },
+  "responsesAuditIntegrity": {
+    "message": "Integrità dell'audit:",
+    "description": "Auto-migrated from responses"
+  },
+  "responsesArchiveInvalidateResponse": {
+    "message": "Archivia/Invalida risposta",
+    "description": "Auto-migrated from responses"
+  },
+  "responsesRestore": {
+    "message": "Ripristinare",
+    "description": "Auto-migrated from responses"
+  },
+  "responsesArchiveInvalidate": {
+    "message": "Archivia/Invalida",
+    "description": "Auto-migrated from responses"
+  },
+  "responsesNotApplicable": {
+    "message": "Non applicabile",
+    "description": "Auto-migrated from responses"
+  },
+  "responsesResponseExecutionMustAlwaysStartFrom": {
+    "message": "L'esecuzione della risposta deve sempre iniziare dal check-in dell'evento.",
+    "description": "Auto-migrated from responses"
+  },
+  "responseDetailTimeline": {
+    "message": "Cronologia",
+    "description": "Auto-migrated from responseDetail"
+  },
+  "responseDetailFinalScore": {
+    "message": "Punteggio finale",
+    "description": "Auto-migrated from responseDetail"
+  },
+  "responseDetailTotalQuestions": {
+    "message": "Domande totali",
+    "description": "Auto-migrated from responseDetail"
+  },
+  "responseDetailAuditor": {
+    "message": "Revisore dei conti",
+    "description": "Auto-migrated from responseDetail"
+  },
+  "responseDetailExecutionSummary": {
+    "message": "Riepilogo dell'esecuzione",
+    "description": "Auto-migrated from responseDetail"
+  },
+  "responseDetailReadOnlyAccess": {
+    "message": "Accesso in sola lettura",
+    "description": "Auto-migrated from responseDetail"
+  },
+  "responseDetailErrorLoadingResponse": {
+    "message": "Errore durante il caricamento della risposta",
+    "description": "Auto-migrated from responseDetail"
+  }
+}

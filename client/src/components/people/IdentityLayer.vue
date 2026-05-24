@@ -29,14 +29,12 @@
       <div class="flex items-center justify-between">
         <div class="flex-1">
           <div class="flex items-center gap-2 mb-2">
-            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Identity</span>
+            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ t('settings.roleDrawerIdentity') }}</span>
           </div>
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
             Who is this person?
           </h2>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-            Recognition-first identity information
-          </p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">{{ t('people.identityLayerRecognitionFirstIdentityInformation') }}</p>
         </div>
         
         <!-- Actions -->
@@ -48,18 +46,14 @@
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-            Email
-          </button>
+            </svg>{{ t('settings.settingsAddFieldTypeEmail') }}</button>
           <button
             @click="handleEditProfile"
             class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-            Edit profile
-          </button>
+            </svg>{{ t('people.identityLayerEditProfile') }}</button>
         </div>
       </div>
     </div>
@@ -83,7 +77,7 @@
           <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <!-- Full Name -->
             <div v-if="fullName" class="sm:col-span-2">
-              <dt class="text-sm text-gray-500 dark:text-gray-400">Full Name</dt>
+              <dt class="text-sm text-gray-500 dark:text-gray-400">{{ t('people.identityLayerFullName') }}</dt>
               <dd class="mt-2 text-lg font-semibold text-gray-900 dark:text-white">
                 {{ fullName }}
               </dd>
@@ -92,7 +86,7 @@
             <!-- Primary Contact (Email) -->
             <LabeledValue
               v-if="email"
-              label="Email"
+              :label="t('settings.settingsAddFieldTypeEmail')"
               :value="email"
             >
               <a :href="`mailto:${email}`" class="text-indigo-600 dark:text-indigo-400 hover:underline">
@@ -103,7 +97,7 @@
             <!-- Primary Contact (Phone) -->
             <LabeledValue
               v-if="phone"
-              label="Phone"
+              :label="t('settings.settingsAddFieldTypePhone')"
               :value="phone"
             >
               <a :href="`tel:${phone}`" class="text-indigo-600 dark:text-indigo-400 hover:underline">
@@ -113,7 +107,7 @@
 
             <!-- Organization -->
             <div v-if="organization" class="sm:col-span-2">
-              <dt class="text-sm text-gray-500 dark:text-gray-400">Organization</dt>
+              <dt class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.profileMetaOrg') }}</dt>
               <dd class="mt-2 text-sm text-gray-900 dark:text-white">
                 <button
                   v-if="organizationId"
@@ -128,7 +122,7 @@
 
             <!-- Compliance Flags -->
             <div v-if="doNotContact !== undefined" class="sm:col-span-2">
-              <dt class="text-sm text-gray-500 dark:text-gray-400 mb-2">Compliance</dt>
+              <dt class="text-sm text-gray-500 dark:text-gray-400 mb-2">{{ t('forms.reportCompliance') }}</dt>
               <dd class="mt-2">
                 <StatusFlag
                   :type="doNotContact ? 'danger' : 'success'"
@@ -139,7 +133,7 @@
 
             <!-- Tags -->
             <div v-if="tags && tags.length > 0" class="sm:col-span-2">
-              <dt class="text-sm text-gray-500 dark:text-gray-400 mb-2">Tags</dt>
+              <dt class="text-sm text-gray-500 dark:text-gray-400 mb-2">{{ t('settings.assignRulesCondFieldTags') }}</dt>
               <dd class="mt-2">
                 <TagList :tags="tags" />
               </dd>
@@ -153,6 +147,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import RecognitionOnly from '@/components/ui/RecognitionOnly.vue';
 import AvatarInitials from '@/components/ui/AvatarInitials.vue';
 import LabeledValue from '@/components/ui/LabeledValue.vue';
@@ -207,6 +202,8 @@ const props = defineProps({
     default: null
   }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['edit-profile', 'email']);
 

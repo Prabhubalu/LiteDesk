@@ -1,6 +1,6 @@
 <template>
   <section class="space-y-3">
-    <h3 v-if="showHeader" class="text-base font-semibold text-gray-900 dark:text-white">Related</h3>
+    <h3 v-if="showHeader" class="text-base font-semibold text-gray-900 dark:text-white">{{ t('records.relatedTitle') }}</h3>
 
     <div
       v-if="!groups.length"
@@ -9,8 +9,8 @@
       <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-3">
         <LinkIcon class="w-5 h-5 text-gray-400 dark:text-gray-500" />
       </div>
-      <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">No related records yet.</p>
-      <p class="text-xs text-gray-400 dark:text-gray-500">Link this record to associated items.</p>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">{{ t('records.relatedEmpty') }}</p>
+      <p class="text-xs text-gray-400 dark:text-gray-500">{{ t('records.relatedEmptyHint') }}</p>
     </div>
 
     <div v-else class="space-y-5">
@@ -41,14 +41,14 @@
               class="min-w-0 flex-1 text-left"
               @click="openItem(item, group)"
             >
-              <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ item.title || 'Untitled' }}</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ item.title || t('records.relatedUntitled') }}</p>
               <p v-if="item.meta" class="mt-0.5 text-xs text-gray-500 dark:text-gray-400 truncate">{{ item.meta }}</p>
             </button>
             <div v-if="showUnlinkMenu(item, group)" class="flex items-center gap-1.5 shrink-0">
               <Menu as="div" class="relative">
                 <MenuButton
                   class="inline-flex items-center justify-center rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-200 opacity-0 transition-opacity duration-150 group-hover/related-card:opacity-100 focus:opacity-100"
-                  aria-label="Related record actions"
+                  :aria-label="t('records.relatedActionsAria')"
                   @click.stop
                 >
                   <EllipsisVerticalIcon class="h-4 w-4" />
@@ -73,7 +73,7 @@
                         ]"
                         @click.stop="handleUnlink(item, group)"
                       >
-                        Unlink
+                        {{ t('records.relatedUnlink') }}
                       </button>
                     </MenuItem>
                   </MenuItems>
@@ -89,6 +89,9 @@
 
 <script setup>
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
 import { ChevronRightIcon, LinkIcon, EllipsisVerticalIcon } from '@heroicons/vue/24/outline';
 

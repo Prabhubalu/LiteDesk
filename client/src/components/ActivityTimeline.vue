@@ -4,7 +4,7 @@
     <div v-if="loading" class="flex items-center justify-center py-8">
       <div class="text-center">
         <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
-        <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">Loading activities...</p>
+        <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">{{ t('records.activityTimelineLoadingActivities') }}</p>
       </div>
     </div>
 
@@ -15,9 +15,7 @@
           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
         </svg>
         <div class="flex-1">
-          <h3 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-1">
-            Error Loading Activities
-          </h3>
+          <h3 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-1">{{ t('records.activityTimelineErrorLoadingActivities') }}</h3>
           <p class="text-sm text-red-700 dark:text-red-300">{{ error }}</p>
         </div>
       </div>
@@ -30,9 +28,7 @@
           <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
         </svg>
         <div class="flex-1">
-          <h3 class="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-1">
-            Cannot Load Activities
-          </h3>
+          <h3 class="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-1">{{ t('records.activityTimelineCannotLoadActivities') }}</h3>
           <p class="text-sm text-yellow-700 dark:text-yellow-300">
             {{ blockedReason || 'App context is ambiguous. Cannot determine which activities to show.' }}
           </p>
@@ -97,9 +93,7 @@
                   type="button"
                   class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300 dark:hover:bg-indigo-900/50 transition-colors"
                   @click="emit('retry-optimistic', activity)"
-                >
-                  Retry
-                </button>
+                >{{ t('actions.retry') }}</button>
               </div>
             </div>
           </div>
@@ -117,6 +111,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, watch, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import apiClient from '@/utils/apiClient';
@@ -125,6 +120,8 @@ import { getHistoryDisplayText, getHistoryAppContext } from './people/historyEve
 import EmailThreadCard from '@/components/communications/EmailThreadCard.vue';
 
 const emit = defineEmits(['retry-optimistic']);
+
+const { t } = useI18n();
 
 const props = defineProps({
   entityType: {

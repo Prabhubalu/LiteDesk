@@ -44,9 +44,7 @@
               type="button" 
               @click="$emit('close')" 
               class="px-6 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
-            >
-              Cancel
-            </button>
+            >{{ t('performance.cancelWizard') }}</button>
             <button 
               type="submit" 
               :disabled="saving || !moduleDefinition" 
@@ -62,6 +60,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, computed } from 'vue';
 import apiClient from '@/utils/apiClient';
 import DynamicForm from '@/components/common/DynamicForm.vue';
@@ -72,6 +71,8 @@ const props = defineProps({
     default: null
   }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['close', 'saved']);
 
@@ -232,7 +233,7 @@ const handleSubmit = async (formData) => {
     }
   } catch (error) {
     console.error('Error saving organization:', error);
-    alert(error.message || 'Failed to save organization');
+    alert(error.message || t('organizations.organizationFormModalToastFailedToSaveOrganization'));
   } finally {
     saving.value = false;
   }

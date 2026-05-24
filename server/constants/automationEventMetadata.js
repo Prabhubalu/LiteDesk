@@ -71,6 +71,41 @@ const EVENT_METADATA = {
     suggestedEntityType: 'deal',
     conditionFields: DEAL_CONDITION_FIELDS
   },
+  'target.lifecycle.activated': {
+    label: 'Target activated',
+    category: 'performance',
+    suggestedEntityType: 'target',
+    conditionFields: [
+      { value: 'currentState.lifecycleStatus', label: 'Lifecycle status' },
+      { value: 'currentState.targetValue', label: 'Target value' }
+    ]
+  },
+  'target.progress.updated': {
+    label: 'Target progress updated',
+    category: 'performance',
+    suggestedEntityType: 'target',
+    conditionFields: [
+      { value: 'currentState.percent', label: 'Achieved percent' },
+      { value: 'currentState.achievedValue', label: 'Achieved value' }
+    ]
+  },
+  'target.threshold.crossed': {
+    label: 'Target threshold crossed',
+    category: 'performance',
+    suggestedEntityType: 'target',
+    conditionFields: [
+      { value: 'currentState.thresholdPercent', label: 'Threshold percent' },
+      { value: 'currentState.achievedPercent', label: 'Achieved percent' }
+    ]
+  },
+  'target.status.changed': {
+    label: 'Target status changed',
+    category: 'performance',
+    suggestedEntityType: 'target',
+    conditionFields: [
+      { value: 'currentState.status', label: 'Status' }
+    ]
+  },
   'appointment.created': {
     label: 'Appointment booked',
     category: 'appointments',

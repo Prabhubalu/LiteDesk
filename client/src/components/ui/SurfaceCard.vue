@@ -5,6 +5,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 // SurfaceCard - Generic card container for Surface layers
 // No props needed - pure container component
 </script>

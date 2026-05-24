@@ -1,0 +1,26 @@
+{
+  "recordDetailToastFailedToDeleteRecordPlease": {
+    "message": "Failed to delete record. Please try again.",
+    "description": "Toast from RecordDetail.vue"
+  },
+  "instanceManagementToastInstanceManagementUiComingSoon": {
+    "message": "Instance management UI coming soon!",
+    "description": "Toast from InstanceManagement.vue"
+  },
+  "useRecordHeaderActionsToastUrlCopiedToClipboard": {
+    "message": "URL copied to clipboard!",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "useRecordHeaderActionsToastErrorExportingRecordPleaseTry": {
+    "message": "Error exporting record. Please try again.",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "useRecordHeaderActionsToastErrorDeletingRecordPleaseTry": {
+    "message": "Error deleting record. Please try again.",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "instanceManagementToastRecordsInstancemanagementtoastinstancemanage": {
+    "message": "records.instanceManagementToastInstanceManagementUiComingSoon",
+    "description": "Toast from InstanceManagement.vue"
+  }
+}

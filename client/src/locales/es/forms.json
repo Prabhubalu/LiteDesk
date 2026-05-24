@@ -1,0 +1,3778 @@
+{
+  "analyticsAllQuestionsPassing": {
+    "message": "¡Todas las preguntas pasan!",
+    "description": "Empty failed questions subtext"
+  },
+  "analyticsChartAvgScorePct": {
+    "message": "% de puntuación promedio",
+    "description": "Section scores chart dataset label"
+  },
+  "analyticsChartCompliancePct": {
+    "message": "Cumplimiento %",
+    "description": "Compliance trend chart dataset label"
+  },
+  "analyticsChartNumResponses": {
+    "message": "Número de respuestas",
+    "description": "Rating distribution chart dataset label"
+  },
+  "analyticsChartResponsesPerDay": {
+    "message": "Respuestas por día",
+    "description": "Response rate chart dataset label"
+  },
+  "analyticsComplianceTrend": {
+    "message": "Tendencia de cumplimiento",
+    "description": "Analytics chart section title"
+  },
+  "analyticsFailRateLabel": {
+    "message": "Tasa de fracaso:",
+    "description": "Fail rate prefix"
+  },
+  "analyticsFailedQuestionsLoading": {
+    "message": "Cargando preguntas fallidas...",
+    "description": "Top failed questions loading"
+  },
+  "analyticsFailedTimes": {
+    "message": "Error: {count} veces",
+    "description": "Failed question count label"
+  },
+  "analyticsLoading": {
+    "message": "Cargando análisis...",
+    "description": "Form analytics loading state"
+  },
+  "analyticsNoFailedQuestions": {
+    "message": "No se encontraron preguntas fallidas",
+    "description": "Empty failed questions state"
+  },
+  "analyticsRatingDistribution": {
+    "message": "Distribución de calificaciones",
+    "description": "Analytics chart section title"
+  },
+  "analyticsResponseRate": {
+    "message": "Tasa de respuesta a lo largo del tiempo",
+    "description": "Analytics chart section title"
+  },
+  "analyticsSectionLabel": {
+    "message": "Sección:",
+    "description": "Section name prefix in failed questions list"
+  },
+  "analyticsSectionScores": {
+    "message": "Comparación de puntuaciones de sección",
+    "description": "Analytics chart section title"
+  },
+  "analyticsStar1": {
+    "message": "1 estrella",
+    "description": "Rating bucket label"
+  },
+  "analyticsStar2": {
+    "message": "2 estrellas",
+    "description": "Rating bucket label"
+  },
+  "analyticsStar3": {
+    "message": "3 estrellas",
+    "description": "Rating bucket label"
+  },
+  "analyticsStar4": {
+    "message": "4 estrellas",
+    "description": "Rating bucket label"
+  },
+  "analyticsStar5": {
+    "message": "5 estrellas",
+    "description": "Rating bucket label"
+  },
+  "analyticsTooltipCompliance": {
+    "message": "Cumplimiento: __UCI_0__%",
+    "description": "Compliance chart tooltip"
+  },
+  "analyticsTooltipResponses": {
+    "message": "__UCI_0__ respuestas",
+    "description": "Chart tooltip response count"
+  },
+  "analyticsTooltipScore": {
+    "message": "Puntuación: __UCI_0__%",
+    "description": "Section score chart tooltip"
+  },
+  "analyticsTopFailedQuestions": {
+    "message": "Principales preguntas fallidas",
+    "description": "Analytics section title"
+  },
+  "analyticsUnknownQuestion": {
+    "message": "Pregunta desconocida",
+    "description": "Fallback question title in analytics"
+  },
+  "analyticsUnknownSection": {
+    "message": "Sección desconocida",
+    "description": "Fallback section name in analytics"
+  },
+  "answerNo": {
+    "message": "No",
+    "description": "Yes/No question no label"
+  },
+  "answerYes": {
+    "message": "Sí",
+    "description": "Yes/No question yes label"
+  },
+  "auditorApprove": {
+    "message": "Aprobar",
+    "description": "Approve verification button"
+  },
+  "auditorApproved": {
+    "message": "Aprobado",
+    "description": "Approved verification badge"
+  },
+  "auditorManagersAction": {
+    "message": "Acción del gerente:",
+    "description": "Manager action label in verification"
+  },
+  "auditorNoActionsNeedVerification": {
+    "message": "Ninguna acción correctiva necesita verificación.",
+    "description": "Empty auditor verification state"
+  },
+  "auditorNoComments": {
+    "message": "Sin comentarios",
+    "description": "Empty manager comment"
+  },
+  "auditorProofLabel": {
+    "message": "Prueba:",
+    "description": "Proof files label"
+  },
+  "auditorReject": {
+    "message": "Rechazar",
+    "description": "Reject verification button"
+  },
+  "auditorRejected": {
+    "message": "Rechazado",
+    "description": "Rejected verification badge"
+  },
+  "auditorStatusPending": {
+    "message": "Pendiente",
+    "description": "Legacy status badge"
+  },
+  "auditorStatusResolved": {
+    "message": "Resuelto",
+    "description": "Legacy status badge"
+  },
+  "auditorVerificationComments": {
+    "message": "Comentarios de verificación",
+    "description": "Verification comments field label"
+  },
+  "auditorVerificationCommentsPh": {
+    "message": "Añade tus comentarios de verificación...",
+    "description": "Verification comments placeholder"
+  },
+  "auditorVerificationHeading": {
+    "message": "Verificación del auditor",
+    "description": "Auditor verification panel heading"
+  },
+  "auditorVerificationStatus": {
+    "message": "Estado de verificación:",
+    "description": "Verification status label"
+  },
+  "auditorVerificationSubtitle": {
+    "message": "Revisar y verificar acciones correctivas.",
+    "description": "Auditor verification panel subtitle"
+  },
+  "auditorVerifiedBy": {
+    "message": "Verificado por: {name} el {date}",
+    "description": "Verification attribution line"
+  },
+  "auditorVerifyFailed": {
+    "message": "No se pudo verificar la acción. Por favor inténtalo de nuevo.",
+    "description": "Verification failure alert"
+  },
+  "auditorVerifying": {
+    "message": "Verificando...",
+    "description": "Verify button in progress"
+  },
+  "builderAddFirstQuestion": {
+    "message": "Añade tu primera pregunta",
+    "description": "Empty state add first question"
+  },
+  "builderAddFirstSection": {
+    "message": "Agrega tu primera sección",
+    "description": "Empty state add first section"
+  },
+  "builderAddInline": {
+    "message": "+ Agregar",
+    "description": "Inline add subsection control"
+  },
+  "builderAddOption": {
+    "message": "Agregar opción",
+    "description": "Add dropdown option button"
+  },
+  "builderAddOptionsFirst": {
+    "message": "Agregue las opciones arriba primero",
+    "description": "Empty dropdown pass options hint"
+  },
+  "builderAddQuestion": {
+    "message": "Agregar pregunta",
+    "description": "Add question palette heading"
+  },
+  "builderAddQuestionTypeTitle": {
+    "message": "Agregar pregunta {type}",
+    "description": "Add question palette button tooltip"
+  },
+  "builderAddRule": {
+    "message": "Agregar regla",
+    "description": "Add evidence rule button"
+  },
+  "builderAddSection": {
+    "message": "Agregar sección",
+    "description": "Add section button label"
+  },
+  "builderAddSectionOptional": {
+    "message": "Agregar sección (opcional)",
+    "description": "Empty state optional section button"
+  },
+  "builderAddSubsection": {
+    "message": "+ Agregar subsección",
+    "description": "Add subsection button"
+  },
+  "builderAdvanced": {
+    "message": "Avanzado",
+    "description": "Advanced settings section"
+  },
+  "builderAllowMultipleFiles": {
+    "message": "Permitir múltiples archivos",
+    "description": "Allow multiple files checkbox"
+  },
+  "builderAlwaysVisible": {
+    "message": "Siempre visible",
+    "description": "Conditional visibility default option"
+  },
+  "builderAnswerNo": {
+    "message": "No",
+    "description": "No answer option label"
+  },
+  "builderAnswerYes": {
+    "message": "Sí",
+    "description": "Yes answer option label"
+  },
+  "builderBannerActiveAfter": {
+    "message": "y en uso. Sólo se permiten cambios cosméticos (títulos, etiquetas, texto de ayuda).",
+    "description": "Active form banner text after status"
+  },
+  "builderBannerActiveBefore": {
+    "message": "Este formulario es",
+    "description": "Active form banner lead-in before status"
+  },
+  "builderBannerArchivedAfter": {
+    "message": "y de solo lectura. Para realizar cambios, duplique el formulario.",
+    "description": "Archived form banner text after status"
+  },
+  "builderBannerArchivedBefore": {
+    "message": "Este formulario es",
+    "description": "Archived form banner lead-in"
+  },
+  "builderBannerDraftBefore": {
+    "message": "Este formulario está en",
+    "description": "Draft form banner lead-in"
+  },
+  "builderBannerDraftEnd": {
+    "message": ".",
+    "description": "Draft form banner closing period"
+  },
+  "builderBannerDraftMiddle": {
+    "message": "estado. Complete el formulario y guárdelo para configurarlo",
+    "description": "Draft form banner between status labels"
+  },
+  "builderBannerStructuralNote": {
+    "message": "Los cambios estructurales (agregar o eliminar secciones o preguntas, cambiar tipos de preguntas, modificar la puntuación) se bloquean para proteger la integridad de los datos.",
+    "description": "Active form structural changes note"
+  },
+  "builderBasics": {
+    "message": "Lo esencial",
+    "description": "Question basics settings section"
+  },
+  "builderCanvas": {
+    "message": "Lienzo",
+    "description": "Canvas panel heading"
+  },
+  "builderCanvasQuestionCount": {
+    "message": "{count, plural, one {# pregunta} other {# preguntas}}",
+    "description": "Canvas subtitle question count"
+  },
+  "builderCondContains": {
+    "message": "contiene",
+    "description": "Conditional operator contains"
+  },
+  "builderCondEquals": {
+    "message": "es igual",
+    "description": "Conditional operator equals"
+  },
+  "builderCondGreaterThan": {
+    "message": "es mayor que",
+    "description": "Conditional operator greater than"
+  },
+  "builderCondLessThan": {
+    "message": "es menor que",
+    "description": "Conditional operator less than"
+  },
+  "builderCondNotContains": {
+    "message": "no contiene",
+    "description": "Conditional operator not contains"
+  },
+  "builderCondNotEquals": {
+    "message": "no es igual",
+    "description": "Conditional operator not equals"
+  },
+  "builderCondition": {
+    "message": "Condición",
+    "description": "Conditional operator label"
+  },
+  "builderCriticalQuestion": {
+    "message": "Pregunta crítica",
+    "description": "Critical question checkbox"
+  },
+  "builderCriticalQuestionHint": {
+    "message": "Si una pregunta crítica falla, su sección principal falla inmediatamente, independientemente de la puntuación.",
+    "description": "Critical question hint"
+  },
+  "builderDefaultOption1": {
+    "message": "Opción 1",
+    "description": "Default dropdown option 1"
+  },
+  "builderDefaultOption2": {
+    "message": "Opción 2",
+    "description": "Default dropdown option 2"
+  },
+  "builderDefaultSectionName": {
+    "message": "Cumplimiento general",
+    "description": "Default audit section name"
+  },
+  "builderDelete": {
+    "message": "Borrar",
+    "description": "Delete menu action"
+  },
+  "builderDescriptionHelpText": {
+    "message": "Descripción / Texto de ayuda",
+    "description": "Help text field label"
+  },
+  "builderDisplayOrder": {
+    "message": "Orden de visualización",
+    "description": "Display order field label"
+  },
+  "builderDisplayOrderHint": {
+    "message": "Los números más bajos aparecen primero (0 = primero)",
+    "description": "Display order hint"
+  },
+  "builderDuplicate": {
+    "message": "Duplicado",
+    "description": "Duplicate menu action"
+  },
+  "builderEmptyAuditLead": {
+    "message": "Comience creando su primera sección.",
+    "description": "Empty state audit mode"
+  },
+  "builderEmptyFlatLead": {
+    "message": "Comience agregando su primera pregunta.",
+    "description": "Empty state flat mode"
+  },
+  "builderEnableEvidence": {
+    "message": "Habilitar captura de evidencia",
+    "description": "Enable evidence checkbox"
+  },
+  "builderEnableScoring": {
+    "message": "Habilitar puntuación",
+    "description": "Enable scoring checkbox label"
+  },
+  "builderEnterEmailPh": {
+    "message": "Ingrese el correo electrónico",
+    "description": "Conditional email placeholder"
+  },
+  "builderEnterMaxValuePh": {
+    "message": "Introduzca el valor máximo",
+    "description": "Number pass max placeholder"
+  },
+  "builderEnterMinValuePh": {
+    "message": "Introduzca el valor mínimo",
+    "description": "Number pass min placeholder"
+  },
+  "builderEnterNumberPh": {
+    "message": "Introduzca el número",
+    "description": "Conditional number placeholder"
+  },
+  "builderEnterSectionNamePh": {
+    "message": "Ingrese el nombre de la sección",
+    "description": "Section name placeholder in inspector"
+  },
+  "builderEnterSubsectionNamePh": {
+    "message": "Ingrese el nombre de la subsección",
+    "description": "Subsection name placeholder in inspector"
+  },
+  "builderEnterValuePh": {
+    "message": "Introducir valor",
+    "description": "Conditional text placeholder"
+  },
+  "builderEvidence": {
+    "message": "Evidencia",
+    "description": "Evidence settings section"
+  },
+  "builderEvidenceComment": {
+    "message": "Comentario",
+    "description": "Evidence type comment"
+  },
+  "builderEvidenceImage": {
+    "message": "Subir imagen",
+    "description": "Evidence type image"
+  },
+  "builderEvidenceNotRequired": {
+    "message": "No requerido",
+    "description": "Evidence requirement hidden"
+  },
+  "builderEvidenceOptional": {
+    "message": "Opcional",
+    "description": "Evidence requirement optional"
+  },
+  "builderEvidenceRequired": {
+    "message": "Requerido",
+    "description": "Evidence requirement required"
+  },
+  "builderEvidenceRuleNumber": {
+    "message": "Regla __UCI_0__",
+    "description": "Evidence rule heading"
+  },
+  "builderEvidenceRulesHint": {
+    "message": "Configure los requisitos de evidencia por opción de respuesta. Las entradas de evidencia aparecerán durante la ejecución de la auditoría cuando la respuesta seleccionada coincida con una regla.",
+    "description": "Evidence rules intro"
+  },
+  "builderEvidenceValidation": {
+    "message": "Se debe habilitar al menos un tipo de evidencia cuando cualquier regla está marcada como Obligatoria.",
+    "description": "Evidence validation error"
+  },
+  "builderEvidenceVideo": {
+    "message": "Subir vídeo",
+    "description": "Evidence type video"
+  },
+  "builderFileSettings": {
+    "message": "Configuración de archivos",
+    "description": "File question settings section"
+  },
+  "builderHelpTextInspectorPh": {
+    "message": "Sugerencia o explicación opcional que se muestra debajo de la pregunta.",
+    "description": "Help text placeholder in inspector"
+  },
+  "builderHelpTextLabel": {
+    "message": "Texto de ayuda",
+    "description": "Help text label in structured inspector"
+  },
+  "builderHelpTextPh": {
+    "message": "Descripción u orientación opcional",
+    "description": "Question help text placeholder on card"
+  },
+  "builderHelpTextStructuredPh": {
+    "message": "Sugerencia opcional que se muestra debajo de la pregunta.",
+    "description": "Help text placeholder structured mode"
+  },
+  "builderInspector": {
+    "message": "Inspector",
+    "description": "Inspector panel title"
+  },
+  "builderMaxValuePh": {
+    "message": "Valor máximo",
+    "description": "Between rule max placeholder"
+  },
+  "builderMinRating": {
+    "message": "Calificación mínima:",
+    "description": "Minimum rating label"
+  },
+  "builderMinValuePh": {
+    "message": "Valor mínimo",
+    "description": "Between rule min placeholder"
+  },
+  "builderNewQuestionPh": {
+    "message": "Nueva pregunta",
+    "description": "Default question text placeholder"
+  },
+  "builderNoSubsectionSelected": {
+    "message": "Ninguna subsección seleccionada",
+    "description": "Canvas title when nothing selected"
+  },
+  "builderOptionNumber": {
+    "message": "Opción __UCI_0__",
+    "description": "Dropdown option placeholder"
+  },
+  "builderOptions": {
+    "message": "Opciones",
+    "description": "Dropdown options section heading"
+  },
+  "builderPaletteDate": {
+    "message": "Fecha",
+    "description": "Question palette date"
+  },
+  "builderPaletteDropdown": {
+    "message": "Menú desplegable",
+    "description": "Question palette dropdown"
+  },
+  "builderPaletteEmail": {
+    "message": "Correo electrónico",
+    "description": "Question palette email"
+  },
+  "builderPaletteFileUpload": {
+    "message": "Carga de archivos",
+    "description": "Question palette file"
+  },
+  "builderPaletteLongText": {
+    "message": "Texto largo",
+    "description": "Question palette long text"
+  },
+  "builderPaletteNumber": {
+    "message": "Número",
+    "description": "Question palette number"
+  },
+  "builderPaletteRating": {
+    "message": "Clasificación",
+    "description": "Question palette rating"
+  },
+  "builderPaletteShortText": {
+    "message": "Texto corto",
+    "description": "Question palette short text"
+  },
+  "builderPaletteSignature": {
+    "message": "Firma",
+    "description": "Question palette signature"
+  },
+  "builderPaletteYesNo": {
+    "message": "Sí/No",
+    "description": "Question palette yes no"
+  },
+  "builderPassFailDefinition": {
+    "message": "Definición de aprobado/reprobado",
+    "description": "Pass fail definition label"
+  },
+  "builderPassFailDefinitionPh": {
+    "message": "Opcional: defina qué constituye un aprobado o reprobado para esta pregunta.",
+    "description": "Pass fail definition placeholder"
+  },
+  "builderPassIfAnswer": {
+    "message": "Pasa si la respuesta es",
+    "description": "Pass condition label"
+  },
+  "builderPassOptionsHint": {
+    "message": "Seleccione una o más opciones que constituyan un pase:",
+    "description": "Dropdown pass options hint"
+  },
+  "builderPassThreshold": {
+    "message": "Umbral de aprobación (%)",
+    "description": "Pass threshold percent label"
+  },
+  "builderPreview": {
+    "message": "Avance",
+    "description": "Preview form button"
+  },
+  "builderQtDate": {
+    "message": "Fecha",
+    "description": "Question type display: Date"
+  },
+  "builderQtDropdown": {
+    "message": "Menú desplegable",
+    "description": "Question type display: Dropdown"
+  },
+  "builderQtEmail": {
+    "message": "Correo electrónico",
+    "description": "Question type display: Email"
+  },
+  "builderQtFile": {
+    "message": "Archivo",
+    "description": "Question type display: File"
+  },
+  "builderQtNumber": {
+    "message": "Número",
+    "description": "Question type display: Number"
+  },
+  "builderQtRating": {
+    "message": "Clasificación",
+    "description": "Question type display: Rating"
+  },
+  "builderQtSignature": {
+    "message": "Firma",
+    "description": "Question type display: Signature"
+  },
+  "builderQtText": {
+    "message": "Texto",
+    "description": "Question type display: Text"
+  },
+  "builderQtTextarea": {
+    "message": "área de texto",
+    "description": "Question type display: Textarea"
+  },
+  "builderQtYesNo": {
+    "message": "Sí-No",
+    "description": "Question type display: Yes-No"
+  },
+  "builderQuestionCount": {
+    "message": "{count, plural, one {# pregunta} other {# preguntas}}",
+    "description": "Question count label"
+  },
+  "builderQuestionFallback": {
+    "message": "Pregunta __UCI_0__",
+    "description": "Fallback label for unnamed question in dropdown"
+  },
+  "builderQuestionId": {
+    "message": "ID de pregunta",
+    "description": "Question ID field label"
+  },
+  "builderQuestionIdHint": {
+    "message": "Identificador único para esta pregunta (usado en lógica condicional)",
+    "description": "Question ID hint"
+  },
+  "builderQuestionIndex": {
+    "message": "Pregunta __UCI_0__",
+    "description": "Selected question index label"
+  },
+  "builderQuestionSettings": {
+    "message": "Configuración de preguntas",
+    "description": "Inspector title when editing question"
+  },
+  "builderQuestionText": {
+    "message": "Texto de la pregunta",
+    "description": "Question text field label"
+  },
+  "builderQuestionTextLabel": {
+    "message": "Texto de la pregunta",
+    "description": "Question text label in structured inspector"
+  },
+  "builderQuestionsAvailable": {
+    "message": "({count} preguntas disponibles)",
+    "description": "Conditional visibility hint count"
+  },
+  "builderQuestionsHeading": {
+    "message": "Preguntas",
+    "description": "Flat mode questions panel heading"
+  },
+  "builderRatingPassHint": {
+    "message": "Las respuestas con calificación ≥ {min} pasarán",
+    "description": "Rating pass threshold hint"
+  },
+  "builderRemove": {
+    "message": "Eliminar",
+    "description": "Remove evidence rule button"
+  },
+  "builderRequired": {
+    "message": "Requerido",
+    "description": "Required question badge"
+  },
+  "builderRuleBetween": {
+    "message": "Entre (inclusive)",
+    "description": "Number scoring rule between"
+  },
+  "builderRuleGte": {
+    "message": "Mayor o igual a (≥)",
+    "description": "Number scoring rule gte"
+  },
+  "builderRuleLte": {
+    "message": "Menor o igual a (≤)",
+    "description": "Number scoring rule lte"
+  },
+  "builderScoring": {
+    "message": "Tanteo",
+    "description": "Scoring settings section"
+  },
+  "builderSectionName": {
+    "message": "Nombre de la sección",
+    "description": "Section name field label"
+  },
+  "builderSectionNamePh": {
+    "message": "Ingrese el nombre de la sección",
+    "description": "Section name placeholder"
+  },
+  "builderSectionNumber": {
+    "message": "Sección __UCI_0__ ·",
+    "description": "Section index prefix in structure tree"
+  },
+  "builderSectionSettings": {
+    "message": "Configuración de sección",
+    "description": "Inspector title when editing section"
+  },
+  "builderSectionSummary": {
+    "message": "{subsectionCount, plural, one {# subsección} other {# subsecciones}} • {questionCount, plural, one {# pregunta} other {# preguntas}}",
+    "description": "Section summary in structure panel"
+  },
+  "builderSectionThresholdHint": {
+    "message": "La sección pasa si su porcentaje de puntuación es ≥ este umbral. El valor predeterminado es 100%.",
+    "description": "Section threshold hint"
+  },
+  "builderSelectOption": {
+    "message": "Seleccione una opción",
+    "description": "Conditional value empty option"
+  },
+  "builderSelectQuestionEmpty": {
+    "message": "Seleccione una pregunta para editar su configuración",
+    "description": "Flat mode inspector empty state"
+  },
+  "builderSelectRating": {
+    "message": "Seleccione una calificación",
+    "description": "Conditional rating placeholder"
+  },
+  "builderSelectTargetEmpty": {
+    "message": "Seleccione una pregunta, subsección o sección para editar su configuración",
+    "description": "Structured inspector empty state"
+  },
+  "builderShellBackToForms": {
+    "message": "Volver a formularios",
+    "description": "Navigate back to forms list"
+  },
+  "builderShellEnablePublicFailed": {
+    "message": "No se pudo habilitar el enlace público. Por favor inténtalo de nuevo.",
+    "description": "Enable public link error"
+  },
+  "builderShellLoading": {
+    "message": "Cargando formulario...",
+    "description": "Form builder page loading"
+  },
+  "builderShellNameRequired": {
+    "message": "El nombre del formulario es obligatorio.",
+    "description": "Validation before save"
+  },
+  "builderShellNewForm": {
+    "message": "Nuevo formulario",
+    "description": "Default title for unsaved form"
+  },
+  "builderShellPageTitle": {
+    "message": "Creador de formularios",
+    "description": "Tab title for form builder"
+  },
+  "builderShellPreview": {
+    "message": "Avance",
+    "description": "Open preview button"
+  },
+  "builderShellPreviewModalTitle": {
+    "message": "Vista previa del formulario",
+    "description": "Preview modal heading"
+  },
+  "builderShellPublicLinkNotInResponse": {
+    "message": "Enlace público no encontrado en la respuesta del servidor.",
+    "description": "Public link error"
+  },
+  "builderShellPublicSlugMissing": {
+    "message": "Enlace público habilitado pero falta el slug.",
+    "description": "Public link error"
+  },
+  "builderShellSaveError": {
+    "message": "Error al guardar el formulario. Por favor inténtalo de nuevo.",
+    "description": "Generic save error"
+  },
+  "builderShellSaveSuccessCreated": {
+    "message": "¡Formulario creado exitosamente!",
+    "description": "Manual save success new form"
+  },
+  "builderShellSaveSuccessUpdated": {
+    "message": "¡Formulario actualizado exitosamente!",
+    "description": "Manual save success"
+  },
+  "builderShellTabDetails": {
+    "message": "Detalles",
+    "description": "Form builder tab"
+  },
+  "builderShellTabSections": {
+    "message": "Secciones y preguntas",
+    "description": "Form builder tab"
+  },
+  "builderShellTabSettings": {
+    "message": "Ajustes",
+    "description": "Form builder tab"
+  },
+  "builderShellUnexpectedResponse": {
+    "message": "Respuesta inesperada del servidor.",
+    "description": "Public link error"
+  },
+  "builderShowQuestionIf": {
+    "message": "Muestre esta pregunta si",
+    "description": "Conditional visibility label"
+  },
+  "builderStructure": {
+    "message": "Estructura",
+    "description": "Structure panel heading"
+  },
+  "builderStructureSectionNamePh": {
+    "message": "Nombre de la sección",
+    "description": "Structure tree section name placeholder"
+  },
+  "builderStructureSubsectionNamePh": {
+    "message": "Nombre de la subsección",
+    "description": "Structure tree subsection name placeholder"
+  },
+  "builderSubsectionActions": {
+    "message": "Acciones de subsección",
+    "description": "Subsection menu button title"
+  },
+  "builderSubsectionName": {
+    "message": "Nombre de la subsección",
+    "description": "Subsection name field label"
+  },
+  "builderSubsectionNamePh": {
+    "message": "Ingrese el nombre de la subsección",
+    "description": "Subsection name placeholder"
+  },
+  "builderSubsectionSettings": {
+    "message": "Configuración de subsección",
+    "description": "Inspector title when editing subsection"
+  },
+  "builderSubsectionThresholdHint": {
+    "message": "La subsección se aprueba si su porcentaje de puntuación es ≥ este umbral. El valor predeterminado es 100%.",
+    "description": "Subsection threshold hint"
+  },
+  "builderThresholdDefaultPh": {
+    "message": "100",
+    "description": "Default threshold placeholder"
+  },
+  "builderTitleAddSection": {
+    "message": "Agregar nueva sección",
+    "description": "Add section button tooltip"
+  },
+  "builderTitleDeleteSubsection": {
+    "message": "Eliminar subsección",
+    "description": "Delete subsection menu tooltip"
+  },
+  "builderTitleDuplicateSubsection": {
+    "message": "Subsección duplicada",
+    "description": "Duplicate subsection menu tooltip"
+  },
+  "builderTitleRemoveQuestion": {
+    "message": "Eliminar pregunta",
+    "description": "Remove question tooltip"
+  },
+  "builderTitleRemoveSection": {
+    "message": "Eliminar sección",
+    "description": "Remove section tooltip"
+  },
+  "builderType": {
+    "message": "Tipo",
+    "description": "Question type field label"
+  },
+  "builderUntitledSection": {
+    "message": "Sección sin título",
+    "description": "Fallback section title"
+  },
+  "builderUntitledSubsection": {
+    "message": "Subsección sin título",
+    "description": "Fallback subsection title"
+  },
+  "builderValue": {
+    "message": "Valor",
+    "description": "Conditional value label"
+  },
+  "builderVisibility": {
+    "message": "Visibilidad",
+    "description": "Visibility settings section"
+  },
+  "builderWeight": {
+    "message": "Peso",
+    "description": "Scoring weight label"
+  },
+  "builderWeightDefaultPh": {
+    "message": "1",
+    "description": "Default weight input placeholder"
+  },
+  "builderWeightQuestionHint": {
+    "message": "La ponderación predeterminada es 1. Las ponderaciones más altas contribuyen más a la puntuación general.",
+    "description": "Question weight hint"
+  },
+  "builderWeightSectionHint": {
+    "message": "La ponderación predeterminada es 1. Las ponderaciones más altas contribuyen más a la puntuación general de la auditoría.",
+    "description": "Section weight hint"
+  },
+  "builderWeightSubsectionHint": {
+    "message": "El peso predeterminado es 1. Los pesos más altos contribuyen más a la puntuación de la sección.",
+    "description": "Subsection weight hint"
+  },
+  "builderWhenAnswerIs": {
+    "message": "Cuando la respuesta es:",
+    "description": "Evidence rule when label"
+  },
+  "comparisonAverage": {
+    "message": "Comparar con el promedio",
+    "description": "Comparison type option"
+  },
+  "comparisonAverageLabel": {
+    "message": "Promedio",
+    "description": "Comparison label"
+  },
+  "comparisonAverageScore": {
+    "message": "Puntuación promedio",
+    "description": "Comparison score label"
+  },
+  "comparisonChange": {
+    "message": "Cambiar",
+    "description": "Comparison change column"
+  },
+  "comparisonChangeValue": {
+    "message": "Cambio: {value}",
+    "description": "Section comparison change prefix"
+  },
+  "comparisonCurrent": {
+    "message": "Actual",
+    "description": "Comparison column label"
+  },
+  "comparisonCurrentScore": {
+    "message": "Puntuación actual",
+    "description": "Comparison metric label"
+  },
+  "comparisonFailedLoad": {
+    "message": "No se pudieron cargar los datos de comparación",
+    "description": "Comparison load error"
+  },
+  "comparisonHeading": {
+    "message": "Comparación de respuestas",
+    "description": "Comparison panel heading"
+  },
+  "comparisonLastAudit": {
+    "message": "Comparar con la última auditoría",
+    "description": "Comparison type option"
+  },
+  "comparisonLastAuditLabel": {
+    "message": "Última auditoría",
+    "description": "Comparison label"
+  },
+  "comparisonLastAuditScore": {
+    "message": "Puntuación de la última auditoría",
+    "description": "Comparison score label"
+  },
+  "comparisonLoading": {
+    "message": "Cargando comparación...",
+    "description": "Comparison loading"
+  },
+  "comparisonNoMeaningful": {
+    "message": "No hay datos comparativos significativos disponibles.",
+    "description": "Empty comparison data state"
+  },
+  "comparisonNoPrevious": {
+    "message": "No hay auditorías previas disponibles para comparar.",
+    "description": "Comparison empty state"
+  },
+  "comparisonScoreDefault": {
+    "message": "Puntuación de comparación",
+    "description": "Default comparison score label"
+  },
+  "comparisonSectionHeading": {
+    "message": "Comparación de secciones",
+    "description": "Section comparison heading"
+  },
+  "comparisonSpecific": {
+    "message": "Comparar con auditoría específica",
+    "description": "Comparison type option"
+  },
+  "comparisonSpecificAuditScore": {
+    "message": "Puntuación de auditoría específica",
+    "description": "Comparison score label"
+  },
+  "comparisonSpecificLabel": {
+    "message": "Auditoría específica",
+    "description": "Comparison label"
+  },
+  "comparisonTrendAnalysis": {
+    "message": "Análisis de tendencias",
+    "description": "Trend analysis section heading"
+  },
+  "correctiveActionNoun": {
+    "message": "Acción correctiva",
+    "description": "Corrective action noun in buttons"
+  },
+  "correctiveActionTitle": {
+    "message": "Acción",
+    "description": "Corrective action block title"
+  },
+  "correctiveActionTitleField": {
+    "message": "Título de la acción",
+    "description": "Corrective action form field label"
+  },
+  "correctiveActionTitlePh": {
+    "message": "Describa la acción correctiva a tomar...",
+    "description": "Corrective action description placeholder"
+  },
+  "correctiveActionsHeading": {
+    "message": "Acciones correctivas",
+    "description": "Corrective actions panel heading"
+  },
+  "correctiveAllPassed": {
+    "message": "Todas las preguntas pasaron. No se requieren acciones correctivas.",
+    "description": "No failed questions success message"
+  },
+  "correctiveAnswerLabel": {
+    "message": "Respuesta:",
+    "description": "Failed question answer prefix"
+  },
+  "correctiveDueDate": {
+    "message": "Fecha de vencimiento",
+    "description": "Corrective action due date label"
+  },
+  "correctiveEditAction": {
+    "message": "Editar acción correctiva",
+    "description": "Edit corrective action button"
+  },
+  "correctiveLastUpdatedBy": {
+    "message": "Última actualización por",
+    "description": "Corrective action metadata label"
+  },
+  "correctiveLoadingPermissions": {
+    "message": "Cargando permisos…",
+    "description": "Permissions loading state"
+  },
+  "correctiveNoAnswer": {
+    "message": "Sin respuesta",
+    "description": "Empty answer display"
+  },
+  "correctiveNoDescription": {
+    "message": "No se proporciona descripción",
+    "description": "Empty corrective action description"
+  },
+  "correctiveNotSet": {
+    "message": "No establecido",
+    "description": "Missing due date placeholder"
+  },
+  "correctiveOwnersField": {
+    "message": "Propietarios de acciones correctivas",
+    "description": "Event field name in read-only message"
+  },
+  "correctivePassFailFail": {
+    "message": "Fallar",
+    "description": "Pass/fail badge fail label"
+  },
+  "correctiveProofFiles": {
+    "message": "Archivos de prueba",
+    "description": "Proof files section label"
+  },
+  "correctiveReadOnly": {
+    "message": "Esta sección es de sólo lectura. Solo los usuarios asignados en el {ownersField} del evento pueden actualizar las acciones correctivas.",
+    "description": "Read-only corrective actions message"
+  },
+  "correctiveSaveFailed": {
+    "message": "No se pudo guardar la acción correctiva",
+    "description": "Save failure message"
+  },
+  "correctiveSaveFailedRetry": {
+    "message": "No se pudo guardar la acción correctiva. Por favor inténtalo de nuevo.",
+    "description": "Save failure alert"
+  },
+  "correctiveServerError": {
+    "message": "Error del servidor ({status}). Por favor inténtalo de nuevo.",
+    "description": "Non-JSON server error"
+  },
+  "correctiveStatusCompleted": {
+    "message": "Terminado",
+    "description": "Corrective action status display"
+  },
+  "correctiveStatusInProgress": {
+    "message": "En curso",
+    "description": "Corrective action status display"
+  },
+  "correctiveStatusOpen": {
+    "message": "Abierto",
+    "description": "Corrective action status display"
+  },
+  "correctiveTitleRequired": {
+    "message": "Por favor proporcione un título/descripción de la acción",
+    "description": "Validation alert before save"
+  },
+  "correctiveUnknownUser": {
+    "message": "Usuario desconocido",
+    "description": "Fallback user name"
+  },
+  "correctiveUploadProof": {
+    "message": "Cargar prueba (opcional)",
+    "description": "Proof upload field label"
+  },
+  "createFormSubmit": {
+    "message": "Crear formulario",
+    "description": "Create form submit button"
+  },
+  "createNewFormSubtitle": {
+    "message": "Sigue los pasos para crear tu formulario",
+    "description": "Form creation modal subtitle"
+  },
+  "createNewFormTitle": {
+    "message": "Crear nuevo formulario",
+    "description": "Form creation modal title"
+  },
+  "dupActiveBody": {
+    "message": "Este formulario está actualmente activo y en uso. Para realizar este cambio, cree una nueva versión.",
+    "description": "Duplicate dialog explanation"
+  },
+  "dupActiveTitle": {
+    "message": "El formulario está activo",
+    "description": "Duplicate dialog title when form is active"
+  },
+  "dupBulletDraft": {
+    "message": "Se creará un nuevo formulario en estado Borrador.",
+    "description": "Duplicate benefit bullet"
+  },
+  "dupBulletEditable": {
+    "message": "Puede realizar todos los cambios en el nuevo formulario.",
+    "description": "Duplicate benefit bullet"
+  },
+  "dupBulletOriginal": {
+    "message": "La forma activa original permanece sin cambios.",
+    "description": "Duplicate benefit bullet"
+  },
+  "dupDuplicateEdit": {
+    "message": "Duplicar y editar",
+    "description": "Duplicate dialog confirm button"
+  },
+  "dupFailed": {
+    "message": "No se pudo duplicar el formulario",
+    "description": "Duplicate form error"
+  },
+  "dupFormIdRequired": {
+    "message": "Se requiere identificación del formulario",
+    "description": "Duplicate without form id error"
+  },
+  "dupWhatHappensHeading": {
+    "message": "¿Qué pasa cuando duplicas?",
+    "description": "Duplicate dialog bullets heading"
+  },
+  "editFormSubtitle": {
+    "message": "Actualiza los detalles de tu formulario",
+    "description": "Form edit modal subtitle"
+  },
+  "editFormTitle": {
+    "message": "Editar formulario",
+    "description": "Form edit modal title"
+  },
+  "emailExamplePh": {
+    "message": "correo electrónico@ejemplo.com",
+    "description": "Email question placeholder"
+  },
+  "evidenceAddRequiredHint": {
+    "message": "Por favor agregue la evidencia requerida para continuar",
+    "description": "Evidence validation banner"
+  },
+  "evidenceCommentLabel": {
+    "message": "Comentario",
+    "description": "Evidence comment field label"
+  },
+  "evidenceCommentPh": {
+    "message": "Añade un comentario…",
+    "description": "Evidence comment placeholder"
+  },
+  "evidenceCommentRequired": {
+    "message": "Se requiere comentario",
+    "description": "Evidence comment validation"
+  },
+  "evidenceImageRequired": {
+    "message": "Se requiere imagen",
+    "description": "Evidence image validation"
+  },
+  "evidenceImageUploadLabel": {
+    "message": "Subir imagen",
+    "description": "Evidence image field label"
+  },
+  "evidenceImageUploaded": {
+    "message": "Imagen cargada",
+    "description": "Evidence image fallback name"
+  },
+  "evidenceRequiredHeading": {
+    "message": "Evidencia requerida",
+    "description": "Audit evidence section heading"
+  },
+  "evidenceSelectedPrefix": {
+    "message": "Seleccionado:",
+    "description": "Evidence file selected prefix"
+  },
+  "evidenceVideoRequired": {
+    "message": "Se requiere vídeo",
+    "description": "Evidence video validation"
+  },
+  "evidenceVideoUploadLabel": {
+    "message": "Subir vídeo",
+    "description": "Evidence video field label"
+  },
+  "evidenceVideoUploaded": {
+    "message": "Vídeo subido",
+    "description": "Evidence video fallback name"
+  },
+  "fieldAddTagPh": {
+    "message": "Añadir etiqueta…",
+    "description": "Add tag input placeholder"
+  },
+  "fieldApprovalRequired": {
+    "message": "Aprobación requerida",
+    "description": "Approval required checkbox"
+  },
+  "fieldDescription": {
+    "message": "Descripción",
+    "description": "Form description field label"
+  },
+  "fieldDescriptionPh": {
+    "message": "Describa el propósito de este formulario...",
+    "description": "Form description placeholder"
+  },
+  "fieldExpiryDate": {
+    "message": "Fecha de vencimiento",
+    "description": "Survey expiry date label"
+  },
+  "fieldFormDescriptionPh": {
+    "message": "Ingrese la descripción del formulario",
+    "description": "Form description placeholder in builder tab"
+  },
+  "fieldFormId": {
+    "message": "ID del formulario",
+    "description": "Read-only form id label"
+  },
+  "fieldFormName": {
+    "message": "Nombre del formulario",
+    "description": "Form name field label"
+  },
+  "fieldFormNamePh": {
+    "message": "Introduzca el nombre del formulario",
+    "description": "Form name placeholder"
+  },
+  "fieldFormType": {
+    "message": "Tipo de formulario",
+    "description": "Form type field label"
+  },
+  "fieldNotes": {
+    "message": "Notas",
+    "description": "Internal notes field label"
+  },
+  "fieldNotesPh": {
+    "message": "Notas internas sobre este formulario",
+    "description": "Notes placeholder"
+  },
+  "fieldStatus": {
+    "message": "Estado",
+    "description": "Form status field label"
+  },
+  "fieldTags": {
+    "message": "Etiquetas",
+    "description": "Form tags field label"
+  },
+  "fieldVisibility": {
+    "message": "Visibilidad",
+    "description": "Form visibility field label"
+  },
+  "fileChooseFile": {
+    "message": "Elige el archivo",
+    "description": "File upload choose link"
+  },
+  "fileDragDropOr": {
+    "message": "Arrastre y suelte el archivo aquí o",
+    "description": "File upload drop zone lead-in"
+  },
+  "fileMaxSize": {
+    "message": "Tamaño máximo: 25 MB",
+    "description": "File upload max size"
+  },
+  "fileRemoveAria": {
+    "message": "Eliminar archivo",
+    "description": "Remove uploaded file button"
+  },
+  "fileSupportedAllTypes": {
+    "message": "Todos los tipos de archivos",
+    "description": "Supported formats all types"
+  },
+  "fileSupportedFormats": {
+    "message": "Formatos admitidos: {formats}",
+    "description": "File upload formats line"
+  },
+  "fileSupportedMultiple": {
+    "message": "Varios archivos",
+    "description": "Supported formats when multiple allowed"
+  },
+  "formBuilderTabTitle": {
+    "message": "Creador de formularios",
+    "description": "Tab title for form builder route"
+  },
+  "hubActionAddCorrective": {
+    "message": "Agregar acción correctiva",
+    "description": "Form responses row action"
+  },
+  "hubActionApprove": {
+    "message": "Aprobar",
+    "description": "Form responses row action"
+  },
+  "hubActionReject": {
+    "message": "Rechazar",
+    "description": "Form responses row action"
+  },
+  "hubActionViewDetails": {
+    "message": "Ver detalles",
+    "description": "Form responses row action"
+  },
+  "hubActionViewForm": {
+    "message": "Ver detalles del formulario",
+    "description": "Forms list row action tooltip"
+  },
+  "hubActionViewResponses": {
+    "message": "Ver respuestas",
+    "description": "Forms list row action tooltip"
+  },
+  "hubAnonymous": {
+    "message": "Anónimo",
+    "description": "Anonymous submitter label"
+  },
+  "hubApproveFailed": {
+    "message": "No se pudo aprobar la respuesta. Por favor inténtalo de nuevo.",
+    "description": "Approve response error"
+  },
+  "hubBackToResponses": {
+    "message": "Volver a Respuestas",
+    "description": "Response detail back navigation"
+  },
+  "hubBulkActionError": {
+    "message": "Error al realizar la acción masiva. Por favor inténtalo de nuevo.",
+    "description": "Forms bulk action failure alert"
+  },
+  "hubColAssignedTo": {
+    "message": "Asignado a",
+    "description": "Forms list column"
+  },
+  "hubColCreated": {
+    "message": "Creado",
+    "description": "Forms list column"
+  },
+  "hubColExecution": {
+    "message": "Ejecución",
+    "description": "Form responses column"
+  },
+  "hubColKpis": {
+    "message": "KPI",
+    "description": "Form responses column"
+  },
+  "hubColLinkedTo": {
+    "message": "Vinculado a",
+    "description": "Form responses column"
+  },
+  "hubColName": {
+    "message": "Nombre",
+    "description": "Forms list column"
+  },
+  "hubColReview": {
+    "message": "Revisar",
+    "description": "Form responses column"
+  },
+  "hubColScore": {
+    "message": "Puntaje",
+    "description": "Form responses column"
+  },
+  "hubColSubmitted": {
+    "message": "Enviado",
+    "description": "Form responses column"
+  },
+  "hubColSubmittedBy": {
+    "message": "Enviado por",
+    "description": "Form responses column"
+  },
+  "hubColType": {
+    "message": "Tipo",
+    "description": "Forms list column"
+  },
+  "hubColVisibility": {
+    "message": "Visibilidad",
+    "description": "Forms list column"
+  },
+  "hubConfirmApprove": {
+    "message": "¿Estás seguro de que quieres aprobar esta respuesta?",
+    "description": "Approve response confirm"
+  },
+  "hubConfirmDeleteResponse": {
+    "message": "¿Estás seguro de que deseas eliminar esta respuesta?",
+    "description": "Delete response confirm"
+  },
+  "hubConfirmReject": {
+    "message": "¿Estás seguro de que quieres rechazar esta respuesta?",
+    "description": "Reject response confirm"
+  },
+  "hubCreateLabel": {
+    "message": "Nuevo formulario",
+    "description": "Create form button on forms list"
+  },
+  "hubDeleteFormFailed": {
+    "message": "No se pudo eliminar el formulario. Por favor inténtalo de nuevo.",
+    "description": "Delete form error"
+  },
+  "hubDeleteResponseFailed": {
+    "message": "No se pudo eliminar la respuesta. Por favor inténtalo de nuevo.",
+    "description": "Delete response error"
+  },
+  "hubDescription": {
+    "message": "Cree y administre formularios, encuestas, auditorías y comentarios",
+    "description": "Forms hub list description"
+  },
+  "hubEmptyMessage": {
+    "message": "Los formularios le permiten recopilar información de clientes y miembros del equipo. Cree su primer formulario para comenzar a recopilar respuestas.",
+    "description": "Empty forms list body"
+  },
+  "hubEmptyTitle": {
+    "message": "Aún no hay formularios",
+    "description": "Empty forms list heading"
+  },
+  "hubExecutionInProgress": {
+    "message": "En curso",
+    "description": "Response execution status"
+  },
+  "hubExecutionNotStarted": {
+    "message": "No iniciado",
+    "description": "Response execution status"
+  },
+  "hubExecutionSubmitted": {
+    "message": "Enviado",
+    "description": "Response execution status"
+  },
+  "hubExportResponsesError": {
+    "message": "Error al exportar respuestas: {detail}",
+    "description": "Export responses error with detail"
+  },
+  "hubExportResponsesFailed": {
+    "message": "Se produjo un error durante la exportación.",
+    "description": "Export responses generic error"
+  },
+  "hubFilterAllAssignees": {
+    "message": "Todos los cesionarios",
+    "description": "Assignee filter group label"
+  },
+  "hubFilterAllStatus": {
+    "message": "Todo el estado",
+    "description": "Form status filter group label"
+  },
+  "hubFilterAllTypes": {
+    "message": "Todos los tipos",
+    "description": "Form type filter group label"
+  },
+  "hubFilterExecutionStatus": {
+    "message": "Estado de ejecución",
+    "description": "Form responses filter label"
+  },
+  "hubFilterFromDate": {
+    "message": "Desde la fecha",
+    "description": "Form responses date filter"
+  },
+  "hubFilterMyForms": {
+    "message": "Mis formularios",
+    "description": "Assigned-to-me filter option"
+  },
+  "hubFilterReviewStatus": {
+    "message": "Estado de revisión",
+    "description": "Form responses filter label"
+  },
+  "hubFilterToDate": {
+    "message": "Hasta la fecha",
+    "description": "Form responses date filter"
+  },
+  "hubFormNotFound": {
+    "message": "Formulario no encontrado",
+    "description": "Form detail load error"
+  },
+  "hubKpiCompliance": {
+    "message": "Cumplimiento: __UCI_0__%",
+    "description": "Response KPI cell"
+  },
+  "hubKpiPassRate": {
+    "message": "Tasa de aprobación: {value}%",
+    "description": "Response KPI cell"
+  },
+  "hubKpiRating": {
+    "message": "Clasificación: __UCI_0__/5",
+    "description": "Response KPI cell"
+  },
+  "hubLinkedContact": {
+    "message": "Contacto",
+    "description": "Linked record type badge"
+  },
+  "hubLinkedLead": {
+    "message": "Dirigir",
+    "description": "Linked record type badge"
+  },
+  "hubLoadFormFailed": {
+    "message": "No se pudo cargar el formulario",
+    "description": "Form detail load error fallback"
+  },
+  "hubNotInReview": {
+    "message": "No en revisión",
+    "description": "Review column empty state"
+  },
+  "hubPickerDefault": {
+    "message": "Por defecto",
+    "description": "Default form type badge in picker"
+  },
+  "hubPickerHeading": {
+    "message": "Elija un tipo de formulario",
+    "description": "New form type picker modal heading"
+  },
+  "hubPickerSubheading": {
+    "message": "Comience con la plantilla adecuada para su flujo de trabajo.",
+    "description": "New form type picker modal subheading"
+  },
+  "hubRejectFailed": {
+    "message": "No se pudo rechazar la respuesta. Por favor inténtalo de nuevo.",
+    "description": "Reject response error"
+  },
+  "hubRelatedRecords": {
+    "message": "Registros relacionados",
+    "description": "Form detail related records heading"
+  },
+  "hubResponseDetailApprove": {
+    "message": "Aprobar respuesta",
+    "description": "Approve response action button"
+  },
+  "hubResponseDetailApproved": {
+    "message": "Respuesta aprobada.",
+    "description": "Approve response success alert"
+  },
+  "hubResponseDetailAttachments": {
+    "message": "Adjuntos:",
+    "description": "Question attachments label"
+  },
+  "hubResponseDetailAuditor": {
+    "message": "Auditor:",
+    "description": "Linked event auditor label"
+  },
+  "hubResponseDetailCannotClose": {
+    "message": "No se puede cerrar la respuesta. Todas las acciones correctivas deben completarse y aprobarse.",
+    "description": "Close response blocked alert"
+  },
+  "hubResponseDetailClose": {
+    "message": "Cerrar respuesta",
+    "description": "Close response action button"
+  },
+  "hubResponseDetailCloseConfirm": {
+    "message": "¿Estás seguro de que quieres cerrar esta respuesta? Esta acción no se puede deshacer.",
+    "description": "Close response confirm"
+  },
+  "hubResponseDetailCloseFailed": {
+    "message": "No se pudo cerrar la respuesta. Por favor inténtalo de nuevo.",
+    "description": "Close response error alert"
+  },
+  "hubResponseDetailClosedHint": {
+    "message": "La respuesta está cerrada.",
+    "description": "Closed response read-only hint"
+  },
+  "hubResponseDetailClosedSuccess": {
+    "message": "La respuesta se cerró correctamente.",
+    "description": "Close response success alert"
+  },
+  "hubResponseDetailComplianceHint": {
+    "message": "% de controles obligatorios aprobados",
+    "description": "Compliance KPI help text"
+  },
+  "hubResponseDetailContradictionHint": {
+    "message": "Válido: El cumplimiento mide controles obligatorios, mientras que la puntuación general se basa en preguntas puntuables ponderadas. Un formulario puede tener un cumplimiento del 100 % si se aprueban todas las comprobaciones obligatorias, pero una puntuación general del 0 % si las preguntas puntuables no se ponderan ni responden.",
+    "description": "Compliance vs overall score explanation"
+  },
+  "hubResponseDetailCorrectiveOwner": {
+    "message": "Propietario correctivo:",
+    "description": "Linked event corrective owner label"
+  },
+  "hubResponseDetailJumpToSection": {
+    "message": "Saltar a la sección...",
+    "description": "Mobile section navigation placeholder"
+  },
+  "hubResponseDetailLoadFailed": {
+    "message": "No se pudo cargar la respuesta",
+    "description": "Response fetch error"
+  },
+  "hubResponseDetailLoadFormFailed": {
+    "message": "No se pudieron cargar los detalles del formulario",
+    "description": "Form fetch error on response detail"
+  },
+  "hubResponseDetailLoading": {
+    "message": "Cargando respuesta...",
+    "description": "Response detail loading message"
+  },
+  "hubResponseDetailNoAnswerProvided": {
+    "message": "No se proporcionó respuesta",
+    "description": "Empty answer placeholder"
+  },
+  "hubResponseDetailNotApplicable": {
+    "message": "N / A",
+    "description": "Pass/fail badge not applicable label"
+  },
+  "hubResponseDetailNotClosedYet": {
+    "message": "La respuesta no se puede cerrar todavía. Asegúrese de que todas las acciones correctivas estén verificadas y aprobadas.",
+    "description": "Close response incomplete alert"
+  },
+  "hubResponseDetailOverallScoreHint": {
+    "message": "Puntuación ponderada basada en preguntas puntuables",
+    "description": "Overall score KPI help text"
+  },
+  "hubResponseDetailPass": {
+    "message": "Aprobar",
+    "description": "Pass/fail badge pass label"
+  },
+  "hubResponseDetailPassRateHint": {
+    "message": "Preguntas puntuables aprobadas/preguntas puntuables totales",
+    "description": "Pass rate KPI help text"
+  },
+  "hubResponseDetailQuestionScore": {
+    "message": "Puntuación: __UCI_0__",
+    "description": "Question score in response body"
+  },
+  "hubResponseDetailRejected": {
+    "message": "Respuesta rechazada.",
+    "description": "Reject response success alert"
+  },
+  "hubResponseDetailReviewer": {
+    "message": "Crítico:",
+    "description": "Linked event reviewer label"
+  },
+  "hubResponseDetailReviewerOnly": {
+    "message": "Sólo el revisor asignado puede aprobar o enviar esta respuesta de auditoría.",
+    "description": "Reviewer-only actions hint"
+  },
+  "hubResponseDetailSectionScore": {
+    "message": "Puntuación: __UCI_0__%",
+    "description": "Section score in response body"
+  },
+  "hubResponseDetailSectionsNav": {
+    "message": "Secciones",
+    "description": "Section navigation sidebar heading"
+  },
+  "hubResponseDetailSelfReviewBadge": {
+    "message": "Auditoría autoevaluada",
+    "description": "Self-reviewed audit badge label"
+  },
+  "hubResponseDetailSelfReviewTitle": {
+    "message": "Esta auditoría fue revisada por el mismo usuario que la realizó.",
+    "description": "Self-reviewed audit badge tooltip"
+  },
+  "hubResponseDetailSendBack": {
+    "message": "Enviar de vuelta para corrección",
+    "description": "Send response back for correction"
+  },
+  "hubResponseDetailSendBackConfirm": {
+    "message": "¿Está seguro de que desea devolver esta respuesta para su corrección? Esto rechazará la respuesta actual.",
+    "description": "Send back for correction confirm"
+  },
+  "hubResponseDetailSubmittedAt": {
+    "message": "Enviado {date}",
+    "description": "Response submission timestamp line"
+  },
+  "hubResponseDetailSubsectionPrefix": {
+    "message": "└ __UCI_0__",
+    "description": "Subsection option prefix in mobile nav"
+  },
+  "hubResponseDetailTabResponse": {
+    "message": "Respuesta",
+    "description": "Tab title fallback segment for response detail"
+  },
+  "hubResponseDetailTitle": {
+    "message": "Detalles de la respuesta",
+    "description": "Response detail page heading"
+  },
+  "hubResponseDetailWhyDifferent": {
+    "message": "¿Por qué diferente?",
+    "description": "Compliance vs score info link"
+  },
+  "hubResponsesDescription": {
+    "message": "Respuestas para {formId}",
+    "description": "Form responses list description fallback"
+  },
+  "hubResponsesEmptyMessage": {
+    "message": "Las respuestas aparecerán aquí una vez que las personas comiencen a completar este formulario. Comparta el enlace del formulario para comenzar a recopilar información.",
+    "description": "Empty form responses body"
+  },
+  "hubResponsesEmptyTitle": {
+    "message": "Aún no hay respuestas",
+    "description": "Empty form responses heading"
+  },
+  "hubResponsesFormIdFallback": {
+    "message": "este formulario",
+    "description": "Form ID placeholder when form has no formId"
+  },
+  "hubResponsesSearchPlaceholder": {
+    "message": "Buscar respuestas...",
+    "description": "Form responses search placeholder"
+  },
+  "hubResponsesTitleFallback": {
+    "message": "Respuestas del formulario",
+    "description": "Form responses list title fallback"
+  },
+  "hubReviewClosed": {
+    "message": "Cerrado",
+    "description": "Response review status"
+  },
+  "hubReviewNeedsAuditor": {
+    "message": "Necesita revisión del auditor",
+    "description": "Response review status"
+  },
+  "hubReviewPendingCorrective": {
+    "message": "Acción correctiva pendiente",
+    "description": "Response review status"
+  },
+  "hubSearchPlaceholder": {
+    "message": "Buscar formularios...",
+    "description": "Forms list search placeholder"
+  },
+  "hubSectionCount": {
+    "message": "{count, plural, one {# sección} other {# secciones}}",
+    "description": "Score cell section count"
+  },
+  "hubStatApproved": {
+    "message": "Aprobado",
+    "description": "Form responses KPI label"
+  },
+  "hubStatNeedsAction": {
+    "message": "Necesita acción",
+    "description": "Form responses KPI label"
+  },
+  "hubStatNew": {
+    "message": "Nuevo",
+    "description": "Form responses KPI label"
+  },
+  "hubStatTotalForms": {
+    "message": "Formularios totales",
+    "description": "Forms list KPI label"
+  },
+  "hubStatTotalResponses": {
+    "message": "Respuestas totales",
+    "description": "Forms list KPI label"
+  },
+  "hubSubtitleForm": {
+    "message": "__UCI_0__ • __UCI_1__",
+    "description": "Form detail summary subtitle"
+  },
+  "hubTabDuplicateForm": {
+    "message": "Duplicado: {name}",
+    "description": "Tab title when duplicating a form"
+  },
+  "hubTabEditForm": {
+    "message": "Editar: __UCI_0__",
+    "description": "Tab title when editing a form"
+  },
+  "hubTabFormBuilder": {
+    "message": "Creador de formularios",
+    "description": "Tab title for form builder"
+  },
+  "hubTabFormDetails": {
+    "message": "Detalles del formulario",
+    "description": "Tab title for form detail view"
+  },
+  "hubTabNewForm": {
+    "message": "Nueva __UCI_0__",
+    "description": "Tab title when creating a form"
+  },
+  "hubTabResponsesTitle": {
+    "message": "__UCI_0__ - Respuestas",
+    "description": "Tab title for form responses list"
+  },
+  "hubTitle": {
+    "message": "Formularios",
+    "description": "Forms hub list page title"
+  },
+  "hubTypeAuditDesc": {
+    "message": "Auditorías estructuradas con puntuación, captura de evidencia y aprobaciones.",
+    "description": "Audit type picker description"
+  },
+  "hubTypeAuditSubtitle": {
+    "message": "Listas de verificación y cumplimiento",
+    "description": "Audit type picker subtitle"
+  },
+  "hubTypeFeedbackDesc": {
+    "message": "Comentarios rápidos con calificaciones, comentarios y seguimiento opcional.",
+    "description": "Feedback type picker description"
+  },
+  "hubTypeFeedbackSubtitle": {
+    "message": "NPS/CSAT/CES",
+    "description": "Feedback type picker subtitle"
+  },
+  "hubTypeFormFallback": {
+    "message": "Forma",
+    "description": "Form type label fallback on detail view"
+  },
+  "hubTypeSurveyDesc": {
+    "message": "Encuestas de preguntas múltiples con lógica, ramificación y puntuación.",
+    "description": "Survey type picker description"
+  },
+  "hubTypeSurveySubtitle": {
+    "message": "Información sobre clientes y empleados",
+    "description": "Survey type picker subtitle"
+  },
+  "hubUntitledForm": {
+    "message": "Formulario sin título",
+    "description": "Form detail name fallback"
+  },
+  "nextStepBlockedTitle": {
+    "message": "Complete todos los campos obligatorios en el paso actual",
+    "description": "Next button disabled tooltip"
+  },
+  "outcomesAuditRulesDesc": {
+    "message": "Elija cómo se determina el resultado final de la auditoría.",
+    "description": "Audit result rules description"
+  },
+  "outcomesAuditRulesHeading": {
+    "message": "Reglas de resultados de auditoría",
+    "description": "Audit result rules section"
+  },
+  "outcomesEmitAuditFail": {
+    "message": "Emitir evento cuando falla la auditoría",
+    "description": "Post-submission signal checkbox"
+  },
+  "outcomesEmitAuditFailHint": {
+    "message": "Activar un evento cuando el resultado general de la auditoría sea un error",
+    "description": "Post-submission signal hint"
+  },
+  "outcomesEmitCriticalFail": {
+    "message": "Emitir evento cuando falla una pregunta crítica",
+    "description": "Post-submission signal checkbox"
+  },
+  "outcomesEmitCriticalFailHint": {
+    "message": "Activar un evento cuando falla cualquier pregunta marcada como crítica",
+    "description": "Post-submission signal hint"
+  },
+  "outcomesEmitMissingEvidence": {
+    "message": "Emitir evento cuando falta la evidencia requerida",
+    "description": "Post-submission signal checkbox"
+  },
+  "outcomesEmitMissingEvidenceHint": {
+    "message": "Activar un evento cuando no se proporcionan los archivos adjuntos o las pruebas requeridas",
+    "description": "Post-submission signal hint"
+  },
+  "outcomesEmitSectionFail": {
+    "message": "Emitir evento cuando falla una sección",
+    "description": "Post-submission signal checkbox"
+  },
+  "outcomesEmitSectionFailHint": {
+    "message": "Activar un evento cuando cualquier sección individual no alcanza su umbral de aprobación",
+    "description": "Post-submission signal hint"
+  },
+  "outcomesGovernanceDesc": {
+    "message": "Metadatos del formulario e información de versión.",
+    "description": "Governance section description"
+  },
+  "outcomesGovernanceHeading": {
+    "message": "Gobernancia",
+    "description": "Governance section heading"
+  },
+  "outcomesHeading": {
+    "message": "Resultados y reglas",
+    "description": "Form builder step 3 heading"
+  },
+  "outcomesMetricAvgRatingHint": {
+    "message": "Puntuación de calificación promedio de todas las preguntas de tipo calificación",
+    "description": "Average rating metric hint"
+  },
+  "outcomesMetricEvidence": {
+    "message": "% de finalización de pruebas",
+    "description": "Reporting metric checkbox"
+  },
+  "outcomesMetricEvidenceHint": {
+    "message": "Porcentaje de elementos de evidencia requeridos que se han proporcionado",
+    "description": "Reporting metric hint"
+  },
+  "outcomesMetricOverallCompliance": {
+    "message": "% de cumplimiento general",
+    "description": "Reporting metric checkbox"
+  },
+  "outcomesMetricOverallComplianceHint": {
+    "message": "Porcentaje de cumplimiento general en todas las secciones",
+    "description": "Reporting metric hint"
+  },
+  "outcomesMetricSectionWise": {
+    "message": "Cumplimiento por secciones",
+    "description": "Reporting metric checkbox"
+  },
+  "outcomesMetricSectionWiseHint": {
+    "message": "Porcentaje de cumplimiento individual para cada apartado",
+    "description": "Reporting metric hint"
+  },
+  "outcomesOverallScoreCalc": {
+    "message": "Cálculo de puntuación general:",
+    "description": "Read-only formula label"
+  },
+  "outcomesOverallScoreCalcHint": {
+    "message": "Esta fórmula se calcula a partir de la puntuación de secciones y subsecciones configuradas en los pasos anteriores.",
+    "description": "Formula hint"
+  },
+  "outcomesPostSubmissionAutomationHint": {
+    "message": "Las asignaciones de usuarios y las notificaciones se configuran por separado en los flujos de trabajo de automatización.",
+    "description": "Post-submission automation hint"
+  },
+  "outcomesPostSubmissionDesc": {
+    "message": "Defina qué eventos se emiten cuando se envía una auditoría. Estos eventos serán consumidos por las reglas de automatización.",
+    "description": "Post-submission description"
+  },
+  "outcomesPostSubmissionHeading": {
+    "message": "Señales posteriores al envío",
+    "description": "Post-submission signals section"
+  },
+  "outcomesReportingDesc": {
+    "message": "Seleccione qué métricas de resultados estarán disponibles para informes, paneles y exportaciones.",
+    "description": "Reporting metrics description"
+  },
+  "outcomesReportingHeading": {
+    "message": "Métricas de informes",
+    "description": "Reporting metrics section"
+  },
+  "outcomesReportingTemplateHint": {
+    "message": "La presentación y el diseño se configuran en el paso Plantilla de respuesta.",
+    "description": "Reporting metrics template hint"
+  },
+  "outcomesRuleAnySectionFails": {
+    "message": "La auditoría falla si falla alguna sección",
+    "description": "Audit result rule option"
+  },
+  "outcomesRuleAnySectionFailsHint": {
+    "message": "Valor predeterminado recomendado. La auditoría falla si alguna sección no alcanza su umbral de aprobación.",
+    "description": "Audit result rule hint"
+  },
+  "outcomesRuleOverallScore": {
+    "message": "Resultado de la auditoría basado únicamente en la puntuación general",
+    "description": "Audit result rule option"
+  },
+  "outcomesRuleOverallScoreHint": {
+    "message": "El resultado de la auditoría está determinado únicamente por el porcentaje de cumplimiento general, independientemente de los resultados de las secciones individuales.",
+    "description": "Audit result rule hint"
+  },
+  "outcomesSubtitle": {
+    "message": "Defina cómo se evalúan los resultados de la auditoría y qué datos de resultados se exponen después del envío.",
+    "description": "Step 3 subtitle"
+  },
+  "permBlockingActive": {
+    "message": "Este formulario está actualmente activo y en uso.\nPara realizar este cambio, cree una nueva versión.",
+    "description": "Tooltip when structural edit blocked on active form"
+  },
+  "permBlockingArchived": {
+    "message": "Este formulario está archivado y no se puede editar.\nPara realizar cambios, duplique el formulario.",
+    "description": "Tooltip when edit blocked on archived form"
+  },
+  "previewActiveTemplate": {
+    "message": "Plantilla activa: {name}",
+    "description": "Active report template label"
+  },
+  "previewAuditFailAnySection": {
+    "message": "La auditoría falla si falla alguna sección",
+    "description": "Audit result rule label"
+  },
+  "previewAuditFailAnySectionDesc": {
+    "message": "La auditoría falla si alguna sección no alcanza su umbral de aprobación.",
+    "description": "Audit result rule description"
+  },
+  "previewAuditOverallScoreOnly": {
+    "message": "Resultado de la auditoría basado únicamente en la puntuación general",
+    "description": "Audit result rule label"
+  },
+  "previewAuditOverallScoreOnlyDesc": {
+    "message": "El resultado de la auditoría está determinado únicamente por el porcentaje de cumplimiento general, independientemente de los resultados de las secciones individuales.",
+    "description": "Audit result rule description"
+  },
+  "previewAuditResultRules": {
+    "message": "Reglas de resultados de auditoría",
+    "description": "Audit result rules section heading"
+  },
+  "previewChecklistOutcome": {
+    "message": "Se selecciona la regla de resultado",
+    "description": "Readiness outcome item"
+  },
+  "previewChecklistOutcomeMissing": {
+    "message": "Se debe seleccionar una regla de resultado de auditoría",
+    "description": "Readiness outcome incomplete"
+  },
+  "previewChecklistScoring": {
+    "message": "Las reglas de puntuación están configuradas.",
+    "description": "Readiness scoring item"
+  },
+  "previewChecklistScoringMissing": {
+    "message": "Las preguntas puntuables deben tener condiciones de aprobación y ponderaciones ≥ 1",
+    "description": "Readiness scoring incomplete"
+  },
+  "previewChecklistScoringOk": {
+    "message": "Todas las preguntas puntuables tienen condiciones y ponderaciones para aprobar.",
+    "description": "Readiness scoring ok"
+  },
+  "previewChecklistSections": {
+    "message": "Se definen secciones y preguntas.",
+    "description": "Readiness checklist item"
+  },
+  "previewChecklistSectionsMissing": {
+    "message": "Se requiere al menos una sección con preguntas.",
+    "description": "Readiness sections incomplete"
+  },
+  "previewChecklistSectionsOkAudit": {
+    "message": "{count} sección(es) configuradas",
+    "description": "Readiness sections ok audit"
+  },
+  "previewChecklistSectionsOkSurvey": {
+    "message": "Preguntas configuradas",
+    "description": "Readiness sections ok survey"
+  },
+  "previewChecklistTemplate": {
+    "message": "La plantilla de respuesta está seleccionada.",
+    "description": "Readiness template item"
+  },
+  "previewChecklistTemplateDefaultSuffix": {
+    "message": "(por defecto)",
+    "description": "Default template suffix in readiness"
+  },
+  "previewChecklistUsingTemplate": {
+    "message": "Usando plantilla: {name}{suffix}",
+    "description": "Readiness template message"
+  },
+  "previewClosePanelSr": {
+    "message": "Cerrar panel",
+    "description": "Preview drawer close screen reader"
+  },
+  "previewDefaultReportHeading": {
+    "message": "Informe de auditoría",
+    "description": "Default report template heading block"
+  },
+  "previewDefaultTemplateName": {
+    "message": "Plantilla predeterminada",
+    "description": "Default report template name"
+  },
+  "previewDrawerSubtitle": {
+    "message": "Obtenga una vista previa de su formulario tal como aparecerá para los usuarios",
+    "description": "Preview drawer subtitle"
+  },
+  "previewDrawerTitle": {
+    "message": "Vista previa del formulario",
+    "description": "Preview drawer title"
+  },
+  "previewExecutionIntro": {
+    "message": "Así es como aparecerá el formulario cuando se ejecute. La vista previa es de solo lectura.",
+    "description": "Execution preview panel intro"
+  },
+  "previewExecutionTitle": {
+    "message": "Vista previa de ejecución",
+    "description": "Execution preview panel title"
+  },
+  "previewFixIssuesHeading": {
+    "message": "Solucione los siguientes problemas antes de guardar:",
+    "description": "Validation errors heading"
+  },
+  "previewFormReadySaved": {
+    "message": "El formulario está listo para ser guardado.",
+    "description": "Readiness success message"
+  },
+  "previewFormSavedNotLiveYet": {
+    "message": "Este formulario está guardado pero aún no está activo.",
+    "description": "Readiness success hint"
+  },
+  "previewMetricAverageRating": {
+    "message": "Calificación promedio",
+    "description": "Reporting metric label"
+  },
+  "previewMetricEvidenceCompletion": {
+    "message": "% de finalización de pruebas",
+    "description": "Reporting metric label"
+  },
+  "previewMetricOverallCompliance": {
+    "message": "% de cumplimiento general",
+    "description": "Reporting metric label"
+  },
+  "previewMetricSectionWise": {
+    "message": "Cumplimiento por secciones",
+    "description": "Reporting metric label"
+  },
+  "previewNoBlocksInTemplate": {
+    "message": "No hay bloques en la plantilla (se utilizará la plantilla predeterminada)",
+    "description": "Empty report template blocks"
+  },
+  "previewNoData": {
+    "message": "No hay datos de formulario disponibles para vista previa",
+    "description": "Empty form preview state"
+  },
+  "previewNoMetricsEnabled": {
+    "message": "No hay métricas de informes habilitadas",
+    "description": "Empty reporting metrics state"
+  },
+  "previewOutcomeIntro": {
+    "message": "Revise las reglas de resultados de auditoría, las métricas de informes y la configuración de la plantilla de informes.",
+    "description": "Outcome preview panel intro"
+  },
+  "previewOutcomeTitle": {
+    "message": "Vista previa de resultados e informes",
+    "description": "Outcome preview panel title"
+  },
+  "previewReadinessIntro": {
+    "message": "Confirme que todos los componentes requeridos estén configurados.",
+    "description": "Readiness checklist intro"
+  },
+  "previewReadinessTitle": {
+    "message": "Verificación final de preparación",
+    "description": "Readiness checklist title"
+  },
+  "previewReportTemplate": {
+    "message": "Plantilla de informe",
+    "description": "Report template section heading"
+  },
+  "previewReportingMetrics": {
+    "message": "Métricas de informes",
+    "description": "Reporting metrics section heading"
+  },
+  "previewSaveHeading": {
+    "message": "Vista previa y guardar",
+    "description": "Preview and save step heading"
+  },
+  "previewSaveIntro": {
+    "message": "Revise la definición de su formulario y confirme que esté listo para usarse. Este paso no publica el formulario.",
+    "description": "Preview and save step intro"
+  },
+  "previewSubmitForm": {
+    "message": "Enviar formulario",
+    "description": "Form preview submit button"
+  },
+  "previewTabExecution": {
+    "message": "Ejecución",
+    "description": "Preview save execution tab"
+  },
+  "previewTabOutcome": {
+    "message": "Resultado",
+    "description": "Preview save outcome tab"
+  },
+  "rbActionItemsNoteBody": {
+    "message": "Los datos provienen de acciones correctivas. Sólo se pueden configurar opciones de visualización y filtrado.",
+    "description": "Action items notice"
+  },
+  "rbBlockType": {
+    "message": "Tipo de bloque",
+    "description": "Block settings block type label"
+  },
+  "rbBottomAreasCount": {
+    "message": "Recuento de áreas inferiores",
+    "description": "Number input label"
+  },
+  "rbBrandingNoteBody": {
+    "message": "El logotipo y los colores se configuran en la configuración de marca de la plantilla, no por bloque.",
+    "description": "Report identity branding note"
+  },
+  "rbChartArea": {
+    "message": "Gráfico de área",
+    "description": "Chart type option"
+  },
+  "rbChartBar": {
+    "message": "Gráfico de barras",
+    "description": "Chart type option"
+  },
+  "rbChartDonut": {
+    "message": "Gráfico de anillos",
+    "description": "Chart type option"
+  },
+  "rbChartGauge": {
+    "message": "Indicador",
+    "description": "Chart type option"
+  },
+  "rbChartLine": {
+    "message": "Gráfico de líneas",
+    "description": "Chart type option"
+  },
+  "rbChartNone": {
+    "message": "Sin gráfico",
+    "description": "Chart type option"
+  },
+  "rbChartTitle": {
+    "message": "Título del gráfico",
+    "description": "Chart block label"
+  },
+  "rbChartTitlePh": {
+    "message": "Introduzca el título del gráfico",
+    "description": "Chart title placeholder"
+  },
+  "rbChartType": {
+    "message": "Tipo de gráfico",
+    "description": "Chart type select label"
+  },
+  "rbComparePreviousAudit": {
+    "message": "Comparar con auditoría anterior",
+    "description": "Checkbox label"
+  },
+  "rbComparisonPeriod": {
+    "message": "Período de comparación",
+    "description": "Comparison settings label"
+  },
+  "rbCoreBlock": {
+    "message": "Bloque central",
+    "description": "Core block badge"
+  },
+  "rbCoreOverallPerformanceBody": {
+    "message": "Este bloque muestra métricas de rendimiento generales. Sólo se pueden configurar opciones de presentación.",
+    "description": "Overall performance core notice"
+  },
+  "rbCorePresentationOnly": {
+    "message": "Este es un bloque de informe central. Sólo se pueden modificar las configuraciones de presentación.",
+    "description": "Core block settings hint"
+  },
+  "rbCoreReportIdentityBody": {
+    "message": "Este bloque muestra información de identidad del informe. Sólo se pueden configurar opciones de presentación.",
+    "description": "Report identity core notice body"
+  },
+  "rbCoreSectionBreakdownBody": {
+    "message": "Este bloque muestra el rendimiento sección por sección. Sólo se pueden configurar opciones de presentación.",
+    "description": "Section breakdown core notice"
+  },
+  "rbDataSourceMetric": {
+    "message": "Fuente de datos (métrica)",
+    "description": "Chart metric select label"
+  },
+  "rbDetailedFindingsNoteBody": {
+    "message": "Los datos provienen de los detalles de la respuesta. Sólo se pueden configurar las opciones de filtrado y visualización de columnas.",
+    "description": "Detailed findings notice"
+  },
+  "rbFailedPoints": {
+    "message": "Puntos fallidos",
+    "description": "Metric checkbox label"
+  },
+  "rbGroupByCategory": {
+    "message": "Agrupar por categoría",
+    "description": "Checkbox label"
+  },
+  "rbGroupByDepartment": {
+    "message": "Agrupar por Departamento",
+    "description": "Checkbox label"
+  },
+  "rbHeadingText": {
+    "message": "Texto del encabezado",
+    "description": "Heading block settings label"
+  },
+  "rbHeadingTextPh": {
+    "message": "Introduzca el texto del encabezado",
+    "description": "Heading text placeholder"
+  },
+  "rbHighlightCurrentAudit": {
+    "message": "Resaltar la auditoría actual",
+    "description": "Checkbox label"
+  },
+  "rbHighlightFailedSections": {
+    "message": "Resaltar secciones fallidas",
+    "description": "Checkbox label"
+  },
+  "rbIncludeItemsFromPreviousAudits": {
+    "message": "Incluir elementos de auditorías anteriores",
+    "description": "Checkbox label"
+  },
+  "rbIncludeScoreContext": {
+    "message": "Incluir contexto de puntuación",
+    "description": "Checkbox label"
+  },
+  "rbIncludeTrendInfo": {
+    "message": "Incluir información de tendencias",
+    "description": "Checkbox label"
+  },
+  "rbLabelCoreBlock": {
+    "message": "Bloque central:",
+    "description": "Core block notice label"
+  },
+  "rbLabelNote": {
+    "message": "Nota:",
+    "description": "Note label in block settings"
+  },
+  "rbLayout": {
+    "message": "Disposición",
+    "description": "Layout select label"
+  },
+  "rbLayoutGrid": {
+    "message": "Red",
+    "description": "Layout option"
+  },
+  "rbLayoutList": {
+    "message": "Lista",
+    "description": "Layout option"
+  },
+  "rbLayoutSideBySide": {
+    "message": "Juntos",
+    "description": "Layout option"
+  },
+  "rbLayoutStacked": {
+    "message": "apilados",
+    "description": "Layout option"
+  },
+  "rbLayoutTable": {
+    "message": "Mesa",
+    "description": "Layout option"
+  },
+  "rbLevel": {
+    "message": "Nivel",
+    "description": "Heading level label"
+  },
+  "rbLevel1": {
+    "message": "Nivel 1 (más grande)",
+    "description": "Heading level option"
+  },
+  "rbLevel2": {
+    "message": "Nivel 2",
+    "description": "Heading level option"
+  },
+  "rbLevel3": {
+    "message": "Nivel 3 (más pequeño)",
+    "description": "Heading level option"
+  },
+  "rbMentionBottomAreas": {
+    "message": "Mencione las áreas que necesitan mejorar",
+    "description": "Checkbox label"
+  },
+  "rbMentionTopAreas": {
+    "message": "Mencione las áreas de mejor desempeño",
+    "description": "Checkbox label"
+  },
+  "rbMetrics": {
+    "message": "Métrica",
+    "description": "Metrics label"
+  },
+  "rbMetricsStep3Hint": {
+    "message": "Solo están disponibles las métricas habilitadas en el Paso 3",
+    "description": "Chart metric hint"
+  },
+  "rbMetricsToCompare": {
+    "message": "Métricas para comparar",
+    "description": "Comparison metrics label"
+  },
+  "rbNarrativeNoteBody": {
+    "message": "La narrativa se genera automáticamente a partir de los datos de respuesta. Sólo se pueden configurar opciones de presentación.",
+    "description": "Narrative summary notice"
+  },
+  "rbNonComplianceNoteBody": {
+    "message": "Los datos se calculan a partir de preguntas fallidas. Sólo se pueden configurar opciones de agrupación y visualización.",
+    "description": "Non-compliance notice"
+  },
+  "rbNumberOfAudits": {
+    "message": "Número de auditorías",
+    "description": "Trend settings label"
+  },
+  "rbPerformanceTrendsNoteBody": {
+    "message": "Los datos se obtienen de respuestas históricas. Sólo se pueden configurar las opciones de visualización de gráficos.",
+    "description": "Performance trends notice"
+  },
+  "rbPeriodLast3Audits": {
+    "message": "Últimas 3 auditorías",
+    "description": "Comparison period option"
+  },
+  "rbPeriodPreviousAudit": {
+    "message": "Auditoría previa",
+    "description": "Comparison period option"
+  },
+  "rbReportTitle": {
+    "message": "Título del informe",
+    "description": "Report identity report title label"
+  },
+  "rbSelectMetricPh": {
+    "message": "Seleccionar métrica...",
+    "description": "Chart metric placeholder"
+  },
+  "rbShowActionItemStatus": {
+    "message": "Mostrar estado del elemento de acción",
+    "description": "Checkbox label"
+  },
+  "rbShowAddress": {
+    "message": "Mostrar dirección",
+    "description": "Report identity checkbox"
+  },
+  "rbShowAssignedUser": {
+    "message": "Mostrar usuario asignado",
+    "description": "Checkbox label"
+  },
+  "rbShowAuditId": {
+    "message": "Mostrar ID de auditoría",
+    "description": "Report identity checkbox"
+  },
+  "rbShowAverageTrendLine": {
+    "message": "Mostrar línea de tendencia promedio",
+    "description": "Checkbox label"
+  },
+  "rbShowBenchmarkComparison": {
+    "message": "Mostrar comparación de puntos de referencia",
+    "description": "Checkbox label"
+  },
+  "rbShowChangeFromPrevious": {
+    "message": "Mostrar cambios de la auditoría anterior",
+    "description": "Checkbox label"
+  },
+  "rbShowChangeIndicators": {
+    "message": "Mostrar indicadores de cambio",
+    "description": "Checkbox label"
+  },
+  "rbShowCheckInOutDates": {
+    "message": "Mostrar fechas de entrada/salida",
+    "description": "Report identity checkbox"
+  },
+  "rbShowCompliancePercentage": {
+    "message": "Mostrar porcentaje de cumplimiento",
+    "description": "Checkbox label"
+  },
+  "rbShowCreationDueDates": {
+    "message": "Mostrar fechas de creación/vencimiento",
+    "description": "Checkbox label"
+  },
+  "rbShowCurrentAuditScores": {
+    "message": "Mostrar puntuaciones de auditoría actuales",
+    "description": "Checkbox label"
+  },
+  "rbShowDates": {
+    "message": "Mostrar fechas",
+    "description": "Checkbox label"
+  },
+  "rbShowEvidenceAttachments": {
+    "message": "Mostrar archivos adjuntos de evidencia",
+    "description": "Checkbox label"
+  },
+  "rbShowEvidenceStatus": {
+    "message": "Mostrar estado de la evidencia",
+    "description": "Checkbox label"
+  },
+  "rbShowGeneralManager": {
+    "message": "Mostrar Gerente General",
+    "description": "Report identity checkbox"
+  },
+  "rbShowIndividualQuestionScores": {
+    "message": "Mostrar puntuaciones de preguntas individuales",
+    "description": "Checkbox label"
+  },
+  "rbShowLabel": {
+    "message": "Mostrar etiqueta",
+    "description": "Checkbox label"
+  },
+  "rbShowOnlyFailedQuestions": {
+    "message": "Mostrar sólo preguntas fallidas",
+    "description": "Checkbox label"
+  },
+  "rbShowOverallScore": {
+    "message": "Mostrar puntuación general",
+    "description": "Checkbox label"
+  },
+  "rbShowPassFailCounts": {
+    "message": "Mostrar recuento de preguntas de aprobado/reprobado",
+    "description": "Checkbox label"
+  },
+  "rbShowPercentage": {
+    "message": "Mostrar porcentaje",
+    "description": "Checkbox label"
+  },
+  "rbShowPerformanceHistoryChart": {
+    "message": "Mostrar gráfico del historial de rendimiento",
+    "description": "Checkbox label"
+  },
+  "rbShowPreviousAuditScores": {
+    "message": "Mostrar puntuaciones de auditoría anteriores",
+    "description": "Checkbox label"
+  },
+  "rbShowQuestionComments": {
+    "message": "Mostrar comentarios de preguntas",
+    "description": "Checkbox label"
+  },
+  "rbShowRatingClassificationTable": {
+    "message": "Mostrar tabla de clasificación de calificaciones",
+    "description": "Checkbox label"
+  },
+  "rbShowResultPassFail": {
+    "message": "Mostrar resultado (aprobado/reprobado)",
+    "description": "Audit summary checkbox"
+  },
+  "rbShowRoundNumber": {
+    "message": "Mostrar número redondo",
+    "description": "Report identity checkbox"
+  },
+  "rbShowScoreBreakdown": {
+    "message": "Mostrar desglose de puntuación",
+    "description": "Checkbox label"
+  },
+  "rbShowScorePercentages": {
+    "message": "Mostrar porcentajes de puntuación",
+    "description": "Checkbox label"
+  },
+  "rbShowSectionName": {
+    "message": "Mostrar nombre de sección",
+    "description": "Checkbox label"
+  },
+  "rbShowStarRating": {
+    "message": "Mostrar calificación de estrellas",
+    "description": "Checkbox label"
+  },
+  "rbShowStatusFixedPending": {
+    "message": "Mostrar estado (fijo/pendiente/regresado)",
+    "description": "Corrective actions checkbox"
+  },
+  "rbShowThumbnails": {
+    "message": "Mostrar miniaturas",
+    "description": "Checkbox label"
+  },
+  "rbSortBy": {
+    "message": "Ordenar por",
+    "description": "Sort select label"
+  },
+  "rbSortChangeAmount": {
+    "message": "Cantidad de cambio",
+    "description": "Sort option"
+  },
+  "rbSortDate": {
+    "message": "Fecha",
+    "description": "Sort option"
+  },
+  "rbSortDefaultOrder": {
+    "message": "Orden predeterminada",
+    "description": "Sort option"
+  },
+  "rbSortDepartment": {
+    "message": "Departamento",
+    "description": "Sort option"
+  },
+  "rbSortDepartmentName": {
+    "message": "Nombre del departamento",
+    "description": "Sort option"
+  },
+  "rbSortNonComplianceCount": {
+    "message": "Recuento de incumplimiento",
+    "description": "Sort option"
+  },
+  "rbSortPriority": {
+    "message": "Prioridad",
+    "description": "Sort option"
+  },
+  "rbSortQuestionId": {
+    "message": "ID de pregunta",
+    "description": "Sort option"
+  },
+  "rbSortScore": {
+    "message": "Puntaje",
+    "description": "Sort option"
+  },
+  "rbSortScoreHighLow": {
+    "message": "Puntuación (de mayor a menor)",
+    "description": "Sort option"
+  },
+  "rbSortSection": {
+    "message": "Sección",
+    "description": "Sort option"
+  },
+  "rbSortSectionName": {
+    "message": "Nombre de la sección",
+    "description": "Sort option"
+  },
+  "rbSortStatus": {
+    "message": "Estado",
+    "description": "Sort option"
+  },
+  "rbSystemDrivenVisibility": {
+    "message": "Visibilidad impulsada por el sistema",
+    "description": "Visibility notice heading"
+  },
+  "rbTextContent": {
+    "message": "Contenido de texto",
+    "description": "Text block label"
+  },
+  "rbTextContentPh": {
+    "message": "Introduzca el contenido del texto",
+    "description": "Text block placeholder"
+  },
+  "rbTopAreasCount": {
+    "message": "Recuento de áreas principales",
+    "description": "Number input label"
+  },
+  "rbTopBottomNoteBody": {
+    "message": "Los datos se calculan a partir de las puntuaciones de las secciones. Sólo se pueden configurar opciones de visualización.",
+    "description": "Top bottom areas notice"
+  },
+  "rbTypeAuditSummary": {
+    "message": "Resumen de auditoría",
+    "description": "Block type label"
+  },
+  "rbTypeBarChart": {
+    "message": "Gráfico de barras",
+    "description": "Block type label"
+  },
+  "rbTypeComparison": {
+    "message": "Actual vs Anterior",
+    "description": "Block type label"
+  },
+  "rbTypeCorrectiveActions": {
+    "message": "Acciones correctivas",
+    "description": "Block type label"
+  },
+  "rbTypeEvidenceGallery": {
+    "message": "Galería de evidencia",
+    "description": "Block type label"
+  },
+  "rbTypeFailedQuestions": {
+    "message": "Preguntas fallidas",
+    "description": "Block type label"
+  },
+  "rbTypeLineChart": {
+    "message": "Gráfico de líneas",
+    "description": "Block type label"
+  },
+  "rbTypeOverallPerformance": {
+    "message": "Rendimiento general",
+    "description": "Block type label"
+  },
+  "rbTypeOverallScore": {
+    "message": "Puntuación general",
+    "description": "Block type label"
+  },
+  "rbTypePieChart": {
+    "message": "Gráfico circular",
+    "description": "Block type label"
+  },
+  "rbTypeReportIdentity": {
+    "message": "Informar de identidad",
+    "description": "Block type label"
+  },
+  "rbTypeSectionBreakdown": {
+    "message": "Desglose del rendimiento de la sección",
+    "description": "Block type label"
+  },
+  "rbTypeSectionResults": {
+    "message": "Resultados de la sección",
+    "description": "Block type label"
+  },
+  "rbTypeTrend": {
+    "message": "Tendencias de auditoría",
+    "description": "Block type label"
+  },
+  "rbVisibilityAlways": {
+    "message": "mostrar siempre",
+    "description": "Visibility option"
+  },
+  "rbVisibilityDefault": {
+    "message": "Este bloque tiene reglas de visibilidad impulsadas por el sistema que no se pueden anular.",
+    "description": "System visibility fallback"
+  },
+  "rbVisibilityHideNoActionItems": {
+    "message": "Este bloque solo aparecerá si se han agregado acciones correctivas.",
+    "description": "System visibility rule"
+  },
+  "rbVisibilityHideNoComparison": {
+    "message": "Ocultar si no hay datos de comparación",
+    "description": "Visibility option"
+  },
+  "rbVisibilityHideNoHistory": {
+    "message": "Este bloque solo aparecerá si existen respuestas históricas para comparar.",
+    "description": "System visibility rule"
+  },
+  "rbVisibilityHideNoNonCompliance": {
+    "message": "Este bloque solo aparecerá si hay preguntas fallidas o problemas de incumplimiento.",
+    "description": "System visibility rule"
+  },
+  "rbVisibilityHideNoQuestions": {
+    "message": "Este bloque solo aparecerá si la respuesta contiene datos de la pregunta.",
+    "description": "System visibility rule"
+  },
+  "rbVisibilityRule": {
+    "message": "Regla de visibilidad",
+    "description": "Visibility rule select label"
+  },
+  "rbVisibilityShowIfData": {
+    "message": "Mostrar solo si existen datos",
+    "description": "Visibility option"
+  },
+  "rbpActionItemsDesc": {
+    "message": "Acciones correctivas y estado.",
+    "description": "Action items preview description"
+  },
+  "rbpChartSuffix": {
+    "message": "({chartType} gráfico)",
+    "description": "Chart type suffix in preview"
+  },
+  "rbpComparisonDesc": {
+    "message": "Compara la auditoría actual con la anterior.",
+    "description": "Comparison preview description"
+  },
+  "rbpCoreBlockTitle": {
+    "message": "Bloque central: no se puede eliminar ni ocultar",
+    "description": "Core block lock icon title"
+  },
+  "rbpCoreSuffix": {
+    "message": "(Centro)",
+    "description": "Core block suffix in preview"
+  },
+  "rbpCorrectiveActionsDesc": {
+    "message": "Muestra problemas de auditorías anteriores con estado.",
+    "description": "Corrective actions preview description"
+  },
+  "rbpCorrectiveActionsShortDesc": {
+    "message": "Muestra problemas de auditorías anteriores.",
+    "description": "Corrective actions preview in ReportBlockPreview"
+  },
+  "rbpDetailedFindingsDesc": {
+    "message": "Resultados completos pregunta por pregunta",
+    "description": "Detailed findings preview description"
+  },
+  "rbpEvidenceGalleryDesc": {
+    "message": "Muestra archivos de evidencia enviados",
+    "description": "Evidence gallery preview description"
+  },
+  "rbpFailedOnlySuffix": {
+    "message": "(solo falló)",
+    "description": "Detailed findings preview suffix"
+  },
+  "rbpFailedQuestionsDesc": {
+    "message": "Enumera las preguntas que no cumplieron con los requisitos.",
+    "description": "Failed questions preview description"
+  },
+  "rbpFromPreviousAuditsSuffix": {
+    "message": "(incluye auditorías previas)",
+    "description": "Preview suffix"
+  },
+  "rbpGroupByCategory": {
+    "message": "categoría",
+    "description": "Non-compliance group by value"
+  },
+  "rbpGroupByDepartment": {
+    "message": "departamento",
+    "description": "Non-compliance group by value"
+  },
+  "rbpIncludesFailedSections": {
+    "message": "Incluye secciones fallidas",
+    "description": "Section results preview suffix"
+  },
+  "rbpIncludesScoreContext": {
+    "message": "(incluye contexto de partitura)",
+    "description": "Narrative preview suffix"
+  },
+  "rbpLayoutSuffix": {
+    "message": "(diseño {layout})",
+    "description": "Layout suffix in preview"
+  },
+  "rbpMentionsTopAreas": {
+    "message": "(menciona las áreas superiores)",
+    "description": "Narrative preview suffix"
+  },
+  "rbpMetricLabel": {
+    "message": "Métrica: {metric}",
+    "description": "Chart block metric preview"
+  },
+  "rbpMetricNa": {
+    "message": "N / A",
+    "description": "Chart metric not set"
+  },
+  "rbpMetricsInline": {
+    "message": "(métricas: {metrics})",
+    "description": "Inline metrics in preview"
+  },
+  "rbpMetricsSuffix": {
+    "message": "- métricas: {metrics}",
+    "description": "Metrics list suffix in preview"
+  },
+  "rbpMoveDown": {
+    "message": "Bajar",
+    "description": "Move block down button title"
+  },
+  "rbpMoveUp": {
+    "message": "Subir",
+    "description": "Move block up button title"
+  },
+  "rbpNarrativeDesc": {
+    "message": "Resumen ejecutivo con hallazgos clave",
+    "description": "Narrative summary preview description"
+  },
+  "rbpNonComplianceBy": {
+    "message": "Problemas de cumplimiento por parte de {groupBy}",
+    "description": "Non-compliance preview description"
+  },
+  "rbpPerformanceTrendsDesc": {
+    "message": "Tendencia de las últimas {count} auditorías",
+    "description": "Performance trends preview description"
+  },
+  "rbpPeriodInline": {
+    "message": "(período: __UCI_0__)",
+    "description": "Period inline in preview"
+  },
+  "rbpSampleAuditId": {
+    "message": "ID de auditoría: RSP-001",
+    "description": "Report identity preview sample"
+  },
+  "rbpSampleBenchmark": {
+    "message": "Punto de referencia: 80%",
+    "description": "Overall performance preview sample"
+  },
+  "rbpSampleDates": {
+    "message": "Fechas: 1 de enero de 2024",
+    "description": "Report identity preview sample"
+  },
+  "rbpSampleOverallScore": {
+    "message": "Puntuación general: 85%",
+    "description": "Audit summary preview sample"
+  },
+  "rbpSampleRating": {
+    "message": "Calificación: ⭐⭐⭐",
+    "description": "Overall performance preview sample"
+  },
+  "rbpSampleResultPass": {
+    "message": "Resultado: Pasar",
+    "description": "Audit summary preview sample"
+  },
+  "rbpSampleRound": {
+    "message": "Ronda: 1.ª Ronda 2024",
+    "description": "Report identity preview sample"
+  },
+  "rbpSampleScore": {
+    "message": "Puntuación: 85%",
+    "description": "Overall performance preview sample"
+  },
+  "rbpSampleScorePercent": {
+    "message": "85%",
+    "description": "Overall score preview value"
+  },
+  "rbpSectionBreakdownDesc": {
+    "message": "Muestra puntuaciones de cumplimiento por sección",
+    "description": "Section breakdown preview description"
+  },
+  "rbpSectionResultsDesc": {
+    "message": "Muestra el cumplimiento por sección.",
+    "description": "Section results preview description"
+  },
+  "rbpShowsComplianceBySection": {
+    "message": "Muestra el porcentaje de cumplimiento por sección.",
+    "description": "Section results preview in ReportBlockPreview"
+  },
+  "rbpTopBottomDesc": {
+    "message": "Secciones de puntuación superior {top} e inferior {bottom}",
+    "description": "Top bottom areas preview description"
+  },
+  "rbpTrendAuditsCount": {
+    "message": "Muestra tendencias en las últimas {count} auditorías",
+    "description": "Trend block preview description"
+  },
+  "rbpTrendDesc": {
+    "message": "Muestra tendencias en las últimas auditorías.",
+    "description": "Trend preview description"
+  },
+  "rbpUnknownBlockType": {
+    "message": "Tipo de bloque desconocido: {type}",
+    "description": "Unknown block type message"
+  },
+  "rbpWithCommentsSuffix": {
+    "message": "(con comentarios)",
+    "description": "Preview suffix"
+  },
+  "rbpWithDatesSuffix": {
+    "message": "(con fechas)",
+    "description": "Preview suffix"
+  },
+  "rbpWithEvidenceSuffix": {
+    "message": "(con evidencia)",
+    "description": "Preview suffix"
+  },
+  "rbpWithPassFailCounts": {
+    "message": "con recuentos de pasa/falla",
+    "description": "Section breakdown preview suffix"
+  },
+  "rbpWithPreviousComparison": {
+    "message": "(con comparación anterior)",
+    "description": "Non-compliance preview suffix"
+  },
+  "rbpWithSectionNames": {
+    "message": "(con nombres de secciones)",
+    "description": "Failed questions preview suffix"
+  },
+  "rbpWithStatusSuffix": {
+    "message": "(con estado)",
+    "description": "Preview suffix"
+  },
+  "rbpWithThumbnailsSuffix": {
+    "message": "(con miniaturas)",
+    "description": "Evidence gallery preview suffix"
+  },
+  "reportBlockedHint": {
+    "message": "El informe se puede generar después de que se apruebe la respuesta.",
+    "description": "Report blocked hint"
+  },
+  "reportCompliance": {
+    "message": "Cumplimiento",
+    "description": "Report summary metric"
+  },
+  "reportComprehensive": {
+    "message": "Generar informe completo",
+    "description": "Comprehensive report button"
+  },
+  "reportComprehensiveSuccess": {
+    "message": "¡Informe completo generado exitosamente!",
+    "description": "Comprehensive report success alert"
+  },
+  "reportComprehensiveTitle": {
+    "message": "Genere informes PDF completos de primer nivel con gráficos, tablas y análisis detallados",
+    "description": "Comprehensive report button title"
+  },
+  "reportCorrectiveActions": {
+    "message": "Acciones correctivas",
+    "description": "Report corrective actions heading"
+  },
+  "reportDownloadComprehensivePdf": {
+    "message": "Descargar PDF completo",
+    "description": "Download comprehensive PDF"
+  },
+  "reportDownloadPdf": {
+    "message": "Descargar PDF",
+    "description": "Download PDF button"
+  },
+  "reportExportExcel": {
+    "message": "Exportar Excel",
+    "description": "Export Excel button"
+  },
+  "reportExporting": {
+    "message": "Exportador...",
+    "description": "Export in progress"
+  },
+  "reportFailedComprehensive": {
+    "message": "No se pudo generar un informe completo",
+    "description": "Comprehensive report error"
+  },
+  "reportFailedExport": {
+    "message": "No se pudo exportar a Excel",
+    "description": "Excel export error"
+  },
+  "reportFailedGenerate": {
+    "message": "No se pudo generar el informe",
+    "description": "Report generation error"
+  },
+  "reportGenerate": {
+    "message": "Generar informe",
+    "description": "Generate report button"
+  },
+  "reportGeneratedOn": {
+    "message": "Generado el {date}",
+    "description": "Report generated date"
+  },
+  "reportGenerating": {
+    "message": "Generando...",
+    "description": "Generate report in progress"
+  },
+  "reportHeading": {
+    "message": "Informe de formulario",
+    "description": "Form report panel heading"
+  },
+  "reportNoComment": {
+    "message": "Sin comentarios",
+    "description": "Empty corrective action comment"
+  },
+  "reportNoReportYet": {
+    "message": "Aún no se ha generado ningún informe. Haga clic en \"Generar informe\" para crear uno.",
+    "description": "Empty report state"
+  },
+  "reportOverallScore": {
+    "message": "Puntuación general",
+    "description": "Report summary metric"
+  },
+  "reportPassRate": {
+    "message": "Tasa de aprobación",
+    "description": "Report pass rate metric"
+  },
+  "reportRating": {
+    "message": "Clasificación",
+    "description": "Report summary metric"
+  },
+  "reportSectionScores": {
+    "message": "Puntuaciones de sección",
+    "description": "Report section scores heading"
+  },
+  "rtAlignCenter": {
+    "message": "Centro",
+    "description": "Alignment option"
+  },
+  "rtAlignLeft": {
+    "message": "Izquierda",
+    "description": "Alignment option"
+  },
+  "rtAlignRight": {
+    "message": "Bien",
+    "description": "Alignment option"
+  },
+  "rtBaseFontSize": {
+    "message": "Tamaño de fuente base (px)",
+    "description": "Base font size label"
+  },
+  "rtBlockActionItems": {
+    "message": "Resumen de elementos de acción",
+    "description": "Report block library name"
+  },
+  "rtBlockActionItemsDesc": {
+    "message": "Acciones correctivas y su estado.",
+    "description": "Report block library description"
+  },
+  "rtBlockCategoryContent": {
+    "message": "Contenido",
+    "description": "Block library category"
+  },
+  "rtBlockCategoryDetails": {
+    "message": "Detalles",
+    "description": "Block library category"
+  },
+  "rtBlockCategoryInsights": {
+    "message": "Perspectivas",
+    "description": "Block library category"
+  },
+  "rtBlockCategoryTrends": {
+    "message": "Tendencias",
+    "description": "Block library category"
+  },
+  "rtBlockDetailedFindings": {
+    "message": "Hallazgos detallados",
+    "description": "Report block library name"
+  },
+  "rtBlockDetailedFindingsDesc": {
+    "message": "Complete los resultados de la auditoría pregunta por pregunta",
+    "description": "Report block library description"
+  },
+  "rtBlockDivider": {
+    "message": "Divisor",
+    "description": "Report block library name"
+  },
+  "rtBlockDividerDesc": {
+    "message": "línea horizontal",
+    "description": "Report block library description"
+  },
+  "rtBlockHeading": {
+    "message": "Título",
+    "description": "Report block library name"
+  },
+  "rtBlockHeadingDesc": {
+    "message": "Agregar un encabezado",
+    "description": "Report block library description"
+  },
+  "rtBlockLibrary": {
+    "message": "Biblioteca de bloques",
+    "description": "Block library panel heading"
+  },
+  "rtBlockNarrativeSummary": {
+    "message": "Resumen narrativo",
+    "description": "Report block library name"
+  },
+  "rtBlockNarrativeSummaryDesc": {
+    "message": "Resumen ejecutivo y hallazgos clave",
+    "description": "Report block library description"
+  },
+  "rtBlockNonCompliance": {
+    "message": "Resumen de incumplimiento",
+    "description": "Report block library name"
+  },
+  "rtBlockNonComplianceDesc": {
+    "message": "Resumen de problemas de cumplimiento por departamento",
+    "description": "Report block library description"
+  },
+  "rtBlockPerformanceTrends": {
+    "message": "Tendencias de rendimiento",
+    "description": "Report block library name"
+  },
+  "rtBlockPerformanceTrendsDesc": {
+    "message": "Rendimiento histórico en múltiples auditorías",
+    "description": "Report block library description"
+  },
+  "rtBlockSettings": {
+    "message": "Configuración de bloque",
+    "description": "Block settings panel heading"
+  },
+  "rtBlockText": {
+    "message": "Texto",
+    "description": "Report block library name"
+  },
+  "rtBlockTextDesc": {
+    "message": "Agregar contenido de texto",
+    "description": "Report block library description"
+  },
+  "rtBlockTopBottom": {
+    "message": "Áreas superior e inferior",
+    "description": "Report block library name"
+  },
+  "rtBlockTopBottomDesc": {
+    "message": "Secciones de mayor y menor puntuación",
+    "description": "Report block library description"
+  },
+  "rtBuilderSubtitle": {
+    "message": "Diseñe cómo se verá el informe de respuesta final después del envío del formulario. Este paso sólo controla la presentación, no la lógica.",
+    "description": "Response template builder subtitle"
+  },
+  "rtCannotDeleteCore": {
+    "message": "Este es un bloque de informe principal y no se puede eliminar.",
+    "description": "Core block delete alert"
+  },
+  "rtCannotDeleteDefault": {
+    "message": "No se puede eliminar la plantilla predeterminada",
+    "description": "Default template delete alert"
+  },
+  "rtCannotDeleteLast": {
+    "message": "No se puede eliminar la última plantilla",
+    "description": "Last template delete alert"
+  },
+  "rtColorDanger": {
+    "message": "Peligro",
+    "description": "Danger color label"
+  },
+  "rtColorPalette": {
+    "message": "Paleta de colores",
+    "description": "Color palette label"
+  },
+  "rtColorPrimary": {
+    "message": "Primario",
+    "description": "Primary color label"
+  },
+  "rtColorSecondary": {
+    "message": "Secundario",
+    "description": "Secondary color label"
+  },
+  "rtColorSuccess": {
+    "message": "Éxito",
+    "description": "Success color label"
+  },
+  "rtConfirmDeleteTemplate": {
+    "message": "¿Está seguro de que desea eliminar \"{name}\"?",
+    "description": "Delete template confirm"
+  },
+  "rtDefaultDistributionTitle": {
+    "message": "Distribución",
+    "description": "Default pie chart title"
+  },
+  "rtDefaultHeadingContent": {
+    "message": "Título",
+    "description": "Default heading block content"
+  },
+  "rtDefaultSectionComparisonTitle": {
+    "message": "Comparación de secciones",
+    "description": "Default bar chart title"
+  },
+  "rtDefaultTextContent": {
+    "message": "Introduzca texto aquí...",
+    "description": "Default text block content"
+  },
+  "rtDefaultTrendTitle": {
+    "message": "Tendencia a lo largo del tiempo",
+    "description": "Default line chart title"
+  },
+  "rtDeleteTitle": {
+    "message": "Eliminar plantilla",
+    "description": "Delete template button title"
+  },
+  "rtDisclaimerPh": {
+    "message": "Propiedad confidencial de GDI",
+    "description": "Disclaimer placeholder example"
+  },
+  "rtDisclaimerText": {
+    "message": "Texto de descargo de responsabilidad",
+    "description": "Disclaimer text label"
+  },
+  "rtDragBlocksHint": {
+    "message": "Arrastra los bloques aquí para crear tu informe",
+    "description": "Empty canvas hint"
+  },
+  "rtDuplicateTitle": {
+    "message": "Plantilla duplicada",
+    "description": "Duplicate template button title"
+  },
+  "rtFontFamily": {
+    "message": "Familia de fuentes",
+    "description": "Font family label"
+  },
+  "rtFontFamilyPh": {
+    "message": "Arial, sans-serif",
+    "description": "Font family placeholder example"
+  },
+  "rtFooterAlignment": {
+    "message": "Alineación de pie de página",
+    "description": "Footer alignment label"
+  },
+  "rtFooterLayout": {
+    "message": "Diseño de pie de página",
+    "description": "Footer layout section"
+  },
+  "rtHeaderAlignment": {
+    "message": "Alineación del encabezado",
+    "description": "Header alignment label"
+  },
+  "rtHeaderLayout": {
+    "message": "Diseño de encabezado",
+    "description": "Header layout section"
+  },
+  "rtHideBranding": {
+    "message": "Ocultar configuración de marca",
+    "description": "Toggle branding settings off"
+  },
+  "rtLogo": {
+    "message": "Logo",
+    "description": "Logo field label"
+  },
+  "rtLogoAlt": {
+    "message": "Logo",
+    "description": "Logo preview alt text"
+  },
+  "rtLogoPh": {
+    "message": "URL o ruta del logotipo",
+    "description": "Logo URL placeholder"
+  },
+  "rtRenameLabel": {
+    "message": "Rebautizar:",
+    "description": "Inline rename label"
+  },
+  "rtRenameTitle": {
+    "message": "Cambiar nombre de plantilla",
+    "description": "Rename template button title"
+  },
+  "rtReportBranding": {
+    "message": "Informe de marca",
+    "description": "Report branding section"
+  },
+  "rtReportBrandingDesc": {
+    "message": "Configure la marca que se aplica globalmente a todos los bloques de esta plantilla",
+    "description": "Report branding description"
+  },
+  "rtSelectBlock": {
+    "message": "Seleccione un bloque para configurar",
+    "description": "No block selected hint"
+  },
+  "rtShowBranding": {
+    "message": "Mostrar configuración de marca",
+    "description": "Toggle branding settings on"
+  },
+  "rtShowCompanyHeader": {
+    "message": "Mostrar el nombre de la empresa en el encabezado",
+    "description": "Header company checkbox"
+  },
+  "rtShowDisclaimer": {
+    "message": "Mostrar texto de exención de responsabilidad",
+    "description": "Footer disclaimer checkbox"
+  },
+  "rtShowLogoHeader": {
+    "message": "Mostrar logotipo en el encabezado",
+    "description": "Header logo checkbox"
+  },
+  "rtTemplateDefaultSuffix": {
+    "message": "(Por defecto)",
+    "description": "Default template suffix in dropdown"
+  },
+  "rtTemplateDuplicateName": {
+    "message": "__UCI_0__ (Copia)",
+    "description": "Duplicated template name"
+  },
+  "rtTemplateNamePh": {
+    "message": "Nombre de la plantilla",
+    "description": "Template name input placeholder"
+  },
+  "rtTypography": {
+    "message": "Tipografía",
+    "description": "Typography section label"
+  },
+  "saveFormFailed": {
+    "message": "No se pudo guardar el formulario",
+    "description": "Save form error"
+  },
+  "selectOption": {
+    "message": "Seleccione una opción",
+    "description": "Dropdown empty option"
+  },
+  "settingsApprover": {
+    "message": "Aprobador",
+    "description": "Approver select label"
+  },
+  "settingsAssignedTo": {
+    "message": "Asignado a",
+    "description": "Assigned to field label"
+  },
+  "settingsAutoAssignment": {
+    "message": "Asignación automática",
+    "description": "Auto assignment checkbox"
+  },
+  "settingsCreateTask": {
+    "message": "Crear tarea",
+    "description": "Create task on submit checkbox"
+  },
+  "settingsFormVersion": {
+    "message": "Versión del formulario",
+    "description": "Form version read-only label"
+  },
+  "settingsKpiAvgRating": {
+    "message": "Calificación promedio",
+    "description": "KPI metric checkbox label"
+  },
+  "settingsKpiCompliance": {
+    "message": "Porcentaje de cumplimiento",
+    "description": "KPI metric checkbox label"
+  },
+  "settingsKpiMetrics": {
+    "message": "Métricas de KPI",
+    "description": "KPI metrics section label"
+  },
+  "settingsKpiSatisfaction": {
+    "message": "Porcentaje de satisfacción",
+    "description": "KPI metric checkbox label"
+  },
+  "settingsLinkDeal": {
+    "message": "Trato",
+    "description": "Auto assignment link target"
+  },
+  "settingsLinkEvent": {
+    "message": "Evento",
+    "description": "Auto assignment link target"
+  },
+  "settingsLinkOrganization": {
+    "message": "Organización",
+    "description": "Auto assignment link target"
+  },
+  "settingsLinkTask": {
+    "message": "Tarea",
+    "description": "Auto assignment link target"
+  },
+  "settingsPartialThreshold": {
+    "message": "Umbral parcial (%)",
+    "description": "Partial threshold label"
+  },
+  "settingsPassThreshold": {
+    "message": "Umbral de aprobación (%)",
+    "description": "Pass threshold label"
+  },
+  "settingsPublicLink": {
+    "message": "Enlace público",
+    "description": "Public link section label"
+  },
+  "settingsPublicLinkCopied": {
+    "message": "¡Enlace público copiado al portapapeles!",
+    "description": "Copy public link success"
+  },
+  "settingsRequireApproval": {
+    "message": "Requerir aprobación",
+    "description": "Approval workflow checkbox"
+  },
+  "settingsScoringFormula": {
+    "message": "Fórmula de puntuación",
+    "description": "Scoring formula label"
+  },
+  "settingsScoringFormulaHint": {
+    "message": "Fórmula para calcular la puntuación general del formulario",
+    "description": "Scoring formula hint"
+  },
+  "settingsScoringFormulaPh": {
+    "message": "por ejemplo, (Aprobado / Total) × 100",
+    "description": "Scoring formula placeholder"
+  },
+  "settingsSelectApprover": {
+    "message": "Seleccionar aprobador",
+    "description": "Approver empty option"
+  },
+  "settingsUpdateField": {
+    "message": "Actualizar campo",
+    "description": "Update field sub-label"
+  },
+  "settingsUpdateFieldCustom": {
+    "message": "Campo personalizado",
+    "description": "Update field custom option"
+  },
+  "settingsUpdateFieldNone": {
+    "message": "Ninguno",
+    "description": "Update field none option"
+  },
+  "settingsUpdateFieldStage": {
+    "message": "Escenario",
+    "description": "Update field stage option"
+  },
+  "settingsUpdateFieldStatus": {
+    "message": "Estado",
+    "description": "Update field status option"
+  },
+  "settingsWorkflowOnSubmit": {
+    "message": "Flujo de trabajo al enviar",
+    "description": "Workflow on submit section"
+  },
+  "signatureClear": {
+    "message": "Claro",
+    "description": "Clear signature button"
+  },
+  "signatureDefaultLabel": {
+    "message": "Firma",
+    "description": "Signature pad default label"
+  },
+  "signatureSignHere": {
+    "message": "Firma aquí",
+    "description": "Signature pad empty hint"
+  },
+  "statusActive": {
+    "message": "Activo",
+    "description": "Form status option"
+  },
+  "statusArchived": {
+    "message": "Archivado",
+    "description": "Form status option"
+  },
+  "statusClosed": {
+    "message": "Cerrado",
+    "description": "Form status option (closed)"
+  },
+  "statusDraft": {
+    "message": "Borrador",
+    "description": "Form status option"
+  },
+  "statusReady": {
+    "message": "Listo",
+    "description": "Form status option"
+  },
+  "tabDetailsHeading": {
+    "message": "Detalles del formulario",
+    "description": "Form details tab heading"
+  },
+  "tabSettingsHeading": {
+    "message": "Configuración del formulario",
+    "description": "Form settings tab heading"
+  },
+  "tabTemplateHeading": {
+    "message": "Plantilla de respuesta",
+    "description": "Response template tab heading"
+  },
+  "templateCreate": {
+    "message": "Crear plantilla",
+    "description": "Create template button"
+  },
+  "templateCreateModalBody": {
+    "message": "El generador de plantillas avanzado con funcionalidad de arrastrar y soltar estará disponible en una actualización futura.",
+    "description": "Create template modal body"
+  },
+  "templateCreateModalTitle": {
+    "message": "Crear plantilla de respuesta",
+    "description": "Create template modal title"
+  },
+  "templateCustomSettings": {
+    "message": "Configuración de plantilla personalizada",
+    "description": "Custom template settings heading"
+  },
+  "templateIncludeCharts": {
+    "message": "Incluir gráficos de KPI",
+    "description": "Template option"
+  },
+  "templateIncludeComparison": {
+    "message": "Incluir comparación con respuestas anteriores",
+    "description": "Template option"
+  },
+  "templateIncludeCorrectiveActions": {
+    "message": "Incluir sección de acciones correctivas",
+    "description": "Template option"
+  },
+  "templateIncludeTrends": {
+    "message": "Incluir gráficos de tendencias",
+    "description": "Template option"
+  },
+  "templatePreviewButton": {
+    "message": "Plantilla de vista previa",
+    "description": "Preview template button"
+  },
+  "templatePreviewHint": {
+    "message": "La vista previa aparecerá aquí una vez que se seleccione o cree una plantilla",
+    "description": "Template preview placeholder hint"
+  },
+  "templatePreviewTitle": {
+    "message": "Vista previa de plantilla",
+    "description": "Template preview placeholder title"
+  },
+  "templateSelect": {
+    "message": "Seleccionar plantilla",
+    "description": "Select template label"
+  },
+  "templateSelectHint": {
+    "message": "Elija una plantilla para personalizar cómo aparecen las respuestas del formulario en los informes",
+    "description": "Template select hint"
+  },
+  "templateUseDefault": {
+    "message": "Usar plantilla predeterminada",
+    "description": "Default template option"
+  },
+  "textAnswerPh": {
+    "message": "Introduce tu respuesta",
+    "description": "Text question placeholder"
+  },
+  "trendsChartCompliance": {
+    "message": "Cumplimiento %",
+    "description": "Trends chart dataset label"
+  },
+  "trendsChartScore": {
+    "message": "Puntaje %",
+    "description": "Trends chart dataset label"
+  },
+  "typeAudit": {
+    "message": "Auditoría",
+    "description": "Form type option label"
+  },
+  "typeCustom": {
+    "message": "Costumbre",
+    "description": "Form type option label"
+  },
+  "typeFeedback": {
+    "message": "Comentario",
+    "description": "Form type option label"
+  },
+  "typeInspection": {
+    "message": "Inspección",
+    "description": "Form type option label"
+  },
+  "typeSurvey": {
+    "message": "Encuesta",
+    "description": "Form type option label"
+  },
+  "updateFormSubmit": {
+    "message": "Formulario de actualización",
+    "description": "Update form submit button"
+  },
+  "visibilityInternal": {
+    "message": "Interno",
+    "description": "Form visibility option"
+  },
+  "visibilityPartner": {
+    "message": "Pareja",
+    "description": "Form visibility option"
+  },
+  "visibilityPublic": {
+    "message": "Público",
+    "description": "Form visibility option"
+  },
+  "widgetAnalytics": {
+    "message": "Analítica",
+    "description": "Analytics widget fallback title"
+  },
+  "widgetAvgCompliance": {
+    "message": "Cumplimiento promedio",
+    "description": "Analytics widget title"
+  },
+  "widgetAvgRating": {
+    "message": "Calificación promedio",
+    "description": "Analytics widget title"
+  },
+  "widgetLoadFailed": {
+    "message": "No se pudieron cargar los análisis",
+    "description": "Widget error message"
+  },
+  "widgetResponseRate": {
+    "message": "Tasa de respuesta",
+    "description": "Analytics widget title"
+  },
+  "widgetSubtitlePercent": {
+    "message": "Porcentaje",
+    "description": "Percent metric subtitle"
+  },
+  "widgetSubtitleStars": {
+    "message": "De 5 estrellas",
+    "description": "Rating widget subtitle"
+  },
+  "widgetTotalResponses": {
+    "message": "Respuestas totales",
+    "description": "Analytics widget title"
+  },
+  "wizardFormDetailsIntro": {
+    "message": "Comience proporcionando información básica sobre su formulario.",
+    "description": "Step 1 intro"
+  },
+  "wizardPreviewIntro": {
+    "message": "Revise su formulario antes de crearlo.",
+    "description": "Step 4 intro"
+  },
+  "wizardProgressAria": {
+    "message": "Progreso",
+    "description": "Form wizard stepper aria label"
+  },
+  "wizardSectionsIntro": {
+    "message": "Construya la estructura de su formulario agregando secciones y preguntas.",
+    "description": "Step 2 intro"
+  },
+  "wizardSettingsIntro": {
+    "message": "Configure la puntuación, los umbrales y los ajustes del flujo de trabajo.",
+    "description": "Step 3 intro"
+  },
+  "wizardStep0RequiredAlert": {
+    "message": "Complete todos los campos obligatorios (Nombre del formulario y Tipo de formulario) antes de continuar.",
+    "description": "Wizard step 1 validation alert"
+  },
+  "wizardStep1RequiredAlert": {
+    "message": "Complete todas las secciones, subsecciones y preguntas. Cada sección debe tener al menos una subsección con al menos una pregunta y todas las preguntas deben tener texto.",
+    "description": "Wizard step 2 validation alert"
+  },
+  "wizardStepFormDetails": {
+    "message": "Detalles del formulario",
+    "description": "Wizard step name"
+  },
+  "wizardStepPreview": {
+    "message": "Avance",
+    "description": "Wizard step name"
+  },
+  "wizardStepSectionsQuestions": {
+    "message": "Secciones y preguntas",
+    "description": "Wizard step name"
+  },
+  "wizardStepSettingsLogic": {
+    "message": "Configuración y lógica",
+    "description": "Wizard step name"
+  },
+  "hubCreateOutcomesAuditOnly": {
+    "message": "Los resultados y las reglas solo están disponibles para los formularios de auditoría.",
+    "description": "Form create wizard step 3 non-audit message"
+  },
+  "hubCreateOutcomesSkipped": {
+    "message": "Este paso se omite para los formularios de encuesta y comentarios.",
+    "description": "Form create wizard step 3 skipped hint"
+  },
+  "hubCreateStep1RequiredAlert": {
+    "message": "Complete todas las secciones y preguntas. Todas las preguntas deben tener texto.",
+    "description": "Form create wizard sections step validation"
+  },
+  "hubCreateAuditRuleRequired": {
+    "message": "Seleccione una regla de resultado de auditoría antes de continuar.",
+    "description": "Form create wizard outcomes step validation"
+  },
+  "hubCreateValidationFixPrefix": {
+    "message": "Solucione los siguientes problemas antes de guardar:\n\n__UCI_0__",
+    "description": "Form create final save validation alert prefix"
+  },
+  "hubCreateDraftSaved": {
+    "message": "Borrador guardado",
+    "description": "Form create auto-save indicator"
+  },
+  "hubCreateUnsavedTitle": {
+    "message": "Cambios no guardados",
+    "description": "Form create close confirmation title"
+  },
+  "hubCreateUnsavedBody": {
+    "message": "Tienes cambios sin guardar. ¿Estás seguro de que quieres irte? Tus cambios se perderán.",
+    "description": "Form create close confirmation body"
+  },
+  "hubCreateLeaveWithoutSaving": {
+    "message": "Salir sin ahorrar",
+    "description": "Form create discard changes button"
+  },
+  "hubCreateLoadEditFailed": {
+    "message": "No se pudo cargar el formulario para editarlo",
+    "description": "Form create edit load error"
+  },
+  "hubCreateLoadDuplicateFailed": {
+    "message": "No se pudo cargar el formulario para duplicarlo",
+    "description": "Form create duplicate load error"
+  },
+  "hubCreateSaveError": {
+    "message": "Error al guardar el formulario: {detail}",
+    "description": "Form create save error alert"
+  },
+  "hubCreateFormIdRequired": {
+    "message": "Se requiere ID del formulario para editar",
+    "description": "Form create edit without id error"
+  },
+  "hubCreateVisibilityExternal": {
+    "message": "Externo",
+    "description": "Form create visibility option (external)"
+  },
+  "hubCreateSubsectionDefault": {
+    "message": "Subsección __UCI_0__",
+    "description": "Default subsection name on save"
+  },
+  "hubFillLoadingSubtext": {
+    "message": "Espere mientras preparamos su formulario.",
+    "description": "Form fill loading subtext"
+  },
+  "hubFillNotFoundTitle": {
+    "message": "Formulario no encontrado",
+    "description": "Form fill error heading"
+  },
+  "hubFillSubmitSuccessTitle": {
+    "message": "¡Formulario enviado exitosamente!",
+    "description": "Form fill success heading"
+  },
+  "hubFillSubmitSuccessBody": {
+    "message": "Su respuesta ha sido guardada y registrada.",
+    "description": "Form fill success body"
+  },
+  "hubFillReturnToEventHint": {
+    "message": "Ahora puede regresar al evento para completar el proceso de auditoría.",
+    "description": "Form fill success event hint"
+  },
+  "hubFillReturnToEvent": {
+    "message": "Volver al evento",
+    "description": "Form fill return to event button"
+  },
+  "hubFillEventLinked": {
+    "message": "Evento vinculado",
+    "description": "Form fill event linked badge"
+  },
+  "hubFillBackToEventTitle": {
+    "message": "Volver al evento",
+    "description": "Form fill back to event tooltip"
+  },
+  "hubFillQuestionsProgress": {
+    "message": "{answered} / {total} preguntas respondidas",
+    "description": "Form fill header progress"
+  },
+  "hubFillPercentComplete": {
+    "message": "__UCI_0__% completado",
+    "description": "Form fill completion percentage"
+  },
+  "hubFillAutoSaveSaved": {
+    "message": "Todos los cambios guardados",
+    "description": "Form fill auto-save saved state"
+  },
+  "hubFillSectionQuestions": {
+    "message": "{answered} de {total} preguntas respondidas",
+    "description": "Form fill section progress"
+  },
+  "hubFillSectionFallback": {
+    "message": "Sección __UCI_0__",
+    "description": "Form fill unnamed section title"
+  },
+  "hubFillCriticalBadge": {
+    "message": "Crítico",
+    "description": "Form fill critical question badge"
+  },
+  "hubFillCriticalTitle": {
+    "message": "Pregunta crítica",
+    "description": "Form fill critical question tooltip"
+  },
+  "hubFillRequiredTitle": {
+    "message": "Requerido",
+    "description": "Form fill required question tooltip"
+  },
+  "hubFillScoringPts": {
+    "message": "__UCI_0__ puntos",
+    "description": "Form fill question scoring weight"
+  },
+  "hubFillNumberPh": {
+    "message": "Introduce un número",
+    "description": "Form fill number input placeholder"
+  },
+  "hubFillDropdownPh": {
+    "message": "Seleccione una opción...",
+    "description": "Form fill dropdown empty option"
+  },
+  "hubFillFileUploadPrompt": {
+    "message": "Haga clic para cargar o arrastre y suelte",
+    "description": "Form fill file upload prompt"
+  },
+  "hubFillFileFormats": {
+    "message": "PDF, DOC, JPG, PNG hasta 10MB",
+    "description": "Form fill file upload formats hint"
+  },
+  "hubFillEvidenceAttachHint": {
+    "message": "Adjunte documentos de respaldo o fotografías para esta respuesta.",
+    "description": "Form fill evidence attachment hint"
+  },
+  "hubFillSubmitErrorHeading": {
+    "message": "Error al enviar el formulario",
+    "description": "Form fill submit error heading"
+  },
+  "hubFillRequiredRemaining": {
+    "message": "{count, plural, one {# pregunta obligatoria pendiente} other {# preguntas obligatorias pendientes}}",
+    "description": "Form fill required questions remaining"
+  },
+  "hubFillAllRequiredAnswered": {
+    "message": "✓ Todas las preguntas requeridas respondidas",
+    "description": "Form fill all required complete"
+  },
+  "hubFillSubmitting": {
+    "message": "Sumisión...",
+    "description": "Form fill submit in progress"
+  },
+  "hubFillNotFoundDenied": {
+    "message": "Formulario no encontrado o acceso denegado",
+    "description": "Form fill fetch not found"
+  },
+  "hubFillLoadFailed": {
+    "message": "No se pudo cargar el formulario",
+    "description": "Form fill fetch error"
+  },
+  "hubFillRequiredAnswerAlert": {
+    "message": "Responda todas las preguntas requeridas ({count} restantes)",
+    "description": "Form fill validation before submit"
+  },
+  "hubFillSubmitFailed": {
+    "message": "No se pudo enviar el formulario",
+    "description": "Form fill submit error"
+  },
+  "hubFillSubmitFailedRetry": {
+    "message": "No se pudo enviar el formulario. Por favor inténtalo de nuevo.",
+    "description": "Form fill submit error with retry hint"
+  },
+  "hubPublicFormIdLabel": {
+    "message": "ID del formulario: {id}",
+    "description": "Public form header form id"
+  },
+  "hubPublicTypeLabel": {
+    "message": "Tipo: __UCI_0__",
+    "description": "Public form header type"
+  },
+  "hubPublicThankYou": {
+    "message": "Gracias por tu envío.",
+    "description": "Public form success message"
+  },
+  "hubPublicFormNotFound": {
+    "message": "Formulario no encontrado",
+    "description": "Public form fetch not found"
+  },
+  "hubPublicLoadFailed": {
+    "message": "No se pudo cargar el formulario. Por favor inténtalo de nuevo.",
+    "description": "Public form fetch error"
+  },
+  "hubPublicSubmitFailed": {
+    "message": "No se pudo enviar el formulario. Por favor inténtalo de nuevo.",
+    "description": "Public form submit error"
+  }
+}

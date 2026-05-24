@@ -1,0 +1,378 @@
+{
+  "panelAria": {
+    "message": "सूचनाएं",
+    "description": "Notifications drawer/sheet dialog aria-label"
+  },
+  "drawerHeading": {
+    "message": "सूचनाएं",
+    "description": "Notifications panel heading"
+  },
+  "markAllRead": {
+    "message": "सभी को पढ़ा हुआ मार्क करें",
+    "description": "Mark all notifications read action"
+  },
+  "markAllReadAria": {
+    "message": "सभी सूचनाओं को पठित के रूप में चिह्नित करें",
+    "description": "Mark all notifications read button aria-label"
+  },
+  "closePanelAria": {
+    "message": "सूचनाएं बंद करें",
+    "description": "Close notifications panel aria-label"
+  },
+  "offlineBanner": {
+    "message": "ऑफ़लाइन - सूचनाएं पुरानी हो सकती हैं.",
+    "description": "Offline state banner in notification panel"
+  },
+  "caughtUp": {
+    "message": "आप सब फंस गए हैं",
+    "description": "Empty state headline when no unread notifications"
+  },
+  "emptyList": {
+    "message": "अभी तक कोई सूचना नहीं.",
+    "description": "Empty state body when notification list is empty"
+  },
+  "noUpdatesDigest": {
+    "message": "कोई अपडेट नहीं - आपके पास कोई नई सूचना नहीं है।",
+    "description": "Digest placeholder when there are no new items"
+  },
+  "settingsLink": {
+    "message": "अधिसूचना सेटिंग्स",
+    "description": "Link to notification settings from panel footer"
+  },
+  "itemNew": {
+    "message": "नया",
+    "description": "Badge on unread notification item"
+  },
+  "itemUnavailable": {
+    "message": "यह आइटम अब उपलब्ध नहीं है.",
+    "description": "Warning when linked record is gone"
+  },
+  "whyReceived": {
+    "message": "आपको यह सूचना क्यों प्राप्त हुई?",
+    "description": "Explainability popover heading"
+  },
+  "whyIntro": {
+    "message": "अधिसूचना विवरण के आधार पर एक त्वरित स्पष्टीकरण।",
+    "description": "Explainability popover subheading"
+  },
+  "happenedBecause": {
+    "message": "ऐसा इसलिए हुआ क्योंकि",
+    "description": "Explainability trigger section label"
+  },
+  "receivedBecause": {
+    "message": "आपको यह प्राप्त हुआ क्योंकि आप हैं",
+    "description": "Explainability role section label"
+  },
+  "deliveredVia": {
+    "message": "के माध्यम से वितरित किया गया",
+    "description": "Explainability delivery channel label"
+  },
+  "controlHeading": {
+    "message": "नियंत्रण",
+    "description": "Explainability control section label"
+  },
+  "controlBody": {
+    "message": "आप अधिसूचना सेटिंग्स में इस तरह से सूचनाएं प्रबंधित कर सकते हैं।",
+    "description": "Explainability control section body"
+  },
+  "openSettings": {
+    "message": "अधिसूचना सेटिंग खोलें",
+    "description": "Link to notification settings"
+  },
+  "reviewRules": {
+    "message": "अधिसूचना नियमों की समीक्षा करें",
+    "description": "Link to notification rules list"
+  },
+  "markRead": {
+    "message": "पढ़े हुए का चिह्न",
+    "description": "Mark single notification read tooltip"
+  },
+  "markReadAria": {
+    "message": "अधिसूचना को पठित के रूप में चिह्नित करें",
+    "description": "Mark read button aria-label"
+  },
+  "dismiss": {
+    "message": "नकार देना",
+    "description": "Dismiss notification tooltip"
+  },
+  "dismissAria": {
+    "message": "अधिसूचना ख़ारिज करें",
+    "description": "Dismiss button aria-label"
+  },
+  "snooze": {
+    "message": "दिन में झपकी लेना",
+    "description": "Snooze notification tooltip"
+  },
+  "snoozeAria": {
+    "message": "स्नूज़ विकल्प",
+    "description": "Snooze button aria-label"
+  },
+  "acknowledge": {
+    "message": "स्वीकार करें - इस अधिसूचना को प्रबंधित के रूप में चिह्नित करता है। अंतर्निहित रिकॉर्ड नहीं बदलता.",
+    "description": "Acknowledge notification tooltip"
+  },
+  "acknowledgeAria": {
+    "message": "अधिसूचना स्वीकार करें (रिकॉर्ड नहीं बदलता)",
+    "description": "Acknowledge button aria-label"
+  },
+  "whyAmISeeing": {
+    "message": "मैं यह क्यों देख रहा हूँ?",
+    "description": "Open explainability popover aria-label"
+  },
+  "channelComingSoon": {
+    "message": "जल्द आ रहा है",
+    "description": "Unavailable notification channel section state"
+  },
+  "channelUnavailable": {
+    "message": "इस ऐप के लिए उपलब्ध नहीं है",
+    "description": "Disabled channel option hint"
+  },
+  "channelToggleAria": {
+    "message": "{channel} सूचनाएं टॉगल करें",
+    "description": "Channel section global toggle aria-label"
+  },
+  "channelOptionAria": {
+    "message": "{channel} सूचनाएं",
+    "description": "Channel checkbox aria-label in rule builder"
+  },
+  "assignToMe": {
+    "message": "मुझे सौंपा गया",
+    "description": "Notification rule assigned-to condition"
+  },
+  "assignAnyone": {
+    "message": "किसी को भी सौंपा गया",
+    "description": "Notification rule assigned-to anyone condition"
+  },
+  "noStatusOptions": {
+    "message": "इस मॉड्यूल के लिए कोई स्थिति विकल्प उपलब्ध नहीं है",
+    "description": "Empty status condition picker"
+  },
+  "ruleCreateHeading": {
+    "message": "अधिसूचना नियम बनाएं",
+    "description": "Rule builder modal title when creating"
+  },
+  "ruleEditHeading": {
+    "message": "अधिसूचना नियम संपादित करें",
+    "description": "Rule builder modal title when editing"
+  },
+  "ruleStepAria": {
+    "message": "चरण {index}: {step}",
+    "description": "Rule builder step button aria-label"
+  },
+  "ruleStepModule": {
+    "message": "मॉड्यूल",
+    "description": "Rule builder step: module"
+  },
+  "ruleStepEvent": {
+    "message": "आयोजन",
+    "description": "Rule builder step: event"
+  },
+  "ruleStepConditions": {
+    "message": "स्थितियाँ",
+    "description": "Rule builder step: conditions"
+  },
+  "ruleStepChannels": {
+    "message": "चैनल",
+    "description": "Rule builder step: channels"
+  },
+  "ruleStepReview": {
+    "message": "समीक्षा",
+    "description": "Rule builder step: review"
+  },
+  "ruleModule": {
+    "message": "मॉड्यूल",
+    "description": "Rule builder module field label"
+  },
+  "ruleSelectModule": {
+    "message": "एक मॉड्यूल चुनें...",
+    "description": "Rule builder module select placeholder"
+  },
+  "ruleModuleHint": {
+    "message": "चुनें कि यह नियम किस मॉड्यूल पर लागू होता है।",
+    "description": "Rule builder module field help"
+  },
+  "ruleMaxReached": {
+    "message": "आप इस मॉड्यूल के लिए अधिकतम 5 नियमों तक पहुँच चुके हैं।",
+    "description": "Rule limit warning per module"
+  },
+  "ruleEventType": {
+    "message": "इवेंट प्रकार",
+    "description": "Rule builder event type label"
+  },
+  "ruleConditionsOptional": {
+    "message": "शर्तें (वैकल्पिक)",
+    "description": "Rule builder conditions section label"
+  },
+  "ruleAddCondition": {
+    "message": "+ शर्त जोड़ें",
+    "description": "Add another rule condition"
+  },
+  "ruleNoConditions": {
+    "message": "कोई शर्त नहीं. यह नियम सभी {module} {event} घटनाओं के लिए ट्रिगर होगा।",
+    "description": "Rule builder empty conditions explanation"
+  },
+  "ruleSelectCondition": {
+    "message": "शर्त चुनें...",
+    "description": "Condition field select placeholder"
+  },
+  "ruleRemoveCondition": {
+    "message": "स्थिति हटाएँ {index}",
+    "description": "Remove condition button aria-label"
+  },
+  "ruleSelectEvent": {
+    "message": "{event} चुनें",
+    "description": "Select event type radio aria-label"
+  },
+  "ruleChannels": {
+    "message": "अधिसूचना चैनल",
+    "description": "Rule builder channels section label"
+  },
+  "ruleChannelsHint": {
+    "message": "चुनें कि आप इस नियम के लिए सूचनाएं कैसे प्राप्त करना चाहते हैं। कम से कम एक चैनल अवश्य चुना जाना चाहिए.",
+    "description": "Rule builder channels help text"
+  },
+  "ruleChannelsRequired": {
+    "message": "कृपया कम से कम एक अधिसूचना चैनल चुनें.",
+    "description": "Rule builder channels validation hint"
+  },
+  "ruleSummary": {
+    "message": "नियम सारांश",
+    "description": "Rule builder review summary heading"
+  },
+  "ruleWhen": {
+    "message": "कब:",
+    "description": "Rule summary when label"
+  },
+  "ruleNotifyVia": {
+    "message": "इसके माध्यम से सूचित करें:",
+    "description": "Rule summary channels label"
+  },
+  "ruleFixIssues": {
+    "message": "कृपया निम्नलिखित समस्याएं ठीक करें:",
+    "description": "Rule builder validation errors heading"
+  },
+  "ruleUpdate": {
+    "message": "अद्यतन नियम",
+    "description": "Save button when editing rule"
+  },
+  "ruleCreate": {
+    "message": "नियम बनाएं",
+    "description": "Save button when creating rule"
+  },
+  "groupMarkAllAria": {
+    "message": "सभी {count} सूचनाओं को पठित के रूप में चिह्नित करें",
+    "description": "Mark grouped notifications read aria-label"
+  },
+  "countInGroupAria": {
+    "message": "{count} सूचनाएं",
+    "description": "Notification group count aria-label"
+  },
+  "groupEntryAria": {
+    "message": "{label} ({count} आइटम)",
+    "description": "Grouped notification section aria-label"
+  },
+  "groupLatest": {
+    "message": "नवीनतम: {title} – {time}",
+    "description": "Grouped notification preview line"
+  },
+  "snoozeOneHour": {
+    "message": "1 घंटा",
+    "description": "Snooze option: one hour"
+  },
+  "snoozeOneHourHelp": {
+    "message": "इस नोटिफिकेशन को 1 घंटे के लिए छुपाएं. स्वचालित रूप से पुनः प्रकट होता है.",
+    "description": "Snooze one hour help text"
+  },
+  "snoozeTomorrow": {
+    "message": "कल तक",
+    "description": "Snooze option: until tomorrow"
+  },
+  "snoozeTomorrowHelp": {
+    "message": "इस अधिसूचना को कल तक छिपाएँ। स्वचालित रूप से पुनः प्रकट होता है.",
+    "description": "Snooze until tomorrow help"
+  },
+  "snoozeNextWeek": {
+    "message": "अगले सप्ताह तक",
+    "description": "Snooze option: until next week"
+  },
+  "snoozeNextWeekHelp": {
+    "message": "इस अधिसूचना को अगले सप्ताह तक छिपाएँ। स्वचालित रूप से पुनः प्रकट होता है.",
+    "description": "Snooze until next week help"
+  },
+  "snoozeDueDate": {
+    "message": "नियत तारीख तक",
+    "description": "Snooze option: until due date"
+  },
+  "snoozeDueDateHelp": {
+    "message": "इस अधिसूचना को इसकी नियत तिथि तक छिपाएँ। स्वचालित रूप से पुनः प्रकट होता है.",
+    "description": "Snooze until due date help"
+  },
+  "snoozeOptionAria": {
+    "message": "{label} के लिए स्नूज़ करें",
+    "description": "Snooze menu item aria-label"
+  },
+  "loadMore": {
+    "message": "और लोड करें",
+    "description": "Load more notifications button"
+  },
+  "sectionToday": {
+    "message": "आज",
+    "description": "Notification list section: today"
+  },
+  "sectionYesterday": {
+    "message": "कल",
+    "description": "Notification list section: yesterday"
+  },
+  "sectionEarlier": {
+    "message": "पहले",
+    "description": "Notification list section: earlier"
+  },
+  "sectionNew": {
+    "message": "नया",
+    "description": "Notification list section: new since opened"
+  },
+  "bellAria": {
+    "message": "सूचनाएं",
+    "description": "Notification bell button aria-label when no unread"
+  },
+  "bellAriaUnread": {
+    "message": "सूचनाएं, अपठित आइटम मौजूद हैं",
+    "description": "Notification bell aria-label when unread exist"
+  },
+  "feedbackMarkedRead": {
+    "message": "पढ़ा हुआ चिन्हित",
+    "description": "Inline feedback after marking notification read"
+  },
+  "feedbackDismissed": {
+    "message": "ख़ारिज",
+    "description": "Inline feedback after dismissing notification"
+  },
+  "feedbackAcknowledged": {
+    "message": "स्वीकार किया",
+    "description": "Inline feedback after acknowledging notification"
+  },
+  "ruleErrorModuleRequired": {
+    "message": "मॉड्यूल आवश्यक है",
+    "description": "Rule builder validation"
+  },
+  "ruleErrorEventRequired": {
+    "message": "इवेंट प्रकार आवश्यक है",
+    "description": "Rule builder validation"
+  },
+  "ruleErrorChannelRequired": {
+    "message": "कम से कम एक अधिसूचना चैनल अवश्य चुना जाना चाहिए",
+    "description": "Rule builder validation"
+  },
+  "ruleErrorConditionField": {
+    "message": "स्थिति {index} में फ़ील्ड गुम है",
+    "description": "Rule builder validation for incomplete condition"
+  },
+  "bellTooltipUnreadOne": {
+    "message": "{count} अपठित सूचना",
+    "description": "Notification bell tooltip when one unread item"
+  },
+  "bellTooltipUnreadMany": {
+    "message": "{count} अपठित सूचनाएँ",
+    "description": "Notification bell tooltip when multiple unread items"
+  }
+}

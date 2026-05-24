@@ -52,19 +52,16 @@
     <span
       v-else-if="variant !== 'picker' && provider.status === 'coming_soon'"
       class="rounded-full bg-gray-200 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-600 dark:bg-gray-700 dark:text-gray-300"
-    >
-      Soon
-    </span>
+    >{{ t('inbox.inboxProviderCardSoon') }}</span>
     <span
       v-else-if="variant !== 'picker' && provider.status === 'disabled'"
       class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-950/50 dark:text-amber-200"
-    >
-      Unavailable
-    </span>
+    >{{ t('appointments.publicUnavailable') }}</span>
   </component>
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 import { CheckIcon, EnvelopeIcon } from '@heroicons/vue/24/outline';
 
@@ -77,6 +74,8 @@ const props = defineProps({
   /** `picker` — Vtiger-style tile (logo + name only) for inbox onboarding modal */
   variant: { type: String, default: 'default' }
 });
+
+const { t } = useI18n();
 
 defineEmits(['select']);
 
@@ -113,11 +112,14 @@ const cardClasses = computed(() => {
 });
 
 const titleAttr = computed(() => {
+  const name = props.provider.name;
   if (props.provider.status === 'coming_soon') {
-    return `${props.provider.name} — coming soon`;
+    return t('inbox.inboxProviderComingSoonTitle', { name });
   }
   if (props.unavailableReason) return props.unavailableReason;
-  if (props.provider.status !== 'available') return `${props.provider.name} — not available`;
-  return `Connect ${props.provider.name}`;
+  if (props.provider.status !== 'available') {
+    return t('inbox.inboxProviderNotAvailableTitle', { name });
+  }
+  return t('inbox.inboxProviderConnectTitle', { name });
 });
 </script>

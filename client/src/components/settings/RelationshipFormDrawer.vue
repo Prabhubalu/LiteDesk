@@ -34,7 +34,7 @@
                     <div class="bg-indigo-700 dark:bg-indigo-800 px-4 py-6 sm:px-6 flex-shrink-0">
                       <div class="flex items-center justify-between">
                         <DialogTitle class="text-base font-semibold text-white">
-                          {{ isEdit ? 'Edit relationship' : 'Add relationship' }}
+                          {{ isEdit ? t('settings.modFieldsTitleEditRelationship') : t('settings.modFieldsAddRelationship') }}
                         </DialogTitle>
                         <button
                           type="button"
@@ -42,12 +42,12 @@
                           @click="handleClose"
                         >
                           <span class="absolute -inset-2.5" />
-                          <span class="sr-only">Close</span>
+                          <span class="sr-only">{{ t('common.closePanel') }}</span>
                           <XMarkIcon class="size-6" aria-hidden="true" />
                         </button>
                       </div>
                       <p class="mt-1 text-sm text-indigo-300">
-                        {{ moduleName ? `${moduleName} → other modules` : 'Define how this module links to others.' }}
+                        {{ moduleName ? t('settings.settingsRelDrawerSubtitleWithModule', { module: moduleName }) : t('settings.settingsRelDrawerSubtitleDefault') }}
                       </p>
                     </div>
 
@@ -56,18 +56,18 @@
                       <div class="px-4 sm:px-6 py-6 space-y-6">
                         <!-- Target module first (always visible) -->
                         <div class="space-y-4">
-                          <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Basics</h4>
+                          <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('settings.settingsRelDrawerBasics') }}</h4>
                           <div>
-                            <label for="rel-target" class="block text-sm font-medium text-gray-900 dark:text-white mb-1.5">Target module <span class="text-red-500">*</span></label>
+                            <label for="rel-target" class="block text-sm font-medium text-gray-900 dark:text-white mb-1.5">{{ t('settings.modFieldsTargetModule') }} <span class="text-red-500">*</span></label>
                             <HeadlessSelect
                               id="rel-target"
                               v-model="draft.targetModuleKey"
                               :options="moduleOptions"
-                              placeholder="Select module"
+                              :placeholder="t('settings.modFieldsSelectModulePh')"
                               allow-empty
-                              empty-label="Select module"
+                              :empty-label="t('settings.modFieldsSelectModulePh')"
                             />
-                            <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">Choose the module this one will link to. More options will appear after you select a target.</p>
+                            <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.settingsRelDrawerTargetHint') }}</p>
                           </div>
                         </div>
 
@@ -76,7 +76,7 @@
                           <!-- Relationship type -->
                           <div class="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-6">
                             <div>
-                              <label for="rel-type" class="block text-sm font-medium text-gray-900 dark:text-white mb-1.5">Relationship type <span class="text-red-500">*</span></label>
+                              <label for="rel-type" class="block text-sm font-medium text-gray-900 dark:text-white mb-1.5">{{ t('settings.settingsRelDrawerRelationshipType') }} <span class="text-red-500">*</span></label>
                               <HeadlessSelect
                                 id="rel-type"
                                 v-model="draft.type"
@@ -84,22 +84,22 @@
                               />
                             </div>
                             <div>
-                              <label for="rel-name" class="block text-sm font-medium text-gray-900 dark:text-white mb-1.5">Relationship name <span class="text-red-500">*</span></label>
+                              <label for="rel-name" class="block text-sm font-medium text-gray-900 dark:text-white mb-1.5">{{ t('settings.settingsRelDrawerRelationshipName') }} <span class="text-red-500">*</span></label>
                               <input
                                 id="rel-name"
                                 v-model="draft.name"
                                 type="text"
-                                placeholder="e.g., Primary Organization"
+                                :placeholder="t('settings.settingsRelDrawerRelationshipNamePh')"
                                 class="block w-full rounded-lg bg-gray-50 dark:bg-gray-700/50 px-3 py-2 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
                               />
                             </div>
                             <div>
-                              <label for="rel-label" class="block text-sm font-medium text-gray-900 dark:text-white mb-1.5">Display label</label>
+                              <label for="rel-label" class="block text-sm font-medium text-gray-900 dark:text-white mb-1.5">{{ t('settings.settingsRelDrawerDisplayLabel') }}</label>
                               <input
                                 id="rel-label"
                                 v-model="draft.label"
                                 type="text"
-                                placeholder="e.g., Related Organizations"
+                                :placeholder="t('settings.settingsRelDrawerDisplayLabelPh')"
                                 class="block w-full rounded-lg bg-gray-50 dark:bg-gray-700/50 px-3 py-2 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                               />
                             </div>
@@ -112,7 +112,7 @@
                               @click="advancedOpen = !advancedOpen"
                               class="flex items-center justify-between w-full text-left py-1 group"
                             >
-                              <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider group-hover:text-gray-700 dark:group-hover:text-gray-300">Advanced</h4>
+                              <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider group-hover:text-gray-700 dark:group-hover:text-gray-300">{{ t('settings.settingsRelDrawerAdvanced') }}</h4>
                               <svg
                                 :class="['w-4 h-4 text-gray-400 transition-transform', advancedOpen && 'rotate-180']"
                                 fill="none"
@@ -123,26 +123,26 @@
                               </svg>
                             </button>
                             <div v-show="advancedOpen" class="space-y-4 pt-4">
-                              <p class="text-xs text-gray-500 dark:text-gray-400">Field mapping</p>
+                              <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.settingsRelDrawerFieldMapping') }}</p>
                               <div class="grid grid-cols-1 gap-4">
                                 <div>
-                                  <label for="rel-local" class="block text-sm font-medium text-gray-900 dark:text-white mb-1.5">Local field <span class="text-red-500">*</span></label>
+                                  <label for="rel-local" class="block text-sm font-medium text-gray-900 dark:text-white mb-1.5">{{ t('settings.settingsRelDrawerLocalField') }} <span class="text-red-500">*</span></label>
                                   <HeadlessSelect
                                     id="rel-local"
                                     v-model="draft.localField"
                                     :options="localFieldOptions"
-                                    placeholder="Select field"
+                                    :placeholder="t('settings.modFieldsSelectFieldPh')"
                                     allow-empty
-                                    empty-label="Select field"
+                                    :empty-label="t('settings.modFieldsSelectFieldPh')"
                                   />
                                 </div>
                                 <div>
-                                  <label for="rel-foreign" class="block text-sm font-medium text-gray-900 dark:text-white mb-1.5">Foreign field <span class="text-red-500">*</span></label>
+                                  <label for="rel-foreign" class="block text-sm font-medium text-gray-900 dark:text-white mb-1.5">{{ t('settings.settingsRelDrawerForeignField') }} <span class="text-red-500">*</span></label>
                                   <input
                                     id="rel-foreign"
                                     v-model="draft.foreignField"
                                     type="text"
-                                    placeholder="e.g., _id"
+                                    :placeholder="t('settings.settingsRelDrawerForeignFieldPh')"
                                     class="block w-full rounded-lg bg-gray-50 dark:bg-gray-700/50 px-3 py-2 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                   />
                                 </div>
@@ -152,35 +152,35 @@
 
                           <!-- Options -->
                           <div class="space-y-3 border-t border-gray-200 dark:border-gray-700 pt-6">
-                            <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Options</h4>
+                            <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('settings.settingsRelDrawerOptions') }}</h4>
                             <div class="grid grid-cols-2 gap-2">
                               <label class="flex items-center gap-2 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-600 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
                                 <HeadlessCheckbox
                                   v-model="draft.required"
                                   checkbox-class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
                                 />
-                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Required</span>
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('settings.settingsRelDrawerRequired') }}</span>
                               </label>
                               <label class="flex items-center gap-2 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-600 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
                                 <HeadlessCheckbox
                                   v-model="draft.unique"
                                   checkbox-class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
                                 />
-                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Unique</span>
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('settings.settingsRelDrawerUnique') }}</span>
                               </label>
                               <label class="flex items-center gap-2 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-600 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
                                 <HeadlessCheckbox
                                   v-model="draft.index"
                                   checkbox-class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
                                 />
-                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Index</span>
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('settings.settingsRelDrawerIndex') }}</span>
                               </label>
                               <label class="flex items-center gap-2 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-600 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
                                 <HeadlessCheckbox
                                   v-model="draft.cascadeDelete"
                                   checkbox-class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
                                 />
-                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Cascade delete</span>
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('settings.settingsRelDrawerCascadeDelete') }}</span>
                               </label>
                             </div>
                           </div>
@@ -200,13 +200,13 @@
                         class="rounded-md px-3 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                         @click="handleClose"
                       >
-                        Cancel
+                        {{ t('actions.cancel') }}
                       </button>
                       <button
                         type="submit"
                         class="rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 dark:hover:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 cursor-pointer"
                       >
-                        {{ isEdit ? 'Save changes' : 'Add relationship' }}
+                        {{ isEdit ? t('settings.saveChanges') : t('settings.modFieldsAddRelationship') }}
                       </button>
                     </div>
                   </form>
@@ -222,10 +222,13 @@
 
 <script setup>
 import { ref, watch, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
+
+const { t } = useI18n();
 
 const DEFAULT_RELATIONSHIP = () => ({
   name: '',
@@ -240,7 +243,7 @@ const DEFAULT_RELATIONSHIP = () => ({
   unique: false,
   index: true,
   cascadeDelete: false,
-  label: ''
+  label: '',
 });
 
 const props = defineProps({
@@ -258,7 +261,7 @@ const props = defineProps({
   /** Existing relationships on the current module (for duplicate check) */
   existingRelationships: { type: Array, default: () => [] },
   /** Fields for local field dropdown */
-  editFields: { type: Array, default: () => [] }
+  editFields: { type: Array, default: () => [] },
 });
 
 const emit = defineEmits(['close', 'save']);
@@ -315,11 +318,36 @@ const relationshipTypeOptions = computed(() => {
   const tgtPlural = tgt ? pluralize(tgt) : '';
   const hasTarget = Boolean(tgt);
   return [
-    { value: 'lookup', label: hasTarget ? `Lookup reference (Many ${curPlural} belong to one ${tgt})` : 'Lookup reference' },
-    { value: 'many_to_one', label: hasTarget ? `Many ${curPlural} belong to one ${tgt} (N:1)` : 'Many records belong to one target (N:1)' },
-    { value: 'one_to_many', label: hasTarget ? `One ${cur} has many ${tgtPlural} (1:N)` : 'One record has many targets (1:N)' },
-    { value: 'many_to_many', label: hasTarget ? `${curPlural} and ${tgtPlural} relate many-to-many (N:N)` : 'Records relate many-to-many (N:N)' },
-    { value: 'one_to_one', label: hasTarget ? `One ${cur} links to one ${tgt} (1:1)` : 'One-to-one relationship (1:1)' }
+    {
+      value: 'lookup',
+      label: hasTarget
+        ? t('settings.settingsRelDrawerTypeLookupWithTarget', { curPlural, tgt })
+        : t('settings.settingsRelDrawerTypeLookup'),
+    },
+    {
+      value: 'many_to_one',
+      label: hasTarget
+        ? t('settings.settingsRelDrawerTypeManyToOneWithTarget', { curPlural, tgt })
+        : t('settings.settingsRelDrawerTypeManyToOne'),
+    },
+    {
+      value: 'one_to_many',
+      label: hasTarget
+        ? t('settings.settingsRelDrawerTypeOneToManyWithTarget', { cur, tgtPlural })
+        : t('settings.settingsRelDrawerTypeOneToMany'),
+    },
+    {
+      value: 'many_to_many',
+      label: hasTarget
+        ? t('settings.settingsRelDrawerTypeManyToManyWithTarget', { curPlural, tgtPlural })
+        : t('settings.settingsRelDrawerTypeManyToMany'),
+    },
+    {
+      value: 'one_to_one',
+      label: hasTarget
+        ? t('settings.settingsRelDrawerTypeOneToOneWithTarget', { cur, tgt })
+        : t('settings.settingsRelDrawerTypeOneToOne'),
+    },
   ];
 });
 
@@ -333,7 +361,7 @@ function resetDraft() {
       ...DEFAULT_RELATIONSHIP(),
       ...raw,
       type: typeForUi,
-      isLookup: raw.type === 'lookup' || (raw.type === 'many_to_one' && !!raw.isLookup)
+      isLookup: raw.type === 'lookup' || (raw.type === 'many_to_one' && !!raw.isLookup),
     };
   } else {
     draft.value = { ...DEFAULT_RELATIONSHIP() };
@@ -439,7 +467,7 @@ const handleSave = () => {
     payload.isLookup = payload.type === 'many_to_one' ? !!payload.isLookup : false;
   }
   if (hasDuplicateTypeRelationship(payload, props.editIndex)) {
-    duplicateError.value = 'A relationship with the same type already exists between these modules.';
+    duplicateError.value = t('settings.settingsRelDrawerDuplicateError');
     return;
   }
   emit('save', { relationship: payload, editIndex: props.editIndex });

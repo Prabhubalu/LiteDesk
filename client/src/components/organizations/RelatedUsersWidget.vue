@@ -1,11 +1,11 @@
 <template>
   <div class="flex flex-col h-full w-full">
     <div class="flex items-center justify-between mb-3">
-      <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Related Users</h3>
+      <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('organizations.relatedUsersWidgetRelatedUsers') }}</h3>
       <button
         @click="$emit('create-user')"
         class="p-1 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded transition-colors"
-        title="Add User"
+        :title="t('organizations.relatedUsersWidgetAddUser2')"
       >
         <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -43,7 +43,7 @@
               <template v-if="getFieldValue(fieldDef, user)">
                 {{ getFieldValue(fieldDef, user) }}
               </template>
-              <span v-else class="text-gray-400 dark:text-gray-500 italic">Empty</span>
+              <span v-else class="text-gray-400 dark:text-gray-500 italic">{{ t('settings.modFieldsQuickCreateEmpty') }}</span>
             </div>
           </div>
         </div>
@@ -55,18 +55,17 @@
       <svg class="mx-auto h-10 w-10 text-gray-400 dark:text-gray-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
       </svg>
-      <p class="text-sm text-gray-500 dark:text-gray-400">No users linked yet. Link users to this organization to see them here.</p>
+      <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('organizations.relatedUsersWidgetNoUsersLinkedYetLinkUsers') }}</p>
       <button
         @click="$emit('create-user')"
         class="mt-2 text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
-      >
-        Add user
-      </button>
+      >{{ t('organizations.relatedUsersWidgetAddUser') }}</button>
     </div>
   </div>
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, watch, onMounted, computed } from 'vue';
 import apiClient from '@/utils/apiClient';
 import { getKeyFields, getFieldValue } from '@/utils/fieldDisplay';
@@ -85,6 +84,8 @@ const props = defineProps({
     required: false
   }
 });
+
+const { t } = useI18n();
 
 defineEmits(['view-user', 'create-user']);
 

@@ -21,7 +21,7 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        Create custom module
+        {{ t('settings.appsCreateCustomModule') }}
       </button>
     </div>
 
@@ -30,8 +30,8 @@
       <!-- Settings Options Grid -->
       <div v-if="!activeSalesTab || activeSalesTab === 'options'" class="space-y-6">
         <div>
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Configuration Options</h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Choose a category to configure</p>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.appsConfigOptions') }}</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ t('settings.appsChooseCategory') }}</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -47,15 +47,15 @@
               </div>
               <div class="flex-1 min-w-0">
                 <h4 class="text-base font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors mb-1">
-                  {{ option.name }}
+                  {{ optionLabel(option) }}
                 </h4>
                 <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                  {{ option.description }}
+                  {{ optionDesc(option) }}
                 </p>
               </div>
             </div>
             <div class="mt-4 flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity">
-              <span>Configure</span>
+              <span>{{ t('settings.appsConfigure') }}</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
@@ -81,8 +81,8 @@
     <!-- Other Apps Options (when app is selected but not Sales) -->
     <div v-else-if="selectedApp && !isSalesApp" class="space-y-6">
       <div v-if="activeAppTab === 'options'">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Configuration Options</h3>
-        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Available settings for {{ appDisplayName }}</p>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.appsConfigOptions') }}</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ t('settings.appsAvailableFor', { app: appDisplayName }) }}</p>
       </div>
 
       <div v-if="activeAppTab === 'options'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -99,11 +99,11 @@
             </div>
             <div class="flex-1 min-w-0">
               <h4 class="text-base font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors mb-1">
-                {{ option.name }}
-                <span v-if="!option.available" class="ml-2 text-xs text-gray-500 dark:text-gray-400">(Coming Soon)</span>
+                {{ optionLabel(option) }}
+                <span v-if="!option.available" class="ml-2 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.appsComingSoon') }}</span>
               </h4>
               <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                {{ option.description }}
+                {{ optionDesc(option) }}
               </p>
             </div>
           </div>
@@ -114,7 +114,7 @@
 
       <div v-else class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
         <p class="text-sm text-yellow-800 dark:text-yellow-300">
-          This settings panel is not available yet.
+          {{ t('settings.appsPanelUnavailable') }}
         </p>
       </div>
     </div>
@@ -127,14 +127,14 @@
         </svg>
       </div>
       <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-        {{ selectedApp ? `${capitalizeFirst(selectedApp)} Settings` : 'App Settings' }}
+        {{ selectedApp ? t('settings.appsSettingsTitleNamed', { app: appDisplayName }) : t('settings.appsSettingsTitle') }}
       </h3>
       <p class="text-sm text-gray-600 dark:text-gray-400">
         <span v-if="selectedApp && !hasSalesAccess">
-          {{ capitalizeFirst(selectedApp) }} app is not enabled or you don't have access to configure it.
+          {{ t('settings.appsNotEnabled', { app: appDisplayName }) }}
         </span>
         <span v-else>
-          No app selected or app settings are not available.
+          {{ t('settings.appsNoAppSelected') }}
         </span>
       </p>
     </div>
@@ -144,6 +144,7 @@
 <script setup>
 import { ref, computed, watch, h, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/authRegistry';
 import SalesSchema from './SalesSchema.vue';
 import SalesPipelines from './SalesPipelines.vue';
@@ -152,6 +153,7 @@ import HelpdeskSchema from './HelpdeskSchema.vue';
 import HelpdeskExecutionSettings from './HelpdeskExecutionSettings.vue';
 import HelpdeskAnalyticsDashboard from './HelpdeskAnalyticsDashboard.vue';
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
@@ -162,6 +164,32 @@ const activeAppTab = ref('options');
 const salesTabContentRef = ref(null);
 // Selected module inside Sales Modules (e.g. Deals) – kept in sync via event from SalesSchema for reactive header
 const salesSelectedModule = ref(null);
+
+const APP_NAME_KEYS = {
+  sales: 'settings.appsNameSales',
+  helpdesk: 'settings.appsNameHelpdesk',
+  projects: 'settings.appsNameProjects',
+  portal: 'settings.appsNamePortal',
+  audit: 'settings.appsNameAudit',
+  lms: 'settings.appsNameLms'
+};
+
+const APP_DESC_KEYS = {
+  sales: 'settings.appsDescSales',
+  helpdesk: 'settings.appsDescHelpdesk',
+  projects: 'settings.appsDescProjects',
+  portal: 'settings.appsDescPortal',
+  audit: 'settings.appsDescAudit',
+  lms: 'settings.appsDescLms'
+};
+
+function optionLabel(option) {
+  return option?.nameKey ? t(option.nameKey) : t('settings.appsSettingsFallback');
+}
+
+function optionDesc(option) {
+  return option?.descriptionKey ? t(option.descriptionKey) : '';
+}
 
 function onCreateCustomModuleClick() {
   nextTick(() => {
@@ -205,29 +233,15 @@ const isSalesApp = computed(() => {
 });
 
 const appDisplayName = computed(() => {
-  const appNames = {
-    'sales': 'Sales',
-    'helpdesk': 'Helpdesk',
-    'projects': 'Projects',
-    'portal': 'Portal',
-    'audit': 'Audit',
-    'lms': 'LMS'
-  };
-  return appNames[selectedApp.value.toLowerCase()] || capitalizeFirst(selectedApp.value);
+  const key = selectedApp.value?.toLowerCase();
+  const nameKey = APP_NAME_KEYS[key];
+  return nameKey ? t(nameKey) : capitalizeFirst(selectedApp.value);
 });
 
-// App descriptions shown below app name in header (when app is opened)
-const appDescriptions = {
-  sales: 'Manage your sales pipeline, deals, and customer relationships',
-  helpdesk: 'Manage cases, support workflows, and customer issues',
-  projects: 'Plan and track projects, tasks, and deliverables',
-  portal: 'Customer and partner self-service portal',
-  audit: 'Audit and compliance tracking',
-  lms: 'Learning management and training'
-};
 const appDescription = computed(() => {
   const key = selectedApp.value?.toLowerCase();
-  return key ? appDescriptions[key] || '' : '';
+  const descKey = APP_DESC_KEYS[key];
+  return descKey ? t(descKey) : '';
 });
 
 // When a Sales option card is selected, show its name/description in the main header.
@@ -242,12 +256,12 @@ const salesPageHeading = computed(() => {
   if (!isSalesApp.value && activeAppTab.value && activeAppTab.value !== 'options') {
     return getAppOptionName(selectedApp.value, activeAppTab.value);
   }
-  return `${appDisplayName.value} Settings`;
+  return t('settings.appsSettingsTitleNamed', { app: appDisplayName.value });
 });
 
 const salesPageSubheading = computed(() => {
   if (hasSalesAccess.value && isSalesApp.value && activeSalesTab.value === 'schema') {
-    if (salesSelectedModule.value?.name) return 'Configure fields, relationships and quick create';
+    if (salesSelectedModule.value?.name) return t('settings.appsModuleConfigureHint');
   }
   if (hasSalesAccess.value && isSalesApp.value && activeSalesTab.value && activeSalesTab.value !== 'options') {
     return getOptionDescription(activeSalesTab.value);
@@ -255,38 +269,38 @@ const salesPageSubheading = computed(() => {
   if (!isSalesApp.value && activeAppTab.value && activeAppTab.value !== 'options') {
     return getAppOptionDescription(selectedApp.value, activeAppTab.value);
   }
-  return appDescription.value || `Configure ${appDisplayName.value} app-specific settings and options`;
+  return appDescription.value || t('settings.appsConfigureAppFallback', { app: appDisplayName.value });
 });
 
 // Sales app options (Sales-owned configuration only) – Sales Modules first
 const salesOptions = [
   {
     id: 'schema',
-    name: 'Sales Modules',
-    description: 'Configure Sales app modules, custom fields, and data structure',
+    nameKey: 'settings.appsSalesModules',
+    descriptionKey: 'settings.appsSalesModulesDesc',
     icon: SchemaIcon,
     available: true
   },
   {
     id: 'pipelines',
-    name: 'Pipelines & Stages',
-    description: 'Configure sales pipelines, deal stages, and workflow automation',
+    nameKey: 'settings.appsPipelines',
+    descriptionKey: 'settings.appsPipelinesDesc',
     icon: PipelineIcon,
     available: true
   },
   {
     id: 'playbooks',
-    name: 'Playbooks',
-    description: 'Set up sales playbooks, templates, and process automation',
+    nameKey: 'settings.appsPlaybooks',
+    descriptionKey: 'settings.appsPlaybooksDesc',
     icon: PlaybookIcon,
     available: true
   }
 ];
 
 const salesTabs = [
-  { id: 'schema', name: 'Sales Modules', component: SalesSchema },
-  { id: 'pipelines', name: 'Pipelines & Stages', component: SalesPipelines },
-  { id: 'playbooks', name: 'Playbooks', component: SalesPlaybooks }
+  { id: 'schema', component: SalesSchema },
+  { id: 'pipelines', component: SalesPipelines },
+  { id: 'playbooks', component: SalesPlaybooks }
 ];
 
 const currentSalesTabComponent = computed(() => {
@@ -307,36 +321,30 @@ const navigateToOption = (optionId) => {
 
 const getOptionName = (optionId) => {
   const option = salesOptions.find(o => o.id === optionId);
-  return option?.name || 'Settings';
+  return optionLabel(option);
 };
 
 const getOptionDescription = (optionId) => {
   const option = salesOptions.find(o => o.id === optionId);
-  return option?.description || '';
-};
-
-const getTabsForOption = (optionId) => {
-  // For now, each option maps to a single tab
-  // In the future, options could have multiple sub-tabs
-  return salesTabs.filter(tab => tab.id === optionId);
+  return optionDesc(option);
 };
 
 // Get options for other apps
 const getAppOptions = (app) => {
   const appLower = app.toLowerCase();
-  
+
   const commonOptions = [
     {
       id: 'schema',
-      name: 'Schema',
-      description: 'Configure custom fields, modules, and data structure',
+      nameKey: 'settings.appsSchema',
+      descriptionKey: 'settings.appsSchemaDesc',
       icon: SchemaIcon,
       available: false
     },
     {
       id: 'settings',
-      name: 'General Settings',
-      description: 'Configure general app settings and preferences',
+      nameKey: 'settings.appsGeneralSettings',
+      descriptionKey: 'settings.appsGeneralSettingsDesc',
       icon: SettingsIcon,
       available: false
     }
@@ -344,100 +352,100 @@ const getAppOptions = (app) => {
 
   // App-specific options
   const appSpecificOptions = {
-    'helpdesk': [
+    helpdesk: [
       {
         id: 'schema',
-        name: 'Cases Module',
-        description: 'Configure Helpdesk case fields, relationships, and quick create',
+        nameKey: 'settings.appsHelpdeskCases',
+        descriptionKey: 'settings.appsHelpdeskCasesDesc',
         icon: SchemaIcon,
         available: true
       },
       {
         id: 'execution-settings',
-        name: 'Execution Settings',
-        description: 'Configure case types, SLA policies, business hours, and escalation rules',
+        nameKey: 'settings.appsHelpdeskExecution',
+        descriptionKey: 'settings.appsHelpdeskExecutionDesc',
         icon: SettingsIcon,
         available: true
       },
       {
         id: 'analytics',
-        name: 'Analytics Dashboard',
-        description: 'Review SLA compliance, owner performance, and distribution trends',
+        nameKey: 'settings.appsHelpdeskAnalytics',
+        descriptionKey: 'settings.appsHelpdeskAnalyticsDesc',
         icon: PipelineIcon,
         available: true
       },
       {
         id: 'assignment-rules',
-        name: 'Assignment rules',
-        description: 'Group-first routing, distribution modes, delays, and schedules for cases',
+        nameKey: 'settings.appsHelpdeskAssignment',
+        descriptionKey: 'settings.appsHelpdeskAssignmentDesc',
         icon: SettingsIcon,
         available: true,
         navigateTo: {
           path: '/settings',
-          query: { tab: 'automation', assignmentApp: 'HELPDESK', assignmentModule: 'cases' }
+          query: { tab: 'automation', automationView: 'assignment-rules', assignmentApp: 'HELPDESK', assignmentModule: 'cases' }
         }
       }
     ],
-    'projects': [
+    projects: [
       {
         id: 'templates',
-        name: 'Project Templates',
-        description: 'Create and manage project templates',
+        nameKey: 'settings.appsProjectsTemplates',
+        descriptionKey: 'settings.appsProjectsTemplatesDesc',
         icon: SettingsIcon,
         available: false
       },
       {
         id: 'workflows',
-        name: 'Workflows',
-        description: 'Configure project workflows and approval processes',
+        nameKey: 'settings.appsProjectsWorkflows',
+        descriptionKey: 'settings.appsProjectsWorkflowsDesc',
         icon: SettingsIcon,
         available: false
       }
     ],
-    'portal': [
+    portal: [
       {
         id: 'branding',
-        name: 'Branding',
-        description: 'Customize portal appearance and branding',
+        nameKey: 'settings.appsPortalBranding',
+        descriptionKey: 'settings.appsPortalBrandingDesc',
         icon: SettingsIcon,
         available: false
       },
       {
         id: 'access',
-        name: 'Access Control',
-        description: 'Manage portal access and permissions',
+        nameKey: 'settings.appsPortalAccess',
+        descriptionKey: 'settings.appsPortalAccessDesc',
         icon: SettingsIcon,
         available: false
       }
     ],
-    'audit': [
+    audit: [
       {
         id: 'checklists',
-        name: 'Audit Checklists',
-        description: 'Configure audit checklists and templates',
+        nameKey: 'settings.appsAuditChecklists',
+        descriptionKey: 'settings.appsAuditChecklistsDesc',
         icon: SettingsIcon,
         available: false
       },
       {
         id: 'compliance',
-        name: 'Compliance Rules',
-        description: 'Set up compliance rules and requirements',
+        nameKey: 'settings.appsAuditCompliance',
+        descriptionKey: 'settings.appsAuditComplianceDesc',
         icon: SettingsIcon,
         available: false
       }
     ],
-    'lms': [
+    lms: [
       {
         id: 'courses',
-        name: 'Course Settings',
-        description: 'Configure course structure and settings',
+        nameKey: 'settings.appsLmsCourses',
+        descriptionKey: 'settings.appsLmsCoursesDesc',
         icon: SettingsIcon,
         available: false
       },
       {
         id: 'certifications',
-        name: 'Certifications',
-        description: 'Manage certification programs and requirements',
+        nameKey: 'settings.appsLmsCertifications',
+        descriptionKey: 'settings.appsLmsCertificationsDesc',
         icon: SettingsIcon,
         available: false
       }
@@ -466,9 +474,9 @@ const getAppOptions = (app) => {
 
 const appSettingsComponents = {
   helpdesk: {
-    'schema': HelpdeskSchema,
+    schema: HelpdeskSchema,
     'execution-settings': HelpdeskExecutionSettings,
-    'analytics': HelpdeskAnalyticsDashboard
+    analytics: HelpdeskAnalyticsDashboard
   }
 };
 
@@ -493,11 +501,11 @@ const getAppOptionById = (app, optionId) => {
 };
 
 const getAppOptionName = (app, optionId) => {
-  return getAppOptionById(app, optionId)?.name || 'Settings';
+  return optionLabel(getAppOptionById(app, optionId));
 };
 
 const getAppOptionDescription = (app, optionId) => {
-  return getAppOptionById(app, optionId)?.description || '';
+  return optionDesc(getAppOptionById(app, optionId));
 };
 
 const goBack = () => {
@@ -522,7 +530,7 @@ const goBack = () => {
   router.push({ path: '/settings', query: { tab: 'applications', appKey: appKey } });
 };
 
-// Helper function to capitalize first letter
+// Helper function to capitalize first letter (fallback when no translation key)
 const capitalizeFirst = (str) => {
   if (!str) return '';
   return str.charAt(0).toUpperCase() + str.slice(1);

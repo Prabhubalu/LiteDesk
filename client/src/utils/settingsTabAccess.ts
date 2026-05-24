@@ -35,6 +35,12 @@ export function canAccessSettingsTab(
     case 'automation':
       // Same bar as application configuration: assignment routing affects operational behavior org-wide.
       return Boolean(p.edit);
+    case 'performance':
+      return Boolean(
+        p.edit ||
+        ctx.permissions?.performance?.targets?.view ||
+        ctx.permissions?.performance?.targets?.create
+      );
     case 'business-hours':
       return true;
     default:
@@ -49,6 +55,7 @@ const SETTINGS_TAB_IDS = [
   'core-modules',
   'applications',
   'automation',
+  'performance',
   'subscriptions',
   'notifications',
   'security',

@@ -5,9 +5,7 @@
         <!-- Header -->
         <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 rounded-t-2xl z-10">
           <div class="flex items-center justify-between">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white">
-              Create Order
-            </h2>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ t('events.orderCreationModalCreateOrder') }}</h2>
             <button @click="close" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
               <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -20,15 +18,14 @@
         <form @submit.prevent="handleSubmit" class="p-6 space-y-6">
           <!-- Organization -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Organization <span class="text-red-500">*</span>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.profileMetaOrg') }}<span class="text-red-500">*</span>
             </label>
             <select
               v-model="form.targetOrgId"
               required
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
-              <option value="">Select Organization...</option>
+              <option value="">{{ t('events.orderCreationModalSelectOrganization') }}</option>
               <option v-for="org in organizations" :key="org._id" :value="org._id">
                 {{ org.name }}
               </option>
@@ -37,8 +34,7 @@
 
           <!-- Order Items -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Order Items <span class="text-red-500">*</span>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('events.orderCreationModalOrderItems') }}<span class="text-red-500">*</span>
             </label>
             <div class="space-y-3">
               <div
@@ -50,7 +46,7 @@
                   <input
                     v-model="item.name"
                     type="text"
-                    placeholder="Item name"
+                    :placeholder="t('events.orderCreationModalItemName')"
                     required
                     class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
                   />
@@ -67,7 +63,7 @@
                     type="number"
                     min="0"
                     step="0.01"
-                    placeholder="Unit price"
+                    :placeholder="t('events.orderCreationModalUnitPrice')"
                     required
                     class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
                   />
@@ -95,13 +91,13 @@
           <!-- Order Summary -->
           <div class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
             <div class="flex justify-between items-center mb-2">
-              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Subtotal:</span>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('events.orderCreationModalSubtotal') }}</span>
               <span class="text-lg font-bold text-gray-900 dark:text-white">
                 {{ currency }} {{ subtotal.toFixed(2) }}
               </span>
             </div>
             <div class="flex justify-between items-center">
-              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Total:</span>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('events.orderCreationModalTotal') }}</span>
               <span class="text-xl font-bold text-indigo-600 dark:text-indigo-400">
                 {{ currency }} {{ total.toFixed(2) }}
               </span>
@@ -110,11 +106,11 @@
 
           <!-- Notes -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('forms.fieldNotes') }}</label>
             <textarea
               v-model="form.notes"
               rows="3"
-              placeholder="Additional notes..."
+              :placeholder="t('events.orderCreationModalAdditionalNotes')"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             ></textarea>
           </div>
@@ -125,9 +121,7 @@
               type="button"
               @click="close"
               class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg font-medium transition-colors"
-            >
-              Cancel
-            </button>
+            >{{ t('performance.cancelWizard') }}</button>
             <button
               type="submit"
               :disabled="saving || form.items.length === 0"
@@ -147,6 +141,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, computed, watch } from 'vue';
 import apiClient from '@/utils/apiClient';
 
@@ -164,6 +159,8 @@ const props = defineProps({
     default: null
   }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['close', 'created']);
 
@@ -258,11 +255,11 @@ const handleSubmit = async () => {
       emit('created', response.data);
       close();
     } else {
-      alert(response.message || 'Failed to create order');
+      alert(response.message || t('events.orderCreationModalToastFailedToCreateOrder'));
     }
   } catch (error) {
     console.error('Error creating order:', error);
-    alert('Failed to create order: ' + (error.message || 'Unknown error'));
+    alert(t('events.orderCreationModalToastFailedToCreateOrder2') + (error.message || 'Unknown error'));
   } finally {
     saving.value = false;
   }

@@ -5,7 +5,7 @@
       <div class="form-group">
         <label for="contactName" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Full Name *</label>
         <div class="mt-2">
-          <input type="text" id="contactName" v-model="formData.contactName" placeholder="Enter your full name" required
+          <input type="text" id="contactName" v-model="formData.contactName" :placeholder="t('auth.demoRequestFormEnterYourFullName')" required
             class="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-gray-900 text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 
             dark:text-white dark:bg-gray-700 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500" />
         </div>
@@ -14,7 +14,7 @@
         <div class="form-group">
           <label for="email" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Work Email *</label>
           <div class="mt-2">
-            <input type="email" id="email" v-model="formData.email" placeholder="your@email.com" required
+            <input type="email" id="email" v-model="formData.email" :placeholder="t('auth.demoRequestFormYourEmailCom')" required
               class="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-gray-900 text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 
             dark:text-white dark:bg-gray-700 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500" />
           </div>
@@ -25,7 +25,7 @@
             <PhoneInput
               id="phone"
               :model-value="formData.phone"
-              placeholder="Phone number"
+              :placeholder="t('settings.profilePhone')"
               required
               input-class="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-gray-900 text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:text-white dark:bg-gray-700 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
               @update:model-value="formData.phone = $event"
@@ -47,7 +47,7 @@
         <div class="form-group">
           <label for="jobTitle" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Job Title *</label>
           <div class="mt-2">
-            <input type="text" id="jobTitle" v-model="formData.jobTitle" placeholder="e.g. Sales Manager, CEO" required
+            <input type="text" id="jobTitle" v-model="formData.jobTitle" :placeholder="t('auth.demoRequestFormEGSalesManagerCeo')" required
               class="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-gray-900 text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 
             dark:text-white dark:bg-gray-700 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500" />
           </div>
@@ -62,16 +62,16 @@
             <select id="industry" v-model="formData.industry" required
               class="block w-full rounded-md bg-gray-100 px-3 py-2 text-gray-900 text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 
               dark:text-white dark:bg-gray-700 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500">
-              <!-- <option value="">Select Industry</option> -->
-              <option value="Technology">Technology</option>
-              <option value="Healthcare">Healthcare</option>
-              <option value="Finance">Finance</option>
-              <option value="Retail">Retail</option>
-              <option value="Manufacturing">Manufacturing</option>
-              <option value="Real Estate">Real Estate</option>
-              <option value="Education">Education</option>
-              <option value="Consulting">Consulting</option>
-              <option value="Other">Other</option>
+              <!-- <option value="">{{ t('auth.demoRequestFormSelectIndustry') }}</option> -->
+              <option value="Technology">{{ t('auth.demoRequestFormTechnology') }}</option>
+              <option value="Healthcare">{{ t('auth.demoRequestFormHealthcare') }}</option>
+              <option value="Finance">{{ t('auth.demoRequestFormFinance') }}</option>
+              <option value="Retail">{{ t('auth.demoRequestFormRetail') }}</option>
+              <option value="Manufacturing">{{ t('auth.demoRequestFormManufacturing') }}</option>
+              <option value="Real Estate">{{ t('auth.demoRequestFormRealEstate') }}</option>
+              <option value="Education">{{ t('auth.demoRequestFormEducation') }}</option>
+              <option value="Consulting">{{ t('auth.demoRequestFormConsulting') }}</option>
+              <option value="Other">{{ t('settings.settingsBhTzGroupOther') }}</option>
             </select>
           </div>
         </div>
@@ -82,7 +82,7 @@
             <select id="companySize" v-model="formData.companySize" required
               class="block w-full rounded-md bg-gray-100 px-3 py-2 text-gray-900 text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 
               dark:text-white dark:bg-gray-700 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500">
-              <!-- <option value="">Select Size</option> -->
+              <!-- <option value="">{{ t('auth.demoRequestFormSelectSize') }}</option> -->
               <option value="1-10">1-10 employees</option>
               <option value="11-50">11-50 employees</option>
               <option value="51-200">51-200 employees</option>
@@ -97,12 +97,12 @@
       <div class="form-section">
 
         <div class="form-group">
-          <label for="message" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Primary Goal</label>
+          <label for="message" class="block text-sm/6 font-medium text-gray-900 dark:text-white">{{ t('auth.demoRequestFormPrimaryGoal') }}</label>
           <div class="mt-2">
             <textarea id="message" v-model="formData.message" rows="4"
               class="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-gray-900 text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6
             dark:text-white dark:bg-gray-700 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
-              placeholder="Tell us what are you looking to achieve with Nurtura..."></textarea>
+              :placeholder="t('auth.demoRequestFormTellUsWhatAreYouLooking')"></textarea>
           </div>
 
         </div>
@@ -123,8 +123,8 @@
       <button type="submit" :disabled="loading"
         class="flex w-full justify-center rounded-md bg-indigo-500 px-3 py-2.5 text-md/0 font-semibold text-white hover:bg-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
 
-        <span v-if="loading">Submitting...</span>
-        <span v-else>Request Demo</span>
+        <span v-if="loading">{{ t('forms.hubFillSubmitting') }}</span>
+        <span v-else>{{ t('auth.demoRequestFormRequestDemo') }}</span>
       </button>
     </form>
 
@@ -150,8 +150,7 @@
                     <CheckIcon class="size-6 text-green-600 dark:text-green-400" aria-hidden="true" />
                   </div>
                   <div class="mt-3 text-center sm:mt-5">
-                    <DialogTitle as="h3" class="text-base font-semibold text-gray-900 dark:text-white">Demo Request Submitted!
-                    </DialogTitle>
+                    <DialogTitle as="h3" class="text-base font-semibold text-gray-900 dark:text-white">{{ t('auth.demoRequestFormDemoRequestSubmitted') }}</DialogTitle>
                     <div class="mt-2">
                       <p class="text-sm text-gray-500 dark:text-gray-400">🎉 Thank you for your interest! Our team will contact you within
                         24 hours.</p>
@@ -161,7 +160,7 @@
                 <div class="mt-5 sm:mt-6">
                   <button type="button"
                     class="inline-flex w-full justify-center rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500 dark:hover:bg-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-500"
-                    @click="closeAndNavigate">Go back to home</button>
+                    @click="closeAndNavigate">{{ t('auth.demoRequestFormGoBackToHome') }}</button>
                 </div>
               </DialogPanel>
             </TransitionChild>
@@ -173,6 +172,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import apiClient from '../utils/apiClient';

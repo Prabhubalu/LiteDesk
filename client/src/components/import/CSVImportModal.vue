@@ -14,7 +14,7 @@
               <h2 class="text-2xl font-bold text-white">
                 Import {{ entityType }}
               </h2>
-              <p class="text-indigo-100 text-sm mt-0.5">Upload and map your CSV data</p>
+              <p class="text-indigo-100 text-sm mt-0.5">{{ t('import.cSVImportModalUploadAndMapYourCsvData') }}</p>
             </div>
           </div>
           <button @click="$emit('close')" class="p-2.5 text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition-all duration-200">
@@ -82,20 +82,14 @@
                     </svg>
                   </div>
                   <div>
-                    <h4 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Upload Your CSV File</h4>
-                    <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
-                      Drag and drop your file here, or click to browse from your computer
-                    </p>
+                    <h4 class="text-xl font-bold text-gray-900 dark:text-white mb-2">{{ t('import.cSVImportModalUploadYourCsvFile') }}</h4>
+                    <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">{{ t('import.cSVImportModalDragAndDropYourFileHere') }}</p>
                     <button type="button" class="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-indigo-500/20">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-                      </svg>
-                      Choose File
-                    </button>
+                      </svg>{{ t('import.cSVImportModalChooseFile') }}</button>
                   </div>
-                  <p class="text-xs text-gray-500 dark:text-gray-500 pt-4">
-                    Supported format: CSV files only
-                  </p>
+                  <p class="text-xs text-gray-500 dark:text-gray-500 pt-4">{{ t('import.cSVImportModalSupportedFormatCsvFilesOnly') }}</p>
                 </div>
 
                 <div v-else class="space-y-4">
@@ -105,11 +99,9 @@
                     </svg>
                   </div>
                   <div>
-                    <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-1">File Selected</h4>
+                    <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-1">{{ t('import.cSVImportModalFileSelected') }}</h4>
                     <p class="text-indigo-600 dark:text-indigo-400 font-medium text-lg">{{ fileName }}</p>
-                    <button type="button" @click.stop="clearFile" class="mt-4 text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 underline transition-colors">
-                      Choose a different file
-                    </button>
+                    <button type="button" @click.stop="clearFile" class="mt-4 text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 underline transition-colors">{{ t('import.cSVImportModalChooseADifferentFile') }}</button>
                   </div>
                 </div>
               </div>
@@ -128,8 +120,7 @@
                 </div>
                 <div class="flex-1">
                   <p class="text-white text-sm font-medium">
-                    <span class="font-bold text-lg">{{ totalRows }} rows</span> detected in your CSV file
-                  </p>
+                    <span class="font-bold text-lg">{{ totalRows }} rows</span>{{ t('import.cSVImportModalDetectedInYourCsvFile') }}</p>
                   <p class="text-blue-100 text-sm mt-1">
                     Map your CSV columns to {{ entityType }} fields below. You can skip fields you don't need.
                   </p>
@@ -187,7 +178,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                 </svg>
                 <div class="flex-1">
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Duplicate Detection Options</h3>
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('import.cSVImportModalDuplicateDetectionOptions') }}</h3>
                   
                   <!-- Radio Buttons for Check/Don't Check -->
                   <div class="space-y-3 mb-6">
@@ -200,12 +191,10 @@
                       />
                       <div class="flex-1">
                         <div class="flex items-center gap-2">
-                          <span class="text-sm font-semibold text-gray-900 dark:text-white">Check for Duplicates</span>
-                          <span class="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs rounded-full">Recommended</span>
+                          <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('import.cSVImportModalCheckForDuplicates') }}</span>
+                          <span class="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs rounded-full">{{ t('settings.integrationsRecommended') }}</span>
                         </div>
-                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                          Scan your CSV for duplicate records based on selected fields. You can choose to skip, update, or import them.
-                        </p>
+                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">{{ t('import.cSVImportModalScanYourCsvForDuplicateRecords') }}</p>
                       </div>
                     </label>
                     
@@ -217,23 +206,17 @@
                         class="w-5 h-5 text-indigo-600 border-gray-300 focus:ring-indigo-500 mt-0.5 flex-shrink-0"
                       />
                       <div class="flex-1">
-                        <span class="text-sm font-semibold text-gray-900 dark:text-white">Do Not Check for Duplicates</span>
-                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                          Import all records without duplicate checking. Use this if you're confident your data is clean.
-                        </p>
+                        <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('import.cSVImportModalDoNotCheckForDuplicates') }}</span>
+                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">{{ t('import.cSVImportModalImportAllRecordsWithoutDuplicateChecking') }}</p>
                       </div>
                     </label>
                   </div>
                   
                   <!-- Field Selector (only shown if checking duplicates) -->
                   <div v-if="shouldCheckDuplicates" class="border-t border-gray-200 dark:border-gray-700 pt-4">
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                      Select which field(s) to use for duplicate checking. Records matching <strong>ALL</strong> selected fields will be considered duplicates.
-                    </p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ t('import.cSVImportModalSelectWhichFieldSToUse') }}<strong>{{ t('import.cSVImportModalAll2') }}</strong>{{ t('import.cSVImportModalSelectedFieldsWillBeConsideredDuplicates') }}</p>
                     
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Duplicate Check Fields
-                    </label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('import.cSVImportModalDuplicateCheckFields') }}</label>
                   
                   <!-- Multi-Select Dropdown -->
                   <div class="relative">
@@ -244,9 +227,7 @@
                     >
                       <div class="flex items-center justify-between">
                         <div class="flex-1 min-w-0">
-                          <div v-if="duplicateCheckFields.length === 0" class="text-gray-500 dark:text-gray-400">
-                            Select fields to check...
-                          </div>
+                          <div v-if="duplicateCheckFields.length === 0" class="text-gray-500 dark:text-gray-400">{{ t('import.cSVImportModalSelectFieldsToCheck') }}</div>
                           <div v-else class="flex flex-wrap gap-2">
                             <span
                               v-for="fieldValue in duplicateCheckFields"
@@ -293,9 +274,7 @@
                               <span
                                 v-if="field.recommended"
                                 class="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs rounded-full"
-                              >
-                                Recommended
-                              </span>
+                              >{{ t('settings.integrationsRecommended') }}</span>
                             </div>
                             <span class="text-xs text-gray-500 dark:text-gray-400">{{ field.description }}</span>
                           </div>
@@ -309,7 +288,7 @@
                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
                       </svg>
                       <span>
-                        <strong>AND Logic:</strong> A record is only considered a duplicate if it matches on <strong>ALL</strong> selected fields.
+                        <strong>{{ t('import.cSVImportModalAndLogic') }}</strong>{{ t('import.cSVImportModalARecordIsOnlyConsideredA') }}<strong>{{ t('import.cSVImportModalAll') }}</strong> selected fields.
                         For example, selecting "Email + Company" means both the email AND company must match.
                       </span>
                     </div>
@@ -321,7 +300,7 @@
 
           <div v-if="checkingDuplicates" class="text-center py-12">
             <div class="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mb-4"></div>
-            <p class="text-lg font-medium text-gray-900 dark:text-white">Checking for duplicates...</p>
+            <p class="text-lg font-medium text-gray-900 dark:text-white">{{ t('import.cSVImportModalCheckingForDuplicates') }}</p>
             <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Comparing {{ totalRows }} records</p>
           </div>
 
@@ -336,7 +315,7 @@
                 </div>
                 <div>
                   <p class="stat-value">{{ duplicateData.unique }}</p>
-                  <p class="stat-label">New Records</p>
+                  <p class="stat-label">{{ t('import.cSVImportModalNewRecords') }}</p>
                 </div>
               </div>
 
@@ -348,7 +327,7 @@
                 </div>
                 <div>
                   <p class="stat-value">{{ duplicateData.duplicates }}</p>
-                  <p class="stat-label">Duplicates Found</p>
+                  <p class="stat-label">{{ t('import.cSVImportModalDuplicatesFound') }}</p>
                 </div>
               </div>
 
@@ -360,7 +339,7 @@
                 </div>
                 <div>
                   <p class="stat-value">{{ duplicateData.total }}</p>
-                  <p class="stat-label">Total Rows</p>
+                  <p class="stat-label">{{ t('import.cSVImportModalTotalRows') }}</p>
                 </div>
               </div>
             </div>
@@ -375,7 +354,7 @@
                   :class="duplicateAction === 'skip' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'">
                   <input type="radio" value="skip" v-model="duplicateAction" class="mt-1 w-4 h-4 text-indigo-600" />
                   <div>
-                    <p class="font-medium text-gray-900 dark:text-white">Skip Duplicates</p>
+                    <p class="font-medium text-gray-900 dark:text-white">{{ t('import.cSVImportModalSkipDuplicates') }}</p>
                     <p class="text-sm text-gray-600 dark:text-gray-400">Only import new records ({{ duplicateData.unique }} records)</p>
                   </div>
                 </label>
@@ -384,7 +363,7 @@
                   :class="duplicateAction === 'update' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'">
                   <input type="radio" value="update" v-model="duplicateAction" class="mt-1 w-4 h-4 text-indigo-600" />
                   <div>
-                    <p class="font-medium text-gray-900 dark:text-white">Update Existing Records</p>
+                    <p class="font-medium text-gray-900 dark:text-white">{{ t('import.cSVImportModalUpdateExistingRecords') }}</p>
                     <p class="text-sm text-gray-600 dark:text-gray-400">Update {{ duplicateData.duplicates }} duplicates with new data</p>
                   </div>
                 </label>
@@ -393,7 +372,7 @@
                   :class="duplicateAction === 'import-all' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'">
                   <input type="radio" value="import-all" v-model="duplicateAction" class="mt-1 w-4 h-4 text-indigo-600" />
                   <div>
-                    <p class="font-medium text-gray-900 dark:text-white">Import All (Create Duplicates)</p>
+                    <p class="font-medium text-gray-900 dark:text-white">{{ t('import.cSVImportModalImportAllCreateDuplicates') }}</p>
                     <p class="text-sm text-gray-600 dark:text-gray-400">Import all {{ duplicateData.total }} records, even duplicates</p>
                   </div>
                 </label>
@@ -420,9 +399,7 @@
                         Existing: {{ dup.existingRecord.first_name || dup.existingRecord.name }} ({{ new Date(dup.existingRecord.createdAt).toLocaleDateString() }})
                       </p>
                     </div>
-                    <span class="px-2 py-1 text-xs font-semibold bg-warning-100 dark:bg-warning-900/40 text-warning-800 dark:text-warning-200 rounded">
-                      Duplicate
-                    </span>
+                    <span class="px-2 py-1 text-xs font-semibold bg-warning-100 dark:bg-warning-900/40 text-warning-800 dark:text-warning-200 rounded">{{ t('forms.builderDuplicate') }}</span>
                   </div>
                 </div>
                 <p v-if="duplicateData.duplicateRecords.length > 10" class="text-sm text-gray-500 dark:text-gray-400 text-center py-2">
@@ -437,8 +414,8 @@
         <div v-if="step === 3">
           <div v-if="importing" class="text-center py-12">
             <div class="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mb-4"></div>
-            <p class="text-lg font-medium text-gray-900 dark:text-white">Importing records...</p>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">This may take a moment</p>
+            <p class="text-lg font-medium text-gray-900 dark:text-white">{{ t('import.cSVImportModalImportingRecords') }}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">{{ t('import.cSVImportModalThisMayTakeAMoment') }}</p>
           </div>
 
           <div v-else-if="importResults" class="space-y-6">
@@ -452,7 +429,7 @@
                 </div>
                 <div>
                   <p class="stat-value">{{ importResults.created }}</p>
-                  <p class="stat-label">Created</p>
+                  <p class="stat-label">{{ t('forms.hubColCreated') }}</p>
                 </div>
               </div>
 
@@ -464,7 +441,7 @@
                 </div>
                 <div>
                   <p class="stat-value">{{ importResults.updated }}</p>
-                  <p class="stat-label">Updated</p>
+                  <p class="stat-label">{{ t('import.cSVImportModalUpdated') }}</p>
                 </div>
               </div>
 
@@ -476,14 +453,14 @@
                 </div>
                 <div>
                   <p class="stat-value">{{ importResults.failed }}</p>
-                  <p class="stat-label">Failed</p>
+                  <p class="stat-label">{{ t('process.execFailed') }}</p>
                 </div>
               </div>
             </div>
 
             <!-- Errors -->
             <div v-if="importResults.errors && importResults.errors.length > 0" class="max-h-64 overflow-y-auto">
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Import Errors:</h4>
+              <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('import.cSVImportModalImportErrors') }}</h4>
               <div class="space-y-2">
                 <div v-for="(error, index) in importResults.errors" :key="index" class="p-3 bg-danger-50 dark:bg-danger-900/20 border border-danger-200 dark:border-danger-800 rounded-lg">
                   <p class="text-sm text-danger-800 dark:text-danger-200">
@@ -496,8 +473,7 @@
             <!-- Success Message -->
             <div v-else class="p-4 bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 rounded-lg">
               <p class="text-success-800 dark:text-success-200 text-center">
-                <strong>✓</strong> All records imported successfully!
-              </p>
+                <strong>✓</strong>{{ t('import.cSVImportModalAllRecordsImportedSuccessfully') }}</p>
             </div>
           </div>
         </div>
@@ -511,9 +487,7 @@
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-              </svg>
-              Back
-            </button>
+              </svg>{{ t('performance.back') }}</button>
             <div v-else></div>
 
             <div class="flex gap-3">
@@ -546,9 +520,7 @@
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                </svg>
-                Import Now (Skip Duplicate Check)
-              </button>
+                </svg>{{ t('import.cSVImportModalImportNowSkipDuplicateCheck') }}</button>
               
               <!-- Next/Import button (all other steps) -->
               <button 
@@ -573,9 +545,7 @@
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                Done
-              </button>
+                </svg>{{ t('import.cSVImportModalDone') }}</button>
             </div>
           </div>
         </div>
@@ -585,6 +555,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { ref, reactive, computed, watch } from 'vue';
 import apiClient from '@/utils/apiClient';
@@ -682,6 +653,8 @@ const props = defineProps({
     default: ''
   }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['close', 'import-complete']);
 
@@ -799,7 +772,7 @@ const handleFileSelect = (event) => {
 const handleFileDrop = (event) => {
   const file = event.dataTransfer.files[0];
   if (!file || !file.name.endsWith('.csv')) {
-    alert('Please upload a CSV file');
+    alert(t('import.cSVImportModalToastPleaseUploadACsvFile'));
     return;
   }
 
@@ -858,7 +831,7 @@ const parseCSV = () => {
   try {
     const lines = csvData.value.split('\n').filter(line => line.trim());
     if (lines.length === 0) {
-      alert('CSV file is empty');
+      alert(t('import.cSVImportModalToastCsvFileIsEmpty'));
       return;
     }
 
@@ -886,7 +859,7 @@ const parseCSV = () => {
     totalRows.value = lines.length - 1;
   } catch (error) {
     console.error('Error parsing CSV:', error);
-    alert('Error parsing CSV file. Please check the format and try again.');
+    alert(t('import.cSVImportModalToastErrorParsingCsvFilePlease'));
   }
 };
 
@@ -930,7 +903,7 @@ const checkDuplicates = async () => {
     }
   } catch (error) {
     console.error('Error checking duplicates:', error);
-    alert('Error checking for duplicates. Please try again.');
+    alert(t('import.cSVImportModalToastErrorCheckingForDuplicatesPlease'));
   } finally {
     checkingDuplicates.value = false;
   }
@@ -966,7 +939,7 @@ const performImport = async () => {
     }
   } catch (error) {
     console.error('Error importing:', error);
-    alert('Error importing data. Please try again.');
+    alert(t('import.cSVImportModalToastErrorImportingDataPleaseTry'));
     step.value = 1;
   } finally {
     importing.value = false;

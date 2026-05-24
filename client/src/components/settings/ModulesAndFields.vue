@@ -3,12 +3,12 @@
     <div v-if="!props.hideHeader" class="mb-4 flex items-center justify-between gap-3">
       <template v-if="selectedModuleId">
         <div class="flex items-center gap-3">
-          <button @click="clearSelection" class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5" title="Back to modules">
+          <button @click="clearSelection" class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5" :title="t('settings.modFieldsBackTitle')">
             <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12.78 15.22a.75.75 0 01-1.06 0l-4.5-4.5a.75.75 0 010-1.06l4.5-4.5a.75.75 0 111.06 1.06L8.56 10l4.22 4.22a.75.75 0 010 1.06z" clip-rule="evenodd"/></svg>
           </button>
           <div>
             <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ selectedModule?.name }}</h2>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Configure fields, relationships and quick create</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.appsModuleConfigureHint') }}</p>
           </div>
         </div>
         <div class="flex items-center gap-2">
@@ -16,20 +16,20 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
-            Create Module
+            {{ t('settings.modFieldsCreateModule') }}
           </button>
         </div>
       </template>
       <template v-else>
         <div>
           <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ title }}</h2>
-          <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Manage modules and configure fields</p>
+          <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.modFieldsManageModules') }}</p>
         </div>
         <button @click="openCreateModal" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
-          Create Module
+          {{ t('settings.modFieldsCreateModule') }}
         </button>
       </template>
     </div>
@@ -67,11 +67,11 @@
                     @click.stop="deleteModule(mod)"
                     class="flex-shrink-0 text-red-600 dark:text-red-400 text-sm hover:underline opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity duration-150"
                   >
-                    Delete
+                    {{ t('settings.modFieldsDelete') }}
                   </button>
                 </div>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                  {{ getModuleCardCounts(mod).fields }} Fields · {{ getModuleCardCounts(mod).relationships }} Relationships
+                  {{ formatModuleCardCounts(mod) }}
                 </p>
               </div>
               <svg class="flex-shrink-0 w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -87,19 +87,19 @@
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
-                Core
+                {{ t('settings.modFieldsBadgeCore') }}
               </span>
               <span
                 v-else-if="mod.type === 'custom'"
                 class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
               >
-                Custom
+                {{ t('settings.modFieldsBadgeCustom') }}
               </span>
               <span
                 v-else
                 class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
               >
-                App
+                {{ t('settings.modFieldsBadgeApp') }}
               </span>
             </div>
           </button>
@@ -131,8 +131,8 @@
         </div>
         <div class="flex items-center justify-between py-3">
           <div class="text-sm text-gray-500 dark:text-gray-400">
-            <span v-if="activeTopTab === 'pipeline'">Manage pipeline stages, order, and statuses.</span>
-            <span v-else-if="activeTopTab === 'playbooks'">Configure playbooks for each pipeline stage.</span>
+            <span v-if="activeTopTab === 'pipeline'">{{ t('settings.modFieldsPipelineHint') }}</span>
+            <span v-else-if="activeTopTab === 'playbooks'">{{ t('settings.modFieldsPlaybooksHint') }}</span>
           </div>
         </div>
       </div>
@@ -142,24 +142,25 @@
         <!-- Microcopy for People module -->
         <div v-if="isPeopleModule" class="px-2 flex-shrink-0">
           <p class="text-sm text-gray-600 dark:text-gray-400">
-            Configure how People fields are displayed. Field ownership and application scope are defined by the platform and apps.
+            {{ t('settings.modFieldsPeopleMicrocopy') }}
           </p>
         </div>
         
         <!-- Microcopy for Organizations module -->
         <div v-if="isOrganizationsModule" class="px-2 flex-shrink-0">
           <p class="text-sm text-gray-600 dark:text-gray-400">
-            Configure how Organization fields are displayed. Field ownership and application scope are defined by the platform and apps. 
-            <strong>Note:</strong> This configures business organizations (Customer, Partner, Vendor), not tenant organizations. 
-            Tenant organization settings are managed in Platform Settings.
+            {{ t('settings.modFieldsOrgsMicrocopy') }}
+            <strong>{{ t('settings.modFieldsFormsNote') }}</strong>
+            {{ t('settings.modFieldsOrgsNoteBody') }}
           </p>
         </div>
         
         <!-- Microcopy for Tasks module -->
         <div v-if="isTasksModule" class="px-2 flex-shrink-0">
           <p class="text-sm text-gray-600 dark:text-gray-400">
-            Configure how Task fields are displayed. Field ownership and application scope are defined by the platform and apps.
-            <strong>Note:</strong> Tasks Settings configure structure only, never work. Task lists, completion, time tracking, and automation belong in Surfaces and Work interfaces.
+            {{ t('settings.modFieldsTasksMicrocopy') }}
+            <strong>{{ t('settings.modFieldsFormsNote') }}</strong>
+            {{ t('settings.modFieldsTasksNoteBody') }}
           </p>
         </div>
         
@@ -171,17 +172,18 @@
         -->
         <div v-if="isEventsModule" class="px-2 flex-shrink-0">
           <p class="text-sm text-gray-600 dark:text-gray-400">
-            Configure how Event fields are displayed. Field ownership and application scope are defined by the platform and apps.
-            <strong>Note:</strong> Events Settings handle structure and constraints only.
-            Scheduling, calendars, execution, audit workflows, and geo tracking belong in Surfaces and Work interfaces.
+            {{ t('settings.modFieldsEventsMicrocopy') }}
+            <strong>{{ t('settings.modFieldsFormsNote') }}</strong>
+            {{ t('settings.modFieldsEventsNoteBody') }}
           </p>
         </div>
         
         <!-- Microcopy for Items module -->
         <div v-if="isItemsModule" class="px-2 flex-shrink-0">
           <p class="text-sm text-gray-600 dark:text-gray-400">
-            Configure how Item fields are displayed. Field ownership and application scope are defined by the platform and apps.
-            <strong>Note:</strong> Items Settings configure structure only. Items are supporting/secondary entities used primarily in sales contexts.
+            {{ t('settings.modFieldsItemsMicrocopy') }}
+            <strong>{{ t('settings.modFieldsFormsNote') }}</strong>
+            {{ t('settings.modFieldsItemsNoteBody') }}
           </p>
         </div>
         
@@ -201,21 +203,21 @@
         -->
         <div v-if="isFormsModule" class="px-2 flex-shrink-0">
           <p class="text-sm text-gray-600 dark:text-gray-400">
-            Configure Form record fields: visibility, behavior, and rules. Field ownership and application scope are defined by the platform and apps.
-            <strong>Note:</strong> Forms Settings configure structure and behavior only, not form content. 
-            Form sections/questions are edited in the Form Builder. Responses and execution belong in Form Responses and Work interfaces.
+            {{ t('settings.modFieldsFormsMicrocopy') }}
+            <strong>{{ t('settings.modFieldsFormsNote') }}</strong>
+            {{ t('settings.modFieldsFormsNoteBody') }}
           </p>
           
           <!-- Capability Indicators -->
           <div class="mt-3 flex flex-wrap gap-2">
             <span v-if="hasCapability('metadataEditable')" class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded text-xs font-medium">
-              ✓ Metadata Editable
+              {{ t('settings.modFieldsCapMetadata') }}
             </span>
             <span v-if="isCapabilityLocked('builderEditable')" class="px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded text-xs font-medium">
-              🔒 Structure Locked (Form Builder)
+              {{ t('settings.modFieldsCapStructureLocked') }}
             </span>
             <span v-if="isCapabilityLocked('contentEditable')" class="px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded text-xs font-medium">
-              🔒 Content Locked (Form Builder)
+              {{ t('settings.modFieldsCapContentLocked') }}
             </span>
           </div>
         </div>
@@ -233,21 +235,21 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
               </svg>
-              <span>Add Custom Field</span>
+              <span>{{ t('settings.modFieldsAddCustomField') }}</span>
             </button>
           </div>
           <div class="p-2 border-b border-gray-200 dark:border-white/10 flex items-center justify-between flex-shrink-0">
-            <div class="text-xs text-gray-500 dark:text-gray-400">Fields</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsFieldsLabel') }}</div>
           </div>
         <div class="p-2 border-b border-gray-200 dark:border-white/10 space-y-2 flex-shrink-0">
-          <input v-model="fieldSearch" placeholder="Search fields" class="w-full px-2 py-1 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs" />
+          <input v-model="fieldSearch" :placeholder="t('settings.modFieldsSearchFieldsPh')" class="w-full px-2 py-1 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs" />
           <!-- Show Tenant Fields Toggle (only for organizations module) -->
           <label v-if="selectedModule?.key === 'organizations'" class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
             <HeadlessCheckbox
               v-model="showTenantFields"
               checkbox-class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
             />
-            <span>Show Tenant Fields</span>
+            <span>{{ t('settings.modFieldsShowTenantFields') }}</span>
           </label>
         </div>
         <div class="modules-fields-list p-2" style="flex: 1 1 0%; min-height: 0; overflow-y: auto; overflow-x: auto; -webkit-overflow-scrolling: touch;">
@@ -255,7 +257,7 @@
           <template v-if="isPeopleModule">
             <!-- Core Identity Fields -->
             <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">Core Identity</div>
+              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupCoreIdentity') }}</div>
               <ul class="space-y-1">
                 <li
                   v-for="(fieldKey, idx) in groupedFields.coreIdentity"
@@ -274,8 +276,8 @@
                     <div class="cursor-grab select-none mr-2 text-gray-400 dark:text-gray-500">⋮⋮</div>
                     <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
                       <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span v-if="isCustomField(fieldKey)" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">Custom</span>
-                      <span v-else class="px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">Core</span>
+                      <span v-if="isCustomField(fieldKey)" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsBadgeCustomField') }}</span>
+                      <span v-else class="px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">{{ t('settings.modFieldsBadgeCoreField') }}</span>
                     </button>
                     <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
                   </div>
@@ -286,7 +288,7 @@
             <!-- App Participation Groups -->
             <div v-for="(fields, appKey) in groupedFields.participation" :key="appKey" class="mb-4">
               <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">
-                {{ appKey === 'SALES' ? 'Sales Participation' : `${appKey} Participation` }}
+                {{ participationGroupTitle(appKey) }}
               </div>
               <ul class="space-y-1">
                 <li
@@ -316,7 +318,7 @@
 
             <!-- System Fields -->
             <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">System Fields</div>
+              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupSystemFields') }}</div>
               <ul class="space-y-1">
                 <li
                   v-for="fieldKey in groupedFields.system"
@@ -327,10 +329,10 @@
                         'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2 opacity-75',
                         getFieldIndex(fieldKey) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5'
                       ]">
-                    <div class="mr-2 text-xs text-purple-600 dark:text-purple-400" title="System field">🔒</div>
+                    <div class="mr-2 text-xs text-purple-600 dark:text-purple-400" :title="t('settings.modFieldsTitleSystemField')">🔒</div>
                     <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
                       <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span class="px-1.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">System</span>
+                      <span class="px-1.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">{{ t('settings.modFieldsBadgeSystem') }}</span>
                     </button>
                     <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
                   </div>
@@ -343,7 +345,7 @@
           <template v-else-if="isOrganizationsModule">
             <!-- Core Business Fields -->
             <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">Core Business</div>
+              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupCoreBusiness') }}</div>
               <ul class="space-y-1">
                 <li
                   v-for="(fieldKey, idx) in groupedFields.coreIdentity"
@@ -362,8 +364,8 @@
                     <div class="cursor-grab select-none mr-2 text-gray-400 dark:text-gray-500">⋮⋮</div>
                     <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
                       <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span v-if="isCustomField(fieldKey)" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">Custom</span>
-                      <span v-else class="px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">Core</span>
+                      <span v-if="isCustomField(fieldKey)" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsBadgeCustomField') }}</span>
+                      <span v-else class="px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">{{ t('settings.modFieldsBadgeCoreField') }}</span>
                     </button>
                     <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
                   </div>
@@ -374,7 +376,7 @@
             <!-- App Participation Groups -->
             <div v-for="(fields, appKey) in groupedFields.participation" :key="appKey" class="mb-4">
               <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">
-                {{ appKey === 'SALES' ? 'Sales Participation' : `${appKey} Participation` }}
+                {{ participationGroupTitle(appKey) }}
               </div>
               <ul class="space-y-1">
                 <li
@@ -404,7 +406,7 @@
 
             <!-- System Fields -->
             <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">System Fields</div>
+              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupSystemFields') }}</div>
               <ul class="space-y-1">
                 <li
                   v-for="fieldKey in groupedFields.system"
@@ -415,10 +417,10 @@
                         'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2 opacity-75',
                         getFieldIndex(fieldKey) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5'
                       ]">
-                    <div class="mr-2 text-xs text-purple-600 dark:text-purple-400" title="System field">🔒</div>
+                    <div class="mr-2 text-xs text-purple-600 dark:text-purple-400" :title="t('settings.modFieldsTitleSystemField')">🔒</div>
                     <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
                       <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span class="px-1.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">System</span>
+                      <span class="px-1.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">{{ t('settings.modFieldsBadgeSystem') }}</span>
                     </button>
                     <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
                   </div>
@@ -431,7 +433,7 @@
           <template v-else-if="isTasksModule">
             <!-- Core Task Fields -->
             <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">Core Task Fields</div>
+              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupCoreTask') }}</div>
               <ul class="space-y-1">
                 <li
                   v-for="(fieldKey, idx) in groupedFields.coreIdentity"
@@ -452,8 +454,8 @@
                     <div class="cursor-grab select-none mr-2 text-gray-400 dark:text-gray-500">⋮⋮</div>
                     <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
                       <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span v-if="isCustomField(fieldKey)" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">Custom</span>
-                      <span v-else class="px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">Core</span>
+                      <span v-if="isCustomField(fieldKey)" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsBadgeCustomField') }}</span>
+                      <span v-else class="px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">{{ t('settings.modFieldsBadgeCoreField') }}</span>
                     </button>
                     <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
                   </div>
@@ -464,7 +466,7 @@
             <!-- App Participation Groups -->
             <div v-for="(fields, appKey) in groupedFields.participation" :key="appKey" class="mb-4">
               <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">
-                {{ appKey === 'SALES' ? 'Sales Participation' : `${appKey} Participation` }}
+                {{ participationGroupTitle(appKey) }}
               </div>
               <ul class="space-y-1">
                 <li
@@ -494,7 +496,7 @@
 
             <!-- System Fields -->
             <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">System Fields</div>
+              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupSystemFields') }}</div>
               <ul class="space-y-1">
                 <li
                   v-for="fieldKey in groupedFields.system"
@@ -505,10 +507,10 @@
                         'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2 opacity-75',
                         getFieldIndex(fieldKey) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5'
                       ]">
-                    <div class="mr-2 text-xs text-purple-600 dark:text-purple-400" title="System field">🔒</div>
+                    <div class="mr-2 text-xs text-purple-600 dark:text-purple-400" :title="t('settings.modFieldsTitleSystemField')">🔒</div>
                     <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
                       <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span class="px-1.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">System</span>
+                      <span class="px-1.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">{{ t('settings.modFieldsBadgeSystem') }}</span>
                     </button>
                     <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
                   </div>
@@ -521,7 +523,7 @@
           <template v-else-if="isDealsModule || isCasesModule">
             <!-- Core Deal Fields -->
             <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ isCasesModule ? 'Core Case Fields' : 'Core Deal Fields' }}</div>
+              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ isCasesModule ? t('settings.modFieldsGroupCoreCase') : t('settings.modFieldsGroupCoreDeal') }}</div>
               <ul class="space-y-1">
                 <li
                   v-for="(fieldKey, idx) in groupedFields.coreIdentity"
@@ -541,8 +543,8 @@
                     <div class="cursor-grab select-none mr-2 text-gray-400 dark:text-gray-500">⋮⋮</div>
                     <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
                       <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span v-if="isCustomField(fieldKey)" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">Custom</span>
-                      <span v-else class="px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">Core</span>
+                      <span v-if="isCustomField(fieldKey)" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsBadgeCustomField') }}</span>
+                      <span v-else class="px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">{{ t('settings.modFieldsBadgeCoreField') }}</span>
                     </button>
                     <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
                   </div>
@@ -553,7 +555,7 @@
             <!-- App Participation Groups (if any in future) -->
             <div v-for="(fields, appKey) in groupedFields.participation" :key="appKey" class="mb-4">
               <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">
-                {{ appKey === 'SALES' ? 'Sales Participation' : `${appKey} Participation` }}
+                {{ participationGroupTitle(appKey) }}
               </div>
               <ul class="space-y-1">
                 <li
@@ -583,7 +585,7 @@
 
             <!-- System Fields -->
             <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">System Fields</div>
+              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupSystemFields') }}</div>
               <ul class="space-y-1">
                 <li
                   v-for="fieldKey in groupedFields.system"
@@ -594,10 +596,10 @@
                         'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2 opacity-75',
                         getFieldIndex(fieldKey) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5'
                       ]">
-                    <div class="mr-2 text-xs text-purple-600 dark:text-purple-400" title="System field">🔒</div>
+                    <div class="mr-2 text-xs text-purple-600 dark:text-purple-400" :title="t('settings.modFieldsTitleSystemField')">🔒</div>
                     <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
                       <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span class="px-1.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">System</span>
+                      <span class="px-1.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">{{ t('settings.modFieldsBadgeSystem') }}</span>
                     </button>
                     <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
                   </div>
@@ -629,7 +631,7 @@
               See: client/src/platform/forms/formSettingsMap.ts
             -->
             <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">Core Fields</div>
+              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupCoreForm') }}</div>
               <ul class="space-y-1">
                 <li
                   v-for="field in getFieldsForTab('metadataFields').filter(f => !f.isSystem)"
@@ -646,20 +648,20 @@
                     >
                     <div class="flex-1 text-left truncate flex items-center gap-2">
                       <!-- Lock icon for fixed fields -->
-                      <div v-if="field.isFixed" class="mr-1 text-xs text-purple-600 dark:text-purple-400" title="Fixed position field">🔒</div>
+                      <div v-if="field.isFixed" class="mr-1 text-xs text-purple-600 dark:text-purple-400" :title="t('settings.modFieldsTitleFixedField')">🔒</div>
                       <span>{{ field.label }}</span>
                       <!-- Core badge -->
                       <span
                         class="px-1.5 py-0.5 text-xs font-medium rounded bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
                       >
-                        Core
+                        {{ t('settings.modFieldsBadgeCoreField') }}
                       </span>
                       <!-- Fixed badge -->
                       <span
                         v-if="field.isFixed"
                         class="px-1.5 py-0.5 text-xs font-medium rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
                       >
-                        Fixed
+                        {{ t('settings.modFieldsBadgeFixed') }}
                       </span>
                     </div>
                   </div>
@@ -669,7 +671,7 @@
 
             <!-- System Fields (Forms module) -->
             <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">System Fields</div>
+              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupSystemFields') }}</div>
               <ul class="space-y-1">
                 <li
                   v-for="field in getFieldsForTab('metadataFields').filter(f => f.isSystem)"
@@ -686,13 +688,13 @@
                     >
                     <div class="flex-1 text-left truncate flex items-center gap-2">
                       <!-- Lock icon for system fields -->
-                      <div class="mr-1 text-xs text-purple-600 dark:text-purple-400" title="System field">🔒</div>
+                      <div class="mr-1 text-xs text-purple-600 dark:text-purple-400" :title="t('settings.modFieldsTitleSystemField')">🔒</div>
                       <span>{{ field.label }}</span>
                       <!-- System badge -->
                       <span
                         class="px-1.5 py-0.5 text-xs font-medium rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
                       >
-                        System
+                        {{ t('settings.modFieldsBadgeSystem') }}
                       </span>
                     </div>
                   </div>
@@ -704,7 +706,7 @@
           <template v-else-if="isEventsModule">
             <!-- Core Event Fields -->
             <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">Core Event Fields</div>
+              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupCoreEvent') }}</div>
               <ul class="space-y-1">
                 <li
                   v-for="(fieldKey, idx) in groupedFields.coreIdentity"
@@ -723,8 +725,8 @@
                     <div class="cursor-grab select-none mr-2 text-gray-400 dark:text-gray-500">⋮⋮</div>
                     <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
                       <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span v-if="isCustomField(fieldKey)" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">Custom</span>
-                      <span v-else class="px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">Core</span>
+                      <span v-if="isCustomField(fieldKey)" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsBadgeCustomField') }}</span>
+                      <span v-else class="px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">{{ t('settings.modFieldsBadgeCoreField') }}</span>
                     </button>
                     <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
                   </div>
@@ -735,7 +737,7 @@
             <!-- App Participation Groups -->
             <div v-for="(fields, appKey) in groupedFields.participation" :key="appKey" class="mb-4">
               <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">
-                {{ appKey === 'AUDIT' ? 'Audit Participation' : appKey === 'SALES' ? 'Sales Participation' : `${appKey} Participation` }}
+                {{ participationGroupTitle(appKey) }}
               </div>
               <ul class="space-y-1">
                 <li
@@ -765,7 +767,7 @@
 
             <!-- System Fields -->
             <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">System Fields</div>
+              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupSystemFields') }}</div>
               <ul class="space-y-1">
                 <li
                   v-for="fieldKey in groupedFields.system"
@@ -776,10 +778,10 @@
                         'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2 opacity-75',
                         getFieldIndex(fieldKey) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5'
                       ]">
-                    <div class="mr-2 text-xs text-purple-600 dark:text-purple-400" title="System field">🔒</div>
+                    <div class="mr-2 text-xs text-purple-600 dark:text-purple-400" :title="t('settings.modFieldsTitleSystemField')">🔒</div>
                     <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
                       <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span class="px-1.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">System</span>
+                      <span class="px-1.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">{{ t('settings.modFieldsBadgeSystem') }}</span>
                     </button>
                     <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
                   </div>
@@ -792,7 +794,7 @@
           <template v-else-if="isItemsModule">
             <!-- Core Item Fields -->
             <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">Core Item Fields</div>
+              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupCoreItem') }}</div>
               <ul class="space-y-1">
                 <li
                   v-for="(fieldKey, idx) in groupedFields.coreIdentity"
@@ -811,8 +813,8 @@
                     <div class="cursor-grab select-none mr-2 text-gray-400 dark:text-gray-500">⋮⋮</div>
                     <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
                       <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span v-if="isCustomField(fieldKey)" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">Custom</span>
-                      <span v-else class="px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">Core</span>
+                      <span v-if="isCustomField(fieldKey)" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsBadgeCustomField') }}</span>
+                      <span v-else class="px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">{{ t('settings.modFieldsBadgeCoreField') }}</span>
                     </button>
                     <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
                   </div>
@@ -823,7 +825,7 @@
             <!-- App Participation Groups -->
             <div v-for="(fields, appKey) in groupedFields.participation" :key="appKey" class="mb-4">
               <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">
-                {{ appKey === 'SALES' ? 'Sales Participation' : `${appKey} Participation` }}
+                {{ participationGroupTitle(appKey) }}
               </div>
               <ul class="space-y-1">
                 <li
@@ -853,7 +855,7 @@
 
             <!-- System Fields -->
             <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">System Fields</div>
+              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupSystemFields') }}</div>
               <ul class="space-y-1">
                 <li
                   v-for="fieldKey in groupedFields.system"
@@ -864,10 +866,10 @@
                         'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2 opacity-75',
                         getFieldIndex(fieldKey) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5'
                       ]">
-                    <div class="mr-2 text-xs text-purple-600 dark:text-purple-400" title="System field">🔒</div>
+                    <div class="mr-2 text-xs text-purple-600 dark:text-purple-400" :title="t('settings.modFieldsTitleSystemField')">🔒</div>
                     <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
                       <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span class="px-1.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">System</span>
+                      <span class="px-1.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">{{ t('settings.modFieldsBadgeSystem') }}</span>
                     </button>
                     <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
                   </div>
@@ -894,8 +896,8 @@
                     isSystemField(f) ? 'opacity-75' : ''
                   ]">
                 <div v-if="!isSystemField(f) && !isFixedPositionField(f, selectedModule?.key)" class="cursor-grab select-none mr-2 text-gray-400 dark:text-gray-500">⋮⋮</div>
-                <div v-else class="mr-2 text-xs text-purple-600 dark:text-purple-400" :title="isSystemField(f) ? 'System field' : 'Fixed position field'">🔒</div>
-                <button class="flex-1 text-left truncate" @click="selectField(idx)">{{ formatFieldLabelForDisplay(f.label, f.key) || 'Untitled field' }}</button>
+                <div v-else class="mr-2 text-xs text-purple-600 dark:text-purple-400" :title="isSystemField(f) ? t('settings.modFieldsTitleSystemField') : t('settings.modFieldsTitleFixedField')">🔒</div>
+                <button class="flex-1 text-left truncate" @click="selectField(idx)">{{ formatFieldLabelForDisplay(f.label, f.key) || t('settings.modFieldsUntitledField') }}</button>
                 <span class="text-xs text-gray-500 dark:text-gray-400">{{ f.dataType }}</span>
               </div>
             </li>
@@ -911,47 +913,47 @@
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ currentFieldTitle }}</h3>
               <!-- People module: Use metadata-based badges -->
               <template v-if="isPeopleModule && currentField?.key">
-                <span v-if="getPeopleFieldMetadata(currentField.key)?.owner === 'system'" class="px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">System</span>
-                <span v-else-if="currentField?.owner === 'org'" class="px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">Custom</span>
-                <span v-else-if="getPeopleFieldMetadata(currentField.key)?.owner === 'core'" class="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">Core</span>
+                <span v-if="getPeopleFieldMetadata(currentField.key)?.owner === 'system'" class="px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">{{ t('settings.modFieldsBadgeSystem') }}</span>
+                <span v-else-if="currentField?.owner === 'org'" class="px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsBadgeCustomField') }}</span>
+                <span v-else-if="getPeopleFieldMetadata(currentField.key)?.owner === 'core'" class="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">{{ t('settings.modFieldsBadgeCoreField') }}</span>
                 <span v-else-if="getPeopleFieldMetadata(currentField.key)?.fieldScope" class="px-2 py-0.5 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">{{ getPeopleFieldMetadata(currentField.key)?.fieldScope }}</span>
               </template>
               <!-- Deals module: Core vs System badges from deal field model -->
               <template v-else-if="isDealsModule && currentField?.key">
-                <span v-if="getDealFieldMetadata(currentField.key)?.owner === 'system'" class="px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">System</span>
-                <span v-else-if="currentField?.owner === 'org'" class="px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">Custom</span>
-                <span v-else-if="getDealFieldMetadata(currentField.key)?.owner === 'core'" class="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">Core</span>
+                <span v-if="getDealFieldMetadata(currentField.key)?.owner === 'system'" class="px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">{{ t('settings.modFieldsBadgeSystem') }}</span>
+                <span v-else-if="currentField?.owner === 'org'" class="px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsBadgeCustomField') }}</span>
+                <span v-else-if="getDealFieldMetadata(currentField.key)?.owner === 'core'" class="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">{{ t('settings.modFieldsBadgeCoreField') }}</span>
               </template>
               <!-- Other modules: Legacy badges -->
               <template v-else>
-                <span v-if="isSystemField(currentField)" class="px-2 py-0.5 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">System</span>
-                <span v-else-if="currentField?.owner === 'org'" class="px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">Custom</span>
-                <span v-else-if="isFixedPositionField(currentField, selectedModule?.key)" class="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">Fixed Position</span>
-                <span v-else-if="isCoreField(currentField, selectedModule?.key)" class="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">Core</span>
+                <span v-if="isSystemField(currentField)" class="px-2 py-0.5 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">{{ t('settings.modFieldsBadgeSystem') }}</span>
+                <span v-else-if="currentField?.owner === 'org'" class="px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsBadgeCustomField') }}</span>
+                <span v-else-if="isFixedPositionField(currentField, selectedModule?.key)" class="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">{{ t('settings.modFieldsBadgeFixedPosition') }}</span>
+                <span v-else-if="isCoreField(currentField, selectedModule?.key)" class="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">{{ t('settings.modFieldsBadgeCoreField') }}</span>
               </template>
             </div>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Module: {{ selectedModule?.name }} • Key: {{ selectedModule?.key }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsModuleKeyLine', { moduleName: selectedModule?.name, moduleKey: selectedModule?.key }) }}</p>
             <!-- People module: Metadata-based messages -->
             <template v-if="isPeopleModule && currentField?.key">
-              <p v-if="getPeopleFieldMetadata(currentField.key)?.owner === 'system'" class="mt-1 text-xs text-amber-600 dark:text-amber-400">This is a system field and cannot be modified</p>
-              <p v-else-if="getPeopleFieldMetadata(currentField.key)?.owner === 'core'" class="mt-1 text-xs text-blue-600 dark:text-blue-400">Core identity field. Ownership and scope are defined by the platform.</p>
-              <p v-else-if="getPeopleFieldMetadata(currentField.key)?.owner === 'participation'" class="mt-1 text-xs text-purple-600 dark:text-purple-400">Participation field for {{ getPeopleFieldMetadata(currentField.key)?.fieldScope }}. Ownership and scope are defined by the app.</p>
+              <p v-if="getPeopleFieldMetadata(currentField.key)?.owner === 'system'" class="mt-1 text-xs text-amber-600 dark:text-amber-400">{{ t('settings.modFieldsMsgSystemField') }}</p>
+              <p v-else-if="getPeopleFieldMetadata(currentField.key)?.owner === 'core'" class="mt-1 text-xs text-blue-600 dark:text-blue-400">{{ t('settings.modFieldsMsgCoreIdentity') }}</p>
+              <p v-else-if="getPeopleFieldMetadata(currentField.key)?.owner === 'participation'" class="mt-1 text-xs text-purple-600 dark:text-purple-400">{{ t('settings.modFieldsMsgParticipation', { scope: getPeopleFieldMetadata(currentField.key)?.fieldScope }) }}</p>
             </template>
             <!-- Deals module: Core vs System messages -->
             <template v-else-if="isDealsModule && currentField?.key">
-              <p v-if="getDealFieldMetadata(currentField.key)?.owner === 'system'" class="mt-1 text-xs text-amber-600 dark:text-amber-400">This is a system field and cannot be modified</p>
-              <p v-else-if="getDealFieldMetadata(currentField.key)?.owner === 'core'" class="mt-1 text-xs text-blue-600 dark:text-blue-400">Core deal field. Ownership and scope are defined by the platform.</p>
+              <p v-if="getDealFieldMetadata(currentField.key)?.owner === 'system'" class="mt-1 text-xs text-amber-600 dark:text-amber-400">{{ t('settings.modFieldsMsgSystemField') }}</p>
+              <p v-else-if="getDealFieldMetadata(currentField.key)?.owner === 'core'" class="mt-1 text-xs text-blue-600 dark:text-blue-400">{{ t('settings.modFieldsMsgCoreDeal') }}</p>
             </template>
             <!-- Other modules: Legacy messages -->
             <template v-else>
-              <p v-if="isSystemField(currentField)" class="mt-1 text-xs text-amber-600 dark:text-amber-400">This is a system field and cannot be modified</p>
-              <p v-else-if="isFixedPositionField(currentField, selectedModule?.key)" class="mt-1 text-xs text-amber-600 dark:text-amber-400">This field must always be at the top and visible in table and detail views</p>
-              <p v-else-if="isCoreField(currentField, selectedModule?.key)" class="mt-1 text-xs text-amber-600 dark:text-amber-400">This is a core field and cannot be deleted</p>
+              <p v-if="isSystemField(currentField)" class="mt-1 text-xs text-amber-600 dark:text-amber-400">{{ t('settings.modFieldsMsgSystemField') }}</p>
+              <p v-else-if="isFixedPositionField(currentField, selectedModule?.key)" class="mt-1 text-xs text-amber-600 dark:text-amber-400">{{ t('settings.modFieldsMsgFixedTop') }}</p>
+              <p v-else-if="isCoreField(currentField, selectedModule?.key)" class="mt-1 text-xs text-amber-600 dark:text-amber-400">{{ t('settings.modFieldsMsgCoreNoDelete') }}</p>
             </template>
           </div>
           <div class="flex items-center gap-2">
-            <button v-if="selectedModule && isDirty" @click="saveModule" :disabled="isSaving" class="px-3 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors shadow-md">Save changes</button>
-            <button v-if="currentField && canDeleteField && !props.hideFieldCreation" @click="openDeleteFieldConfirm" class="px-3 py-2 bg-red-500 hover:bg-red-600 text-white dark:bg-red-600 dark:hover:bg-red-700 rounded-lg text-sm font-medium transition-colors shadow-sm">Delete Field</button>
+            <button v-if="selectedModule && isDirty" @click="saveModule" :disabled="isSaving" class="px-3 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors shadow-md">{{ t('settings.saveChanges') }}</button>
+            <button v-if="currentField && canDeleteField && !props.hideFieldCreation" @click="openDeleteFieldConfirm" class="px-3 py-2 bg-red-500 hover:bg-red-600 text-white dark:bg-red-600 dark:hover:bg-red-700 rounded-lg text-sm font-medium transition-colors shadow-sm">{{ t('settings.modFieldsDeleteField') }}</button>
           </div>
         </div>
 
@@ -982,9 +984,9 @@
                 class="mb-2 p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/90 dark:bg-gray-900/50 space-y-3"
               >
                 <div>
-                  <label class="block text-sm font-medium text-gray-900 dark:text-white">Field scope</label>
+                  <label class="block text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsFieldScope') }}</label>
                   <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Core fields apply everywhere for this record. App-specific fields appear when you work in that application (for example, opening the person or organization from that app’s list).
+                    {{ t('settings.modFieldsFieldScopeHelp') }}
                   </p>
                 </div>
                 <div class="flex flex-col gap-2">
@@ -995,7 +997,7 @@
                       :checked="orgCustomFieldIsCoreScope"
                       @change="setOrgCustomFieldScopeCore"
                     />
-                    <span class="text-sm text-gray-900 dark:text-white">Core (shared across apps)</span>
+                    <span class="text-sm text-gray-900 dark:text-white">{{ t('settings.modFieldsScopeCoreShared') }}</span>
                   </label>
                   <label class="inline-flex items-center gap-2 cursor-pointer">
                     <input
@@ -1004,11 +1006,11 @@
                       :checked="!orgCustomFieldIsCoreScope"
                       @change="setOrgCustomFieldScopeApp"
                     />
-                    <span class="text-sm text-gray-900 dark:text-white">App-specific</span>
+                    <span class="text-sm text-gray-900 dark:text-white">{{ t('settings.modFieldsScopeAppSpecific') }}</span>
                   </label>
                 </div>
                 <div v-if="!orgCustomFieldIsCoreScope" class="space-y-1">
-                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">Application</label>
+                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">{{ t('settings.modFieldsApplication') }}</label>
                   <select
                     v-model="orgCustomAppContextToken"
                     class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-sm text-gray-900 dark:text-white"
@@ -1031,33 +1033,33 @@
                 See: client/src/platform/forms/formTypeRegistry.ts
               -->
               <div v-if="isFormsModule && currentField?.key === 'formType'" class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">Form Type</label>
+                <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">{{ t('settings.modFieldsFormType') }}</label>
                 <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">
-                  Form Type defines how the form is interpreted and executed. You can change the type or add new ones. Built-in types cannot be removed.
+                  {{ t('settings.modFieldsFormTypeHelp') }}
                 </p>
                 <div class="space-y-3">
                   <div>
-                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Select Form Type</label>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsSelectFormType') }}</label>
                     <select 
                       v-model="currentField.defaultValue"
                       :disabled="false"
                       class="w-full px-3 py-2 rounded bg-white dark:bg-gray-800 border border-gray-200 dark:border-white/10 text-sm cursor-pointer"
                       @focus="loadFieldSettings()"
                     >
-                      <option value="">Select a form type...</option>
+                      <option value="">{{ t('settings.modFieldsSelectFormTypePh') }}</option>
                       <option 
                         v-for="type in getFormTypeDefinitions()" 
                         :key="type.key" 
                         :value="type.key"
                       >
-                        {{ type.label }} {{ type.builtIn ? '(Built-in)' : '(Custom)' }}
+                        {{ type.label }} {{ type.builtIn ? t('settings.modFieldsFormTypeBuiltIn') : t('settings.modFieldsFormTypeCustom') }}
                       </option>
                     </select>
                   </div>
                   
                   <!-- Custom Form Types List (with remove option) -->
                   <div v-if="getCustomFormTypes().length > 0">
-                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Custom Form Types</label>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsCustomFormTypes') }}</label>
                     <div class="space-y-2">
                       <div 
                         v-for="type in getCustomFormTypes()" 
@@ -1070,30 +1072,30 @@
                           @click="handleRemoveCustomFormType(type.key)"
                           class="px-2 py-1 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
                         >
-                          Remove
+                          {{ t('actions.remove') }}
                         </button>
                         <span
                           v-else
                           class="px-2 py-1 text-xs text-gray-500 dark:text-gray-400 italic"
                         >
-                          Built-in
+                          {{ t('settings.modFieldsBuiltIn') }}
                         </span>
                       </div>
                     </div>
                   </div>
                   
                   <div>
-                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Add Custom Form Type</label>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsAddCustomFormType') }}</label>
                     <div class="flex gap-2">
                       <input 
                         v-model="newFormTypeKey"
-                        placeholder="e.g., webform"
+                        :placeholder="t('settings.modFieldsFormTypeKeyPh')"
                         class="flex-1 px-3 py-2 rounded bg-white dark:bg-gray-800 border border-gray-200 dark:border-white/10 text-sm"
                         @keyup.enter="handleAddCustomFormType"
                       />
                       <input 
                         v-model="newFormTypeLabel"
-                        placeholder="e.g., Webform"
+                        :placeholder="t('settings.modFieldsFormTypeLabelPh')"
                         class="flex-1 px-3 py-2 rounded bg-white dark:bg-gray-800 border border-gray-200 dark:border-white/10 text-sm"
                         @keyup.enter="handleAddCustomFormType"
                       />
@@ -1101,11 +1103,11 @@
                         @click="handleAddCustomFormType"
                         class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-sm font-medium transition-colors"
                       >
-                        Add
+                        {{ t('actions.add') }}
                       </button>
                     </div>
                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      Built-in types (Audit, Survey, Feedback) cannot be removed
+                      {{ t('settings.modFieldsFormTypeBuiltinNote') }}
                     </p>
                   </div>
                 </div>
@@ -1114,31 +1116,31 @@
               <!-- Basic Field Information -->
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Label</label>
+                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsLabel') }}</label>
                   <input 
                     :value="isFieldLabelReadOnly(currentField) ? formatFieldLabelForDisplay(currentField?.label, currentField?.key) : (currentField?.label || '')"
                     @input="onFieldLabelInput"
                     :disabled="isFieldLabelReadOnly(currentField)" 
                     class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" 
                   />
-                  <p v-if="isFieldLabelReadOnly(currentField)" class="mt-1 text-xs text-gray-500 dark:text-gray-400">Platform/System field labels cannot be modified</p>
+                  <p v-if="isFieldLabelReadOnly(currentField)" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintLabelReadOnly') }}</p>
                 </div>
                 <div>
-                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Key</label>
+                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsKey') }}</label>
                   <input 
                     v-model="currentField.key" 
                     :disabled="!canRenameField(currentField) || isSystemField(currentField) || isCoreField(currentField, selectedModule?.key) || currentField.dataType === 'Auto-Number' || (isPeopleModule && (getPeopleFieldMetadata(currentField.key)?.owner === 'system' || getPeopleFieldMetadata(currentField.key)?.owner === 'core' || getPeopleFieldMetadata(currentField.key)?.owner === 'participation'))" 
                     class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" 
                   />
-                  <p v-if="currentField.dataType === 'Auto-Number'" class="mt-1 text-xs text-gray-500 dark:text-gray-400">Auto-Number fields cannot have custom keys</p>
-                  <p v-if="isSystemField(currentField) || (isPeopleModule && getPeopleFieldMetadata(currentField.key)?.owner === 'system')" class="mt-1 text-xs text-gray-500 dark:text-gray-400">System fields cannot have their keys modified</p>
-                  <p v-if="isPeopleModule && getPeopleFieldMetadata(currentField.key)?.owner === 'core'" class="mt-1 text-xs text-gray-500 dark:text-gray-400">Core identity fields cannot have their keys modified</p>
-                  <p v-if="isPeopleModule && getPeopleFieldMetadata(currentField.key)?.owner === 'participation'" class="mt-1 text-xs text-gray-500 dark:text-gray-400">Participation fields cannot have their keys modified</p>
-                  <p v-if="isCoreField(currentField, selectedModule?.key) && !isSystemField(currentField) && !isPeopleModule" class="mt-1 text-xs text-gray-500 dark:text-gray-400">Core fields cannot have their keys modified</p>
-                  <p v-if="!isSystemField(currentField) && !isCoreField(currentField, selectedModule?.key) && currentField.dataType !== 'Auto-Number' && !isPeopleModule" class="mt-1 text-xs text-gray-500 dark:text-gray-400">Auto-generated from label, duplicates are automatically handled</p>
+                  <p v-if="currentField.dataType === 'Auto-Number'" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintAutoNumberKey') }}</p>
+                  <p v-if="isSystemField(currentField) || (isPeopleModule && getPeopleFieldMetadata(currentField.key)?.owner === 'system')" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintSystemKey') }}</p>
+                  <p v-if="isPeopleModule && getPeopleFieldMetadata(currentField.key)?.owner === 'core'" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintCoreIdentityKey') }}</p>
+                  <p v-if="isPeopleModule && getPeopleFieldMetadata(currentField.key)?.owner === 'participation'" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintParticipationKey') }}</p>
+                  <p v-if="isCoreField(currentField, selectedModule?.key) && !isSystemField(currentField) && !isPeopleModule" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintCoreKey') }}</p>
+                  <p v-if="!isSystemField(currentField) && !isCoreField(currentField, selectedModule?.key) && currentField.dataType !== 'Auto-Number' && !isPeopleModule" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintAutoKey') }}</p>
                 </div>
                 <div>
-                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Type</label>
+                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsType') }}</label>
                   <select 
                     v-model="currentField.dataType" 
                     :disabled="!canChangeFieldType(currentField) || isSystemField(currentField) || isCoreField(currentField, selectedModule?.key) || (isPeopleModule && (getPeopleFieldMetadata(currentField.key)?.owner === 'system' || getPeopleFieldMetadata(currentField.key)?.owner === 'core'))" 
@@ -1146,34 +1148,34 @@
                   >
                     <option v-for="t in fieldTypes" :key="t" :value="t">{{ t }}</option>
                   </select>
-                  <p v-if="isPeopleModule && getPeopleFieldMetadata(currentField.key)?.owner === 'core'" class="mt-1 text-xs text-gray-500 dark:text-gray-400">Core identity fields cannot have their type changed</p>
-                  <p v-if="isPeopleModule && getPeopleFieldMetadata(currentField.key)?.owner === 'system'" class="mt-1 text-xs text-gray-500 dark:text-gray-400">System fields cannot have their type changed</p>
-                  <p v-if="isCoreField(currentField, selectedModule?.key) && !isPeopleModule" class="mt-1 text-xs text-gray-500 dark:text-gray-400">Core fields cannot have their type changed</p>
+                  <p v-if="isPeopleModule && getPeopleFieldMetadata(currentField.key)?.owner === 'core'" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintCoreIdentityType') }}</p>
+                  <p v-if="isPeopleModule && getPeopleFieldMetadata(currentField.key)?.owner === 'system'" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintSystemType') }}</p>
+                  <p v-if="isCoreField(currentField, selectedModule?.key) && !isPeopleModule" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintCoreType') }}</p>
                 </div>
                 
                 <!-- Field Metadata (read-only) - People module only -->
                 <template v-if="isPeopleModule && currentField?.key">
                   <div v-if="getPeopleFieldMetadata(currentField.key)" class="w-full mt-4 p-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg">
                     <div class="space-y-2">
-                      <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Field Metadata</div>
+                      <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">{{ t('settings.modFieldsFieldMetadata') }}</div>
                       <div class="flex flex-wrap items-center gap-3">
                         <!-- Owner -->
                         <div class="flex items-center gap-2">
-                          <span class="text-xs text-gray-500 dark:text-gray-400">Owner:</span>
+                          <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsMetadataOwner') }}</span>
                           <span class="px-2 py-0.5 rounded text-xs font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
                             {{ formatOwnerDisplay(getPeopleFieldMetadata(currentField.key)) }}
                           </span>
                         </div>
                         <!-- Intent -->
                         <div class="flex items-center gap-2">
-                          <span class="text-xs text-gray-500 dark:text-gray-400">Intent:</span>
+                          <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsMetadataIntent') }}</span>
                           <span class="px-2 py-0.5 rounded text-xs font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
                             {{ formatIntentDisplay(getPeopleFieldMetadata(currentField.key)?.intent) }}
                           </span>
                         </div>
                         <!-- Required for (only if present) -->
                         <div v-if="getPeopleFieldMetadata(currentField.key)?.requiredFor?.length" class="flex items-center gap-2">
-                          <span class="text-xs text-gray-500 dark:text-gray-400">Required for:</span>
+                          <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsMetadataRequiredFor') }}</span>
                           <span class="px-2 py-0.5 rounded text-xs font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
                             {{ formatRequiredForApps(getPeopleFieldMetadata(currentField.key)?.requiredFor) }}
                           </span>
@@ -1187,11 +1189,11 @@
                   <!-- Required in Form checkbox -->
                   <template v-if="isParticipationStateField(currentField)">
                     <!-- Locked indicator for participation state fields -->
-                    <div class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400" title="This field is required by the application.">
+                    <div class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400" :title="t('settings.modFieldsTitleRequiredByApp')">
                       <svg class="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
-                      <span>Required in Form</span>
+                      <span>{{ t('settings.modFieldsRequiredInForm') }}</span>
                     </div>
                   </template>
                   <template v-else>
@@ -1201,14 +1203,14 @@
                           v-model="currentField.required"
                           :disabled="isSystemField(currentField) || currentField.dataType === 'Auto-Number' || currentField.dataType === 'Formula' || currentField.dataType === 'Rollup Summary'"
                         />
-                        Required in Form
+                        {{ t('settings.modFieldsRequiredInForm') }}
                       </label>
                       <div class="group relative">
                         <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-2 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                          This controls form submission validation only. Application requirements are defined separately.
+                          {{ t('settings.modFieldsTooltipRequiredInForm') }}
                         </div>
                       </div>
                     </div>
@@ -1220,7 +1222,7 @@
                       v-model="currentField.keyField"
                       :disabled="isSystemField(currentField) || !canMarkAsKeyField || isParticipationStateField(currentField)"
                     />
-                    Key Field
+                    {{ t('settings.modFieldsKeyField') }}
                     <span v-if="keyFieldCount > 0" class="text-xs text-gray-500 dark:text-gray-400">({{ keyFieldCount }}/10)</span>
                   </label>
 
@@ -1232,54 +1234,54 @@
                         <svg class="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                         </svg>
-                        <span>Show in Table</span>
+                        <span>{{ t('settings.modFieldsShowInTable') }}</span>
                       </div>
                       <div class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                         <svg class="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                         </svg>
-                        <span>Show in Detail</span>
+                        <span>{{ t('settings.modFieldsShowInDetail') }}</span>
                       </div>
                     </template>
                     <!-- Other fields: Normal checkboxes -->
                     <template v-else>
-                      <label class="inline-flex items-center gap-2 text-sm" title="Controls whether this field is visible in the table/list view. Users can still customize visibility in column settings.">
+                      <label class="inline-flex items-center gap-2 text-sm" :title="t('settings.modFieldsTitleShowInTable')">
                         <HeadlessCheckbox
                           v-model="currentField.visibility.list"
                           :disabled="!canHideField(currentField) || getPeopleFieldMetadata(currentField.key)?.owner === 'system'"
                         />
-                        Show in Table
+                        {{ t('settings.modFieldsShowInTable') }}
                       </label>
                       <label class="inline-flex items-center gap-2 text-sm">
                         <HeadlessCheckbox
                           v-model="currentField.visibility.detail"
                           :disabled="!canHideField(currentField) || getPeopleFieldMetadata(currentField.key)?.owner === 'system'"
                         />
-                        Show in Detail
+                        {{ t('settings.modFieldsShowInDetail') }}
                       </label>
                     </template>
                     
                     <!-- Helper text for participation state fields -->
                     <p v-if="isParticipationStateField(currentField)" class="w-full mt-2 text-xs text-gray-600 dark:text-gray-400">
-                      State fields are required and always visible. This is defined by the application.
+                      {{ t('settings.modFieldsHintStateFieldsVisible') }}
                     </p>
                     <p v-else-if="getPeopleFieldMetadata(currentField.key)?.owner === 'system'" class="w-full mt-2 text-xs text-gray-500 dark:text-gray-400">
-                      System fields are always visible
+                      {{ t('settings.modFieldsHintSystemAlwaysVisible') }}
                     </p>
                   </template>
                   <!-- Other modules: Legacy visibility controls -->
                   <template v-else>
-                    <label class="inline-flex items-center gap-2 text-sm" title="Controls whether this field is visible in the table/list view. Users can still customize visibility in column settings.">
+                    <label class="inline-flex items-center gap-2 text-sm" :title="t('settings.modFieldsTitleShowInTable')">
                       <HeadlessCheckbox v-model="currentField.visibility.list" :disabled="isSystemField(currentField) || isFixedPositionField(currentField, selectedModule?.key)" />
-                      Show in Table
+                      {{ t('settings.modFieldsShowInTable') }}
                     </label>
-                    <label class="inline-flex items-center gap-2 text-sm"><HeadlessCheckbox v-model="currentField.visibility.detail" :disabled="isSystemField(currentField) || isFixedPositionField(currentField, selectedModule?.key)" /> Show in Detail</label>
-                    <p v-if="isFixedPositionField(currentField, selectedModule?.key)" class="w-full mt-2 text-xs text-gray-500 dark:text-gray-400">This field must always be visible in table and detail views</p>
+                    <label class="inline-flex items-center gap-2 text-sm"><HeadlessCheckbox v-model="currentField.visibility.detail" :disabled="isSystemField(currentField) || isFixedPositionField(currentField, selectedModule?.key)" /> {{ t('settings.modFieldsShowInDetail') }}</label>
+                    <p v-if="isFixedPositionField(currentField, selectedModule?.key)" class="w-full mt-2 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintFixedAlwaysVisible') }}</p>
                   </template>
                 </div>
                 
                 <div>
-                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Default Value</label>
+                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsDefaultValue') }}</label>
                   <template v-if="!isSystemField(currentField) && currentField.dataType !== 'Auto-Number' && currentField.dataType !== 'Formula' && currentField.dataType !== 'Rollup Summary'">
                     <!-- Picklist, Radio Button: dropdown -->
                     <select
@@ -1287,7 +1289,7 @@
                       v-model="currentField.defaultValue"
                       class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10"
                     >
-                      <option value="">No default</option>
+                      <option value="">{{ t('settings.modFieldsNoDefault') }}</option>
                       <option v-for="opt in normalizedOptions" :key="getOptionValue(opt)" :value="getOptionValue(opt)">{{ getOptionDisplayLabel(opt) }}</option>
                     </select>
                     <!-- Multi-Picklist: multi-select dropdown -->
@@ -1299,7 +1301,7 @@
                       >
                         <option v-for="opt in normalizedOptions" :key="getOptionValue(opt)" :value="getOptionValue(opt)">{{ getOptionDisplayLabel(opt) }}</option>
                       </select>
-                      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Hold Ctrl/Cmd to select multiple options</p>
+                      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsMultiPicklistHint') }}</p>
                     </template>
                     <!-- Checkbox: checkbox -->
                     <label v-else-if="currentField.dataType === 'Checkbox'" class="inline-flex items-center gap-2 cursor-pointer">
@@ -1308,7 +1310,7 @@
                         @change="currentField.defaultValue = $event.target.checked"
                         checkbox-class="rounded border-gray-300 dark:border-gray-600"
                       />
-                      <span class="text-sm">Default to checked</span>
+                      <span class="text-sm">{{ t('settings.modFieldsDefaultToChecked') }}</span>
                     </label>
                     <!-- Number fields: number input -->
                     <input
@@ -1342,14 +1344,14 @@
                     />
                   </template>
                   <div v-else class="w-full px-3 py-2 rounded bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 text-sm">
-                    {{ currentField.defaultValue ?? '(none)' }}
+                    {{ currentField.defaultValue ?? t('settings.modFieldsNone') }}
                   </div>
-                  <p v-if="currentField.dataType === 'Auto-Number' || currentField.dataType === 'Formula' || currentField.dataType === 'Rollup Summary'" class="mt-1 text-xs text-gray-500 dark:text-gray-400">This field type cannot have a default value</p>
-                  <p v-if="isSystemField(currentField)" class="mt-1 text-xs text-gray-500 dark:text-gray-400">System fields cannot have default values</p>
+                  <p v-if="currentField.dataType === 'Auto-Number' || currentField.dataType === 'Formula' || currentField.dataType === 'Rollup Summary'" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintNoDefaultValue') }}</p>
+                  <p v-if="isSystemField(currentField)" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintSystemNoDefault') }}</p>
                 </div>
                 <div>
-                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Placeholder</label>
-                  <input v-model="currentField.placeholder" placeholder="e.g., Enter full name" :disabled="isSystemField(currentField) || currentField.dataType === 'Auto-Number' || currentField.dataType === 'Checkbox' || currentField.dataType === 'Formula' || currentField.dataType === 'Rollup Summary'" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsPlaceholder') }}</label>
+                  <input v-model="currentField.placeholder" :placeholder="t('settings.modFieldsPlaceholderPh')" :disabled="isSystemField(currentField) || currentField.dataType === 'Auto-Number' || currentField.dataType === 'Checkbox' || currentField.dataType === 'Formula' || currentField.dataType === 'Rollup Summary'" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
                 </div>
               </div>
 
@@ -1357,20 +1359,20 @@
               <div v-if="['Picklist', 'Multi-Picklist', 'Radio Button'].includes(currentField.dataType)" class="border-t border-gray-200 dark:border-gray-700 pt-4">
                 <div class="flex items-center justify-between mb-2">
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {{ currentField.dataType === 'Multi-Picklist' ? 'Picklist Options (Multi-Select)' : currentField.dataType === 'Radio Button' ? 'Radio Button Options' : 'Picklist Options' }}
+                    {{ currentField.dataType === 'Multi-Picklist' ? t('settings.modFieldsPicklistOptionsMulti') : currentField.dataType === 'Radio Button' ? t('settings.modFieldsPicklistOptionsRadio') : t('settings.modFieldsPicklistOptions') }}
                   </label>
                   <button
                     v-if="!isSystemField(currentField) && !isDealPipelineOrStageField(currentField) && !isPeopleTypesTabPicklistField(currentField)"
                     @click="showAddOption = true"
                     class="px-3 py-1.5 bg-indigo-600 text-white rounded text-xs hover:bg-indigo-700"
                   >
-                    Add Option
+                    {{ t('settings.modFieldsAddOption') }}
                   </button>
                 </div>
                 <!-- Deal Stage / Pipeline: options are configured in Pipelines & Stages -->
                 <div v-if="isDealPipelineOrStageField(currentField)" class="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 px-4 py-3">
                   <p class="text-sm text-blue-800 dark:text-blue-300 mb-3">
-                    Options for Pipeline and Deal Stage are configured in <strong>Pipelines & Stages</strong>. Use that section to add or edit pipelines and stages.
+                    {{ t('settings.modFieldsPipelineStageHint', { section: t('settings.modFieldsPipelinesStagesSection') }) }}
                   </p>
                   <button
                     type="button"
@@ -1386,7 +1388,7 @@
                   class="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 px-4 py-3"
                 >
                   <p class="text-sm text-blue-800 dark:text-blue-300 mb-2">
-                    <strong>{{ peopleTypesTabFieldInfo.article }}</strong> ({{ peopleTypesTabFieldInfo.scopeLabel }}) options and colors are managed in <strong>Types</strong>. They stay in sync with this picklist for forms and lists—edit them there, not here.
+                    {{ t('settings.modFieldsPeopleTypesPicklistHint', { article: peopleTypesTabFieldInfo.article, scope: peopleTypesTabFieldInfo.scopeLabel, typesTab: t('settings.modFieldsTypesTab') }) }}
                   </p>
                   <button
                     v-if="!excludedTabs?.includes('people-types')"
@@ -1394,10 +1396,10 @@
                     @click="navigateToPeopleTypes(peopleTypesTabFieldInfo.appKey)"
                     class="px-3 py-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors mb-3"
                   >
-                    Open Types
+                    {{ t('settings.modFieldsOpenTypes') }}
                   </button>
-                  <p class="text-xs font-medium text-blue-900 dark:text-blue-200 mb-2">Current options (read-only)</p>
-                  <div v-if="!normalizedOptions.length" class="text-xs text-blue-800/80 dark:text-blue-300/80">No types loaded yet.</div>
+                  <p class="text-xs font-medium text-blue-900 dark:text-blue-200 mb-2">{{ t('settings.modFieldsCurrentOptionsReadOnly') }}</p>
+                  <div v-if="!normalizedOptions.length" class="text-xs text-blue-800/80 dark:text-blue-300/80">{{ t('settings.modFieldsNoTypesLoaded') }}</div>
                   <ul v-else class="space-y-2">
                     <li
                       v-for="(opt, oi) in normalizedOptions"
@@ -1415,11 +1417,11 @@
                 <template v-else>
                 <div v-if="isTaskStatusField(currentField)" class="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-800 dark:bg-amber-900/20">
                   <p class="text-xs text-amber-800 dark:text-amber-300">
-                    <strong>Note:</strong> The "Completed" status is system-controlled and cannot be modified or removed.
+                    <strong>{{ t('settings.modFieldsNoteLabel') }}</strong> {{ t('settings.modFieldsTaskStatusNote') }}
                   </p>
                 </div>
                 <div v-if="!currentField.options || currentField.options.length === 0" class="text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-white/5 border border-dashed border-gray-200 dark:border-white/10 rounded-lg p-4 text-center">
-                  No options defined. Click "Add Option" to add values.
+                  {{ t('settings.modFieldsNoOptionsDefined') }}
                 </div>
                 <div v-else class="space-y-2">
                   <div
@@ -1434,17 +1436,17 @@
                     @dragend="onOptionDragEnd"
                   >
                     <!-- Drag handle or lock (status completed) -->
-                    <div v-if="isOptionSystemLocked(option)" class="text-gray-400 dark:text-gray-500" title="System-locked">🔒</div>
-                    <div v-else class="cursor-grab select-none text-gray-400 dark:text-gray-500" title="Drag to reorder">⋮⋮</div>
+                    <div v-if="isOptionSystemLocked(option)" class="text-gray-400 dark:text-gray-500" :title="t('settings.modFieldsTitleSystemLocked')">🔒</div>
+                    <div v-else class="cursor-grab select-none text-gray-400 dark:text-gray-500" :title="t('settings.modFieldsTitleDragReorder')">⋮⋮</div>
                     <!-- Color Picker -->
                     <label class="inline-flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                      <span>Color</span>
+                      <span>{{ t('settings.modFieldsColor') }}</span>
                       <input
                         type="color"
                         :value="getOptionColor(option)"
                         @input="updateOptionColor(optIdx, $event.target.value)"
                         class="h-7 w-9 cursor-pointer rounded border border-gray-300 bg-white p-0.5 dark:border-gray-600 dark:bg-gray-800"
-                        :aria-label="`Color for ${getOptionDisplayLabel(option)}`"
+                        :aria-label="t('settings.modFieldsColorForOption', { label: getOptionDisplayLabel(option) })"
                       />
                     </label>
                     <!-- Option Value / Inline Edit -->
@@ -1460,7 +1462,7 @@
                       />
                       <span v-else class="text-sm font-medium text-gray-900 dark:text-white">
                         {{ getOptionDisplayLabel(option) }}
-                        <span v-if="isOptionSystemLocked(option)" class="ml-2 px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">System-Locked</span>
+                        <span v-if="isOptionSystemLocked(option)" class="ml-2 px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsSystemLocked') }}</span>
                       </span>
                     </div>
                     <!-- Color Preview Badge -->
@@ -1468,7 +1470,7 @@
                       {{ getOptionDisplayLabel(option) }}
                     </div>
                     <!-- Edit / Remove -->
-                    <button v-if="!isOptionSystemLocked(option)" @click="editingOptionIdx === optIdx ? saveOptionEdit(optIdx) : startOptionEdit(optIdx)" class="p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded" :title="editingOptionIdx === optIdx ? 'Save' : 'Rename'">
+                    <button v-if="!isOptionSystemLocked(option)" @click="editingOptionIdx === optIdx ? saveOptionEdit(optIdx) : startOptionEdit(optIdx)" class="p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded" :title="editingOptionIdx === optIdx ? t('actions.save') : t('settings.modFieldsRename')">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                     </button>
                     <!-- Enabled Toggle (status/priority) - before delete -->
@@ -1478,7 +1480,7 @@
                       @change="updateOptionEnabled(optIdx, $event.target.checked)"
                       switch-class="w-9 h-5"
                     />
-                    <button v-if="!isOptionSystemLocked(option) && !(isTaskPriorityField(currentField) && currentField.options.length <= 1)" @click="removeOption(optIdx)" class="p-1.5 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-200 rounded" title="Remove">
+                    <button v-if="!isOptionSystemLocked(option) && !(isTaskPriorityField(currentField) && currentField.options.length <= 1)" @click="removeOption(optIdx)" class="p-1.5 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-200 rounded" :title="t('actions.remove')">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                     </button>
                   </div>
@@ -1488,15 +1490,15 @@
                   <div class="absolute inset-0 bg-black/50" @click="showAddOption = false"></div>
                   <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 w-full max-w-md mx-4">
                     <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-                      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Add Option</h3>
+                      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.modFieldsAddOptionModal') }}</h3>
                     </div>
                     <div class="p-4 space-y-4">
                       <div>
-                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Option Value</label>
-                        <input v-model="newOptionValue" @keyup.enter="addOption" placeholder="Enter option value" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
+                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsOptionValue') }}</label>
+                        <input v-model="newOptionValue" @keyup.enter="addOption" :placeholder="t('settings.modFieldsEnterOptionValuePh')" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
                       </div>
                       <div>
-                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Color</label>
+                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsColor') }}</label>
                         <div class="flex items-center gap-3">
                           <input 
                             type="color" 
@@ -1506,7 +1508,7 @@
                           <input 
                             type="text" 
                             v-model="newOptionColor" 
-                            placeholder="#3B82F6" 
+                            :placeholder="t('settings.modFieldsColorHexPh')" 
                             class="flex-1 px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm font-mono"
                             pattern="^#[0-9A-Fa-f]{6}$"
                           />
@@ -1515,13 +1517,13 @@
                             class="px-3 py-1 rounded-full text-xs font-medium text-white"
                             :style="{ backgroundColor: newOptionColor }"
                           >
-                            Preview
+                            {{ t('settings.modFieldsPreview') }}
                           </div>
                         </div>
                       </div>
                       <div class="flex justify-end gap-2">
-                        <button @click="showAddOption = false" class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 rounded">Cancel</button>
-                        <button @click="addOption" class="px-4 py-2 bg-indigo-600 text-white rounded text-sm hover:bg-indigo-700">Add</button>
+                        <button @click="showAddOption = false" class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 rounded">{{ t('actions.cancel') }}</button>
+                        <button @click="addOption" class="px-4 py-2 bg-indigo-600 text-white rounded text-sm hover:bg-indigo-700">{{ t('actions.add') }}</button>
                       </div>
                     </div>
                   </div>
@@ -1531,29 +1533,29 @@
 
               <!-- Number Options (for Integer, Decimal, Currency) -->
               <div v-if="['Integer', 'Decimal', 'Currency'].includes(currentField.dataType) && !isSystemField(currentField)" class="border-t border-gray-200 dark:border-gray-700 pt-4">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Number Settings</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{{ t('settings.modFieldsNumberSettings') }}</label>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Minimum Value</label>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsMinValue') }}</label>
                     <input type="number" v-model.number="numberSettings.min" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
                   </div>
                   <div>
-                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Maximum Value</label>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsMaxValue') }}</label>
                     <input type="number" v-model.number="numberSettings.max" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
                   </div>
                   <div v-if="currentField.dataType === 'Decimal' || currentField.dataType === 'Currency'">
-                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Decimal Places</label>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsDecimalPlaces') }}</label>
                     <input type="number" min="0" max="10" v-model.number="numberSettings.decimalPlaces" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
                   </div>
                   <div v-if="currentField.dataType === 'Currency'">
-                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Currency Format</label>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsCurrencyFormat') }}</label>
                     <select v-model="numberSettings.currencyCode" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
                       <option v-for="currency in currencySelectOptions" :key="currency.value" :value="currency.value">
                         {{ currency.label }}
                       </option>
                     </select>
                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      Preview: {{ getCurrencyFormatPreview() }}
+                      {{ t('settings.modFieldsCurrencyPreview', { preview: getCurrencyFormatPreview() }) }}
                     </p>
                   </div>
                 </div>
@@ -1561,14 +1563,14 @@
 
               <!-- Text Options (for Text, Text-Area) -->
               <div v-if="['Text', 'Text-Area'].includes(currentField.dataType) && !isSystemField(currentField)" class="border-t border-gray-200 dark:border-gray-700 pt-4">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Text Settings</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{{ t('settings.modFieldsTextSettings') }}</label>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Maximum Length</label>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsMaxLength') }}</label>
                     <input type="number" min="1" v-model.number="textSettings.maxLength" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
                   </div>
                   <div v-if="currentField.dataType === 'Text-Area'">
-                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Rows</label>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsRows') }}</label>
                     <input type="number" min="1" max="20" v-model.number="textSettings.rows" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
                   </div>
                 </div>
@@ -1576,10 +1578,10 @@
 
               <!-- Date Options -->
               <div v-if="['Date', 'Date-Time'].includes(currentField.dataType) && !isSystemField(currentField)" class="border-t border-gray-200 dark:border-gray-700 pt-4">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Date Settings</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{{ t('settings.modFieldsDateSettings') }}</label>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Date Format</label>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsDateFormat') }}</label>
                     <select v-model="dateSettings.format" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
                       <option value="YYYY-MM-DD">YYYY-MM-DD</option>
                       <option value="MM/DD/YYYY">MM/DD/YYYY</option>
@@ -1588,10 +1590,10 @@
                     </select>
                   </div>
                   <div v-if="currentField.dataType === 'Date-Time'">
-                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Time Format</label>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsTimeFormat') }}</label>
                     <select v-model="dateSettings.timeFormat" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-                      <option value="12h">12 Hour (AM/PM)</option>
-                      <option value="24h">24 Hour</option>
+                      <option value="12h">{{ t('settings.modFieldsTime12h') }}</option>
+                      <option value="24h">{{ t('settings.modFieldsTime24h') }}</option>
                     </select>
                   </div>
                 </div>
@@ -1599,38 +1601,38 @@
 
               <!-- Formula Options -->
               <div v-if="currentField.dataType === 'Formula' && !isSystemField(currentField)" class="border-t border-gray-200 dark:border-gray-700 pt-4">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Formula Configuration</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{{ t('settings.modFieldsFormulaConfig') }}</label>
                 <div>
-                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Formula Expression</label>
-                  <textarea v-model="formulaSettings.expression" rows="4" placeholder="e.g., {field1} + {field2}" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 font-mono text-sm"></textarea>
-                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Use {fieldKey} to reference other fields. This field is read-only.</p>
+                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsFormulaExpression') }}</label>
+                  <textarea v-model="formulaSettings.expression" rows="4" :placeholder="t('settings.modFieldsFormulaExpressionPh')" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 font-mono text-sm"></textarea>
+                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsFormulaExpressionHelp') }}</p>
                 </div>
                 <div class="mt-3">
-                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Return Type</label>
+                  <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsReturnType') }}</label>
                   <select v-model="formulaSettings.returnType" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-                    <option value="Text">Text</option>
-                    <option value="Number">Number</option>
-                    <option value="Date">Date</option>
-                    <option value="Checkbox">Checkbox</option>
+                    <option value="Text">{{ t('settings.modFieldsReturnTypeText') }}</option>
+                    <option value="Number">{{ t('settings.modFieldsReturnTypeNumber') }}</option>
+                    <option value="Date">{{ t('settings.modFieldsReturnTypeDate') }}</option>
+                    <option value="Checkbox">{{ t('settings.modFieldsReturnTypeCheckbox') }}</option>
                   </select>
                 </div>
               </div>
 
               <!-- Lookup Options -->
               <div v-if="currentField.dataType === 'Lookup (Relationship)' && !isSystemField(currentField)" class="border-t border-gray-200 dark:border-gray-700 pt-4">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Lookup Configuration</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{{ t('settings.modFieldsLookupConfig') }}</label>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Target Module</label>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsTargetModule') }}</label>
                     <select v-model="lookupSettings.targetModule" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-                      <option value="">Select module...</option>
+                      <option value="">{{ t('settings.modFieldsSelectModulePh') }}</option>
                       <option v-for="m in modules" :key="m.key" :value="m.key">{{ m.name }}</option>
                     </select>
                   </div>
                   <div>
-                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Display Field</label>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsDisplayField') }}</label>
                     <select v-model="lookupSettings.displayField" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-                      <option value="">Auto (Name/Title)</option>
+                      <option value="">{{ t('settings.modFieldsDisplayFieldAuto') }}</option>
                       <option v-for="f in lookupTargetFields" :key="f.key" :value="f.key">{{ f.label || f.key }}</option>
                     </select>
                   </div>
@@ -1646,7 +1648,7 @@
                   </svg>
                   <div>
                     <p class="text-sm text-blue-800 dark:text-blue-300">
-                      Validation rules for participation fields are defined by the application.
+                      {{ t('settings.modFieldsValidationParticipation') }}
                     </p>
                   </div>
                 </div>
@@ -1665,7 +1667,7 @@
                   </svg>
                   <div>
                     <p class="text-sm text-blue-800 dark:text-blue-300">
-                      App participation fields are visibility-configurable only. Required state is controlled by event type, not by Settings.
+                      {{ t('settings.modFieldsValidationEventsParticipation') }}
                     </p>
                   </div>
                 </div>
@@ -1678,10 +1680,10 @@
                   </svg>
                   <div>
                     <p class="text-sm font-medium text-blue-900 dark:text-blue-200">
-                      Phone validation is based on the selected country.
+                      {{ t('settings.modFieldsPhoneValidationTitle') }}
                     </p>
                     <p class="mt-1 text-sm text-blue-800 dark:text-blue-300">
-                      Static regex rules are not used for phone fields because each country can have a different number length.
+                      {{ t('settings.modFieldsPhoneValidationBody') }}
                     </p>
                   </div>
                 </div>
@@ -1693,9 +1695,9 @@
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Validation Rules</h3>
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.modFieldsNoValidationRules') }}</h3>
                   <p class="text-sm text-gray-600 dark:text-gray-400 text-center max-w-md mb-6">
-                    Add validation conditions to ensure data integrity and enforce business rules for this field.
+                    {{ t('settings.modFieldsNoValidationRulesBody') }}
                   </p>
                   <button 
                     @click="addValidation" 
@@ -1708,7 +1710,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
-                    Add Condition
+                    {{ t('settings.modFieldsAddCondition') }}
                   </button>
                 </div>
 
@@ -1724,7 +1726,7 @@
                           'absolute -top-2 -right-2 p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all hover:scale-110 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-white/10 shadow-sm',
                           isValidationDisabled() ? 'opacity-50 cursor-not-allowed hover:text-gray-400 hover:bg-gray-50' : ''
                         ]"
-                        title="Remove validation"
+                        :title="t('settings.modFieldsTitleRemoveValidation')"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -1733,37 +1735,37 @@
 
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
-                          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Validation Name</label>
+                          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsValidationName') }}</label>
                           <input 
                             v-model="v.name" 
-                            placeholder="e.g., Must match business ID format" 
+                            :placeholder="t('settings.modFieldsValidationNamePh')" 
                             :disabled="isValidationDisabled()"
                             class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 disabled:opacity-50 disabled:cursor-not-allowed" 
                           />
                         </div>
                         <div>
-                          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Type</label>
+                          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsType') }}</label>
                           <select 
                             v-model="v.type" 
                             :disabled="isValidationDisabled()"
                             class="w-full px-2 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            <option value="regex">Regular Expression</option>
-                            <option value="length">Length</option>
-                            <option value="range">Range</option>
-                            <option value="picklist_single">Single picklist value matching</option>
-                            <option value="picklist_multi">Multiple picklist value matching</option>
-                            <option value="email">Email</option>
+                            <option value="regex">{{ t('settings.modFieldsValidationRegex') }}</option>
+                            <option value="length">{{ t('settings.modFieldsValidationLength') }}</option>
+                            <option value="range">{{ t('settings.modFieldsValidationRange') }}</option>
+                            <option value="picklist_single">{{ t('settings.modFieldsValidationPicklistSingle') }}</option>
+                            <option value="picklist_multi">{{ t('settings.modFieldsValidationPicklistMulti') }}</option>
+                            <option value="email">{{ t('settings.modFieldsValidationEmail') }}</option>
                           </select>
                         </div>
                       </div>
 
                       <!-- Type-specific fields -->
                       <div v-if="v.type === 'regex'">
-                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Pattern</label>
+                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsPattern') }}</label>
                         <input 
                           v-model="v.pattern" 
-                          placeholder="Regex pattern" 
+                          :placeholder="t('settings.modFieldsRegexPatternPh')" 
                           :disabled="isValidationDisabled()"
                           class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 disabled:opacity-50 disabled:cursor-not-allowed" 
                         />
@@ -1771,7 +1773,7 @@
 
                       <div v-else-if="v.type === 'length'" class="grid grid-cols-2 gap-3">
                         <div>
-                          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Min Length</label>
+                          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsMinLength') }}</label>
                           <input 
                             type="number" 
                             min="0" 
@@ -1781,7 +1783,7 @@
                           />
                         </div>
                         <div>
-                          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Max Length</label>
+                          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsMaxLengthShort') }}</label>
                           <input 
                             type="number" 
                             min="0" 
@@ -1794,7 +1796,7 @@
 
                       <div v-else-if="v.type === 'range'" class="grid grid-cols-2 gap-3">
                         <div>
-                          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Min</label>
+                          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsMin') }}</label>
                           <input 
                             type="number" 
                             v-model.number="v.min" 
@@ -1803,7 +1805,7 @@
                           />
                         </div>
                         <div>
-                          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Max</label>
+                          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsMax') }}</label>
                           <input 
                             type="number" 
                             v-model.number="v.max" 
@@ -1814,22 +1816,22 @@
                       </div>
 
                       <div v-else-if="v.type === 'picklist_single'">
-                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Allowed Values (comma separated)</label>
+                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsAllowedValues') }}</label>
                         <input 
                           v-model="allowedValuesBuffers[vi]" 
                           @change="applyAllowedValues(vi)" 
-                          placeholder="e.g., New, Contacted, Qualified" 
+                          :placeholder="t('settings.modFieldsAllowedValuesPh')" 
                           :disabled="isValidationDisabled()"
                           class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 disabled:opacity-50 disabled:cursor-not-allowed" 
                         />
                       </div>
 
                       <div v-else-if="v.type === 'picklist_multi'">
-                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Allowed Values (comma separated)</label>
+                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsAllowedValues') }}</label>
                         <input 
                           v-model="allowedValuesBuffers[vi]" 
                           @change="applyAllowedValues(vi)" 
-                          placeholder="e.g., New, Contacted, Qualified" 
+                          :placeholder="t('settings.modFieldsAllowedValuesPh')" 
                           :disabled="isValidationDisabled()"
                           class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 disabled:opacity-50 disabled:cursor-not-allowed" 
                         />
@@ -1838,10 +1840,10 @@
                       <!-- Email has no extra inputs -->
 
                       <div>
-                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Error Message</label>
+                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsErrorMessage') }}</label>
                         <input 
                           v-model="v.message" 
-                          placeholder="Message to show when validation fails" 
+                          :placeholder="t('settings.modFieldsErrorMessagePh')" 
                           :disabled="isValidationDisabled()"
                           class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 disabled:opacity-50 disabled:cursor-not-allowed" 
                         />
@@ -1860,7 +1862,7 @@
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                       </svg>
-                      Add custom validation
+                      {{ t('settings.modFieldsAddCustomValidation') }}
                     </button>
                   </div>
                 </div>
@@ -1870,7 +1872,7 @@
               <!-- System fields: Hide Filter Settings entirely -->
               <div v-if="isSystemField(currentField)" class="p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                  Filter settings are not available for system fields.
+                  {{ t('settings.modFieldsFilterSystemUnavailable') }}
                 </p>
               </div>
 
@@ -1878,17 +1880,17 @@
               <div v-else>
                 <!-- Helper text -->
                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  Filterable fields appear in list filters and saved views.
+                  {{ t('settings.modFieldsFilterableHint') }}
                 </p>
 
                 <!-- Field ownership info -->
                 <div v-if="isPeopleModule && currentField?.key && getPeopleFieldMetadata(currentField.key)" class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                   <p class="text-xs text-blue-800 dark:text-blue-300">
                     <span v-if="getPeopleFieldMetadata(currentField.key)?.owner === 'core'">
-                      <strong>Core Field:</strong> Filter Type is read-only and locked to schema default.
+                      {{ t('settings.modFieldsFilterCoreField') }}
                     </span>
                     <span v-else-if="getPeopleFieldMetadata(currentField.key)?.owner === 'participation'">
-                      <strong>App-Owned Field:</strong> Fully editable.
+                      {{ t('settings.modFieldsFilterAppOwned') }}
                     </span>
                   </p>
                 </div>
@@ -1898,10 +1900,10 @@
                   <div class="flex items-center justify-between">
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Enable as filter
+                        {{ t('settings.modFieldsEnableFilter') }}
                       </label>
                       <p class="text-xs text-gray-500 dark:text-gray-400">
-                        Allow this field to be used as a filter in list views
+                        {{ t('settings.modFieldsEnableFilterHelp') }}
                       </p>
                     </div>
                     <HeadlessSwitch
@@ -1916,7 +1918,7 @@
                   <div v-if="currentField.filterable" class="space-y-3 border-t border-gray-200 dark:border-gray-700 pt-4">
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Filter type
+                        {{ t('settings.modFieldsFilterType') }}
                       </label>
                       <select
                         v-model="currentField.filterType"
@@ -1924,7 +1926,7 @@
                         @change="handleFilterTypeChange"
                         class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm"
                       >
-                        <option value="">Select filter type...</option>
+                        <option value="">{{ t('settings.modFieldsSelectFilterTypePh') }}</option>
                         <option
                           v-for="filterType in getAllowedFilterTypes(currentField.dataType)"
                           :key="filterType.value"
@@ -1934,14 +1936,14 @@
                         </option>
                       </select>
                       <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        Filter type is determined by the field's data type
+                        {{ t('settings.modFieldsFilterTypeHelp') }}
                       </p>
                     </div>
 
                     <!-- Filter Priority (visible only when filterable is ON) -->
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Filter priority
+                        {{ t('settings.modFieldsFilterPriority') }}
                       </label>
                       <input
                         type="number"
@@ -1949,11 +1951,11 @@
                         :disabled="isSystemField(currentField)"
                         @input="handleFilterPriorityChange"
                         min="1"
-                        placeholder="Auto-assign"
+                        :placeholder="t('settings.modFieldsFilterPriorityPh')"
                         class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm"
                       />
                       <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        Lower number = higher priority. Default visible filters are top 3 by priority.
+                        {{ t('settings.modFieldsFilterPriorityHelp') }}
                       </p>
                     </div>
                   </div>
@@ -1965,9 +1967,9 @@
                 <!-- Section 1: Field Rules (Existing Field Dependencies) -->
                 <div>
                   <div class="mb-4">
-                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Field Rules</h3>
+                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">{{ t('settings.modFieldsFieldRules') }}</h3>
                     <p class="text-xs text-gray-500 dark:text-gray-400">
-                      Control visibility, read-only state, required state, or filter picklist options based on other field values.
+                      {{ t('settings.modFieldsFieldRulesHelp') }}
                     </p>
                   </div>
 
@@ -1976,15 +1978,15 @@
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                     </svg>
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Field Rules</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.modFieldsNoFieldRules') }}</h3>
                     <p class="text-sm text-gray-600 dark:text-gray-400 text-center max-w-md mb-6">
-                      Add field dependencies to control visibility, read-only state, required state, or filter picklist options based on other field values.
+                      {{ t('settings.modFieldsNoFieldRulesBody') }}
                     </p>
                     <button @click="addDependency" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-md">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                       </svg>
-                      Add Field Rule
+                      {{ t('settings.modFieldsAddFieldRule') }}
                     </button>
                   </div>
 
@@ -1996,7 +1998,7 @@
                       <button 
                         @click="removeDependency(di)" 
                         class="absolute -top-2 -right-2 p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all hover:scale-110 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-white/10 shadow-sm"
-                        title="Remove dependency"
+                        :title="t('settings.modFieldsTitleRemoveDependency')"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -2006,46 +2008,46 @@
                       <!-- Dependency Name and Type in one row -->
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
-                          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Dependency Name</label>
-                          <input v-model="d.name" placeholder="e.g., Show when Status is Active" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm" />
+                          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsDependencyName') }}</label>
+                          <input v-model="d.name" :placeholder="t('settings.modFieldsDependencyNamePh')" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm" />
                         </div>
                         <div>
-                          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Dependency Type</label>
+                          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsDependencyType') }}</label>
                           <select v-model="d.type" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm">
-                            <option value="visibility">Visibility</option>
-                            <option value="readonly">Read-only</option>
-                            <option value="required">Required</option>
-                            <option value="picklist">Picklist Options Filter</option>
-                            <option value="popup">Popup Modal</option>
-                            <option value="label">Label Override</option>
+                            <option value="visibility">{{ t('settings.modFieldsDepVisibility') }}</option>
+                            <option value="readonly">{{ t('settings.modFieldsDepReadonly') }}</option>
+                            <option value="required">{{ t('settings.modFieldsDepRequired') }}</option>
+                            <option value="picklist">{{ t('settings.modFieldsDepPicklistFilter') }}</option>
+                            <option value="popup">{{ t('settings.modFieldsDepPopup') }}</option>
+                            <option value="label">{{ t('settings.modFieldsDepLabelOverride') }}</option>
                           </select>
                         </div>
                       </div>
 
                       <!-- Logic for multiple conditions (show when 2+ conditions or always for clarity) -->
                       <div v-if="getConditionCount(d) > 1">
-                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Logic</label>
+                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsLogic') }}</label>
                         <select v-model="d.logic" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm">
-                          <option value="AND">AND</option>
-                          <option value="OR">OR</option>
+                          <option value="AND">{{ t('settings.modFieldsLogicAnd') }}</option>
+                          <option value="OR">{{ t('settings.modFieldsLogicOr') }}</option>
                         </select>
                       </div>
 
                       <!-- Conditions list - always show conditions array mode -->
                       <div class="space-y-2">
                         <div class="flex items-center justify-between mb-2">
-                          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">Conditions</label>
+                          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">{{ t('settings.modFieldsConditions') }}</label>
                           <button @click="addDependencyCondition(di)" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm hover:shadow-md">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                             </svg>
-                            Add Condition
+                            {{ t('settings.modFieldsAddCondition') }}
                           </button>
                         </div>
                         
                         <!-- Show message if no conditions -->
                         <div v-if="getConditionCount(d) === 0" class="text-xs text-gray-500 dark:text-gray-400 py-4 px-3 bg-gray-50 dark:bg-white/5 rounded border border-dashed border-gray-300 dark:border-gray-600 text-center">
-                          No conditions defined. Click "Add Condition" to get started.
+                          {{ t('settings.modFieldsNoConditions') }}
                         </div>
                         
                         <!-- Conditions -->
@@ -2053,29 +2055,29 @@
                           <!-- Field, Operator, Value in same row -->
                           <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
                             <div class="md:col-span-5">
-                              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Field</label>
+                              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsField') }}</label>
                               <select v-model="c.fieldKey" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm">
-                                <option value="">Select field</option>
+                                <option value="">{{ t('settings.modFieldsSelectFieldPh') }}</option>
                                 <option v-for="f in otherFields" :key="f.key" :value="f.key">{{ f.label || f.key }}</option>
                               </select>
                             </div>
                             <div class="md:col-span-3">
-                              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Operator</label>
+                              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsOperator') }}</label>
                               <select v-model="c.operator" @change="onDependencyOperatorChange(di, ci)" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm">
-                                <option value="equals">equals</option>
-                                <option value="not_equals">not equals</option>
-                                <option value="in">in</option>
-                                <option value="not_in">not in</option>
-                                <option value="exists">exists</option>
-                                <option value="gt">&gt;</option>
-                                <option value="lt">&lt;</option>
-                                <option value="gte">&ge;</option>
-                                <option value="lte">&le;</option>
-                                <option value="contains">contains</option>
+                                <option value="equals">{{ t('settings.modFieldsOpEquals') }}</option>
+                                <option value="not_equals">{{ t('settings.modFieldsOpNotEquals') }}</option>
+                                <option value="in">{{ t('settings.modFieldsOpIn') }}</option>
+                                <option value="not_in">{{ t('settings.modFieldsOpNotIn') }}</option>
+                                <option value="exists">{{ t('settings.modFieldsOpExists') }}</option>
+                                <option value="gt">{{ t('settings.modFieldsOpGt') }}</option>
+                                <option value="lt">{{ t('settings.modFieldsOpLt') }}</option>
+                                <option value="gte">{{ t('settings.modFieldsOpGte') }}</option>
+                                <option value="lte">{{ t('settings.modFieldsOpLte') }}</option>
+                                <option value="contains">{{ t('settings.modFieldsOpContains') }}</option>
                               </select>
                             </div>
                             <div class="md:col-span-3">
-                              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Value</label>
+                              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsValue') }}</label>
                               <!-- Multi-select for Picklist with 'in' or 'not_in' operators -->
                               <div v-if="(getDependencyFieldType(c.fieldKey) === 'Picklist' || getDependencyFieldType(c.fieldKey) === 'Multi-Picklist') && (c.operator === 'in' || c.operator === 'not_in')" class="relative dependency-dropdown-container">
                                 <input
@@ -2084,7 +2086,7 @@
                                   @input="setDependencySearchTerm(di, ci, $event.target.value)"
                                   @focus="setDependencyDropdownOpen(di, ci, true)"
                                   @keydown.escape="setDependencyDropdownOpen(di, ci, false)"
-                                  placeholder="Search and select values..."
+                                  :placeholder="t('settings.modFieldsSearchSelectValuesPh')"
                                   class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                 />
                                 
@@ -2097,7 +2099,7 @@
                                   <!-- Search results header -->
                                   <div class="p-2 border-b border-gray-200 dark:border-white/10 flex items-center justify-between">
                                     <span class="text-xs text-gray-600 dark:text-gray-400">
-                                      {{ getFilteredDependencyOptions(di, ci).length }} option(s)
+                                      {{ t('settings.modFieldsOptionCount', { count: getFilteredDependencyOptions(di, ci).length }) }}
                                     </span>
                                     <div class="flex items-center gap-2">
                                       <button
@@ -2105,14 +2107,14 @@
                                         class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
                                         type="button"
                                       >
-                                        Select All
+                                        {{ t('settings.modFieldsSelectAll') }}
                                       </button>
                                       <button
                                         @click="deselectAllDependencyValues(di, ci)"
                                         class="text-xs text-gray-600 dark:text-gray-400 hover:underline"
                                         type="button"
                                       >
-                                        Clear
+                                        {{ t('settings.modFieldsClear') }}
                                       </button>
                                     </div>
                                   </div>
@@ -2134,19 +2136,19 @@
                                       <span class="text-sm text-gray-700 dark:text-gray-300 flex-1">{{ opt }}</span>
                                     </div>
                                     <div v-if="getFilteredDependencyOptions(di, ci).length === 0" class="px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">
-                                      No options found
+                                      {{ t('settings.modFieldsNoOptionsFound') }}
                                     </div>
                                   </div>
                                 </div>
                               </div>
                               <!-- Single-select Picklist dropdown (for non-in/not_in operators) -->
                               <select v-else-if="getDependencyFieldType(c.fieldKey) === 'Picklist' || getDependencyFieldType(c.fieldKey) === 'Multi-Picklist'" v-model="c.value" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm">
-                                <option value="">Select option</option>
+                                <option value="">{{ t('settings.modFieldsSelectOptionPh') }}</option>
                                 <option v-for="opt in getDependencyFieldOptions(c.fieldKey)" :key="opt" :value="opt">{{ opt }}</option>
                               </select>
                               <!-- Checkbox -->
                               <select v-else-if="getDependencyFieldType(c.fieldKey) === 'Checkbox'" v-model="c.value" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm">
-                                <option value="">Select value</option>
+                                <option value="">{{ t('settings.modFieldsSelectValuePh') }}</option>
                                 <option value="true">true</option>
                                 <option value="false">false</option>
                               </select>
@@ -2155,17 +2157,17 @@
                               <!-- Date-Time -->
                               <input v-else-if="getDependencyFieldType(c.fieldKey) === 'Date-Time'" type="datetime-local" v-model="c.value" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm cursor-pointer" @click="openDatePicker" />
                               <!-- Number fields -->
-                              <input v-else-if="['Integer', 'Decimal', 'Currency'].includes(getDependencyFieldType(c.fieldKey))" type="number" v-model.number="c.value" placeholder="Number" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm" />
+                              <input v-else-if="['Integer', 'Decimal', 'Currency'].includes(getDependencyFieldType(c.fieldKey))" type="number" v-model.number="c.value" :placeholder="t('settings.modFieldsNumberPh')" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm" />
                               <!-- Text input for 'in' or 'not_in' operators (for non-picklist fields) -->
-                              <input v-else-if="c.operator === 'in' || c.operator === 'not_in'" v-model="dependencyConditionBuffers[di + '-' + ci]" placeholder="a, b, c" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm" @change="applyDependencyConditionValue(di, ci)" />
+                              <input v-else-if="c.operator === 'in' || c.operator === 'not_in'" v-model="dependencyConditionBuffers[di + '-' + ci]" :placeholder="t('settings.modFieldsListValuesPh')" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm" @change="applyDependencyConditionValue(di, ci)" />
                               <!-- Comparison operators need numbers -->
-                              <input v-else-if="['gt', 'lt', 'gte', 'lte'].includes(c.operator)" type="number" v-model.number="c.value" placeholder="Number" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm" />
+                              <input v-else-if="['gt', 'lt', 'gte', 'lte'].includes(c.operator)" type="number" v-model.number="c.value" :placeholder="t('settings.modFieldsNumberPh')" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm" />
                               <!-- Exists operator -->
-                              <input v-else-if="c.operator === 'exists'" type="text" disabled value="(exists check)" class="w-full px-3 py-2 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-sm cursor-not-allowed" />
+                              <input v-else-if="c.operator === 'exists'" type="text" disabled :value="t('settings.modFieldsExistsCheck')" class="w-full px-3 py-2 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-sm cursor-not-allowed" />
                               <!-- Default text input -->
-                              <input v-else v-model="c.value" placeholder="Value" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm" />
+                              <input v-else v-model="c.value" :placeholder="t('settings.modFieldsValue')" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm" />
                             </div>
-                            <button @click="removeDependencyCondition(di, ci)" class="md:col-span-1 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm transition-colors flex items-center justify-center" title="Remove condition">
+                            <button @click="removeDependencyCondition(di, ci)" class="md:col-span-1 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm transition-colors flex items-center justify-center" :title="t('settings.modFieldsTitleRemoveCondition')">
                               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                               </svg>
@@ -2185,7 +2187,7 @@
                                   @click="toggleDependencyValue(di, ci, val)"
                                   class="hover:bg-blue-200 dark:hover:bg-blue-900/50 rounded-full p-0.5 transition-colors"
                                   type="button"
-                                  title="Remove"
+                                  :title="t('actions.remove')"
                                 >
                                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -2194,7 +2196,7 @@
                               </span>
                             </div>
                             <p class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                              {{ getSelectedDependencyValues(di, ci).length }} of {{ getDependencyFieldOptions(c.fieldKey).length }} selected
+                              {{ t('settings.modFieldsSelectedCount', { selected: getSelectedDependencyValues(di, ci).length, total: getDependencyFieldOptions(c.fieldKey).length }) }}
                             </p>
                           </div>
                         </div>
@@ -2202,12 +2204,12 @@
 
                       <!-- Picklist-specific settings -->
                       <div v-if="d.type === 'picklist' && (currentField.dataType === 'Picklist' || currentField.dataType === 'Multi-Picklist')" class="border-t border-gray-200 dark:border-white/10 pt-3">
-                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-2">Picklist Options to Show</label>
+                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-2">{{ t('settings.modFieldsPicklistOptionsToShow') }}</label>
                         <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                          Select which options from this field should be visible when the dependency condition is met.
+                          {{ t('settings.modFieldsPicklistOptionsToShowHelp') }}
                         </p>
                         <div v-if="!currentField.options || currentField.options.length === 0" class="text-xs text-gray-500 dark:text-gray-400 py-2">
-                          No picklist options available. Please add options to this field first.
+                          {{ t('settings.modFieldsNoPicklistOptionsForDep') }}
                         </div>
                         <div v-else class="space-y-2">
                           <div v-for="(option, optIdx) in getPicklistOptions(currentField)" :key="optIdx" class="flex items-center gap-2">
@@ -2225,18 +2227,18 @@
                       </div>
                       <div v-else-if="d.type === 'picklist'" class="border-t border-gray-200 dark:border-white/10 pt-3">
                         <p class="text-xs text-gray-500 dark:text-gray-400">
-                          Picklist filter is only available for Picklist or Multi-Picklist field types.
+                          {{ t('settings.modFieldsPicklistFilterTypeOnly') }}
                         </p>
                       </div>
 
                       <!-- Popup-specific settings -->
                       <div v-if="d.type === 'popup'" class="border-t border-gray-200 dark:border-white/10 pt-3">
-                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-2">Fields to Show in Popup</label>
+                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-2">{{ t('settings.modFieldsPopupFields') }}</label>
                         <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                          Select which fields should be displayed in the popup modal when the condition is met.
+                          {{ t('settings.modFieldsPopupFieldsHelp') }}
                         </p>
                         <div v-if="!editFields || editFields.length === 0" class="text-xs text-gray-500 dark:text-gray-400 py-2">
-                          No fields available. Please add fields to this module first.
+                          {{ t('settings.modFieldsNoFieldsForPopup') }}
                         </div>
                         <div v-else class="space-y-2 max-h-60 overflow-y-auto">
                           <div v-for="f in editFields" :key="f.key" class="flex items-center gap-2">
@@ -2255,13 +2257,13 @@
 
                       <!-- Label override settings -->
                       <div v-if="d.type === 'label'" class="border-t border-gray-200 dark:border-white/10 pt-3">
-                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-2">Label to Display</label>
+                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-2">{{ t('settings.modFieldsLabelToDisplay') }}</label>
                         <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                          Override this field’s label when the conditions are met.
+                          {{ t('settings.modFieldsLabelOverrideHelp') }}
                         </p>
                         <input
                           v-model="d.labelValue"
-                          placeholder="e.g., Auditor"
+                          :placeholder="t('settings.modFieldsLabelOverridePh')"
                           class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm"
                         />
                       </div>
@@ -2272,7 +2274,7 @@
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                       </svg>
-                      Add Field Rule
+                      {{ t('settings.modFieldsAddFieldRule') }}
                     </button>
                   </div>
                 </div>
@@ -2281,9 +2283,9 @@
                 <!-- Section 2: Picklist Value Rules (Only for Picklist/Multi-Picklist fields) -->
                 <div v-if="currentField.dataType === 'Picklist' || currentField.dataType === 'Multi-Picklist'" class="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
                   <div class="mb-4">
-                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Picklist Value Rules</h3>
+                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">{{ t('settings.modFieldsPicklistValueRules') }}</h3>
                     <p class="text-xs text-gray-500 dark:text-gray-400">
-                      Filter available options in this picklist based on values selected in another picklist field.
+                      {{ t('settings.modFieldsPicklistValueRulesHelp') }}
                     </p>
                   </div>
 
@@ -2292,15 +2294,15 @@
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Picklist Value Rules</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.modFieldsNoPicklistValueRules') }}</h3>
                     <p class="text-sm text-gray-600 dark:text-gray-400 text-center max-w-md mb-6">
-                      Configure which options are available in this picklist based on values in another picklist field.
+                      {{ t('settings.modFieldsNoPicklistValueRulesBody') }}
                     </p>
                     <button @click="addPicklistValueRule" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-md">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                       </svg>
-                      Add Picklist Value Rule
+                      {{ t('settings.modFieldsAddPicklistValueRule') }}
                     </button>
                   </div>
                   <div v-else class="space-y-4">
@@ -2309,7 +2311,7 @@
                       <button 
                         @click="removePicklistValueRule(ruleIdx)" 
                         class="absolute -top-2 -right-2 p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all hover:scale-110 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-white/10 shadow-sm"
-                        title="Remove rule"
+                        :title="t('settings.modFieldsTitleRemoveRule')"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -2319,13 +2321,13 @@
                       <!-- Parent Field Selection -->
                       <div>
                         <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Parent Field <span class="text-red-500">*</span>
+                          {{ t('settings.modFieldsParentField') }} <span class="text-red-500">*</span>
                         </label>
                         <select 
                           v-model="rule.parentFieldKey"
                           class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         >
-                          <option value="">Select picklist field...</option>
+                          <option value="">{{ t('settings.modFieldsSelectPicklistFieldPh') }}</option>
                           <option 
                             v-for="field in editFields.filter(f => (f.dataType === 'Picklist' || f.dataType === 'Multi-Picklist') && f.key !== currentField.key)" 
                             :key="field.key" 
@@ -2335,17 +2337,17 @@
                           </option>
                         </select>
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                          The picklist field whose value determines which options are available in this field
+                          {{ t('settings.modFieldsParentFieldHelp') }}
                         </p>
                       </div>
 
                       <!-- Value Mapping Table -->
                       <div v-if="rule.parentFieldKey">
                         <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Value Mapping
+                          {{ t('settings.modFieldsValueMapping') }}
                         </label>
                         <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                          Map parent field values to allowed options in this picklist
+                          {{ t('settings.modFieldsValueMappingHelp') }}
                         </p>
                         
                         <div class="space-y-3">
@@ -2356,12 +2358,12 @@
                           >
                             <!-- Parent Value -->
                             <div class="md:col-span-4">
-                              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Parent Value</label>
+                              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsParentValue') }}</label>
                               <select 
                                 v-model="mapping.parentValue"
                                 class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm"
                               >
-                                <option value="">Select value...</option>
+                                <option value="">{{ t('settings.modFieldsSelectValueEllipsisPh') }}</option>
                                 <option 
                                   v-for="opt in getPicklistFieldOptions(rule.parentFieldKey)" 
                                   :key="opt" 
@@ -2381,10 +2383,10 @@
                             
                             <!-- Allowed Child Values -->
                             <div class="md:col-span-6">
-                              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Allowed Options</label>
+                              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsAllowedOptions') }}</label>
                               <div class="space-y-2 max-h-40 overflow-y-auto border border-gray-200 dark:border-white/10 rounded-lg p-2 bg-white dark:bg-gray-800">
                                 <div v-if="!currentField.options || currentField.options.length === 0" class="text-xs text-gray-500 dark:text-gray-400 py-2 text-center">
-                                  No options available
+                                  {{ t('settings.modFieldsNoOptionsAvailable') }}
                                 </div>
                                 <label 
                                   v-for="(option, optIdx) in getPicklistOptions(currentField)" 
@@ -2406,7 +2408,7 @@
                               <button 
                                 @click="removePicklistValueMapping(ruleIdx, mapIdx)"
                                 class="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
-                                title="Remove mapping"
+                                :title="t('settings.modFieldsTitleRemoveMapping')"
                               >
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
                                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -2421,7 +2423,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                             </svg>
-                            Add Value Mapping
+                            {{ t('settings.modFieldsAddValueMapping') }}
                           </button>
                         </div>
                       </div>
@@ -2435,7 +2437,7 @@
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                       </svg>
-                      Add Another Picklist Value Rule
+                      {{ t('settings.modFieldsAddAnotherPicklistRule') }}
                     </button>
                   </div>
                 </div>
@@ -2453,9 +2455,9 @@
         <div class="p-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between flex-shrink-0">
           <div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {{ currentTopTabLabel }}
+              {{ topTabs.find(tab => tab.id === activeTopTab)?.name ?? t('settings.modFieldsTabDetails') }}
             </h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Module: {{ selectedModule?.name }} • Key: {{ selectedModule?.key }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsModuleKeyLine', { moduleName: selectedModule?.name, moduleKey: selectedModule?.key }) }}</p>
           </div>
           <div class="flex items-center gap-2">
             <button 
@@ -2471,7 +2473,7 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              {{ isSavingQuickCreate ? 'Saving...' : 'Save Changes' }}
+              {{ isSavingQuickCreate ? t('states.saving') : t('settings.saveChanges') }}
             </button>
             <button 
               v-if="['details', 'relationships', 'pipeline'].includes(activeTopTab) && isDirty"
@@ -2486,7 +2488,7 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              {{ isSaving ? 'Saving...' : 'Save Changes' }}
+              {{ isSaving ? t('states.saving') : t('settings.saveChanges') }}
             </button>
           </div>
         </div>
@@ -2499,38 +2501,34 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div>
-                <h3 class="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-1">
-                  Platform-Owned Capability
-                </h3>
-                <p class="text-sm text-blue-800 dark:text-blue-400">
-                  This is a shared platform capability owned by the platform. It cannot be deleted, renamed, or modified. Applications can use this capability, but they cannot change its core definition.
-                </p>
+                <h3 class="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-1">{{ t('settings.modFieldsPlatformOwnedTitle') }}</h3>
+                <p class="text-sm text-blue-800 dark:text-blue-400">{{ t('settings.modFieldsPlatformOwnedBody') }}</p>
               </div>
             </div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Display Name</label>
+              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsDisplayName') }}</label>
               <input v-model="moduleNameEdit" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" />
             </div>
             <div>
-              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Module Key</label>
+              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsModuleKeyLabel') }}</label>
               <input :value="selectedModule.key" disabled class="w-full px-3 py-2 rounded bg-gray-100 dark:bg-white/10 border border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400" />
             </div>
             <div>
-              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Type</label>
+              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsType') }}</label>
               <input :value="selectedModule.type" disabled class="w-full px-3 py-2 rounded bg-gray-100 dark:bg-white/10 border border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400" />
             </div>
             <div class="flex items-center gap-2 mt-6">
               <HeadlessCheckbox id="mod-enabled" v-model="moduleEnabled" />
-              <label for="mod-enabled" class="text-sm text-gray-700 dark:text-gray-300" @click="moduleEnabled = !moduleEnabled">Enabled</label>
+              <label for="mod-enabled" class="text-sm text-gray-700 dark:text-gray-300" @click="moduleEnabled = !moduleEnabled">{{ t('settings.modFieldsEnabled') }}</label>
             </div>
           </div>
           
           <!-- Forms Module Details Fields (read-only display) -->
           <div v-if="isFormsModule" class="mt-6">
-            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">Form Module Details</h4>
+            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">{{ t('settings.modFieldsFormModuleDetails') }}</h4>
             <div class="space-y-3">
               <div
                 v-for="field in getFieldsForTab('moduleDetails')"
@@ -2551,7 +2549,7 @@
                             : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                         ]"
                       >
-                        {{ field.editable ? 'Editable' : 'Read-Only' }}
+                        {{ field.editable ? t('settings.modFieldsEditable') : t('settings.modFieldsReadOnly') }}
                       </span>
                     </div>
                     <p v-if="field.notes" class="text-xs text-gray-500 dark:text-gray-400">
@@ -2574,15 +2572,11 @@
               See: client/src/platform/forms/formSettingsPermissions.ts
             -->
             <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">Who Can Configure What</h4>
+              <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">{{ t('settings.modFieldsWhoCanConfigure') }}</h4>
               <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                 <div class="mb-4">
-                  <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                    This matrix explains configuration authority in Form Settings. Permissions are explanatory only and do not enforce access.
-                  </p>
-                  <p class="text-xs text-gray-500 dark:text-gray-500 italic">
-                    Actual enforcement happens at API & surface level. This mirrors Event Execution permission design.
-                  </p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">{{ t('settings.modFieldsFormPermMatrixIntro') }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-500 italic">{{ t('settings.modFieldsFormPermMatrixEnforcement') }}</p>
                 </div>
                 <div class="space-y-3">
                   <div
@@ -2603,7 +2597,7 @@
                               : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
                           ]"
                         >
-                          {{ permission.allowed ? 'Allowed' : 'Not Allowed' }}
+                          {{ permission.allowed ? t('settings.modFieldsAllowed') : t('settings.modFieldsNotAllowed') }}
                         </span>
                       </div>
                       <p v-if="permission.reason" class="text-xs text-gray-600 dark:text-gray-400 mt-1">
@@ -2611,9 +2605,7 @@
                       </p>
                     </div>
                   </div>
-                  <div v-if="formSettingsPermissions.length === 0" class="text-center py-4 text-sm text-gray-500 dark:text-gray-400">
-                    No permission information available.
-                  </div>
+                  <div v-if="formSettingsPermissions.length === 0" class="text-center py-4 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsNoPermissionInfo') }}</div>
                 </div>
               </div>
             </div>
@@ -2636,14 +2628,11 @@
           <div class="p-6">
             <!-- Header -->
             <div class="mb-6">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Status & Types</h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                Configure organization types and status picklists. These are app-scoped semantics that control workflow states.
-              </p>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.modFieldsTabStatusTypes') }}</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ t('settings.modFieldsOrgsStatusTypesDesc') }}</p>
               <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
                 <p class="text-xs text-blue-800 dark:text-blue-400">
-                  <strong>Note:</strong> Organization types and status values are app-scoped. Changes here affect how organizations are classified and tracked within specific applications (Sales, Helpdesk, etc.).
-                </p>
+                  <strong>{{ t('settings.modFieldsNoteLabel') }}</strong>{{ t('settings.modFieldsOrgsStatusTypesNote') }}</p>
               </div>
             </div>
 
@@ -2651,17 +2640,13 @@
             <div class="mb-8">
               <div class="flex items-center justify-between mb-4">
                 <div>
-                  <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">Organization Types</h4>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">
-                    Enable or disable organization types. These are business classifications used to categorize organizations.
-                  </p>
+                  <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">{{ t('settings.modFieldsOrgTypesTitle') }}</h4>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsOrgTypesDesc') }}</p>
                 </div>
               </div>
               
               <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-                <div v-if="organizationTypes.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">
-                  Loading organization types...
-                </div>
+                <div v-if="organizationTypes.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsLoadingOrgTypes') }}</div>
                 <div v-else class="space-y-3">
                   <div 
                     v-for="(type, index) in organizationTypes" 
@@ -2669,10 +2654,10 @@
                     class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
                   >
                     <div class="flex items-center gap-3 flex-1">
-                      <div class="cursor-grab select-none text-gray-400 dark:text-gray-500" title="Drag to reorder">⋮⋮</div>
+                      <div class="cursor-grab select-none text-gray-400 dark:text-gray-500" :title="t('settings.modFieldsTitleDragReorder')">⋮⋮</div>
                       <div class="flex-1">
                         <div class="text-sm font-medium text-gray-900 dark:text-white">{{ type.label }}</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ type.description || 'Business organization type' }}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ type.description || t('settings.modFieldsOrgTypeDefaultDesc') }}</div>
                       </div>
                     </div>
                     <div class="flex items-center gap-3">
@@ -2684,9 +2669,7 @@
                     </div>
                   </div>
                   
-                  <div class="text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-700">
-                    Organization types are business classifications. Disabling a type hides it from selection but does not affect existing organizations.
-                  </div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-700">{{ t('settings.modFieldsOrgTypesFootnote') }}</div>
                 </div>
               </div>
             </div>
@@ -2697,8 +2680,8 @@
               <div>
                 <div class="flex items-center justify-between mb-4">
                   <div class="flex items-center gap-2">
-                    <h4 class="text-base font-semibold text-gray-900 dark:text-white">Customer Status</h4>
-                    <span class="px-2 py-0.5 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">Sales</span>
+                    <h4 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.modFieldsCustomerStatus') }}</h4>
+                    <span class="px-2 py-0.5 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">{{ t('settings.modFieldsBadgeSales') }}</span>
                   </div>
                   <button
                     @click="addStatusValue('customerStatus')"
@@ -2706,25 +2689,19 @@
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    Add Value
-                  </button>
+                    </svg>{{ t('settings.modFieldsAddValue') }}</button>
                 </div>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                  Status values for organizations with type "Customer"
-                </p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ t('settings.modFieldsStatusForCustomer') }}</p>
                 
                 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-                  <div v-if="statusPicklists.customerStatus.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">
-                    No status values configured. Click "Add Value" to create one.
-                  </div>
+                  <div v-if="statusPicklists.customerStatus.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsNoStatusValues') }}</div>
                   <div v-else class="space-y-2">
                     <div
                       v-for="(status, index) in statusPicklists.customerStatus"
                       :key="status.value || index"
                       class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg group"
                     >
-                      <div class="cursor-grab select-none text-gray-400 dark:text-gray-500" title="Drag to reorder">⋮⋮</div>
+                      <div class="cursor-grab select-none text-gray-400 dark:text-gray-500" :title="t('settings.modFieldsTitleDragReorder')">⋮⋮</div>
                       <div class="flex-1 min-w-0">
                         <input
                           v-if="status.editing"
@@ -2746,7 +2723,7 @@
                         <button
                           @click="startStatusEdit('customerStatus', index)"
                           class="p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors rounded"
-                          title="Rename"
+                          :title="t('settings.modFieldsRename')"
                         >
                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -2755,9 +2732,7 @@
                       </div>
                     </div>
                   </div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                    Customer status values are app-scoped (Sales app). Disabled values remain in the system but are hidden from selection.
-                  </div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">{{ t('settings.modFieldsCustomerStatusFootnote') }}</div>
                 </div>
               </div>
 
@@ -2765,8 +2740,8 @@
               <div>
                 <div class="flex items-center justify-between mb-4">
                   <div class="flex items-center gap-2">
-                    <h4 class="text-base font-semibold text-gray-900 dark:text-white">Partner Status</h4>
-                    <span class="px-2 py-0.5 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">Sales</span>
+                    <h4 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.modFieldsPartnerStatus') }}</h4>
+                    <span class="px-2 py-0.5 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">{{ t('settings.modFieldsBadgeSales') }}</span>
                   </div>
                   <button
                     @click="addStatusValue('partnerStatus')"
@@ -2774,25 +2749,19 @@
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    Add Value
-                  </button>
+                    </svg>{{ t('settings.modFieldsAddValue') }}</button>
                 </div>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                  Status values for organizations with type "Partner"
-                </p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ t('settings.modFieldsStatusForPartner') }}</p>
                 
                 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-                  <div v-if="statusPicklists.partnerStatus.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">
-                    No status values configured. Click "Add Value" to create one.
-                  </div>
+                  <div v-if="statusPicklists.partnerStatus.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsNoStatusValues') }}</div>
                   <div v-else class="space-y-2">
                     <div
                       v-for="(status, index) in statusPicklists.partnerStatus"
                       :key="status.value || index"
                       class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg group"
                     >
-                      <div class="cursor-grab select-none text-gray-400 dark:text-gray-500" title="Drag to reorder">⋮⋮</div>
+                      <div class="cursor-grab select-none text-gray-400 dark:text-gray-500" :title="t('settings.modFieldsTitleDragReorder')">⋮⋮</div>
                       <div class="flex-1 min-w-0">
                         <input
                           v-if="status.editing"
@@ -2814,7 +2783,7 @@
                         <button
                           @click="startStatusEdit('partnerStatus', index)"
                           class="p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors rounded"
-                          title="Rename"
+                          :title="t('settings.modFieldsRename')"
                         >
                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -2823,9 +2792,7 @@
                       </div>
                     </div>
                   </div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                    Partner status values are app-scoped (Sales app). Disabled values remain in the system but are hidden from selection.
-                  </div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">{{ t('settings.modFieldsPartnerStatusFootnote') }}</div>
                 </div>
               </div>
 
@@ -2833,8 +2800,8 @@
               <div>
                 <div class="flex items-center justify-between mb-4">
                   <div class="flex items-center gap-2">
-                    <h4 class="text-base font-semibold text-gray-900 dark:text-white">Vendor Status</h4>
-                    <span class="px-2 py-0.5 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">Sales</span>
+                    <h4 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.modFieldsVendorStatus') }}</h4>
+                    <span class="px-2 py-0.5 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">{{ t('settings.modFieldsBadgeSales') }}</span>
                   </div>
                   <button
                     @click="addStatusValue('vendorStatus')"
@@ -2842,25 +2809,19 @@
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    Add Value
-                  </button>
+                    </svg>{{ t('settings.modFieldsAddValue') }}</button>
                 </div>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                  Status values for organizations with type "Vendor"
-                </p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ t('settings.modFieldsStatusForVendor') }}</p>
                 
                 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-                  <div v-if="statusPicklists.vendorStatus.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">
-                    No status values configured. Click "Add Value" to create one.
-                  </div>
+                  <div v-if="statusPicklists.vendorStatus.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsNoStatusValues') }}</div>
                   <div v-else class="space-y-2">
                     <div
                       v-for="(status, index) in statusPicklists.vendorStatus"
                       :key="status.value || index"
                       class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg group"
                     >
-                      <div class="cursor-grab select-none text-gray-400 dark:text-gray-500" title="Drag to reorder">⋮⋮</div>
+                      <div class="cursor-grab select-none text-gray-400 dark:text-gray-500" :title="t('settings.modFieldsTitleDragReorder')">⋮⋮</div>
                       <div class="flex-1 min-w-0">
                         <input
                           v-if="status.editing"
@@ -2882,7 +2843,7 @@
                         <button
                           @click="startStatusEdit('vendorStatus', index)"
                           class="p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors rounded"
-                          title="Rename"
+                          :title="t('settings.modFieldsRename')"
                         >
                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -2891,9 +2852,7 @@
                       </div>
                     </div>
                   </div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                    Vendor status values are app-scoped (Sales app). Disabled values remain in the system but are hidden from selection.
-                  </div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">{{ t('settings.modFieldsVendorStatusFootnote') }}</div>
                 </div>
               </div>
             </div>
@@ -2906,7 +2865,7 @@
                 class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
               >
                 <div v-if="savingStatusTypes" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span>{{ savingStatusTypes ? 'Saving...' : 'Save Changes' }}</span>
+                <span>{{ savingStatusTypes ? t('states.saving') : t('settings.saveChanges') }}</span>
               </button>
             </div>
           </div>
@@ -2921,43 +2880,36 @@
         <div class="flex-1 overflow-y-auto" v-else-if="activeTopTab === 'status-priority' && isTasksModule">
           <div class="p-6">
             <div class="mb-6">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Status & Priority</h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                Task lifecycle values are configured in Field Configurations. Select the Status or Priority field to edit options.
-              </p>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.modFieldsTabStatusPriority') }}</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ t('settings.modFieldsTasksStatusPriorityDesc') }}</p>
               <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
                 <p class="text-xs text-blue-800 dark:text-blue-400">
-                  <strong>Note:</strong> The "Completed" status is system-controlled and cannot be modified or removed.
-                </p>
+                  <strong>{{ t('settings.modFieldsNoteLabel') }}</strong>{{ t('settings.modFieldsTaskStatusNote') }}</p>
               </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
                 <div class="flex items-center justify-between mb-3">
-                  <h4 class="text-base font-semibold text-gray-900 dark:text-white">Status</h4>
-                  <button @click="openTaskStatusPriorityLens" class="px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg">
-                    Edit in Field Configurations
-                  </button>
+                  <h4 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.modFieldsStatusLabel') }}</h4>
+                  <button @click="openTaskStatusPriorityLens" class="px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg">{{ t('settings.modFieldsEditInFieldConfig') }}</button>
                 </div>
                 <div class="flex flex-wrap gap-2">
                   <span v-for="opt in (getTaskPicklistFieldFromConfig('status')?.options || [])" :key="opt.value || opt" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium text-white" :style="{ backgroundColor: (opt.color || '#6B7280') }">
                     {{ opt.label || opt.value || opt }}
                   </span>
-                  <span v-if="!getTaskPicklistFieldFromConfig('status')?.options?.length" class="text-sm text-gray-500 dark:text-gray-400">No options defined</span>
+                  <span v-if="!getTaskPicklistFieldFromConfig('status')?.options?.length" class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsNoOptionsDefinedShort') }}</span>
                 </div>
               </div>
               <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
                 <div class="flex items-center justify-between mb-3">
-                  <h4 class="text-base font-semibold text-gray-900 dark:text-white">Priority</h4>
-                  <button @click="openTaskPriorityInFieldConfig" class="px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg">
-                    Edit in Field Configurations
-                  </button>
+                  <h4 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.modFieldsPriorityLabel') }}</h4>
+                  <button @click="openTaskPriorityInFieldConfig" class="px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg">{{ t('settings.modFieldsEditInFieldConfig') }}</button>
                 </div>
                 <div class="flex flex-wrap gap-2">
                   <span v-for="opt in (getTaskPicklistFieldFromConfig('priority')?.options || [])" :key="opt.value || opt" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium text-white" :style="{ backgroundColor: (opt.color || '#6B7280') }">
                     {{ opt.label || opt.value || opt }}
                   </span>
-                  <span v-if="!getTaskPicklistFieldFromConfig('priority')?.options?.length" class="text-sm text-gray-500 dark:text-gray-400">No options defined</span>
+                  <span v-if="!getTaskPicklistFieldFromConfig('priority')?.options?.length" class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsNoOptionsDefinedShort') }}</span>
                 </div>
               </div>
             </div>
@@ -2969,27 +2921,21 @@
           <div class="p-6">
             <!-- Header -->
             <div class="mb-6">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Status & Types</h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                Configure item types and status picklists. These control how items are classified and their lifecycle states.
-              </p>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.modFieldsTabStatusTypes') }}</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ t('settings.modFieldsItemsStatusTypesDesc') }}</p>
             </div>
 
             <!-- Item Types Section -->
             <div class="mb-8">
               <div class="flex items-center justify-between mb-4">
                 <div>
-                  <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">Item Types</h4>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">
-                    Enable or disable item types. These are business classifications used to categorize items.
-                  </p>
+                  <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">{{ t('settings.modFieldsItemTypesTitle') }}</h4>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsItemTypesDesc') }}</p>
                 </div>
               </div>
               
               <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-                <div v-if="itemTypes.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">
-                  Loading item types...
-                </div>
+                <div v-if="itemTypes.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsLoadingItemTypes') }}</div>
                 <div v-else class="space-y-3">
                   <div 
                     v-for="(type, index) in itemTypes" 
@@ -2997,10 +2943,10 @@
                     class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
                   >
                     <div class="flex items-center gap-3 flex-1">
-                      <div class="cursor-grab select-none text-gray-400 dark:text-gray-500" title="Drag to reorder">⋮⋮</div>
+                      <div class="cursor-grab select-none text-gray-400 dark:text-gray-500" :title="t('settings.modFieldsTitleDragReorder')">⋮⋮</div>
                       <div class="flex-1">
                         <div class="text-sm font-medium text-gray-900 dark:text-white">{{ type.label }}</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ type.description || 'Item type classification' }}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ type.description || t('settings.modFieldsItemTypeDefaultDesc') }}</div>
                       </div>
                     </div>
                     <div class="flex items-center gap-3">
@@ -3012,9 +2958,7 @@
                     </div>
                   </div>
                   
-                  <div class="text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-700">
-                    Item types are business classifications. Disabling a type hides it from selection but does not affect existing items.
-                  </div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-700">{{ t('settings.modFieldsItemTypesFootnote') }}</div>
                 </div>
               </div>
             </div>
@@ -3023,10 +2967,8 @@
             <div>
               <div class="flex items-center justify-between mb-4">
                 <div>
-                  <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">Status Picklist</h4>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">
-                    Configure available item status values.
-                  </p>
+                  <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">{{ t('settings.modFieldsStatusPicklistTitle') }}</h4>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsStatusPicklistDesc') }}</p>
                 </div>
                 <button
                   @click="addItemStatusValue"
@@ -3034,22 +2976,18 @@
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                  </svg>
-                  Add Status
-                </button>
+                  </svg>{{ t('settings.modFieldsAddStatus') }}</button>
               </div>
               
               <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-                <div v-if="itemStatusPicklist.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">
-                  Loading status values...
-                </div>
+                <div v-if="itemStatusPicklist.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsLoadingStatusValues') }}</div>
                 <div v-else class="space-y-2">
                   <div
                     v-for="(status, index) in itemStatusPicklist"
                     :key="status.value || index"
                     class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg group"
                   >
-                    <div class="cursor-grab select-none text-gray-400 dark:text-gray-500" title="Drag to reorder">⋮⋮</div>
+                    <div class="cursor-grab select-none text-gray-400 dark:text-gray-500" :title="t('settings.modFieldsTitleDragReorder')">⋮⋮</div>
                     <div class="flex-1 min-w-0">
                       <input
                         v-if="status.editing"
@@ -3071,7 +3009,7 @@
                       <button
                         @click="startItemStatusEdit(index)"
                         class="p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors rounded"
-                        title="Rename"
+                        :title="t('settings.modFieldsRename')"
                       >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -3080,7 +3018,7 @@
                       <button
                         @click="removeItemStatusValue(index)"
                         class="p-1.5 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-200 transition-colors rounded"
-                        title="Remove"
+                        :title="t('actions.remove')"
                         :disabled="itemStatusPicklist.length <= 1"
                         :class="itemStatusPicklist.length <= 1 ? 'opacity-50 cursor-not-allowed' : ''"
                       >
@@ -3091,9 +3029,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="text-xs text-gray-500 dark:text-gray-400 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                  Status values control item lifecycle. At least one status value must remain enabled.
-                </div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">{{ t('settings.modFieldsItemStatusFootnote') }}</div>
               </div>
             </div>
 
@@ -3105,7 +3041,7 @@
                 class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
               >
                 <div v-if="savingItemStatusTypes" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span>{{ savingItemStatusTypes ? 'Saving...' : 'Save Changes' }}</span>
+                <span>{{ savingItemStatusTypes ? t('states.saving') : t('settings.saveChanges') }}</span>
               </button>
             </div>
           </div>
@@ -3123,14 +3059,11 @@
           <div class="p-6 lg:p-8 max-w-4xl mx-auto space-y-8">
             <!-- Header -->
             <div class="space-y-2">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Event Status</h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                Event statuses are system-controlled and required for lifecycle execution.
-              </p>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.modFieldsEventStatusTitle') }}</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ t('settings.modFieldsEventStatusDesc') }}</p>
               <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
                 <p class="text-xs text-blue-800 dark:text-blue-400">
-                  <strong>System-Owned Statuses:</strong> Planned, Completed, and Cancelled are locked.
-                  They cannot be renamed, deleted, reordered, or disabled in Settings.
+                  <strong>{{ t('settings.modFieldsSystemOwnedStatusesLabel') }}</strong> {{ t('settings.modFieldsEventStatusesLockedBody') }}
                 </p>
               </div>
             </div>
@@ -3139,17 +3072,13 @@
             <div class="space-y-4">
               <div class="flex items-center justify-between">
                 <div>
-                  <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">Event Status Picklist</h4>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">
-                    Visibility-only view of the system status values.
-                  </p>
+                  <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">{{ t('settings.modFieldsEventStatusPicklistTitle') }}</h4>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsEventStatusPicklistDesc') }}</p>
                 </div>
               </div>
               
               <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-                <div v-if="eventStatusPicklist.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">
-                  Loading status values...
-                </div>
+                <div v-if="eventStatusPicklist.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsLoadingStatusValues') }}</div>
                 <div v-else class="space-y-3">
                   <div
                     v-for="(status, index) in eventStatusPicklist"
@@ -3158,12 +3087,12 @@
                   >
                     <div 
                       class="text-gray-400 dark:text-gray-500" 
-                      title="System-locked"
+                      :title="t('settings.modFieldsTitleSystemLockedStatus')"
                     >🔒</div>
                     <div class="flex-1 min-w-0">
                       <span class="text-sm font-medium text-gray-900 dark:text-white">
                         {{ status.label }}
-                        <span class="ml-2 px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">System-Locked</span>
+                        <span class="ml-2 px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsSystemLocked') }}</span>
                       </span>
                     </div>
                     <div class="flex items-center gap-2">
@@ -3175,9 +3104,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="text-xs text-gray-500 dark:text-gray-400 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                  Status transitions happen from Work interfaces (for example, complete or cancel actions), not from Settings.
-                </div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">{{ t('settings.modFieldsEventStatusTransitionsFootnote') }}</div>
               </div>
             </div>
           </div>
@@ -3196,14 +3123,11 @@
           <div class="p-6 lg:p-8 max-w-4xl mx-auto space-y-10">
             <!-- Header -->
             <div class="space-y-2">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Roles & Rules</h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                Configure role requirements, geo rules, and form-linking rules per event type.
-              </p>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.modFieldsTabRolesRules') }}</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ t('settings.modFieldsRolesRulesDesc') }}</p>
               <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
                 <p class="text-xs text-blue-800 dark:text-blue-400">
-                  <strong>Note:</strong> This tab configures constraints only.
-                  Assignment, workflow transitions, and execution behavior are handled in Work interfaces.
+                  <strong>{{ t('settings.modFieldsNoteLabel') }}</strong> {{ t('settings.modFieldsRolesRulesNote') }}
                 </p>
               </div>
             </div>
@@ -3211,15 +3135,11 @@
             <!-- Role Requirements per Event Type Section -->
             <div class="space-y-4">
               <div class="space-y-3">
-                <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">Role Requirements per Event Type</h4>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                  Configure which roles are mandatory for each event type. This controls field requirements, not role assignment.
-                </p>
+                <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">{{ t('settings.modFieldsRoleRequirementsTitle') }}</h4>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ t('settings.modFieldsRoleRequirementsDesc') }}</p>
                 <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
                   <p class="text-xs text-amber-800 dark:text-amber-400">
-                    <strong>Important:</strong> These checkboxes configure field requirements (which roles must be assigned), not role assignment itself. 
-                    Role assignment happens in Work interfaces when creating/editing events.
-                  </p>
+                    <strong>{{ t('settings.modulesAndFieldsImportant3') }}</strong>{{ t('settings.modulesAndFieldsTheseCheckboxesConfigureFieldRequirementsWhich') }}</p>
                 </div>
               </div>
               
@@ -3227,45 +3147,39 @@
                 <div class="space-y-6">
                   <!-- Meeting -->
                   <div class="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0 last:pb-0">
-                    <h5 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Meeting</h5>
+                    <h5 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('settings.modFieldsEventTypeMeeting') }}</h5>
                     <div class="space-y-3">
                       <label class="flex items-start gap-3">
                         <HeadlessCheckbox
-                          :checked="eventRoleRules['Meeting']?.auditorRequired || false"
-                          @change="updateEventRoleRule('Meeting', 'auditorRequired', $event.target.checked)"
+                          :checked="eventRoleRules[t('settings.modFieldsEventTypeMeeting')]?.auditorRequired || false"
+                          @change="updateEventRoleRule(t('settings.modFieldsEventTypeMeeting'), 'auditorRequired', $event.target.checked)"
                           checkbox-class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                         />
                         <div class="flex-1">
-                          <span class="text-sm font-medium text-gray-900 dark:text-white">Auditor Required</span>
-                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            Auditor field is optional for Meeting events.
-                          </p>
+                          <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsAuditorRequired') }}</span>
+                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ t('settings.modFieldsMeetingAuditorOptional') }}</p>
                         </div>
                       </label>
                       <label class="flex items-start gap-3">
                         <HeadlessCheckbox
-                          :checked="eventRoleRules['Meeting']?.reviewerRequired || false"
-                          @change="updateEventRoleRule('Meeting', 'reviewerRequired', $event.target.checked)"
+                          :checked="eventRoleRules[t('settings.modFieldsEventTypeMeeting')]?.reviewerRequired || false"
+                          @change="updateEventRoleRule(t('settings.modFieldsEventTypeMeeting'), 'reviewerRequired', $event.target.checked)"
                           checkbox-class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                         />
                         <div class="flex-1">
-                          <span class="text-sm font-medium text-gray-900 dark:text-white">Reviewer Required</span>
-                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            Reviewer field is optional for Meeting events.
-                          </p>
+                          <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsReviewerRequired') }}</span>
+                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ t('settings.modFieldsMeetingReviewerOptional') }}</p>
                         </div>
                       </label>
                       <label class="flex items-start gap-3">
                         <HeadlessCheckbox
-                          :checked="eventRoleRules['Meeting']?.correctiveOwnerRequired || false"
-                          @change="updateEventRoleRule('Meeting', 'correctiveOwnerRequired', $event.target.checked)"
+                          :checked="eventRoleRules[t('settings.modFieldsEventTypeMeeting')]?.correctiveOwnerRequired || false"
+                          @change="updateEventRoleRule(t('settings.modFieldsEventTypeMeeting'), 'correctiveOwnerRequired', $event.target.checked)"
                           checkbox-class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                         />
                         <div class="flex-1">
-                          <span class="text-sm font-medium text-gray-900 dark:text-white">Corrective Owner Required</span>
-                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            Corrective Owner field is optional for Meeting events.
-                          </p>
+                          <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsCorrectiveOwnerRequired') }}</span>
+                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ t('settings.modFieldsMeetingCorrectiveOwnerOptional') }}</p>
                         </div>
                       </label>
                     </div>
@@ -3273,7 +3187,7 @@
 
                   <!-- Internal Audit -->
                   <div class="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0 last:pb-0">
-                    <h5 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Internal Audit</h5>
+                    <h5 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('settings.modFieldsEventTypeInternalAudit') }}</h5>
                     <div class="space-y-3">
                       <label class="flex items-start gap-3 opacity-75">
                         <HeadlessCheckbox
@@ -3282,24 +3196,20 @@
                           checkbox-class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                         />
                         <div class="flex-1">
-                          <span class="text-sm font-medium text-gray-900 dark:text-white">Auditor Required</span>
-                          <span class="ml-2 px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">Locked</span>
-                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            Auditor is always required for audit events. This cannot be changed.
-                          </p>
+                          <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsAuditorRequired') }}</span>
+                          <span class="ml-2 px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsLocked') }}</span>
+                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ t('settings.modFieldsAuditAuditorRequired') }}</p>
                         </div>
                       </label>
                       <label class="flex items-start gap-3">
                         <HeadlessCheckbox
-                          :checked="eventRoleRules['Internal Audit']?.reviewerRequired || false"
-                          @change="updateEventRoleRule('Internal Audit', 'reviewerRequired', $event.target.checked)"
+                          :checked="eventRoleRules[t('settings.modFieldsEventTypeInternalAudit')]?.reviewerRequired || false"
+                          @change="updateEventRoleRule(t('settings.modFieldsEventTypeInternalAudit'), 'reviewerRequired', $event.target.checked)"
                           checkbox-class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                         />
                         <div class="flex-1">
-                          <span class="text-sm font-medium text-gray-900 dark:text-white">Reviewer Required</span>
-                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            Reviewer is optional for Internal Audit events (self-review allowed).
-                          </p>
+                          <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsReviewerRequired') }}</span>
+                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ t('settings.modFieldsInternalAuditReviewerOptional') }}</p>
                         </div>
                       </label>
                       <label class="flex items-start gap-3 opacity-75">
@@ -3309,10 +3219,10 @@
                           checkbox-class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                         />
                         <div class="flex-1">
-                          <span class="text-sm font-medium text-gray-900 dark:text-white">Corrective Owner Required</span>
-                          <span class="ml-2 px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">Locked</span>
+                          <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsCorrectiveOwnerRequired') }}</span>
+                          <span class="ml-2 px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsLocked') }}</span>
                           <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            Corrective Owner is always required for audit events. This cannot be changed.
+                            {{ t('settings.modFieldsAuditCorrectiveOwnerRequired') }}
                           </p>
                         </div>
                       </label>
@@ -3321,7 +3231,7 @@
 
                   <!-- External Audit — Single Org -->
                   <div class="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0 last:pb-0">
-                    <h5 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">External Audit — Single Org</h5>
+                    <h5 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('settings.modFieldsEventTypeExternalAuditSingleOrg') }}</h5>
                     <div class="space-y-3">
                       <label class="flex items-start gap-3 opacity-75">
                         <HeadlessCheckbox
@@ -3330,11 +3240,9 @@
                           checkbox-class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                         />
                         <div class="flex-1">
-                          <span class="text-sm font-medium text-gray-900 dark:text-white">Auditor Required</span>
-                          <span class="ml-2 px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">Locked</span>
-                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            Auditor is always required for audit events. This cannot be changed.
-                          </p>
+                          <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsAuditorRequired') }}</span>
+                          <span class="ml-2 px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsLocked') }}</span>
+                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ t('settings.modFieldsAuditAuditorRequired') }}</p>
                         </div>
                       </label>
                       <label class="flex items-start gap-3 opacity-75">
@@ -3344,11 +3252,9 @@
                           checkbox-class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                         />
                         <div class="flex-1">
-                          <span class="text-sm font-medium text-gray-900 dark:text-white">Reviewer Required</span>
-                          <span class="ml-2 px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">Locked</span>
-                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            Reviewer is always required for External Audit — Single Org events. This cannot be changed.
-                          </p>
+                          <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsReviewerRequired') }}</span>
+                          <span class="ml-2 px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsLocked') }}</span>
+                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ t('settings.modFieldsExternalAuditReviewerRequired') }}</p>
                         </div>
                       </label>
                       <label class="flex items-start gap-3 opacity-75">
@@ -3358,10 +3264,10 @@
                           checkbox-class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                         />
                         <div class="flex-1">
-                          <span class="text-sm font-medium text-gray-900 dark:text-white">Corrective Owner Required</span>
-                          <span class="ml-2 px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">Locked</span>
+                          <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsCorrectiveOwnerRequired') }}</span>
+                          <span class="ml-2 px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsLocked') }}</span>
                           <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            Corrective Owner is always required for audit events. This cannot be changed.
+                            {{ t('settings.modFieldsAuditCorrectiveOwnerRequired') }}
                           </p>
                         </div>
                       </label>
@@ -3370,7 +3276,7 @@
 
                   <!-- External Audit Beat -->
                   <div class="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0 last:pb-0">
-                    <h5 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">External Audit Beat</h5>
+                    <h5 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('settings.modFieldsEventTypeExternalAuditBeat') }}</h5>
                     <div class="space-y-3">
                       <label class="flex items-start gap-3 opacity-75">
                         <HeadlessCheckbox
@@ -3379,24 +3285,20 @@
                           checkbox-class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                         />
                         <div class="flex-1">
-                          <span class="text-sm font-medium text-gray-900 dark:text-white">Auditor Required</span>
-                          <span class="ml-2 px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">Locked</span>
-                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            Auditor is always required for audit events. This cannot be changed.
-                          </p>
+                          <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsAuditorRequired') }}</span>
+                          <span class="ml-2 px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsLocked') }}</span>
+                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ t('settings.modFieldsAuditAuditorRequired') }}</p>
                         </div>
                       </label>
                       <label class="flex items-start gap-3">
                         <HeadlessCheckbox
-                          :checked="eventRoleRules['External Audit Beat']?.reviewerRequired || false"
-                          @change="updateEventRoleRule('External Audit Beat', 'reviewerRequired', $event.target.checked)"
+                          :checked="eventRoleRules[t('settings.modFieldsEventTypeExternalAuditBeat')]?.reviewerRequired || false"
+                          @change="updateEventRoleRule(t('settings.modFieldsEventTypeExternalAuditBeat'), 'reviewerRequired', $event.target.checked)"
                           checkbox-class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                         />
                         <div class="flex-1">
-                          <span class="text-sm font-medium text-gray-900 dark:text-white">Reviewer Required</span>
-                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            Reviewer is optional for External Audit Beat events.
-                          </p>
+                          <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsReviewerRequired') }}</span>
+                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ t('settings.modFieldsExternalAuditBeatReviewerOptional') }}</p>
                         </div>
                       </label>
                       <label class="flex items-start gap-3 opacity-75">
@@ -3406,10 +3308,10 @@
                           checkbox-class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                         />
                         <div class="flex-1">
-                          <span class="text-sm font-medium text-gray-900 dark:text-white">Corrective Owner Required</span>
-                          <span class="ml-2 px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">Locked</span>
+                          <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsCorrectiveOwnerRequired') }}</span>
+                          <span class="ml-2 px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsLocked') }}</span>
                           <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            Corrective Owner is always required for audit events. This cannot be changed.
+                            {{ t('settings.modFieldsAuditCorrectiveOwnerRequired') }}
                           </p>
                         </div>
                       </label>
@@ -3418,45 +3320,39 @@
 
                   <!-- Field Sales Beat -->
                   <div>
-                    <h5 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Field Sales Beat</h5>
+                    <h5 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('settings.modFieldsEventTypeFieldSalesBeat') }}</h5>
                     <div class="space-y-3">
                       <label class="flex items-start gap-3">
                         <HeadlessCheckbox
-                          :checked="eventRoleRules['Field Sales Beat']?.auditorRequired || false"
-                          @change="updateEventRoleRule('Field Sales Beat', 'auditorRequired', $event.target.checked)"
+                          :checked="eventRoleRules[t('settings.modFieldsEventTypeFieldSalesBeat')]?.auditorRequired || false"
+                          @change="updateEventRoleRule(t('settings.modFieldsEventTypeFieldSalesBeat'), 'auditorRequired', $event.target.checked)"
                           checkbox-class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                         />
                         <div class="flex-1">
-                          <span class="text-sm font-medium text-gray-900 dark:text-white">Auditor Required</span>
-                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            Auditor field is optional for Field Sales Beat events.
-                          </p>
+                          <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsAuditorRequired') }}</span>
+                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ t('settings.modFieldsFieldSalesAuditorOptional') }}</p>
                         </div>
                       </label>
                       <label class="flex items-start gap-3">
                         <HeadlessCheckbox
-                          :checked="eventRoleRules['Field Sales Beat']?.reviewerRequired || false"
-                          @change="updateEventRoleRule('Field Sales Beat', 'reviewerRequired', $event.target.checked)"
+                          :checked="eventRoleRules[t('settings.modFieldsEventTypeFieldSalesBeat')]?.reviewerRequired || false"
+                          @change="updateEventRoleRule(t('settings.modFieldsEventTypeFieldSalesBeat'), 'reviewerRequired', $event.target.checked)"
                           checkbox-class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                         />
                         <div class="flex-1">
-                          <span class="text-sm font-medium text-gray-900 dark:text-white">Reviewer Required</span>
-                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            Reviewer field is optional for Field Sales Beat events.
-                          </p>
+                          <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsReviewerRequired') }}</span>
+                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ t('settings.modFieldsFieldSalesReviewerOptional') }}</p>
                         </div>
                       </label>
                       <label class="flex items-start gap-3">
                         <HeadlessCheckbox
-                          :checked="eventRoleRules['Field Sales Beat']?.correctiveOwnerRequired || false"
-                          @change="updateEventRoleRule('Field Sales Beat', 'correctiveOwnerRequired', $event.target.checked)"
+                          :checked="eventRoleRules[t('settings.modFieldsEventTypeFieldSalesBeat')]?.correctiveOwnerRequired || false"
+                          @change="updateEventRoleRule(t('settings.modFieldsEventTypeFieldSalesBeat'), 'correctiveOwnerRequired', $event.target.checked)"
                           checkbox-class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                         />
                         <div class="flex-1">
-                          <span class="text-sm font-medium text-gray-900 dark:text-white">Corrective Owner Required</span>
-                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            Corrective Owner field is optional for Field Sales Beat events.
-                          </p>
+                          <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsCorrectiveOwnerRequired') }}</span>
+                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ t('settings.modFieldsFieldSalesCorrectiveOwnerOptional') }}</p>
                         </div>
                       </label>
                     </div>
@@ -3468,43 +3364,33 @@
             <!-- Geo Rules Section -->
             <div class="space-y-4">
               <div class="space-y-3">
-                <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">Geo Rules</h4>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                  Configure geo requirements per event type. This controls whether geo tracking is required, not geo tracking execution.
-                </p>
+                <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">{{ t('settings.modFieldsGeoRulesTitle') }}</h4>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ t('settings.modFieldsGeoRulesDesc') }}</p>
                 <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
                   <p class="text-xs text-amber-800 dark:text-amber-400">
-                    <strong>Important:</strong> These settings configure geo requirements (whether geo tracking must be enabled), not geo tracking execution. 
-                    Geo tracking execution (GPS capture, radius validation) belongs in Work interfaces.
-                  </p>
+                    <strong>{{ t('settings.modulesAndFieldsImportant2') }}</strong>{{ t('settings.modulesAndFieldsTheseSettingsConfigureGeoRequirementsWhether') }}</p>
                 </div>
               </div>
               
               <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
                 <div class="space-y-4">
                   <div
-                    v-for="eventType in ['Meeting', 'Internal Audit', 'External Audit — Single Org', 'External Audit Beat', 'Field Sales Beat']"
+                    v-for="eventType in [t('settings.modFieldsEventTypeMeeting'), t('settings.modFieldsEventTypeInternalAudit'), t('settings.modFieldsEventTypeExternalAuditSingleOrg'), 'External Audit Beat', 'Field Sales Beat']"
                     :key="eventType"
                     class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
                   >
                     <div class="flex-1">
                       <span class="text-sm font-medium text-gray-900 dark:text-white">{{ eventType }}</span>
                       <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                        <span v-if="isAuditEventType(eventType)">
-                          Geo is always required for audit events and cannot be disabled.
-                        </span>
-                        <span v-else>
-                          Geo requirement can be configured for this event type.
-                        </span>
+                        <span v-if="isAuditEventType(eventType)">{{ t('settings.modFieldsGeoRequiredAudit') }}</span>
+                        <span v-else>{{ t('settings.modFieldsGeoConfigurable') }}</span>
                       </p>
                     </div>
                     <div class="flex items-center gap-3">
                       <span
                         v-if="isAuditEventType(eventType)"
                         class="px-2 py-1 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded"
-                      >
-                        Locked
-                      </span>
+                      >{{ t('settings.modFieldsLocked') }}</span>
                       <HeadlessSwitch
                         v-else
                         :checked="eventGeoRules[eventType] || false"
@@ -3520,22 +3406,18 @@
             <!-- Form Linking Rules Section -->
             <div>
               <div class="space-y-3 mb-4">
-                <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">Form Linking Rules</h4>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                  Configure form linking eligibility per event type. This controls whether forms can be linked, not form assignment or execution.
-                </p>
+                <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">{{ t('settings.modFieldsFormLinkingRulesTitle') }}</h4>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ t('settings.modFieldsFormLinkingRulesDesc') }}</p>
                 <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
                   <p class="text-xs text-amber-800 dark:text-amber-400">
-                    <strong>Important:</strong> These settings configure form linking eligibility (whether forms can be linked to events), not form assignment or execution.
-                    Form assignment and execution belong in Work interfaces.
-                  </p>
+                    <strong>{{ t('settings.modulesAndFieldsImportant') }}</strong>{{ t('settings.modulesAndFieldsTheseSettingsConfigureFormLinkingEligibility') }}</p>
                 </div>
               </div>
               
               <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
                 <div class="space-y-6">
                   <div
-                    v-for="eventType in ['Meeting', 'Internal Audit', 'External Audit — Single Org', 'External Audit Beat', 'Field Sales Beat']"
+                    v-for="eventType in [t('settings.modFieldsEventTypeMeeting'), t('settings.modFieldsEventTypeInternalAudit'), t('settings.modFieldsEventTypeExternalAuditSingleOrg'), 'External Audit Beat', 'Field Sales Beat']"
                     :key="eventType"
                     class="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0 last:pb-0"
                   >
@@ -3550,20 +3432,14 @@
                           :class="isAuditEventType(eventType) ? 'opacity-50 cursor-not-allowed' : ''"
                         />
                         <div class="flex-1">
-                          <span class="text-sm font-medium text-gray-900 dark:text-white">Allow Linking Forms</span>
+                          <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsAllowLinkingForms') }}</span>
                           <span
                             v-if="isAuditEventType(eventType)"
                             class="ml-2 px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded"
-                          >
-                            Always Allowed
-                          </span>
+                          >{{ t('settings.modFieldsAlwaysAllowed') }}</span>
                           <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            <span v-if="isAuditEventType(eventType)">
-                              Forms can always be linked to audit events.
-                            </span>
-                            <span v-else>
-                              Enable or disable form linking for this event type.
-                            </span>
+                            <span v-if="isAuditEventType(eventType)">{{ t('settings.modFieldsFormsAlwaysLinkedAudit') }}</span>
+                            <span v-else>{{ t('settings.modFieldsEnableFormLinking') }}</span>
                           </p>
                         </div>
                       </label>
@@ -3577,10 +3453,8 @@
                           checkbox-class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                         />
                         <div class="flex-1">
-                          <span class="text-sm font-medium text-gray-900 dark:text-white">Require Form on Creation</span>
-                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            Require a form to be linked when creating audit events of this type.
-                          </p>
+                          <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsRequireFormOnCreation') }}</span>
+                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ t('settings.modFieldsRequireFormOnCreationDesc') }}</p>
                         </div>
                       </label>
                       <label
@@ -3593,10 +3467,8 @@
                           checkbox-class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                         />
                         <div class="flex-1">
-                          <span class="text-sm font-medium text-gray-900 dark:text-white">Prevent Unlinking After Start</span>
-                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            Prevent unlinking forms from events that have been started (checked in).
-                          </p>
+                          <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsPreventUnlinkingAfterStart') }}</span>
+                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ t('settings.modFieldsPreventUnlinkingAfterStartDesc') }}</p>
                         </div>
                       </label>
                     </div>
@@ -3613,7 +3485,7 @@
                 class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
               >
                 <div v-if="savingEventRolesRules" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span>{{ savingEventRolesRules ? 'Saving...' : 'Save Changes' }}</span>
+                <span>{{ savingEventRolesRules ? t('states.saving') : t('settings.saveChanges') }}</span>
               </button>
             </div>
           </div>
@@ -3636,30 +3508,22 @@
           <div class="p-6">
             <!-- Header -->
             <div class="mb-6">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Logic & Rules</h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                Configure form behavior, scoring, and automation rules. Form content is edited in the Form Builder.
-              </p>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.modFieldsTabLogic') }}</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ t('settings.modFieldsLogicRulesDesc') }}</p>
               
               <!-- Capability Indicators -->
               <div class="mt-4 space-y-2">
                 <div v-if="hasCapability('behaviorRulesConfigurable')" class="flex items-center gap-2 text-xs">
-                  <span class="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded font-medium">
-                    ✓ Behavior Rules Configurable
-                  </span>
-                  <span class="text-gray-500 dark:text-gray-400">Configure auto-assignment and workflow triggers</span>
+                  <span class="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded font-medium">{{ t('settings.modFieldsCapBehaviorRules') }}</span>
+                  <span class="text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsCapBehaviorRulesHint') }}</span>
                 </div>
                 <div v-if="isCapabilityLocked('scoringEditable')" class="flex items-center gap-2 text-xs">
-                  <span class="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded font-medium">
-                    🔒 Scoring Weights Locked
-                  </span>
-                  <span class="text-gray-500 dark:text-gray-400">Managed in Form Builder</span>
+                  <span class="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded font-medium">{{ t('settings.modFieldsCapScoringLocked') }}</span>
+                  <span class="text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsCapQuestionLogicLockedHint') }}</span>
                 </div>
                 <div v-if="isCapabilityLocked('questionLogicEditable')" class="flex items-center gap-2 text-xs">
-                  <span class="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded font-medium">
-                    🔒 Question Logic Locked
-                  </span>
-                  <span class="text-gray-500 dark:text-gray-400">Managed in Form Builder</span>
+                  <span class="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded font-medium">{{ t('settings.modFieldsCapQuestionLogicLocked') }}</span>
+                  <span class="text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsCapQuestionLogicLockedHint') }}</span>
                 </div>
               </div>
             </div>
@@ -3685,7 +3549,7 @@
                             : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                         ]"
                       >
-                        {{ field.editable ? 'Editable' : 'Read-Only' }}
+                        {{ field.editable ? t('settings.modFieldsEditable') : t('settings.modFieldsReadOnly') }}
                       </span>
                       <span
                         :class="[
@@ -3697,7 +3561,7 @@
                             : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
                         ]"
                       >
-                        {{ field.source === 'settings' ? 'Settings' : field.source === 'builder' ? 'Builder' : 'Execution' }}
+                        {{ field.source === 'settings' ? t('settings.modFieldsSourceSettings') : field.source === 'builder' ? t('settings.modFieldsSourceBuilder') : t('settings.modFieldsSourceExecution') }}
                       </span>
                     </div>
                     <p v-if="field.notes" class="text-xs text-gray-500 dark:text-gray-400">
@@ -3730,30 +3594,22 @@
           <div class="p-6">
             <!-- Header -->
             <div class="mb-6">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Outcomes</h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                Configure form outcomes, reporting metrics, and post-submission signals. Form content is edited in the Form Builder.
-              </p>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.modFieldsTabOutcomes') }}</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ t('settings.modFieldsOutcomesDesc') }}</p>
               
               <!-- Capability Indicators -->
               <div class="mt-4 space-y-2">
                 <div v-if="hasCapability('outcomesConfigurable')" class="flex items-center gap-2 text-xs">
-                  <span class="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded font-medium">
-                    ✓ Outcomes Configurable
-                  </span>
-                  <span class="text-gray-500 dark:text-gray-400">Configure audit rules, reporting metrics, and signals</span>
+                  <span class="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded font-medium">{{ t('settings.modFieldsCapOutcomes') }}</span>
+                  <span class="text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsCapOutcomesHint') }}</span>
                 </div>
                 <div v-if="isCapabilityLocked('executionBehaviorEditable')" class="flex items-center gap-2 text-xs">
-                  <span class="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded font-medium">
-                    🔒 Execution Behavior Locked
-                  </span>
-                  <span class="text-gray-500 dark:text-gray-400">Managed in Event Execution / Work interfaces</span>
+                  <span class="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded font-medium">{{ t('settings.modFieldsCapExecutionLocked') }}</span>
+                  <span class="text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsCapExecutionLockedHint') }}</span>
                 </div>
                 <div v-if="isCapabilityLocked('workflowExecutionEditable')" class="flex items-center gap-2 text-xs">
-                  <span class="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded font-medium">
-                    🔒 Workflow Execution Locked
-                  </span>
-                  <span class="text-gray-500 dark:text-gray-400">Managed in Audit Workflow / Work components</span>
+                  <span class="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded font-medium">{{ t('settings.modFieldsCapWorkflowLocked') }}</span>
+                  <span class="text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsCapWorkflowLockedHint') }}</span>
                 </div>
               </div>
             </div>
@@ -3779,7 +3635,7 @@
                             : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                         ]"
                       >
-                        {{ field.editable ? 'Editable' : 'Read-Only' }}
+                        {{ field.editable ? t('settings.modFieldsEditable') : t('settings.modFieldsReadOnly') }}
                       </span>
                       <span
                         :class="[
@@ -3791,7 +3647,7 @@
                             : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
                         ]"
                       >
-                        {{ field.source === 'settings' ? 'Settings' : field.source === 'builder' ? 'Builder' : 'Execution' }}
+                        {{ field.source === 'settings' ? t('settings.modFieldsSourceSettings') : field.source === 'builder' ? t('settings.modFieldsSourceBuilder') : t('settings.modFieldsSourceExecution') }}
                       </span>
                     </div>
                     <p v-if="field.notes" class="text-xs text-gray-500 dark:text-gray-400">
@@ -3823,24 +3679,18 @@
           <div class="p-6">
             <!-- Header -->
             <div class="mb-6">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Access</h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                Configure form access, public links, and approval workflows. Form content is edited in the Form Builder.
-              </p>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.modFieldsTabAccess') }}</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ t('settings.modFieldsAccessDesc') }}</p>
               
               <!-- Capability Indicators -->
               <div class="mt-4 space-y-2">
                 <div v-if="hasCapability('accessConfigurable')" class="flex items-center gap-2 text-xs">
-                  <span class="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded font-medium">
-                    ✓ Access Configurable
-                  </span>
-                  <span class="text-gray-500 dark:text-gray-400">Configure public links and approval workflows</span>
+                  <span class="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded font-medium">{{ t('settings.modFieldsCapAccess') }}</span>
+                  <span class="text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsCapAccessHint') }}</span>
                 </div>
                 <div v-if="isCapabilityLocked('auditWorkflowBypassAllowed')" class="flex items-center gap-2 text-xs">
-                  <span class="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded font-medium">
-                    🔒 Audit Workflow Locked
-                  </span>
-                  <span class="text-gray-500 dark:text-gray-400">Audit workflow rules are owned by Audit App</span>
+                  <span class="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded font-medium">{{ t('settings.modFieldsCapAuditWorkflowLocked') }}</span>
+                  <span class="text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsCapAuditWorkflowLockedHint') }}</span>
                 </div>
               </div>
             </div>
@@ -3866,7 +3716,7 @@
                             : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                         ]"
                       >
-                        {{ field.editable ? 'Editable' : 'Read-Only' }}
+                        {{ field.editable ? t('settings.modFieldsEditable') : t('settings.modFieldsReadOnly') }}
                       </span>
                       <span
                         :class="[
@@ -3878,7 +3728,7 @@
                             : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
                         ]"
                       >
-                        {{ field.source === 'settings' ? 'Settings' : field.source === 'builder' ? 'Builder' : 'Execution' }}
+                        {{ field.source === 'settings' ? t('settings.modFieldsSourceSettings') : field.source === 'builder' ? t('settings.modFieldsSourceBuilder') : t('settings.modFieldsSourceExecution') }}
                       </span>
                     </div>
                     <p v-if="field.notes" class="text-xs text-gray-500 dark:text-gray-400">
@@ -3899,9 +3749,7 @@
           <div class="p-6">
           <!-- Intro + Add button (section title "Relationships" is already in the tab header above) -->
           <div v-if="!isFormsModule" class="mb-6 flex items-start justify-between gap-4">
-            <p class="text-sm text-gray-500 dark:text-gray-400 max-w-2xl">
-              Define relationships between this module and other modules. Relationships enable data linking and cross-module references.
-            </p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 max-w-2xl">{{ t('settings.modFieldsRelationshipsIntro') }}</p>
             <button
               type="button"
               @click="openRelationshipDrawer()"
@@ -3909,14 +3757,12 @@
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-              </svg>
-              Add relationship
-            </button>
+              </svg>{{ t('settings.modFieldsAddRelationship') }}</button>
           </div>
 
           <!-- Forms Module Relationships (read-only display) -->
           <div v-if="isFormsModule" class="mb-6">
-            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">Form Relationships</h4>
+            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">{{ t('settings.modFieldsFormRelationships') }}</h4>
             <div class="space-y-3">
               <div
                 v-for="field in getFieldsForTab('relationships')"
@@ -3937,7 +3783,7 @@
                             : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                         ]"
                       >
-                        {{ field.editable ? 'Editable' : 'Read-Only' }}
+                        {{ field.editable ? t('settings.modFieldsEditable') : t('settings.modFieldsReadOnly') }}
                       </span>
                       <span
                         :class="[
@@ -3949,7 +3795,7 @@
                             : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
                         ]"
                       >
-                        {{ field.source === 'settings' ? 'Settings' : field.source === 'builder' ? 'Builder' : 'Execution' }}
+                        {{ field.source === 'settings' ? t('settings.modFieldsSourceSettings') : field.source === 'builder' ? t('settings.modFieldsSourceBuilder') : t('settings.modFieldsSourceExecution') }}
                       </span>
                     </div>
                     <p v-if="field.notes" class="text-xs text-gray-500 dark:text-gray-400">
@@ -3969,8 +3815,8 @@
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
             </svg>
-            <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">No relationships defined</p>
-            <p class="text-xs text-gray-500 dark:text-gray-500">Link this module to others (e.g. Deals → Organizations). Use the button above to add one.</p>
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsNoRelationships') }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-500">{{ t('settings.modFieldsNoRelationshipsHint') }}</p>
           </div>
 
           <!-- Relationships list (two-column grid for easier scanning with 10+ items) -->
@@ -3987,11 +3833,11 @@
                 </div>
                 <div class="min-w-0 flex-1">
                   <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
-                    {{ r.name || `Relationship ${ri + 1}` }}
+                    {{ r.name || t('settings.modFieldsRelationshipFallback', { index: ri + 1 }) }}
                   </p>
                   <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
                     <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 mr-1.5">{{ getRelationshipTypeBadge(r) }}</span>
-                    {{ selectedModule?.name || 'This module' }} → {{ getModuleName(r.targetModuleKey) || '…' }}
+                    {{ selectedModule?.name || t('settings.modFieldsThisModule') }} → {{ getModuleName(r.targetModuleKey) || '…' }}
                   </p>
                 </div>
                 <div class="flex items-center gap-1 flex-shrink-0">
@@ -3999,7 +3845,7 @@
                     type="button"
                     @click="openRelationshipDrawer(ri)"
                     class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
-                    title="Edit relationship"
+                    :title="t('settings.modFieldsTitleEditRelationship')"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -4009,7 +3855,7 @@
                     type="button"
                     @click="removeRelationship(ri)"
                     class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                    title="Remove relationship"
+                    :title="t('settings.modFieldsTitleRemoveRelationship')"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -4040,10 +3886,8 @@
           <div class="h-full flex flex-col lg:flex-row gap-4">
             <aside class="w-full lg:w-80 flex-none bg-white dark:bg-gray-900/60 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
               <div class="p-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between">
-                <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">Pipelines</div>
-                <button @click="addPipeline" class="px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors shadow-sm hover:shadow">
-                  Add
-                </button>
+                <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ t('settings.modFieldsPipelinesTitle') }}</div>
+                <button @click="addPipeline" class="px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors shadow-sm hover:shadow">{{ t('actions.add') }}</button>
               </div>
               <div class="flex-1 overflow-y-auto divide-y divide-gray-200 dark:divide-gray-800">
                 <div
@@ -4065,7 +3909,7 @@
                         <p class="text-xs text-gray-500 dark:text-gray-400">{{ pipeline.stages?.length || 0 }} stage{{ (pipeline.stages?.length || 0) === 1 ? '' : 's' }}</p>
                       </div>
                     </div>
-                    <span v-if="pipeline.isDefault" class="text-xs font-medium text-indigo-600 dark:text-indigo-300">Default</span>
+                    <span v-if="pipeline.isDefault" class="text-xs font-medium text-indigo-600 dark:text-indigo-300">{{ t('settings.modFieldsDefaultLabel') }}</span>
                   </div>
                   <div class="flex items-center gap-2 mt-3">
                     <label class="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
@@ -4075,16 +3919,14 @@
                         class="text-indigo-600 border-gray-300 dark:border-gray-600 focus:ring-indigo-500"
                         :checked="pipeline.isDefault"
                         @change.stop="setDefaultPipeline(pipeline.key)"
-                      />
-                      Default
-                    </label>
+                      />{{ t('settings.modFieldsDefaultLabel') }}</label>
                     <div class="ml-auto flex items-center gap-1">
                       <button
                         class="p-1 rounded text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
                         :disabled="index === 0"
                         :class="{ 'opacity-40 cursor-not-allowed': index === 0 }"
                         @click.stop="movePipeline(pipeline.key, -1)"
-                        title="Move up"
+                        :title="t('settings.modFieldsTitleMoveUp')"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
                           <path fill-rule="evenodd" d="M10 4a.75.75 0 01.53.22l4.5 4.5a.75.75 0 11-1.06 1.06L10 5.81 6.03 9.78a.75.75 0 11-1.06-1.06l4.5-4.5A.75.75 0 0110 4z" clip-rule="evenodd" />
@@ -4096,7 +3938,7 @@
                         :disabled="index === pipelineSettings.length - 1"
                         :class="{ 'opacity-40 cursor-not-allowed': index === pipelineSettings.length - 1 }"
                         @click.stop="movePipeline(pipeline.key, 1)"
-                        title="Move down"
+                        :title="t('settings.modFieldsTitleMoveDown')"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
                           <path fill-rule="evenodd" d="M10 16a.75.75 0 01-.53-.22l-4.5-4.5a.75.75 0 011.06-1.06L10 14.19l3.97-3.97a.75.75 0 111.06 1.06l-4.5 4.5A.75.75 0 0110 16z" clip-rule="evenodd" />
@@ -4106,7 +3948,7 @@
                       <button
                         class="p-1 rounded text-red-500 hover:text-red-600 transition-colors"
                         @click.stop="removePipeline(pipeline.key)"
-                        title="Remove pipeline"
+                        :title="t('settings.modFieldsTitleRemovePipeline')"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
                           <path fill-rule="evenodd" d="M8.75 3a.75.75 0 00-.75.75V5H5.5a.75.75 0 000 1.5h.538l.599 9.27A1.75 1.75 0 008.382 17.5h3.236a1.75 1.75 0 001.745-1.73l.599-9.27h.538a.75.75 0 000-1.5H12v-1.25A.75.75 0 0011.25 3h-2.5zM9.5 6.5v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0zm-2 0v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0z" clip-rule="evenodd" />
@@ -4115,20 +3957,18 @@
                     </div>
                   </div>
                 </div>
-                <div v-if="!pipelineSettings.length" class="p-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                  No pipelines yet.
-                </div>
+                <div v-if="!pipelineSettings.length" class="p-6 text-center text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsNoPipelinesYet') }}</div>
               </div>
             </aside>
             <section class="flex-1 min-w-0 bg-white dark:bg-gray-900/60 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-y-auto flex flex-col">
               <div class="p-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between gap-3">
                 <div class="min-w-0">
                   <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">
-                    {{ currentPipeline?.name || 'Select a pipeline' }}
+                    {{ currentPipeline?.name || t('settings.modFieldsSelectPipeline') }}
                   </p>
                   <p v-if="currentPipeline" class="text-xs text-gray-500 dark:text-gray-400">
                     {{ currentPipeline.stages?.length || 0 }} stage{{ (currentPipeline.stages?.length || 0) === 1 ? '' : 's' }} ·
-                    {{ currentPipeline.isDefault ? 'Default pipeline' : 'Custom pipeline' }}
+                    {{ currentPipeline.isDefault ? t('settings.modFieldsDefaultPipeline') : t('settings.modFieldsCustomPipeline') }}
                   </p>
                 </div>
                 <button
@@ -4146,43 +3986,39 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  <span>{{ isSaving ? 'Saving…' : 'Save Pipelines' }}</span>
+                  <span>{{ isSaving ? t('states.saving') : t('settings.modFieldsSavePipelines') }}</span>
                 </button>
               </div>
               <div v-if="currentPipeline" class="p-4 space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Pipeline Name</label>
+                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsPipelineName') }}</label>
                     <input v-model="currentPipeline.name" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm" />
                   </div>
                   <div>
-                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Color</label>
+                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsColor') }}</label>
                     <div class="flex items-center gap-3">
                       <input type="color" v-model="currentPipeline.color" class="w-14 h-10 border border-gray-300 dark:border-gray-600 rounded focus:outline-none" />
-                      <span class="text-xs text-gray-500 dark:text-gray-400">Used for visual indicators in the UI.</span>
+                      <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsColorUsedInUi') }}</span>
                     </div>
                   </div>
                   <div class="md:col-span-2 flex items-center gap-3">
-                    <span v-if="currentPipeline.isDefault" class="px-2 py-0.5 text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded">Default pipeline</span>
+                    <span v-if="currentPipeline.isDefault" class="px-2 py-0.5 text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded">{{ t('settings.modFieldsDefaultPipeline') }}</span>
                     <button
                       v-else
                       @click="setDefaultPipeline(currentPipeline.key)"
                       class="px-3 py-1.5 text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-white/20 transition-colors"
-                    >
-                      Set as default
-                    </button>
+                    >{{ t('settings.modFieldsSetAsDefault') }}</button>
                   </div>
                 </div>
 
                 <div class="flex items-center justify-between gap-3">
                   <div>
-                    <h4 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Stages</h4>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">Configure the stages available in this pipeline.</p>
+                    <h4 class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ t('settings.modFieldsStagesTitle') }}</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsStagesDesc') }}</p>
                   </div>
                   <div class="flex items-center gap-2">
-                  <button @click="addStageToPipeline(currentPipeline)" class="px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors shadow-sm hover:shadow">
-                    Add Stage
-                  </button>
+                  <button @click="addStageToPipeline(currentPipeline)" class="px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors shadow-sm hover:shadow">{{ t('settings.modFieldsAddStage') }}</button>
                   </div>
                 </div>
 
@@ -4210,7 +4046,7 @@
                         <button
                           class="p-1 rounded text-red-500 hover:text-red-600 transition-colors"
                           @click="removeStageFromPipeline(currentPipeline, stageIndex)"
-                          title="Remove stage"
+                          :title="t('settings.modFieldsTitleRemoveStage')"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
                             <path fill-rule="evenodd" d="M8.75 3a.75.75 0 00-.75.75V5H5.5a.75.75 0 000 1.5h.538l.599 9.27A1.75 1.75 0 008.382 17.5h3.236a1.75 1.75 0 001.745-1.73l.599-9.27h.538a.75.75 0 000-1.5H12v-1.25A.75.75 0 0011.25 3h-2.5zM9.5 6.5v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0zm-2 0v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0z" clip-rule="evenodd" />
@@ -4220,28 +4056,28 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mt-3">
                       <div>
-                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Stage Name</label>
+                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsStageName') }}</label>
                         <input v-model="stage.name" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm" />
                       </div>
                       <div>
-                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Color</label>
+                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsColor') }}</label>
                         <div class="flex items-center gap-2">
                           <input
                             type="color"
                             :value="stage.color || DEFAULT_STAGE_COLOR"
                             @input="stage.color = $event.target.value"
                             class="h-9 w-12 cursor-pointer rounded border border-gray-300 dark:border-gray-600 bg-white p-0.5 dark:bg-gray-800"
-                            title="Stage color"
+                            :title="t('settings.modFieldsTitleStageColor')"
                           />
-                          <span class="px-2.5 py-1 rounded-full text-xs font-medium text-white truncate max-w-[6rem]" :style="{ backgroundColor: stage.color || DEFAULT_STAGE_COLOR }">{{ stage.name || 'Stage' }}</span>
+                          <span class="px-2.5 py-1 rounded-full text-xs font-medium text-white truncate max-w-[6rem]" :style="{ backgroundColor: stage.color || DEFAULT_STAGE_COLOR }">{{ stage.name || t('settings.modFieldsStageLabelFallback') }}</span>
                         </div>
                       </div>
                       <div>
-                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Probability (%)</label>
+                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsProbabilityPercent') }}</label>
                         <input type="number" min="0" max="100" v-model.number="stage.probability" @change="clampStageProbability(stage)" @blur="clampStageProbability(stage)" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm" />
                       </div>
                       <div>
-                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Status</label>
+                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsStatusLabel') }}</label>
                         <select v-model="stage.status" @change="onStageStatusChange(stage)" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm">
                           <option v-for="option in pipelineStageStatusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
                         </select>
@@ -4253,20 +4089,16 @@
                     :class="stageDragOver.pipelineKey === currentPipeline.key && stageDragOver.index === currentPipeline.stages.length ? 'border-indigo-400 text-indigo-600 dark:text-indigo-300' : ''"
                     @dragover.prevent="onStageDragOver(currentPipeline.key, currentPipeline.stages.length)"
                     @drop.prevent="onStageDrop(currentPipeline.key, currentPipeline.stages.length)"
-                  >
-                    Drop here to move stage to the end
-                  </div>
+                  >{{ t('settings.modFieldsDropStageEnd') }}</div>
                 </div>
               </div>
               <div v-else class="flex-1 flex items-center justify-center text-sm text-gray-500 dark:text-gray-400">
                 <div class="text-center space-y-3">
-                  <p>No pipeline selected.</p>
-                  <button @click="addPipeline" class="px-4 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">Create Pipeline</button>
+                  <p>{{ t('settings.modFieldsNoPipelineSelected') }}</p>
+                  <button @click="addPipeline" class="px-4 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">{{ t('settings.modFieldsCreatePipeline') }}</button>
                 </div>
               </div>
-              <div v-if="!currentPipeline" class="flex-1 flex items-center justify-center p-6 text-sm text-gray-500 dark:text-gray-400">
-                Select a pipeline on the left to edit its details.
-              </div>
+              <div v-if="!currentPipeline" class="flex-1 flex items-center justify-center p-6 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsSelectPipelineToEdit') }}</div>
             </section>
           </div>
           </div>
@@ -4277,10 +4109,8 @@
           <div class="h-full flex flex-col lg:flex-row gap-4">
             <aside class="w-full lg:w-80 flex-none bg-white dark:bg-gray-900/60 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
               <div class="p-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between">
-                <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">Pipelines</div>
-                <button @click="addPipeline" class="px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors shadow-sm hover:shadow">
-                  Add
-                </button>
+                <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ t('settings.modFieldsPipelinesTitle') }}</div>
+                <button @click="addPipeline" class="px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors shadow-sm hover:shadow">{{ t('actions.add') }}</button>
               </div>
               <div class="flex-1 overflow-y-auto divide-y divide-gray-200 dark:divide-gray-800">
                 <div
@@ -4302,7 +4132,7 @@
                         <p class="text-xs text-gray-500 dark:text-gray-400">{{ pipeline.stages?.length || 0 }} stage{{ (pipeline.stages?.length || 0) === 1 ? '' : 's' }}</p>
                       </div>
                     </div>
-                    <span v-if="pipeline.isDefault" class="text-xs font-medium text-indigo-600 dark:text-indigo-300">Default</span>
+                    <span v-if="pipeline.isDefault" class="text-xs font-medium text-indigo-600 dark:text-indigo-300">{{ t('settings.modFieldsDefaultLabel') }}</span>
                   </div>
                   <div class="flex items-center gap-2 mt-3">
                     <label class="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
@@ -4312,16 +4142,14 @@
                         class="text-indigo-600 border-gray-300 dark:border-gray-600 focus:ring-indigo-500"
                         :checked="pipeline.isDefault"
                         @change.stop="setDefaultPipeline(pipeline.key)"
-                      />
-                      Default
-                    </label>
+                      />{{ t('settings.modFieldsDefaultLabel') }}</label>
                     <div class="ml-auto flex items-center gap-1">
                       <button
                         class="p-1 rounded text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
                         :disabled="index === 0"
                         :class="{ 'opacity-40 cursor-not-allowed': index === 0 }"
                         @click.stop="movePipeline(pipeline.key, -1)"
-                        title="Move up"
+                        :title="t('settings.modFieldsTitleMoveUp')"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
                           <path fill-rule="evenodd" d="M10 4a.75.75 0 01.53.22l4.5 4.5a.75.75 0 11-1.06 1.06L10 5.81 6.03 9.78a.75.75 0 11-1.06-1.06l4.5-4.5A.75.75 0 0110 4z" clip-rule="evenodd" />
@@ -4333,7 +4161,7 @@
                         :disabled="index === pipelineSettings.length - 1"
                         :class="{ 'opacity-40 cursor-not-allowed': index === pipelineSettings.length - 1 }"
                         @click.stop="movePipeline(pipeline.key, 1)"
-                        title="Move down"
+                        :title="t('settings.modFieldsTitleMoveDown')"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
                           <path fill-rule="evenodd" d="M10 16a.75.75 0 01-.53-.22l-4.5-4.5a.75.75 0 011.06-1.06L10 14.19l3.97-3.97a.75.75 0 111.06 1.06l-4.5 4.5A.75.75 0 0110 16z" clip-rule="evenodd" />
@@ -4343,7 +4171,7 @@
                       <button
                         class="p-1 rounded text-red-500 hover:text-red-600 transition-colors"
                         @click.stop="removePipeline(pipeline.key)"
-                        title="Remove pipeline"
+                        :title="t('settings.modFieldsTitleRemovePipeline')"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
                           <path fill-rule="evenodd" d="M8.75 3a.75.75 0 00-.75.75V5H5.5a.75.75 0 000 1.5h.538l.599 9.27A1.75 1.75 0 008.382 17.5h3.236a1.75 1.75 0 001.745-1.73l.599-9.27h.538a.75.75 0 000-1.5H12v-1.25A.75.75 0 0011.25 3h-2.5zM9.5 6.5v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0zm-2 0v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0z" clip-rule="evenodd" />
@@ -4352,27 +4180,25 @@
                     </div>
                   </div>
                 </div>
-                <div v-if="!pipelineSettings.length" class="p-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                  No pipelines yet.
-                </div>
+                <div v-if="!pipelineSettings.length" class="p-6 text-center text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsNoPipelinesYet') }}</div>
               </div>
             </aside>
             <section class="flex-1 min-w-0 bg-white dark:bg-gray-900/60 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
               <div class="p-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between gap-3">
                 <div class="min-w-0">
                   <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">
-                    {{ currentPipeline?.name || 'Select a pipeline' }}
+                    {{ currentPipeline?.name || t('settings.modFieldsSelectPipeline') }}
                   </p>
                   <p v-if="currentPipeline" class="text-xs text-gray-500 dark:text-gray-400">
                     {{ currentPipeline.stages?.length || 0 }} stage{{ (currentPipeline.stages?.length || 0) === 1 ? '' : 's' }} ·
-                    {{ currentPipeline.isDefault ? 'Default pipeline' : 'Custom pipeline' }}
+                    {{ currentPipeline.isDefault ? t('settings.modFieldsDefaultPipeline') : t('settings.modFieldsCustomPipeline') }}
                   </p>
                 </div>
               </div>
               <div v-if="currentPipeline" class="flex-1 flex flex-col gap-6 p-4 overflow-hidden">
                 <div>
-                  <h4 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Stage Playbooks</h4>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">Define guidance and automation for each stage in this pipeline.</p>
+                  <h4 class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ t('settings.modFieldsStagePlaybooksTitle') }}</h4>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsStagePlaybooksDesc') }}</p>
                 </div>
                 <div class="flex-1 overflow-x-auto pb-6">
                   <div class="flex items-start gap-4 min-w-full">
@@ -4386,7 +4212,7 @@
                           <div class="flex items-start justify-between gap-3">
                             <div class="min-w-0">
                               <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">
-                                {{ stage.name || `Stage ${stageIndex + 1}` }}
+                                {{ stage.name || t('settings.modFieldsStageNumber', { number: stageIndex + 1 }) }}
                               </p>
                               <p class="text-xs text-gray-500 dark:text-gray-400">
                                 Probability: {{ stage.probability ?? 0 }}% · Status: {{ stage.status || 'open' }}
@@ -4398,7 +4224,7 @@
                                 @change="handlePlaybookToggle(stage)"
                                 checkbox-class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
                               />
-                              <span>Enable</span>
+                              <span>{{ t('settings.modFieldsEnable') }}</span>
                             </label>
                           </div>
                           <button
@@ -4418,7 +4244,7 @@
                             >
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
-                            <span>Stage settings</span>
+                            <span>{{ t('settings.modFieldsStageSettings') }}</span>
                           </button>
                           <transition name="fade">
                             <div
@@ -4427,38 +4253,36 @@
                             >
                               <div class="grid grid-cols-1 gap-3">
                                 <div>
-                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Playbook Mode</label>
+                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsPlaybookMode') }}</label>
                                   <select v-model="stage.playbook.mode" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm">
-                                    <option v-for="option in PLAYBOOK_MODE_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
+                                    <option v-for="option in playbookModeOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
                                   </select>
                                 </div>
                                 <div>
-                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Exit Criteria</label>
+                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsExitCriteria') }}</label>
                                   <select v-model="stage.playbook.exitCriteria.type" @change="onPlaybookExitCriteriaChange(stage)" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm">
-                                    <option v-for="option in PLAYBOOK_EXIT_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
+                                    <option v-for="option in playbookExitOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
                                   </select>
                                 </div>
                                 <div>
                                   <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
-                                    <HeadlessCheckbox v-model="stage.playbook.autoAdvance" @change="onPlaybookAutoAdvanceChange(stage)" checkbox-class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500" />
-                                    Auto-move to next stage when criteria met
-                                  </label>
-                                  <p class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">Automatically progress when conditions are satisfied.</p>
+                                    <HeadlessCheckbox v-model="stage.playbook.autoAdvance" @change="onPlaybookAutoAdvanceChange(stage)" checkbox-class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500" />{{ t('settings.modFieldsAutoMoveNextStage') }}</label>
+                                  <p class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsAutoMoveNextStageHint') }}</p>
                                 </div>
                                 <div v-if="stage.playbook.autoAdvance">
-                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Next Stage</label>
+                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsNextStage') }}</label>
                                   <select v-model="stage.playbook.exitCriteria.nextStageKey" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm">
-                                    <option value="">Select stage...</option>
+                                    <option value="">{{ t('settings.modFieldsSelectStagePh') }}</option>
                                     <option v-for="option in getNextStageOptions(currentPipeline, stage)" :key="option.value" :value="option.value">{{ option.label }}</option>
                                   </select>
                                 </div>
                                 <div v-if="stage.playbook.exitCriteria.type === 'custom'">
-                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Custom Trigger Description</label>
-                                  <textarea v-model="stage.playbook.exitCriteria.customDescription" rows="2" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm" placeholder="Describe the conditions that should move this deal to the next stage"></textarea>
+                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsCustomTriggerDesc') }}</label>
+                                  <textarea v-model="stage.playbook.exitCriteria.customDescription" rows="2" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm" :placeholder="t('settings.modFieldsCustomTriggerPh')"></textarea>
                                 </div>
                                 <div>
-                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Internal Notes (optional)</label>
-                                  <textarea v-model="stage.playbook.notes" rows="2" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm" placeholder="Provide additional guidance for your team"></textarea>
+                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsInternalNotesOptional') }}</label>
+                                  <textarea v-model="stage.playbook.notes" rows="2" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm" :placeholder="t('settings.modFieldsInternalNotesPh')"></textarea>
                                 </div>
                               </div>
                             </div>
@@ -4467,8 +4291,8 @@
                         <div class="flex-1 flex flex-col gap-4 p-4">
                           <div class="flex items-start justify-between gap-3">
                             <div>
-                              <h6 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Activities</h6>
-                              <p class="text-xs text-gray-500 dark:text-gray-400">Add and orchestrate the work your team completes in this stage.</p>
+                              <h6 class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ t('settings.modFieldsActivitiesTitle') }}</h6>
+                              <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsActivitiesDesc') }}</p>
                             </div>
                             <button
                               class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors shadow-sm hover:shadow"
@@ -4478,17 +4302,11 @@
                             >
                               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                              </svg>
-                              Add Activity
-                            </button>
+                              </svg>{{ t('settings.modFieldsAddActivity') }}</button>
                           </div>
-                          <div v-if="!stage.playbook.enabled" class="flex-1 rounded-lg border border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 p-4 text-xs text-gray-500 dark:text-gray-400">
-                            Enable this playbook to manage activities for the stage.
-                          </div>
+                          <div v-if="!stage.playbook.enabled" class="flex-1 rounded-lg border border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 p-4 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsEnablePlaybookForStage') }}</div>
                           <div v-else class="flex-1 flex flex-col gap-3 overflow-y-auto pr-1">
-                            <div v-if="!stage.playbook.actions.length" class="flex-1 rounded-lg border border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 px-4 py-8 text-center text-xs text-gray-500 dark:text-gray-400">
-                              No activities yet. Click "Add Activity" to build a guided checklist.
-                            </div>
+                            <div v-if="!stage.playbook.actions.length" class="flex-1 rounded-lg border border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 px-4 py-8 text-center text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsNoActivitiesYet') }}</div>
                             <div v-else class="space-y-3">
                               <div
                                 v-for="(action, actionIndex) in stage.playbook.actions"
@@ -4499,7 +4317,7 @@
                                 <div class="flex items-start justify-between gap-2">
                                   <div class="min-w-0">
                                     <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                                      {{ action.title || `Action ${actionIndex + 1}` }}
+                                      {{ action.title || t('settings.modFieldsActionFallback', { index: actionIndex + 1 }) }}
                                     </p>
                                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                       {{ getPlaybookActionTypeLabel(action.actionType) }}
@@ -4512,7 +4330,7 @@
                                       :disabled="actionIndex === 0"
                                       :class="{ 'opacity-40 cursor-not-allowed': actionIndex === 0 }"
                                       @click.stop="movePlaybookAction(stage, actionIndex, -1)"
-                                      title="Move up"
+                                      :title="t('settings.modFieldsTitleMoveUp')"
                                     >
                                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
                                         <path fill-rule="evenodd" d="M10 4a.75.75 0 01.53.22l4.5 4.5a.75.75 0 11-1.06 1.06L10 5.81 6.03 9.78a.75.75 0 11-1.06-1.06l4.5-4.5A.75.75 0 0110 4z" clip-rule="evenodd" />
@@ -4524,7 +4342,7 @@
                                       :disabled="actionIndex === stage.playbook.actions.length - 1"
                                       :class="{ 'opacity-40 cursor-not-allowed': actionIndex === stage.playbook.actions.length - 1 }"
                                       @click.stop="movePlaybookAction(stage, actionIndex, 1)"
-                                      title="Move down"
+                                      :title="t('settings.modFieldsTitleMoveDown')"
                                     >
                                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
                                         <path fill-rule="evenodd" d="M10 16a.75.75 0 01-.53-.22l-4.5-4.5a.75.75 0 011.06-1.06L10 14.19l3.97-3.97a.75.75 0 111.06 1.06l-4.5 4.5A.75.75 0 0110 16z" clip-rule="evenodd" />
@@ -4534,7 +4352,7 @@
                                     <button
                                       class="p-1 rounded text-red-500 hover:text-red-600 transition-colors"
                                       @click.stop="removePlaybookAction(stage, actionIndex)"
-                                      title="Remove activity"
+                                      :title="t('settings.modFieldsTitleRemoveActivity')"
                                     >
                                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
                                         <path fill-rule="evenodd" d="M8.75 3a.75.75 0 00-.75.75V5H5.5a.75.75 0 000 1.5h.538l.599 9.27A1.75 1.75 0 008.382 17.5h3.236a1.75 1.75 0 001.745-1.73l.599-9.27h.538a.75.75 0 000-1.5H12v-1.25A.75.75 0 0011.25 3h-2.5zM9.5 6.5v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0zm-2 0v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0z" clip-rule="evenodd" />
@@ -4543,8 +4361,8 @@
                                   </div>
                                 </div>
                                 <div class="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400">
-                                  <span v-if="action.required" class="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">Required</span>
-                                  <span v-if="action.autoCreate" class="px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">Auto-create</span>
+                                  <span v-if="action.required" class="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">{{ t('common.required') }}</span>
+                                  <span v-if="action.autoCreate" class="px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">{{ t('settings.modFieldsAutoCreate') }}</span>
                                   <span v-if="action.dependencies?.length" class="px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300">
                                     {{ action.dependencies.length }} dependenc{{ action.dependencies.length === 1 ? 'y' : 'ies' }}
                                   </span>
@@ -4561,9 +4379,7 @@
                   </div>
                 </div>
               </div>
-              <div v-if="!currentPipeline" class="flex-1 flex items-center justify-center p-6 text-sm text-gray-500 dark:text-gray-400">
-                Select a pipeline on the left to configure playbooks.
-              </div>
+              <div v-if="!currentPipeline" class="flex-1 flex items-center justify-center p-6 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsSelectPipelinePlaybooks') }}</div>
             </section>
           </div>
           </div>
@@ -4573,7 +4389,7 @@
           <div class="p-4">
           <!-- Quick Create Mode Toggle - Advanced mode hidden for now -->
           <!-- <div class="mb-3 flex items-center justify-between">
-            <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">Quick Create Mode</div>
+            <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ t('settings.modFieldsQuickCreateMode') }}</div>
             <div class="inline-flex rounded-lg border border-gray-200 dark:border-white/10 overflow-hidden text-sm">
               <button
                 @click="quickMode = 'simple'"
@@ -4583,9 +4399,7 @@
                     ? 'bg-indigo-600 text-white'
                     : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
                 ]"
-              >
-                Simple
-              </button>
+              >{{ t('settings.modFieldsQuickModeSimple') }}</button>
               <button
                 @click="quickMode = 'advanced'"
                 :class="[
@@ -4594,23 +4408,21 @@
                     ? 'bg-indigo-600 text-white'
                     : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
                 ]"
-              >
-                Advanced
-              </button>
+              >{{ t('settings.modFieldsQuickModeAdvanced') }}</button>
             </div>
           </div> -->
           <div class="flex gap-4">
             <!-- Left: Field palette (drag to rows/columns) -->
             <aside class="w-96 flex-none bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
               <div class="p-3 border-b border-gray-200 dark:border-white/10 flex items-center justify-between">
-                <div class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">Field Palette</div>
+                <div class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{{ t('settings.modFieldsFieldPalette') }}</div>
               </div>
               <div class="p-2 max-h-[60vh] overflow-y-auto">
                 <!-- Simple mode: checkboxes with grouped sections -->
                 <template v-if="isPeopleModule">
                   <!-- Core Identity Fields -->
                   <div v-if="quickCreateAvailableFields.some(f => getPeopleFieldMetadata(f.key)?.owner === 'core')" class="mb-4">
-                    <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">Core Identity</div>
+                    <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupCoreIdentity') }}</div>
                     <ul class="space-y-1">
                       <li
                         v-for="f in quickCreateAvailableFields.filter(f => getPeopleFieldMetadata(f.key)?.owner === 'core')"
@@ -4618,7 +4430,7 @@
                         class="px-3 py-2 rounded flex items-center gap-2 cursor-pointer"
                         :class="quickCreateSelected.has(f.key) ? 'bg-gray-100 dark:bg-white/10' : 'hover:bg-gray-50 dark:hover:bg-white/5'"
                         @click="toggleQuickRow(f)"
-                        :title="f.required ? 'Required field is always included' : ''"
+                        :title="f.required ? t('settings.modFieldsTitleRequiredFieldIncluded') : ''"
                       >
                         <HeadlessCheckbox :checked="quickCreateSelected.has(f.key)" :disabled="f.required" @change="toggleQuickCreate(f.key, $event.target.checked)" @click.stop />
                         <span class="text-sm text-gray-800 dark:text-gray-200 truncate">{{ f.label || f.key }}</span>
@@ -4628,7 +4440,7 @@
                   
                   <!-- Participation Fields -->
                   <div v-if="quickCreateAvailableFields.some(f => getPeopleFieldMetadata(f.key)?.owner === 'participation')" class="mb-4">
-                    <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">Participation</div>
+                    <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupParticipation') }}</div>
                     <ul class="space-y-1">
                       <li
                         v-for="f in quickCreateAvailableFields.filter(f => getPeopleFieldMetadata(f.key)?.owner === 'participation')"
@@ -4636,7 +4448,7 @@
                         class="px-3 py-2 rounded flex items-center gap-2 cursor-pointer"
                         :class="quickCreateSelected.has(f.key) ? 'bg-gray-100 dark:bg-white/10' : 'hover:bg-gray-50 dark:hover:bg-white/5'"
                         @click="toggleQuickRow(f)"
-                        :title="f.required ? 'Required field is always included' : ''"
+                        :title="f.required ? t('settings.modFieldsTitleRequiredFieldIncluded') : ''"
                       >
                         <HeadlessCheckbox :checked="quickCreateSelected.has(f.key)" :disabled="f.required" @change="toggleQuickCreate(f.key, $event.target.checked)" @click.stop />
                         <span class="text-sm text-gray-800 dark:text-gray-200 truncate">{{ f.label || f.key }}</span>
@@ -4646,7 +4458,7 @@
                   
                   <!-- Custom / org-defined fields (not in PEOPLE_FIELD_METADATA) -->
                   <div v-if="quickCreateAvailableFields.some(f => f.key && !getPeopleFieldMetadata(f.key))" class="mb-4">
-                    <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">Custom</div>
+                    <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsBadgeCustomField') }}</div>
                     <ul class="space-y-1">
                       <li
                         v-for="f in quickCreateAvailableFields.filter(f => f.key && !getPeopleFieldMetadata(f.key))"
@@ -4654,7 +4466,7 @@
                         class="px-3 py-2 rounded flex items-center gap-2 cursor-pointer"
                         :class="quickCreateSelected.has(f.key) ? 'bg-gray-100 dark:bg-white/10' : 'hover:bg-gray-50 dark:hover:bg-white/5'"
                         @click="toggleQuickRow(f)"
-                        :title="f.required ? 'Required field is always included' : ''"
+                        :title="f.required ? t('settings.modFieldsTitleRequiredFieldIncluded') : ''"
                       >
                         <HeadlessCheckbox :checked="quickCreateSelected.has(f.key)" :disabled="f.required" @change="toggleQuickCreate(f.key, $event.target.checked)" @click.stop />
                         <span class="text-sm text-gray-800 dark:text-gray-200 truncate">{{ f.label || f.key }}</span>
@@ -4663,9 +4475,7 @@
                   </div>
                   
                   <!-- Info message if no fields -->
-                  <div v-if="quickCreateAvailableFields.length === 0" class="p-3 text-xs text-gray-500 dark:text-gray-400 text-center">
-                    No eligible fields available for Quick Create.
-                  </div>
+                  <div v-if="quickCreateAvailableFields.length === 0" class="p-3 text-xs text-gray-500 dark:text-gray-400 text-center">{{ t('settings.modFieldsNoQuickCreateFields') }}</div>
                 </template>
                 
                 <!-- Organizations module: grouped by core business fields (similar to People) -->
@@ -4678,7 +4488,7 @@
                 -->
                 <template v-else-if="isOrganizationsModule">
                   <div v-if="quickCreateAvailableFields.length > 0" class="mb-4">
-                    <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">Core Business Fields</div>
+                    <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupCoreBusinessFields') }}</div>
                     <ul class="space-y-1">
                       <li
                         v-for="f in quickCreateAvailableFields"
@@ -4689,7 +4499,7 @@
                           f.key?.toLowerCase() === 'name' ? 'cursor-default' : 'cursor-pointer'
                         ]"
                         @click="f.key?.toLowerCase() !== 'name' ? toggleQuickRow(f) : null"
-                        :title="f.key?.toLowerCase() === 'name' ? 'Name is required and cannot be removed' : (f.required ? 'Required field is always included' : '')"
+                        :title="f.key?.toLowerCase() === 'name' ? t('settings.modFieldsTitleNameRequired') : (f.required ? t('settings.modFieldsTitleRequiredFieldIncluded') : '')"
                       >
                         <HeadlessCheckbox
                           :checked="quickCreateSelected.has(f.key)"
@@ -4698,21 +4508,19 @@
                           @click.stop
                         />
                         <span class="text-sm text-gray-800 dark:text-gray-200 truncate">{{ f.label || f.key }}</span>
-                        <span v-if="f.key?.toLowerCase() === 'name'" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded ml-auto">Required</span>
-                        <span v-else class="px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded ml-auto">Core</span>
+                        <span v-if="f.key?.toLowerCase() === 'name'" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded ml-auto">{{ t('common.required') }}</span>
+                        <span v-else class="px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded ml-auto">{{ t('settings.modFieldsBadgeCoreField') }}</span>
                       </li>
                     </ul>
                   </div>
                   
                   <!-- Info message if no fields -->
-                  <div v-if="quickCreateAvailableFields.length === 0" class="p-3 text-xs text-gray-500 dark:text-gray-400 text-center">
-                    No eligible fields available for Quick Create.
-                  </div>
+                  <div v-if="quickCreateAvailableFields.length === 0" class="p-3 text-xs text-gray-500 dark:text-gray-400 text-center">{{ t('settings.modFieldsNoQuickCreateFields') }}</div>
                   
                   <!-- Helper text for Organizations -->
                   <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                     <p class="text-xs text-blue-800 dark:text-blue-400">
-                      <strong>Organizations require only a name to be created.</strong> Additional details can be added later from context.
+                      <strong>{{ t('settings.modFieldsOrgsQuickCreateHint') }}</strong>
                     </p>
                   </div>
                 </template>
@@ -4728,7 +4536,7 @@
                 -->
                 <template v-else-if="isTasksModule">
                   <div v-if="quickCreateAvailableFields.length > 0" class="mb-4">
-                    <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">Core Task Fields</div>
+                    <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupCoreTaskFields') }}</div>
                     <ul class="space-y-1">
                       <li
                         v-for="f in quickCreateAvailableFields"
@@ -4739,7 +4547,7 @@
                           f.key?.toLowerCase() === 'title' ? 'cursor-default' : 'cursor-pointer'
                         ]"
                         @click="f.key?.toLowerCase() !== 'title' ? toggleQuickRow(f) : null"
-                        :title="f.key?.toLowerCase() === 'title' ? 'Title is required and cannot be removed' : (f.required ? 'Required field is always included' : '')"
+                        :title="f.key?.toLowerCase() === 'title' ? t('settings.modFieldsTitleTitleRequired') : (f.required ? t('settings.modFieldsTitleRequiredFieldIncluded') : '')"
                       >
                         <HeadlessCheckbox
                           :checked="quickCreateSelected.has(f.key)"
@@ -4748,21 +4556,19 @@
                           @click.stop
                         />
                         <span class="text-sm text-gray-800 dark:text-gray-200 truncate">{{ f.label || f.key }}</span>
-                        <span v-if="f.key?.toLowerCase() === 'title'" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded ml-auto">Required</span>
-                        <span v-else class="px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded ml-auto">Core</span>
+                        <span v-if="f.key?.toLowerCase() === 'title'" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded ml-auto">{{ t('common.required') }}</span>
+                        <span v-else class="px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded ml-auto">{{ t('settings.modFieldsBadgeCoreField') }}</span>
                       </li>
                     </ul>
                   </div>
                   
                   <!-- Info message if no fields -->
-                  <div v-if="quickCreateAvailableFields.length === 0" class="p-3 text-xs text-gray-500 dark:text-gray-400 text-center">
-                    No eligible fields available for Quick Create.
-                  </div>
+                  <div v-if="quickCreateAvailableFields.length === 0" class="p-3 text-xs text-gray-500 dark:text-gray-400 text-center">{{ t('settings.modFieldsNoQuickCreateFields') }}</div>
                   
                   <!-- Helper text for Tasks -->
                   <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                     <p class="text-xs text-blue-800 dark:text-blue-400">
-                      <strong>Quick Create is for fast task capture.</strong> Only essential fields appear. Detailed configuration happens later.
+                      <strong>{{ t('settings.modFieldsTasksQuickCreateHint') }}</strong>
                     </p>
                   </div>
                 </template>
@@ -4780,7 +4586,7 @@
                 -->
                 <template v-else-if="isEventsModule">
                   <div v-if="quickCreateEventGroupedFields.core.length > 0" class="mb-4">
-                    <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">Core Event Fields</div>
+                    <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupCoreEventFields') }}</div>
                     <ul class="space-y-1">
                       <li
                         v-for="f in quickCreateEventGroupedFields.core"
@@ -4791,7 +4597,7 @@
                           f.key?.toLowerCase() === 'eventname' ? 'cursor-default' : 'cursor-pointer'
                         ]"
                         @click="f.key?.toLowerCase() !== 'eventname' ? toggleQuickRow(f) : null"
-                        :title="f.key?.toLowerCase() === 'eventname' ? 'Event Name is required and cannot be removed' : (f.required ? 'Required field is always included' : '')"
+                        :title="f.key?.toLowerCase() === 'eventname' ? t('settings.modFieldsTitleEventNameRequired') : (f.required ? t('settings.modFieldsTitleRequiredFieldIncluded') : '')"
                       >
                         <HeadlessCheckbox
                           :checked="quickCreateSelected.has(f.key)"
@@ -4800,8 +4606,8 @@
                           @click.stop
                         />
                         <span class="text-sm text-gray-800 dark:text-gray-200 truncate">{{ f.label || f.key }}</span>
-                        <span v-if="f.key?.toLowerCase() === 'eventname'" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded ml-auto">Required</span>
-                        <span v-else class="px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded ml-auto">Core</span>
+                        <span v-if="f.key?.toLowerCase() === 'eventname'" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded ml-auto">{{ t('common.required') }}</span>
+                        <span v-else class="px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded ml-auto">{{ t('settings.modFieldsBadgeCoreField') }}</span>
                       </li>
                     </ul>
                   </div>
@@ -4812,7 +4618,7 @@
                     class="mb-4"
                   >
                     <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">
-                      {{ appKey === 'AUDIT' ? 'Audit Participation' : appKey === 'SALES' ? 'Sales Participation' : `${appKey} Participation` }}
+                      {{ appKey === 'AUDIT' ? t('settings.modFieldsParticipationAudit') : appKey === 'SALES' ? 'Sales Participation' : `${appKey} Participation` }}
                     </div>
                     <ul class="space-y-1">
                       <li
@@ -4824,7 +4630,7 @@
                           f.key?.toLowerCase() === 'eventname' ? 'cursor-default' : 'cursor-pointer'
                         ]"
                         @click="f.key?.toLowerCase() !== 'eventname' ? toggleQuickRow(f) : null"
-                        :title="f.key?.toLowerCase() === 'eventname' ? 'Event Name is required and cannot be removed' : (f.required ? 'Required field is always included' : '')"
+                        :title="f.key?.toLowerCase() === 'eventname' ? t('settings.modFieldsTitleEventNameRequired') : (f.required ? t('settings.modFieldsTitleRequiredFieldIncluded') : '')"
                       >
                         <HeadlessCheckbox
                           :checked="quickCreateSelected.has(f.key)"
@@ -4839,7 +4645,7 @@
                   </div>
 
                   <div v-if="quickCreateEventGroupedFields.custom.length > 0" class="mb-4">
-                    <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">Custom Fields</div>
+                    <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsQuickCustomFields') }}</div>
                     <ul class="space-y-1">
                       <li
                         v-for="f in quickCreateEventGroupedFields.custom"
@@ -4850,7 +4656,7 @@
                           f.key?.toLowerCase() === 'eventname' ? 'cursor-default' : 'cursor-pointer'
                         ]"
                         @click="f.key?.toLowerCase() !== 'eventname' ? toggleQuickRow(f) : null"
-                        :title="f.key?.toLowerCase() === 'eventname' ? 'Event Name is required and cannot be removed' : (f.required ? 'Required field is always included' : '')"
+                        :title="f.key?.toLowerCase() === 'eventname' ? t('settings.modFieldsTitleEventNameRequired') : (f.required ? t('settings.modFieldsTitleRequiredFieldIncluded') : '')"
                       >
                         <HeadlessCheckbox
                           :checked="quickCreateSelected.has(f.key)"
@@ -4859,29 +4665,24 @@
                           @click.stop
                         />
                         <span class="text-sm text-gray-800 dark:text-gray-200 truncate">{{ f.label || f.key }}</span>
-                        <span class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded ml-auto">Custom</span>
+                        <span class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded ml-auto">{{ t('settings.modFieldsBadgeCustomField') }}</span>
                       </li>
                     </ul>
                   </div>
                   
                   <!-- Info message if no fields -->
-                  <div v-if="quickCreateAvailableFields.length === 0" class="p-3 text-xs text-gray-500 dark:text-gray-400 text-center">
-                    No eligible fields available for Quick Create.
-                  </div>
+                  <div v-if="quickCreateAvailableFields.length === 0" class="p-3 text-xs text-gray-500 dark:text-gray-400 text-center">{{ t('settings.modFieldsNoQuickCreateFields') }}</div>
                   
                   <!-- Helper text for Events -->
                   <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                    <p class="text-xs text-blue-800 dark:text-blue-400">
-                      Select non-system event fields to include in Quick Create.
-                      Fields are grouped by ownership (core, participation, custom) to match field configuration.
-                    </p>
+                    <p class="text-xs text-blue-800 dark:text-blue-400">{{ t('settings.modulesAndFieldsSelectNonSystemEventFieldsTo') }}</p>
                   </div>
                 </template>
                 
                 <!-- Other modules: non-system fields only -->
                 <template v-else>
                   <div v-if="quickCreateAvailableFields.length > 0" class="mb-4">
-                    <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">Fields</div>
+                    <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsFieldsLabel') }}</div>
                     <ul class="space-y-1">
                       <li
                         v-for="f in quickCreateAvailableFields"
@@ -4889,7 +4690,7 @@
                         class="px-3 py-2 rounded flex items-center gap-2 cursor-pointer"
                         :class="quickCreateSelected.has(f.key) ? 'bg-gray-100 dark:bg-white/10' : 'hover:bg-gray-50 dark:hover:bg-white/5'"
                         @click="toggleQuickRow(f)"
-                        :title="f.required ? 'Required field is always included' : ''"
+                        :title="f.required ? t('settings.modFieldsTitleRequiredFieldIncluded') : ''"
                       >
                         <HeadlessCheckbox :checked="quickCreateSelected.has(f.key)" :disabled="f.required" @change="toggleQuickCreate(f.key, $event.target.checked)" @click.stop />
                         <span class="text-sm text-gray-800 dark:text-gray-200 truncate">{{ f.label || f.key }}</span>
@@ -4898,24 +4699,16 @@
                   </div>
                   
                   <!-- Info message if no fields -->
-                  <div v-if="quickCreateAvailableFields.length === 0" class="p-3 text-xs text-gray-500 dark:text-gray-400 text-center">
-                    No fields available for Quick Create.
-                  </div>
+                  <div v-if="quickCreateAvailableFields.length === 0" class="p-3 text-xs text-gray-500 dark:text-gray-400 text-center">{{ t('settings.modFieldsNoQuickCreateFieldsGeneric') }}</div>
                 </template>
               </div>
               <div class="p-3 border-t border-gray-200 dark:border-white/10">
                 <div class="text-xs text-gray-500 dark:text-gray-400">
-                  <span v-if="isPeopleModule">Select core identity fields to include in Quick Create.</span>
-                  <span v-else-if="isOrganizationsModule">
-                    <strong>Organizations require only a name to be created.</strong> Additional details can be added later from context. Only core business fields (name, industry, website, phone, address, types) are eligible.
-                  </span>
-                  <span v-else-if="isTasksModule">
-                    <strong>Quick Create is for fast task capture.</strong> Only essential fields (title, dueDate, priority, assignedTo, relatedTo) are eligible. Detailed configuration happens later.
-                  </span>
-                  <span v-else-if="isEventsModule">
-                    Select non-system event fields to include in Quick Create. Fields are grouped by ownership (core, participation, custom).
-                  </span>
-                  <span v-else>Select fields to include in Quick Create.</span>
+                  <span v-if="isPeopleModule">{{ t('settings.modFieldsQuickCreatePeopleHint') }}</span>
+                  <span v-else-if="isOrganizationsModule">{{ t('settings.modFieldsQuickCreateOrgsFooter') }}</span>
+                  <span v-else-if="isTasksModule">{{ t('settings.modFieldsQuickCreateTasksFooter') }}</span>
+                  <span v-else-if="isEventsModule">{{ t('settings.modFieldsQuickCreateEventsFooter') }}</span>
+                  <span v-else>{{ t('settings.modFieldsQuickCreateGenericFooter') }}</span>
                 </div>
               </div>
             </aside>
@@ -4924,10 +4717,10 @@
               <!-- Simple mode rendering -->
               <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                 <div class="p-3 border-b border-gray-200 dark:border-white/10 flex items-center justify-between">
-                  <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">Selected Fields (ordered)</div>
+                  <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ t('settings.modFieldsSelectedFieldsOrdered') }}</div>
                 </div>
                 <div class="p-4 space-y-2">
-                  <div v-if="orderedQuickCreate.length === 0" class="text-sm text-gray-600 dark:text-gray-400">No fields selected.</div>
+                  <div v-if="orderedQuickCreate.length === 0" class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.modFieldsNoFieldsSelected') }}</div>
                   <div 
                     v-for="(f, idx) in orderedQuickCreate" 
                     :key="f.key" 
@@ -4957,7 +4750,7 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                     <span class="flex-1">{{ f.label || f.key }}</span>
-                    <span v-if="(isOrganizationsModule && f.key?.toLowerCase() === 'name') || (isTasksModule && f.key?.toLowerCase() === 'title') || (isEventsModule && f.key?.toLowerCase() === 'eventname')" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">Required</span>
+                    <span v-if="(isOrganizationsModule && f.key?.toLowerCase() === 'name') || (isTasksModule && f.key?.toLowerCase() === 'title') || (isEventsModule && f.key?.toLowerCase() === 'eventname')" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('common.required') }}</span>
                   </div>
                 </div>
               </div>
@@ -4965,14 +4758,14 @@
               <!-- Advanced builder - Hidden for now -->
               <!-- <div v-else class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                 <div class="p-3 border-b border-gray-200 dark:border-white/10 flex items-center justify-between">
-                  <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">Visual Builder (Rows / Columns)</div>
+                  <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ t('settings.modFieldsVisualBuilder') }}</div>
                   <div class="flex items-center gap-2">
-                    <button @click="addRow" class="px-3 py-1.5 bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/20 rounded text-xs transition-colors">Add Row</button>
-                    <button @click="openPreview()" class="px-3 py-1.5 bg-indigo-600 text-white rounded text-xs">Preview</button>
+                    <button @click="addRow" class="px-3 py-1.5 bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/20 rounded text-xs transition-colors">{{ t('settings.modFieldsAddRow') }}</button>
+                    <button @click="openPreview()" class="px-3 py-1.5 bg-indigo-600 text-white rounded text-xs">{{ t('settings.modFieldsPreview') }}</button>
                   </div>
                 </div>
                 <div class="p-4 space-y-4">
-                  <div v-if="quickLayout.rows.length === 0" class="text-sm text-gray-600 dark:text-gray-400">No rows yet. Add a row to start.</div>
+                  <div v-if="quickLayout.rows.length === 0" class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.modFieldsNoRowsYet') }}</div>
                   <div v-for="(row, ri) in quickLayout.rows" :key="ri"
                        class="border border-gray-200 dark:border-white/10 rounded-lg p-3 space-y-3"
                        :class="dragRowOver===ri ? 'ring-2 ring-indigo-500/50' : ''"
@@ -4983,8 +4776,8 @@
                     <div class="flex items-center justify-between">
                       <div class="text-xs font-medium text-gray-700 dark:text-gray-300">Row {{ ri + 1 }}</div>
                       <div class="flex items-center gap-2">
-                        <button @click="addCol(ri)" class="px-2 py-1 bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/20 rounded text-xs transition-colors">Add Column</button>
-                        <button @click="removeRow(ri)" class="px-2 py-1 text-red-600 dark:text-red-400 text-xs">Remove Row</button>
+                        <button @click="addCol(ri)" class="px-2 py-1 bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/20 rounded text-xs transition-colors">{{ t('settings.modFieldsAddColumn') }}</button>
+                        <button @click="removeRow(ri)" class="px-2 py-1 text-red-600 dark:text-red-400 text-xs">{{ t('settings.modFieldsRemoveRow') }}</button>
                       </div>
                     </div>
                     <div class="grid grid-cols-12 gap-2"
@@ -5001,25 +4794,25 @@
                            @dragover.prevent="onColDragOver(ri, ci)"
                            @drop.prevent="onColDrop(ri, ci)">
                         <div class="flex items-center gap-2 mb-2">
-                          <button class="cursor-grab text-xs text-gray-500 dark:text-gray-400" title="Drag to reorder">☰</button>
-                          <label class="text-xs text-gray-600 dark:text-gray-400">Span</label>
+                          <button class="cursor-grab text-xs text-gray-500 dark:text-gray-400" :title="t('settings.modFieldsTitleDragReorder')">☰</button>
+                          <label class="text-xs text-gray-600 dark:text-gray-400">{{ t('settings.modFieldsSpan') }}</label>
                           <select v-model.number="col.span" class="px-2 py-1 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs">
                             <option v-for="n in 12" :key="n" :value="n">{{ n }}</option>
                           </select>
-                          <button @click="removeCol(ri, ci)" class="ml-auto text-xs text-red-600 dark:text-red-400">Remove</button>
+                          <button @click="removeCol(ri, ci)" class="ml-auto text-xs text-red-600 dark:text-red-400">{{ t('actions.remove') }}</button>
                         </div>
                         <div @dragover.prevent @drop.prevent="onColumnDrop(ri, ci, $event)" class="rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 p-3 text-sm text-gray-700 dark:text-gray-300 min-h-10 flex items-center justify-between">
-                          <span class="truncate">{{ col.fieldKey ? displayFieldLabel(col.fieldKey) : 'Drop field here' }}</span>
+                          <span class="truncate">{{ col.fieldKey ? displayFieldLabel(col.fieldKey) : t('settings.modFieldsDropFieldHere') }}</span>
                           <div class="flex items-center gap-2" v-if="col.fieldKey">
                             <select v-model="col.widget" class="px-2 py-1 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs">
-                              <option value="input">Input</option>
-                              <option value="textarea">Textarea</option>
-                              <option value="select">Select</option>
-                              <option value="date">Date</option>
-                              <option value="number">Number</option>
+                              <option value="input">{{ t('settings.modFieldsWidgetInput') }}</option>
+                              <option value="textarea">{{ t('settings.modFieldsWidgetTextarea') }}</option>
+                              <option value="select">{{ t('settings.modFieldsWidgetSelect') }}</option>
+                              <option value="date">{{ t('settings.modFieldsWidgetDate') }}</option>
+                              <option value="number">{{ t('settings.modFieldsWidgetNumber') }}</option>
                             </select>
-                            <input v-model="col.props.placeholder" placeholder="Placeholder" class="px-2 py-1 rounded bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs" />
-                            <button @click="clearColumnField(ri, ci)" class="text-xs text-gray-500 dark:text-gray-400">Clear</button>
+                            <input v-model="col.props.placeholder" :placeholder="t('settings.modFieldsPlaceholderGeneric')" class="px-2 py-1 rounded bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs" />
+                            <button @click="clearColumnField(ri, ci)" class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsClear') }}</button>
                           </div>
                         </div>
                       </div>
@@ -5038,8 +4831,8 @@
       <div class="absolute inset-0 bg-black/50" @click="closePreview"></div>
       <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 w-[90vw] max-w-4xl max-h-[85vh] overflow-auto">
         <div class="p-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between">
-          <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">Quick Create Preview</div>
-          <button @click="closePreview" class="px-3 py-1.5 bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/20 rounded text-xs transition-colors">Close</button>
+          <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ t('settings.modFieldsQuickCreatePreviewTitle') }}</div>
+          <button @click="closePreview" class="px-3 py-1.5 bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/20 rounded text-xs transition-colors">{{ t('actions.close') }}</button>
         </div>
         <div class="p-6 space-y-3">
           <div v-for="(row, ri) in quickLayout.rows" :key="`pv-${ri}`" class="grid grid-cols-12 gap-3">
@@ -5060,7 +4853,7 @@
                 </div>
               </template>
               <template v-else>
-                <div class="text-gray-400 dark:text-gray-500">Empty</div>
+                <div class="text-gray-400 dark:text-gray-500">{{ t('settings.modFieldsQuickCreateEmpty') }}</div>
               </template>
             </div>
           </div>
@@ -5078,9 +4871,12 @@
         <div class="relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-gray-200 dark:border-gray-700">
           <div class="flex items-center justify-between border-b border-gray-200 dark:border-white/10 px-6 py-4">
             <div class="min-w-0">
-              <p class="text-sm font-semibold text-gray-900 dark:text-white">Configure Activity</p>
+              <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.modFieldsActivityModalTitle') }}</p>
               <p class="text-xs text-gray-500 dark:text-gray-400">
-                Stage: {{ actionModalStage.name || 'Untitled stage' }} • Activity {{ actionModalActionIndex + 1 }}
+                {{ t('settings.modFieldsActivityStageMeta', {
+                  stage: actionModalStage.name || t('settings.modFieldsUntitledStage'),
+                  number: actionModalActionIndex + 1
+                }) }}
               </p>
             </div>
             <div class="flex items-center gap-2">
@@ -5089,121 +4885,121 @@
                 @click="removePlaybookAction(actionModalStage, actionModalActionIndex)"
                 :disabled="actionModalActionIndex < 0"
               >
-                Delete
+                {{ t('actions.delete') }}
               </button>
               <button
                 class="px-3 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
                 @click="closeActionModal"
               >
-                Close
+                {{ t('actions.close') }}
               </button>
             </div>
           </div>
           <div class="max-h-[calc(90vh-4.5rem)] overflow-y-auto px-6 py-6 space-y-6">
             <div class="space-y-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 p-5">
               <div class="flex items-center justify-between">
-                <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Summary</h3>
-                <span class="text-xs text-gray-500 dark:text-gray-400">Key details about this activity</span>
+                <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ t('settings.modFieldsActivitySummary') }}</h3>
+                <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsActivitySummaryHint') }}</span>
               </div>
               <div class="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Title</label>
+                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsActivityTitleLabel') }}</label>
                   <input
                     v-model="actionModalAction.title"
                     @change="refreshPlaybookActionKey(actionModalStage, actionModalAction)"
                     class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
-                    placeholder="e.g., Send proposal"
+                    :placeholder="t('settings.modFieldsActivityTitlePh')"
                   />
                 </div>
                 <div>
-                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Action Type</label>
+                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsActionTypeLabel') }}</label>
                   <select
                     v-model="actionModalAction.actionType"
                     class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
                   >
-                    <option v-for="option in PLAYBOOK_ACTION_TYPES" :key="option.value" :value="option.value">{{ option.label }}</option>
+                    <option v-for="option in playbookActionTypes" :key="option.value" :value="option.value">{{ option.label }}</option>
                   </select>
                 </div>
                 <div>
-                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Due (days after stage entry)</label>
+                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsDueDaysLabel') }}</label>
                   <input
                     type="number"
                     min="0"
                     v-model.number="actionModalAction.dueInDays"
                     class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
                   />
-                  <p class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">Set to 0 if the activity should occur on the same day.</p>
+                  <p class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsDueSameDayHint') }}</p>
                 </div>
                 <div>
-                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Assignment</label>
+                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsAssignmentLabel') }}</label>
                   <select
                     v-model="actionModalAction.assignment.type"
                     class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
                   >
-                    <option v-for="option in PLAYBOOK_ASSIGNMENT_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
+                    <option v-for="option in playbookAssignmentOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
                   </select>
                   <input
                     v-if="['specific_user', 'role', 'team'].includes(actionModalAction.assignment.type)"
                     v-model="actionModalAction.assignment.targetName"
                     class="mt-2 w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
-                    :placeholder="`Specify ${actionModalAction.assignment.type.replace('_', ' ')}`"
+                    :placeholder="t('settings.modFieldsSpecifyAssignmentPh', { type: actionModalAction.assignment.type.replace('_', ' ') })"
                   />
                 </div>
               </div>
               <div class="flex flex-wrap items-center gap-6">
                 <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
                   <HeadlessCheckbox v-model="actionModalAction.required" checkbox-class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500" />
-                  Required to complete stage
+                  {{ t('settings.modFieldsRequiredCompleteStage') }}
                 </label>
                 <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
                   <HeadlessCheckbox v-model="actionModalAction.autoCreate" checkbox-class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500" />
-                  Auto-create when stage starts
+                  {{ t('settings.modFieldsAutoCreateStageStart') }}
                 </label>
               </div>
               <div>
-                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Description</label>
+                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsDescriptionLabel') }}</label>
                 <textarea
                   v-model="actionModalAction.description"
                   rows="3"
                   class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
-                  placeholder="Add context or instructions for the team..."
+                  :placeholder="t('settings.modFieldsActivityDescriptionPh')"
                 ></textarea>
               </div>
             </div>
 
             <div class="space-y-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 p-5">
               <div class="flex items-center justify-between">
-                <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Trigger & Automation</h3>
-                <span class="text-xs text-gray-500 dark:text-gray-400">When should this activity become active?</span>
+                <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ t('settings.modFieldsTriggerAutomation') }}</h3>
+                <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsTriggerAutomationHint') }}</span>
               </div>
               <div class="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Trigger Type</label>
+                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsTriggerTypeLabel') }}</label>
                   <select
                     v-model="actionModalAction.trigger.type"
                     @change="handleTriggerTypeChange(actionModalAction)"
                     class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
                   >
-                    <option v-for="option in PLAYBOOK_TRIGGER_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
+                    <option v-for="option in playbookTriggerOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
                   </select>
                 </div>
                 <div v-if="actionModalAction.trigger.type === 'after_action'">
-                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Wait for activity</label>
+                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsWaitForActivity') }}</label>
                   <select
                     v-model="actionModalAction.trigger.sourceActionKey"
                     class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
                   >
-                    <option value="">Select activity...</option>
+                    <option value="">{{ t('settings.modFieldsSelectActivityPh') }}</option>
                     <option v-for="option in getActionOptions(actionModalStage, actionModalAction)" :key="option.value" :value="option.value">
                       {{ option.label }}
                     </option>
                   </select>
-                  <p class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">The activity will unlock after the selected one is marked complete.</p>
+                  <p class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsUnlockAfterCompleteHint') }}</p>
                 </div>
               </div>
               <div v-if="actionModalAction.trigger.type === 'time_delay'" class="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Delay amount</label>
+                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsDelayAmount') }}</label>
                   <input
                     type="number"
                     min="0"
@@ -5213,30 +5009,34 @@
                   />
                 </div>
                 <div>
-                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Delay unit</label>
+                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsDelayUnit') }}</label>
                   <select
                     :value="actionModalAction.trigger.delay?.unit || 'hours'"
                     @change="updateTriggerDelayUnit(actionModalAction, $event.target.value)"
                     class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
                   >
-                    <option v-for="option in PLAYBOOK_DELAY_UNIT_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
+                    <option v-for="option in playbookDelayUnitOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
                   </select>
                 </div>
               </div>
               <div v-if="actionModalAction.trigger.type === 'custom'" class="space-y-2">
-                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Custom trigger details</label>
+                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsCustomTriggerDetails') }}</label>
                 <textarea
                   v-model="actionModalAction.trigger.description"
                   rows="3"
                   class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
-                  placeholder="Describe the custom conditions or automations required."
+                  :placeholder="t('settings.modFieldsCustomTriggerPh')"
                 ></textarea>
               </div>
               <div v-if="actionModalAction.trigger.conditions?.length" class="rounded-lg bg-white/70 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 p-3 text-xs text-gray-600 dark:text-gray-300">
-                <p class="font-medium mb-2">Existing conditions</p>
+                <p class="font-medium mb-2">{{ t('settings.modFieldsExistingConditions') }}</p>
                 <ul class="space-y-1">
                   <li v-for="(condition, conditionIndex) in actionModalAction.trigger.conditions" :key="conditionIndex">
-                    • {{ condition.field || 'Field' }} {{ condition.operator || 'equals' }} {{ condition.value ?? '—' }}
+                    • {{ t('settings.modFieldsConditionLine', {
+                      field: condition.field || t('settings.modFieldsConditionFieldFallback'),
+                      operator: condition.operator || t('settings.modFieldsConditionEquals'),
+                      value: condition.value ?? '—'
+                    }) }}
                   </li>
                 </ul>
               </div>
@@ -5244,8 +5044,8 @@
 
             <div class="space-y-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 p-5">
               <div class="flex items-center justify-between">
-                <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Dependencies</h3>
-                <span class="text-xs text-gray-500 dark:text-gray-400">Control the order activities unlock</span>
+                <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ t('settings.modFieldsDependenciesTitle') }}</h3>
+                <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsDependenciesHint') }}</span>
               </div>
               <div v-if="getActionOptions(actionModalStage, actionModalAction).length" class="space-y-2">
                 <label
@@ -5262,13 +5062,13 @@
                 </label>
               </div>
               <div v-else class="text-xs text-gray-500 dark:text-gray-400">
-                Add at least one more activity to set dependencies.
+                {{ t('settings.modFieldsAddActivityForDeps') }}
               </div>
             </div>
 
             <div class="space-y-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 p-5">
               <div class="flex items-center justify-between">
-                <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Alerts & Reminders</h3>
+                <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ t('settings.modFieldsAlertsReminders') }}</h3>
                 <button
                   class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors shadow-sm hover:shadow"
                   @click="addActionAlert(actionModalStage, actionModalAction)"
@@ -5276,11 +5076,11 @@
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                   </svg>
-                  Add alert
+                  {{ t('settings.modFieldsAddAlert') }}
                 </button>
               </div>
               <div v-if="!actionModalAction.alerts?.length" class="rounded-lg border border-dashed border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-gray-900/40 px-4 py-6 text-xs text-gray-500 dark:text-gray-400 text-center">
-                No alerts configured. Add reminders to keep owners on track.
+                {{ t('settings.modFieldsNoAlerts') }}
               </div>
               <div v-else class="space-y-4">
                 <div
@@ -5289,26 +5089,26 @@
                   class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 p-4 space-y-4"
                 >
                   <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Alert {{ alertIndex + 1 }}</span>
+                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsAlertNumber', { number: alertIndex + 1 }) }}</span>
                     <button
                       class="text-xs text-red-600 dark:text-red-300 hover:underline"
                       @click="removeActionAlert(actionModalStage, actionModalAction, alertIndex)"
                     >
-                      Remove
+                      {{ t('actions.remove') }}
                     </button>
                   </div>
                   <div class="grid gap-4 md:grid-cols-2">
                     <div>
-                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Alert Type</label>
+                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsAlertTypeLabel') }}</label>
                       <select
                         v-model="alert.type"
                         class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
                       >
-                        <option v-for="option in PLAYBOOK_ALERT_TYPE_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
+                        <option v-for="option in playbookAlertTypeOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
                       </select>
                     </div>
                     <div>
-                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Send offset</label>
+                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsSendOffset') }}</label>
                       <div class="flex items-center gap-2">
                         <input
                           type="number"
@@ -5322,27 +5122,27 @@
                           @change="updateAlertOffsetUnit(alert, $event.target.value)"
                           class="flex-1 px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
                         >
-                          <option v-for="option in PLAYBOOK_DELAY_UNIT_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
+                          <option v-for="option in playbookDelayUnitOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
                         </select>
                       </div>
                     </div>
                   </div>
                   <div>
-                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Recipients (comma separated emails/usernames)</label>
+                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsRecipientsLabel') }}</label>
                     <input
                       :value="(alert.recipients || []).join(', ')"
                       @input="updateAlertRecipients(alert, $event.target.value)"
                       class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
-                      placeholder="e.g., revenue-ops@company.com, manager@company.com"
+                      :placeholder="t('settings.modFieldsRecipientsPh')"
                     />
                   </div>
                   <div>
-                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Message</label>
+                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsMessageLabel') }}</label>
                     <textarea
                       v-model="alert.message"
                       rows="2"
                       class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
-                      placeholder="Reminder content that will be sent to recipients"
+                      :placeholder="t('settings.modFieldsAlertMessagePh')"
                     ></textarea>
                   </div>
                 </div>
@@ -5351,7 +5151,7 @@
 
             <div class="space-y-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 p-5">
               <div class="flex items-center justify-between">
-                <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Resources</h3>
+                <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ t('settings.modFieldsResourcesTitle') }}</h3>
                 <button
                   class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors shadow-sm hover:shadow"
                   @click="addActionResource(actionModalStage, actionModalAction)"
@@ -5359,11 +5159,11 @@
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                   </svg>
-                  Add resource
+                  {{ t('settings.modFieldsAddResource') }}
                 </button>
               </div>
               <div v-if="!actionModalAction.resources?.length" class="rounded-lg border border-dashed border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-gray-900/40 px-4 py-6 text-xs text-gray-500 dark:text-gray-400 text-center">
-                No supporting documents yet. Attach collateral to speed up execution.
+                {{ t('settings.modFieldsNoResources') }}
               </div>
               <div v-else class="space-y-4">
                 <div
@@ -5372,47 +5172,47 @@
                   class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 p-4 space-y-4"
                 >
                   <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Resource {{ resourceIndex + 1 }}</span>
+                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsResourceNumber', { number: resourceIndex + 1 }) }}</span>
                     <button
                       class="text-xs text-red-600 dark:text-red-300 hover:underline"
                       @click="removeActionResource(actionModalStage, actionModalAction, resourceIndex)"
                     >
-                      Remove
+                      {{ t('actions.remove') }}
                     </button>
                   </div>
                   <div class="grid gap-4 md:grid-cols-2">
                     <div>
-                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Name</label>
+                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsNameLabel') }}</label>
                       <input
                         v-model="resource.name"
                         class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
-                        placeholder="e.g., Proposal template"
+                        :placeholder="t('settings.modFieldsResourceNamePh')"
                       />
                     </div>
                     <div>
-                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Type</label>
+                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsType') }}</label>
                       <select
                         v-model="resource.type"
                         class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
                       >
-                        <option v-for="option in PLAYBOOK_RESOURCE_TYPES" :key="option.value" :value="option.value">{{ option.label }}</option>
+                        <option v-for="option in playbookResourceTypes" :key="option.value" :value="option.value">{{ option.label }}</option>
                       </select>
                     </div>
                     <div class="md:col-span-2">
-                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">URL or attachment reference</label>
+                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsUrlAttachmentRef') }}</label>
                       <input
                         v-model="resource.url"
                         class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
-                        placeholder="https://..."
+                        :placeholder="t('settings.modFieldsUrlPh')"
                       />
                     </div>
                     <div class="md:col-span-2">
-                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Description</label>
+                      <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsDescriptionLabel') }}</label>
                       <textarea
                         v-model="resource.description"
                         rows="2"
                         class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
-                        placeholder="What should the team know about this resource?"
+                        :placeholder="t('settings.modFieldsResourceDescriptionPh')"
                       ></textarea>
                     </div>
                   </div>
@@ -5455,11 +5255,12 @@
                 </div>
                 <div class="flex-1">
                   <DialogTitle as="h3" class="text-base font-semibold text-gray-900 dark:text-white">
-                    Delete field
+                    {{ t('settings.modFieldsDeleteFieldDialogTitle') }}
                   </DialogTitle>
                   <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                    Are you sure you want to delete "{{ currentField?.label || currentField?.key || 'this field' }}"?
-                    This action cannot be undone.
+                    {{ t('settings.modFieldsDeleteFieldConfirm', {
+                      name: currentField?.label || currentField?.key || t('settings.modFieldsThisField')
+                    }) }}
                   </p>
                   <div class="mt-4 flex justify-end gap-3">
                     <button
@@ -5467,14 +5268,14 @@
                       class="rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
                       @click="showDeleteFieldConfirm = false"
                     >
-                      Cancel
+                      {{ t('actions.cancel') }}
                     </button>
                     <button
                       type="button"
                       class="rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
                       @click="confirmDeleteField"
                     >
-                      Delete
+                      {{ t('actions.delete') }}
                     </button>
                   </div>
                 </div>
@@ -5492,6 +5293,7 @@
 // Form Settings are configuration-only and must respect domain boundaries
 
 import { ref, onMounted, onUnmounted, computed, watch, reactive, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
 import { Switch, Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
@@ -5686,6 +5488,8 @@ const props = defineProps({
   }
 });
 
+const { t } = useI18n();
+
 const authStore = useAuthStore();
 const route = useRoute();
 const router = useRouter();
@@ -5832,6 +5636,17 @@ function getModuleCardCounts(mod) {
   return { fields, relationships };
 }
 
+function formatModuleCardCounts(mod) {
+  const counts = getModuleCardCounts(mod);
+  return t('settings.modFieldsCardCounts', counts);
+}
+
+function participationGroupTitle(appKey) {
+  if (appKey === 'SALES') return t('settings.modFieldsParticipationSales');
+  if (appKey === 'AUDIT') return t('settings.modFieldsParticipationAudit');
+  return t('settings.modFieldsParticipationApp', { app: appKey });
+}
+
 const optionsBuffer = ref('');
 const editingOptionIdx = ref(-1);
 const editOptionValue = ref('');
@@ -5874,11 +5689,15 @@ const formSettingsPermissions = computed(() => {
 const dragStartIdx = ref(null);
 const dragOverIdx = ref(null);
 const baseTopTabs = [
-  { id: 'details', name: 'Module details' },
-  { id: 'fields', name: 'Field Configurations' },
-  { id: 'relationships', name: 'Relationships' },
-  { id: 'quick', name: 'Quick Create' }
+  { id: 'details', nameKey: 'settings.modFieldsTabDetails' },
+  { id: 'fields', nameKey: 'settings.modFieldsTabFields' },
+  { id: 'relationships', nameKey: 'settings.modFieldsTabRelationships' },
+  { id: 'quick', nameKey: 'settings.modFieldsTabQuick' },
 ];
+
+function mapTopTab(tab) {
+  return { id: tab.id, name: t(tab.nameKey) };
+}
 const TOP_TAB_IDS_BASE = ['details', 'fields', 'relationships', 'quick'];
 function getAllowedTopTabs(moduleKey) {
   if (moduleKey === 'forms') {
@@ -5925,34 +5744,34 @@ const topTabs = computed(() => {
   // See: client/src/platform/modules/forms/formsModule.definition.ts
   if (moduleKey === 'forms') {
     return [
-      { id: 'details', name: 'Module details' },
-      { id: 'fields', name: 'Fields Configuration' },
-      { id: 'logic', name: 'Logic & Rules' },
-      { id: 'outcomes', name: 'Outcomes' },
-      { id: 'access', name: 'Access' },
-      { id: 'relationships', name: 'Relationships' },
-    ];
+      { id: 'details', nameKey: 'settings.modFieldsTabDetails' },
+      { id: 'fields', nameKey: 'settings.modFieldsTabFieldsForms' },
+      { id: 'logic', nameKey: 'settings.modFieldsTabLogic' },
+      { id: 'outcomes', nameKey: 'settings.modFieldsTabOutcomes' },
+      { id: 'access', nameKey: 'settings.modFieldsTabAccess' },
+      { id: 'relationships', nameKey: 'settings.modFieldsTabRelationships' },
+    ].map(mapTopTab);
   }
   if (moduleKey === 'deals') {
     // Only add pipeline/playbooks tabs if they're not excluded
     if (!props.excludedTabs.includes('pipeline')) {
-      tabs.push({ id: 'pipeline', name: 'Pipeline Settings' });
+      tabs.push({ id: 'pipeline', nameKey: 'settings.modFieldsTabPipeline' });
     }
     if (!props.excludedTabs.includes('playbooks')) {
-      tabs.push({ id: 'playbooks', name: 'Playbook Configuration' });
+      tabs.push({ id: 'playbooks', nameKey: 'settings.modFieldsTabPlaybooks' });
     }
   }
   if (moduleKey === 'people') {
     const fieldsTabIndex = tabs.findIndex(tab => tab.id === 'fields');
     if (fieldsTabIndex >= 0) {
-      tabs.splice(fieldsTabIndex + 1, 0, { id: 'people-types', name: 'Types' });
+      tabs.splice(fieldsTabIndex + 1, 0, { id: 'people-types', nameKey: 'settings.modFieldsTabPeopleTypes' });
     }
   }
   if (moduleKey === 'organizations') {
     // Insert "Status & Types" tab after "Field Configurations" and before "Relationships"
     const fieldsTabIndex = tabs.findIndex(tab => tab.id === 'fields');
     if (fieldsTabIndex >= 0) {
-      tabs.splice(fieldsTabIndex + 1, 0, { id: 'status-types', name: 'Status & Types' });
+      tabs.splice(fieldsTabIndex + 1, 0, { id: 'status-types', nameKey: 'settings.modFieldsTabStatusTypes' });
     }
   }
   if (moduleKey === 'tasks') {
@@ -5961,7 +5780,7 @@ const topTabs = computed(() => {
     // See: docs/architecture/task-settings.md Section 3.3
     const fieldsTabIndex = tabs.findIndex(tab => tab.id === 'fields');
     if (fieldsTabIndex >= 0) {
-      tabs.splice(fieldsTabIndex + 1, 0, { id: 'status-priority', name: 'Status & Priority' });
+      tabs.splice(fieldsTabIndex + 1, 0, { id: 'status-priority', nameKey: 'settings.modFieldsTabStatusPriority' });
     }
   }
   if (moduleKey === 'events') {
@@ -5972,8 +5791,8 @@ const topTabs = computed(() => {
     // See: docs/architecture/event-settings.md Section 2.2, 4.3, 4.4, 4.5
     const fieldsTabIndex = tabs.findIndex(tab => tab.id === 'fields');
     if (fieldsTabIndex >= 0) {
-      tabs.splice(fieldsTabIndex + 1, 0, { id: 'status', name: 'Status' });
-      tabs.splice(fieldsTabIndex + 2, 0, { id: 'roles-rules', name: 'Roles & Rules' });
+      tabs.splice(fieldsTabIndex + 1, 0, { id: 'status', nameKey: 'settings.modFieldsTabStatus' });
+      tabs.splice(fieldsTabIndex + 2, 0, { id: 'roles-rules', nameKey: 'settings.modFieldsTabRolesRules' });
     }
   }
   if (moduleKey === 'items') {
@@ -5981,10 +5800,10 @@ const topTabs = computed(() => {
     // ARCHITECTURE NOTE: Items have status and item_type picklists, similar to Tasks
     const fieldsTabIndex = tabs.findIndex(tab => tab.id === 'fields');
     if (fieldsTabIndex >= 0) {
-      tabs.splice(fieldsTabIndex + 1, 0, { id: 'status-types', name: 'Status & Types' });
+      tabs.splice(fieldsTabIndex + 1, 0, { id: 'status-types', nameKey: 'settings.modFieldsTabStatusTypes' });
     }
   }
-  return tabs;
+  return tabs.map(mapTopTab);
 });
 const tabTitleMap = {
   details: 'Module Details',
@@ -6088,64 +5907,64 @@ const DEFAULT_STAGE_DEFINITIONS = [
   { name: 'Closed Lost', probability: 0, status: 'lost', color: DEFAULT_STAGE_COLORS[6] }
 ];
 
-const PLAYBOOK_ACTION_TYPES = [
-  { value: 'task', label: 'Task' },
-  { value: 'call', label: 'Call' },
-  { value: 'meeting', label: 'Meeting' },
-  { value: 'email', label: 'Email' },
-  { value: 'event', label: 'Event' },
-  { value: 'document', label: 'Document Upload' },
-  { value: 'approval', label: 'Approval' },
-  { value: 'alert', label: 'Alert / Reminder' },
-  { value: 'other', label: 'Other' }
-];
+const playbookActionTypes = computed(() => [
+  { value: 'task', label: t('settings.modFieldsPbActionTask') },
+  { value: 'call', label: t('settings.modFieldsPbActionCall') },
+  { value: 'meeting', label: t('settings.modFieldsPbActionMeeting') },
+  { value: 'email', label: t('settings.modFieldsPbActionEmail') },
+  { value: 'event', label: t('settings.modFieldsPbActionEvent') },
+  { value: 'document', label: t('settings.modFieldsPbActionDocument') },
+  { value: 'approval', label: t('settings.modFieldsPbActionApproval') },
+  { value: 'alert', label: t('settings.modFieldsPbActionAlert') },
+  { value: 'other', label: t('settings.modFieldsPbActionOther') }
+]);
 
-const PLAYBOOK_MODE_OPTIONS = [
-  { value: 'sequential', label: 'Sequential (guided steps)' },
-  { value: 'non_sequential', label: 'Flexible (complete in any order)' }
-];
+const playbookModeOptions = computed(() => [
+  { value: 'sequential', label: t('settings.modFieldsPbModeSequential') },
+  { value: 'non_sequential', label: t('settings.modFieldsPbModeFlexible') }
+]);
 
-const PLAYBOOK_EXIT_OPTIONS = [
-  { value: 'manual', label: 'Manual: team decides when to move' },
-  { value: 'all_actions_completed', label: 'Automatic when all actions complete' },
-  { value: 'any_action_completed', label: 'Automatic when any action completes' },
-  { value: 'custom', label: 'Custom conditions' }
-];
+const playbookExitOptions = computed(() => [
+  { value: 'manual', label: t('settings.modFieldsPbExitManual') },
+  { value: 'all_actions_completed', label: t('settings.modFieldsPbExitAllActions') },
+  { value: 'any_action_completed', label: t('settings.modFieldsPbExitAnyAction') },
+  { value: 'custom', label: t('settings.modFieldsPbExitCustom') }
+]);
 
-const PLAYBOOK_TRIGGER_OPTIONS = [
-  { value: 'stage_entry', label: 'On stage entry' },
-  { value: 'after_action', label: 'After another action completes' },
-  { value: 'time_delay', label: 'After a time delay' },
-  { value: 'custom', label: 'Custom conditions' }
-];
+const playbookTriggerOptions = computed(() => [
+  { value: 'stage_entry', label: t('settings.modFieldsPbTriggerStageEntry') },
+  { value: 'after_action', label: t('settings.modFieldsPbTriggerAfterAction') },
+  { value: 'time_delay', label: t('settings.modFieldsPbTriggerTimeDelay') },
+  { value: 'custom', label: t('settings.modFieldsPbTriggerCustom') }
+]);
 
-const PLAYBOOK_ALERT_TYPE_OPTIONS = [
-  { value: 'in_app', label: 'In-app' },
-  { value: 'email', label: 'Email' },
-  { value: 'sms', label: 'SMS' }
-];
+const playbookAlertTypeOptions = computed(() => [
+  { value: 'in_app', label: t('settings.modFieldsPbAlertInApp') },
+  { value: 'email', label: t('settings.modFieldsPbAlertEmail') },
+  { value: 'sms', label: t('settings.modFieldsPbAlertSms') }
+]);
 
-const PLAYBOOK_DELAY_UNIT_OPTIONS = [
-  { value: 'minutes', label: 'Minutes' },
-  { value: 'hours', label: 'Hours' },
-  { value: 'days', label: 'Days' }
-];
+const playbookDelayUnitOptions = computed(() => [
+  { value: 'minutes', label: t('settings.modFieldsPbDelayMinutes') },
+  { value: 'hours', label: t('settings.modFieldsPbDelayHours') },
+  { value: 'days', label: t('settings.modFieldsPbDelayDays') }
+]);
 
-const PLAYBOOK_RESOURCE_TYPES = [
-  { value: 'document', label: 'Document' },
-  { value: 'link', label: 'Link' },
-  { value: 'form', label: 'Form' },
-  { value: 'template', label: 'Template' },
-  { value: 'other', label: 'Other' }
-];
+const playbookResourceTypes = computed(() => [
+  { value: 'document', label: t('settings.modFieldsPbResourceDocument') },
+  { value: 'link', label: t('settings.modFieldsPbResourceLink') },
+  { value: 'form', label: t('settings.modFieldsPbResourceForm') },
+  { value: 'template', label: t('settings.modFieldsPbResourceTemplate') },
+  { value: 'other', label: t('settings.modFieldsPbResourceOther') }
+]);
 
-const PLAYBOOK_ASSIGNMENT_OPTIONS = [
-  { value: 'deal_owner', label: 'Deal Owner' },
-  { value: 'stage_owner', label: 'Stage Owner' },
-  { value: 'role', label: 'Role' },
-  { value: 'team', label: 'Team' },
-  { value: 'specific_user', label: 'Specific User' }
-];
+const playbookAssignmentOptions = computed(() => [
+  { value: 'deal_owner', label: t('settings.modFieldsPbAssignDealOwner') },
+  { value: 'stage_owner', label: t('settings.modFieldsPbAssignStageOwner') },
+  { value: 'role', label: t('settings.modFieldsPbAssignRole') },
+  { value: 'team', label: t('settings.modFieldsPbAssignTeam') },
+  { value: 'specific_user', label: t('settings.modFieldsPbAssignSpecificUser') }
+]);
 
 function slugify(value = '') {
   return String(value)
@@ -6156,7 +5975,7 @@ function slugify(value = '') {
 }
 
 function normalizePlaybookAssignment(assignment = {}) {
-  const type = PLAYBOOK_ASSIGNMENT_OPTIONS.some(opt => opt.value === assignment.type)
+  const type = playbookAssignmentOptions.value.some(opt => opt.value === assignment.type)
     ? assignment.type
     : 'deal_owner';
   return {
@@ -6168,13 +5987,13 @@ function normalizePlaybookAssignment(assignment = {}) {
 }
 
 function normalizeActionTrigger(trigger = {}) {
-  const type = PLAYBOOK_TRIGGER_OPTIONS.some(opt => opt.value === trigger.type)
+  const type = playbookTriggerOptions.value.some(opt => opt.value === trigger.type)
     ? trigger.type
     : 'stage_entry';
   let delay = null;
   if (trigger.delay && typeof trigger.delay === 'object') {
     const amount = Math.max(0, Number(trigger.delay.amount) || 0);
-    const unit = PLAYBOOK_DELAY_UNIT_OPTIONS.some(opt => opt.value === trigger.delay.unit)
+    const unit = playbookDelayUnitOptions.value.some(opt => opt.value === trigger.delay.unit)
       ? trigger.delay.unit
       : 'days';
     delay = { amount, unit };
@@ -6198,13 +6017,13 @@ function normalizeActionTrigger(trigger = {}) {
 function normalizeActionAlerts(alerts = []) {
   if (!Array.isArray(alerts)) return [];
   return alerts.map(alert => {
-    const type = PLAYBOOK_ALERT_TYPE_OPTIONS.some(opt => opt.value === alert.type)
+    const type = playbookAlertTypeOptions.value.some(opt => opt.value === alert.type)
       ? alert.type
       : 'in_app';
     let offset = null;
     if (alert.offset && typeof alert.offset === 'object') {
       const amount = Math.max(0, Number(alert.offset.amount) || 0);
-      const unit = PLAYBOOK_DELAY_UNIT_OPTIONS.some(opt => opt.value === alert.offset.unit)
+      const unit = playbookDelayUnitOptions.value.some(opt => opt.value === alert.offset.unit)
         ? alert.offset.unit
         : 'hours';
       offset = { amount, unit };
@@ -6225,7 +6044,7 @@ function normalizeActionResources(resources = []) {
   if (!Array.isArray(resources)) return [];
   return resources.map(resource => ({
     name: resource?.name || '',
-    type: PLAYBOOK_RESOURCE_TYPES.some(opt => opt.value === resource?.type) ? resource.type : 'document',
+    type: playbookResourceTypes.value.some(opt => opt.value === resource?.type) ? resource.type : 'document',
     url: resource?.url || '',
     description: resource?.description || ''
   }));
@@ -6234,7 +6053,7 @@ function normalizeActionResources(resources = []) {
 function createStagePlaybook(stageKey, stageName, status = 'open', source = null) {
   const baseExitType = (status === 'won' || status === 'lost') ? 'manual' : 'all_actions_completed';
   const exitCriteria = source?.exitCriteria || {};
-  const normalizedExitType = PLAYBOOK_EXIT_OPTIONS.some(opt => opt.value === exitCriteria.type)
+  const normalizedExitType = playbookExitOptions.value.some(opt => opt.value === exitCriteria.type)
     ? exitCriteria.type
     : baseExitType;
 
@@ -6251,7 +6070,7 @@ function createStagePlaybook(stageKey, stageName, status = 'open', source = null
       key,
       title,
       description: action.description || '',
-      actionType: PLAYBOOK_ACTION_TYPES.some(opt => opt.value === action.actionType) ? action.actionType : 'task',
+      actionType: playbookActionTypes.value.some(opt => opt.value === action.actionType) ? action.actionType : 'task',
       dueInDays: Math.max(0, Number(action.dueInDays) || 0),
       assignment: normalizePlaybookAssignment(action.assignment),
       required: action.required !== false,
@@ -6272,7 +6091,7 @@ function createStagePlaybook(stageKey, stageName, status = 'open', source = null
 
   return {
     enabled: source?.enabled === true,
-    mode: PLAYBOOK_MODE_OPTIONS.some(opt => opt.value === source?.mode) ? source.mode : 'sequential',
+    mode: playbookModeOptions.value.some(opt => opt.value === source?.mode) ? source.mode : 'sequential',
     autoAdvance: source?.autoAdvance === true,
     notes: source?.notes || '',
     actions,
@@ -6548,11 +6367,11 @@ function removePipeline(pipelineKey) {
   const pipeline = pipelineSettings.value.find(p => p.key === pipelineKey);
   if (!pipeline) return;
   if (pipeline.isDefault) {
-    alert('Set another pipeline as default before removing this one.');
+    alert(t('settings.modFieldsPipelineRemoveDefaultFirst'));
     return;
   }
   if (pipelineSettings.value.length <= 1) {
-    alert('At least one pipeline is required.');
+    alert(t('settings.modFieldsPipelineMinOne'));
     return;
   }
   const index = pipelineSettings.value.findIndex(p => p.key === pipelineKey);
@@ -6606,7 +6425,7 @@ function addStageToPipeline(pipeline) {
 function removeStageFromPipeline(pipeline, stageIndex) {
   if (!pipeline) return;
   if (pipeline.stages.length <= 1) {
-    alert('A pipeline must contain at least one stage.');
+    alert(t('settings.modFieldsPipelineMinOneStage'));
     return;
   }
   pipeline.stages.splice(stageIndex, 1);
@@ -6672,7 +6491,7 @@ function ensureStagePlaybook(stage) {
   stage.playbook.actions = stage.playbook.actions.map((action, index) => {
     const key = action?.key || slugify(`${stage.key}-action-${index}`);
     const title = action?.title || `Action ${index + 1}`;
-    const actionType = PLAYBOOK_ACTION_TYPES.some(opt => opt.value === action?.actionType) ? action.actionType : 'task';
+    const actionType = playbookActionTypes.value.some(opt => opt.value === action?.actionType) ? action.actionType : 'task';
     const trigger = normalizeActionTrigger(action?.trigger || {});
     if (trigger.type === 'time_delay' && !trigger.delay) {
       trigger.delay = { amount: 0, unit: 'hours' };
@@ -6833,13 +6652,13 @@ function cleanupPlaybookDependencies(stage) {
 }
 
 function getPlaybookActionTypeLabel(actionType) {
-  const option = PLAYBOOK_ACTION_TYPES.find(opt => opt.value === actionType);
-  return option ? option.label : 'Task';
+  const option = playbookActionTypes.value.find(opt => opt.value === actionType);
+  return option ? option.label : t('settings.modFieldsPbActionTask');
 }
 
 function getPlaybookAssignmentLabel(type) {
-  const option = PLAYBOOK_ASSIGNMENT_OPTIONS.find(opt => opt.value === type);
-  return option ? option.label : 'Deal Owner';
+  const option = playbookAssignmentOptions.value.find(opt => opt.value === type);
+  return option ? option.label : t('settings.modFieldsPbAssignDealOwner');
 }
 
 function getActionOptions(stage, currentAction) {
@@ -6905,8 +6724,8 @@ function updateTriggerDelayAmount(action, value) {
 
 function updateTriggerDelayUnit(action, unit) {
   ensureTriggerDelay(action);
-  const fallback = PLAYBOOK_DELAY_UNIT_OPTIONS[0]?.value || 'hours';
-  action.trigger.delay.unit = PLAYBOOK_DELAY_UNIT_OPTIONS.some(opt => opt.value === unit) ? unit : fallback;
+  const fallback = playbookDelayUnitOptions.value[0]?.value || 'hours';
+  action.trigger.delay.unit = playbookDelayUnitOptions.value.some(opt => opt.value === unit) ? unit : fallback;
 }
 
 function addActionAlert(stage, action) {
@@ -6941,8 +6760,8 @@ function updateAlertOffsetAmount(alert, value) {
 
 function updateAlertOffsetUnit(alert, unit) {
   ensureAlertOffset(alert);
-  const fallback = PLAYBOOK_DELAY_UNIT_OPTIONS[0]?.value || 'hours';
-  alert.offset.unit = PLAYBOOK_DELAY_UNIT_OPTIONS.some(opt => opt.value === unit) ? unit : fallback;
+  const fallback = playbookDelayUnitOptions.value[0]?.value || 'hours';
+  alert.offset.unit = playbookDelayUnitOptions.value.some(opt => opt.value === unit) ? unit : fallback;
 }
 
 function updateAlertRecipients(alert, value) {
@@ -6998,12 +6817,12 @@ function spanClass(span) {
   const n = Math.min(12, Math.max(1, Number(span) || 12));
   return colSpanClasses[n - 1];
 }
-const subTabs = [
-  { id: 'general', name: 'General' },
-  { id: 'validations', name: 'Field Validation' },
-  { id: 'filters', name: 'Filter Settings' },
-  { id: 'dependencies', name: 'Dependencies' }
-];
+const subTabs = computed(() => [
+  { id: 'general', name: t('settings.modFieldsSubTabGeneral') },
+  { id: 'validations', name: t('settings.modFieldsSubTabValidations') },
+  { id: 'filters', name: t('settings.modFieldsSubTabFilters') },
+  { id: 'dependencies', name: t('settings.modFieldsSubTabDependencies') }
+]);
 
 function isSubTabDisabled(tabId) {
   if (!currentField.value) return false;
@@ -9723,10 +9542,10 @@ const handleModuleSaved = async (savedModule) => {
 };
 
 const deleteModule = async (mod) => {
-  if (!confirm(`Delete module "${mod.name}"?`)) return;
+  if (!confirm(t('settings.modFieldsConfirmDeleteModule', { name: mod.name }))) return;
   try {
     const data = await apiClient.delete(`/modules/${mod._id}`);
-    if (!data.success) return alert(data.message || 'Failed to delete module');
+    if (!data.success) return alert(data.message || t('settings.modFieldsDeleteModuleFailed'));
     await fetchModules({ cache: 'no-store' });
     if (modules.value.length) selectModule(modules.value[0]); else selectedModuleId.value = null;
   } catch (e) {
@@ -9798,19 +9617,19 @@ const openDeleteFieldConfirm = () => {
   const mod = selectedModule.value;
   const owner = field?.owner || 'platform';
   if (owner === 'platform') {
-    alert('Platform fields cannot be deleted.');
+    alert(t('settings.modFieldsErrPlatformFieldDelete'));
     return;
   }
   if (owner === 'app') {
-    alert('App-managed fields cannot be deleted by organization users.');
+    alert(t('settings.modFieldsErrAppFieldDelete'));
     return;
   }
   if (isSystemField(field)) {
-    alert('System fields cannot be deleted.');
+    alert(t('settings.modFieldsErrSystemFieldDelete'));
     return;
   }
   if (isCoreField(field, mod?.key)) {
-    alert('Core fields cannot be deleted. These fields are essential for the module functionality.');
+    alert(t('settings.modFieldsErrCoreFieldDelete'));
     return;
   }
   showDeleteFieldConfirm.value = true;
@@ -9833,24 +9652,24 @@ const removeField = (idx) => {
   const owner = field?.owner || 'platform'; // Default to platform if not set
   
   if (owner === 'platform') {
-    alert('Platform fields cannot be deleted.');
+    alert(t('settings.modFieldsErrPlatformFieldDelete'));
     return;
   }
   
   if (owner === 'app') {
-    alert('App-managed fields cannot be deleted by organization users.');
+    alert(t('settings.modFieldsErrAppFieldDelete'));
     return;
   }
   
   // Prevent deletion of system fields (legacy check)
   if (isSystemField(field)) {
-    alert('System fields cannot be deleted.');
+    alert(t('settings.modFieldsErrSystemFieldDelete'));
     return;
   }
   
   // Prevent deletion of core fields (legacy check)
   if (isCoreField(field, mod?.key)) {
-    alert('Core fields cannot be deleted. These fields are essential for the module functionality.');
+    alert(t('settings.modFieldsErrCoreFieldDelete'));
     return;
   }
   
@@ -10005,14 +9824,14 @@ const saveModule = async () => {
       const errData = err.response?.data;
       if (errData?.code === 'FIELD_MUTATION_NOT_ALLOWED' && errData.violations?.length > 0) {
         const violationMessages = errData.violations.map(v => `• ${v.field}: ${v.reason}`).join('\n');
-        alert(`${errData.message}\n\nViolations:\n${violationMessages}`);
+        alert(`${errData.message}\n\n${t('settings.modFieldsErrSaveViolationsSuffix', { violations: violationMessages })}`);
       } else {
-        alert(errData?.message || err.message || 'Failed to save');
+        alert(errData?.message || err.message || t('settings.modFieldsErrSaveFailed'));
       }
       return;
     }
     if (!data.success) {
-      alert(data.message || 'Failed to save');
+      alert(data.message || t('settings.modFieldsErrSaveFailed'));
       return;
     }
     invalidateTenantSchemaCaches();
@@ -10040,7 +9859,9 @@ const saveModule = async () => {
     console.log('Module saved successfully, relationships updated');
   } catch (e) {
     console.error('Save module failed', e);
-    alert('Failed to save: ' + (e.message || 'Unknown error'));
+    alert(t('settings.modFieldsErrSaveFailedWithReason', {
+      reason: e.message || t('settings.modFieldsUnknownError')
+    }));
   } finally {
     isSaving.value = false;
   }
@@ -12045,12 +11866,12 @@ async function saveQuickCreate() {
       data = await apiClient.put(url, payload);
     } catch (err) {
       console.error('Save Quick Create failed:', err);
-      alert(err.message || 'Failed to save quick create');
+      alert(err.message || t('settings.modFieldsErrQuickCreateSaveFailed'));
       return;
     }
     if (!data.success) {
       console.error('Save Quick Create failed:', data);
-      alert(data.message || 'Failed to save quick create');
+      alert(data.message || t('settings.modFieldsErrQuickCreateSaveFailed'));
       return;
     }
     
@@ -12108,7 +11929,7 @@ async function saveQuickCreate() {
     try { window.dispatchEvent(new CustomEvent('arivu:core-modules-updated')); } catch (e) {}
   } catch (e) {
     console.error('Save quick create failed', e);
-    alert('Failed to save quick create settings');
+    alert(t('settings.modFieldsErrQuickCreateSettingsFailed'));
   } finally {
     isSavingQuickCreate.value = false;
   }
@@ -12458,7 +12279,7 @@ async function saveItemStatusTypes() {
     itemStatusTypesOriginalSnapshot.value = JSON.stringify(payload);
   } catch (err) {
     console.error('Failed to save item status/types:', err);
-    alert(err.message || 'Failed to save item status/types. Please try again.');
+    alert(err.message || t('settings.modFieldsErrItemStatusTypesSaveFailed'));
   } finally {
     savingItemStatusTypes.value = false;
   }
@@ -13214,7 +13035,7 @@ async function saveStatusTypes() {
     }
   } catch (err) {
     console.error('Failed to save status types:', err);
-    alert(err.message || 'Failed to save status types. Please try again.');
+    alert(err.message || t('settings.modFieldsErrStatusTypesSaveFailed'));
   } finally {
     savingStatusTypes.value = false;
   }

@@ -4,18 +4,16 @@
     <div v-if="loading" class="flex items-center justify-center min-h-screen">
       <div class="text-center">
         <div class="w-16 h-16 border-4 border-gray-200 dark:border-gray-700 border-t-indigo-600 dark:border-t-indigo-500 rounded-full animate-spin mx-auto mb-4"></div>
-        <p class="text-gray-600 dark:text-gray-400 font-medium">Loading deal...</p>
+        <p class="text-gray-600 dark:text-gray-400 font-medium">{{ t('deals.dealDetailLoadingDeal') }}</p>
       </div>
     </div>
 
     <!-- Error -->
     <div v-else-if="error" class="flex items-center justify-center min-h-screen p-4">
       <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Error Loading Deal</h2>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ t('records.dealErrorTitle') }}</h2>
         <p class="text-gray-600 dark:text-gray-400 mb-6">{{ error }}</p>
-        <button @click="$router.push('/deals')" class="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium">
-          Back to Deals
-        </button>
+        <button @click="$router.push('/deals')" class="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium">{{ t('deals.dealDetailBackToDeals') }}</button>
       </div>
     </div>
 
@@ -27,7 +25,7 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          <span class="font-medium">Back</span>
+          <span class="font-medium">{{ t('performance.back') }}</span>
         </button>
 
         <div class="flex items-center gap-2">
@@ -38,21 +36,15 @@
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-            Email
-          </button>
+            </svg>{{ t('settings.settingsAddFieldTypeEmail') }}</button>
           <button @click="editDeal" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 font-medium text-gray-700 dark:text-gray-300 transition-all">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-            Edit
-          </button>
+            </svg>{{ t('settings.groupsEditTitle') }}</button>
           <button @click="deleteDeal" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-all">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-            Delete
-          </button>
+            </svg>{{ t('settings.modFieldsDelete') }}</button>
         </div>
       </div>
 
@@ -87,7 +79,7 @@
                   v-if="deal.derivedStatus"
                   class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                   :class="getStatusClass(deal.status)"
-                  title="System-owned (computed from stage)"
+                  :title="t('deals.dealDetailSystemOwnedComputedFromStage')"
                 >
                   {{ deal.status }}
                 </span>
@@ -123,7 +115,7 @@
                 <svg class="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
-                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Primary Contact</span>
+                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ t('deals.dealDetailPrimaryContact') }}</span>
               </div>
               <p class="text-sm font-semibold text-gray-900 dark:text-white">
                 {{ primaryContact.first_name }} {{ primaryContact.last_name }}
@@ -137,7 +129,7 @@
                 <svg class="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
-                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Primary Customer</span>
+                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ t('deals.dealDetailPrimaryCustomer') }}</span>
               </div>
               <p class="text-sm font-semibold text-gray-900 dark:text-white">
                 {{ primaryCustomer.name }}
@@ -168,7 +160,7 @@
                 <!-- People on this Deal -->
                 <div v-if="allPeople.length" class="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                   <div class="px-3 py-2 bg-gray-50 dark:bg-gray-800/80 border-b border-gray-200 dark:border-gray-700">
-                    <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">People on this Deal</span>
+                    <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">{{ t('deals.dealDetailPeopleOnThisDeal') }}</span>
                   </div>
                   <ul class="divide-y divide-gray-200 dark:divide-gray-700">
                     <li
@@ -182,7 +174,7 @@
                         </p>
                         <div class="flex items-center gap-2 mt-0.5 flex-wrap">
                           <span class="text-xs text-gray-500 dark:text-gray-400">{{ participantRoleLabel(entry.role, 'person') }}</span>
-                          <span v-if="entry.isPrimary" class="inline-flex px-1.5 py-0.5 rounded text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300">Primary</span>
+                          <span v-if="entry.isPrimary" class="inline-flex px-1.5 py-0.5 rounded text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300">{{ t('forms.rtColorPrimary') }}</span>
                         </div>
                       </div>
                     </li>
@@ -191,7 +183,7 @@
                 <!-- Organizations on this Deal -->
                 <div v-if="allOrgs.length" class="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                   <div class="px-3 py-2 bg-gray-50 dark:bg-gray-800/80 border-b border-gray-200 dark:border-gray-700">
-                    <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">Organizations on this Deal</span>
+                    <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">{{ t('deals.dealDetailOrganizationsOnThisDeal') }}</span>
                   </div>
                   <ul class="divide-y divide-gray-200 dark:divide-gray-700">
                     <li
@@ -205,7 +197,7 @@
                         </p>
                         <div class="flex items-center gap-2 mt-0.5 flex-wrap">
                           <span class="text-xs text-gray-500 dark:text-gray-400">{{ participantRoleLabel(entry.role, 'org') }}</span>
-                          <span v-if="entry.isPrimary" class="inline-flex px-1.5 py-0.5 rounded text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300">Primary</span>
+                          <span v-if="entry.isPrimary" class="inline-flex px-1.5 py-0.5 rounded text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300">{{ t('forms.rtColorPrimary') }}</span>
                         </div>
                       </div>
                     </li>
@@ -221,7 +213,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
                 <div class="flex-1">
-                  <p class="text-xs text-gray-500 dark:text-gray-400">Owner</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.roleUsersOwner') }}</p>
                   <p class="text-xs font-medium text-gray-900 dark:text-white">
                     {{ deal.ownerId.firstName }} {{ deal.ownerId.lastName }}
                   </p>
@@ -233,7 +225,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                 </svg>
                 <div class="flex-1">
-                  <p class="text-xs text-gray-500 dark:text-gray-400">Type</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsValidationType') }}</p>
                   <p class="text-xs font-medium text-gray-900 dark:text-white">{{ deal.type }}</p>
                 </div>
               </div>
@@ -243,7 +235,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
                 <div class="flex-1">
-                  <p class="text-xs text-gray-500 dark:text-gray-400">Source</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('common.metricsSource') }}</p>
                   <p class="text-xs font-medium text-gray-900 dark:text-white">{{ deal.source }}</p>
                 </div>
               </div>
@@ -253,7 +245,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <div class="flex-1">
-                  <p class="text-xs text-gray-500 dark:text-gray-400">Expected Close</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('deals.dealDetailExpectedClose') }}</p>
                   <p class="text-xs font-medium text-gray-900 dark:text-white">{{ formatDate(deal.expectedCloseDate) }}</p>
                 </div>
               </div>
@@ -263,7 +255,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <div class="flex-1">
-                  <p class="text-xs text-gray-500 dark:text-gray-400">Created</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('forms.hubColCreated') }}</p>
                   <p class="text-xs font-medium text-gray-900 dark:text-white">{{ formatDate(deal.createdAt) }}</p>
                 </div>
               </div>
@@ -278,7 +270,7 @@
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3">
               <div class="flex items-center justify-between">
                 <div>
-                  <p class="text-xs text-gray-600 dark:text-gray-400 font-medium">Weighted</p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400 font-medium">{{ t('settings.assignRulesDistWeighted') }}</p>
                   <p class="text-xl font-bold text-gray-900 dark:text-white mt-0.5">
                     ${{ ((deal.amount || 0) * (deal.probability || 0) / 100).toLocaleString() }}
                   </p>
@@ -294,7 +286,7 @@
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3">
               <div class="flex items-center justify-between">
                 <div>
-                  <p class="text-xs text-gray-600 dark:text-gray-400 font-medium">Notes</p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400 font-medium">{{ t('forms.fieldNotes') }}</p>
                   <p class="text-xl font-bold text-gray-900 dark:text-white mt-0.5">{{ deal.notes?.length || 0 }}</p>
                 </div>
                 <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
@@ -308,7 +300,7 @@
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3">
               <div class="flex items-center justify-between">
                 <div>
-                  <p class="text-xs text-gray-600 dark:text-gray-400 font-medium">Age</p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400 font-medium">{{ t('deals.dealDetailAge') }}</p>
                   <p class="text-xl font-bold text-gray-900 dark:text-white mt-0.5">{{ getDealAge() }}d</p>
                 </div>
                 <div class="w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
@@ -322,13 +314,13 @@
 
           <!-- Description -->
           <div v-if="deal.description" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-            <h3 class="text-base font-bold text-gray-900 dark:text-white mb-2">Description</h3>
+            <h3 class="text-base font-bold text-gray-900 dark:text-white mb-2">{{ t('settings.coreModDetailDescription') }}</h3>
             <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ deal.description }}</p>
           </div>
 
           <!-- Stage History -->
           <div v-if="deal.stageHistory && deal.stageHistory.length > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-            <h3 class="text-base font-bold text-gray-900 dark:text-white mb-3">Stage History</h3>
+            <h3 class="text-base font-bold text-gray-900 dark:text-white mb-3">{{ t('records.stageHistoryTitle') }}</h3>
             <div class="space-y-2">
               <div v-for="(history, index) in deal.stageHistory.slice(0, 5)" :key="index" class="flex items-center gap-2 text-xs">
                 <div class="w-2 h-2 rounded-full bg-indigo-600 dark:bg-indigo-500"></div>
@@ -343,13 +335,11 @@
           <!-- Related Events -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
             <div class="flex items-center justify-between mb-3">
-              <h3 class="text-base font-bold text-gray-900 dark:text-white">Events</h3>
+              <h3 class="text-base font-bold text-gray-900 dark:text-white">{{ t('settings.coreModDetailModuleEvents') }}</h3>
               <button @click="openCreateEvent" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Add Event
-              </button>
+                </svg>{{ t('deals.dealDetailAddEvent') }}</button>
             </div>
             
             <RelatedEventsWidget
@@ -365,7 +355,7 @@
 
           <!-- Related Records Panel (Phase 1B: Read-only visibility) -->
           <div v-if="deal._id" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-            <h3 class="text-base font-bold text-gray-900 dark:text-white mb-4">Related Records</h3>
+            <h3 class="text-base font-bold text-gray-900 dark:text-white mb-4">{{ t('records.taskRelatedRecordsTab') }}</h3>
             <RelatedRecordsPanel
               app-key="SALES"
               module-key="deals"
@@ -388,26 +378,20 @@
               <button @click="showNoteForm = true" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Add
-              </button>
+                </svg>{{ t('actions.add') }}</button>
             </div>
 
             <!-- Note Form -->
             <div v-if="showNoteForm" class="mb-4">
               <textarea 
                 v-model="newNote" 
-                placeholder="Add a note..."
+                :placeholder="t('deals.dealDetailAddANote')"
                 rows="2"
                 class="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 focus:border-transparent resize-none transition-all"
               ></textarea>
               <div class="flex items-center justify-end gap-2 mt-2">
-                <button @click="showNoteForm = false; newNote = ''" class="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                  Cancel
-                </button>
-                <button @click="addNote" :disabled="!newNote.trim()" class="px-3 py-1.5 bg-indigo-600 text-white text-xs rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors">
-                  Save
-                </button>
+                <button @click="showNoteForm = false; newNote = ''" class="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">{{ t('performance.cancelWizard') }}</button>
+                <button @click="addNote" :disabled="!newNote.trim()" class="px-3 py-1.5 bg-indigo-600 text-white text-xs rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors">{{ t('actions.save') }}</button>
               </div>
             </div>
 
@@ -443,7 +427,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                   </svg>
                 </div>
-                <p class="text-gray-500 dark:text-gray-400 text-xs font-medium mb-1">No activity yet</p>
+                <p class="text-gray-500 dark:text-gray-400 text-xs font-medium mb-1">{{ t('common.summaryNoActivity') }}</p>
                 <p class="text-gray-400 dark:text-gray-500 text-xs">Click "Add" to start tracking</p>
               </div>
             </div>
@@ -482,6 +466,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useTabs } from '@/composables/useTabs';
@@ -707,7 +694,7 @@ const deleteDeal = async () => {
     router.push('/deals');
   } catch (err) {
     console.error('Error deleting deal:', err);
-    alert('Failed to delete deal');
+    alert(t('common.dealDetailToastFailedToDeleteDeal'));
   }
 };
 
@@ -726,7 +713,7 @@ const addNote = async () => {
     }
   } catch (err) {
     console.error('Error adding note:', err);
-    alert('Failed to add note');
+    alert(t('common.dealDetailToastFailedToAddNote'));
   }
 };
 

@@ -24,12 +24,12 @@
         >
           <template v-if="props.moduleKey === 'tasks' && col.fieldKey === 'description'">
             <label :for="`field-${col.fieldKey}`" class="block text-sm font-medium text-gray-900 dark:text-white mb-1">
-              {{ getFieldDisplayLabel(getFieldByKey(col.fieldKey)) || 'Description' }}
+              {{ getFieldDisplayLabel(getFieldByKey(col.fieldKey)) || t('common.taskDescriptionFallback') }}
               <span v-if="getFieldByKey(col.fieldKey)?.required" class="text-red-500">*</span>
             </label>
             <TaskDescriptionEditor
               :model-value="localFormData[col.fieldKey] || ''"
-              placeholder="Write or type '/' for commands"
+              :placeholder="t('common.taskDescriptionPlaceholder')"
               class="w-full"
               @update:model-value="(v) => updateField(col.fieldKey, v)"
             />
@@ -59,7 +59,7 @@
         <div v-if="quickCreateFields.length" class="space-y-3">
           <div class="flex items-center gap-3">
             <h3 class="text-sm font-semibold tracking-wide text-gray-900 dark:text-white uppercase">
-              Quick Create Fields
+              {{ t('common.formQuickCreateFields') }}
             </h3>
             <div class="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
           </div>
@@ -75,12 +75,12 @@
             >
               <template v-if="props.moduleKey === 'tasks' && field.key === 'description'">
                 <label :for="`field-${field.key}`" class="block text-sm font-medium text-gray-900 dark:text-white mb-1">
-                  {{ getFieldDisplayLabel(field) || 'Description' }}
+                  {{ getFieldDisplayLabel(field) || t('common.taskDescriptionFallback') }}
                   <span v-if="field.required" class="text-red-500">*</span>
                 </label>
                 <TaskDescriptionEditor
                   :model-value="localFormData[field.key] || ''"
-                  placeholder="Write or type '/' for commands"
+                  :placeholder="t('common.taskDescriptionPlaceholder')"
                   class="w-full"
                   @update:model-value="(v) => updateField(field.key, v)"
                 />
@@ -89,7 +89,7 @@
               <template v-else-if="props.moduleKey === 'tasks' && field.key === 'relatedTo'">
                 <TaskRelatedToField
                   :model-value="normalizedRelatedTo(localFormData[field.key])"
-                  :label="getFieldDisplayLabel(field) || 'Related To'"
+                  :label="getFieldDisplayLabel(field) || t('common.taskRelatedToFallback')"
                   :required="!!field.required"
                   :error="errors[field.key]"
                   @update:model-value="(v) => updateField(field.key, v)"
@@ -98,7 +98,7 @@
               <template v-else-if="props.moduleKey === 'tasks' && field.key === 'subtasks'">
                 <TaskSubtasksField
                   :model-value="localFormData.subtasks || []"
-                  label="Subtasks"
+                  :label="t('common.taskSubtasksLabel')"
                   :error="errors.subtasks"
                   @update:model-value="(v) => updateField('subtasks', v)"
                 />
@@ -143,12 +143,12 @@
             >
               <template v-if="props.moduleKey === 'tasks' && field.key === 'description'">
                 <label :for="`field-${field.key}`" class="block text-sm font-medium text-gray-900 dark:text-white mb-1">
-                  {{ getFieldDisplayLabel(field) || 'Description' }}
+                  {{ getFieldDisplayLabel(field) || t('common.taskDescriptionFallback') }}
                   <span v-if="field.required" class="text-red-500">*</span>
                 </label>
                 <TaskDescriptionEditor
                   :model-value="localFormData[field.key] || ''"
-                  placeholder="Write or type '/' for commands"
+                  :placeholder="t('common.taskDescriptionPlaceholder')"
                   class="w-full"
                   @update:model-value="(v) => updateField(field.key, v)"
                 />
@@ -157,7 +157,7 @@
               <template v-else-if="props.moduleKey === 'tasks' && field.key === 'relatedTo'">
                 <TaskRelatedToField
                   :model-value="normalizedRelatedTo(localFormData[field.key])"
-                  :label="getFieldDisplayLabel(field) || 'Related To'"
+                  :label="getFieldDisplayLabel(field) || t('common.taskRelatedToFallback')"
                   :required="!!field.required"
                   :error="errors[field.key]"
                   @update:model-value="(v) => updateField(field.key, v)"
@@ -166,7 +166,7 @@
               <template v-else-if="props.moduleKey === 'tasks' && field.key === 'subtasks'">
                 <TaskSubtasksField
                   :model-value="localFormData.subtasks || []"
-                  label="Subtasks"
+                  :label="t('common.taskSubtasksLabel')"
                   :error="errors.subtasks"
                   @update:model-value="(v) => updateField('subtasks', v)"
                 />
@@ -203,12 +203,12 @@
           >
             <template v-if="props.moduleKey === 'tasks' && field.key === 'description'">
               <label :for="`field-${field.key}`" class="block text-sm font-medium text-gray-900 dark:text-white mb-1">
-                {{ getFieldDisplayLabel(field) || 'Description' }}
+                {{ getFieldDisplayLabel(field) || t('common.taskDescriptionFallback') }}
                 <span v-if="field.required" class="text-red-500">*</span>
               </label>
               <TaskDescriptionEditor
                 :model-value="localFormData[field.key] || ''"
-                placeholder="Write or type '/' for commands"
+                :placeholder="t('common.taskDescriptionPlaceholder')"
                 class="w-full"
                 @update:model-value="(v) => updateField(field.key, v)"
               />
@@ -217,7 +217,7 @@
             <template v-else-if="props.moduleKey === 'tasks' && field.key === 'relatedTo'">
               <TaskRelatedToField
                 :model-value="normalizedRelatedTo(localFormData[field.key])"
-                :label="getFieldDisplayLabel(field) || 'Related To'"
+                :label="getFieldDisplayLabel(field) || t('common.taskRelatedToFallback')"
                 :required="!!field.required"
                 :error="errors[field.key]"
                 @update:model-value="(v) => updateField(field.key, v)"
@@ -226,7 +226,7 @@
             <template v-else-if="props.moduleKey === 'tasks' && field.key === 'subtasks'">
               <TaskSubtasksField
                 :model-value="localFormData.subtasks || []"
-                label="Subtasks"
+                :label="t('common.taskSubtasksLabel')"
                 :error="errors.subtasks"
                 @update:model-value="(v) => updateField('subtasks', v)"
               />
@@ -262,12 +262,12 @@
           >
             <template v-if="props.moduleKey === 'tasks' && field.key === 'description'">
               <label :for="`field-${field.key}`" class="block text-sm font-medium text-gray-900 dark:text-white mb-1">
-                {{ getFieldDisplayLabel(field) || 'Description' }}
+                {{ getFieldDisplayLabel(field) || t('common.taskDescriptionFallback') }}
                 <span v-if="field.required" class="text-red-500">*</span>
               </label>
               <TaskDescriptionEditor
                 :model-value="localFormData[field.key] || ''"
-                placeholder="Write or type '/' for commands"
+                :placeholder="t('common.taskDescriptionPlaceholder')"
                 class="w-full"
                 @update:model-value="(v) => updateField(field.key, v)"
               />
@@ -276,7 +276,7 @@
             <template v-else-if="props.moduleKey === 'tasks' && field.key === 'relatedTo'">
               <TaskRelatedToField
                 :model-value="normalizedRelatedTo(localFormData[field.key])"
-                :label="getFieldDisplayLabel(field) || 'Related To'"
+                :label="getFieldDisplayLabel(field) || t('common.taskRelatedToFallback')"
                 :required="!!field.required"
                 :error="errors[field.key]"
                 @update:model-value="(v) => updateField(field.key, v)"
@@ -285,7 +285,7 @@
             <template v-else-if="props.moduleKey === 'tasks' && field.key === 'subtasks'">
               <TaskSubtasksField
                 :model-value="localFormData.subtasks || []"
-                label="Subtasks"
+                :label="t('common.taskSubtasksLabel')"
                 :error="errors.subtasks"
                 @update:model-value="(v) => updateField('subtasks', v)"
               />
@@ -320,12 +320,12 @@
           <!-- Task description: full-width TipTap editor (same as edit drawer) -->
           <template v-if="props.moduleKey === 'tasks' && field.key === 'description'">
             <label :for="`field-${field.key}`" class="block text-sm font-medium text-gray-900 dark:text-white mb-1">
-              {{ getFieldDisplayLabel(field) || 'Description' }}
+              {{ getFieldDisplayLabel(field) || t('common.taskDescriptionFallback') }}
               <span v-if="field.required" class="text-red-500">*</span>
             </label>
             <TaskDescriptionEditor
               :model-value="localFormData[field.key] || ''"
-              placeholder="Write or type '/' for commands"
+              :placeholder="t('common.taskDescriptionPlaceholder')"
               class="w-full"
               @update:model-value="(v) => updateField(field.key, v)"
             />
@@ -334,7 +334,7 @@
           <template v-else-if="props.moduleKey === 'tasks' && field.key === 'relatedTo'">
             <TaskRelatedToField
               :model-value="normalizedRelatedTo(localFormData[field.key])"
-              :label="getFieldDisplayLabel(field) || 'Related To'"
+              :label="getFieldDisplayLabel(field) || t('common.taskRelatedToFallback')"
               :required="!!field.required"
               :error="errors[field.key]"
               @update:model-value="(v) => updateField(field.key, v)"
@@ -343,7 +343,7 @@
           <template v-else-if="props.moduleKey === 'tasks' && field.key === 'subtasks'">
             <TaskSubtasksField
               :model-value="localFormData.subtasks || []"
-              label="Subtasks"
+              :label="t('common.taskSubtasksLabel')"
               :error="errors.subtasks"
               @update:model-value="(v) => updateField('subtasks', v)"
             />
@@ -370,6 +370,9 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import DynamicFormField from './DynamicFormField.vue';
 import TaskDescriptionEditor from '@/components/record-page/TaskDescriptionEditor.vue';
 import TaskRelatedToField from '@/components/tasks/TaskRelatedToField.vue';
@@ -582,11 +585,11 @@ const orderedFields = computed(() => {
     if (props.moduleKey?.toLowerCase() === 'tasks') {
       const hasRelatedTo = allFields.some((f) => String(f?.key).toLowerCase() === 'relatedto');
       if (!hasRelatedTo) {
-        allFields = [...allFields, { key: 'relatedTo', label: 'Related To', required: false }];
+        allFields = [...allFields, { key: 'relatedTo', label: t('common.taskRelatedToFallback'), required: false }];
       }
       const hasSubtasks = allFields.some((f) => String(f?.key).toLowerCase() === 'subtasks');
       if (!hasSubtasks) {
-        allFields = [...allFields, { key: 'subtasks', label: 'Subtasks', required: false, order: 999 }];
+        allFields = [...allFields, { key: 'subtasks', label: t('common.taskSubtasksLabel'), required: false, order: 999 }];
       }
     }
     const systemFieldKeys = Array.from(INTERNAL_FALLBACK_SYSTEM_KEYS);
@@ -656,11 +659,11 @@ const orderedFields = computed(() => {
   if (props.moduleKey?.toLowerCase() === 'tasks') {
     const hasRelatedTo = allFields.some((f) => String(f?.key).toLowerCase() === 'relatedto');
     if (!hasRelatedTo) {
-      allFields = [...allFields, { key: 'relatedTo', label: 'Related To', required: false }];
+      allFields = [...allFields, { key: 'relatedTo', label: t('common.taskRelatedToFallback'), required: false }];
     }
     const hasSubtasks = allFields.some((f) => String(f?.key).toLowerCase() === 'subtasks');
     if (!hasSubtasks) {
-      allFields = [...allFields, { key: 'subtasks', label: 'Subtasks', required: false, order: 999 }];
+      allFields = [...allFields, { key: 'subtasks', label: t('common.taskSubtasksLabel'), required: false, order: 999 }];
     }
   }
   

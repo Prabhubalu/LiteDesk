@@ -10,6 +10,7 @@ const { tickSnoozeWakeNotifications } = require('./snoozeWakeNotificationSchedul
 const { tickAppointmentReminders } = require('./appointmentReminderSchedulerService');
 const { processDueDeferredAutomationActions } = require('./deferredAutomationSchedulerService');
 const { tickBusinessHoursKpiAggregation } = require('./businessHoursKpiSchedulerService');
+const { tickProcessWaitResume } = require('./processWaitResumeSchedulerService');
 
 const NOTIFICATION_DEBUG = process.env.NOTIFICATION_DEBUG === 'true';
 const ENABLE_DIGEST_SCHEDULER = process.env.ENABLE_DIGEST_SCHEDULER !== 'false'; // Default: enabled
@@ -27,6 +28,10 @@ const ENABLE_DEFERRED_AUTOMATION_SCHEDULER =
   process.env.ENABLE_DEFERRED_AUTOMATION_SCHEDULER !== 'false';
 const ENABLE_BUSINESS_HOURS_KPI_SCHEDULER =
   process.env.ENABLE_BUSINESS_HOURS_KPI_SCHEDULER !== 'false';
+const ENABLE_PROCESS_WAIT_RESUME_SCHEDULER =
+  process.env.ENABLE_PROCESS_WAIT_RESUME_SCHEDULER !== 'false';
+const ENABLE_TARGET_RECALC_SCHEDULER =
+  process.env.ENABLE_TARGET_RECALC_SCHEDULER !== 'false';
 
 let dailyDigestJob = null;
 let weeklyDigestJob = null;
@@ -39,6 +44,8 @@ let snoozeWakeNotificationJob = null;
 let appointmentReminderJob = null;
 let deferredAutomationJob = null;
 let businessHoursKpiJob = null;
+let processWaitResumeJob = null;
+let targetRecalcJob = null;
 
 /**
  * Initialize and start scheduled jobs (node-cron).
@@ -165,6 +172,24 @@ function startScheduledJobs() {
     console.log('[scheduledJobs] Assignment scheduler disabled (ENABLE_ASSIGNMENT_SCHEDULER=false)');
   }
 
+  if (ENABLE_PROCESS_WAIT_RESUME_SCHEDULER) {
+    processWaitResumeJob = cron.schedule('* * * * *', async () => {
+      try {
+        const result = await tickProcessWaitResume();
+        if (result.due > 0 || NOTIFICATION_DEBUG) {
+          console.log(
+            `[scheduledJobs] Process wait resume: tenants=${result.tenantsProcessed} due=${result.due} resumed=${result.resumed} failed=${result.failed}`
+          );
+        }
+      } catch (err) {
+        console.error('[scheduledJobs] Process wait resume tick failed:', err.message);
+      }
+    }, { scheduled: true, timezone: process.env.DIGEST_TIMEZONE || 'UTC' });
+    console.log('[scheduledJobs]   - Process wait resume: every minute');
+  } else {
+    console.log('[scheduledJobs] Process wait resume scheduler disabled (ENABLE_PROCESS_WAIT_RESUME_SCHEDULER=false)');
+  }
+
   if (ENABLE_DEFERRED_AUTOMATION_SCHEDULER) {
     deferredAutomationJob = cron.schedule('* * * * *', async () => {
       try {
@@ -197,6 +222,26 @@ function startScheduledJobs() {
       console.log(`[scheduledJobs]   - Business hours KPI aggregation: ${kpiCron}`);
     } else {
       console.error(`[scheduledJobs] Invalid BUSINESS_HOURS_KPI_CRON="${kpiCron}"`);
+    }
+  }
+
+  if (ENABLE_TARGET_RECALC_SCHEDULER) {
+    const targetCron = String(process.env.TARGET_RECALC_CRON || '30 2 * * *').trim();
+    const { tickTargetRecalc } = require('./targets/targetRecalcScheduler');
+    if (cron.validate(targetCron)) {
+      targetRecalcJob = cron.schedule(targetCron, async () => {
+        try {
+          const result = await tickTargetRecalc();
+          console.log(
+            `[scheduledJobs] Target recalc: tenants=${result.tenants} processed=${result.processed} failed=${result.failed}`
+          );
+        } catch (err) {
+          console.error('[scheduledJobs] Target recalc tick failed:', err.message);
+        }
+      }, { scheduled: true, timezone: process.env.DIGEST_TIMEZONE || 'UTC' });
+      console.log(`[scheduledJobs]   - Target recalc fallback: ${targetCron}`);
+    } else {
+      console.error(`[scheduledJobs] Invalid TARGET_RECALC_CRON="${targetCron}"`);
     }
   }
 
@@ -388,6 +433,18 @@ function stopScheduledJobs() {
     businessHoursKpiJob.stop();
     businessHoursKpiJob = null;
     console.log('[scheduledJobs] Business hours KPI job stopped');
+  }
+
+  if (processWaitResumeJob) {
+    processWaitResumeJob.stop();
+    processWaitResumeJob = null;
+    console.log('[scheduledJobs] Process wait resume job stopped');
+  }
+
+  if (targetRecalcJob) {
+    targetRecalcJob.stop();
+    targetRecalcJob = null;
+    console.log('[scheduledJobs] Target recalc job stopped');
   }
 }
 

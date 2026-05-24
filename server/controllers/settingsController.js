@@ -628,6 +628,13 @@ exports.toggleAppParticipation = async (req, res) => {
         
         await organization.save();
 
+        try {
+            const { invalidateTenantPermissionCaches } = require('../services/rolePermissionCatalogService');
+            invalidateTenantPermissionCaches(req.user.organizationId);
+        } catch (_cacheErr) {
+            console.warn('[toggleAppParticipation] cache invalidation failed:', _cacheErr.message);
+        }
+
         res.json({
             success: true,
             message: `Application participation ${enabled ? 'enabled' : 'disabled'} successfully`,

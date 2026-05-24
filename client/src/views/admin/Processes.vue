@@ -4,20 +4,20 @@
     <header class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div>
         <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-          Processes
+          {{ t('process.processListTitle') }}
         </h1>
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-          Processes control how your system behaves automatically.
+          {{ t('process.processListDescription') }}
         </p>
       </div>
       <button
-        @click="openCreateWizard"
+        @click="openDesignerNew"
         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        New Process
+        {{ t('process.processNew') }}
       </button>
     </header>
 
@@ -28,20 +28,20 @@
         @change="loadProcesses"
         class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
       >
-        <option value="">All Apps</option>
-        <option value="SALES">SALES</option>
-        <option value="AUDIT">AUDIT</option>
-        <option value="PORTAL">PORTAL</option>
+        <option value="">{{ t('process.filterApps') }}</option>
+        <option value="SALES">{{ t('process.appKeySales') }}</option>
+        <option value="AUDIT">{{ t('process.appKeyAudit') }}</option>
+        <option value="PORTAL">{{ t('process.appKeyPortal') }}</option>
       </select>
       <select
         v-model="filters.status"
         @change="loadProcesses"
         class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
       >
-        <option value="">All Status</option>
-        <option value="draft">Draft</option>
-        <option value="active">Active</option>
-        <option value="archived">Archived</option>
+        <option value="">{{ t('process.filterStatus') }}</option>
+        <option value="draft">{{ t('process.statusDraft') }}</option>
+        <option value="active">{{ t('process.statusActive') }}</option>
+        <option value="archived">{{ t('process.statusArchived') }}</option>
       </select>
     </div>
 
@@ -81,7 +81,7 @@
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                 ]"
               >
-                {{ process.status === 'active' ? 'Active' : process.status === 'draft' ? 'Draft' : 'Archived' }}
+                {{ processStatusLabel(process.status) }}
               </span>
             </div>
             <p v-if="process.description" class="text-sm text-gray-600 dark:text-gray-400 mb-3">
@@ -89,17 +89,23 @@
             </p>
             <div class="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
               <span>
-                <span class="font-medium">App:</span> {{ process.appKey }}
+                <span class="font-medium">{{ t('process.labelApp') }}</span> {{ process.appKey }}
               </span>
               <span>
-                <span class="font-medium">Trigger:</span>
-                {{ process.trigger.type === 'domain_event' ? process.trigger.eventType : 'Manual' }}
+                <span class="font-medium">{{ t('process.labelTrigger') }}</span>
+                {{
+                  process.trigger.type === 'domain_event'
+                    ? process.trigger.eventType
+                    : process.trigger.type === 'webhook'
+                    ? t('process.triggerWebhook')
+                    : t('process.triggerManual')
+                }}
               </span>
               <span>
-                <span class="font-medium">Nodes:</span> {{ process.nodes?.length || 0 }}
+                <span class="font-medium">{{ t('process.labelNodes') }}</span> {{ process.nodes?.length || 0 }}
               </span>
               <span v-if="process.updatedAt">
-                <span class="font-medium">Updated:</span>
+                <span class="font-medium">{{ t('process.labelUpdated') }}</span>
                 {{ formatDate(process.updatedAt) }}
               </span>
             </div>
@@ -108,7 +114,7 @@
             <button
               @click="viewExecutions(process)"
               class="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
-              title="View Logs"
+              :title="t('process.processTooltipViewLogs')"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -118,7 +124,7 @@
               v-if="process.status === 'draft'"
               @click="activateProcess(process)"
               class="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
-              title="Activate"
+              :title="t('process.processTooltipActivate')"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -128,7 +134,7 @@
               v-else-if="process.status === 'active'"
               @click="deactivateProcess(process)"
               class="p-2 text-gray-500 hover:text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 rounded-lg transition-colors"
-              title="Deactivate"
+              :title="t('process.processTooltipDeactivate')"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
@@ -137,7 +143,7 @@
             <button
               @click="duplicateProcess(process)"
               class="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
-              title="Duplicate"
+              :title="t('actions.duplicate')"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -146,7 +152,7 @@
             <button
               @click="editProcess(process)"
               class="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
-              title="Edit"
+              :title="t('actions.edit')"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -162,35 +168,20 @@
       <svg class="w-12 h-12 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No processes</h3>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('process.processEmptyTitle') }}</h3>
       <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-        Processes control how your system behaves automatically.
+        {{ t('process.processListDescription') }}
       </p>
       <button
-        @click="openCreateWizard"
+        @click="openDesignerNew"
         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        New Process
+        {{ t('process.processNew') }}
       </button>
     </div>
-
-    <!-- Process Creation Wizard -->
-    <ProcessCreationWizard
-      v-if="showWizard"
-      @close="showWizard = false"
-      @saved="handleProcessSaved"
-    />
-
-    <!-- Process Editor -->
-    <ProcessEditor
-      v-if="editingProcess"
-      :process="editingProcess"
-      @close="editingProcess = null"
-      @saved="handleProcessSaved"
-    />
 
     <!-- Execution Logs Modal -->
     <ProcessExecutionLogs
@@ -204,11 +195,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
-import ProcessCreationWizard from '@/components/admin/ProcessCreationWizard.vue';
-import ProcessEditor from '@/components/admin/ProcessEditor.vue';
 import ProcessExecutionLogs from '@/components/admin/ProcessExecutionLogs.vue';
 
+const { t } = useI18n();
 const router = useRouter();
 
 const processes = ref([]);
@@ -218,9 +209,13 @@ const filters = ref({
   appKey: '',
   status: ''
 });
-const showWizard = ref(false);
-const editingProcess = ref(null);
 const viewingExecutions = ref(null);
+
+function processStatusLabel(status) {
+  if (status === 'active') return t('process.statusActive');
+  if (status === 'draft') return t('process.statusDraft');
+  return t('process.statusArchived');
+}
 
 const loadProcesses = async () => {
   loading.value = true;
@@ -233,7 +228,7 @@ const loadProcesses = async () => {
     const response = await apiClient.get('/admin/processes', { params });
     processes.value = response.data || [];
   } catch (err) {
-    error.value = err.message || 'Failed to load processes';
+    error.value = err.message || t('process.processLoadFailed');
     console.error('Error loading processes:', err);
   } finally {
     loading.value = false;
@@ -246,14 +241,12 @@ const formatDate = (dateString) => {
   return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
-const openCreateWizard = () => {
-  showWizard.value = true;
+const openDesignerNew = () => {
+  router.push({ name: 'process-designer-new' });
 };
 
 const editProcess = (process) => {
-  // Allow opening any process in editor
-  // Editor will show read-only banner for active processes
-  editingProcess.value = process;
+  router.push({ name: 'process-designer', params: { id: process._id } });
 };
 
 const duplicateProcess = async (process) => {
@@ -261,10 +254,12 @@ const duplicateProcess = async (process) => {
     const response = await apiClient.post(`/admin/processes/${process._id}/duplicate`);
     if (response.success) {
       await loadProcesses();
-      alert('Process duplicated successfully');
+      if (response.data?._id) {
+        router.push({ name: 'process-designer', params: { id: response.data._id } });
+      }
     }
   } catch (err) {
-    alert(err.message || 'Failed to duplicate process');
+    alert(err.message || t('process.processDuplicateFailed'));
   }
 };
 
@@ -273,10 +268,10 @@ const activateProcess = async (process) => {
     const response = await apiClient.put(`/admin/processes/${process._id}/status`, { status: 'active' });
     if (response.success) {
       await loadProcesses();
-      alert('Process activated successfully');
+      alert(t('process.processActivateSuccess'));
     }
   } catch (err) {
-    alert(err.message || 'Failed to activate process');
+    alert(err.message || t('process.processActivateFailed'));
   }
 };
 
@@ -285,10 +280,10 @@ const deactivateProcess = async (process) => {
     const response = await apiClient.put(`/admin/processes/${process._id}/status`, { status: 'archived' });
     if (response.success) {
       await loadProcesses();
-      alert('Process deactivated successfully');
+      alert(t('process.processDeactivateSuccess'));
     }
   } catch (err) {
-    alert(err.message || 'Failed to deactivate process');
+    alert(err.message || t('process.processDeactivateFailed'));
   }
 };
 
@@ -296,30 +291,8 @@ const viewExecutions = (process) => {
   viewingExecutions.value = process;
 };
 
-const handleProcessSaved = async (duplicatedProcess) => {
-  showWizard.value = false;
-  await loadProcesses();
-  
-  // If a process was duplicated, open it for editing
-  if (duplicatedProcess && duplicatedProcess._id) {
-    // Find the newly duplicated process (it will have a new _id)
-    const newProcess = processes.value.find(p => 
-      p.name === duplicatedProcess.name && 
-      p.status === 'draft' &&
-      p._id !== editingProcess.value?._id
-    );
-    if (newProcess) {
-      editingProcess.value = newProcess;
-    } else {
-      editingProcess.value = null;
-    }
-  } else {
-    editingProcess.value = null;
-  }
-};
-
 onMounted(() => {
-  document.title = 'Processes | Arivu';
+  document.title = t('process.processListPageTitle');
   loadProcesses();
 });
 </script>

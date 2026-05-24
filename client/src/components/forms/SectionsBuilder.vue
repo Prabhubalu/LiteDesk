@@ -48,13 +48,13 @@
             }"
           >
             <span v-if="isLocked">
-              This form is <strong>Active</strong> and in use. Only cosmetic changes (titles, labels, help text) are allowed.
+              {{ t('forms.builderBannerActiveBefore') }}<strong>{{ t('forms.statusActive') }}</strong>{{ t('forms.builderBannerActiveAfter') }}
             </span>
             <span v-else-if="isReadOnly">
-              This form is <strong>Archived</strong> and read-only. To make changes, duplicate the form.
+              {{ t('forms.builderBannerArchivedBefore') }}<strong>{{ t('forms.statusArchived') }}</strong>{{ t('forms.builderBannerArchivedAfter') }}
             </span>
             <span v-else-if="formStatus === 'Draft'">
-              This form is in <strong>Draft</strong> status. Complete the form and save to set it to Ready.
+              {{ t('forms.builderBannerDraftBefore') }}<strong>{{ t('forms.statusDraft') }}</strong>{{ t('forms.builderBannerDraftMiddle') }}{{ t('forms.statusReady') }}{{ t('forms.builderBannerDraftEnd') }}
             </span>
           </p>
           <p
@@ -64,7 +64,7 @@
               'text-yellow-700 dark:text-yellow-300': isLocked
             }"
           >
-            Structural changes (adding/removing sections or questions, changing question types, modifying scoring) are blocked to protect data integrity.
+            {{ t('forms.builderBannerStructuralNote') }}
           </p>
         </div>
         <div
@@ -94,10 +94,10 @@
         <div class="flex items-center justify-between mb-5 pb-4 border-b border-gray-100 dark:border-gray-700">
           <div>
             <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-              Questions
+              {{ t('forms.builderQuestionsHeading') }}
             </p>
             <p class="text-base font-semibold text-gray-900 dark:text-white">
-              {{ rootQuestions.length }} {{ rootQuestions.length === 1 ? 'question' : 'questions' }}
+              {{ t('forms.builderQuestionCount', { count: rootQuestions.length }) }}
             </p>
           </div>
     </div>
@@ -140,26 +140,26 @@
               <input
                       v-model="question.questionText"
                 type="text"
-                      placeholder="New Question"
+                      :placeholder="t('forms.builderNewQuestionPh')"
                       class="w-full text-base font-medium text-gray-900 dark:text-white bg-transparent border-none focus:outline-none focus:ring-0 placeholder-gray-400 dark:placeholder-gray-500"
               />
                 <input
                       v-model="question.helpText"
                       type="text"
-                      placeholder="Optional description or guidance"
+                      :placeholder="t('forms.builderHelpTextPh')"
                       class="mt-2 w-full text-sm text-gray-500 dark:text-gray-400 bg-transparent border-none focus:outline-none focus:ring-0 placeholder-gray-400 dark:placeholder-gray-500"
                     />
                     <div class="flex flex-wrap items-center gap-2 mt-3">
                       <span
                         class="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 capitalize"
                       >
-                        {{ question.type || 'Text' }}
+                        {{ questionTypeLabel(question.type) }}
                       </span>
                       <span
                         v-if="question.mandatory"
                         class="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300"
                       >
-                        Required
+                        {{ t('forms.builderRequired') }}
                       </span>
               </div>
             </div>
@@ -194,7 +194,7 @@
           <!-- Question palette -->
           <div class="mt-6 pt-5 border-t border-gray-200 dark:border-gray-700">
             <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-              Add Question
+              {{ t('forms.builderAddQuestion') }}
             </p>
             <div class="flex flex-wrap gap-2.5">
               <button
@@ -217,10 +217,10 @@
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 flex flex-col">
         <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100 dark:border-gray-700">
           <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
-            Inspector
+            {{ t('forms.builderInspector') }}
           </h3>
           <span v-if="selectedRootQuestion" class="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2.5 py-1 rounded-full font-medium">
-            Question {{ (selectedQuestionIndex !== null ? selectedQuestionIndex : 0) + 1 }}
+            {{ t('forms.builderQuestionIndex', { number: (selectedQuestionIndex !== null ? selectedQuestionIndex : 0) + 1 }) }}
           </span>
         </div>
         <div v-if="selectedRootQuestion" class="space-y-5 overflow-y-auto max-h-[600px] pr-1 -mr-1 text-sm">
@@ -228,45 +228,42 @@
           <div class="space-y-4">
             <div>
               <p class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4">
-                Basics
+                {{ t('forms.builderBasics') }}
               </p>
               <div class="space-y-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Question Text</label>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('forms.builderQuestionText') }}</label>
                         <input
                     v-model="selectedRootQuestion.questionText"
                           type="text"
                     data-question-settings-text-input="true"
-                    placeholder="New Question"
+                    :placeholder="t('forms.builderNewQuestionPh')"
                     class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
                   />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description / Help Text</label>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('forms.builderDescriptionHelpText') }}</label>
                   <textarea
                     v-model="selectedRootQuestion.helpText"
                     rows="3"
                     class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none transition-all"
-                    placeholder="Optional hint or explanation shown under the question"
+                    :placeholder="t('forms.builderHelpTextInspectorPh')"
                   ></textarea>
                 </div>
                 <div class="flex items-end gap-3">
                   <div class="flex-1">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('forms.builderType') }}</label>
                         <select
                       v-model="selectedRootQuestion.type"
                       class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all cursor-pointer"
                         >
-                          <option value="Text">Text</option>
-                          <option value="Textarea">Textarea</option>
-                          <option value="Email">Email</option>
-                          <option value="Number">Number</option>
-                          <option value="Date">Date</option>
-                          <option value="Dropdown">Dropdown</option>
-                          <option value="Rating">Rating</option>
-                          <option value="File">File</option>
-                          <option value="Signature">Signature</option>
-                          <option value="Yes-No">Yes-No</option>
+                          <option
+                            v-for="opt in questionTypeOptions"
+                            :key="opt.value"
+                            :value="opt.value"
+                          >
+                            {{ opt.label }}
+                          </option>
                         </select>
                   </div>
                   <label class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all" @click.stop @mousedown.stop>
@@ -279,7 +276,7 @@
                       @blur="handleQuestionSettingsBlur"
                       checkbox-class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
                           />
-                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Required</span>
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('forms.builderRequired') }}</span>
                         </label>
                         </div>
                       </div>
@@ -288,7 +285,7 @@
             <!-- Dropdown options -->
             <div v-if="selectedRootQuestion.type === 'Dropdown'" class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
               <p class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                Options
+                {{ t('forms.builderOptions') }}
               </p>
               <div class="space-y-2">
                 <div
@@ -299,7 +296,7 @@
                   <input
                     v-model="selectedRootQuestion.options[optIdx]"
                     type="text"
-                    :placeholder="`Option ${optIdx + 1}`"
+                    :placeholder="t('forms.builderOptionNumber', { number: optIdx + 1 })"
                     class="flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
                   />
                     <button
@@ -318,7 +315,7 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                   </svg>
-                  Add Option
+                  {{ t('forms.builderAddOption') }}
                 </button>
               </div>
             </div>
@@ -328,7 +325,7 @@
           <svg class="w-12 h-12 mb-3 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          <p class="text-sm text-gray-500 dark:text-gray-400">Select a question to edit its settings</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('forms.builderSelectQuestionEmpty') }}</p>
         </div>
       </div>
                   </div>
@@ -343,20 +340,20 @@
       <div class="col-span-1 md:col-span-3 bg-white dark:bg-gray-900 flex flex-col min-h-0 border-r border-gray-200 dark:border-gray-800 rounded-tl-lg rounded-bl-lg" style="height: 100%;">
         <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
           <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-            Structure
+            {{ t('forms.builderStructure') }}
           </h3>
           <button
             type="button"
             @click.stop="addSection()"
             :disabled="!canModifyFormStructure"
-            :title="!canModifyFormStructure ? getBlockingMessage(formStatus) : 'Add new section'"
+            :title="!canModifyFormStructure ? getBlockingMessage(formStatus) : t('forms.builderTitleAddSection')"
             class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             :class="!canModifyFormStructure ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        Add Section
+        {{ t('forms.builderAddSection') }}
       </button>
     </div>
 
@@ -429,13 +426,13 @@
                 ]"
               >
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Section {{ sIdx + 1 }} ·
+                  {{ t('forms.builderSectionNumber', { number: sIdx + 1 }) }}
                 </span>
               <input
                   :ref="(el) => setSectionInputRef(el, section.sectionId)"
                 v-model="section.name"
                 type="text"
-                placeholder="Section name"
+                :placeholder="structureSectionNamePh"
                   class="flex-1 text-sm font-medium text-gray-900 dark:text-white bg-transparent border-none focus:outline-none focus:ring-0 p-0 placeholder-gray-400 dark:placeholder-gray-500"
                   @click.stop="(e) => handleSectionInputClick(e, getActualSectionIndex(section))"
                   @focus="() => { selectSection(getActualSectionIndex(section), true, true); focusedSectionId = section.sectionId; }"
@@ -447,7 +444,7 @@
                 v-if="!isAuditMode || visibleSections.length > 1"
                 @click.stop="removeSection(getActualSectionIndex(section))"
                 :disabled="!canModifyFormStructure"
-                :title="!canModifyFormStructure ? getBlockingMessage(formStatus) : 'Remove section'"
+                :title="!canModifyFormStructure ? getBlockingMessage(formStatus) : t('forms.builderTitleRemoveSection')"
                 class="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors opacity-0 group-hover:opacity-100"
                 :class="!canModifyFormStructure ? 'opacity-30 cursor-not-allowed' : ''"
           >
@@ -502,7 +499,7 @@
                     :data-subsection-id="sub.subsectionId"
                     v-model="sub.name"
                   type="text"
-                  placeholder="Subsection name"
+                  :placeholder="structureSubsectionNamePh"
                     class="flex-1 text-sm bg-transparent border-none focus:outline-none focus:ring-0 p-0 placeholder-gray-400 dark:placeholder-gray-500"
                     :class="[
                       selectedSectionIndex === getActualSectionIndex(section) && selectedSubsectionIndex === subIdx
@@ -532,13 +529,13 @@
                     }"
                     class="px-2 py-1 text-xs text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer"
                   >
-                    + Add
+                    {{ t('forms.builderAddInline') }}
                   </button>
                   <button
                     type="button"
                     @click.stop="toggleSubsectionMenu(getActualSectionIndex(section), subIdx)"
                     class="px-2 py-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
-                    title="Subsection actions"
+                    :title="t('forms.builderSubsectionActions')"
                   >
                     ...
               </button>
@@ -552,18 +549,18 @@
                       class="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
                       @click.stop="duplicateSubsectionFromMenu(getActualSectionIndex(section), subIdx)"
                       :disabled="!canModifyFormStructure"
-                      :title="!canModifyFormStructure ? getBlockingMessage(formStatus) : 'Duplicate subsection'"
+                      :title="!canModifyFormStructure ? getBlockingMessage(formStatus) : t('forms.builderTitleDuplicateSubsection')"
                     >
-                      Duplicate
+                      {{ t('forms.builderDuplicate') }}
                     </button>
                     <button
                       type="button"
                       class="w-full text-left px-3 py-1.5 text-xs text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-800"
                       @click.stop="deleteSubsectionFromMenu(getActualSectionIndex(section), subIdx)"
                       :disabled="!canModifyFormStructure"
-                      :title="!canModifyFormStructure ? getBlockingMessage(formStatus) : 'Delete subsection'"
+                      :title="!canModifyFormStructure ? getBlockingMessage(formStatus) : t('forms.builderTitleDeleteSubsection')"
                     >
-                      Delete
+                      {{ t('forms.builderDelete') }}
                     </button>
                   </div>
                 </div>
@@ -601,7 +598,7 @@
                 }"
                 class="px-2 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer"
               >
-                + Add subsection
+                {{ t('forms.builderAddSubsection') }}
               </button>
             </div>
           </div>
@@ -612,23 +609,19 @@
       <div class="col-span-1 md:col-span-6 bg-white dark:bg-gray-900 flex flex-col min-h-0 border-r border-gray-200 dark:border-gray-800" style="height: 100%;">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
           <div>
-            <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-              Canvas
-            </p>
+            <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ t('forms.builderCanvas') }}</p>
             <div class="flex items-center gap-2">
               <h3 class="text-base font-medium text-gray-900 dark:text-white">
                 {{ currentSubsectionTitle }}
               </h3>
               <span class="text-sm text-gray-500 dark:text-gray-400">•</span>
-              <span class="text-sm text-gray-500 dark:text-gray-400">{{ currentQuestions.length }} questions</span>
+              <span class="text-sm text-gray-500 dark:text-gray-400">{{ t('forms.builderCanvasQuestionCount', { count: currentQuestions.length }) }}</span>
             </div>
           </div>
           <button
             @click="openPreview"
             class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-          >
-            Preview
-          </button>
+          >{{ t('forms.builderPreview') }}</button>
         </div>
 
         <div
@@ -678,20 +671,20 @@
                           <input
                             v-model="question.questionText"
                             type="text"
-                      placeholder="New Question"
+                      :placeholder="t('forms.builderNewQuestionPh')"
                       class="w-full text-sm font-medium text-gray-900 dark:text-white bg-transparent border-none focus:outline-none focus:ring-0 p-0 placeholder-gray-400 dark:placeholder-gray-500"
                       @click.stop
                     />
                     <input
                       v-model="question.helpText"
                       type="text"
-                      placeholder="Optional description or guidance"
+                      :placeholder="t('forms.builderHelpTextPh')"
                       class="mt-1 w-full text-sm text-gray-500 dark:text-gray-400 bg-transparent border-none focus:outline-none focus:ring-0 p-0 placeholder-gray-400 dark:placeholder-gray-500"
                       @click.stop
                           />
                           <div class="flex items-center gap-2 mt-2">
                       <span class="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                        {{ question.type || 'Text' }}
+                        {{ questionTypeLabel(question.type || 'Text') }}
                       </span>
                     </div>
                   </div>
@@ -715,7 +708,7 @@
                     <button
                       @click.stop="removeQuestion(selectedSectionIndex, selectedSubsectionIndex, qIdx)"
                       :disabled="!canModifyFormQuestions"
-                      :title="!canModifyFormQuestions ? getBlockingMessage(formStatus) : 'Remove question'"
+                      :title="!canModifyFormQuestions ? getBlockingMessage(formStatus) : t('forms.builderTitleRemoveQuestion')"
                       class="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
                       :class="!canModifyFormQuestions ? 'opacity-30 cursor-not-allowed' : ''"
                     >
@@ -731,16 +724,14 @@
 
           <!-- Question palette - Fixed at bottom -->
           <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-            <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-              Add Question
-            </p>
+            <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">{{ t('forms.builderAddQuestion') }}</p>
             <div class="flex flex-wrap gap-2">
                       <button
                 v-for="qt in questionPalette"
                 :key="qt.type"
                 @click="addQuestion(selectedSectionIndex, selectedSubsectionIndex, qt.type)"
                 :disabled="!canModifyFormQuestions"
-                :title="!canModifyFormQuestions ? getBlockingMessage(formStatus) : `Add ${qt.label} question`"
+                :title="!canModifyFormQuestions ? getBlockingMessage(formStatus) : t('forms.builderAddQuestionTypeTitle', { type: qt.label })"
                 class="px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 :class="!canModifyFormQuestions ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'"
               >
@@ -756,10 +747,10 @@
       <div class="col-span-1 md:col-span-3 bg-white dark:bg-gray-900 flex flex-col min-h-0 rounded-tr-lg rounded-br-lg" style="height: 100%;" @click.stop>
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-800" @click.stop>
           <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-            <span v-if="currentQuestion">Question Settings</span>
-            <span v-else-if="currentSubsection">Subsection Settings</span>
-            <span v-else-if="currentSection">Section Settings</span>
-            <span v-else>Inspector</span>
+            <span v-if="currentQuestion">{{ t('forms.builderQuestionSettings') }}</span>
+            <span v-else-if="currentSubsection">{{ t('forms.builderSubsectionSettings') }}</span>
+            <span v-else-if="currentSection">{{ t('forms.builderSectionSettings') }}</span>
+            <span v-else>{{ t('forms.builderInspector') }}</span>
           </h3>
         </div>
 
@@ -768,52 +759,47 @@
           <!-- Question basics -->
           <div class="space-y-5">
             <div>
-              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-                Basics
-              </p>
+              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">{{ t('forms.builderBasics') }}</p>
               <div class="space-y-4">
                 <div>
-                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">Question text</label>
+                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('forms.builderQuestionTextLabel') }}</label>
                           <input
                     v-model="currentQuestion.questionText"
                             type="text"
                     data-question-settings-text-input="true"
-                    placeholder="New Question"
+                    :placeholder="t('forms.builderNewQuestionPh')"
                     @focus="handleQuestionSettingsFocus"
                     @blur="handleQuestionSettingsBlur"
                     class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                           />
                         </div>
                 <div>
-                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">Help text</label>
+                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('forms.builderHelpTextLabel') }}</label>
                           <input
                     v-model="currentQuestion.helpText"
                     type="text"
                     @focus="handleQuestionSettingsFocus"
                     @blur="handleQuestionSettingsBlur"
                     class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Optional hint shown under question"
+                    :placeholder="t('forms.builderHelpTextStructuredPh')"
                           />
                         </div>
                 <div class="flex items-end gap-3">
                   <div class="flex-1">
-                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">Type</label>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('forms.builderType') }}</label>
                         <select
                       v-model="currentQuestion.type"
                       @focus="handleQuestionSettingsFocus"
                       @blur="handleQuestionSettingsBlur"
                       class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer"
                         >
-                          <option value="Text">Text</option>
-                          <option value="Textarea">Textarea</option>
-                          <option value="Email">Email</option>
-                          <option value="Number">Number</option>
-                          <option value="Date">Date</option>
-                          <option value="Dropdown">Dropdown</option>
-                          <option value="Rating">Rating</option>
-                          <option value="File">File</option>
-                          <option value="Signature">Signature</option>
-                          <option value="Yes-No">Yes-No</option>
+                          <option
+                            v-for="opt in questionTypeOptions"
+                            :key="opt.value"
+                            :value="opt.value"
+                          >
+                            {{ opt.label }}
+                          </option>
                         </select>
                   </div>
                   <label class="inline-flex items-center gap-2 px-3 py-2 h-[34px]" @click.stop @mousedown.stop>
@@ -826,7 +812,7 @@
                       @blur="handleQuestionSettingsBlur"
                       checkbox-class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
                           />
-                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Required</span>
+                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ t('forms.builderRequired') }}</span>
                         </label>
                         </div>
                       </div>
@@ -834,28 +820,24 @@
 
             <!-- Visibility -->
             <div class="pt-4 border-t border-gray-200 dark:border-gray-800">
-              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-                Visibility
-              </p>
+              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">{{ t('forms.builderVisibility') }}</p>
                     <div class="space-y-3">
                 <div>
-                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                    Show this question if
-                    <span class="text-xs text-gray-400 ml-2">({{ allQuestions.length }} questions available)</span>
+                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('forms.builderShowQuestionIf') }}<span class="text-xs text-gray-400 ml-2">{{ t('forms.builderQuestionsAvailable', { count: allQuestions.length }) }}</span>
                   </label>
                           <select
                     :value="currentQuestion.conditionalLogic?.showIf?.questionId || ''"
                     @change="handleVisibilityQuestionChange"
                     class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                   >
-                    <option value="">Always visible</option>
+                    <option value="">{{ t('forms.builderAlwaysVisible') }}</option>
                     <option
                       v-for="(q, qIdx) in allQuestions"
                       :key="q.questionId || qIdx"
                       :value="q.questionId || `temp-${qIdx}`"
                       :disabled="(q.questionId || `temp-${qIdx}`) === (currentQuestion?.questionId || '')"
                     >
-                      {{ q.questionText || `Question ${qIdx + 1}` }}
+                      {{ q.questionText || t('forms.builderQuestionFallback', { number: qIdx + 1 }) }}
                     </option>
                   </select>
                 </div>
@@ -863,24 +845,24 @@
                 <!-- Operator and Value - only show when a question is selected -->
                 <template v-if="currentQuestion?.conditionalLogic?.showIf?.questionId">
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">Condition</label>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('forms.builderCondition') }}</label>
                     <select
                       v-model="currentQuestion.conditionalLogic.showIf.operator"
                       @focus="handleQuestionSettingsFocus"
                       @blur="handleQuestionSettingsBlur"
                       class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                     >
-                      <option value="equals">equals</option>
-                      <option value="notEquals">does not equal</option>
-                      <option v-if="getConditionalQuestion()?.type === 'Text' || getConditionalQuestion()?.type === 'Textarea' || getConditionalQuestion()?.type === 'Email'" value="contains">contains</option>
-                      <option v-if="getConditionalQuestion()?.type === 'Text' || getConditionalQuestion()?.type === 'Textarea' || getConditionalQuestion()?.type === 'Email'" value="notContains">does not contain</option>
-                      <option v-if="getConditionalQuestion()?.type === 'Number' || getConditionalQuestion()?.type === 'Rating'" value="greaterThan">is greater than</option>
-                      <option v-if="getConditionalQuestion()?.type === 'Number' || getConditionalQuestion()?.type === 'Rating'" value="lessThan">is less than</option>
+                      <option value="equals">{{ t('forms.builderCondEquals') }}</option>
+                      <option value="notEquals">{{ t('forms.builderCondNotEquals') }}</option>
+                      <option v-if="getConditionalQuestion()?.type === 'Text' || getConditionalQuestion()?.type === 'Textarea' || getConditionalQuestion()?.type === 'Email'" value="contains">{{ t('forms.builderCondContains') }}</option>
+                      <option v-if="getConditionalQuestion()?.type === 'Text' || getConditionalQuestion()?.type === 'Textarea' || getConditionalQuestion()?.type === 'Email'" value="notContains">{{ t('forms.builderCondNotContains') }}</option>
+                      <option v-if="getConditionalQuestion()?.type === 'Number' || getConditionalQuestion()?.type === 'Rating'" value="greaterThan">{{ t('forms.builderCondGreaterThan') }}</option>
+                      <option v-if="getConditionalQuestion()?.type === 'Number' || getConditionalQuestion()?.type === 'Rating'" value="lessThan">{{ t('forms.builderCondLessThan') }}</option>
                     </select>
                   </div>
 
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">Value</label>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('forms.builderValue') }}</label>
                     <!-- Dropdown question - show options -->
                     <select
                       v-if="getConditionalQuestion()?.type === 'Dropdown'"
@@ -889,7 +871,7 @@
                       @blur="handleQuestionSettingsBlur"
                       class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                     >
-                      <option value="">Select an option</option>
+                      <option value="">{{ t('forms.builderSelectOption') }}</option>
                       <option
                         v-for="(option, optIdx) in (getConditionalQuestion()?.options || [])"
                         :key="optIdx"
@@ -906,9 +888,9 @@
                       @blur="handleQuestionSettingsBlur"
                       class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                     >
-                      <option value="">Select an option</option>
-                      <option value="Yes">Yes</option>
-                      <option value="No">No</option>
+                      <option value="">{{ t('forms.builderSelectOption') }}</option>
+                      <option value="Yes">{{ t('forms.builderAnswerYes') }}</option>
+                      <option value="No">{{ t('forms.builderAnswerNo') }}</option>
                     </select>
                     <!-- Rating question - show dropdown with rating options -->
                     <select
@@ -918,7 +900,7 @@
                       @blur="handleQuestionSettingsBlur"
                       class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                     >
-                      <option value="">Select a rating</option>
+                      <option value="">{{ t('forms.builderSelectRating') }}</option>
                       <option
                         v-for="rating in getRatingOptions()"
                         :key="rating"
@@ -932,7 +914,7 @@
                       v-else-if="getConditionalQuestion()?.type === 'Number'"
                       v-model.number="currentQuestion.conditionalLogic.showIf.value"
                       type="number"
-                      placeholder="Enter number"
+                      :placeholder="t('forms.builderEnterNumberPh')"
                       @focus="handleQuestionSettingsFocus"
                       @blur="handleQuestionSettingsBlur"
                       class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
@@ -952,7 +934,7 @@
                       v-else
                       v-model="currentQuestion.conditionalLogic.showIf.value"
                       type="text"
-                      :placeholder="getConditionalQuestion()?.type === 'Email' ? 'Enter email' : 'Enter value'"
+                      :placeholder="getConditionalQuestion()?.type === 'Email' ? t('forms.builderEnterEmailPh') : t('forms.builderEnterValuePh')"
                       @focus="handleQuestionSettingsFocus"
                       @blur="handleQuestionSettingsBlur"
                       class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
@@ -964,9 +946,7 @@
 
             <!-- Dropdown options -->
             <div v-if="currentQuestion.type === 'Dropdown'" class="pt-4 border-t border-gray-200 dark:border-gray-800">
-              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-                Options
-              </p>
+              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">{{ t('forms.builderOptions') }}</p>
               <div class="space-y-2">
                 <div
                   v-for="(option, optIdx) in currentQuestion.options || []"
@@ -976,7 +956,7 @@
                         <input
                     v-model="currentQuestion.options[optIdx]"
                           type="text"
-                    :placeholder="`Option ${optIdx + 1}`"
+                    :placeholder="t('forms.builderOptionNumber', { number: optIdx + 1 })"
                     @focus="handleQuestionSettingsFocus"
                     @blur="handleQuestionSettingsBlur"
                     class="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
@@ -996,17 +976,13 @@
                       >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Add Option
-                      </button>
+                        </svg>{{ t('forms.builderAddOption') }}</button>
                     </div>
                   </div>
 
             <!-- Yes-No options -->
             <div v-if="currentQuestion.type === 'Yes-No'" class="pt-4 border-t border-gray-200 dark:border-gray-800">
-              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-                Options
-              </p>
+              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">{{ t('forms.builderOptions') }}</p>
               <div class="space-y-2">
                 <div
                   v-for="(option, optIdx) in ['Yes', 'No']"
@@ -1014,7 +990,7 @@
                   class="flex items-center gap-2"
                 >
                   <input
-                    :value="option"
+                    :value="option === 'Yes' ? t('forms.builderAnswerYes') : t('forms.builderAnswerNo')"
                     type="text"
                     readonly
                     disabled
@@ -1029,9 +1005,7 @@
               v-if="isAuditMode && isScorableQuestionType(currentQuestion.type)"
               class="pt-4 border-t border-gray-200 dark:border-gray-800"
             >
-              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-                Scoring
-              </p>
+              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">{{ t('forms.builderScoring') }}</p>
               <div class="space-y-4">
                 <!-- Enable Scoring Toggle -->
                 <div>
@@ -1042,7 +1016,7 @@
                       @blur="handleQuestionSettingsBlur"
                       checkbox-class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
                     />
-                    <span>Enable scoring</span>
+                    <span>{{ t('forms.builderEnableScoring') }}</span>
                   </label>
                 </div>
 
@@ -1050,9 +1024,7 @@
                 <div v-if="currentQuestion.scoring.enabled" class="space-y-4 pl-1">
                   <!-- Pass Condition -->
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                      Pass if answer is
-                    </label>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('forms.builderPassIfAnswer') }}</label>
                     
                     <!-- Yes/No: Expected value -->
                     <div v-if="currentQuestion.type === 'Yes-No'" class="space-y-2">
@@ -1062,16 +1034,14 @@
                         @blur="handleQuestionSettingsBlur"
                         class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer"
                       >
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
+                        <option value="Yes">{{ t('forms.builderAnswerYes') }}</option>
+                        <option value="No">{{ t('forms.builderAnswerNo') }}</option>
                       </select>
                     </div>
 
                     <!-- Dropdown: One or more pass options -->
                     <div v-else-if="currentQuestion.type === 'Dropdown'" class="space-y-2">
-                      <div class="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                        Select one or more options that constitute a pass:
-                      </div>
+                      <div class="text-xs text-gray-600 dark:text-gray-400 mb-2">{{ t('forms.builderPassOptionsHint') }}</div>
                       <div class="space-y-2 max-h-32 overflow-y-auto">
                         <label
                           v-for="(option, optIdx) in currentQuestion.options || []"
@@ -1089,15 +1059,13 @@
                           <span class="text-sm text-gray-700 dark:text-gray-300">{{ option }}</span>
                         </label>
                       </div>
-                      <p v-if="!currentQuestion.options || currentQuestion.options.length === 0" class="text-xs text-gray-500 dark:text-gray-400 italic">
-                        Add options above first
-                      </p>
+                      <p v-if="!currentQuestion.options || currentQuestion.options.length === 0" class="text-xs text-gray-500 dark:text-gray-400 italic">{{ t('forms.builderAddOptionsFirst') }}</p>
                     </div>
 
                     <!-- Rating: Minimum acceptable rating -->
                     <div v-else-if="currentQuestion.type === 'Rating'" class="space-y-2">
                       <div class="flex items-center gap-2">
-                        <span class="text-xs text-gray-600 dark:text-gray-400">Minimum rating:</span>
+                        <span class="text-xs text-gray-600 dark:text-gray-400">{{ t('forms.builderMinRating') }}</span>
                         <input
                           v-model.number="currentQuestion.scoring.passCondition.minRating"
                           type="number"
@@ -1109,7 +1077,7 @@
                         />
                       </div>
                       <p class="text-xs text-gray-500 dark:text-gray-400">
-                        Answers with rating ≥ {{ currentQuestion.scoring.passCondition.minRating || 1 }} will pass
+                        {{ t('forms.builderRatingPassHint', { min: currentQuestion.scoring.passCondition.minRating || 1 }) }}
                       </p>
                     </div>
 
@@ -1121,9 +1089,9 @@
                         @blur="handleQuestionSettingsBlur"
                         class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer"
                       >
-                        <option value=">=">Greater than or equal to (≥)</option>
-                        <option value="<=">Less than or equal to (≤)</option>
-                        <option value="between">Between (inclusive)</option>
+                        <option value=">=">{{ t('forms.builderRuleGte') }}</option>
+                        <option value="<=">{{ t('forms.builderRuleLte') }}</option>
+                        <option value="between">{{ t('forms.builderRuleBetween') }}</option>
                       </select>
                       
                       <!-- Single value for >= or <= -->
@@ -1135,7 +1103,7 @@
                           @focus="handleQuestionSettingsFocus"
                           @blur="handleQuestionSettingsBlur"
                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                          :placeholder="currentQuestion.scoring.passCondition.rule === '>=' ? 'Enter minimum value' : 'Enter maximum value'"
+                          :placeholder="getNumberPassValuePlaceholder()"
                         />
                       </div>
                       
@@ -1148,7 +1116,7 @@
                           @focus="handleQuestionSettingsFocus"
                           @blur="handleQuestionSettingsBlur"
                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                          placeholder="Minimum value"
+                          :placeholder="t('forms.builderMinValuePh')"
                         />
                         <input
                           v-model.number="currentQuestion.scoring.passCondition.maxValue"
@@ -1157,7 +1125,7 @@
                           @focus="handleQuestionSettingsFocus"
                           @blur="handleQuestionSettingsBlur"
                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                          placeholder="Maximum value"
+                          :placeholder="t('forms.builderMaxValuePh')"
                         />
                       </div>
                     </div>
@@ -1165,9 +1133,7 @@
 
                   <!-- Weight -->
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                      Weight
-                    </label>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('forms.builderWeight') }}</label>
                     <input
                       v-model.number="currentQuestion.scoring.weight"
                       type="number"
@@ -1176,11 +1142,9 @@
                       @focus="handleQuestionSettingsFocus"
                       @blur="handleQuestionSettingsBlur"
                       class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                      placeholder="1"
+                      :placeholder="t('forms.builderWeightDefaultPh')"
                     />
-                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      Default weight is 1. Higher weights contribute more to the overall score.
-                    </p>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('forms.builderWeightQuestionHint') }}</p>
                   </div>
 
                   <!-- Critical Question -->
@@ -1192,11 +1156,9 @@
                         @blur="handleQuestionSettingsBlur"
                         checkbox-class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
                       />
-                      <span>Critical question</span>
+                      <span>{{ t('forms.builderCriticalQuestion') }}</span>
                     </label>
-                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      If a critical question fails, its parent section fails immediately regardless of score.
-                    </p>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('forms.builderCriticalQuestionHint') }}</p>
                   </div>
                 </div>
               </div>
@@ -1209,9 +1171,7 @@
               @click.stop
               @mousedown.stop
             >
-              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-                Evidence
-              </p>
+              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">{{ t('forms.builderEvidence') }}</p>
               
               <!-- Ensure evidence structure exists -->
               <template v-if="currentQuestion.evidence">
@@ -1225,15 +1185,13 @@
                     @mousedown.stop
                     class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
                   />
-                  <span @click.stop @mousedown.stop>Enable evidence capture</span>
+                  <span @click.stop @mousedown.stop>{{ t('forms.builderEnableEvidence') }}</span>
                 </label>
               </div>
 
               <!-- Evidence Rules (only shown when enabled) -->
               <div v-if="currentQuestion.evidence.enabled" class="space-y-4">
-                <div class="text-xs text-gray-600 dark:text-gray-400 mb-3">
-                  Configure evidence requirements per answer option. Evidence inputs will appear during audit execution when the selected answer matches a rule.
-                </div>
+                <div class="text-xs text-gray-600 dark:text-gray-400 mb-3">{{ t('forms.builderEvidenceRulesHint') }}</div>
 
                 <!-- Rules List -->
                 <div class="space-y-3">
@@ -1245,19 +1203,17 @@
                     @mousedown.stop
                   >
                     <div class="flex items-center justify-between mb-3">
-                      <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Rule {{ ruleIdx + 1 }}</span>
+                      <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ t('forms.builderEvidenceRuleNumber', { number: ruleIdx + 1 }) }}</span>
                       <button
                         @click.stop="removeEvidenceRule(ruleIdx)"
                         @mousedown.stop
                         class="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
-                      >
-                        Remove
-                      </button>
+                      >{{ t('forms.builderRemove') }}</button>
                     </div>
 
                     <!-- When condition -->
                     <div class="mb-3" @click.stop @mousedown.stop>
-                      <label class="block text-xs text-gray-700 dark:text-gray-300 mb-1">When answer is:</label>
+                      <label class="block text-xs text-gray-700 dark:text-gray-300 mb-1">{{ t('forms.builderWhenAnswerIs') }}</label>
                       <select
                         v-model="rule.when"
                         @focus="handleQuestionSettingsFocus"
@@ -1266,8 +1222,8 @@
                         @mousedown.stop
                         class="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                       >
-                        <option v-if="currentQuestion.type === 'Yes-No'" value="Yes">Yes</option>
-                        <option v-if="currentQuestion.type === 'Yes-No'" value="No">No</option>
+                        <option v-if="currentQuestion.type === 'Yes-No'" value="Yes">{{ t('forms.builderAnswerYes') }}</option>
+                        <option v-if="currentQuestion.type === 'Yes-No'" value="No">{{ t('forms.builderAnswerNo') }}</option>
                         <option v-if="currentQuestion.type === 'Rating'" v-for="r in 5" :key="r" :value="String(r)">{{ r }}</option>
                         <option v-if="currentQuestion.type === 'Dropdown'" v-for="opt in currentQuestion.options" :key="opt" :value="opt">{{ opt }}</option>
                       </select>
@@ -1277,7 +1233,7 @@
                     <div class="space-y-2" @click.stop @mousedown.stop>
                       <!-- Comment -->
                       <div class="flex items-center justify-between">
-                        <label class="text-xs text-gray-700 dark:text-gray-300">Comment</label>
+                        <label class="text-xs text-gray-700 dark:text-gray-300">{{ t('forms.builderEvidenceComment') }}</label>
                         <select
                           v-model="rule.comment.required"
                           @focus="handleQuestionSettingsFocus"
@@ -1286,15 +1242,15 @@
                           @mousedown.stop
                           class="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                         >
-                          <option value="hidden">Not required</option>
-                          <option value="optional">Optional</option>
-                          <option value="required">Required</option>
+                          <option value="hidden">{{ t('forms.builderEvidenceNotRequired') }}</option>
+                          <option value="optional">{{ t('forms.builderEvidenceOptional') }}</option>
+                          <option value="required">{{ t('forms.builderRequired') }}</option>
                         </select>
                       </div>
 
                       <!-- Image -->
                       <div class="flex items-center justify-between">
-                        <label class="text-xs text-gray-700 dark:text-gray-300">Image upload</label>
+                        <label class="text-xs text-gray-700 dark:text-gray-300">{{ t('forms.builderEvidenceImage') }}</label>
                         <select
                           v-model="rule.image.required"
                           @focus="handleQuestionSettingsFocus"
@@ -1303,15 +1259,15 @@
                           @mousedown.stop
                           class="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                         >
-                          <option value="hidden">Not required</option>
-                          <option value="optional">Optional</option>
-                          <option value="required">Required</option>
+                          <option value="hidden">{{ t('forms.builderEvidenceNotRequired') }}</option>
+                          <option value="optional">{{ t('forms.builderEvidenceOptional') }}</option>
+                          <option value="required">{{ t('forms.builderRequired') }}</option>
                         </select>
                       </div>
 
                       <!-- Video -->
                       <div class="flex items-center justify-between">
-                        <label class="text-xs text-gray-700 dark:text-gray-300">Video upload</label>
+                        <label class="text-xs text-gray-700 dark:text-gray-300">{{ t('forms.builderEvidenceVideo') }}</label>
                         <select
                           v-model="rule.video.required"
                           @focus="handleQuestionSettingsFocus"
@@ -1320,9 +1276,9 @@
                           @mousedown.stop
                           class="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                         >
-                          <option value="hidden">Not required</option>
-                          <option value="optional">Optional</option>
-                          <option value="required">Required</option>
+                          <option value="hidden">{{ t('forms.builderEvidenceNotRequired') }}</option>
+                          <option value="optional">{{ t('forms.builderEvidenceOptional') }}</option>
+                          <option value="required">{{ t('forms.builderRequired') }}</option>
                         </select>
                       </div>
                     </div>
@@ -1338,14 +1294,10 @@
                 >
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                  </svg>
-                  Add Rule
-                </button>
+                  </svg>{{ t('forms.builderAddRule') }}</button>
 
                 <!-- Validation Message -->
-                <div v-if="hasRequiredEvidenceWithoutType" class="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded">
-                  At least one evidence type must be enabled when any rule is marked as Required.
-                </div>
+                <div v-if="hasRequiredEvidenceWithoutType" class="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded">{{ t('forms.builderEvidenceValidation') }}</div>
               </div>
               </template>
             </div>
@@ -1357,9 +1309,7 @@
                 @mousedown.stop
                 class="flex items-center justify-between w-full text-left"
               >
-                <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Advanced
-                </p>
+                <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('forms.builderAdvanced') }}</p>
                 <svg 
                   class="w-4 h-4 text-gray-400 transition-transform"
                   :class="{ 'rotate-180': expandedAdvancedSettings }"
@@ -1375,9 +1325,7 @@
               <div v-if="expandedAdvancedSettings" class="mt-4 space-y-4" @click.stop @mousedown.stop>
                 <!-- Question ID (read-only, for reference) -->
                 <div>
-                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                    Question ID
-                  </label>
+                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('forms.builderQuestionId') }}</label>
                   <input
                     :value="currentQuestion.questionId"
                     type="text"
@@ -1385,16 +1333,12 @@
                     disabled
                     class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                   />
-                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Unique identifier for this question (used in conditional logic)
-                  </p>
+                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('forms.builderQuestionIdHint') }}</p>
                 </div>
 
                 <!-- Order/Position -->
                 <div>
-                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                    Display Order
-                  </label>
+                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('forms.builderDisplayOrder') }}</label>
                   <input
                     v-model.number="currentQuestion.order"
                     type="number"
@@ -1403,23 +1347,19 @@
                     @blur="handleQuestionSettingsBlur"
                     class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                   />
-                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Lower numbers appear first (0 = first)
-                  </p>
+                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('forms.builderDisplayOrderHint') }}</p>
                 </div>
 
                 <!-- Pass/Fail Definition (for scorable questions) -->
                 <div v-if="currentQuestion.type === 'Yes-No' || currentQuestion.type === 'Rating' || currentQuestion.type === 'Dropdown'">
-                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                    Pass/Fail Definition
-                  </label>
+                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('forms.builderPassFailDefinition') }}</label>
                   <textarea
                     v-model="currentQuestion.passFailDefinition"
                     rows="2"
                     @focus="handleQuestionSettingsFocus"
                     @blur="handleQuestionSettingsBlur"
                     class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
-                    placeholder="Optional: Define what constitutes a pass or fail for this question"
+                    :placeholder="t('forms.builderPassFailDefinitionPh')"
                   ></textarea>
                 </div>
               </div>
@@ -1427,16 +1367,12 @@
 
             <!-- File settings -->
             <div v-if="currentQuestion.type === 'File'" class="pt-4 border-t border-gray-200 dark:border-gray-800">
-              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-                File Settings
-              </p>
+              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">{{ t('forms.builderFileSettings') }}</p>
               <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300">
                         <HeadlessCheckbox
                   v-model="currentQuestion.attachmentAllowance"
                   checkbox-class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
-                        />
-                Allow multiple files
-                      </label>
+                        />{{ t('forms.builderAllowMultipleFiles') }}</label>
                     </div>
                   </div>
                 </div>
@@ -1446,19 +1382,17 @@
           <div class="space-y-5">
             <!-- Subsection Basics -->
             <div>
-              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-                Basics
-              </p>
+              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">{{ t('forms.builderBasics') }}</p>
               <div class="space-y-4">
                 <div>
-                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">Subsection name</label>
+                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('forms.builderSubsectionName') }}</label>
                   <input
                     v-model="currentSubsection.name"
                     type="text"
                     @focus="handleQuestionSettingsFocus"
                     @blur="handleQuestionSettingsBlur"
                     class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Enter subsection name"
+                    :placeholder="t('forms.builderEnterSubsectionNamePh')"
                   />
                 </div>
               </div>
@@ -1466,14 +1400,10 @@
 
             <!-- Subsection Scoring -->
             <div class="pt-4 border-t border-gray-200 dark:border-gray-800">
-              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-                Scoring
-              </p>
+              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">{{ t('forms.builderScoring') }}</p>
               <div class="space-y-4">
                 <div>
-                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                    Weight
-                  </label>
+                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('forms.builderWeight') }}</label>
                   <input
                     v-model.number="currentSubsection.subsectionScoring.weight"
                     type="number"
@@ -1482,17 +1412,13 @@
                     @focus="handleQuestionSettingsFocus"
                     @blur="handleQuestionSettingsBlur"
                     class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="1"
+                    :placeholder="t('forms.builderWeightDefaultPh')"
                   />
-                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Default weight is 1. Higher weights contribute more to the section score.
-                  </p>
+                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('forms.builderWeightSubsectionHint') }}</p>
                 </div>
 
                 <div>
-                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                    Pass threshold (%)
-                  </label>
+                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('forms.builderPassThreshold') }}</label>
                   <input
                     v-model.number="currentSubsection.subsectionScoring.threshold"
                     type="number"
@@ -1502,11 +1428,9 @@
                     @focus="handleQuestionSettingsFocus"
                     @blur="handleQuestionSettingsBlur"
                     class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="100"
+                    :placeholder="t('forms.builderThresholdDefaultPh')"
                   />
-                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Subsection passes if its score percentage is ≥ this threshold. Default is 100%.
-                  </p>
+                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('forms.builderSubsectionThresholdHint') }}</p>
                 </div>
               </div>
             </div>
@@ -1518,19 +1442,17 @@
           <div class="space-y-5">
             <!-- Section Basics -->
             <div>
-              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-                Basics
-              </p>
+              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">{{ t('forms.builderBasics') }}</p>
               <div class="space-y-4">
                 <div>
-                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">Section name</label>
+                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('forms.builderSectionName') }}</label>
                   <input
                     v-model="currentSection.name"
                     type="text"
                     @focus="handleQuestionSettingsFocus"
                     @blur="handleQuestionSettingsBlur"
                     class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Enter section name"
+                    :placeholder="t('forms.builderEnterSectionNamePh')"
                   />
                 </div>
               </div>
@@ -1538,14 +1460,10 @@
 
             <!-- Section Scoring -->
             <div class="pt-4 border-t border-gray-200 dark:border-gray-800">
-              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-                Scoring
-              </p>
+              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">{{ t('forms.builderScoring') }}</p>
               <div class="space-y-4">
                 <div>
-                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                    Weight
-                  </label>
+                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('forms.builderWeight') }}</label>
                   <input
                     v-model.number="currentSection.sectionScoring.weight"
                     type="number"
@@ -1554,17 +1472,13 @@
                     @focus="handleQuestionSettingsFocus"
                     @blur="handleQuestionSettingsBlur"
                     class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="1"
+                    :placeholder="t('forms.builderWeightDefaultPh')"
                   />
-                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Default weight is 1. Higher weights contribute more to the overall audit score.
-                  </p>
+                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('forms.builderWeightSectionHint') }}</p>
                 </div>
 
                 <div>
-                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                    Pass threshold (%)
-                  </label>
+                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('forms.builderPassThreshold') }}</label>
                   <input
                     v-model.number="currentSection.sectionScoring.threshold"
                     type="number"
@@ -1574,11 +1488,9 @@
                     @focus="handleQuestionSettingsFocus"
                     @blur="handleQuestionSettingsBlur"
                     class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="100"
+                    :placeholder="t('forms.builderThresholdDefaultPh')"
                   />
-                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Section passes if its score percentage is ≥ this threshold. Default is 100%.
-                  </p>
+                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('forms.builderSectionThresholdHint') }}</p>
                 </div>
               </div>
             </div>
@@ -1587,7 +1499,7 @@
 
         <!-- Empty State -->
         <div v-else class="flex-1 flex items-center justify-center text-center text-gray-400 dark:text-gray-500 px-6 py-12">
-          <p class="text-sm text-gray-500 dark:text-gray-400">Select a question, subsection, or section to edit its settings</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('forms.builderSelectTargetEmpty') }}</p>
               </div>
       </div>
     </div>
@@ -1600,8 +1512,8 @@
       <svg class="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
-      <p v-if="isAuditMode" class="text-base font-medium text-gray-700 dark:text-gray-300 mb-2">Start by creating your first section.</p>
-      <p v-else class="text-base font-medium text-gray-700 dark:text-gray-300 mb-2">Start by adding your first question.</p>
+      <p v-if="isAuditMode" class="text-base font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('forms.builderEmptyAuditLead') }}</p>
+      <p v-else class="text-base font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('forms.builderEmptyFlatLead') }}</p>
       <div class="flex items-center justify-center gap-3 mt-6">
               <button
           v-if="isFlatMode"
@@ -1610,9 +1522,7 @@
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-          Add Your First Question
-              </button>
+                </svg>{{ t('forms.builderAddFirstQuestion') }}</button>
           <button
           v-else
           @click="addSection"
@@ -1620,9 +1530,7 @@
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-          Add Your First Section
-          </button>
+            </svg>{{ t('forms.builderAddFirstSection') }}</button>
       <button
           v-if="isFlatMode"
         @click="addSection"
@@ -1630,9 +1538,7 @@
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-          Add Section (optional)
-      </button>
+        </svg>{{ t('forms.builderAddSectionOptional') }}</button>
       </div>
     </div>
 
@@ -1657,6 +1563,7 @@
 <script setup>
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { openDatePicker } from '@/utils/dateUtils';
 import FormPreviewDrawer from './FormPreviewDrawer.vue';
 import DuplicateFormDialog from './DuplicateFormDialog.vue';
@@ -1676,6 +1583,42 @@ import {
   isEditAllowed,
   getStatusInfo
 } from '@/utils/formEditPermissions';
+
+const { t } = useI18n();
+
+const structureSectionNamePh = computed(() => t('forms.builderStructureSectionNamePh'));
+const structureSubsectionNamePh = computed(() => t('forms.builderStructureSubsectionNamePh'));
+
+const QUESTION_TYPE_LABEL_KEYS = {
+  Text: 'builderQtText',
+  Textarea: 'builderQtTextarea',
+  Email: 'builderQtEmail',
+  Number: 'builderQtNumber',
+  Date: 'builderQtDate',
+  Dropdown: 'builderQtDropdown',
+  Rating: 'builderQtRating',
+  File: 'builderQtFile',
+  Signature: 'builderQtSignature',
+  'Yes-No': 'builderQtYesNo',
+};
+
+const questionTypeLabel = (type) => {
+  const key = QUESTION_TYPE_LABEL_KEYS[type || 'Text'] || QUESTION_TYPE_LABEL_KEYS.Text;
+  return t(`forms.${key}`);
+};
+
+const questionTypeOptions = computed(() => [
+  { value: 'Text', label: t('forms.builderQtText') },
+  { value: 'Textarea', label: t('forms.builderQtTextarea') },
+  { value: 'Email', label: t('forms.builderQtEmail') },
+  { value: 'Number', label: t('forms.builderQtNumber') },
+  { value: 'Date', label: t('forms.builderQtDate') },
+  { value: 'Dropdown', label: t('forms.builderQtDropdown') },
+  { value: 'Rating', label: t('forms.builderQtRating') },
+  { value: 'File', label: t('forms.builderQtFile') },
+  { value: 'Signature', label: t('forms.builderQtSignature') },
+  { value: 'Yes-No', label: t('forms.builderQtYesNo') },
+]);
 
 const props = defineProps({
   form: {
@@ -2027,7 +1970,7 @@ const initializeLocalForm = () => {
   if (formTypeValue === 'audit' && initializedForm.sections.length === 0) {
     initializedForm.sections.push({
       sectionId: generateIdLocal('SEC'),
-      name: 'General Compliance',
+      name: t('forms.builderDefaultSectionName'),
       weightage: 0,
       subsections: [],
       questions: [],
@@ -2574,8 +2517,8 @@ const handleDocumentClick = (e) => {
 
   // Get the clicked element and check if it's an input
   const isSectionInput = clickedElement.tagName === 'INPUT' && 
-    (clickedElement.getAttribute('placeholder') === 'Section name' || 
-     clickedElement.getAttribute('placeholder') === 'Subsection name');
+    (clickedElement.getAttribute('placeholder') === structureSectionNamePh.value || 
+     clickedElement.getAttribute('placeholder') === structureSubsectionNamePh.value);
   
   // If we clicked outside section/subsection inputs, blur any focused ones
   if (!isSectionInput) {
@@ -2591,7 +2534,7 @@ const handleDocumentClick = (e) => {
     // Check if active element is a section/subsection input
     if (activeElement && activeElement.tagName === 'INPUT') {
       const placeholder = activeElement.getAttribute('placeholder');
-      if (placeholder === 'Section name' || placeholder === 'Subsection name') {
+      if (placeholder === structureSectionNamePh.value || placeholder === structureSubsectionNamePh.value) {
         shouldBlur = true;
       }
     }
@@ -2606,7 +2549,7 @@ const handleDocumentClick = (e) => {
       // Blur the active element first
       if (activeElement && activeElement.tagName === 'INPUT') {
         const placeholder = activeElement.getAttribute('placeholder');
-        if (placeholder === 'Section name' || placeholder === 'Subsection name') {
+        if (placeholder === structureSectionNamePh.value || placeholder === structureSubsectionNamePh.value) {
           activeElement.blur();
         }
       }
@@ -2636,8 +2579,8 @@ const handleDocumentMousedown = (e) => {
   // Check if the clicked element is not an input field
   const clickedElement = e.target;
   const isSectionInput = clickedElement.tagName === 'INPUT' && 
-    (clickedElement.getAttribute('placeholder') === 'Section name' || 
-     clickedElement.getAttribute('placeholder') === 'Subsection name');
+    (clickedElement.getAttribute('placeholder') === structureSectionNamePh.value || 
+     clickedElement.getAttribute('placeholder') === structureSubsectionNamePh.value);
   
   // If clicking outside inputs, blur any focused inputs
   // Use setTimeout to run after the click event completes
@@ -2650,7 +2593,7 @@ const handleDocumentMousedown = (e) => {
       // Check if there's a focused section/subsection input
       if (activeElement && activeElement.tagName === 'INPUT') {
         const placeholder = activeElement.getAttribute('placeholder');
-        if (placeholder === 'Section name' || placeholder === 'Subsection name') {
+        if (placeholder === structureSectionNamePh.value || placeholder === structureSubsectionNamePh.value) {
           activeElement.blur();
           focusedSectionId.value = null;
           focusedSubsectionId.value = null;
@@ -3564,6 +3507,11 @@ const currentQuestion = computed(() => {
   return qs[selectedQuestionIndex.value];
 });
 
+const getNumberPassValuePlaceholder = () => {
+  const rule = currentQuestion.value?.scoring?.passCondition?.rule;
+  return rule === '>=' ? t('forms.builderEnterMinValuePh') : t('forms.builderEnterMaxValuePh');
+};
+
 // Root question selection for flat mode
 const selectedRootQuestion = computed(() => {
   if (!isFlatMode.value) return null;
@@ -3584,34 +3532,34 @@ const dragOverRootQuestionIndex = ref(null);
 
 const currentSubsectionTitle = computed(() => {
   if (currentSubsection.value) {
-    return currentSubsection.value.name || 'Untitled subsection';
+    return currentSubsection.value.name || t('forms.builderUntitledSubsection');
   }
   // If section is selected but no subsection, show section name
   if (currentSection.value) {
-    return currentSection.value.name || 'Untitled section';
+    return currentSection.value.name || t('forms.builderUntitledSection');
   }
-  return 'No subsection selected';
+  return t('forms.builderNoSubsectionSelected');
 });
 
 const currentSectionSummary = computed(() => {
   if (!currentSection.value) return '';
   const subs = currentSection.value.subsections || [];
   const qCount = subs.reduce((acc, s) => acc + (s.questions ? s.questions.length : 0), 0);
-  return `${subs.length} subsections • ${qCount} questions`;
+  return t('forms.builderSectionSummary', { subsectionCount: subs.length, questionCount: qCount });
 });
 
-const questionPalette = [
-  { type: 'Text', label: 'Short Text', primary: true },
-  { type: 'Textarea', label: 'Long Text', primary: false },
-  { type: 'Yes-No', label: 'Yes / No', primary: true },
-  { type: 'Dropdown', label: 'Dropdown', primary: true },
-  { type: 'Rating', label: 'Rating', primary: false },
-  { type: 'Number', label: 'Number', primary: false },
-  { type: 'Date', label: 'Date', primary: false },
-  { type: 'Email', label: 'Email', primary: false },
-  { type: 'File', label: 'File Upload', primary: false },
-  { type: 'Signature', label: 'Signature', primary: false }
-];
+const questionPalette = computed(() => [
+  { type: 'Text', label: t('forms.builderPaletteShortText'), primary: true },
+  { type: 'Textarea', label: t('forms.builderPaletteLongText'), primary: false },
+  { type: 'Yes-No', label: t('forms.builderPaletteYesNo'), primary: true },
+  { type: 'Dropdown', label: t('forms.builderPaletteDropdown'), primary: true },
+  { type: 'Rating', label: t('forms.builderPaletteRating'), primary: false },
+  { type: 'Number', label: t('forms.builderPaletteNumber'), primary: false },
+  { type: 'Date', label: t('forms.builderPaletteDate'), primary: false },
+  { type: 'Email', label: t('forms.builderPaletteEmail'), primary: false },
+  { type: 'File', label: t('forms.builderPaletteFileUpload'), primary: false },
+  { type: 'Signature', label: t('forms.builderPaletteSignature'), primary: false },
+]);
 
 const addSection = () => {
   // Check edit permissions
@@ -4131,7 +4079,7 @@ const buildDefaultQuestion = (type) => {
       base.options = ['Yes', 'No'];
       base.scoring.passCondition = { expectedValue: 'Yes' };
     } else if (type === 'Dropdown') {
-      base.options = ['Option 1', 'Option 2'];
+      base.options = [t('forms.builderDefaultOption1'), t('forms.builderDefaultOption2')];
       base.scoring.passCondition = { passOptions: [] };
     } else if (type === 'Rating') {
       base.scoring.passCondition = { minRating: 4 };

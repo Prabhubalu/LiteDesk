@@ -29,9 +29,7 @@
             >
               <!-- Header -->
               <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <DialogTitle as="h3" class="text-lg font-semibold text-gray-900 dark:text-white">
-                  Link Record
-                </DialogTitle>
+                <DialogTitle as="h3" class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('records.genericLinkDrawerLink') }}</DialogTitle>
                 <button
                   type="button"
                   @click="handleClose"
@@ -45,9 +43,7 @@
               <div class="px-6 py-4 space-y-4">
                 <!-- Module Selection -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                    Record Type
-                  </label>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('records.linkRecordModalRecordType') }}</label>
                   <Listbox v-model="selectedModule">
                     <div class="relative">
                       <ListboxButton
@@ -60,9 +56,7 @@
                           />
                           <span class="block truncate text-gray-900 dark:text-white">{{ selectedModule.label }}</span>
                         </span>
-                        <span v-else class="block truncate text-gray-400 dark:text-gray-500">
-                          Select a record type...
-                        </span>
+                        <span v-else class="block truncate text-gray-400 dark:text-gray-500">{{ t('records.linkRecordModalSelectARecordType') }}</span>
                         <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                           <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
                         </span>
@@ -220,9 +214,7 @@
                   type="button"
                   @click="handleClose"
                   class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-                >
-                  Cancel
-                </button>
+                >{{ t('performance.cancelWizard') }}</button>
                 <button
                   type="button"
                   @click="handleConfirm"
@@ -235,10 +227,8 @@
                   ]"
                 >
                   <span v-if="linking" class="flex items-center gap-2">
-                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Linking...
-                  </span>
-                  <span v-else>Link Record</span>
+                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>{{ t('records.linkRecordModalLinking') }}</span>
+                  <span v-else>{{ t('records.genericLinkDrawerLink') }}</span>
                 </button>
               </div>
             </DialogPanel>
@@ -250,6 +240,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, computed, watch, nextTick } from 'vue';
 import {
   Dialog,
@@ -298,6 +289,8 @@ const props = defineProps({
     default: () => []
   }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['close', 'confirm']);
 

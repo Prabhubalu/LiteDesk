@@ -1,5 +1,12 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t, te } = useI18n();
+
+function tabDisplayTitle(tab) {
+  return resolveTabTitle(tab, t, te);
+}
 import { useRoute } from 'vue-router';
 import { useTabs } from '@/composables/useTabs';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -8,6 +15,7 @@ import NotificationBell from '@/components/notifications/NotificationBell.vue';
 import UserMenu from '@/components/UserMenu.vue';
 import { useUserStatus } from '@/composables/useUserStatus';
 import { XMarkIcon } from '@heroicons/vue/20/solid';
+import { resolveTabTitle } from '@/utils/navigationLabels';
 
 const route = useRoute();
 const authStore = useAuthStore();
@@ -390,13 +398,14 @@ onUnmounted(() => {
               : 'text-gray-600 dark:text-gray-400'
           ]"
         >
-          {{ tab.title }}
+          {{ tabDisplayTitle(tab) }}
         </span>
         
         <!-- Close button - collapses to 0 width when hidden -->
         <button
           v-if="tab.closable"
           @click="handleCloseTab($event, tab.id)"
+          :aria-label="t('navigation.tabCloseTab')"
           :class="[
             'p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-150 overflow-hidden',
             activeTabId === tab.id
@@ -429,7 +438,7 @@ onUnmounted(() => {
           <button
             type="button"
             class="relative rounded-full overflow-visible w-8 h-8 flex-shrink-0 ring-1 ring-gray-200 dark:ring-gray-600 hover:ring-gray-300 dark:hover:ring-gray-500 transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-            title="Account"
+            :title="t('navigation.tabAccount')"
             aria-haspopup="true"
             :aria-expanded="showProfileDropdown"
             @click.stop="toggleProfileDropdown"
@@ -474,7 +483,7 @@ onUnmounted(() => {
           @click="handleContextMenuAction('close')"
           class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150"
         >
-          Close
+          {{ t('navigation.tabClose') }}
         </button>
         
         <!-- Close Others -->
@@ -482,7 +491,7 @@ onUnmounted(() => {
           @click="handleContextMenuAction('close-others')"
           class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150"
         >
-          Close Others
+          {{ t('navigation.tabCloseOthers') }}
         </button>
         
         <!-- Close Tabs to the Right -->
@@ -490,7 +499,7 @@ onUnmounted(() => {
           @click="handleContextMenuAction('close-right')"
           class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150"
         >
-          Close Tabs to the Right
+          {{ t('navigation.tabCloseToRight') }}
         </button>
         
         <div class="my-1 border-t border-gray-200 dark:border-gray-700"></div>
@@ -500,7 +509,7 @@ onUnmounted(() => {
           @click="handleContextMenuAction('close-all')"
           class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150"
         >
-          Close All Tabs
+          {{ t('navigation.tabCloseAll') }}
         </button>
       </div>
     </transition>

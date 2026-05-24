@@ -1,0 +1,2382 @@
+{
+  "recordsCount": {
+    "message": "{count, plural, one {# record} other {# records}}",
+    "description": "Record list count with ICU pluralization"
+  },
+  "itemsSelected": {
+    "message": "{count, plural, one {# item selected} other {# items selected}}",
+    "description": "Bulk selection count in list views"
+  },
+  "welcomeUser": {
+    "message": "Welcome, {name}",
+    "description": "Personalized greeting with interpolation"
+  },
+  "assignedToUser": {
+    "message": "Assigned to {gender, select, female {her} male {him} other {them}}",
+    "description": "ICU select example for gendered copy (platform chrome only)"
+  },
+  "localeDevTitle": {
+    "message": "Localization QA",
+    "description": "Developer settings section for i18n tools"
+  },
+  "pseudoLocaleHint": {
+    "message": "Pseudo-locales expand text and expose layout issues before translation.",
+    "description": "Help text for pseudo-locale developer toggle"
+  },
+  "moreActions": {
+    "message": "More actions",
+    "description": "Overflow menu trigger aria-label"
+  },
+  "loadingList": {
+    "message": "Loading list",
+    "description": "List skeleton aria-label"
+  },
+  "viewRecord": {
+    "message": "View",
+    "description": "Row action: open record"
+  },
+  "importData": {
+    "message": "Import",
+    "description": "Module header import action"
+  },
+  "exportData": {
+    "message": "Export",
+    "description": "Module header export action"
+  },
+  "listSaveView": {
+    "message": "Save view",
+    "description": "List view: save current filters/columns"
+  },
+  "listFilters": {
+    "message": "Filters",
+    "description": "List view filters panel title"
+  },
+  "listAllRecords": {
+    "message": "All",
+    "description": "List filter tab: all records"
+  },
+  "listClearFilters": {
+    "message": "Clear filters",
+    "description": "Reset active list filters"
+  },
+  "listLoadingOptions": {
+    "message": "Loading options…",
+    "description": "Filter dropdown loading state"
+  },
+  "listClear": {
+    "message": "Clear",
+    "description": "Clear single filter or selection"
+  },
+  "listViewName": {
+    "message": "View name",
+    "description": "Saved view name field label"
+  },
+  "listDeleteView": {
+    "message": "Delete view",
+    "description": "Delete saved list view action"
+  },
+  "listCustomizeView": {
+    "message": "Customize view",
+    "description": "Open list view customization drawer"
+  },
+  "listLayoutOptions": {
+    "message": "Layout options",
+    "description": "List layout section title"
+  },
+  "listRowHeight": {
+    "message": "Row height",
+    "description": "Table row height setting"
+  },
+  "listReset": {
+    "message": "Reset",
+    "description": "Reset view settings to defaults"
+  },
+  "listColumnWidths": {
+    "message": "Column widths",
+    "description": "Column width customization section"
+  },
+  "listDefaultView": {
+    "message": "Default view",
+    "description": "Mark view as org default"
+  },
+  "listManageFields": {
+    "message": "Manage fields",
+    "description": "Open field visibility manager"
+  },
+  "listFieldRequired": {
+    "message": "Required",
+    "description": "Field cannot be hidden"
+  },
+  "listFieldLocked": {
+    "message": "Locked",
+    "description": "Field locked from reorder"
+  },
+  "listFieldHidden": {
+    "message": "Hidden",
+    "description": "Hidden fields section"
+  },
+  "listNoHiddenFields": {
+    "message": "No hidden fields",
+    "description": "Empty hidden fields state"
+  },
+  "listNewCustomField": {
+    "message": "New custom field",
+    "description": "Create custom field from list manager"
+  },
+  "listCustomizeKanban": {
+    "message": "Customize Kanban",
+    "description": "Kanban board customization"
+  },
+  "deleteTitleBulk": {
+    "message": "Delete {count} {recordTypePlural}",
+    "description": "Bulk delete dialog title"
+  },
+  "deleteTitleSingle": {
+    "message": "Delete {recordType}",
+    "description": "Single delete dialog title"
+  },
+  "deleteConfirmBulk": {
+    "message": "Are you sure you want to delete {count} {recordTypeLabel}? This action cannot be undone.",
+    "description": "Bulk delete confirmation"
+  },
+  "deleteConfirmSingle": {
+    "message": "Are you sure you want to delete {target}? This action cannot be undone.",
+    "description": "Single delete confirmation; target is quoted name or type"
+  },
+  "deleteInProgress": {
+    "message": "Deleting…",
+    "description": "Delete button in progress"
+  },
+  "listEditView": {
+    "message": "Edit view",
+    "description": "Edit saved list view action title"
+  },
+  "listDeleteViewAction": {
+    "message": "Delete view",
+    "description": "Delete saved list view action title"
+  },
+  "listSaveViewHint": {
+    "message": "Save current view as a new saved view",
+    "description": "Save view button tooltip"
+  },
+  "listHideStatistics": {
+    "message": "Hide statistics",
+    "description": "Stats panel toggle tooltip when visible"
+  },
+  "listShowStatistics": {
+    "message": "Show statistics",
+    "description": "Stats panel toggle tooltip when hidden"
+  },
+  "listStatsShort": {
+    "message": "Stats",
+    "description": "Short stats toggle label"
+  },
+  "listHideShort": {
+    "message": "Hide",
+    "description": "Short hide label for stats toggle"
+  },
+  "listSuggestedLabel": {
+    "message": "Suggested:",
+    "description": "Suggested filters section prefix"
+  },
+  "listSuggestedHint": {
+    "message": "Suggestions based on common usage. Nothing is applied automatically.",
+    "description": "Suggested filters tooltip"
+  },
+  "listSuggestedConfigure": {
+    "message": "Click to configure {filter} filter",
+    "description": "Suggested filter chip tooltip"
+  },
+  "listClearSearch": {
+    "message": "Clear search for {title}",
+    "description": "Clear search input aria-label"
+  },
+  "listViewNameExample": {
+    "message": "e.g., Sales Leads",
+    "description": "Saved view name placeholder"
+  },
+  "listViewDescOptional": {
+    "message": "Description (optional)",
+    "description": "Saved view description field label"
+  },
+  "listViewDescPlaceholder": {
+    "message": "Optional description for this view",
+    "description": "Saved view description placeholder"
+  },
+  "listSaveCurrentView": {
+    "message": "Save current view",
+    "description": "Save view modal title"
+  },
+  "listEditViewTitle": {
+    "message": "Edit view",
+    "description": "Edit view modal title"
+  },
+  "listDeleteViewConfirm": {
+    "message": "Are you sure you want to delete \"{viewName}\"? This action cannot be undone.",
+    "description": "Delete saved view confirmation"
+  },
+  "listClearSelection": {
+    "message": "Clear selection",
+    "description": "Bulk selection clear button tooltip"
+  },
+  "listRowsSelected": {
+    "message": "{count, plural, one {# {singular} selected} other {# {plural} selected}}",
+    "description": "Bulk row selection count in list"
+  },
+  "listSearchFields": {
+    "message": "Search fields",
+    "description": "Field manager search placeholder"
+  },
+  "listShownCount": {
+    "message": "Shown ({count})",
+    "description": "Visible fields section header"
+  },
+  "listKanbanOptions": {
+    "message": "Kanban options",
+    "description": "Kanban settings section title"
+  },
+  "listCardSize": {
+    "message": "Card size",
+    "description": "Kanban card size setting"
+  },
+  "listStackFields": {
+    "message": "Stack fields",
+    "description": "Kanban stack fields toggle"
+  },
+  "listCollapseEmpty": {
+    "message": "Collapse empty columns",
+    "description": "Kanban collapse empty columns toggle"
+  },
+  "listShowEmptyFields": {
+    "message": "Show empty fields",
+    "description": "Kanban show empty fields toggle"
+  },
+  "listShowClosedRecords": {
+    "message": "Show closed records",
+    "description": "Kanban show closed records toggle"
+  },
+  "listSearchModule": {
+    "message": "Search {module}...",
+    "description": "Module list search placeholder"
+  },
+  "listCreateModule": {
+    "message": "New {module}",
+    "description": "Generic module list create button"
+  },
+  "listViewAllModule": {
+    "message": "All {module}",
+    "description": "Generic all-records list view title"
+  },
+  "listViewMyModule": {
+    "message": "My {module}",
+    "description": "Generic assigned-to-me list view title"
+  },
+  "listViewCustom": {
+    "message": "Custom",
+    "description": "List view title when filters or search are applied"
+  },
+  "listStatAssignedToMe": {
+    "message": "Assigned to Me",
+    "description": "List statistics card label"
+  },
+  "listStatUnassigned": {
+    "message": "Unassigned",
+    "description": "List statistics card label"
+  },
+  "listStatCompleted": {
+    "message": "Completed",
+    "description": "List statistics card label"
+  },
+  "listStatOverdue": {
+    "message": "Overdue",
+    "description": "List statistics card label"
+  },
+  "listDefaultViewTooltip": {
+    "message": "Default list (loads when opening)",
+    "description": "Tooltip on active default saved list view"
+  },
+  "listSetDefaultViewTooltip": {
+    "message": "Set as default list",
+    "description": "Tooltip to mark a saved list view as default"
+  },
+  "listCoreFields": {
+    "message": "Core Fields",
+    "description": "Customize list field group label"
+  },
+  "listParticipationFields": {
+    "message": "Participation",
+    "description": "Customize list field group label"
+  },
+  "listSystemFields": {
+    "message": "System Fields",
+    "description": "Customize list field group label"
+  },
+  "listParticipationApp": {
+    "message": "Participation: {app}",
+    "description": "Customize list participation field group label"
+  },
+  "listRowHeightSmall": {
+    "message": "Small",
+    "description": "List row height option"
+  },
+  "listRowHeightMedium": {
+    "message": "Medium",
+    "description": "List row height option"
+  },
+  "listRowHeightLarge": {
+    "message": "Large",
+    "description": "List row height option"
+  },
+  "listRowHeightHuge": {
+    "message": "Huge",
+    "description": "List row height option"
+  },
+  "listEmptyTitle": {
+    "message": "No records yet",
+    "description": "Default list empty state title"
+  },
+  "listEmptyMessage": {
+    "message": "Start by adding your first record",
+    "description": "Default list empty state description"
+  },
+  "listEmptyNoModuleYet": {
+    "message": "No {module} yet",
+    "description": "Module list empty state title"
+  },
+  "listEmptyModuleWillAppear": {
+    "message": "{module} will appear here as you add them.",
+    "description": "Module list empty state description"
+  },
+  "listEmptyNoMatchFilters": {
+    "message": "No {module} match your filters",
+    "description": "List empty title when filters are active"
+  },
+  "listEmptyNoMatchSearchAndFilters": {
+    "message": "No {module} match your search or filters. Try adjusting them or clear everything to start over.",
+    "description": "List empty message when search and filters are active"
+  },
+  "listEmptyNoMatchSearch": {
+    "message": "We couldn't find any {module} matching \"{query}\". Try a different keyword or clear the search.",
+    "description": "List empty message when search is active"
+  },
+  "listEmptyNoMatchFiltersOnly": {
+    "message": "No {module} match your filters. Try adjusting or clearing them to see more results.",
+    "description": "List empty message when only filters are active"
+  },
+  "listClearSearchAndFilters": {
+    "message": "Clear search & filters",
+    "description": "Button to reset list search and filters"
+  },
+  "listFilterAll": {
+    "message": "All {filter}",
+    "description": "Filter dropdown placeholder when no value selected"
+  },
+  "listUnknown": {
+    "message": "Unknown",
+    "description": "Fallback label for unknown filter option"
+  },
+  "listNoDataAvailable": {
+    "message": "No data available",
+    "description": "Table empty state title fallback"
+  },
+  "listNoRecordsFound": {
+    "message": "No records found.",
+    "description": "Table empty state message fallback"
+  },
+  "listEmptyIllustrationAlt": {
+    "message": "No records illustration",
+    "description": "Alt text for list empty state illustration"
+  },
+  "phraseDefaultInParens": {
+    "message": "(Default)",
+    "description": "Suffix for default pipeline or option"
+  },
+  "darkMode": {
+    "message": "Dark mode",
+    "description": "Dark color mode menu option"
+  },
+  "lightMode": {
+    "message": "Light mode",
+    "description": "Light color mode menu option"
+  },
+  "tableClearSelection": {
+    "message": "Clear selection",
+    "description": "Clear bulk row selection"
+  },
+  "tableAllPageSelected": {
+    "message": "All {count} items on this page are selected.",
+    "description": "Select-all banner when current page is fully selected"
+  },
+  "tableSelectAllItems": {
+    "message": "Select all {count} items",
+    "description": "Expand selection to all pages"
+  },
+  "tableAllSelected": {
+    "message": "All {count} selected",
+    "description": "All records across pages selected"
+  },
+  "tableSelectedCount": {
+    "message": "{count, plural, one {# selected} other {# selected}}",
+    "description": "Bulk selection count in data table"
+  },
+  "tableDeleteSelected": {
+    "message": "Delete selected",
+    "description": "Bulk delete action label"
+  },
+  "tableColumns": {
+    "message": "Columns",
+    "description": "Column settings button label"
+  },
+  "tableColumnSettings": {
+    "message": "Column settings",
+    "description": "Column settings modal title"
+  },
+  "tableManageColumns": {
+    "message": "Manage columns",
+    "description": "Column manager section title"
+  },
+  "tableManageColumnsHint": {
+    "message": "Toggle visibility and drag to reorder",
+    "description": "Column manager help text"
+  },
+  "tableVisibleCount": {
+    "message": "{visible} of {total} visible",
+    "description": "Visible column count in settings"
+  },
+  "tableUnfreezeColumn": {
+    "message": "Unfreeze column",
+    "description": "Unfreeze sticky column tooltip"
+  },
+  "tableFreezeColumn": {
+    "message": "Freeze column",
+    "description": "Freeze sticky column tooltip"
+  },
+  "tableFreezeMax": {
+    "message": "Maximum 2 columns can be frozen",
+    "description": "Freeze limit tooltip"
+  },
+  "tableFrozen": {
+    "message": "Frozen",
+    "description": "Frozen column badge"
+  },
+  "tableResetDefault": {
+    "message": "Reset to default",
+    "description": "Reset column settings"
+  },
+  "tableShowingResults": {
+    "message": "Showing {start} to {end} of {total} results",
+    "description": "Pagination summary"
+  },
+  "tableSortAscending": {
+    "message": "Sort ascending",
+    "description": "Table column sort ascending"
+  },
+  "tableSortDescending": {
+    "message": "Sort descending",
+    "description": "Table column sort descending"
+  },
+  "tableClearSort": {
+    "message": "Clear sort",
+    "description": "Remove column sort"
+  },
+  "tableToggleSort": {
+    "message": "Toggle sort for {column}",
+    "description": "Sort toggle aria-label"
+  },
+  "tableRowSelectSr": {
+    "message": "Row number and select rows",
+    "description": "Screen reader label for selection column"
+  },
+  "tableLoadingSr": {
+    "message": "Loading table",
+    "description": "Screen reader label for table loading skeleton"
+  },
+  "metricsTitle": {
+    "message": "Metrics",
+    "description": "Metrics widget card title"
+  },
+  "metricsConfigure": {
+    "message": "Configure metrics",
+    "description": "Open metrics configuration"
+  },
+  "metricsEmptyYet": {
+    "message": "No metrics configured yet.",
+    "description": "Empty metrics widget state"
+  },
+  "metricsEmptyPanel": {
+    "message": "No metrics configured.",
+    "description": "Empty metrics config panel"
+  },
+  "metricsAdd": {
+    "message": "Add metric",
+    "description": "Add a new metric row"
+  },
+  "metricsLabel": {
+    "message": "Label",
+    "description": "Metric label column"
+  },
+  "metricsSource": {
+    "message": "Source",
+    "description": "Metric data source column"
+  },
+  "metricsField": {
+    "message": "Field",
+    "description": "Metric field column"
+  },
+  "metricsAggregation": {
+    "message": "Aggregation",
+    "description": "Metric aggregation column"
+  },
+  "metricsDragReorder": {
+    "message": "Drag to reorder",
+    "description": "Metric row drag handle tooltip"
+  },
+  "metricsDelete": {
+    "message": "Delete metric",
+    "description": "Remove metric row"
+  },
+  "metricsClosePanel": {
+    "message": "Close panel",
+    "description": "Close metrics config drawer"
+  },
+  "keyFieldsTitle": {
+    "message": "Key fields",
+    "description": "Key fields widget title"
+  },
+  "keyFieldsEmptyValue": {
+    "message": "Empty",
+    "description": "Empty key field value placeholder"
+  },
+  "keyFieldsNone": {
+    "message": "No key fields configured",
+    "description": "No key fields empty state"
+  },
+  "keyFieldsHint": {
+    "message": "Mark fields as \"Key Field\" in module settings",
+    "description": "Key fields configuration hint"
+  },
+  "closePanel": {
+    "message": "Close panel",
+    "description": "Screen reader label for closing a side panel"
+  },
+  "formAssignToMe": {
+    "message": "Assign to me",
+    "description": "Assign current user to a reviewer field"
+  },
+  "formNoOptions": {
+    "message": "No options available.",
+    "description": "Empty picklist dropdown"
+  },
+  "formNoMatchingRecords": {
+    "message": "No matching records found.",
+    "description": "Empty lookup combobox search results"
+  },
+  "formNoRecordsFound": {
+    "message": "No records found",
+    "description": "Empty lookup modal list"
+  },
+  "formSelected": {
+    "message": "Selected",
+    "description": "Lookup row already selected badge"
+  },
+  "formCreateNew": {
+    "message": "Create new",
+    "description": "Create related record from lookup footer"
+  },
+  "formSearchOptions": {
+    "message": "Search options...",
+    "description": "Picklist search placeholder"
+  },
+  "formSearchRecords": {
+    "message": "Search records...",
+    "description": "Lookup combobox search placeholder"
+  },
+  "formBrowseRecords": {
+    "message": "Browse records",
+    "description": "Open lookup record picker modal"
+  },
+  "formCreateAndSelect": {
+    "message": "Create and select",
+    "description": "Create new lookup record shortcut"
+  },
+  "formUploading": {
+    "message": "Uploading...",
+    "description": "Image upload in progress"
+  },
+  "formUploadImage": {
+    "message": "Upload Image",
+    "description": "Image upload trigger button"
+  },
+  "formRefreshing": {
+    "message": "Refreshing...",
+    "description": "Lookup modal refresh in progress"
+  },
+  "formLookupSelectTitle": {
+    "message": "Select {label}",
+    "description": "Lookup modal title"
+  },
+  "formLookupChooseOne": {
+    "message": "Choose one {module} to fill {field}",
+    "description": "Lookup modal subtitle"
+  },
+  "formLookupSearchModule": {
+    "message": "Search {module}...",
+    "description": "Lookup modal search placeholder"
+  },
+  "formLookupNoMatch": {
+    "message": "No {module} match \"{query}\".",
+    "description": "Lookup modal empty state with search query"
+  },
+  "formLookupNoRecordsYet": {
+    "message": "There are no {module} to choose from yet.",
+    "description": "Lookup modal empty state without query"
+  },
+  "formLookupCreateModule": {
+    "message": "Create new {module}",
+    "description": "Lookup modal create CTA with module name"
+  },
+  "lifecycleStageTitle": {
+    "message": "Lifecycle Stage",
+    "description": "Lifecycle stage widget title"
+  },
+  "lifecycleType": {
+    "message": "Type:",
+    "description": "Lifecycle widget type label"
+  },
+  "lifecycleAge": {
+    "message": "Age:",
+    "description": "Lifecycle widget age label"
+  },
+  "lifecycleJustCreated": {
+    "message": "Just created",
+    "description": "Record age when created today"
+  },
+  "lifecycleAgeDays": {
+    "message": "{days, plural, one {# day} other {# days}}",
+    "description": "Record age in days"
+  },
+  "lifecycleAgeZero": {
+    "message": "0 days",
+    "description": "Record age fallback when no createdAt"
+  },
+  "searchPlaceholder": {
+    "message": "Search...",
+    "description": "Generic search input placeholder"
+  },
+  "filterAll": {
+    "message": "All",
+    "description": "Filter option: no restriction"
+  },
+  "filterAllNamed": {
+    "message": "All {label}",
+    "description": "Filter option: all values for a named field"
+  },
+  "filterDays": {
+    "message": "Days",
+    "description": "Relative date filter days input label"
+  },
+  "filterDate": {
+    "message": "Date",
+    "description": "Single date filter input label"
+  },
+  "filterFrom": {
+    "message": "From",
+    "description": "Date range filter start label"
+  },
+  "filterTo": {
+    "message": "To",
+    "description": "Date range filter end label"
+  },
+  "filterDaysPlaceholder": {
+    "message": "e.g. 7",
+    "description": "Relative date filter days input placeholder"
+  },
+  "dependencyNoFields": {
+    "message": "No fields to display",
+    "description": "Dependency popup empty state"
+  },
+  "drawerBackQuickCreate": {
+    "message": "Back to quick create",
+    "description": "Toggle from full create form to quick create"
+  },
+  "drawerShowAllFields": {
+    "message": "Show all fields",
+    "description": "Expand quick create drawer to full form"
+  },
+  "formQuickCreateFields": {
+    "message": "Quick Create Fields",
+    "description": "Section heading for quick-create field group"
+  },
+  "taskDescriptionPlaceholder": {
+    "message": "Write or type '/' for commands",
+    "description": "Task description editor placeholder"
+  },
+  "taskDescriptionFallback": {
+    "message": "Description",
+    "description": "Task description field fallback label"
+  },
+  "taskRelatedToFallback": {
+    "message": "Related To",
+    "description": "Task related-to field fallback label"
+  },
+  "taskSubtasksLabel": {
+    "message": "Subtasks",
+    "description": "Task subtasks field label"
+  },
+  "tagsTitle": {
+    "message": "Tags",
+    "description": "Tags picker panel title"
+  },
+  "tagsNewTag": {
+    "message": "New Tag",
+    "description": "Create a new tag definition"
+  },
+  "tagsSearchPlaceholder": {
+    "message": "Search or create a tag",
+    "description": "Tags picker search input"
+  },
+  "tagsClickSearchHint": {
+    "message": "Click the search box to view available tags.",
+    "description": "Tags picker collapsed hint"
+  },
+  "tagsNoTagsYet": {
+    "message": "No tags in this workspace yet.",
+    "description": "Empty workspace tags list"
+  },
+  "tagsCreateFirst": {
+    "message": "Create first tag",
+    "description": "CTA when no tags exist"
+  },
+  "tagsCreateNamed": {
+    "message": "Create \"{name}\"",
+    "description": "Create tag from search query"
+  },
+  "tagsPublic": {
+    "message": "Public",
+    "description": "Public tag badge"
+  },
+  "tagsRemoveTag": {
+    "message": "Remove tag",
+    "description": "Remove tag from selection aria-label"
+  },
+  "tagsEditTag": {
+    "message": "Edit tag",
+    "description": "Edit tag definition action"
+  },
+  "tagsTagActions": {
+    "message": "Tag actions",
+    "description": "Tag row overflow menu aria-label"
+  },
+  "tagsTagName": {
+    "message": "Tag Name",
+    "description": "Tag editor name field label"
+  },
+  "tagsEnterTagName": {
+    "message": "Enter tag name",
+    "description": "Tag editor name placeholder"
+  },
+  "tagsColor": {
+    "message": "Color",
+    "description": "Tag editor color field label"
+  },
+  "tagsMakePublic": {
+    "message": "Make tag public",
+    "description": "Tag editor public toggle label"
+  },
+  "tagsRemoveFromSelection": {
+    "message": "Remove from selection",
+    "description": "Unassign tag from current record"
+  },
+  "tagsAddToSelection": {
+    "message": "Add to selection",
+    "description": "Assign tag to current record"
+  },
+  "tagsDeleteFromModule": {
+    "message": "Delete tag from module",
+    "description": "Delete tag definition from module"
+  },
+  "tagsRemovedNamed": {
+    "message": "Removed \"{name}\".",
+    "description": "Tag removal pending undo banner"
+  },
+  "tagsUndoSeconds": {
+    "message": "Undo ({seconds})",
+    "description": "Undo tag removal countdown"
+  },
+  "linkRecordsBackToType": {
+    "message": "Back to record type",
+    "description": "Return to link records type selector"
+  },
+  "linkRecordsLinked": {
+    "message": "Linked",
+    "description": "Already-linked record type badge"
+  },
+  "linkRecordsNoTypes": {
+    "message": "No linkable record types configured for this module. Configure relationships in Settings → Modules.",
+    "description": "Empty linkable types state"
+  },
+  "linkRecordsNoMatch": {
+    "message": "No matching records found. Try adjusting your search or filters.",
+    "description": "Empty link records search results"
+  },
+  "linkRecordsCreateNew": {
+    "message": "Create New",
+    "description": "Create record from link drawer"
+  },
+  "linkRecordsSelectedCount": {
+    "message": "{count, plural, one {# selected} other {# selected}}",
+    "description": "Link drawer multi-select count"
+  },
+  "linkRecordsLink": {
+    "message": "Link",
+    "description": "Confirm link records action"
+  },
+  "kanbanExpandColumn": {
+    "message": "Expand column",
+    "description": "Expand collapsed kanban column"
+  },
+  "kanbanNoItems": {
+    "message": "No items",
+    "description": "Empty kanban column placeholder"
+  },
+  "summaryLoadingRecord": {
+    "message": "Loading {type}...",
+    "description": "Record summary page loading state"
+  },
+  "summaryErrorLoadingTitle": {
+    "message": "Error Loading {type}",
+    "description": "Record summary page error headline"
+  },
+  "summaryNoTagsYet": {
+    "message": "No tags yet",
+    "description": "Empty tags on record header"
+  },
+  "summaryManageTags": {
+    "message": "Manage Tags",
+    "description": "Open tag manager when tags exist"
+  },
+  "summaryAddTag": {
+    "message": "Add Tag",
+    "description": "Add a tag to the record"
+  },
+  "summaryAddAnotherTag": {
+    "message": "Add Another Tag",
+    "description": "Add another tag when some exist"
+  },
+  "summaryCopyLink": {
+    "message": "Copy Link",
+    "description": "Copy record URL to clipboard"
+  },
+  "summarySelectPlaceholder": {
+    "message": "Select...",
+    "description": "Unset lifecycle/status dropdown value"
+  },
+  "summaryAddRelation": {
+    "message": "Add Relation",
+    "description": "Add related record menu"
+  },
+  "summaryViewResponses": {
+    "message": "View Responses",
+    "description": "Open form responses list"
+  },
+  "summaryDeleteRecord": {
+    "message": "Delete Record",
+    "description": "Delete current record action"
+  },
+  "summaryFormNotActive": {
+    "message": "Form Not Yet Active",
+    "description": "Inactive form empty state title"
+  },
+  "summaryFormNotActiveHint": {
+    "message": "This form has not been used yet. Assign it via events to start collecting responses.",
+    "description": "Inactive form empty state body"
+  },
+  "summaryAddWidget": {
+    "message": "Add Widget",
+    "description": "Add dashboard widget CTA"
+  },
+  "summaryAddCustomWidget": {
+    "message": "Add Custom Widget",
+    "description": "Add widget floating button tooltip"
+  },
+  "summaryShowEmptyFields": {
+    "message": "Show empty fields",
+    "description": "Toggle empty fields in details tab"
+  },
+  "summaryTenantFields": {
+    "message": "Tenant Fields",
+    "description": "Tenant details tab section title"
+  },
+  "summaryTenantFieldsHint": {
+    "message": "Subscription, limits, and organization settings",
+    "description": "Tenant details tab subtitle"
+  },
+  "summaryTenantFieldsNoMatch": {
+    "message": "No tenant fields match your search.",
+    "description": "Tenant fields search empty"
+  },
+  "summaryTenantFieldsNoValues": {
+    "message": "No tenant fields with values to display.",
+    "description": "Tenant fields all empty hidden"
+  },
+  "summaryTenantFieldsNone": {
+    "message": "No tenant fields available.",
+    "description": "No tenant fields configured"
+  },
+  "summaryManageFields": {
+    "message": "Manage Fields",
+    "description": "Open field management settings"
+  },
+  "summaryNotAvailable": {
+    "message": "Not available",
+    "description": "Field value unavailable placeholder"
+  },
+  "summaryFieldsNoMatch": {
+    "message": "No fields match your search.",
+    "description": "Details tab search empty"
+  },
+  "summaryFieldsNoValues": {
+    "message": "No fields with values to display.",
+    "description": "Details tab all empty hidden"
+  },
+  "summaryFieldsNone": {
+    "message": "No fields available.",
+    "description": "No fields configured on module"
+  },
+  "summaryFormUsage": {
+    "message": "Form Usage",
+    "description": "Form submissions section title"
+  },
+  "summaryFormUsageHint": {
+    "message": "List of form submissions with status, score, and submission date.",
+    "description": "Form submissions section subtitle"
+  },
+  "summaryLoadingSubmissions": {
+    "message": "Loading submissions...",
+    "description": "Form submissions table loading"
+  },
+  "summaryColSubmitted": {
+    "message": "Submitted",
+    "description": "Submission date column"
+  },
+  "summaryColSubmittedBy": {
+    "message": "Submitted By",
+    "description": "Submitter column"
+  },
+  "summaryColStatus": {
+    "message": "Status",
+    "description": "Status column header"
+  },
+  "summaryColScore": {
+    "message": "Score",
+    "description": "Score column header"
+  },
+  "summaryColActions": {
+    "message": "Actions",
+    "description": "Actions column header"
+  },
+  "summaryColKpis": {
+    "message": "KPIs",
+    "description": "KPI column header"
+  },
+  "summaryAnonymous": {
+    "message": "Anonymous",
+    "description": "Anonymous submitter label"
+  },
+  "summaryNoSubmissions": {
+    "message": "No Submissions Yet",
+    "description": "Empty form submissions state"
+  },
+  "summaryNoSubmissionsHint": {
+    "message": "This form hasn't received any submissions yet.",
+    "description": "Empty form submissions body"
+  },
+  "summaryFormPreview": {
+    "message": "Form Preview",
+    "description": "Form preview section title"
+  },
+  "summaryFormPreviewHint": {
+    "message": "Preview how this form will appear to users when filling it out.",
+    "description": "Form preview section subtitle"
+  },
+  "summaryFormResponses": {
+    "message": "Form Responses",
+    "description": "Form responses section title"
+  },
+  "summaryFormResponsesHint": {
+    "message": "View and manage all responses submitted for this form.",
+    "description": "Form responses section subtitle"
+  },
+  "summaryLoadingResponses": {
+    "message": "Loading responses...",
+    "description": "Form responses table loading"
+  },
+  "summaryNoResponses": {
+    "message": "No Responses Yet",
+    "description": "Empty form responses state"
+  },
+  "summaryNoResponsesHint": {
+    "message": "This form hasn't received any responses yet.",
+    "description": "Empty form responses body"
+  },
+  "summaryViewAllResponses": {
+    "message": "View All Responses",
+    "description": "Navigate to full responses list"
+  },
+  "summaryUser": {
+    "message": "User",
+    "description": "Activity filter user label"
+  },
+  "summaryAllUsers": {
+    "message": "All Users",
+    "description": "Activity filter all users option"
+  },
+  "summaryType": {
+    "message": "Type",
+    "description": "Activity filter type label"
+  },
+  "summaryAllTypes": {
+    "message": "All Types",
+    "description": "Activity filter all types option"
+  },
+  "summaryComments": {
+    "message": "Comments",
+    "description": "Activity type filter comments"
+  },
+  "summaryFieldChanges": {
+    "message": "Field Changes",
+    "description": "Activity type filter field changes"
+  },
+  "summaryNoActivity": {
+    "message": "No activity yet",
+    "description": "Empty activity feed"
+  },
+  "summarySelectWidget": {
+    "message": "Select a widget to add to your dashboard",
+    "description": "Add widget drawer subtitle"
+  },
+  "summaryResetToDefault": {
+    "message": "Reset to Default",
+    "description": "Reset widget layout action"
+  },
+  "summaryResetWidgetLayout": {
+    "message": "Reset Widget Layout",
+    "description": "Reset layout confirmation title"
+  },
+  "summaryResetLayoutConfirmBody": {
+    "message": "Are you sure you want to reset the widget layout to default? This will remove all customizations including widget positions, sizes, and any widgets you've added or removed.",
+    "description": "Reset layout confirmation body"
+  },
+  "summaryResetLayoutTooltip": {
+    "message": "Reset widget layout to default order",
+    "description": "Reset layout button tooltip"
+  },
+  "summaryNoMetrics": {
+    "message": "No metrics available.",
+    "description": "Empty metrics widget fallback"
+  },
+  "summaryKeyFieldsPlaceholder": {
+    "message": "Key fields will be displayed here.",
+    "description": "Empty key fields widget fallback"
+  },
+  "summaryWidgetContent": {
+    "message": "Widget content",
+    "description": "Generic widget placeholder"
+  },
+  "summaryTabsAria": {
+    "message": "Tabs",
+    "description": "Record summary tab list aria-label"
+  },
+  "summarySearchTenantFields": {
+    "message": "Search tenant fields...",
+    "description": "Tenant fields search placeholder"
+  },
+  "summarySearchFields": {
+    "message": "Search fields...",
+    "description": "Details fields search placeholder"
+  },
+  "summarySearchActivities": {
+    "message": "Search activities...",
+    "description": "Activity feed search placeholder"
+  },
+  "summaryUrlCopied": {
+    "message": "URL copied to clipboard!",
+    "description": "Copy link success toast"
+  },
+  "summaryResetLayoutFailed": {
+    "message": "Failed to reset layout. Please try again.",
+    "description": "Reset layout error toast"
+  },
+  "summarySaveFieldsFailed": {
+    "message": "Failed to save field updates. Please try again.",
+    "description": "Inline field save error toast"
+  },
+  "moduleListTheListForThisModuleIs": {
+    "message": "The list for this module is not available.",
+    "description": "Auto-migrated from moduleList"
+  },
+  "moduleListListNotFound": {
+    "message": "List Not Found",
+    "description": "Auto-migrated from moduleList"
+  },
+  "targetWizardStepperTargetCreationProgress": {
+    "message": "Target creation progress",
+    "description": "Auto-migrated from targetWizardStepper"
+  },
+  "trashRestore": {
+    "message": "Restore",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAutoDeleteIn": {
+    "message": "Auto delete in",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedBy": {
+    "message": "Deleted by",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedItemsWillAppearHereYou": {
+    "message": "Deleted items will appear here. You can restore them or permanently delete them before they expire.",
+    "description": "Auto-migrated from trash"
+  },
+  "trashTrashIsEmpty": {
+    "message": "Trash is empty",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletePermanently": {
+    "message": "Delete permanently",
+    "description": "Auto-migrated from trash"
+  },
+  "trashRestoreSelected": {
+    "message": "Restore selected",
+    "description": "Auto-migrated from trash"
+  },
+  "trashEmptyTrash": {
+    "message": "Empty Trash",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedTo": {
+    "message": "Deleted to",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedFrom": {
+    "message": "Deleted from",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAllUsers": {
+    "message": "All users",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAllModules": {
+    "message": "All modules",
+    "description": "Auto-migrated from trash"
+  },
+  "trashSearchNameModuleDeletedBy": {
+    "message": "Search name, module, deleted by...",
+    "description": "Auto-migrated from trash"
+  },
+  "trashRetention": {
+    "message": "Retention",
+    "description": "Auto-migrated from trash"
+  },
+  "trashOldestItem": {
+    "message": "Oldest Item",
+    "description": "Auto-migrated from trash"
+  },
+  "trashExpiringIn7Days": {
+    "message": "Expiring in 7 Days",
+    "description": "Auto-migrated from trash"
+  },
+  "trashTotalInTrash": {
+    "message": "Total in Trash",
+    "description": "Auto-migrated from trash"
+  },
+  "approvalDetailEnterRejectionReason": {
+    "message": "Enter rejection reason...",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailReason": {
+    "message": "Reason",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailRejectingWillBlockThisAction": {
+    "message": "Rejecting will block this action.",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailRejectApproval": {
+    "message": "Reject Approval",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailYouAreNotAuthorizedToApprove": {
+    "message": "You are not authorized to approve or reject this request.",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailReason2": {
+    "message": "Reason:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecidedAt": {
+    "message": "Decided at:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecidedBy": {
+    "message": "Decided by:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecisionAlreadyMade": {
+    "message": "Decision already made",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailYourDecision": {
+    "message": "Your Decision",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailThisApprovalWasEscalatedDueTo": {
+    "message": "This approval was escalated due to no response within the time limit. New approvers have been notified.",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailEscalated": {
+    "message": "Escalated",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailIfRejected": {
+    "message": "If rejected",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailIfApproved": {
+    "message": "If approved",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailWhatWillHappen": {
+    "message": "What will happen",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailWhyApprovalIsRequired": {
+    "message": "Why approval is required",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailEntity": {
+    "message": "Entity",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailContext": {
+    "message": "Context",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailBackToApprovals": {
+    "message": "Back to Approvals",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalInboxEnterRejectionReason": {
+    "message": "Enter rejection reason...",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxReason": {
+    "message": "Reason",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRejectingWillBlockThisActionPlease": {
+    "message": "Rejecting will block this action. Please provide a reason.",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRejectApproval": {
+    "message": "Reject Approval",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxDueIn": {
+    "message": "Due in:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRequestedAt": {
+    "message": "Requested at:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRequestedBy": {
+    "message": "Requested by:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxAllCaughtUpYouHaveNo": {
+    "message": "All caught up! You have no pending approval requests.",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxNoApprovalsPending": {
+    "message": "No approvals pending",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxReviewAndApprovePendingRequests": {
+    "message": "Review and approve pending requests",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxApprovals": {
+    "message": "Approvals",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "demoRequestsEnterprise": {
+    "message": "Enterprise",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsProfessional": {
+    "message": "Professional",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsStarter": {
+    "message": "Starter",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsTrial15Days": {
+    "message": "Trial (15 days)",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSubscriptionTier": {
+    "message": "Subscription Tier",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsEnterTemporaryPasswordForOwner": {
+    "message": "Enter temporary password for owner",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvert": {
+    "message": "Convert",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvertToOrganization": {
+    "message": "Convert to Organization",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted": {
+    "message": "Converted",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoCompleted": {
+    "message": "Demo Completed",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoScheduled": {
+    "message": "Demo Scheduled",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContacted": {
+    "message": "Contacted",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsUpdateStatus": {
+    "message": "Update Status",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisContactExistsInASeparate": {
+    "message": "This contact exists in a separate organization. They will see their own CRM data when they log in.",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactPhone": {
+    "message": "Contact Phone:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactEmail": {
+    "message": "Contact Email:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContact": {
+    "message": "Contact:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsOrganization": {
+    "message": "Organization:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisProspectIsAlreadyInYour": {
+    "message": "This prospect is already in your CRM!",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsJobTitle": {
+    "message": "Job Title:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsPhone": {
+    "message": "Phone:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsEmail": {
+    "message": "Email:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactName": {
+    "message": "Contact Name:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactInformation": {
+    "message": "Contact Information",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanySize": {
+    "message": "Company Size:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsIndustry": {
+    "message": "Industry:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanyName": {
+    "message": "Company Name:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanyInformation": {
+    "message": "Company Information",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoRequestDetails": {
+    "message": "Demo Request Details",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsNoDemoRequestsFound": {
+    "message": "No demo requests found",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvert2": {
+    "message": "Convert",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvertToOrganization2": {
+    "message": "Convert to Organization",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSize": {
+    "message": "Size",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsLoadingDemoRequests": {
+    "message": "Loading demo requests...",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted2": {
+    "message": "Converted",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoCompleted2": {
+    "message": "Demo Completed",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoScheduled2": {
+    "message": "Demo Scheduled",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContacted2": {
+    "message": "Contacted",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSearchDemoRequests": {
+    "message": "Search demo requests...",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted3": {
+    "message": "Converted",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisMonth": {
+    "message": "This Month",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsTotalRequests": {
+    "message": "Total Requests",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "publicBookingViewPoweredByYourCrm": {
+    "message": "Powered by your CRM",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYourDetails": {
+    "message": "Your details",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYourTime": {
+    "message": "Your time",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewAvailableTimes": {
+    "message": "Available times",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewPickADate": {
+    "message": "Pick a date",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewBookWithOurTeam": {
+    "message": "Book with our team",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewRescheduleOrCancel": {
+    "message": "Reschedule or cancel",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewAConfirmationHasBeenSentTo": {
+    "message": "A confirmation has been sent to your email. You'll get a reminder before your appointment.",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYoureBooked": {
+    "message": "You're booked!",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewPageUnavailable": {
+    "message": "Page unavailable",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewLoadingCalendar": {
+    "message": "Loading calendar…",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "notificationOverviewOpenHealthDashboard": {
+    "message": "Open health dashboard",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewViewDeliveryStatisticsChannelHealthEvent": {
+    "message": "View delivery statistics, channel health, event volume, and user notification patterns. Identify potential issues before they impact your team.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewHealthDashboard": {
+    "message": "Health dashboard",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewMonitorNotificationDeliveryHealthAndAnalytics": {
+    "message": "Monitor notification delivery health and analytics across your organization.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAdminTools": {
+    "message": "Admin tools",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageDigests": {
+    "message": "Manage digests",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewReceiveDailyOrWeeklySummariesOf": {
+    "message": "Receive daily or weekly summaries of your notifications instead of real-time alerts. Reduce notification noise while staying informed.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewDigests": {
+    "message": "Digests",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageRules": {
+    "message": "Manage rules",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewCreateCustomNotificationConditionsSetUp": {
+    "message": "Create custom notification conditions. Set up rules based on assignments, priorities, statuses, and more.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManagePreferences": {
+    "message": "Manage preferences",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewToggleWhatTypesOfNotificationsYou": {
+    "message": "Toggle what types of notifications you receive per event. Control which channels are used for each notification type.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewPreferences": {
+    "message": "Preferences",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewCustomizeYourNotificationExperienceToMatch": {
+    "message": "Customize your notification experience to match your workflow.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewYourNotificationControl": {
+    "message": "Your notification control",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageDeliveryChannels": {
+    "message": "Manage delivery channels",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable": {
+    "message": "Configurable",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable2": {
+    "message": "Configurable",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhatsapp": {
+    "message": "WhatsApp",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable3": {
+    "message": "Configurable",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewPush": {
+    "message": "Push",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable4": {
+    "message": "Configurable",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAlwaysOn": {
+    "message": "Always on",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewChooseWhereAndHowYouReceive": {
+    "message": "Choose where and how you receive notifications across different delivery channels.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewHowYoureNotified": {
+    "message": "How you're notified",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined": {
+    "message": "System-defined",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAccountActivitySystemUpdatesAndCompliance": {
+    "message": "Account activity, system updates, and compliance-related notifications.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined2": {
+    "message": "System-defined",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewActivityThatInvolvesCollaborationAndReview": {
+    "message": "Activity that involves collaboration and review.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConversations": {
+    "message": "Conversations",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewRemindersForUpcomingOrOverdueItems": {
+    "message": "Reminders for upcoming or overdue items.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewDeadlines": {
+    "message": "Deadlines",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewStatusChangesSubmissionsApprovalsAndOther": {
+    "message": "Status changes, submissions, approvals, and other important updates.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined3": {
+    "message": "System-defined",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhenTasksAuditsOrCorrectiveActions": {
+    "message": "When tasks, audits, or corrective actions are assigned to you.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAssignments": {
+    "message": "Assignments",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewNotificationsAreOrganizedByIntentTo": {
+    "message": "Notifications are organized by intent to help you stay informed without being overwhelmed.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhatYoureNotifiedAbout": {
+    "message": "What you're notified about",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewLearnHowNotificationsWorkAndWhat": {
+    "message": "Learn how notifications work and what you can control.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewNotificationOverview": {
+    "message": "Notification Overview",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationHealthHighVolume": {
+    "message": "High volume",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoUserDataAvailable": {
+    "message": "No user data available",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthFlag": {
+    "message": "Flag",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthReceived": {
+    "message": "Received",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthHighVolumeUsers": {
+    "message": "High-Volume Users",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoEventDataAvailable": {
+    "message": "No event data available",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthTopEventTypes": {
+    "message": "Top Event Types",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoChannelDataAvailable": {
+    "message": "No channel data available",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthLastFailure": {
+    "message": "Last Failure",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthSent": {
+    "message": "Sent",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthChannelHealth": {
+    "message": "Channel Health",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthDegradedChannels": {
+    "message": "Degraded Channels",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthActiveChannels": {
+    "message": "Active Channels",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthReadRate": {
+    "message": "Read Rate",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthTotalNotifications": {
+    "message": "Total Notifications",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthMonitorNotificationDeliveryAndChannelHealth": {
+    "message": "Monitor notification delivery and channel health",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNotificationHealth": {
+    "message": "Notification Health",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthHealth": {
+    "message": "Health",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationPreferencesReceiveAWeeklySummaryViaEmail": {
+    "message": "Receive a weekly summary via email. Perfect for staying informed without daily interruptions.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWeeklyDigest": {
+    "message": "Weekly Digest",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesReceiveADailySummaryOfYour": {
+    "message": "Receive a daily summary of your notifications. Reduces notification noise while keeping you informed.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesDailyDigest": {
+    "message": "Daily Digest",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesReceiveSummariesInsteadOfRealTime": {
+    "message": "Receive summaries instead of real-time notifications",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationDigests": {
+    "message": "Notification Digests",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSmsIsOnlyUsedAsA": {
+    "message": "SMS is only used as a last resort when other channels are unavailable. Messages are kept short and include deep links when possible.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSmsNotifications": {
+    "message": "SMS Notifications",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWhatsappNotificationsAreOnlySentFor": {
+    "message": "WhatsApp notifications are only sent for high-priority events in Audit and Portal apps.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWhatsappNotifications": {
+    "message": "WhatsApp Notifications",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPushNotificationsAreBlockedEnableThem": {
+    "message": "Push notifications are blocked. Enable them in your browser settings.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesTestNotification": {
+    "message": "Test Notification",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesEnablePushNotifications": {
+    "message": "Enable Push Notifications",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPushNotifications": {
+    "message": "Push Notifications",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesThereAreNoConfigurableNotificationEvents": {
+    "message": "There are no configurable notification events for this app yet.\n          Notifications will continue using their safe defaults.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesInApp": {
+    "message": "In app",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSystemEventManagedByArivu": {
+    "message": "System event (managed by Arivu)",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesClickAChannelToJumpTo": {
+    "message": "Click a channel to jump to its settings. Disabled channels are not available for this app.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationDelivery": {
+    "message": "Notification delivery",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWeCouldntLoadYourNotificationPreferences": {
+    "message": "We couldn’t load your notification preferences right now. Notifications will\n        continue using their defaults. You can keep using the app safely.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesCouldntSaveChangesPleaseTryAgain": {
+    "message": "Couldn’t save changes. Please try again.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesHealthDashboard": {
+    "message": "Health Dashboard",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationRules": {
+    "message": "Notification Rules",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesControlInAppAndEmailNotifications": {
+    "message": "Control in-app and email notifications for this workspace.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationPreferences": {
+    "message": "Notification Preferences",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPreferences": {
+    "message": "Preferences",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationRulesDeleteRule": {
+    "message": "Delete rule",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesEditRule": {
+    "message": "Edit rule",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesCreateYourFirstRule": {
+    "message": "Create your first rule",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesGetStartedByCreatingYourFirst": {
+    "message": "Get started by creating your first notification rule.",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesNoNotificationRulesYet": {
+    "message": "No notification rules yet",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesFailedToLoadNotificationRules": {
+    "message": "Failed to load notification rules",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesDeleteAnExistingRuleToCreate": {
+    "message": "Delete an existing rule to create a new one.",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesCreateCustomNotificationTriggersForModules": {
+    "message": "Create custom notification triggers for modules you care about.",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesNotificationRules": {
+    "message": "Notification Rules",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "contactDetailToastFailedToDeleteContact": {
+    "message": "Failed to delete contact",
+    "description": "Toast from ContactDetail.vue"
+  },
+  "contactDetailToastFailedToUnlinkOrganization": {
+    "message": "Failed to unlink organization",
+    "description": "Toast from ContactDetail.vue"
+  },
+  "dealDetailToastFailedToDeleteDeal": {
+    "message": "Failed to delete deal",
+    "description": "Toast from DealDetail.vue"
+  },
+  "dealDetailToastFailedToAddNote": {
+    "message": "Failed to add note",
+    "description": "Toast from DealDetail.vue"
+  },
+  "dealsToastErrorDeletingDealPleaseTry": {
+    "message": "Error deleting deal. Please try again.",
+    "description": "Toast from Deals.vue"
+  },
+  "dealsToastErrorPerformingBulkActionPlease": {
+    "message": "Error performing bulk action. Please try again.",
+    "description": "Toast from Deals.vue"
+  },
+  "dealsToastFailedToExportDeals": {
+    "message": "Failed to export deals.",
+    "description": "Toast from Deals.vue"
+  },
+  "demoRequestsToastFailedToUpdateStatus": {
+    "message": "Failed to update status",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "demoRequestsToastSuccessfullyConvertedToOrganization": {
+    "message": "Successfully converted to organization!",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "demoRequestsToastFailedToConvertRequest": {
+    "message": "Failed to convert request",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "eventDetailToastFailedToDeleteEvent": {
+    "message": "Failed to delete event",
+    "description": "Toast from EventDetail.vue"
+  },
+  "eventDetailToastFailedToAddNote": {
+    "message": "Failed to add note",
+    "description": "Toast from EventDetail.vue"
+  },
+  "eventExecutionSurfaceToastLocationIsRequiredForCheck": {
+    "message": "Location is required for check-in. Please allow location access and try again.",
+    "description": "Toast from EventExecutionSurface.vue"
+  },
+  "eventsToastErrorPerformingBulkActionPlease": {
+    "message": "Error performing bulk action. Please try again.",
+    "description": "Toast from Events.vue"
+  },
+  "eventsToastErrorExportingEventsPleaseTry": {
+    "message": "Error exporting events. Please try again.",
+    "description": "Toast from Events.vue"
+  },
+  "groupDetailToastFailedToLoadGroup": {
+    "message": "Failed to load group",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToAddMember": {
+    "message": "Failed to add member",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToRemoveMember": {
+    "message": "Failed to remove member",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToDeleteGroup": {
+    "message": "Failed to delete group",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupsToastErrorPerformingBulkActionPlease": {
+    "message": "Error performing bulk action. Please try again.",
+    "description": "Toast from Groups.vue"
+  },
+  "groupsToastErrorDeletingGroupPleaseTry": {
+    "message": "Error deleting group. Please try again.",
+    "description": "Toast from Groups.vue"
+  },
+  "organizationDetailToastFailedToDeleteOrganizationPlease": {
+    "message": "Failed to delete organization. Please try again.",
+    "description": "Toast from OrganizationDetail.vue"
+  },
+  "organizationsToastUnknownError": {
+    "message": "Unknown error",
+    "description": "Toast from Organizations.vue"
+  },
+  "organizationsToastErrorExportingOrganizationsPleaseTry": {
+    "message": "Error exporting organizations. Please try again.",
+    "description": "Toast from Organizations.vue"
+  },
+  "organizationsToastErrorExportingOrganizationsPleaseTry2": {
+    "message": "Error exporting organizations. Please try again.",
+    "description": "Toast from Organizations.vue"
+  },
+  "peopleToastUnknownError": {
+    "message": "Unknown error",
+    "description": "Toast from People.vue"
+  },
+  "peopleToastErrorExportingPeoplePleaseTry": {
+    "message": "Error exporting people. Please try again.",
+    "description": "Toast from People.vue"
+  },
+  "peopleToastErrorExportingContactsPleaseTry": {
+    "message": "Error exporting contacts. Please try again.",
+    "description": "Toast from People.vue"
+  },
+  "responsesToastFormIdNotFoundPlease": {
+    "message": "Form ID not found. Please refresh the page and try again.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToApproveResponsePlease": {
+    "message": "Failed to approve response. Please try again.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease2": {
+    "message": "Form ID not found. Please refresh the page and try again.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToRejectResponsePlease": {
+    "message": "Failed to reject response. Please try again.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease3": {
+    "message": "Form ID not found. Please refresh the page and try again.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease4": {
+    "message": "Form ID not found. Please refresh the page and try again.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToRestoreResponsePlease": {
+    "message": "Failed to restore response. Please try again.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastSubmittedResponsesCannotBeDeleted": {
+    "message": "Submitted responses cannot be deleted. Use archive or invalidate instead.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease5": {
+    "message": "Form ID not found. Please refresh the page and try again.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToDeleteResponsePlease": {
+    "message": "Failed to delete response. Please try again.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastExportFunctionalityForAllResponses": {
+    "message": "Export functionality for all responses is coming soon!",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastAnErrorOccurredDuringExport": {
+    "message": "An error occurred during export.",
+    "description": "Toast from Responses.vue"
+  },
+  "tasksToastFailedToUpdateTaskStatus": {
+    "message": "Failed to update task status",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastFailedToDeleteTask": {
+    "message": "Failed to delete task.",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastErrorPerformingBulkActionPlease": {
+    "message": "Error performing bulk action. Please try again.",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastErrorExportingTasksPleaseTry": {
+    "message": "Error exporting tasks. Please try again.",
+    "description": "Toast from Tasks.vue"
+  },
+  "trashToastRestoredSomeParentRecordsWere": {
+    "message": "Restored. Some parent records were permanently deleted.",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToRestore": {
+    "message": "Failed to restore",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToRestore2": {
+    "message": "Failed to restore",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToDelete": {
+    "message": "Failed to delete",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToDelete2": {
+    "message": "Failed to delete",
+    "description": "Toast from Trash.vue"
+  },
+  "notificationPreferencesToastPushNotificationsAreNotSupported": {
+    "message": "Push notifications are not supported in this browser.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastEnablePushNotifications": {
+    "message": "Enable Push Notifications",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastNotificationsAreNotSupportedIn": {
+    "message": "Notifications are not supported in this browser.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationTriggeredCheckYour": {
+    "message": "Test notification triggered. Check your system notifications.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationTriggeredIfYou": {
+    "message": "Test notification triggered. If you don’t see it, check Notification Center / browser OS settings.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastUnknownError": {
+    "message": "Unknown error",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationFailedSeeConsole": {
+    "message": "Test notification failed. See console for details.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationRulesToastFailedToDeleteRulePlease": {
+    "message": "Failed to delete rule. Please try again.",
+    "description": "Toast from NotificationRules.vue"
+  },
+  "pronounYou": {
+    "message": "You",
+    "description": "First-person actor label in activity feed"
+  },
+  "relativeJustNow": {
+    "message": "just now",
+    "description": "Relative time under one minute"
+  },
+  "relativeOneMinuteAgo": {
+    "message": "1 min ago",
+    "description": "Relative time one minute"
+  },
+  "relativeManyMinutesAgo": {
+    "message": "{count} mins ago",
+    "description": "Relative time multiple minutes"
+  },
+  "relativeOneHourAgo": {
+    "message": "1 hour ago",
+    "description": "Relative time one hour"
+  },
+  "relativeManyHoursAgo": {
+    "message": "{count} hours ago",
+    "description": "Relative time multiple hours"
+  },
+  "relativeOneDayAgo": {
+    "message": "1 day ago",
+    "description": "Relative time one day"
+  },
+  "relativeManyDaysAgo": {
+    "message": "{count} days ago",
+    "description": "Relative time multiple days"
+  },
+  "relativeOneMonthAgo": {
+    "message": "1 month ago",
+    "description": "Relative time one month"
+  },
+  "relativeManyMonthsAgo": {
+    "message": "{count} months ago",
+    "description": "Relative time multiple months"
+  },
+  "relativeOneYearAgo": {
+    "message": "1 year ago",
+    "description": "Relative time one year"
+  },
+  "relativeManyYearsAgo": {
+    "message": "{count} years ago",
+    "description": "Relative time multiple years"
+  },
+  "phraseAnnualRevenue": {
+    "message": "Annual Revenue",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLeadSource": {
+    "message": "Lead Source",
+    "description": "Common tenant custom field label"
+  },
+  "phraseIndustry": {
+    "message": "Industry",
+    "description": "Common tenant custom field label"
+  },
+  "phraseWebsite": {
+    "message": "Website",
+    "description": "Common tenant custom field label"
+  },
+  "phraseFax": {
+    "message": "Fax",
+    "description": "Common tenant custom field label"
+  },
+  "phraseAddress": {
+    "message": "Address",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCity": {
+    "message": "City",
+    "description": "Common tenant custom field label"
+  },
+  "phraseState": {
+    "message": "State",
+    "description": "Common tenant custom field label"
+  },
+  "phraseZipCode": {
+    "message": "Zip Code",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCountry": {
+    "message": "Country",
+    "description": "Common tenant custom field label"
+  },
+  "phraseDepartment": {
+    "message": "Department",
+    "description": "Common tenant custom field label"
+  },
+  "phraseJobTitle": {
+    "message": "Job Title",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLinkedin": {
+    "message": "LinkedIn",
+    "description": "Common tenant custom field label"
+  },
+  "phrasePriority": {
+    "message": "Priority",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRating": {
+    "message": "Rating",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCategory": {
+    "message": "Category",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSubcategory": {
+    "message": "Subcategory",
+    "description": "Common tenant custom field label"
+  },
+  "phraseProduct": {
+    "message": "Product",
+    "description": "Common tenant custom field label"
+  },
+  "phraseQuantity": {
+    "message": "Quantity",
+    "description": "Common tenant custom field label"
+  },
+  "phraseUnitPrice": {
+    "message": "Unit Price",
+    "description": "Common tenant custom field label"
+  },
+  "phraseDiscount": {
+    "message": "Discount",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTax": {
+    "message": "Tax",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTotal": {
+    "message": "Total",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSubtotal": {
+    "message": "Subtotal",
+    "description": "Common tenant custom field label"
+  },
+  "phraseContractStart": {
+    "message": "Contract Start",
+    "description": "Common tenant custom field label"
+  },
+  "phraseContractEnd": {
+    "message": "Contract End",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRenewalDate": {
+    "message": "Renewal Date",
+    "description": "Common tenant custom field label"
+  },
+  "phraseMrr": {
+    "message": "MRR",
+    "description": "Common tenant custom field label"
+  },
+  "phraseArr": {
+    "message": "ARR",
+    "description": "Common tenant custom field label"
+  },
+  "phraseEmployees": {
+    "message": "Employees",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRevenue": {
+    "message": "Revenue",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTerritory": {
+    "message": "Territory",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRegion": {
+    "message": "Region",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTimezone": {
+    "message": "Timezone",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCurrency": {
+    "message": "Currency",
+    "description": "Common tenant custom field label"
+  },
+  "phrasePoNumber": {
+    "message": "PO Number",
+    "description": "Common tenant custom field label"
+  },
+  "phraseInvoiceNumber": {
+    "message": "Invoice Number",
+    "description": "Common tenant custom field label"
+  },
+  "phraseOrderNumber": {
+    "message": "Order Number",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSerialNumber": {
+    "message": "Serial Number",
+    "description": "Common tenant custom field label"
+  },
+  "phraseExternalId": {
+    "message": "External ID",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLastActivity": {
+    "message": "Last Activity",
+    "description": "Common tenant custom field label"
+  },
+  "phraseNextFollowUp": {
+    "message": "Next Follow-up",
+    "description": "Common tenant custom field label"
+  },
+  "phraseInfluencer": {
+    "message": "Influencer",
+    "description": "Common tenant custom field label"
+  },
+  "phraseMobile": {
+    "message": "Mobile",
+    "description": "Common tenant custom field label"
+  },
+  "phraseColor": {
+    "message": "Color",
+    "description": "Common tenant custom field label"
+  },
+  "phraseEmoji": {
+    "message": "Emoji",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTrend": {
+    "message": "Trend",
+    "description": "Common tenant custom field label"
+  },
+  "phraseAccount": {
+    "message": "Account",
+    "description": "Common tenant custom field label"
+  },
+  "phraseHelpdesk": {
+    "message": "Helpdesk",
+    "description": "App/product name"
+  },
+  "phrasePortal": {
+    "message": "Portal",
+    "description": "App/product name"
+  },
+  "fieldRequiredBadge": {
+    "message": "Required",
+    "description": "Badge on required fields in settings and forms"
+  },
+  "required": {
+    "message": "Required",
+    "description": "Required field indicator (alias for settings badges)"
+  }
+}

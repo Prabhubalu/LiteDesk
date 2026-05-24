@@ -1,0 +1,1114 @@
+{
+  "eventExecutionAccuracy": {
+    "message": "शुद्धता:",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionCurrentLocation": {
+    "message": "वर्तमान स्थान:",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionStatus": {
+    "message": "स्थिति:",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionGpsStatus": {
+    "message": "जीपीएस स्थिति",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionYouAreOfflineActionsWillBe": {
+    "message": "आप संपर्क में नहीं हैं। कनेक्शन बहाल होने पर क्रियाएँ समन्वयित हो जाएंगी।",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionCompleteEvent": {
+    "message": "संपूर्ण घटना",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionCollectPayment": {
+    "message": "भुगतान प्राप्त करें",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionCreateOrder": {
+    "message": "ऑर्डर बनाएं",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionSalesActions": {
+    "message": "बिक्री क्रियाएँ",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionNoFormLinkedToThisEvent": {
+    "message": "इस घटना से कोई प्रपत्र लिंक नहीं है",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionOpenForm": {
+    "message": "फॉर्म खोलें",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionOpenTheFormToFillAnd": {
+    "message": "भरने और सबमिट करने के लिए फॉर्म खोलें।",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionOpenResponse": {
+    "message": "खुली प्रतिक्रिया",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionTheFormHasBeenSuccessfullySubmitted": {
+    "message": "फॉर्म सफलतापूर्वक सबमिट कर दिया गया है और आपको स्वचालित रूप से चेक आउट कर दिया गया है।",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionFormSubmitted": {
+    "message": "फॉर्म जमा किया गया",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionCheckIn": {
+    "message": "चेक इन",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionRouteProgress": {
+    "message": "मार्ग प्रगति",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionCheckOut": {
+    "message": "चेक आउट",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionCheckedIn": {
+    "message": "आगमन की सूचना दिया",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionCheckIn2": {
+    "message": "चेक इन",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionGeoCheckInRequired": {
+    "message": "GEO चेक-इन आवश्यक है",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionCheckIn3": {
+    "message": "चेक इन",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionWaitingForGpsLocation": {
+    "message": "जीपीएस लोकेशन का इंतजार है...",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionCheckInToBeginTheAudit": {
+    "message": "ऑडिट प्रक्रिया शुरू करने के लिए चेक इन करें.",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionReadyToStartAudit": {
+    "message": "ऑडिट शुरू करने के लिए तैयार",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionStartEvent": {
+    "message": "इवेंट प्रारंभ करें",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionEventExecution": {
+    "message": "घटना निष्पादन",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventFormModalFileUploadFunctionalityToBeImplemented": {
+    "message": "फ़ाइल अपलोड कार्यक्षमता लागू की जाएगी",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalAttachments": {
+    "message": "संलग्नक",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalPartnerVisibilityForGuestAuditor": {
+    "message": "भागीदार दृश्यता (अतिथि लेखा परीक्षक के लिए)",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalPayments": {
+    "message": "भुगतान",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalOrders": {
+    "message": "आदेश",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalAllowedActions": {
+    "message": "अनुमत क्रियाएँ",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalEG30": {
+    "message": "जैसे, 30",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalMinimumVisitDurationMinutes": {
+    "message": "न्यूनतम विज़िट अवधि (मिनट)",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalEnableBackgroundTracking": {
+    "message": "पृष्ठभूमि ट्रैकिंग सक्षम करें",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalSelectOrg": {
+    "message": "संगठन का चयन करें...",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalSequence": {
+    "message": "अनुक्रम",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalOrganizationList": {
+    "message": "संगठन सूची",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalEnableOnlyIfTheAuditorIs": {
+    "message": "केवल तभी सक्षम करें जब ऑडिटर निष्पादन और अनुमोदन दोनों के लिए जिम्मेदार हो।",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalAllowSelfReview": {
+    "message": "स्वयं समीक्षा की अनुमति दें",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalCreateAFormFirstInThe": {
+    "message": "फ़ॉर्म मॉड्यूल में पहले एक फ़ॉर्म बनाएं",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalNoFormsAvailableCreateAForm": {
+    "message": "कोई फॉर्म उपलब्ध नहीं है (पहले एक फॉर्म बनाएं)",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalSelectForm": {
+    "message": "फॉर्म चुनें...",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalTheFormThatWillBeExecuted": {
+    "message": "वह प्रपत्र जो इस इवेंट के भाग के रूप में निष्पादित किया जाएगा.",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalSelectOrganization": {
+    "message": "संगठन का चयन करें...",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalTheOrganizationThisEventIsAssociated": {
+    "message": "यह आयोजन जिस संगठन से जुड़ा है.",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalGeoRequired": {
+    "message": "जीईओ आवश्यक:",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalGeoRequired2": {
+    "message": "जीईओ आवश्यक",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalEventConfiguration": {
+    "message": "इवेंट कॉन्फ़िगरेशन",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalMonthly": {
+    "message": "महीने के",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalRecurrencePattern": {
+    "message": "पुनरावृत्ति पैटर्न",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalRecurrence": {
+    "message": "पुनरावृत्ति",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalPhysicalAddressOrMeetingUrl": {
+    "message": "भौतिक पता या मीटिंग यूआरएल",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalLocationAddressOrUrl": {
+    "message": "स्थान (पता या यूआरएल)",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalLocation": {
+    "message": "जगह",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalSelectUser": {
+    "message": "उपयोगकर्ता चुनें...",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalEventOwner": {
+    "message": "इवेंट स्वामी",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalAuditEventsAreScheduledFromThe": {
+    "message": "ऑडिट कार्यक्रम ऑडिट मॉड्यूल से निर्धारित किए जाते हैं।",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalAddNotesOrDescription": {
+    "message": "नोट्स या विवरण जोड़ें...",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalEnterEventName": {
+    "message": "ईवेंट का नाम दर्ज करें",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalEventName": {
+    "message": "घटना नाम",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventMapViewNoGpsTrackingDataAvailable": {
+    "message": "कोई जीपीएस ट्रैकिंग डेटा उपलब्ध नहीं है",
+    "description": "Auto-migrated from eventMapView"
+  },
+  "eventMapViewCenterMap": {
+    "message": "केंद्र मानचित्र",
+    "description": "Auto-migrated from eventMapView"
+  },
+  "eventMapViewCheckOut": {
+    "message": "चेक आउट",
+    "description": "Auto-migrated from eventMapView"
+  },
+  "eventMapViewCheckIn": {
+    "message": "चेक इन",
+    "description": "Auto-migrated from eventMapView"
+  },
+  "eventMapViewLoadingMap": {
+    "message": "मानचित्र लोड हो रहा है...",
+    "description": "Auto-migrated from eventMapView"
+  },
+  "eventMapViewGpsTrackingMap": {
+    "message": "जीपीएस ट्रैकिंग मानचित्र",
+    "description": "Auto-migrated from eventMapView"
+  },
+  "genericEventCreateSurfaceAddressOrLocationNameOptional": {
+    "message": "पता या स्थान का नाम (वैकल्पिक)",
+    "description": "Auto-migrated from genericEventCreateSurface"
+  },
+  "genericEventCreateSurfaceLocation": {
+    "message": "जगह",
+    "description": "Auto-migrated from genericEventCreateSurface"
+  },
+  "genericEventCreateSurfaceEventIntentIsAUiGuidance": {
+    "message": "ईवेंट अभिप्राय एक यूआई मार्गदर्शन परत है, प्रवर्तन नहीं।",
+    "description": "Auto-migrated from genericEventCreateSurface"
+  },
+  "genericEventCreateSurfaceSelectStatus": {
+    "message": "स्थिति चुनें...",
+    "description": "Auto-migrated from genericEventCreateSurface"
+  },
+  "genericEventCreateSurfaceAuditEventsAreScheduledFromThe": {
+    "message": "ऑडिट कार्यक्रम ऑडिट मॉड्यूल से निर्धारित किए जाते हैं।",
+    "description": "Auto-migrated from genericEventCreateSurface"
+  },
+  "genericEventCreateSurfaceNoEventTypesAvailable": {
+    "message": "कोई ईवेंट प्रकार उपलब्ध नहीं है",
+    "description": "Auto-migrated from genericEventCreateSurface"
+  },
+  "genericEventCreateSurfaceEnterEventName": {
+    "message": "ईवेंट का नाम दर्ज करें",
+    "description": "Auto-migrated from genericEventCreateSurface"
+  },
+  "genericEventCreateSurfaceEventName": {
+    "message": "घटना नाम",
+    "description": "Auto-migrated from genericEventCreateSurface"
+  },
+  "genericEventCreateSurfaceThisInterfaceSupportsBasicEventCreation": {
+    "message": "यह इंटरफ़ेस केवल बुनियादी ईवेंट निर्माण का समर्थन करता है। \n                  ऑडिट इवेंट, उन्नत कॉन्फ़िगरेशन, या जटिल वर्कफ़्लो के लिए, कृपया उपयुक्त मॉड्यूल इंटरफ़ेस का उपयोग करें।",
+    "description": "Auto-migrated from genericEventCreateSurface"
+  },
+  "genericEventCreateSurfaceLimitedScope": {
+    "message": "कम कार्य क्षेत्र:",
+    "description": "Auto-migrated from genericEventCreateSurface"
+  },
+  "orderCreationModalAdditionalNotes": {
+    "message": "अतिरिक्त टिप्पणी...",
+    "description": "Auto-migrated from orderCreationModal"
+  },
+  "orderCreationModalTotal": {
+    "message": "कुल:",
+    "description": "Auto-migrated from orderCreationModal"
+  },
+  "orderCreationModalSubtotal": {
+    "message": "उप योग:",
+    "description": "Auto-migrated from orderCreationModal"
+  },
+  "orderCreationModalUnitPrice": {
+    "message": "यूनिट मूल्य",
+    "description": "Auto-migrated from orderCreationModal"
+  },
+  "orderCreationModalItemName": {
+    "message": "आइटम नाम",
+    "description": "Auto-migrated from orderCreationModal"
+  },
+  "orderCreationModalOrderItems": {
+    "message": "आदेश आइटम",
+    "description": "Auto-migrated from orderCreationModal"
+  },
+  "orderCreationModalSelectOrganization": {
+    "message": "संगठन का चयन करें...",
+    "description": "Auto-migrated from orderCreationModal"
+  },
+  "orderCreationModalCreateOrder": {
+    "message": "ऑर्डर बनाएं",
+    "description": "Auto-migrated from orderCreationModal"
+  },
+  "paymentCollectionModalPaymentNotes": {
+    "message": "भुगतान नोट...",
+    "description": "Auto-migrated from paymentCollectionModal"
+  },
+  "paymentCollectionModalTransactionCheckNumber": {
+    "message": "लेन-देन/चेक संख्या",
+    "description": "Auto-migrated from paymentCollectionModal"
+  },
+  "paymentCollectionModalReferenceNumber": {
+    "message": "संदर्भ संख्या",
+    "description": "Auto-migrated from paymentCollectionModal"
+  },
+  "paymentCollectionModalBankTransfer": {
+    "message": "बैंक ट्रांसफर",
+    "description": "Auto-migrated from paymentCollectionModal"
+  },
+  "paymentCollectionModalCheck": {
+    "message": "जाँच करना",
+    "description": "Auto-migrated from paymentCollectionModal"
+  },
+  "paymentCollectionModalCard": {
+    "message": "कार्ड",
+    "description": "Auto-migrated from paymentCollectionModal"
+  },
+  "paymentCollectionModalCash": {
+    "message": "नकद",
+    "description": "Auto-migrated from paymentCollectionModal"
+  },
+  "paymentCollectionModalSelectMethod": {
+    "message": "विधि चुनें...",
+    "description": "Auto-migrated from paymentCollectionModal"
+  },
+  "paymentCollectionModalPaymentMethod": {
+    "message": "भुगतान विधि",
+    "description": "Auto-migrated from paymentCollectionModal"
+  },
+  "paymentCollectionModalSelectOrganization": {
+    "message": "संगठन का चयन करें...",
+    "description": "Auto-migrated from paymentCollectionModal"
+  },
+  "paymentCollectionModalCollectPayment": {
+    "message": "भुगतान प्राप्त करें",
+    "description": "Auto-migrated from paymentCollectionModal"
+  },
+  "relatedEventsWidgetCreateFirstEvent": {
+    "message": "पहला ईवेंट बनाएं",
+    "description": "Auto-migrated from relatedEventsWidget"
+  },
+  "relatedEventsWidgetNoEventsYet": {
+    "message": "अभी तक कोई इवेंट नहीं",
+    "description": "Auto-migrated from relatedEventsWidget"
+  },
+  "relatedEventsWidgetAddEvent": {
+    "message": "कार्यक्रम जोड़ें",
+    "description": "Auto-migrated from relatedEventsWidget"
+  },
+  "relatedEventsWidgetLinkEvents": {
+    "message": "इवेंट लिंक करें",
+    "description": "Auto-migrated from relatedEventsWidget"
+  },
+  "relatedEventsWidgetRelatedEvents": {
+    "message": "संबंधित घटनाएँ",
+    "description": "Auto-migrated from relatedEventsWidget"
+  },
+  "eventsLoadingCalendar": {
+    "message": "कैलेंडर लोड हो रहा है...",
+    "description": "Auto-migrated from events"
+  },
+  "eventsNewEvent": {
+    "message": "नई इवैंट",
+    "description": "Auto-migrated from events"
+  },
+  "eventsCalendar": {
+    "message": "कैलेंडर",
+    "description": "Auto-migrated from events"
+  },
+  "eventsAppts": {
+    "message": "Appts",
+    "description": "Auto-migrated from events"
+  },
+  "eventsAppointmentsOnly": {
+    "message": "केवल नियुक्तियाँ",
+    "description": "Auto-migrated from events"
+  },
+  "eventDetailNoNotesYet": {
+    "message": "अभी तक कोई नोट नहीं",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailSaveNote": {
+    "message": "नोट सहेजें",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailAddANote": {
+    "message": "एक नोट जोड़े...",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailAuditHistory": {
+    "message": "लेखापरीक्षा इतिहास",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailConversionRate": {
+    "message": "रूपांतरण दर",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailVisitsCompleted": {
+    "message": "दौरे पूरे हुए",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailOrderValue": {
+    "message": "ऑर्डर मूल्य",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailOrdersCreated": {
+    "message": "आदेश बनाए गए",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailSalesKpis": {
+    "message": "बिक्री KPI",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailPending": {
+    "message": "लंबित:",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailInProgress": {
+    "message": "प्रगति पर है:",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailCompleted": {
+    "message": "पुरा होना:",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailTotalOrganizations": {
+    "message": "कुल संगठन:",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailRouteSummary": {
+    "message": "मार्ग सारांश",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailCurrentState": {
+    "message": "वर्तमान स्थिति:",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailAuditWorkflowState": {
+    "message": "ऑडिट वर्कफ़्लो स्थिति",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailCheckOut": {
+    "message": "चेक आउट",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailCheckIn": {
+    "message": "चेक इन",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailGeoTrackingHistory": {
+    "message": "GEO ट्रैकिंग इतिहास",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailViewCorrectiveActions": {
+    "message": "सुधारात्मक कार्रवाइयां देखें",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailThisAuditRequiresCorrectiveActionsReview": {
+    "message": "इस ऑडिट के लिए सुधारात्मक कार्रवाई की आवश्यकता है। विफल ऑडिट प्रश्नों के लिए सुधारात्मक कार्रवाइयों की समीक्षा और प्रबंधन करें।",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailViewFormResponse": {
+    "message": "प्रपत्र प्रतिक्रिया देखें",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailEventIsReadOnly": {
+    "message": "इवेंट केवल पढ़ने के लिए है",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailAuditEventsCannotBeManuallyCompleted": {
+    "message": "ऑडिट इवेंट मैन्युअल रूप से पूरे नहीं किए जा सकते. जब ऑडिट वर्कफ़्लो बंद स्थिति में पहुँच जाता है तो वे स्वचालित रूप से पूर्ण हो जाते हैं।",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailCompletionControl": {
+    "message": "समापन नियंत्रण",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailLocationTrackingIsMandatoryForAudits": {
+    "message": "ऑडिट के लिए स्थान ट्रैकिंग अनिवार्य है और स्वचालित रूप से सक्षम है। इस आवश्यकता को बदला नहीं जा सकता.",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailLocationTracking": {
+    "message": "स्थान ट्रैकिंग",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailAuditEventsFollowAControlledExecution": {
+    "message": "ऑडिट इवेंट नियंत्रित निष्पादन वर्कफ़्लो का पालन करते हैं। उन्हें मैन्युअल रूप से पूरा नहीं किया जा सकता. पूर्णता तभी होती है जब ऑडिट वर्कफ़्लो बंद स्थिति में पहुँच जाता है।",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailAuditEventWorkflow": {
+    "message": "ऑडिट इवेंट वर्कफ़्लो",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailLocationTrackingNotRequiredForThis": {
+    "message": "इस इवेंट के लिए स्थान ट्रैकिंग की आवश्यकता नहीं है.",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailLocationDataNotYetRecorded": {
+    "message": "स्थान डेटा अभी तक रिकॉर्ड नहीं किया गया है.",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailCheckOutLocation": {
+    "message": "चेक-आउट स्थान",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailCheckInLocation": {
+    "message": "चेक-इन स्थान",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailLocationTrackingSummary": {
+    "message": "स्थान ट्रैकिंग सारांश",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailNoExecutionActivityRecordedYet": {
+    "message": "अभी तक कोई निष्पादन गतिविधि दर्ज नहीं की गई.",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailExecutionHistory": {
+    "message": "निष्पादन इतिहास",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailActionAvailability": {
+    "message": "कार्रवाई उपलब्धता",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailUnableToDetermineReadinessStatus": {
+    "message": "तैयारी की स्थिति निर्धारित करने में असमर्थ.",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailThisEventIsNotReadyFor": {
+    "message": "यह ईवेंट निष्पादन के लिए तैयार नहीं है.",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailThisEventIsReadyForExecution": {
+    "message": "यह इवेंट क्रियान्वयन के लिए तैयार है.",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailExecutionReadiness": {
+    "message": "निष्पादन की तैयारी",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailMeetingLink": {
+    "message": "मीटिंग लिंक",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailLocation": {
+    "message": "जगह",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailTime": {
+    "message": "समय",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailAlwaysEnabledLockedForAuditEvents": {
+    "message": "हमेशा सक्षम (ऑडिट इवेंट के लिए लॉक किया गया)",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailGeoRequired": {
+    "message": "जियो आवश्यक",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailAuditWorkflowState2": {
+    "message": "ऑडिट वर्कफ़्लो स्थिति",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailExecutionMayBeBlockedUntilReadiness": {
+    "message": "तत्परता की शर्तें पूरी होने तक निष्पादन को अवरुद्ध किया जा सकता है।",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailOpenExecution": {
+    "message": "निष्पादन खोलें",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailBackToEvents": {
+    "message": "इवेंट पर वापस जाएँ",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailBackToEvents2": {
+    "message": "इवेंट पर वापस जाएँ",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailErrorLoadingEvent": {
+    "message": "इवेंट लोड करने में त्रुटि",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailLoadingEvent": {
+    "message": "इवेंट लोड हो रहा है...",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventExecutionSurfaceYesForCheckInCheckOut": {
+    "message": "हाँ (चेक-इन/चेक-आउट के लिए)",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceLocationRequired": {
+    "message": "स्थान आवश्यक",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceAuditState": {
+    "message": "लेखापरीक्षा राज्य",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceLinkedForm": {
+    "message": "लिंक किया गया फॉर्म",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceYourRole": {
+    "message": "आपकी भूमिका",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceScheduledTime": {
+    "message": "निर्धारित समय",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceEventDetails": {
+    "message": "घटना विवरण",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceAuditEventsCannotBeManuallyCompleted": {
+    "message": "ऑडिट इवेंट मैन्युअल रूप से पूरे नहीं किए जा सकते. जब ऑडिट वर्कफ़्लो बंद स्थिति में पहुँच जाता है तो वे स्वचालित रूप से पूर्ण हो जाते हैं।",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceNoManualCompletion": {
+    "message": "कोई मैन्युअल समापन नहीं",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceLocationTrackingIsMandatoryForAudit": {
+    "message": "ऑडिट इवेंट के लिए स्थान ट्रैकिंग अनिवार्य है और स्वचालित रूप से सक्षम है। इस आवश्यकता को बदला नहीं जा सकता.",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceLocationTrackingRequired": {
+    "message": "स्थान ट्रैकिंग आवश्यक है",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceAuditEventsFollowAControlledExecution": {
+    "message": "ऑडिट इवेंट नियंत्रित निष्पादन वर्कफ़्लो का पालन करते हैं। पूर्णता तभी होती है जब ऑडिट वर्कफ़्लो बंद स्थिति में पहुँच जाता है।",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceExecutionControlledByAuditWorkflow": {
+    "message": "ऑडिट वर्कफ़्लो द्वारा नियंत्रित निष्पादन",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceAuditWorkflowControl": {
+    "message": "ऑडिट वर्कफ़्लो नियंत्रण",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceThisEventHasBeenCancelledAnd": {
+    "message": "यह ईवेंट रद्द कर दिया गया है और इसे निष्पादित नहीं किया जा सकता.",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceEventCancelled": {
+    "message": "कार्यक्रम रद्द कर दिया गया",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceAllRequiredWorkHasBeenCompleted": {
+    "message": "सभी आवश्यक कार्य पूर्ण कर लिये गये हैं। आयोजन अब पूर्ण स्थिति में है।",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceCompletionSummary": {
+    "message": "समापन सारांश",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceThisEventHasBeenSuccessfullyCompleted": {
+    "message": "यह आयोजन सफलतापूर्वक संपन्न हो गया है.",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceEventCompleted": {
+    "message": "आयोजन पूरा हुआ",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceExecutionMayBeBlockedUntilThe": {
+    "message": "उपरोक्त शर्तों का समाधान होने तक निष्पादन अवरुद्ध किया जा सकता है।",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceCancelExecution": {
+    "message": "निष्पादन रद्द करें",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceYouDoNotHavePermissionTo": {
+    "message": "आपके पास इस ईवेंट को पूरा करने की अनुमति नहीं है.",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceExecutionIsCurrentlyActive": {
+    "message": "निष्पादन वर्तमान में सक्रिय है",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceEventInProgress": {
+    "message": "घटना प्रगति पर है",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceCheckOutWhenAuditIsComplete": {
+    "message": "ऑडिट पूरा होने पर जांचें",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceCompleteTheLinkedAuditForm": {
+    "message": "लिंक किया गया ऑडिट फॉर्म पूरा करें",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceWhatToDoNext": {
+    "message": "आगे क्या करना है:",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceCompleteTheAuditFormToProceed": {
+    "message": "ऑडिट निष्पादन के साथ आगे बढ़ने के लिए ऑडिट फॉर्म पूरा करें।",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceLinkedFormStatus": {
+    "message": "लिंक्ड फॉर्म स्थिति",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceCheckedInSuccessfully": {
+    "message": "सफलतापूर्वक चेक इन किया गया",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceAuditInProgress": {
+    "message": "ऑडिट प्रगति पर है",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceExecutionMayBeBlockedUntilThe2": {
+    "message": "उपरोक्त शर्तों का समाधान होने तक निष्पादन अवरुद्ध किया जा सकता है।",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceOnlyTheAssignedAuditorCanCheck": {
+    "message": "केवल निर्दिष्ट ऑडिटर ही इस ऑडिट में जांच कर सकता है।",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceWaitingForGpsLocation": {
+    "message": "जीपीएस लोकेशन का इंतजार है...",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceThisAuditRequiresLocationVerificationPlease": {
+    "message": "इस ऑडिट के लिए स्थान सत्यापन की आवश्यकता है. कृपया संकेत मिलने पर स्थान पहुंच की अनुमति दें।",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceLocationRequired2": {
+    "message": "स्थान आवश्यक",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceCheckInToBeginTheAudit": {
+    "message": "ऑडिट निष्पादन प्रक्रिया शुरू करने के लिए चेक इन करें।",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceReadyToStartAudit": {
+    "message": "ऑडिट शुरू करने के लिए तैयार",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceWhoCanDoWhat": {
+    "message": "कौन क्या कर सकता है",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceWhoCanDoWhat2": {
+    "message": "कौन क्या कर सकता है",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceExecutionError": {
+    "message": "निष्पादन त्रुटि",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceExecutionMayBeBlockedByThe": {
+    "message": "निष्पादन को निम्नलिखित शर्तों द्वारा अवरुद्ध किया जा सकता है:",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceThisAuditIsReadyForExecution": {
+    "message": "यह ऑडिट निष्पादन के लिए तैयार है.",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceExecutionReadiness": {
+    "message": "निष्पादन की तैयारी",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceExecutionMayBeBlockedUntilThe3": {
+    "message": "उपरोक्त शर्तों का समाधान होने तक निष्पादन अवरुद्ध किया जा सकता है।",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceYouDoNotHavePermissionTo2": {
+    "message": "आपके पास यह ईवेंट प्रारंभ करने की अनुमति नहीं है.",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceThisEventIsScheduledAndReady": {
+    "message": "यह ईवेंट निर्धारित है और कार्यान्वयन शुरू करने के लिए तैयार है।",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceReadyToStart": {
+    "message": "शुरू करने के लिए तैयार",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceExecutionError2": {
+    "message": "निष्पादन त्रुटि",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceExecutionMayBeBlockedByThe2": {
+    "message": "निष्पादन को निम्नलिखित शर्तों द्वारा अवरुद्ध किया जा सकता है:",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceThisEventIsReadyForExecution": {
+    "message": "यह इवेंट क्रियान्वयन के लिए तैयार है.",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceExecutionReadiness2": {
+    "message": "निष्पादन की तैयारी",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceYourRole2": {
+    "message": "आपकी भूमिका:",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceBackToEvents": {
+    "message": "इवेंट पर वापस जाएँ",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceErrorLoadingEvent": {
+    "message": "इवेंट लोड करने में त्रुटि",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceLoadingEventExecutionContext": {
+    "message": "इवेंट निष्पादन संदर्भ लोड हो रहा है...",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionToastFailedToStartEvent": {
+    "message": "इवेंट प्रारंभ करने में विफल",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToStartEvent2": {
+    "message": "इवेंट प्रारंभ करने में विफल:",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastNoFormIsAssignedTo": {
+    "message": "इस आयोजन के लिए कोई प्रपत्र निर्दिष्ट नहीं किया गया है. फॉर्म आवंटित करने के लिए कृपया अपने व्यवस्थापक से संपर्क करें।",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastYouAreOfflineCheckIn": {
+    "message": "आप संपर्क में नहीं हैं। कनेक्शन बहाल होने पर चेक-इन सिंक हो जाएगा।",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToCheckIn": {
+    "message": "चेक इन करने में विफल",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToCheckIn2": {
+    "message": "चेक इन करने में विफल:",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastNoFormIsAssignedTo2": {
+    "message": "इस आयोजन के लिए कोई प्रपत्र निर्दिष्ट नहीं किया गया है. फॉर्म आवंटित करने के लिए कृपया अपने व्यवस्थापक से संपर्क करें।",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToCheckIn3": {
+    "message": "चेक इन करने में विफल",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToCheckIn4": {
+    "message": "चेक इन करने में विफल:",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastCouldNotGetLocationFor": {
+    "message": "चेक-आउट के लिए स्थान नहीं मिल सका. कृपया पुन: प्रयास करें।",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastYouAreOfflineCheckOut": {
+    "message": "आप संपर्क में नहीं हैं। कनेक्शन बहाल होने पर चेक-आउट सिंक हो जाएगा।",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToCheckOut": {
+    "message": "जाँच करने में विफल",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToCheckOut2": {
+    "message": "जाँच करने में विफल:",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastPleaseFillAndSubmitThe": {
+    "message": "कृपया पहले ऑडिट फॉर्म भरें और जमा करें",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastAuditSubmittedAndCheckedOut": {
+    "message": "लेखापरीक्षा प्रस्तुत की गई और जाँच की गई। कुछ वस्तुओं में सुधारात्मक कार्रवाई की आवश्यकता होती है।",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastAuditSubmittedSuccessfullyAndYou": {
+    "message": "ऑडिट सफलतापूर्वक सबमिट हो गया है और आपका स्वचालित रूप से चेक आउट हो गया है।",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastYouAreOfflineAuditSubmission": {
+    "message": "आप संपर्क में नहीं हैं। कनेक्शन बहाल होने पर ऑडिट सबमिशन सिंक हो जाएगा।",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToSubmitAudit": {
+    "message": "ऑडिट प्रस्तुत करने में विफल",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToSubmitAudit2": {
+    "message": "ऑडिट सबमिट करने में विफल:",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToMoveToNext": {
+    "message": "अगले संगठन में जाने में विफल",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToMoveToNext2": {
+    "message": "अगले संगठन में जाने में विफल:",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastThisEventHasBeenChecked": {
+    "message": "इस इवेंट की जाँच कर ली गई है. फॉर्म दोबारा नहीं खोला जा सकता.",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastEventCompletedSuccessfully": {
+    "message": "आयोजन सफलतापूर्वक संपन्न हुआ",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastYouAreOfflineEventCompletion": {
+    "message": "आप संपर्क में नहीं हैं। कनेक्शन बहाल होने पर ईवेंट पूर्णता समन्वयित हो जाएगी।",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToCompleteEvent": {
+    "message": "ईवेंट पूरा करने में विफल",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToCompleteEvent2": {
+    "message": "ईवेंट पूरा करने में विफल:",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventFormModalToastEventNameIsRequired": {
+    "message": "इवेंट का नाम आवश्यक है",
+    "description": "Toast from EventFormModal.vue"
+  },
+  "eventFormModalToastStartDateTimeIsRequired": {
+    "message": "प्रारंभ दिनांक/समय आवश्यक है",
+    "description": "Toast from EventFormModal.vue"
+  },
+  "eventFormModalToastEndDateTimeIsRequired": {
+    "message": "समाप्ति दिनांक/समय आवश्यक है",
+    "description": "Toast from EventFormModal.vue"
+  },
+  "eventFormModalToastEventOwnerIsRequired": {
+    "message": "ईवेंट स्वामी आवश्यक है",
+    "description": "Toast from EventFormModal.vue"
+  },
+  "eventFormModalToastInvalidStartDateTimePlease": {
+    "message": "अमान्य प्रारंभ दिनांक/समय. कृपया एक वैध दिनांक और समय चुनें.",
+    "description": "Toast from EventFormModal.vue"
+  },
+  "eventFormModalToastInvalidEndDateTimePlease": {
+    "message": "अमान्य अंतिम तिथि/समय. कृपया एक वैध दिनांक और समय चुनें.",
+    "description": "Toast from EventFormModal.vue"
+  },
+  "eventFormModalToastEndDateTimeMustBe": {
+    "message": "समाप्ति तिथि/समय प्रारंभ तिथि/समय के बाद का होना चाहिए।",
+    "description": "Toast from EventFormModal.vue"
+  },
+  "orderCreationModalToastFailedToCreateOrder": {
+    "message": "ऑर्डर बनाने में विफल",
+    "description": "Toast from OrderCreationModal.vue"
+  },
+  "orderCreationModalToastFailedToCreateOrder2": {
+    "message": "ऑर्डर बनाने में विफल:",
+    "description": "Toast from OrderCreationModal.vue"
+  },
+  "paymentCollectionModalToastFailedToCollectPayment": {
+    "message": "भुगतान एकत्र करने में विफल",
+    "description": "Toast from PaymentCollectionModal.vue"
+  },
+  "paymentCollectionModalToastFailedToCollectPayment2": {
+    "message": "भुगतान एकत्रित करने में विफल:",
+    "description": "Toast from PaymentCollectionModal.vue"
+  },
+  "listViewAll": {
+    "message": "All Events",
+    "description": "Events list default view title"
+  },
+  "listViewUpcoming": {
+    "message": "Upcoming Events",
+    "description": "Events list upcoming view title"
+  },
+  "listViewPast": {
+    "message": "Past Events",
+    "description": "Events list past view title"
+  },
+  "listViewMy": {
+    "message": "My Events",
+    "description": "Events list my events view title"
+  },
+  "listViewAppointments": {
+    "message": "Appointments",
+    "description": "Events list appointments view title"
+  },
+  "listViewUpcomingAppointments": {
+    "message": "Upcoming Appointments",
+    "description": "Events list upcoming appointments view title"
+  },
+  "listCreate": {
+    "message": "New Event",
+    "description": "Events list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "Search events...",
+    "description": "Events list search placeholder"
+  },
+  "listStatTotal": {
+    "message": "Total Events",
+    "description": "Events list statistics card"
+  },
+  "listStatUpcoming": {
+    "message": "Upcoming",
+    "description": "Events list statistics card"
+  },
+  "listStatPast": {
+    "message": "Past",
+    "description": "Events list statistics card"
+  },
+  "listStatMy": {
+    "message": "My Events",
+    "description": "Events list statistics card"
+  },
+  "listStatToday": {
+    "message": "Today",
+    "description": "Events list statistics card"
+  },
+  "listStatThisWeek": {
+    "message": "This Week",
+    "description": "Events list statistics card"
+  },
+  "eventsCalendarToday": {
+    "message": "आज",
+    "description": "FullCalendar today button"
+  },
+  "eventsCalendarMonth": {
+    "message": "माह",
+    "description": "FullCalendar month view button"
+  },
+  "eventsCalendarWeek": {
+    "message": "सप्ताह",
+    "description": "FullCalendar week view button"
+  },
+  "eventsCalendarDay": {
+    "message": "दिन",
+    "description": "FullCalendar day view button"
+  },
+  "eventsCalendarList": {
+    "message": "सूची",
+    "description": "FullCalendar list view button"
+  },
+  "eventsTabEventDetail": {
+    "message": "इवेंट विवरण",
+    "description": "Event record tab title fallback"
+  },
+  "sysFieldAppointmentBookedBy": {
+    "message": "द्वारा बुक किया गया",
+    "description": "Events list appointment field label"
+  },
+  "sysFieldAppointmentBookingSource": {
+    "message": "स्रोत",
+    "description": "Events list appointment field label"
+  },
+  "sysFieldAppointmentType": {
+    "message": "प्रकार",
+    "description": "Events list appointment field label"
+  },
+  "sysFieldAppointmentMeetingLink": {
+    "message": "Meeting link",
+    "description": "Events list appointment field label"
+  }
+}

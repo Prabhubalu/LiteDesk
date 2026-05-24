@@ -1,0 +1,462 @@
+{
+  "dealFormModalNextFollowUpDate": {
+    "message": "Volgende vervolgdatum",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalAddDetailsAboutThisDealRequirements": {
+    "message": "Voeg details toe over deze deal, vereisten, opmerkingen, etc.",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalAdditionalDetails": {
+    "message": "Aanvullende details",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalLinkThisDealToAContact": {
+    "message": "Koppel deze deal aan een contactpersoon",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalSelectContact": {
+    "message": "Selecteer Contactpersoon",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalEnterprisePriorityDemo": {
+    "message": "onderneming, prioriteit, demo",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalTagsCommaSeparated": {
+    "message": "Tags (door komma's gescheiden)",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalUrgent": {
+    "message": "Dringend",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalCrossSell": {
+    "message": "Cross-verkoop",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalRenewal": {
+    "message": "Vernieuwing",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalUpsell": {
+    "message": "Bijverkoop",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalExistingCustomer": {
+    "message": "Bestaande klant",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalNewBusiness": {
+    "message": "Nieuw bedrijf",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalSelectType": {
+    "message": "Selecteer Type",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalDealType": {
+    "message": "Dealtype",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalClassification": {
+    "message": "Classificatie",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalChangingStageUpdatesStatusAndProbability": {
+    "message": "Als u de fase wijzigt, worden de status en waarschijnlijkheid automatisch bijgewerkt",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalSelectPipeline": {
+    "message": "Pijplijn selecteren...",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalExpectedCloseDate": {
+    "message": "Verwachte sluitingsdatum",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalEGAcmeCorpCrmImplementation": {
+    "message": "bijvoorbeeld Acme Corp - CRM-implementatie",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalDealName": {
+    "message": "Dealnaam",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalDealInformation": {
+    "message": "Dealinformatie",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealRelationshipEditorSelectOrganization": {
+    "message": "Selecteer organisatie...",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorNoOrganizationsLinkedYet": {
+    "message": "Er zijn nog geen organisaties gekoppeld.",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorRemoveFromDeal": {
+    "message": "Uit overeenkomst verwijderen",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorSetAsPrimaryCustomer": {
+    "message": "Instellen als primaire klant",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorOrganizationsOnThisDeal": {
+    "message": "Organisaties die betrokken zijn bij deze deal",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorShowingContactsFor": {
+    "message": "Contacten tonen voor",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorSelectPerson": {
+    "message": "Selecteer persoon...",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorNoPeopleLinkedYet": {
+    "message": "Er zijn nog geen mensen gekoppeld.",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorRemoveFromDeal2": {
+    "message": "Uit overeenkomst verwijderen",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorSetAsPrimaryContact": {
+    "message": "Instellen als primair contact",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorPeopleOnThisDeal": {
+    "message": "Mensen op deze deal",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "relatedDealsWidgetCreateFirstDeal": {
+    "message": "Maak een eerste deal",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetNoDealsYet": {
+    "message": "Nog geen aanbiedingen",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetAddDeal": {
+    "message": "Aanbieding toevoegen",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetLinkDeals": {
+    "message": "Linkaanbiedingen",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetRelatedDeals": {
+    "message": "Gerelateerde aanbiedingen",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "dealsAddDeal": {
+    "message": "Aanbieding toevoegen",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsNoDealsInThisStage": {
+    "message": "Geen deals in deze fase",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsLoadingPipeline": {
+    "message": "Pijplijn laden...",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsNewDeal": {
+    "message": "Nieuwe overeenkomst",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsGroupStage": {
+    "message": "Groep: Podium",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsUpgradePlan": {
+    "message": "Upgradeplan",
+    "description": "Auto-migrated from deals"
+  },
+  "dealDetailAddANote": {
+    "message": "Voeg een notitie toe...",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailAddEvent": {
+    "message": "Evenement toevoegen",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailAge": {
+    "message": "Leeftijd",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailExpectedClose": {
+    "message": "Verwacht dichtbij",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailOrganizationsOnThisDeal": {
+    "message": "Organisaties die betrokken zijn bij deze deal",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailPeopleOnThisDeal": {
+    "message": "Mensen op deze deal",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailPrimaryCustomer": {
+    "message": "Primaire klant",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailPrimaryContact": {
+    "message": "Primaire contactpersoon",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailSystemOwnedComputedFromStage": {
+    "message": "Eigendom van het systeem (berekend vanaf het podium)",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailBackToDeals": {
+    "message": "Terug naar Aanbiedingen",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailLoadingDeal": {
+    "message": "Aanbieding laden...",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealFormModalToastFailedToSaveDeal": {
+    "message": "Kan de deal niet opslaan",
+    "description": "Toast from DealFormModal.vue"
+  },
+  "sysFieldName": {
+    "message": "Dealnaam",
+    "description": "System deal field label"
+  },
+  "sysFieldStage": {
+    "message": "Dealfase",
+    "description": "System deal field label"
+  },
+  "sysFieldAmount": {
+    "message": "Verwachte waarde",
+    "description": "System deal field label"
+  },
+  "sysFieldProbability": {
+    "message": "Waarschijnlijkheid (%)",
+    "description": "System deal field label"
+  },
+  "sysFieldExpectedCloseDate": {
+    "message": "Sluitingsdatum",
+    "description": "System deal field label"
+  },
+  "sysFieldOwnerId": {
+    "message": "Eigenaar van de deal",
+    "description": "System deal field label"
+  },
+  "sysFieldAccountId": {
+    "message": "Organisatie",
+    "description": "System deal field label"
+  },
+  "sysFieldContactId": {
+    "message": "Contact",
+    "description": "System deal field label"
+  },
+  "sysFieldType": {
+    "message": "Dealtype",
+    "description": "System deal field label"
+  },
+  "sysFieldPipeline": {
+    "message": "Pijpleiding",
+    "description": "System deal field label"
+  },
+  "sysFieldNextStep": {
+    "message": "Volgende stap",
+    "description": "System deal field label"
+  },
+  "sysFieldTags": {
+    "message": "Labels",
+    "description": "System deal field label"
+  },
+  "sysFieldAssignedTo": {
+    "message": "Toegewezen aan",
+    "description": "System deal field label"
+  },
+  "sysFieldDescription": {
+    "message": "Beschrijving",
+    "description": "System deal field label"
+  },
+  "sysFieldDealType": {
+    "message": "Dealtype",
+    "description": "Alias for deal type field"
+  },
+  "activityCreatedDeal": {
+    "message": "deze overeenkomst gecreëerd",
+    "description": "Deal record created activity fragment"
+  },
+  "activityUpdatedDeal": {
+    "message": "deze deal bijgewerkt",
+    "description": "Deal record updated activity fragment"
+  },
+  "activityYouCreatedDeal": {
+    "message": "{actor} heeft deze deal gemaakt",
+    "description": "Deal created system activity line"
+  },
+  "activityYouUpdatedDeal": {
+    "message": "{actor} heeft deze deal bijgewerkt",
+    "description": "Deal updated system activity line"
+  },
+  "picklistNew": {
+    "message": "Nieuw",
+    "description": "Default pipeline stage"
+  },
+  "picklistNewBusiness": {
+    "message": "Nieuw bedrijf",
+    "description": "Common deal type value"
+  },
+  "picklistUpsell": {
+    "message": "Bijverkoop",
+    "description": "Deal type picklist value"
+  },
+  "picklistCrossSell": {
+    "message": "Cross-selling",
+    "description": "Deal type picklist value"
+  },
+  "picklistRenewal": {
+    "message": "Vernieuwing",
+    "description": "Deal type picklist value"
+  },
+  "picklistExistingCustomer": {
+    "message": "Bestaande klant",
+    "description": "Deal type picklist value"
+  },
+  "stageNew": {
+    "message": "Nieuw",
+    "description": "Default pipeline stage name"
+  },
+  "stageQualified": {
+    "message": "Gekwalificeerd",
+    "description": "Pipeline stage name"
+  },
+  "stageProposal": {
+    "message": "Voorstel",
+    "description": "Pipeline stage name"
+  },
+  "stageNegotiation": {
+    "message": "Onderhandeling",
+    "description": "Pipeline stage name"
+  },
+  "stageWon": {
+    "message": "Won",
+    "description": "Pipeline stage name"
+  },
+  "stageLost": {
+    "message": "Kwijt",
+    "description": "Pipeline stage name"
+  },
+  "stageClosedWon": {
+    "message": "Gesloten gewonnen",
+    "description": "Pipeline stage name"
+  },
+  "stageClosedLost": {
+    "message": "Gesloten Verloren",
+    "description": "Pipeline stage name"
+  },
+  "stageDiscovery": {
+    "message": "Ontdekking",
+    "description": "Pipeline stage name"
+  },
+  "stageNeedsAnalysis": {
+    "message": "Analyse van behoeften",
+    "description": "Pipeline stage name"
+  },
+  "stageValueProposition": {
+    "message": "Waardevoorstel",
+    "description": "Pipeline stage name"
+  },
+  "stageIdDecisionMakers": {
+    "message": "Identiteitskaart Beslissers",
+    "description": "Pipeline stage name"
+  },
+  "stagePerceptionAnalysis": {
+    "message": "Perceptie Analyse",
+    "description": "Pipeline stage name"
+  },
+  "stageProposalPriceQuote": {
+    "message": "Voorstel/Prijsofferte",
+    "description": "Pipeline stage name"
+  },
+  "stageNegotiationReview": {
+    "message": "Onderhandeling/beoordeling",
+    "description": "Pipeline stage name"
+  },
+  "pipelineSales": {
+    "message": "Verkooppijplijn",
+    "description": "Tenant pipeline display name"
+  },
+  "pipelineDefault": {
+    "message": "Standaardpijplijn",
+    "description": "Tenant pipeline display name"
+  },
+  "pipelineMarketing": {
+    "message": "Marketingpijplijn",
+    "description": "Tenant pipeline display name"
+  },
+  "pipelinePartner": {
+    "message": "Partnerpijplijn",
+    "description": "Tenant pipeline display name"
+  },
+  "listViewAll": {
+    "message": "All Deals",
+    "description": "Deals list default view title"
+  },
+  "listViewMy": {
+    "message": "My Deals",
+    "description": "Deals list assigned-to-me view title"
+  },
+  "listViewOpen": {
+    "message": "Open",
+    "description": "Deals list open view title"
+  },
+  "listViewWon": {
+    "message": "Won",
+    "description": "Deals list won view title"
+  },
+  "listViewLost": {
+    "message": "Lost",
+    "description": "Deals list lost view title"
+  },
+  "listCreate": {
+    "message": "New Deal",
+    "description": "Deals list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "Search deals...",
+    "description": "Deals list search placeholder"
+  },
+  "listStatPipelineValue": {
+    "message": "Pipeline Value",
+    "description": "Deals list statistics card"
+  },
+  "listStatOpenDeals": {
+    "message": "Open Deals",
+    "description": "Deals list statistics card"
+  },
+  "listStatWonThisMonth": {
+    "message": "Won This Month",
+    "description": "Deals list statistics card"
+  },
+  "listStatWinRate": {
+    "message": "Win Rate",
+    "description": "Deals list statistics card"
+  },
+  "dealsFeatureNotAvailable": {
+    "message": "Feature Not Available",
+    "description": "Deals plan limitation error title"
+  },
+  "dealsErrorLoading": {
+    "message": "Error Loading Deals",
+    "description": "Deals load error title"
+  },
+  "dealsDealDetail": {
+    "message": "Deal Detail",
+    "description": "Deal record tab title fallback"
+  },
+  "dealsStageUpdateFailed": {
+    "message": "Failed to update deal stage",
+    "description": "Kanban stage change error"
+  }
+}

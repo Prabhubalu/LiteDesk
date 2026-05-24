@@ -19,14 +19,14 @@
             'font-semibold',
             trialDaysRemaining <= 3 ? 'text-danger-800 dark:text-danger-200' : 'text-warning-800 dark:text-warning-200'
           ]">
-            <span v-if="trialDaysRemaining === 0">Your trial expires today!</span>
-            <span v-else-if="trialDaysRemaining === 1">Your trial expires in 1 day</span>
+            <span v-if="trialDaysRemaining === 0">{{ t('dashboard.dashboardYourTrialExpiresToday') }}</span>
+            <span v-else-if="trialDaysRemaining === 1">{{ t('dashboard.dashboardYourTrialExpiresIn1Day') }}</span>
             <span v-else>Your trial expires in {{ trialDaysRemaining }} days</span>
           </p>
           <p :class="[
             'text-sm mt-1',
             trialDaysRemaining <= 3 ? 'text-danger-700 dark:text-danger-300' : 'text-warning-700 dark:text-warning-300'
-          ]">Upgrade now to continue using all features</p>
+          ]">{{ t('dashboard.dashboardUpgradeNowToContinueUsingAll') }}</p>
         </div>
       </div>
       <button @click="navigateToUpgrade" :class="[
@@ -34,24 +34,20 @@
         trialDaysRemaining <= 3 
           ? 'bg-danger-600 hover:bg-danger-700 text-white' 
           : 'bg-warning-600 hover:bg-warning-700 text-white'
-      ]">
-        Upgrade Now
-      </button>
+      ]">{{ t('dashboard.dashboardUpgradeNow') }}</button>
     </div>
 
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
       <div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Good {{ getTimeOfDay() }}, {{ userName }}! 👋</h1>
-        <p class="text-lg text-gray-600 dark:text-gray-400 mt-2">Here's what's happening with your business today.</p>
+        <p class="text-lg text-gray-600 dark:text-gray-400 mt-2">{{ t('dashboard.dashboardHeresWhatsHappeningWithYourBusiness') }}</p>
       </div>
       <div class="flex gap-3 mt-4 sm:mt-0">
         <!-- <button @click="$router.push('/contacts?action=new')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-          </svg>
-          Add Contact
-        </button> -->
+          </svg>{{ t('dashboard.dashboardAddContact') }}</button> -->
       </div>
     </div>
 
@@ -64,7 +60,7 @@
           </svg>
         </div>
         <div>
-          <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Contacts</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{{ t('dashboard.dashboardTotalContacts2') }}</p>
           <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ contactStats.total || 0 }}</p>
           <p class="text-sm text-green-600 dark:text-green-400 font-medium" v-if="contactStats.newThisWeek > 0">
             +{{ contactStats.newThisWeek }} this week
@@ -79,7 +75,7 @@
           </svg>
         </div>
         <div>
-          <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Active Leads</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{{ t('dashboard.dashboardActiveLeads') }}</p>
           <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ contactStats.leads || 0 }}</p>
           <p class="text-sm text-gray-600 dark:text-gray-400">{{ contactStats.conversionRate || 0 }}% conversion</p>
         </div>
@@ -92,7 +88,7 @@
           </svg>
         </div>
         <div>
-          <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Customers</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{{ t('dashboard.dashboardCustomers') }}</p>
           <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ contactStats.customers || 0 }}</p>
           <p class="text-sm text-green-600 dark:text-green-400 font-medium" v-if="contactStats.newCustomers > 0">
             +{{ contactStats.newCustomers }} new
@@ -107,7 +103,7 @@
           </svg>
         </div>
         <div>
-          <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Activities Today</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{{ t('dashboard.dashboardActivitiesToday') }}</p>
           <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ activityStats.today || 0 }}</p>
           <p class="text-sm text-gray-600 dark:text-gray-400">{{ activityStats.pending || 0 }} pending</p>
         </div>
@@ -119,23 +115,21 @@
       <!-- Recent Contacts -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 lg:col-span-2">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Recent Contacts</h2>
-          <router-link to="/people" class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium transition-colors">
-            View All
-          </router-link>
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('dashboard.dashboardRecentContacts') }}</h2>
+          <router-link to="/people" class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium transition-colors">{{ t('dashboard.dashboardViewAll') }}</router-link>
         </div>
         
         <div v-if="loading" class="px-6 py-12 text-center">
           <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-          <p class="text-gray-600 dark:text-gray-400 mt-4">Loading contacts...</p>
+          <p class="text-gray-600 dark:text-gray-400 mt-4">{{ t('dashboard.dashboardLoadingContacts') }}</p>
         </div>
 
         <div v-else-if="recentContacts.length === 0" class="px-6 py-12 text-center">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-600">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
-          <p class="text-gray-600 dark:text-gray-400 mb-4">No contacts yet</p>
-          <button @click="$router.push('/people')" class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg font-medium transition-colors">Add Your First Person</button>
+          <p class="text-gray-600 dark:text-gray-400 mb-4">{{ t('dashboard.dashboardNoContactsYet') }}</p>
+          <button @click="$router.push('/people')" class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg font-medium transition-colors">{{ t('dashboard.dashboardAddYourFirstPerson') }}</button>
         </div>
 
         <div v-else class="px-6 py-4">
@@ -168,11 +162,11 @@
       <!-- Contact Growth Chart -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Contact Growth</h2>
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('dashboard.dashboardContactGrowth') }}</h2>
           <select v-model="chartPeriod" @change="fetchChartData" class="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm py-1 px-2 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-            <option value="7">Last 7 Days</option>
-            <option value="30">Last 30 Days</option>
-            <option value="90">Last 90 Days</option>
+            <option value="7">{{ t('dashboard.dashboardLast7Days') }}</option>
+            <option value="30">{{ t('dashboard.dashboardLast30Days') }}</option>
+            <option value="90">{{ t('dashboard.dashboardLast90Days') }}</option>
           </select>
         </div>
 
@@ -228,7 +222,7 @@
           <div class="flex items-center justify-center gap-6">
             <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
               <span class="w-3 h-3 rounded-sm bg-indigo-500"></span>
-              <span>Total Contacts</span>
+              <span>{{ t('dashboard.dashboardTotalContacts') }}</span>
             </div>
           </div>
         </div>
@@ -237,7 +231,7 @@
       <!-- Quick Actions -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Quick Actions</h2>
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('dashboard.dashboardQuickActions') }}</h2>
         </div>
         
         <div class="px-6 py-4">
@@ -248,7 +242,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                 </svg>
               </div>
-              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Add Person</span>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('dashboard.dashboardAddPerson') }}</span>
             </button>
 
             <button @click="$router.push('/people?action=import')" class="flex flex-col items-center gap-3 p-6 bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-white dark:hover:bg-gray-700 hover:shadow-md transition-all cursor-pointer">
@@ -257,7 +251,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
               </div>
-              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Import People</span>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('dashboard.dashboardImportPeople') }}</span>
             </button>
 
             <button @click="$router.push('/people')" class="flex flex-col items-center gap-3 p-6 bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-white dark:hover:bg-gray-700 hover:shadow-md transition-all cursor-pointer">
@@ -266,7 +260,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
-              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Search People</span>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('dashboard.dashboardSearchPeople') }}</span>
             </button>
 
             <button @click="exportContacts" class="flex flex-col items-center gap-3 p-6 bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-white dark:hover:bg-gray-700 hover:shadow-md transition-all cursor-pointer">
@@ -275,7 +269,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
                 </svg>
               </div>
-              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Export Data</span>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('dashboard.dashboardExportData') }}</span>
             </button>
           </div>
         </div>
@@ -284,14 +278,14 @@
       <!-- Activity Feed -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Recent Activity</h2>
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('dashboard.dashboardRecentActivity') }}</h2>
         </div>
 
         <div v-if="recentActivity.length === 0" class="px-6 py-12 text-center">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-600">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <p class="text-gray-600 dark:text-gray-400">No recent activity</p>
+          <p class="text-gray-600 dark:text-gray-400">{{ t('dashboard.dashboardNoRecentActivity') }}</p>
         </div>
 
         <div v-else class="px-6 py-4">
@@ -329,6 +323,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';

@@ -1,28 +1,23 @@
 <template>
   <div class="mx-auto w-full">
     <ListView
-      :title="form?.name || 'Form Responses'"
-      :description="form?.description || `Responses for ${form?.formId || 'this form'}`"
+      :title="listTitle"
+      :description="listDescription"
       module-key="forms"
-      search-placeholder="Search responses..."
+      :search-placeholder="t('forms.hubResponsesSearchPlaceholder')"
       :data="responses"
       :columns="columns"
       :loading="loading"
       :statistics="statistics"
-      :stats-config="[
-        { name: 'Total Responses', key: 'total', formatter: 'number' },
-        { name: 'New', key: 'new', formatter: 'number' },
-        { name: 'Approved', key: 'approved', formatter: 'number' },
-        { name: 'Needs Action', key: 'needsAction', formatter: 'number' }
-      ]"
+      :stats-config="statsConfig"
       :pagination="{ currentPage: pagination.currentPage, totalPages: pagination.totalPages, totalRecords: pagination.totalResponses, limit: pagination.responsesPerPage }"
       :sort-field="sortField"
       :sort-order="sortOrder"
       :filter-config="filterConfig"
       table-id="form-responses-table"
       row-key="_id"
-      empty-title="No responses yet"
-      empty-message="Responses will appear here once people start filling out this form. Share the form link to start collecting information."
+      :empty-title="t('forms.hubResponsesEmptyTitle')"
+      :empty-message="t('forms.hubResponsesEmptyMessage')"
       :show-create="false"
       :show-import="false"
       :show-export="true"
@@ -57,36 +52,26 @@
             {{ row.submittedBy.firstName }} {{ row.submittedBy.lastName }}
           </span>
         </div>
-        <span v-else class="text-sm text-gray-500 dark:text-gray-400">Anonymous</span>
+        <span v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('forms.hubAnonymous') }}</span>
       </template>
 
       <!-- Custom Execution Status Cell -->
       <template #cell-executionStatus="{ row }">
-        <BadgeCell 
-          :value="row.executionStatus || 'Not Started'" 
-          :variant-map="{
-            'Not Started': 'default',
-            'In Progress': 'info',
-            'Submitted': 'success'
-          }"
+        <BadgeCell
+          :value="executionStatusLabel(row.executionStatus)"
+          :variant="executionStatusVariant(row.executionStatus)"
         />
       </template>
 
       <!-- Custom Review Status Cell -->
       <template #cell-reviewStatus="{ row }">
         <div v-if="row.executionStatus === 'Submitted' && row.reviewStatus" class="flex items-center gap-2">
-          <BadgeCell 
-            :value="row.reviewStatus" 
-            :variant-map="{
-              'Pending Corrective Action': 'warning',
-              'Needs Auditor Review': 'info',
-              'Approved': 'success',
-              'Rejected': 'danger',
-              'Closed': 'default'
-            }"
+          <BadgeCell
+            :value="reviewStatusLabel(row.reviewStatus)"
+            :variant="reviewStatusVariant(row.reviewStatus)"
           />
         </div>
-        <span v-else class="text-xs text-gray-400 dark:text-gray-500 italic">Not in review</span>
+        <span v-else class="text-xs text-gray-400 dark:text-gray-500 italic">{{ t('forms.hubNotInReview') }}</span>
       </template>
 
       <!-- Custom Score Cell -->
@@ -96,7 +81,7 @@
             {{ calculateOverallScore(row.sectionScores) }}%
           </div>
           <div class="text-xs text-gray-500 dark:text-gray-400">
-            {{ Object.keys(row.sectionScores).length }} section{{ Object.keys(row.sectionScores).length !== 1 ? 's' : '' }}
+            {{ t('forms.hubSectionCount', { count: Object.keys(row.sectionScores).length }) }}
           </div>
         </div>
         <span v-else class="text-sm text-gray-500 dark:text-gray-400">-</span>
@@ -106,13 +91,13 @@
       <template #cell-kpis="{ row }">
         <div v-if="row.kpis && typeof row.kpis === 'object'" class="text-xs space-y-0.5">
           <div v-if="row.kpis.compliancePercentage !== undefined" class="text-gray-700 dark:text-gray-300">
-            Compliance: {{ row.kpis.compliancePercentage }}%
+            {{ t('forms.hubKpiCompliance', { value: row.kpis.compliancePercentage }) }}
           </div>
           <div v-if="row.kpis.avgRating !== undefined" class="text-gray-700 dark:text-gray-300">
-            Rating: {{ row.kpis.avgRating }}/5
+            {{ t('forms.hubKpiRating', { value: row.kpis.avgRating }) }}
           </div>
           <div v-if="row.kpis.passRate !== undefined" class="text-gray-700 dark:text-gray-300">
-            Pass Rate: {{ row.kpis.passRate }}%
+            {{ t('forms.hubKpiPassRate', { value: row.kpis.passRate }) }}
           </div>
         </div>
         <span v-else class="text-sm text-gray-500 dark:text-gray-400">-</span>
@@ -121,16 +106,9 @@
       <!-- Custom Linked To Cell -->
       <template #cell-linkedTo="{ row }">
         <div v-if="row.linkedTo && row.linkedTo.type" class="text-sm">
-          <BadgeCell 
-            :value="row.linkedTo.type" 
-            :variant-map="{
-              'Organization': 'info',
-              'Deal': 'success',
-              'Task': 'warning',
-              'Event': 'primary',
-              'Lead': 'default',
-              'Contact': 'default'
-            }"
+          <BadgeCell
+            :value="linkedToTypeLabel(row.linkedTo.type)"
+            :variant="linkedToTypeVariant(row.linkedTo.type)"
           />
         </div>
         <span v-else class="text-sm text-gray-500 dark:text-gray-400">-</span>
@@ -142,7 +120,7 @@
           <button
             @click.stop="viewResponseDetail(row)"
             class="p-1.5 text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-            title="View Details"
+            :title="t('forms.hubActionViewDetails')"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -153,7 +131,7 @@
             v-if="row.executionStatus === 'Submitted' && row.reviewStatus === 'Needs Auditor Review'"
             @click.stop="approveResponse(row)"
             class="p-1.5 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors"
-            title="Approve"
+            :title="t('forms.hubActionApprove')"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -163,7 +141,7 @@
             v-if="row.executionStatus === 'Submitted' && row.reviewStatus === 'Needs Auditor Review'"
             @click.stop="rejectResponse(row)"
             class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-            title="Reject"
+            :title="t('forms.hubActionReject')"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -173,7 +151,7 @@
             v-if="row.executionStatus === 'Submitted' && row.reviewStatus === 'Pending Corrective Action'"
             @click.stop="viewResponseDetail(row)"
             class="p-1.5 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded transition-colors"
-            title="Add Corrective Action"
+            :title="t('forms.hubActionAddCorrective')"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -188,6 +166,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useTabs } from '@/composables/useTabs';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
@@ -196,9 +175,80 @@ import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import Avatar from '@/components/common/Avatar.vue';
 import DateCell from '@/components/common/table/DateCell.vue';
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const { openTab } = useTabs();
+
+const EXECUTION_STATUS_VARIANTS = {
+  'Not Started': 'default',
+  'In Progress': 'info',
+  Submitted: 'success',
+};
+
+const REVIEW_STATUS_VARIANTS = {
+  'Pending Corrective Action': 'warning',
+  'Needs Auditor Review': 'info',
+  Approved: 'success',
+  Rejected: 'danger',
+  Closed: 'default',
+};
+
+const LINKED_TO_VARIANTS = {
+  Organization: 'info',
+  Deal: 'success',
+  Task: 'warning',
+  Event: 'primary',
+  Lead: 'default',
+  Contact: 'default',
+};
+
+function executionStatusLabel(value) {
+  const keyByValue = {
+    'Not Started': 'forms.hubExecutionNotStarted',
+    'In Progress': 'forms.hubExecutionInProgress',
+    Submitted: 'forms.hubExecutionSubmitted',
+  };
+  const key = keyByValue[value];
+  return key ? t(key) : value;
+}
+
+function executionStatusVariant(value) {
+  return EXECUTION_STATUS_VARIANTS[value] || 'default';
+}
+
+function reviewStatusLabel(value) {
+  const keyByValue = {
+    'Pending Corrective Action': 'forms.hubReviewPendingCorrective',
+    'Needs Auditor Review': 'forms.hubReviewNeedsAuditor',
+    Approved: 'forms.auditorApproved',
+    Rejected: 'forms.auditorRejected',
+    Closed: 'forms.hubReviewClosed',
+  };
+  const key = keyByValue[value];
+  return key ? t(key) : value;
+}
+
+function reviewStatusVariant(value) {
+  return REVIEW_STATUS_VARIANTS[value] || 'default';
+}
+
+function linkedToTypeLabel(value) {
+  const keyByValue = {
+    Organization: 'forms.settingsLinkOrganization',
+    Deal: 'forms.settingsLinkDeal',
+    Task: 'forms.settingsLinkTask',
+    Event: 'forms.settingsLinkEvent',
+    Lead: 'forms.hubLinkedLead',
+    Contact: 'forms.hubLinkedContact',
+  };
+  const key = keyByValue[value];
+  return key ? t(key) : value;
+}
+
+function linkedToTypeVariant(value) {
+  return LINKED_TO_VARIANTS[value] || 'default';
+}
 
 // State
 const form = ref(null);
@@ -229,59 +279,74 @@ const statistics = ref({
   needsAction: 0
 });
 
-// Columns configuration
-const columns = [
-  { key: 'submittedAt', label: 'Submitted', sortable: true },
-  { key: 'submittedBy', label: 'Submitted By', sortable: true },
-  { key: 'executionStatus', label: 'Execution', sortable: true },
-  { key: 'reviewStatus', label: 'Review', sortable: true },
-  { key: 'score', label: 'Score', sortable: false },
-  { key: 'kpis', label: 'KPIs', sortable: false },
-  { key: 'linkedTo', label: 'Linked To', sortable: false }
-];
+const listTitle = computed(() => form.value?.name || t('forms.hubResponsesTitleFallback'));
 
-// Filter configuration
+const listDescription = computed(() => {
+  if (form.value?.description) {
+    return form.value.description;
+  }
+  const formId = form.value?.formId || t('forms.hubResponsesFormIdFallback');
+  return t('forms.hubResponsesDescription', { formId });
+});
+
+const statsConfig = computed(() => [
+  { name: t('forms.hubStatTotalResponses'), key: 'total', formatter: 'number' },
+  { name: t('forms.hubStatNew'), key: 'new', formatter: 'number' },
+  { name: t('forms.hubStatApproved'), key: 'approved', formatter: 'number' },
+  { name: t('forms.hubStatNeedsAction'), key: 'needsAction', formatter: 'number' }
+]);
+
+const columns = computed(() => [
+  { key: 'submittedAt', label: t('forms.hubColSubmitted'), sortable: true },
+  { key: 'submittedBy', label: t('forms.hubColSubmittedBy'), sortable: true },
+  { key: 'executionStatus', label: t('forms.hubColExecution'), sortable: true },
+  { key: 'reviewStatus', label: t('forms.hubColReview'), sortable: true },
+  { key: 'score', label: t('forms.hubColScore'), sortable: false },
+  { key: 'kpis', label: t('forms.hubColKpis'), sortable: false },
+  { key: 'linkedTo', label: t('forms.hubColLinkedTo'), sortable: false }
+]);
+
 const filterConfig = computed(() => [
   {
     key: 'executionStatus',
-    label: 'Execution Status',
+    label: t('forms.hubFilterExecutionStatus'),
     options: [
-      { value: 'Not Started', label: 'Not Started' },
-      { value: 'In Progress', label: 'In Progress' },
-      { value: 'Submitted', label: 'Submitted' }
+      { value: 'Not Started', label: t('forms.hubExecutionNotStarted') },
+      { value: 'In Progress', label: t('forms.hubExecutionInProgress') },
+      { value: 'Submitted', label: t('forms.hubExecutionSubmitted') }
     ]
   },
   {
     key: 'reviewStatus',
-    label: 'Review Status',
+    label: t('forms.hubFilterReviewStatus'),
     options: [
-      { value: 'Pending Corrective Action', label: 'Pending Corrective Action' },
-      { value: 'Needs Auditor Review', label: 'Needs Auditor Review' },
-      { value: 'Approved', label: 'Approved' },
-      { value: 'Rejected', label: 'Rejected' },
-      { value: 'Closed', label: 'Closed' }
+      { value: 'Pending Corrective Action', label: t('forms.hubReviewPendingCorrective') },
+      { value: 'Needs Auditor Review', label: t('forms.hubReviewNeedsAuditor') },
+      { value: 'Approved', label: t('forms.auditorApproved') },
+      { value: 'Rejected', label: t('forms.auditorRejected') },
+      { value: 'Closed', label: t('forms.hubReviewClosed') }
     ]
   },
   {
     key: 'linkedToType',
-    label: 'Linked To',
+    label: t('forms.hubColLinkedTo'),
     options: [
-      { value: 'Organization', label: 'Organization' },
-      { value: 'Deal', label: 'Deal' },
-      { value: 'Task', label: 'Task' },
-      { value: 'Event', label: 'Event' },
-      { value: 'Lead', label: 'Lead' },
-      { value: 'Contact', label: 'Contact' }
+      { value: 'Organization', label: t('forms.settingsLinkOrganization') },
+      { value: 'Deal', label: t('forms.settingsLinkDeal') },
+      { value: 'Task', label: t('forms.settingsLinkTask') },
+      { value: 'Event', label: t('forms.settingsLinkEvent') },
+      { value: 'Lead', label: t('forms.hubLinkedLead') },
+      { value: 'Contact', label: t('forms.hubLinkedContact') }
     ]
   },
   {
     key: 'fromDate',
-    label: 'From Date',
+    label: t('forms.hubFilterFromDate'),
     type: 'date'
   },
   {
     key: 'toDate',
-    label: 'To Date',
+    label: t('forms.hubFilterToDate'),
     type: 'date'
   }
 ]);
@@ -290,7 +355,7 @@ const filterConfig = computed(() => [
 const fetchForm = async () => {
   const formId = route.params.id;
   if (!formId) return;
-  
+
   try {
     const response = await apiClient(`/forms/${formId}`, { method: 'GET' });
     if (response.success) {
@@ -304,7 +369,7 @@ const fetchForm = async () => {
 const fetchResponses = async () => {
   const formId = route.params.id;
   if (!formId) return;
-  
+
   loading.value = true;
   try {
     const params = {
@@ -316,7 +381,6 @@ const fetchResponses = async () => {
       ...filters.value
     };
 
-    // Remove empty filters
     Object.keys(params).forEach(key => {
       if (params[key] === '' || params[key] === null || params[key] === undefined) {
         delete params[key];
@@ -329,25 +393,18 @@ const fetchResponses = async () => {
     });
 
     if (response.success) {
-      // Ensure we have an array of responses
       responses.value = Array.isArray(response.data) ? response.data : [];
-      
-      console.log(`Fetched ${responses.value.length} responses for form ${formId}`);
-      
-      // Handle pagination
+
       if (response.pagination) {
         pagination.value.totalResponses = response.pagination.totalResponses || 0;
         pagination.value.totalPages = response.pagination.totalPages || 1;
       }
-      
-      // Calculate statistics - use totalResponses for total count
-      // Note: Other statistics are calculated from current page only
-      // In the future, backend should provide aggregated statistics for filtered results
+
       statistics.value = {
         total: pagination.value.totalResponses || 0,
         new: responses.value.filter(r => r.executionStatus === 'In Progress').length,
         approved: responses.value.filter(r => r.executionStatus === 'Submitted' && r.reviewStatus === 'Approved').length,
-        needsAction: responses.value.filter(r => 
+        needsAction: responses.value.filter(r =>
           r.executionStatus === 'Submitted' && (r.reviewStatus === 'Pending Corrective Action' || r.reviewStatus === 'Needs Auditor Review')
         ).length
       };
@@ -389,10 +446,10 @@ const handleSort = ({ key, order }) => {
 
 const calculateOverallScore = (sectionScores) => {
   if (!sectionScores || typeof sectionScores !== 'object') return 0;
-  
+
   const scores = Object.values(sectionScores).filter(s => typeof s === 'number');
   if (scores.length === 0) return 0;
-  
+
   const sum = scores.reduce((acc, score) => acc + score, 0);
   return Math.round(sum / scores.length);
 };
@@ -409,7 +466,7 @@ const viewResponseDetail = (response) => {
 };
 
 const approveResponse = async (response) => {
-  if (!confirm('Are you sure you want to approve this response?')) {
+  if (!confirm(t('forms.hubConfirmApprove'))) {
     return;
   }
 
@@ -423,12 +480,12 @@ const approveResponse = async (response) => {
     }
   } catch (error) {
     console.error('Error approving response:', error);
-    alert('Failed to approve response. Please try again.');
+    alert(t('forms.hubApproveFailed'));
   }
 };
 
 const rejectResponse = async (response) => {
-  if (!confirm('Are you sure you want to reject this response?')) {
+  if (!confirm(t('forms.hubConfirmReject'))) {
     return;
   }
 
@@ -442,12 +499,12 @@ const rejectResponse = async (response) => {
     }
   } catch (error) {
     console.error('Error rejecting response:', error);
-    alert('Failed to reject response. Please try again.');
+    alert(t('forms.hubRejectFailed'));
   }
 };
 
 const handleDelete = async (response) => {
-  if (!confirm(`Are you sure you want to delete this response?`)) {
+  if (!confirm(t('forms.hubConfirmDeleteResponse'))) {
     return;
   }
 
@@ -461,7 +518,7 @@ const handleDelete = async (response) => {
     }
   } catch (error) {
     console.error('Error deleting response:', error);
-    alert('Failed to delete response. Please try again.');
+    alert(t('forms.hubDeleteResponseFailed'));
   }
 };
 
@@ -471,7 +528,7 @@ const exportResponses = async () => {
       ...filters.value,
       search: searchQuery.value
     });
-    
+
     const authStore = useAuthStore();
     const token = authStore.user?.token;
     const response = await fetch(`/api/forms/${route.params.id}/responses/export?${params.toString()}`, {
@@ -491,21 +548,19 @@ const exportResponses = async () => {
     } else {
       const errorData = await response.json();
       console.error('Error exporting responses:', errorData);
-      alert(`Error exporting responses: ${errorData.message || response.statusText}`);
+      alert(t('forms.hubExportResponsesError', { detail: errorData.message || response.statusText }));
     }
   } catch (error) {
     console.error('Error exporting responses:', error);
-    alert('An error occurred during export.');
+    alert(t('forms.hubExportResponsesFailed'));
   }
 };
 
-// Lifecycle
 onMounted(() => {
   fetchForm();
   fetchResponses();
 });
 
-// Watch for route changes
 watch(() => route.params.id, () => {
   fetchForm();
   fetchResponses();

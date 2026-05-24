@@ -4,7 +4,7 @@
     <div v-if="loading" class="flex items-center justify-center py-8">
       <div class="text-center">
         <div class="w-8 h-8 border-2 border-gray-200 dark:border-gray-700 border-t-indigo-600 dark:border-t-indigo-500 rounded-full animate-spin mx-auto mb-2"></div>
-        <p class="text-xs text-gray-500 dark:text-gray-400">Loading related records...</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('records.relatedRecordsPanelLoadingRelatedRecords') }}</p>
       </div>
     </div>
     
@@ -13,7 +13,7 @@
       <div class="flex items-start gap-2">
         <ExclamationCircleIcon class="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
         <div class="flex-1">
-          <p class="text-sm font-medium text-red-800 dark:text-red-300">Error loading related records</p>
+          <p class="text-sm font-medium text-red-800 dark:text-red-300">{{ t('records.relatedRecordsPanelErrorLoadingRelatedRecords') }}</p>
           <p class="text-xs text-red-600 dark:text-red-400 mt-1">{{ error.message || 'Unknown error' }}</p>
         </div>
       </div>
@@ -21,7 +21,7 @@
     
     <!-- Empty State: no relationships configured -->
     <div v-else-if="!hasRelationships" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">
-      <p>No relationships configured for this record type.</p>
+      <p>{{ t('records.relatedRecordsPanelNoRelationshipsConfiguredForThisRecord') }}</p>
     </div>
     
     <!-- Empty State: relationships exist but no records linked yet -->
@@ -32,10 +32,8 @@
       <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
         <LinkIcon class="w-6 h-6 text-gray-400 dark:text-gray-500" />
       </div>
-      <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">No related records yet.</p>
-      <p class="text-xs text-gray-400 dark:text-gray-500">
-        Link this record to people, organizations, tasks, events, or forms.
-      </p>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">{{ t('records.relatedEmpty') }}</p>
+      <p class="text-xs text-gray-400 dark:text-gray-500">{{ t('records.relatedRecordsPanelLinkThisRecordToPeopleOrganizations') }}</p>
     </div>
     
     <!-- Relationships List -->
@@ -50,12 +48,8 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <div class="flex-1">
-            <p class="text-sm font-medium text-blue-900 dark:text-blue-300">
-              Required Relationships
-            </p>
-            <p class="text-xs text-blue-700 dark:text-blue-400 mt-1">
-              This record requires the following relationships to be linked:
-            </p>
+            <p class="text-sm font-medium text-blue-900 dark:text-blue-300">{{ t('records.relatedRecordsPanelRequiredRelationships') }}</p>
+            <p class="text-xs text-blue-700 dark:text-blue-400 mt-1">{{ t('records.relatedRecordsPanelThisRecordRequiresTheFollowingRelationships') }}</p>
             <ul class="mt-2 space-y-1">
               <li
                 v-for="rel in unsatisfiedRequired"
@@ -83,6 +77,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { computed, onMounted, watch } from 'vue';
 import { ExclamationCircleIcon, LinkIcon } from '@heroicons/vue/24/outline';
 import { useRecordContext } from '@/composables/useRecordContext';
@@ -113,6 +108,8 @@ const props = defineProps({
     default: null // If null, uses appKey
   }
 });
+
+const { t } = useI18n();
 
 const route = useRoute();
 

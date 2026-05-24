@@ -48,7 +48,7 @@
             v-if="isNew"
             class="flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-primary-500/15 text-primary-600 dark:text-primary-400"
           >
-            New
+            {{ t('notifications.itemNew') }}
           </span>
         </div>
 
@@ -74,7 +74,7 @@
           v-if="unavailable"
           class="mt-2 text-xs text-warning-600 dark:text-warning-400"
         >
-          This item is no longer available.
+          {{ t('notifications.itemUnavailable') }}
         </p>
       </div>
     </button>
@@ -101,8 +101,8 @@
         type="button"
         class="inline-flex items-center justify-center rounded-lg text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 hover:bg-white dark:hover:bg-neutral-700 min-h-[32px] min-w-[32px] transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500/20 shadow-sm"
         :tabindex="actionsVisible ? 0 : -1"
-        aria-label="Mark notification as read"
-        title="Mark as read"
+        :aria-label="t('notifications.markReadAria')"
+        :title="t('notifications.markRead')"
         @click.stop.prevent="handleMarkReadAction"
       >
         <CheckIcon class="w-4 h-4" aria-hidden="true" />
@@ -113,8 +113,8 @@
         type="button"
         class="inline-flex items-center justify-center rounded-lg text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 hover:bg-white dark:hover:bg-neutral-700 min-h-[32px] min-w-[32px] transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500/20 shadow-sm"
         :tabindex="actionsVisible ? 0 : -1"
-        aria-label="Dismiss notification"
-        title="Dismiss"
+        :aria-label="t('notifications.dismissAria')"
+        :title="t('notifications.dismiss')"
         @click.stop.prevent="handleDismissAction"
       >
         <XMarkIcon class="w-4 h-4" aria-hidden="true" />
@@ -131,8 +131,8 @@
           ref="snoozeButtonEl"
           class="inline-flex items-center justify-center rounded-lg text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 hover:bg-white dark:hover:bg-neutral-700 min-h-[32px] min-w-[32px] transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500/20 shadow-sm"
           :tabindex="actionsVisible ? 0 : -1"
-          aria-label="Snooze options"
-          title="Snooze"
+          :aria-label="t('notifications.snoozeAria')"
+          :title="t('notifications.snooze')"
         >
           <ClockIcon class="w-4 h-4" aria-hidden="true" />
         </PopoverButton>
@@ -166,8 +166,8 @@
         type="button"
         class="inline-flex items-center justify-center rounded-lg text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 hover:bg-white dark:hover:bg-neutral-700 min-h-[32px] min-w-[32px] transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500/20 shadow-sm"
         :tabindex="actionsVisible ? 0 : -1"
-        aria-label="Acknowledge notification (does not change record)"
-        title="Acknowledge — Marks this notification as handled. Does not change the underlying record."
+        :aria-label="t('notifications.acknowledgeAria')"
+        :title="t('notifications.acknowledge')"
         @click.stop.prevent="handleResolveAction"
       >
         <CheckCircleIcon class="w-4 h-4" aria-hidden="true" />
@@ -187,7 +187,7 @@
         ref="infoButtonEl"
         class="inline-flex items-center justify-center rounded-lg text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 hover:bg-white dark:hover:bg-neutral-700 min-h-[28px] min-w-[28px] transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
         :tabindex="iconVisible ? 0 : -1"
-        :aria-label="`Why am I seeing this?`"
+        :aria-label="t('notifications.whyAmISeeing')"
         @click="onInfoClick"
       >
         <InfoOutlineIcon class="w-4 h-4" aria-hidden="true" />
@@ -201,17 +201,17 @@
         <div class="space-y-4">
           <div>
             <p class="text-sm font-semibold text-neutral-900 dark:text-white">
-              Why you received this notification
+              {{ t('notifications.whyReceived') }}
             </p>
             <p class="mt-0.5 text-xs text-neutral-600 dark:text-neutral-400">
-              A quick explanation based on the notification details.
+              {{ t('notifications.whyIntro') }}
             </p>
           </div>
 
           <!-- Trigger -->
           <div v-if="triggerLine">
             <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-              This happened because
+              {{ t('notifications.happenedBecause') }}
             </p>
             <p class="mt-1 text-sm text-neutral-900 dark:text-white">
               {{ triggerLine }}
@@ -221,7 +221,7 @@
           <!-- Your role -->
           <div v-if="roleLines.length">
             <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-              You received this because you are
+              {{ t('notifications.receivedBecause') }}
             </p>
             <ul class="mt-1 text-sm text-neutral-900 dark:text-white space-y-1">
               <li v-for="(line, idx) in roleLines" :key="idx" class="flex gap-2">
@@ -234,7 +234,7 @@
           <!-- Delivery -->
           <div v-if="deliveryLine">
             <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-              Delivered via
+              {{ t('notifications.deliveredVia') }}
             </p>
             <p class="mt-1 text-sm text-neutral-900 dark:text-white">
               {{ deliveryLine }}
@@ -244,10 +244,10 @@
           <!-- Control -->
           <div>
             <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-              Control
+              {{ t('notifications.controlHeading') }}
             </p>
             <p class="mt-1 text-sm text-neutral-700 dark:text-neutral-300">
-              You can manage notifications like this in Notification settings.
+              {{ t('notifications.controlBody') }}
             </p>
             <div class="mt-2 flex flex-col gap-2">
               <router-link
@@ -255,7 +255,7 @@
                 class="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline"
                 @click="close"
               >
-                Open Notification settings
+                {{ t('notifications.openSettings') }}
               </router-link>
               <router-link
                 v-if="hasRuleId"
@@ -263,7 +263,7 @@
                 class="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline"
                 @click="close"
               >
-                Review notification rules
+                {{ t('notifications.reviewRules') }}
               </router-link>
             </div>
           </div>
@@ -275,7 +275,10 @@
 
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
+
+const { t } = useI18n();
 import { useTabs } from '@/composables/useTabs';
 import { useNotificationStore } from '@/stores/notifications';
 import { getNotificationRoute, validateRoute } from '@/utils/notificationRouteMap';
@@ -523,11 +526,11 @@ const isResolvable = computed(() => {
 
 async function handleMarkReadAction() {
   await store.markRead(props.item.id);
-  flashFeedback('Marked read');
+  flashFeedback(t('notifications.feedbackMarkedRead'));
 }
 
 async function handleDismissAction() {
-  flashFeedback('Dismissed');
+  flashFeedback(t('notifications.feedbackDismissed'));
   await store.dismissNotification(props.item.id);
 }
 
@@ -538,7 +541,7 @@ function handleSnoozeAction() {
 async function handleResolveAction() {
   // “Resolve” is a lightweight acknowledgement: mark as read (no new APIs).
   await store.markRead(props.item.id);
-  flashFeedback('Acknowledged');
+  flashFeedback(t('notifications.feedbackAcknowledged'));
 }
 
 const feedbackText = ref('');
@@ -600,20 +603,20 @@ const snoozeOptions = computed(() => {
   const opts = [
     {
       key: '1h',
-      label: '1 hour',
-      helpText: 'Hide this notification for 1 hour. Reappears automatically.',
+      label: t('notifications.snoozeOneHour'),
+      helpText: t('notifications.snoozeOneHourHelp'),
       until: new Date(now + 60 * 60 * 1000)
     },
     {
       key: 'tomorrow',
-      label: 'Until tomorrow',
-      helpText: 'Hide this notification until tomorrow. Reappears automatically.',
+      label: t('notifications.snoozeTomorrow'),
+      helpText: t('notifications.snoozeTomorrowHelp'),
       until: getUntilTomorrow()
     },
     {
       key: 'nextweek',
-      label: 'Until next week',
-      helpText: 'Hide this notification until next week. Reappears automatically.',
+      label: t('notifications.snoozeNextWeek'),
+      helpText: t('notifications.snoozeNextWeekHelp'),
       until: getUntilNextWeek()
     }
   ];
@@ -621,17 +624,15 @@ const snoozeOptions = computed(() => {
   if (dueAt && dueAt.getTime() > now) {
     opts.push({
       key: 'duedate',
-      label: 'Until due date',
-      helpText: 'Hide this notification until its due date. Reappears automatically.',
+      label: t('notifications.snoozeDueDate'),
+      helpText: t('notifications.snoozeDueDateHelp'),
       until: dueAt
     });
   }
 
   return opts.map(o => ({
     ...o,
-    ariaLabel: o.key === '1h'
-      ? 'Snooze for 1 hour'
-      : `Snooze ${o.label.toLowerCase()}`
+    ariaLabel: t('notifications.snoozeOptionAria', { label: o.label })
   }));
 });
 

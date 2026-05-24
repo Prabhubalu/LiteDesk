@@ -1,15 +1,15 @@
 <template>
-  <CardWidget class="ld-card-group" title="Metrics">
+  <CardWidget class="ld-card-group" :title="t('common.metricsTitle')">
     <template #actions>
-      <button @click="openConfig" class="rounded-md bg-white dark:bg-gray-800 px-2 py-1.5 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" title="Configure Metrics">
+      <button @click="openConfig" class="rounded-md bg-white dark:bg-gray-800 px-2 py-1.5 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" :title="t('common.metricsConfigure')">
         <Cog6ToothIcon class="w-4 h-4 text-gray-700 dark:text-gray-300" />
       </button>
     </template>
 
     <div v-if="visibleMetrics.length === 0" class="flex-1 flex items-center justify-center py-6">
       <div class="text-center">
-        <p class="text-sm text-gray-500 dark:text-gray-400">No metrics configured yet.</p>
-        <button @click="openConfig" class="mt-2 rounded-md bg-white dark:bg-gray-800 px-3 py-1.5 text-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">Configure Metrics</button>
+        <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('common.metricsEmptyYet') }}</p>
+        <button @click="openConfig" class="mt-2 rounded-md bg-white dark:bg-gray-800 px-3 py-1.5 text-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">{{ t('common.metricsConfigure') }}</button>
       </div>
     </div>
 
@@ -41,9 +41,9 @@
                 <DialogPanel class="pointer-events-auto w-screen max-w-6xl">
                   <div class="relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800 shadow-xl">
                     <div class="flex items-center justify-between px-4 py-4 bg-indigo-700 dark:bg-indigo-800">
-                      <DialogTitle class="text-base font-semibold text-white">Configure Metrics</DialogTitle>
+                      <DialogTitle class="text-base font-semibold text-white">{{ t('common.metricsConfigure') }}</DialogTitle>
                       <button type="button" class="rounded-md text-indigo-200 hover:text-white" @click="closeConfig">
-                        <span class="sr-only">Close panel</span>
+                        <span class="sr-only">{{ t('common.metricsClosePanel') }}</span>
                         <XMarkIcon class="size-6" />
                       </button>
                     </div>
@@ -51,10 +51,10 @@
         <div class="flex items-center justify-end">
           <button @click="addMetric" class="inline-flex items-center gap-2 rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
             <PlusIcon class="w-4 h-4" />
-            Add Metric
+            {{ t('common.metricsAdd') }}
           </button>
         </div>
-          <div v-if="metrics.length === 0" class="text-xs text-gray-500 dark:text-gray-400">No metrics configured.</div>
+          <div v-if="metrics.length === 0" class="text-xs text-gray-500 dark:text-gray-400">{{ t('common.metricsEmptyPanel') }}</div>
           <div v-else class="space-y-3">
             <!-- Header Row -->
             <div class="grid grid-cols-[auto_3fr_2fr_3fr_2fr_auto] items-center pb-2 border-b border-gray-200 dark:border-gray-700">
@@ -62,16 +62,16 @@
                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">#No.</label>
               </div>
               <div class="pl-3">
-                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Label</label>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('common.metricsLabel') }}</label>
               </div>
               <div class="">
-                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Source</label>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('common.metricsSource') }}</label>
               </div>
               <div class="">
-                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Field</label>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('common.metricsField') }}</label>
               </div>
               <div class="">
-                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Aggregation</label>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('common.metricsAggregation') }}</label>
               </div>
               <div>
                 <!-- Empty header for delete button column -->
@@ -93,7 +93,7 @@
                 <button
                   type="button"
                   class="opacity-0 group-hover:opacity-100 transition-opacity absolute inset-0 flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-                  title="Drag to reorder"
+                  :title="t('common.metricsDragReorder')"
                   @mousedown="onHandleMouseDown(idx)"
                 >
                   <Bars3Icon class="w-4 h-4 text-gray-500 dark:text-gray-400" />
@@ -142,7 +142,7 @@
                 />
               </div>
               <div class="flex items-center justify-center">
-                <button @click="removeMetric(idx)" class="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" title="Delete metric">
+                <button @click="removeMetric(idx)" class="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" :title="t('common.metricsDelete')">
                   <TrashIcon class="w-5 h-5" />
                 </button>
               </div>
@@ -162,6 +162,9 @@
 
 <script setup>
 import { computed, ref, watch, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import CardWidget from '@/components/common/CardWidget.vue';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { XMarkIcon, Cog6ToothIcon, TrashIcon, PlusIcon, Bars3Icon } from '@heroicons/vue/24/outline';

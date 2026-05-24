@@ -2,9 +2,9 @@
   <section class="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm dark:border-gray-700/80 dark:bg-gray-900/80">
     <div class="flex items-start justify-between gap-3">
       <div>
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Booking questions</h2>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('appointments.customFieldsHeading') }}</h2>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Optional extra fields guests fill in when booking (after name and email).
+          {{ t('appointments.customFieldsHint') }}
         </p>
       </div>
       <button
@@ -13,12 +13,12 @@
         :disabled="fields.length >= maxFields"
         @click="addField"
       >
-        + Add question
+        {{ t('appointments.addQuestion') }}
       </button>
     </div>
 
     <p v-if="!fields.length" class="mt-4 rounded-lg border border-dashed border-gray-200 px-4 py-6 text-center text-sm text-gray-500 dark:border-gray-700">
-      No custom questions yet.
+      {{ t('appointments.noCustomQuestions') }}
     </p>
 
     <div v-else class="mt-4 space-y-4">
@@ -28,61 +28,61 @@
         class="rounded-xl border border-gray-200 p-4 dark:border-gray-700"
       >
         <div class="flex items-start justify-between gap-2">
-          <span class="text-xs font-medium uppercase tracking-wide text-gray-400">Question {{ idx + 1 }}</span>
+          <span class="text-xs font-medium uppercase tracking-wide text-gray-400">{{ t('appointments.questionN', { n: idx + 1 }) }}</span>
           <button
             type="button"
             class="text-sm text-red-600 hover:underline dark:text-red-400"
             @click="removeField(idx)"
           >
-            Remove
+            {{ t('actions.remove') }}
           </button>
         </div>
         <div class="mt-3 grid gap-3 sm:grid-cols-2">
           <div class="sm:col-span-2">
-            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Label</label>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('appointments.fieldLabel') }}</label>
             <input
               v-model="field.label"
               type="text"
               class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-              placeholder="e.g. Company name"
+              :placeholder="t('appointments.labelPhCompany')"
               @blur="syncKey(field)"
             />
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Field type</label>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('appointments.fieldType') }}</label>
             <select
               v-model="field.type"
               class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
               @change="onTypeChange(field)"
             >
-              <option value="text">Short text</option>
-              <option value="textarea">Long text</option>
-              <option value="email">Email</option>
-              <option value="phone">Phone</option>
-              <option value="select">Dropdown</option>
+              <option value="text">{{ t('appointments.fieldTypeText') }}</option>
+              <option value="textarea">{{ t('appointments.fieldTypeTextarea') }}</option>
+              <option value="email">{{ t('appointments.fieldTypeEmail') }}</option>
+              <option value="phone">{{ t('appointments.fieldTypePhone') }}</option>
+              <option value="select">{{ t('appointments.fieldTypeSelect') }}</option>
             </select>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Field key</label>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('appointments.fieldKey') }}</label>
             <input
               v-model="field.key"
               type="text"
               class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 font-mono text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-              placeholder="company_name"
+              :placeholder="t('appointments.keyPhCompany')"
             />
           </div>
         </div>
         <label class="mt-3 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
           <input v-model="field.required" type="checkbox" class="rounded border-gray-300 text-indigo-600" />
-          Required
+          {{ t('appointments.fieldRequired') }}
         </label>
         <div v-if="field.type === 'select'" class="mt-3">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Options (one per line)</label>
+          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('appointments.fieldOptions') }}</label>
           <textarea
             :value="optionsText(field)"
             rows="3"
             class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-            placeholder="Option A&#10;Option B"
+            :placeholder="t('appointments.optionsPh')"
             @input="setOptionsFromText(field, $event.target.value)"
           />
         </div>
@@ -92,7 +92,10 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { slugifyClient } from '@/utils/appointmentFormatters';
+
+const { t } = useI18n();
 
 const fields = defineModel({ type: Array, default: () => [] });
 

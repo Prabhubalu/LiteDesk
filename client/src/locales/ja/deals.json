@@ -1,0 +1,462 @@
+{
+  "dealFormModalNextFollowUpDate": {
+    "message": "次回のフォローアップ日",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalAddDetailsAboutThisDealRequirements": {
+    "message": "この取引、要件、注意事項などの詳細を追加します。",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalAdditionalDetails": {
+    "message": "追加の詳細",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalLinkThisDealToAContact": {
+    "message": "この取引を連絡先にリンクする",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalSelectContact": {
+    "message": "連絡先の選択",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalEnterprisePriorityDemo": {
+    "message": "エンタープライズ、優先度、デモ",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalTagsCommaSeparated": {
+    "message": "タグ (カンマ区切り)",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalUrgent": {
+    "message": "緊急",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalCrossSell": {
+    "message": "クロスセル",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalRenewal": {
+    "message": "リニューアル",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalUpsell": {
+    "message": "アップセル",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalExistingCustomer": {
+    "message": "既存の顧客",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalNewBusiness": {
+    "message": "新規事業",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalSelectType": {
+    "message": "タイプの選択",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalDealType": {
+    "message": "取引タイプ",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalClassification": {
+    "message": "分類",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalChangingStageUpdatesStatusAndProbability": {
+    "message": "ステージを変更するとステータスと確率が自動的に更新されます",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalSelectPipeline": {
+    "message": "パイプラインを選択...",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalExpectedCloseDate": {
+    "message": "終了予定日",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalEGAcmeCorpCrmImplementation": {
+    "message": "例: Acme Corp - CRM 実装",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalDealName": {
+    "message": "取引名",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalDealInformation": {
+    "message": "取引情報",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealRelationshipEditorSelectOrganization": {
+    "message": "組織を選択してください...",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorNoOrganizationsLinkedYet": {
+    "message": "まだリンクされている組織はありません。",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorRemoveFromDeal": {
+    "message": "取引から削除する",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorSetAsPrimaryCustomer": {
+    "message": "主要顧客として設定",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorOrganizationsOnThisDeal": {
+    "message": "この取引に参加している組織",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorShowingContactsFor": {
+    "message": "の連絡先を表示しています",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorSelectPerson": {
+    "message": "人を選択してください...",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorNoPeopleLinkedYet": {
+    "message": "まだリンクしている人はいません。",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorRemoveFromDeal2": {
+    "message": "取引から削除する",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorSetAsPrimaryContact": {
+    "message": "主要連絡先として設定",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorPeopleOnThisDeal": {
+    "message": "この取引に参加している人",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "relatedDealsWidgetCreateFirstDeal": {
+    "message": "最初の取引を作成する",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetNoDealsYet": {
+    "message": "まだ取引はありません",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetAddDeal": {
+    "message": "取引を追加",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetLinkDeals": {
+    "message": "リンクセール",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetRelatedDeals": {
+    "message": "関連セール",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "dealsAddDeal": {
+    "message": "取引を追加",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsNoDealsInThisStage": {
+    "message": "この段階では取引はありません",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsLoadingPipeline": {
+    "message": "パイプラインを読み込み中...",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsNewDeal": {
+    "message": "ニューディール",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsGroupStage": {
+    "message": "グループ: ステージ",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsUpgradePlan": {
+    "message": "アップグレードプラン",
+    "description": "Auto-migrated from deals"
+  },
+  "dealDetailAddANote": {
+    "message": "メモを追加...",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailAddEvent": {
+    "message": "イベントの追加",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailAge": {
+    "message": "年",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailExpectedClose": {
+    "message": "予想終値",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailOrganizationsOnThisDeal": {
+    "message": "この取引に参加している組織",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailPeopleOnThisDeal": {
+    "message": "この取引に参加している人",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailPrimaryCustomer": {
+    "message": "主要顧客",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailPrimaryContact": {
+    "message": "主な連絡先",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailSystemOwnedComputedFromStage": {
+    "message": "システム所有 (ステージから計算)",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailBackToDeals": {
+    "message": "セールに戻る",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailLoadingDeal": {
+    "message": "取引を読み込み中...",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealFormModalToastFailedToSaveDeal": {
+    "message": "取引を保存できませんでした",
+    "description": "Toast from DealFormModal.vue"
+  },
+  "sysFieldName": {
+    "message": "取引名",
+    "description": "System deal field label"
+  },
+  "sysFieldStage": {
+    "message": "取引ステージ",
+    "description": "System deal field label"
+  },
+  "sysFieldAmount": {
+    "message": "期待値",
+    "description": "System deal field label"
+  },
+  "sysFieldProbability": {
+    "message": "確率 (%)",
+    "description": "System deal field label"
+  },
+  "sysFieldExpectedCloseDate": {
+    "message": "終了日",
+    "description": "System deal field label"
+  },
+  "sysFieldOwnerId": {
+    "message": "取引オーナー",
+    "description": "System deal field label"
+  },
+  "sysFieldAccountId": {
+    "message": "組織",
+    "description": "System deal field label"
+  },
+  "sysFieldContactId": {
+    "message": "接触",
+    "description": "System deal field label"
+  },
+  "sysFieldType": {
+    "message": "取引タイプ",
+    "description": "System deal field label"
+  },
+  "sysFieldPipeline": {
+    "message": "パイプライン",
+    "description": "System deal field label"
+  },
+  "sysFieldNextStep": {
+    "message": "次のステップ",
+    "description": "System deal field label"
+  },
+  "sysFieldTags": {
+    "message": "タグ",
+    "description": "System deal field label"
+  },
+  "sysFieldAssignedTo": {
+    "message": "担当者",
+    "description": "System deal field label"
+  },
+  "sysFieldDescription": {
+    "message": "説明",
+    "description": "System deal field label"
+  },
+  "sysFieldDealType": {
+    "message": "取引タイプ",
+    "description": "Alias for deal type field"
+  },
+  "activityCreatedDeal": {
+    "message": "この取引を作成しました",
+    "description": "Deal record created activity fragment"
+  },
+  "activityUpdatedDeal": {
+    "message": "この取引を更新しました",
+    "description": "Deal record updated activity fragment"
+  },
+  "activityYouCreatedDeal": {
+    "message": "{actor} がこの取引を作成しました",
+    "description": "Deal created system activity line"
+  },
+  "activityYouUpdatedDeal": {
+    "message": "{actor} がこの取引を更新しました",
+    "description": "Deal updated system activity line"
+  },
+  "picklistNew": {
+    "message": "新しい",
+    "description": "Default pipeline stage"
+  },
+  "picklistNewBusiness": {
+    "message": "新規事業",
+    "description": "Common deal type value"
+  },
+  "picklistUpsell": {
+    "message": "アップセル",
+    "description": "Deal type picklist value"
+  },
+  "picklistCrossSell": {
+    "message": "クロスセル",
+    "description": "Deal type picklist value"
+  },
+  "picklistRenewal": {
+    "message": "リニューアル",
+    "description": "Deal type picklist value"
+  },
+  "picklistExistingCustomer": {
+    "message": "既存の顧客",
+    "description": "Deal type picklist value"
+  },
+  "stageNew": {
+    "message": "新しい",
+    "description": "Default pipeline stage name"
+  },
+  "stageQualified": {
+    "message": "資格のある",
+    "description": "Pipeline stage name"
+  },
+  "stageProposal": {
+    "message": "提案",
+    "description": "Pipeline stage name"
+  },
+  "stageNegotiation": {
+    "message": "交渉",
+    "description": "Pipeline stage name"
+  },
+  "stageWon": {
+    "message": "勝利した",
+    "description": "Pipeline stage name"
+  },
+  "stageLost": {
+    "message": "失った",
+    "description": "Pipeline stage name"
+  },
+  "stageClosedWon": {
+    "message": "クローズドウォン",
+    "description": "Pipeline stage name"
+  },
+  "stageClosedLost": {
+    "message": "閉店しました 紛失しました",
+    "description": "Pipeline stage name"
+  },
+  "stageDiscovery": {
+    "message": "発見",
+    "description": "Pipeline stage name"
+  },
+  "stageNeedsAnalysis": {
+    "message": "ニーズ分析",
+    "description": "Pipeline stage name"
+  },
+  "stageValueProposition": {
+    "message": "価値提案",
+    "description": "Pipeline stage name"
+  },
+  "stageIdDecisionMakers": {
+    "message": "同上。意思決定者",
+    "description": "Pipeline stage name"
+  },
+  "stagePerceptionAnalysis": {
+    "message": "知覚分析",
+    "description": "Pipeline stage name"
+  },
+  "stageProposalPriceQuote": {
+    "message": "ご提案・お見積り",
+    "description": "Pipeline stage name"
+  },
+  "stageNegotiationReview": {
+    "message": "交渉・検討",
+    "description": "Pipeline stage name"
+  },
+  "pipelineSales": {
+    "message": "販売パイプライン",
+    "description": "Tenant pipeline display name"
+  },
+  "pipelineDefault": {
+    "message": "デフォルトのパイプライン",
+    "description": "Tenant pipeline display name"
+  },
+  "pipelineMarketing": {
+    "message": "マーケティングパイプライン",
+    "description": "Tenant pipeline display name"
+  },
+  "pipelinePartner": {
+    "message": "パートナーパイプライン",
+    "description": "Tenant pipeline display name"
+  },
+  "listViewAll": {
+    "message": "All Deals",
+    "description": "Deals list default view title"
+  },
+  "listViewMy": {
+    "message": "My Deals",
+    "description": "Deals list assigned-to-me view title"
+  },
+  "listViewOpen": {
+    "message": "Open",
+    "description": "Deals list open view title"
+  },
+  "listViewWon": {
+    "message": "Won",
+    "description": "Deals list won view title"
+  },
+  "listViewLost": {
+    "message": "Lost",
+    "description": "Deals list lost view title"
+  },
+  "listCreate": {
+    "message": "New Deal",
+    "description": "Deals list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "Search deals...",
+    "description": "Deals list search placeholder"
+  },
+  "listStatPipelineValue": {
+    "message": "Pipeline Value",
+    "description": "Deals list statistics card"
+  },
+  "listStatOpenDeals": {
+    "message": "Open Deals",
+    "description": "Deals list statistics card"
+  },
+  "listStatWonThisMonth": {
+    "message": "Won This Month",
+    "description": "Deals list statistics card"
+  },
+  "listStatWinRate": {
+    "message": "Win Rate",
+    "description": "Deals list statistics card"
+  },
+  "dealsFeatureNotAvailable": {
+    "message": "Feature Not Available",
+    "description": "Deals plan limitation error title"
+  },
+  "dealsErrorLoading": {
+    "message": "Error Loading Deals",
+    "description": "Deals load error title"
+  },
+  "dealsDealDetail": {
+    "message": "Deal Detail",
+    "description": "Deal record tab title fallback"
+  },
+  "dealsStageUpdateFailed": {
+    "message": "Failed to update deal stage",
+    "description": "Kanban stage change error"
+  }
+}
