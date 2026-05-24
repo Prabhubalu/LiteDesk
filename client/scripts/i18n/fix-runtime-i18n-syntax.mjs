@@ -3,6 +3,8 @@
  * Fix known vue-i18n compile failures:
  * - notifications.bellTooltipUnread ICU plural → one/many keys
  * - inboxGetStartedTipMentions literal @ → {'@'}
+ * - settings integrations email placeholders literal @ → {'@'}
+ * - settings.secRequireSpecialDesc password charset literal @ → {'@'}
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -41,6 +43,33 @@ for (const lang of SUPPORTED_LANGUAGES) {
       delete data.bellTooltipUnread;
       fs.writeFileSync(notifPath, `${JSON.stringify(data, null, 2)}\n`);
       console.log(`  notifications/${lang}: bellTooltipUnread → one/many`);
+    }
+  }
+
+  const settingsPath = path.join(LOCALES_DIR, lang, 'settings.json');
+  if (fs.existsSync(settingsPath)) {
+    const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+    const placeholderKeys = [
+      'integrationsPlaceholderFromEmail',
+      'integrationsPlaceholderReplyTo',
+      'integrationsPlaceholderSearchEmail',
+    ];
+    let settingsChanged = false;
+    for (const key of placeholderKeys) {
+      const msg = settings[key]?.message;
+      if (msg && msg.includes('@') && !msg.includes("{'@'}")) {
+        settings[key].message = msg.replace(/@/g, "{'@'}");
+        settingsChanged = true;
+      }
+    }
+    const secDesc = settings.secRequireSpecialDesc?.message;
+    if (secDesc && secDesc.includes('@') && !secDesc.includes("{'@'}")) {
+      settings.secRequireSpecialDesc.message = secDesc.replace(/@/g, "{'@'}");
+      settingsChanged = true;
+    }
+    if (settingsChanged) {
+      fs.writeFileSync(settingsPath, `${JSON.stringify(settings, null, 2)}\n`);
+      console.log(`  settings/${lang}: escaped @ in settings.json`);
     }
   }
 

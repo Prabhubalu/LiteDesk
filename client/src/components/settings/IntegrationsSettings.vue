@@ -46,7 +46,7 @@
       <div class="lg:col-span-1 space-y-4">
         <div class="flex items-center justify-between">
           <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.integrationsAvailableTitle') }}</h3>
-          <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.integrationsCount', { count: integrations.length }) }}</span>
+          <span class="text-xs text-gray-500 dark:text-gray-400">{{ integrationsCountLabel(integrations.length) }}</span>
         </div>
         <div class="space-y-3">
           <button
@@ -1196,6 +1196,12 @@ function integrationStatusLabel(enabled) {
 
 function scopeBadgeLabel(scope) {
   return scope === 'platform' ? t('settings.integrationsScopePlatform') : t('settings.integrationsScopeApp');
+}
+
+function integrationsCountLabel(count) {
+  return count === 1
+    ? t('settings.integrationsCountOne', { count })
+    : t('settings.integrationsCountOther', { count });
 }
 
 function connectionStatusMessage(enabled) {

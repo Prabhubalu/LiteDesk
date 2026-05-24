@@ -280,7 +280,7 @@
     "description": "Password policy option"
   },
   "secRequireSpecialDesc": {
-    "message": "Las contraseñas deben contener al menos un carácter especial (!@#$%^&*)",
+    "message": "Las contraseñas deben contener al menos un carácter especial (!{'@'}#$%^&*)",
     "description": "Password policy option desc"
   },
   "secPreventReuse": {
@@ -6531,10 +6531,6 @@
     "message": "Cargando horarios…",
     "description": "Schedules list loading"
   },
-  "settingsBhScheduleCount": {
-    "message": "{count, plural, one {# horario} other {# horarios}}",
-    "description": "Schedule list count"
-  },
   "settingsBhCreateSchedule": {
     "message": "Crear horario",
     "description": "Create schedule button"
@@ -6566,10 +6562,6 @@
   "settingsBhLoadFailed": {
     "message": "No se pudieron cargar los horarios",
     "description": "Schedules load error"
-  },
-  "settingsBhHolidayCalendarOption": {
-    "message": "{name} ({count, plural, one {# festivo} other {# festivos}})",
-    "description": "Holiday calendar select option"
   },
   "settingsCoreModLoadFailed": {
     "message": "No se pudieron cargar los módulos principales",
@@ -7735,9 +7727,13 @@
     "message": "Integraciones disponibles",
     "description": "Catalog list heading"
   },
-  "integrationsCount": {
-    "message": "{count, plural, one {# integración} other {# integraciones}}",
-    "description": "Catalog integration count"
+  "integrationsCountOne": {
+    "message": "{count} integración",
+    "description": "Catalog integration count singular"
+  },
+  "integrationsCountOther": {
+    "message": "{count} integraciones",
+    "description": "Catalog integration count plural"
   },
   "integrationsScopePlatform": {
     "message": "Toda la plataforma",
@@ -8000,7 +7996,7 @@
     "description": "OCI region placeholder"
   },
   "integrationsPlaceholderFromEmail": {
-    "message": "hola@tudominio.com",
+    "message": "hola{'@'}tudominio.com",
     "description": "From email placeholder"
   },
   "integrationsPlaceholderFromName": {
@@ -8008,7 +8004,7 @@
     "description": "From name placeholder"
   },
   "integrationsPlaceholderReplyTo": {
-    "message": "soporte@tudominio.com",
+    "message": "soporte{'@'}tudominio.com",
     "description": "Reply-to placeholder"
   },
   "integrationsPlaceholderAwsRegion": {
@@ -8020,7 +8016,7 @@
     "description": "Gmail OAuth redirect URI placeholder"
   },
   "integrationsPlaceholderSearchEmail": {
-    "message": "nombre@ejemplo.com",
+    "message": "nombre{'@'}ejemplo.com",
     "description": "Suppression search placeholder"
   },
   "integrationsPlaceholderWebhookProvider": {
@@ -8843,10 +8839,6 @@
     "message": "Importar CSV",
     "description": "Import holiday calendar button"
   },
-  "settingsBhHolidayCount": {
-    "message": "{count, plural, one {# holiday} other {# holidays}}",
-    "description": "Holiday count on calendar card"
-  },
   "settingsBhEmptyHolidayCalendars": {
     "message": "Aún no hay calendarios de vacaciones. Importe un CSV con fecha y nombre por línea.",
     "description": "Empty holiday calendars state"
@@ -9058,5 +9050,29 @@
   "modulesAndFieldsImportant3": {
     "message": "Importante:",
     "description": "Auto-migrated from modulesAndFields"
+  },
+  "settingsBhScheduleCountOne": {
+    "message": "{count} horario",
+    "description": "Schedule list count singular"
+  },
+  "settingsBhScheduleCountOther": {
+    "message": "{count} horarios",
+    "description": "Schedule list count plural"
+  },
+  "settingsBhHolidayCountOne": {
+    "message": "{count} holiday",
+    "description": "Holiday count singular"
+  },
+  "settingsBhHolidayCountOther": {
+    "message": "{count} holidays",
+    "description": "Holiday count plural"
+  },
+  "settingsBhHolidayCalendarOptionOne": {
+    "message": "{name} ({count} festivo)",
+    "description": "Holiday calendar select option singular"
+  },
+  "settingsBhHolidayCalendarOptionOther": {
+    "message": "{name} ({count} festivos)",
+    "description": "Holiday calendar select option plural"
   }
 }
