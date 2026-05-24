@@ -1642,11 +1642,15 @@ function appToggleSrLabel(enabled, appName) {
 }
 
 function applicationCountLabel(count) {
-  return t('settings.coreModDetailApplicationCount', { count });
+  return count === 1
+    ? t('settings.coreModDetailApplicationCountOne', { count })
+    : t('settings.coreModDetailApplicationCountOther', { count });
 }
 
 function sharedByLabel(count) {
-  return t('settings.coreModDetailSharedBy', { count });
+  return count === 1
+    ? t('settings.coreModDetailSharedByOne', { count })
+    : t('settings.coreModDetailSharedByOther', { count });
 }
 
 function confirmToggleTitle(newState, appName) {

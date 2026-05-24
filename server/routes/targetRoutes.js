@@ -28,6 +28,7 @@ router.post('/:id/activate', controller.activateTarget);
 router.post('/:id/lock', controller.lockTarget);
 router.post('/:id/complete', controller.completeTarget);
 router.post('/:id/close', controller.closeTarget);
+router.get('/:id/assignments', controller.getAssignments);
 router.get('/:id/contributions', controller.getContributions);
 router.get('/:id/forecast', controller.getForecast);
 router.get('/:id/versions', controller.listVersions);

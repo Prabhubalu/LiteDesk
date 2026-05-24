@@ -87,7 +87,7 @@
           <div v-if="subscription.planDetails.daysRemaining !== undefined" class="flex items-center justify-between">
             <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.settingsSubDetailDaysRemaining') }}</span>
             <span class="text-sm font-medium text-gray-900 dark:text-white">
-              {{ t('settings.settingsSubDetailDaysCount', { count: subscription.planDetails.daysRemaining }) }}
+              {{ daysRemainingLabel(subscription.planDetails.daysRemaining) }}
             </span>
           </div>
           <div v-if="subscription.planDetails.autoRenew !== undefined" class="flex items-center justify-between">
@@ -241,6 +241,12 @@ import apiClient from '@/utils/apiClient';
 import { useLocale } from '@/composables/useLocale';
 
 const { t } = useI18n();
+
+function daysRemainingLabel(count) {
+  return count === 1
+    ? t('settings.settingsSubDetailDaysCountOne', { count })
+    : t('settings.settingsSubDetailDaysCountOther', { count });
+}
 const { formatDate } = useLocale();
 const route = useRoute();
 const router = useRouter();

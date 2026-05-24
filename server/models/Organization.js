@@ -264,9 +264,9 @@ const OrganizationSchema = new mongoose.Schema({
     
     // ===== CRM FIELDS (from OrganizationV2) =====
     // CRM Core
+    // Values from module field config (Settings → Fields), not a fixed schema enum
     types: {
         type: [String],
-        enum: ['Customer', 'Partner', 'Vendor', 'Distributor', 'Dealer'],
         default: []
     },
     website: { type: String, trim: true },
@@ -299,11 +299,11 @@ const OrganizationSchema = new mongoose.Schema({
     // Customer-specific
     customerStatus: {
         type: String,
-        enum: ['Active', 'Prospect', 'Churned', 'Lead Customer']
+        trim: true
     },
     customerTier: {
         type: String,
-        enum: ['Gold', 'Silver', 'Bronze']
+        trim: true
     },
     slaLevel: { type: String, trim: true },
     paymentTerms: { type: String, trim: true },
@@ -318,15 +318,15 @@ const OrganizationSchema = new mongoose.Schema({
     // Partner-specific
     partnerStatus: {
         type: String,
-        enum: ['Active', 'Onboarding', 'Inactive']
+        trim: true
     },
     partnerTier: {
         type: String,
-        enum: ['Platinum', 'Gold', 'Silver', 'Bronze']
+        trim: true
     },
     partnerType: {
         type: String,
-        enum: ['Reseller', 'System Integrator', 'Referral', 'Technology Partner']
+        trim: true
     },
     partnerSince: { type: Date },
     partnerOnboardingSteps: mongoose.Schema.Types.Mixed,
@@ -336,7 +336,7 @@ const OrganizationSchema = new mongoose.Schema({
     // Vendor-specific
     vendorStatus: {
         type: String,
-        enum: ['Approved', 'Pending', 'Suspended']
+        trim: true
     },
     vendorRating: { type: Number, min: 0 },
     vendorContract: { 
@@ -352,7 +352,7 @@ const OrganizationSchema = new mongoose.Schema({
     distributionCapacityMonthly: { type: Number, min: 0 },
     dealerLevel: {
         type: String,
-        enum: ['Authorized', 'Franchise', 'Retailer']
+        trim: true
     },
     terms: { type: String, trim: true },
     shippingAddress: { type: String, trim: true },

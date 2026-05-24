@@ -85,8 +85,47 @@
           <p class="mt-1 text-xl font-semibold tabular-nums text-gray-900 dark:text-white">
             {{ target.forecastValue != null ? formatTargetValue(target.forecastValue, target.metricKind) : '—' }}
           </p>
+          <p v-if="forecastBreakdown?.pipelineContribution > 0" class="mt-1 text-xs text-gray-500">
+            {{ t('performance.detailForecastBreakdown', {
+              achieved: formatTargetValue(forecastBreakdown.achieved, target.metricKind),
+              pipeline: formatTargetValue(forecastBreakdown.pipelineContribution, target.metricKind),
+            }) }}
+          </p>
+          <p v-else-if="forecastBreakdown && !forecastBreakdown.tracksDeals" class="mt-1 text-xs text-gray-500">
+            {{ t('performance.detailForecastNoDealsHint') }}
+          </p>
+          <p v-else-if="forecastBreakdown && forecastBreakdown.tracksDeals && forecastBreakdown.pipeline === 0" class="mt-1 text-xs text-gray-500">
+            {{ t('performance.detailForecastNoOpenDealsHint') }}
+          </p>
+          <p v-if="forecastBreakdown && !forecastBreakdown.enabled && forecastBreakdown.pipelineContribution > 0" class="mt-1 text-xs text-gray-400">
+            {{ t('performance.detailForecastProbabilityHint') }}
+          </p>
           <p v-if="target.riskLevel" class="mt-1 text-xs capitalize text-gray-500">{{ target.riskLevel }} risk</p>
         </div>
+      </div>
+
+      <div
+        v-if="assignments.length"
+        class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden"
+      >
+        <div class="border-b border-gray-100 dark:border-gray-700 px-5 py-4">
+          <h2 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('performance.detailQuotas') }}</h2>
+        </div>
+        <ul class="divide-y divide-gray-100 dark:divide-gray-700">
+          <li
+            v-for="row in assignments"
+            :key="row._id"
+            class="flex items-center justify-between gap-4 px-5 py-3 text-sm"
+          >
+            <span class="font-medium text-gray-900 dark:text-white">{{ assignmentUserName(row) }}</span>
+            <span class="text-gray-600 dark:text-gray-400 tabular-nums">
+              {{ t('performance.achievedOfTarget', {
+                achieved: formatTargetValue(row.achievedValue, target.metricKind),
+                target: formatTargetValue(row.allocatedValue, target.metricKind),
+              }) }}
+            </span>
+          </li>
+        </ul>
       </div>
 
       <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
@@ -145,8 +184,10 @@ const route = useRoute();
 const router = useRouter();
 
 const target = ref(null);
+const assignments = ref([]);
 const contributions = ref([]);
 const versions = ref([]);
+const forecastBreakdown = ref(null);
 const loading = ref(true);
 
 const targetId = computed(() => props.id || route.params.id);
@@ -155,6 +196,13 @@ const progressPct = computed(() => targetProgressPercent(target.value));
 
 function formatDate(d) {
   return d ? new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+}
+
+function assignmentUserName(row) {
+  const u = row.userId;
+  if (!u || typeof u !== 'object') return '—';
+  const name = [u.firstName, u.lastName].filter(Boolean).join(' ').trim();
+  return name || u.email || '—';
 }
 
 function formatRelative(d) {
@@ -170,17 +218,26 @@ function formatRelative(d) {
 async function load() {
   loading.value = true;
   try {
-    const [tRes, cRes, vRes] = await Promise.all([
+    const [tRes, aRes, cRes, vRes] = await Promise.all([
       apiClient.get(`/targets/${targetId.value}`),
+      apiClient.get(`/targets/${targetId.value}/assignments`),
       apiClient.get(`/targets/${targetId.value}/contributions`),
       apiClient.get(`/targets/${targetId.value}/versions`),
     ]);
     target.value = tRes?.data;
+    assignments.value = aRes?.data || [];
     contributions.value = cRes?.data || [];
     versions.value = vRes?.data || [];
-    await apiClient.get(`/targets/${targetId.value}/forecast`);
-    const refreshed = await apiClient.get(`/targets/${targetId.value}`);
-    if (refreshed?.data) target.value = refreshed.data;
+    const fRes = await apiClient.get(`/targets/${targetId.value}/forecast`);
+    if (fRes?.data) {
+      target.value = {
+        ...target.value,
+        forecastValue: fRes.data.forecastValue,
+        achievementProbability: fRes.data.achievementProbability,
+        riskLevel: fRes.data.riskLevel,
+      };
+      forecastBreakdown.value = fRes.data.breakdown || null;
+    }
   } finally {
     loading.value = false;
   }

@@ -167,7 +167,7 @@
               {{ t('settings.settingsAppDetailRequiredDeps') }}
             </h4>
             <span class="text-xs text-gray-500 dark:text-gray-500">
-              {{ t('settings.settingsAppDetailModuleCount', { count: application.dependencies.required.length }) }}
+              {{ moduleCountLabel(application.dependencies.required.length) }}
             </span>
           </div>
           <div class="space-y-3">
@@ -219,7 +219,7 @@
               {{ t('settings.settingsAppDetailOptionalDeps') }}
             </h4>
             <span class="text-xs text-gray-500 dark:text-gray-500">
-              {{ t('settings.settingsAppDetailModuleCount', { count: application.dependencies.optional.length }) }}
+              {{ moduleCountLabel(application.dependencies.optional.length) }}
             </span>
           </div>
           <div class="space-y-3">
@@ -326,6 +326,12 @@ import { useRoute, useRouter } from 'vue-router';
 import apiClient from '@/utils/apiClient';
 
 const { t } = useI18n();
+
+function moduleCountLabel(count) {
+  return count === 1
+    ? t('settings.settingsAppDetailModuleCountOne', { count })
+    : t('settings.settingsAppDetailModuleCountOther', { count });
+}
 const route = useRoute();
 const router = useRouter();
 

@@ -39,7 +39,7 @@ const ThresholdSchema = new mongoose.Schema({
 const ForecastRuleSchema = new mongoose.Schema({
   enabled: { type: Boolean, default: false },
   includePipeline: { type: Boolean, default: true },
-  historicalWeight: { type: Number, default: 0.3, min: 0, max: 1 }
+  historicalWeight: { type: Number, default: 1, min: 0, max: 1 }
 }, { _id: false });
 
 const TargetSchema = new mongoose.Schema({

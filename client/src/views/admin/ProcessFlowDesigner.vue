@@ -661,39 +661,59 @@ function onSelectNode(node) {
   selectedFlowNode.value = flowNodes.value.find((n) => n.id === node.id) || node;
 }
 
+/** Pick Yes/No branch when auto-wiring from an IF step. */
+function pickConditionForSource(sourceId) {
+  const sourceNode = flowNodes.value.find((n) => n.id === sourceId);
+  if (sourceNode?.data?.processType !== 'condition') return null;
+
+  const outEdges = flowEdges.value.filter((e) => e.source === sourceId);
+  const hasTrue = outEdges.some(
+    (e) => e.data?.condition === true || e.data?.condition === 'true'
+  );
+  const hasFalse = outEdges.some(
+    (e) => e.data?.condition === false || e.data?.condition === 'false'
+  );
+  if (!hasTrue) return true;
+  if (!hasFalse) return false;
+  return null;
+}
+
 /** Wire a newly added step into the flow when it has no incoming edge yet. */
 function autoConnectNewNode(newNodeId) {
   if (flowEdges.value.some((e) => e.target === newNodeId)) return;
 
-  const trigger = flowNodes.value.find((n) => n.data.processType === 'trigger');
-  if (trigger) {
-    flowEdges.value = [
-      ...flowEdges.value,
-      {
-        id: generateId('edge'),
-        source: trigger.id,
-        target: newNodeId,
-        data: { condition: null }
-      }
-    ];
+  const outgoing = new Set(flowEdges.value.map((e) => e.source));
+  const tails = flowNodes.value.filter((n) => n.id !== newNodeId && !outgoing.has(n.id));
+
+  let sourceId = null;
+  const selected = selectedFlowNode.value;
+  if (selected?.id && selected.id !== newNodeId && tails.some((t) => t.id === selected.id)) {
+    sourceId = selected.id;
+  } else if (tails.length === 1) {
+    sourceId = tails[0].id;
+  }
+
+  if (!sourceId) return;
+
+  const condition = pickConditionForSource(sourceId);
+  if (condition === null && flowNodes.value.find((n) => n.id === sourceId)?.data?.processType === 'condition') {
     return;
   }
 
-  const outgoing = new Set(flowEdges.value.map((e) => e.source));
-  const tails = flowNodes.value.filter(
-    (n) => n.id !== newNodeId && n.data.processType !== 'trigger' && !outgoing.has(n.id)
-  );
-  if (tails.length === 1) {
-    flowEdges.value = [
-      ...flowEdges.value,
-      {
-        id: generateId('edge'),
-        source: tails[0].id,
-        target: newNodeId,
-        data: { condition: null }
-      }
-    ];
+  const edge = {
+    id: generateId('edge'),
+    source: sourceId,
+    target: newNodeId,
+    data: { condition: condition ?? null }
+  };
+  if (condition === true) {
+    edge.sourceHandle = 'true';
+    edge.label = t('process.edgeYes');
+  } else if (condition === false) {
+    edge.sourceHandle = 'false';
+    edge.label = t('process.edgeNo');
   }
+  flowEdges.value = [...flowEdges.value, edge];
 }
 
 function addNode(type) {

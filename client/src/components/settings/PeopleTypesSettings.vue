@@ -123,7 +123,7 @@
               <template v-else>
                 <span class="text-sm font-medium text-gray-900 dark:text-white">{{ row.value }}</span>
                 <p v-if="usageCountForDisplay(row.value) > 0" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                  {{ t('settings.peopleTypesInUse', { count: usageCountForDisplay(row.value) }) }}
+                  {{ peopleTypesInUseLabel(usageCountForDisplay(row.value)) }}
                 </p>
               </template>
             </div>
@@ -353,7 +353,7 @@
           </h4>
           <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
             <template v-if="deleteConfirmCount > 0">
-              {{ t('settings.peopleTypesDeleteInUse', { count: deleteConfirmCount }) }}
+              {{ peopleTypesDeleteInUseLabel(deleteConfirmCount) }}
             </template>
             <template v-else>{{ t('settings.peopleTypesDeleteEmpty') }}</template>
           </p>
@@ -397,6 +397,18 @@ import {
 import { getAppFields, getParticipationFields } from '@/platform/fields/peopleFieldModel';
 
 const { t } = useI18n();
+
+function peopleTypesInUseLabel(count) {
+  return count === 1
+    ? t('settings.peopleTypesInUseOne', { count })
+    : t('settings.peopleTypesInUseOther', { count });
+}
+
+function peopleTypesDeleteInUseLabel(count) {
+  return count === 1
+    ? t('settings.peopleTypesDeleteInUseOne', { count })
+    : t('settings.peopleTypesDeleteInUseOther', { count });
+}
 
 const appOptions = computed(() => [
   { value: 'SALES' as const, label: t('settings.peopleTypesAppSales') },

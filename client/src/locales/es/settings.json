@@ -3767,10 +3767,6 @@
     "message": "Arrastra para reordenar",
     "description": "Drag handle tooltip"
   },
-  "salesPipeStageCount": {
-    "message": "{count, plural, one {# etapa} other {# etapas}}",
-    "description": "Stage count in pipeline list or detail"
-  },
   "salesPipeDefaultBadge": {
     "message": "Por defecto",
     "description": "Default pipeline badge and radio label"
@@ -4979,10 +4975,6 @@
     "message": "Buscar y seleccionar valores...",
     "description": "Dependency multi-select placeholder"
   },
-  "modFieldsOptionCount": {
-    "message": "{count, plural, one {# opción} other {# opciones}}",
-    "description": "Dependency option count"
-  },
   "modFieldsSelectAll": {
     "message": "Seleccionar todo",
     "description": "Select all options"
@@ -6111,10 +6103,6 @@
     "message": "Seleccione una tubería",
     "description": "Other tabs section"
   },
-  "modFieldsStageCount": {
-    "message": "{count, plural, one {# etapa} other {# etapas}}",
-    "description": "Other tabs section"
-  },
   "modFieldsDefaultPipeline": {
     "message": "Canalización predeterminada",
     "description": "Other tabs section"
@@ -6935,10 +6923,6 @@
     "message": "Días restantes",
     "description": "Days remaining label"
   },
-  "settingsSubDetailDaysCount": {
-    "message": "{count, plural, one {# día} other {# días}}",
-    "description": "Days remaining count"
-  },
   "settingsSubDetailAutoRenew": {
     "message": "Renovación automática",
     "description": "Auto renew label"
@@ -7078,10 +7062,6 @@
   "settingsAppDetailOptionalDeps": {
     "message": "Dependencias opcionales",
     "description": "Optional dependencies heading"
-  },
-  "settingsAppDetailModuleCount": {
-    "message": "({count, plural, one {# módulo} other {# módulos}})",
-    "description": "Dependency module count"
   },
   "settingsAppDetailViewDetailsHint": {
     "message": "Sólo lectura • Ver detalles →",
@@ -7395,10 +7375,6 @@
     "message": "No hay roles definidos. Haga clic en \"Agregar opción\" para agregar valores.",
     "description": "Empty role types list"
   },
-  "peopleTypesInUse": {
-    "message": "En uso por {count, plural, one {# persona} other {# personas}}",
-    "description": "Role usage count on row"
-  },
   "peopleTypesFieldsWhenSelected": {
     "message": "Campos cuando se selecciona este tipo",
     "description": "Per-type participation fields section"
@@ -7450,10 +7426,6 @@
   "peopleTypesDeleteTitle": {
     "message": "¿Quitar rol?",
     "description": "Delete role confirm title"
-  },
-  "peopleTypesDeleteInUse": {
-    "message": "Este rol lo usan {count, plural, one {# persona} other {# personas}}. Quitarlo de la lista no cambia los registros existentes; conservarán su rol actual hasta que se actualicen.",
-    "description": "Delete role confirm when in use"
   },
   "peopleTypesDeleteEmpty": {
     "message": "¿Eliminar este rol de la lista?",
@@ -7527,10 +7499,6 @@
     "message": "Propiedad de la plataforma",
     "description": "Platform-owned module badge"
   },
-  "coreModDetailSharedBy": {
-    "message": "Compartido por {count, plural, one {# aplicación} other {# aplicaciones}}",
-    "description": "Shared across applications badge"
-  },
   "coreModDetailAppsUsingTitle": {
     "message": "Aplicaciones que utilizan este módulo",
     "description": "Apps using module section title"
@@ -7546,10 +7514,6 @@
   "coreModDetailOptional": {
     "message": "Opcional",
     "description": "Optional applications section"
-  },
-  "coreModDetailApplicationCount": {
-    "message": "({count, plural, one {# aplicación} other {# aplicaciones}})",
-    "description": "Application count in section header"
   },
   "coreModDetailAppRequiredLock": {
     "message": "Esta aplicación requiere este módulo y no se puede desactivar",
@@ -9074,5 +9038,85 @@
   "settingsBhHolidayCalendarOptionOther": {
     "message": "{name} ({count} festivos)",
     "description": "Holiday calendar select option plural"
+  },
+  "coreModDetailSharedByOne": {
+    "message": "Compartido por {count} aplicación",
+    "description": "Shared across applications badge (singular)"
+  },
+  "coreModDetailSharedByOther": {
+    "message": "Compartido por {count} aplicaciones",
+    "description": "Shared across applications badge (plural)"
+  },
+  "coreModDetailApplicationCountOne": {
+    "message": "({count} aplicación)",
+    "description": "Application count in section header (singular)"
+  },
+  "coreModDetailApplicationCountOther": {
+    "message": "({count} aplicaciones)",
+    "description": "Application count in section header (plural)"
+  },
+  "salesPipeStageCountOne": {
+    "message": "{count} etapa",
+    "description": "Stage count in pipeline list or detail (singular)"
+  },
+  "salesPipeStageCountOther": {
+    "message": "{count} etapas",
+    "description": "Stage count in pipeline list or detail (plural)"
+  },
+  "modFieldsOptionCountOne": {
+    "message": "{count} opción",
+    "description": "Dependency option count (singular)"
+  },
+  "modFieldsOptionCountOther": {
+    "message": "{count} opciones",
+    "description": "Dependency option count (plural)"
+  },
+  "modFieldsStageCountOne": {
+    "message": "{count} etapa",
+    "description": "Other tabs section (singular)"
+  },
+  "modFieldsStageCountOther": {
+    "message": "{count} etapas",
+    "description": "Other tabs section (plural)"
+  },
+  "settingsSubDetailDaysCountOne": {
+    "message": "{count} día",
+    "description": "Days remaining count (singular)"
+  },
+  "settingsSubDetailDaysCountOther": {
+    "message": "{count} días",
+    "description": "Days remaining count (plural)"
+  },
+  "settingsAppDetailModuleCountOne": {
+    "message": "({count} módulo)",
+    "description": "Dependency module count (singular)"
+  },
+  "settingsAppDetailModuleCountOther": {
+    "message": "({count} módulos)",
+    "description": "Dependency module count (plural)"
+  },
+  "peopleTypesInUseOne": {
+    "message": "En uso por {count} persona",
+    "description": "Role usage count on row (singular)"
+  },
+  "peopleTypesInUseOther": {
+    "message": "En uso por {count} personas",
+    "description": "Role usage count on row (plural)"
+  },
+  "peopleTypesDeleteInUseOne": {
+    "message": "Este rol lo usan {count} persona. Quitarlo de la lista no cambia los registros existentes; conservarán su rol actual hasta que se actualicen.",
+    "description": "Delete role confirm when in use (singular)"
+  },
+  "peopleTypesDeleteInUseOther": {
+    "message": "Este rol lo usan {count} personas. Quitarlo de la lista no cambia los registros existentes; conservarán su rol actual hasta que se actualicen.",
+    "description": "Delete role confirm when in use (plural)"
+  },
+  "modFieldsStatusTypesColorHint": {
+    "message": "Colors match the Types and status field options configured under the Fields tab.",
+    "description": "Status and Types tab color hint"
+  },
+  "modFieldsNoStatusValuesCatalog": {
+    "message": "No status values defined yet. Add them in Field configurations first, then return here to enable or disable them.",
+    "description": "Empty status list when catalog is empty"
   }
 }

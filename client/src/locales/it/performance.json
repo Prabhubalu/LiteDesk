@@ -346,5 +346,89 @@
   "widgetHelpdeskTitle": {
     "message": "Obiettivi di risoluzione",
     "description": "Widget title"
+  },
+  "wizardStepQuotas": {
+    "message": "Team quotas",
+    "description": "Wizard step"
+  },
+  "wizardStepQuotasHint": {
+    "message": "Add people and set each person's share of the goal.",
+    "description": "Step hint"
+  },
+  "ownerLabel": {
+    "message": "Target owner",
+    "description": "Owner field label"
+  },
+  "ownerSelectPlaceholder": {
+    "message": "Select owner…",
+    "description": "Owner select placeholder"
+  },
+  "ownerMeSuffix": {
+    "message": "you",
+    "description": "Current user suffix in owner list"
+  },
+  "periodYearLabel": {
+    "message": "Year",
+    "description": "Period year"
+  },
+  "periodMonthLabel": {
+    "message": "Month",
+    "description": "Period month"
+  },
+  "periodQuarterOption": {
+    "message": "Q{quarter}",
+    "description": "Quarter button"
+  },
+  "periodRangeSummary": {
+    "message": "{range}",
+    "description": "Computed period range"
+  },
+  "quotasAddMember": {
+    "message": "Add team member",
+    "description": "Add quota row"
+  },
+  "quotasSelectMember": {
+    "message": "Select a person…",
+    "description": "Quota user placeholder"
+  },
+  "quotasWeightLabel": {
+    "message": "Weight",
+    "description": "Weighted quota"
+  },
+  "quotasAmountLabel": {
+    "message": "Quota",
+    "description": "Manual quota amount"
+  },
+  "quotasCapacityLabel": {
+    "message": "Capacity",
+    "description": "Capacity quota"
+  },
+  "quotasPreviewEqual": {
+    "message": "{amount} each ({count} people)",
+    "description": "Equal split preview"
+  },
+  "quotasSoloHint": {
+    "message": "Only the owner is on this target. Add people below to split the goal.",
+    "description": "Solo quotas hint"
+  },
+  "reviewOwner": {
+    "message": "Owner",
+    "description": "Review row"
+  },
+  "reviewTeamSize": {
+    "message": "Team members",
+    "description": "Review row"
+  },
+  "detailQuotas": {
+    "message": "Team quotas",
+    "description": "Section"
+  },
+  "detailQuotaAllocated": {
+    "message": "Quota",
+    "description": "Assignment column"
+  },
+  "detailQuotaAchieved": {
+    "message": "Achieved",
+    "description": "Assignment column"
   }
 }

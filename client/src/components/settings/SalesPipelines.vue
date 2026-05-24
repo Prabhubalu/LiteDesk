@@ -49,7 +49,7 @@
                 <span class="w-2.5 h-2.5 rounded-full border border-white shadow flex-shrink-0" :style="{ backgroundColor: pipeline.color || DEFAULT_PIPELINE_COLOR }"></span>
                 <div class="min-w-0">
                   <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ pipeline.name }}</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.salesPipeStageCount', { count: pipeline.stages?.length || 0 }) }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ stageCountLabel(pipeline.stages?.length || 0) }}</p>
                 </div>
               </div>
               <span v-if="pipelineSettings.length > 1 && pipeline.isDefault" class="inline-flex px-2 py-0.5 text-xs font-medium rounded bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 flex-shrink-0">{{ t('settings.salesPipeDefaultBadge') }}</span>
@@ -97,7 +97,7 @@
               {{ currentPipeline?.name || t('settings.salesPipeSelectPipeline') }}
             </p>
             <p v-if="currentPipeline" class="text-xs text-gray-500 dark:text-gray-400">
-              {{ t('settings.salesPipeStageCount', { count: currentPipeline.stages?.length || 0 }) }}
+              {{ stageCountLabel(currentPipeline.stages?.length || 0) }}
               <template v-if="pipelineSettings.length > 1"> · {{ currentPipeline.isDefault ? t('settings.salesPipeDefaultPipelineLabel') : t('settings.salesPipeCustomPipelineLabel') }}</template>
             </p>
           </div>
@@ -257,6 +257,12 @@ import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
 
 const { t } = useI18n();
+
+function stageCountLabel(count) {
+  return count === 1
+    ? t('settings.salesPipeStageCountOne', { count })
+    : t('settings.salesPipeStageCountOther', { count });
+}
 const authStore = useAuthStore();
 const loading = ref(true);
 const error = ref('');

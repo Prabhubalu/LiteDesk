@@ -9,9 +9,13 @@
     "description": "Toggle app participation error with retry hint"
   },
   "coreModDetailPlatformOwnedBadge": { "message": "Platform-Owned", "description": "Platform-owned module badge" },
-  "coreModDetailSharedBy": {
-    "message": "Shared by {count, plural, one {# application} other {# applications}}",
-    "description": "Shared across applications badge"
+  "coreModDetailSharedByOne": {
+    "message": "Shared by {count} application",
+    "description": "Shared across applications badge (singular)"
+  },
+  "coreModDetailSharedByOther": {
+    "message": "Shared by {count} applications",
+    "description": "Shared across applications badge (plural)"
   },
   "coreModDetailAppsUsingTitle": { "message": "Apps Using This Module", "description": "Apps using module section title" },
   "coreModDetailApplicationsUsingTitle": {
@@ -20,9 +24,13 @@
   },
   "coreModDetailRequired": { "message": "Required", "description": "Required application badge" },
   "coreModDetailOptional": { "message": "Optional", "description": "Optional applications section" },
-  "coreModDetailApplicationCount": {
-    "message": "({count, plural, one {# application} other {# applications}})",
-    "description": "Application count in section header"
+  "coreModDetailApplicationCountOne": {
+    "message": "({count} application)",
+    "description": "Application count in section header (singular)"
+  },
+  "coreModDetailApplicationCountOther": {
+    "message": "({count} applications)",
+    "description": "Application count in section header (plural)"
   },
   "coreModDetailAppRequiredLock": {
     "message": "This application requires this module and cannot be disabled",

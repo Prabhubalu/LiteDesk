@@ -111,7 +111,58 @@
               {{ preset.label }}
             </button>
           </div>
-          <div class="grid grid-cols-2 gap-3">
+
+          <div v-if="periodPreset === 'month'" class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">{{ t('performance.periodYearLabel') }}</label>
+              <select
+                v-model.number="periodYear"
+                class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 px-3 py-2 text-sm"
+                @change="syncPeriodFromSelection"
+              >
+                <option v-for="y in periodYearOptions" :key="y" :value="y">{{ y }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">{{ t('performance.periodMonthLabel') }}</label>
+              <select
+                v-model.number="periodMonth"
+                class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 px-3 py-2 text-sm"
+                @change="syncPeriodFromSelection"
+              >
+                <option v-for="(label, idx) in monthLabels" :key="idx" :value="idx">{{ label }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div v-else-if="periodPreset === 'quarter'" class="space-y-3">
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">{{ t('performance.periodYearLabel') }}</label>
+              <select
+                v-model.number="periodYear"
+                class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 px-3 py-2 text-sm"
+                @change="syncPeriodFromSelection"
+              >
+                <option v-for="y in periodYearOptions" :key="y" :value="y">{{ y }}</option>
+              </select>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <button
+                v-for="q in 4"
+                :key="q"
+                type="button"
+                class="rounded-lg border px-3 py-2.5 text-sm font-semibold transition-colors"
+                :class="selectedQuarter === q
+                  ? 'border-indigo-600 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-200'
+                  : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-indigo-400'"
+                @click="selectQuarter(q)"
+              >
+                {{ t('performance.periodQuarterOption', { quarter: q }) }}
+              </button>
+            </div>
+          </div>
+
+          <div v-else class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-medium text-gray-500 mb-1">{{ t('performance.periodStartLabel') }}</label>
               <input v-model="form.periodStart" type="date" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 px-3 py-2 text-sm" />
@@ -121,6 +172,13 @@
               <input v-model="form.periodEnd" type="date" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 px-3 py-2 text-sm" />
             </div>
           </div>
+
+          <p
+            v-if="periodPreset !== 'custom' && form.periodStart && form.periodEnd"
+            class="rounded-lg bg-gray-50 dark:bg-gray-900/50 px-3 py-2 text-sm text-gray-600 dark:text-gray-400"
+          >
+            {{ t('performance.periodRangeSummary', { range: formatPeriodRange(form.periodStart, form.periodEnd) }) }}
+          </p>
         </div>
 
         <!-- Distribution -->
@@ -141,12 +199,108 @@
         </div>
 
         <!-- Assign -->
-        <div v-else-if="step === 6" class="rounded-xl border border-gray-200 dark:border-gray-600 p-4 text-sm text-gray-600 dark:text-gray-400">
-          {{ t('performance.wizardStepAssignHint') }}
+        <div v-else-if="step === 6" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('performance.ownerLabel') }}</label>
+            <select
+              v-model="ownerId"
+              class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 px-3 py-2.5 text-sm"
+              :disabled="loadingUsers"
+            >
+              <option value="">{{ t('performance.ownerSelectPlaceholder') }}</option>
+              <option v-for="u in orgUsers" :key="u._id" :value="String(u._id)">
+                {{ userDisplayName(u) }}{{ String(u._id) === String(authStore.user?._id) ? ` (${t('performance.ownerMeSuffix')})` : '' }}
+              </option>
+            </select>
+          </div>
+          <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('performance.wizardStepAssignHint') }}</p>
+        </div>
+
+        <!-- Quotas -->
+        <div v-else-if="step === 7" class="space-y-4">
+          <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('performance.quotasSoloHint') }}</p>
+          <div class="space-y-3">
+            <div
+              v-for="(row, idx) in quotaRows"
+              :key="row.userId"
+              class="rounded-xl border border-gray-200 dark:border-gray-600 p-4 space-y-3"
+            >
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ userDisplayName(usersById[row.userId]) }}</span>
+                <button
+                  v-if="quotaRows.length > 1"
+                  type="button"
+                  class="text-xs text-red-600 hover:text-red-500"
+                  @click="removeQuotaRow(idx)"
+                >
+                  {{ t('actions.remove') }}
+                </button>
+              </div>
+              <div v-if="form.distributionType === 'weighted'" class="max-w-xs">
+                <label class="block text-xs font-medium text-gray-500 mb-1">{{ t('performance.quotasWeightLabel') }}</label>
+                <input
+                  v-model.number="row.weight"
+                  type="number"
+                  min="0.1"
+                  step="0.1"
+                  class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 px-3 py-2 text-sm tabular-nums"
+                />
+              </div>
+              <div v-else-if="form.distributionType === 'manual'" class="max-w-xs">
+                <label class="block text-xs font-medium text-gray-500 mb-1">{{ t('performance.quotasAmountLabel') }}</label>
+                <input
+                  v-model.number="row.allocatedValue"
+                  type="number"
+                  min="0"
+                  class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 px-3 py-2 text-sm tabular-nums"
+                />
+              </div>
+              <div v-else-if="form.distributionType === 'capacity'" class="max-w-xs">
+                <label class="block text-xs font-medium text-gray-500 mb-1">{{ t('performance.quotasCapacityLabel') }}</label>
+                <input
+                  v-model.number="row.capacity"
+                  type="number"
+                  min="0"
+                  class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 px-3 py-2 text-sm tabular-nums"
+                />
+              </div>
+              <p v-else-if="form.distributionType === 'equal'" class="text-sm text-gray-600 dark:text-gray-400 tabular-nums">
+                {{ formatTargetValue(quotaPreviewForRow(row), form.metricKind) }}
+              </p>
+            </div>
+          </div>
+          <div v-if="availableQuotaUsers.length" class="flex flex-wrap gap-2">
+            <select
+              v-model="quotaUserToAdd"
+              class="flex-1 min-w-[12rem] rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 px-3 py-2 text-sm"
+            >
+              <option value="">{{ t('performance.quotasSelectMember') }}</option>
+              <option v-for="u in availableQuotaUsers" :key="u._id" :value="u._id">
+                {{ userDisplayName(u) }}
+              </option>
+            </select>
+            <button
+              type="button"
+              class="rounded-lg border border-indigo-600 px-4 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 disabled:opacity-40"
+              :disabled="!quotaUserToAdd"
+              @click="addQuotaMember"
+            >
+              {{ t('performance.quotasAddMember') }}
+            </button>
+          </div>
+          <p
+            v-if="form.distributionType === 'equal' && quotaRows.length"
+            class="text-sm text-gray-600 dark:text-gray-400"
+          >
+            {{ t('performance.quotasPreviewEqual', {
+              amount: formatTargetValue(quotaPreviewForRow(), form.metricKind),
+              count: quotaRows.length,
+            }) }}
+          </p>
         </div>
 
         <!-- Thresholds -->
-        <div v-else-if="step === 7" class="space-y-2">
+        <div v-else-if="step === 8" class="space-y-2">
           <label
             v-for="th in thresholdOptions"
             :key="th.percent"
@@ -158,7 +312,7 @@
         </div>
 
         <!-- Forecast -->
-        <div v-else-if="step === 8">
+        <div v-else-if="step === 9">
           <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-gray-200 dark:border-gray-600 p-4">
             <input v-model="form.forecastRules.enabled" type="checkbox" class="mt-0.5 rounded border-gray-300 text-indigo-600" />
             <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('performance.forecastEnable') }}</span>
@@ -179,6 +333,14 @@
             <div class="flex justify-between py-3 gap-4">
               <dt class="text-gray-500">{{ t('performance.periodLabel') }}</dt>
               <dd class="text-right text-gray-900 dark:text-white">{{ formatPeriodRange(form.periodStart, form.periodEnd) }}</dd>
+            </div>
+            <div class="flex justify-between py-3 gap-4">
+              <dt class="text-gray-500">{{ t('performance.reviewOwner') }}</dt>
+              <dd class="text-right text-gray-900 dark:text-white">{{ userDisplayName(usersById[ownerId]) || '—' }}</dd>
+            </div>
+            <div class="flex justify-between py-3 gap-4">
+              <dt class="text-gray-500">{{ t('performance.reviewTeamSize') }}</dt>
+              <dd class="text-right text-gray-900 dark:text-white">{{ quotaRows.length }}</dd>
             </div>
             <div class="flex justify-between py-3 gap-4">
               <dt class="text-gray-500">{{ t('performance.wizardStepModules') }}</dt>
@@ -238,7 +400,15 @@ import { useI18n } from 'vue-i18n';
 import { ArrowLeftIcon } from '@heroicons/vue/24/outline';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
-import { APP_LABELS, MODULE_LABELS, formatPeriodRange } from '@/utils/targetDisplayUtils';
+import {
+  APP_LABELS,
+  MODULE_LABELS,
+  formatPeriodRange,
+  formatTargetValue,
+  getMonthRange,
+  getQuarterRange,
+  currentCalendarQuarter,
+} from '@/utils/targetDisplayUtils';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -252,6 +422,7 @@ const stepItems = computed(() => [
   { id: 'period', label: t('performance.wizardStepPeriod'), hint: t('performance.wizardStepPeriodHint') },
   { id: 'distribution', label: t('performance.wizardStepDistribution'), hint: t('performance.wizardStepDistributionHint') },
   { id: 'assign', label: t('performance.wizardStepAssign'), hint: t('performance.wizardStepAssignHint') },
+  { id: 'quotas', label: t('performance.wizardStepQuotas'), hint: t('performance.wizardStepQuotasHint') },
   { id: 'thresholds', label: t('performance.wizardStepThresholds'), hint: t('performance.wizardStepThresholdsHint') },
   { id: 'forecast', label: t('performance.wizardStepForecast'), hint: t('performance.wizardStepForecastHint') },
   { id: 'review', label: t('performance.wizardStepReview'), hint: t('performance.wizardStepReviewHint') },
@@ -284,6 +455,14 @@ const error = ref(null);
 const thresholdPercents = ref([80, 100]);
 const selectedModuleKeys = ref([]);
 const periodPreset = ref('quarter');
+const periodYear = ref(new Date().getFullYear());
+const periodMonth = ref(new Date().getMonth());
+const selectedQuarter = ref(currentCalendarQuarter());
+const ownerId = ref('');
+const orgUsers = ref([]);
+const loadingUsers = ref(false);
+const quotaRows = ref([]);
+const quotaUserToAdd = ref('');
 
 const form = ref({
   name: '',
@@ -293,7 +472,7 @@ const form = ref({
   distributionType: 'equal',
   periodStart: '',
   periodEnd: '',
-  forecastRules: { enabled: false, includePipeline: true },
+  forecastRules: { enabled: false, includePipeline: true, historicalWeight: 1 },
 });
 
 const suggestedModules = computed(() => {
@@ -301,10 +480,35 @@ const suggestedModules = computed(() => {
   return type?.defaultSourceModules || [];
 });
 
+const periodYearOptions = computed(() => {
+  const y = new Date().getFullYear();
+  return [y - 1, y, y + 1];
+});
+
+const monthLabels = computed(() => {
+  const fmt = new Intl.DateTimeFormat(undefined, { month: 'long' });
+  return Array.from({ length: 12 }, (_, i) => fmt.format(new Date(2000, i, 1)));
+});
+
+const usersById = computed(() => {
+  const map = {};
+  for (const u of orgUsers.value) {
+    if (u?._id) map[u._id] = u;
+  }
+  return map;
+});
+
+const availableQuotaUsers = computed(() => {
+  const assigned = new Set(quotaRows.value.map((r) => r.userId));
+  return orgUsers.value.filter((u) => u._id && !assigned.has(u._id));
+});
+
 const canContinue = computed(() => {
   if (step.value === 1) return selectedModuleKeys.value.length > 0;
   if (step.value === 3) return form.value.name?.trim() && form.value.targetValue > 0;
   if (step.value === 4) return form.value.periodStart && form.value.periodEnd;
+  if (step.value === 6) return Boolean(ownerId.value);
+  if (step.value === 7) return quotaRows.value.length > 0;
   return true;
 });
 
@@ -361,16 +565,103 @@ function applyPeriodPreset(id) {
   periodPreset.value = id;
   const now = new Date();
   if (id === 'month') {
-    const start = new Date(now.getFullYear(), now.getMonth(), 1);
-    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    form.value.periodStart = start.toISOString().slice(0, 10);
-    form.value.periodEnd = end.toISOString().slice(0, 10);
+    periodYear.value = now.getFullYear();
+    periodMonth.value = now.getMonth();
+    syncPeriodFromSelection();
   } else if (id === 'quarter') {
-    const q = Math.floor(now.getMonth() / 3);
-    const start = new Date(now.getFullYear(), q * 3, 1);
-    const end = new Date(now.getFullYear(), q * 3 + 3, 0);
-    form.value.periodStart = start.toISOString().slice(0, 10);
-    form.value.periodEnd = end.toISOString().slice(0, 10);
+    periodYear.value = now.getFullYear();
+    selectedQuarter.value = currentCalendarQuarter();
+    syncPeriodFromSelection();
+  }
+}
+
+function syncPeriodFromSelection() {
+  if (periodPreset.value === 'month') {
+    const { start, end } = getMonthRange(periodYear.value, periodMonth.value);
+    form.value.periodStart = start;
+    form.value.periodEnd = end;
+  } else if (periodPreset.value === 'quarter') {
+    const { start, end } = getQuarterRange(periodYear.value, selectedQuarter.value);
+    form.value.periodStart = start;
+    form.value.periodEnd = end;
+  }
+}
+
+function selectQuarter(q) {
+  selectedQuarter.value = q;
+  syncPeriodFromSelection();
+}
+
+function userDisplayName(user) {
+  if (!user) return '—';
+  const name = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
+  return name || user.email || user._id;
+}
+
+function defaultQuotaRow(userId) {
+  return {
+    userId,
+    weight: 1,
+    allocatedValue: form.value.targetValue,
+    capacity: form.value.targetValue,
+  };
+}
+
+function ensureOwnerInQuotas() {
+  if (!ownerId.value) return;
+  const owner = String(ownerId.value);
+  if (!quotaRows.value.some((r) => String(r.userId) === owner)) {
+    quotaRows.value = [defaultQuotaRow(owner), ...quotaRows.value];
+  }
+}
+
+function addQuotaMember() {
+  if (!quotaUserToAdd.value) return;
+  quotaRows.value = [...quotaRows.value, defaultQuotaRow(quotaUserToAdd.value)];
+  quotaUserToAdd.value = '';
+}
+
+function removeQuotaRow(idx) {
+  quotaRows.value = quotaRows.value.filter((_, i) => i !== idx);
+}
+
+function quotaPreviewForRow(row) {
+  const total = Number(form.value.targetValue) || 0;
+  const n = quotaRows.value.length || 1;
+  if (form.value.distributionType === 'equal') {
+    return total / n;
+  }
+  if (form.value.distributionType === 'weighted' && row) {
+    const sum = quotaRows.value.reduce((s, r) => s + (r.weight || 1), 0) || 1;
+    return (total * (row.weight || 1)) / sum;
+  }
+  if (form.value.distributionType === 'manual' && row) {
+    return row.allocatedValue ?? 0;
+  }
+  if (form.value.distributionType === 'capacity' && row) {
+    return row.capacity ?? 0;
+  }
+  return total / n;
+}
+
+function buildAssigneesPayload() {
+  return quotaRows.value.map((row) => ({
+    userId: row.userId,
+    weight: row.weight ?? 1,
+    allocatedValue: row.allocatedValue,
+    capacity: row.capacity,
+  }));
+}
+
+async function loadOrgUsers() {
+  loadingUsers.value = true;
+  try {
+    const res = await apiClient.get('/users/list');
+    orgUsers.value = res?.success && Array.isArray(res.data) ? res.data : [];
+  } catch {
+    orgUsers.value = authStore.user ? [authStore.user] : [];
+  } finally {
+    loadingUsers.value = false;
   }
 }
 
@@ -379,7 +670,7 @@ async function nextStep() {
   if (step.value === 4) {
     try {
       const res = await apiClient.post('/targets/conflicts/check', {
-        ownerId: authStore.user?._id,
+        ownerId: ownerId.value || authStore.user?._id,
         periodStart: form.value.periodStart,
         periodEnd: form.value.periodEnd,
         sourceModules: parseModules(),
@@ -388,6 +679,9 @@ async function nextStep() {
     } catch {
       conflicts.value = [];
     }
+  }
+  if (step.value === 6) {
+    ensureOwnerInQuotas();
   }
   step.value += 1;
 }
@@ -399,7 +693,7 @@ async function submit() {
     const thresholds = thresholdPercents.value.map((percent) => ({ percent, notify: true }));
     const createRes = await apiClient.post('/targets', {
       ...form.value,
-      ownerId: authStore.user?._id,
+      ownerId: ownerId.value || authStore.user?._id,
       sourceModules: parseModules(),
       thresholds,
       periodStart: new Date(form.value.periodStart).toISOString(),
@@ -408,6 +702,7 @@ async function submit() {
     const id = createRes?.data?._id;
     await apiClient.post(`/targets/${id}/activate`, {
       overrideConflicts: conflicts.value.length > 0,
+      assignees: buildAssigneesPayload(),
     });
     router.replace(`/targets/${id}`);
   } catch (e) {
@@ -421,8 +716,22 @@ function cancel() {
   router.push('/settings?tab=performance&view=targets');
 }
 
+watch(ownerId, (id) => {
+  if (!id) return;
+  const owner = String(id);
+  const existing = quotaRows.value.find((r) => String(r.userId) === owner);
+  if (!existing && quotaRows.value.length === 0) {
+    quotaRows.value = [defaultQuotaRow(owner)];
+  }
+});
+
 onMounted(async () => {
+  ownerId.value = authStore.user?._id ? String(authStore.user._id) : '';
+  await loadOrgUsers();
   applyPeriodPreset('quarter');
+  if (ownerId.value) {
+    quotaRows.value = [defaultQuotaRow(ownerId.value)];
+  }
   const res = await apiClient.get('/targets/types');
   targetTypes.value = res?.data || [];
   if (targetTypes.value.length) {

@@ -3767,10 +3767,6 @@
     "message": "Drag to reorder",
     "description": "Drag handle tooltip"
   },
-  "salesPipeStageCount": {
-    "message": "{count, plural, one {# stage} other {# stages}}",
-    "description": "Stage count in pipeline list or detail"
-  },
   "salesPipeDefaultBadge": {
     "message": "Default",
     "description": "Default pipeline badge and radio label"
@@ -4979,10 +4975,6 @@
     "message": "Search and select values...",
     "description": "Dependency multi-select placeholder"
   },
-  "modFieldsOptionCount": {
-    "message": "{count, plural, one {# option} other {# options}}",
-    "description": "Dependency option count"
-  },
   "modFieldsSelectAll": {
     "message": "Select All",
     "description": "Select all options"
@@ -5644,12 +5636,16 @@
     "description": "Other tabs section"
   },
   "modFieldsOrgsStatusTypesDesc": {
-    "message": "Configure organization types and status picklists. These are app-scoped semantics that control workflow states.",
-    "description": "Other tabs section"
+    "message": "Choose which organization types and status values are active for your tenant. Add, rename, reorder, and set colors under Field configurations.",
+    "description": "Organizations Status and Types tab intro"
   },
   "modFieldsOrgsStatusTypesNote": {
-    "message": "Organization types and status values are app-scoped. Changes here affect how organizations are classified and tracked within specific applications (Sales, Helpdesk, etc.).",
-    "description": "Other tabs section"
+    "message": "This tab controls availability only (on/off). The master list of values lives in Field configurations (Types, Customer Status, Partner Status, Vendor Status).",
+    "description": "Organizations Status and Types policy note"
+  },
+  "modFieldsNoStatusValuesCatalog": {
+    "message": "No status values defined yet. Add them in Field configurations first, then return here to enable or disable them.",
+    "description": "Empty status list when catalog is empty"
   },
   "modFieldsOrgTypesTitle": {
     "message": "Organization Types",
@@ -5670,6 +5666,10 @@
   "modFieldsOrgTypesFootnote": {
     "message": "Organization types are business classifications. Disabling a type hides it from selection but does not affect existing organizations.",
     "description": "Other tabs section"
+  },
+  "modFieldsStatusTypesColorHint": {
+    "message": "Colors match the Types and status field options configured under the Fields tab.",
+    "description": "Status and Types tab color hint"
   },
   "modFieldsCustomerStatus": {
     "message": "Customer Status",
@@ -5692,16 +5692,16 @@
     "description": "Other tabs section"
   },
   "modFieldsStatusForCustomer": {
-    "message": "Status values for organizations with type \"Customer\"",
-    "description": "Other tabs section"
+    "message": "Enable or disable status values for Customer organizations. Edit the value list under Field configurations.",
+    "description": "Customer status policy section"
   },
   "modFieldsStatusForPartner": {
-    "message": "Status values for organizations with type \"Partner\"",
-    "description": "Other tabs section"
+    "message": "Enable or disable status values for Partner organizations. Edit the value list under Field configurations.",
+    "description": "Partner status policy section"
   },
   "modFieldsStatusForVendor": {
-    "message": "Status values for organizations with type \"Vendor\"",
-    "description": "Other tabs section"
+    "message": "Enable or disable status values for Vendor organizations. Edit the value list under Field configurations.",
+    "description": "Vendor status policy section"
   },
   "modFieldsNoStatusValues": {
     "message": "No status values configured. Click \"Add Value\" to create one.",
@@ -6109,10 +6109,6 @@
   },
   "modFieldsSelectPipeline": {
     "message": "Select a pipeline",
-    "description": "Other tabs section"
-  },
-  "modFieldsStageCount": {
-    "message": "{count, plural, one {# stage} other {# stages}}",
     "description": "Other tabs section"
   },
   "modFieldsDefaultPipeline": {
@@ -6935,10 +6931,6 @@
     "message": "Days Remaining",
     "description": "Days remaining label"
   },
-  "settingsSubDetailDaysCount": {
-    "message": "{count, plural, one {# day} other {# days}}",
-    "description": "Days remaining count"
-  },
   "settingsSubDetailAutoRenew": {
     "message": "Auto Renew",
     "description": "Auto renew label"
@@ -7078,10 +7070,6 @@
   "settingsAppDetailOptionalDeps": {
     "message": "Optional Dependencies",
     "description": "Optional dependencies heading"
-  },
-  "settingsAppDetailModuleCount": {
-    "message": "({count, plural, one {# module} other {# modules}})",
-    "description": "Dependency module count"
   },
   "settingsAppDetailViewDetailsHint": {
     "message": "Read-only • View details →",
@@ -7395,10 +7383,6 @@
     "message": "No roles defined. Click \"Add Option\" to add values.",
     "description": "Empty role types list"
   },
-  "peopleTypesInUse": {
-    "message": "In use by {count, plural, one {# person} other {# people}}",
-    "description": "Role usage count on row"
-  },
   "peopleTypesFieldsWhenSelected": {
     "message": "Fields when this type is selected",
     "description": "Per-type participation fields section"
@@ -7450,10 +7434,6 @@
   "peopleTypesDeleteTitle": {
     "message": "Remove role?",
     "description": "Delete role confirm title"
-  },
-  "peopleTypesDeleteInUse": {
-    "message": "This role is used by {count, plural, one {# person} other {# people}}. Removing it from the list does not change existing records; they will keep their current role value until updated.",
-    "description": "Delete role confirm when in use"
   },
   "peopleTypesDeleteEmpty": {
     "message": "Remove this role from the list?",
@@ -7527,10 +7507,6 @@
     "message": "Platform-Owned",
     "description": "Platform-owned module badge"
   },
-  "coreModDetailSharedBy": {
-    "message": "Shared by {count, plural, one {# application} other {# applications}}",
-    "description": "Shared across applications badge"
-  },
   "coreModDetailAppsUsingTitle": {
     "message": "Apps Using This Module",
     "description": "Apps using module section title"
@@ -7546,10 +7522,6 @@
   "coreModDetailOptional": {
     "message": "Optional",
     "description": "Optional applications section"
-  },
-  "coreModDetailApplicationCount": {
-    "message": "({count, plural, one {# application} other {# applications}})",
-    "description": "Application count in section header"
   },
   "coreModDetailAppRequiredLock": {
     "message": "This application requires this module and cannot be disabled",
@@ -9074,5 +9046,77 @@
   "settingsBhHolidayCalendarOptionOther": {
     "message": "{name} ({count} holidays)",
     "description": "Holiday calendar select option plural"
+  },
+  "coreModDetailSharedByOne": {
+    "message": "Shared by {count} application",
+    "description": "Shared across applications badge (singular)"
+  },
+  "coreModDetailSharedByOther": {
+    "message": "Shared by {count} applications",
+    "description": "Shared across applications badge (plural)"
+  },
+  "coreModDetailApplicationCountOne": {
+    "message": "({count} application)",
+    "description": "Application count in section header (singular)"
+  },
+  "coreModDetailApplicationCountOther": {
+    "message": "({count} applications)",
+    "description": "Application count in section header (plural)"
+  },
+  "salesPipeStageCountOne": {
+    "message": "{count} stage",
+    "description": "Stage count in pipeline list or detail (singular)"
+  },
+  "salesPipeStageCountOther": {
+    "message": "{count} stages",
+    "description": "Stage count in pipeline list or detail (plural)"
+  },
+  "modFieldsOptionCountOne": {
+    "message": "{count} option",
+    "description": "Dependency option count (singular)"
+  },
+  "modFieldsOptionCountOther": {
+    "message": "{count} options",
+    "description": "Dependency option count (plural)"
+  },
+  "modFieldsStageCountOne": {
+    "message": "{count} stage",
+    "description": "Other tabs section (singular)"
+  },
+  "modFieldsStageCountOther": {
+    "message": "{count} stages",
+    "description": "Other tabs section (plural)"
+  },
+  "settingsSubDetailDaysCountOne": {
+    "message": "{count} day",
+    "description": "Days remaining count (singular)"
+  },
+  "settingsSubDetailDaysCountOther": {
+    "message": "{count} days",
+    "description": "Days remaining count (plural)"
+  },
+  "settingsAppDetailModuleCountOne": {
+    "message": "({count} module)",
+    "description": "Dependency module count (singular)"
+  },
+  "settingsAppDetailModuleCountOther": {
+    "message": "({count} modules)",
+    "description": "Dependency module count (plural)"
+  },
+  "peopleTypesInUseOne": {
+    "message": "In use by {count} person",
+    "description": "Role usage count on row (singular)"
+  },
+  "peopleTypesInUseOther": {
+    "message": "In use by {count} people",
+    "description": "Role usage count on row (plural)"
+  },
+  "peopleTypesDeleteInUseOne": {
+    "message": "This role is used by {count} person. Removing it from the list does not change existing records; they will keep their current role value until updated.",
+    "description": "Delete role confirm when in use (singular)"
+  },
+  "peopleTypesDeleteInUseOther": {
+    "message": "This role is used by {count} people. Removing it from the list does not change existing records; they will keep their current role value until updated.",
+    "description": "Delete role confirm when in use (plural)"
   }
 }

@@ -6,7 +6,7 @@ const DEFAULT_RULE_TEMPLATES = {
   'SALES:deals': {
     metricField: 'amount',
     metricKind: 'currency',
-    filters: [{ field: 'stage', operator: 'equals', value: 'Won' }],
+    filters: [{ field: 'status', operator: 'equals', value: 'Won' }],
     attribution: { type: 'owner', field: 'ownerId' }
   },
   'HELPDESK:cases': {
@@ -18,7 +18,7 @@ const DEFAULT_RULE_TEMPLATES = {
   'PLATFORM:tasks': {
     metricField: null,
     metricKind: 'count',
-    filters: [{ field: 'status', operator: 'equals', value: 'Completed' }],
+    filters: [{ field: 'status', operator: 'equals', value: 'completed' }],
     attribution: { type: 'owner', field: 'assignedTo' }
   }
 };
