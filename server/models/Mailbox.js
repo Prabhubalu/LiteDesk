@@ -81,7 +81,19 @@ const MailboxSchema = new Schema(
       default: 'none'
     },
     smtpOutboundEncryptedAppPassword: { type: String, default: '' },
-    smtpOutboundVerifiedAt: { type: Date, default: null }
+    smtpOutboundVerifiedAt: { type: Date, default: null },
+    /** Arivu Inbound Parser (platform-provisioned; tenants see routingAddress only). */
+    parserTenantId: { type: String, trim: true, default: '' },
+    parserMailboxId: { type: String, trim: true, default: '' },
+    routingAddress: { type: String, trim: true, lowercase: true, default: '' },
+    parserForwardingHint: { type: String, trim: true, default: '', maxlength: 500 },
+    parserProvisionedAt: { type: Date, default: null },
+    parserProvisioningError: { type: String, trim: true, default: '', maxlength: 500 },
+    parserProvisionStatus: {
+      type: String,
+      enum: ['pending', 'provisioned', 'failed', 'skipped'],
+      default: 'pending'
+    }
   },
   { timestamps: true }
 );

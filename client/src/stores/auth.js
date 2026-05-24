@@ -246,6 +246,7 @@ export const useAuthStore = defineStore('auth', {
                 email: userData.email,
                 role: userData.role,
                 isOwner: userData.isOwner,
+                isPlatformAdmin: userData.isPlatformAdmin === true,
                 permissions: userData.permissions,
                 token: userData.token,
                 appAccess: userData.appAccess,

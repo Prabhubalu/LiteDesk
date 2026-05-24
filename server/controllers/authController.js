@@ -541,6 +541,7 @@ exports.loginUser = async (req, res) => {
             email: orgUser.email,
             role: orgUser.role,
             isOwner: orgUser.isOwner,
+            isPlatformAdmin: orgUser.isPlatformAdmin === true,
             permissions: orgUser.permissions,
             allowedApps: allowedApps, // Include app access
             appAccess: orgUser.appAccess,

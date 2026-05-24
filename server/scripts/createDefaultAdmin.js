@@ -56,9 +56,18 @@ async function createDefaultAdmin() {
         });
 
         if (existingAdmin && organization) {
+            let upgraded = false;
+            if (!existingAdmin.isPlatformAdmin) {
+                existingAdmin.isPlatformAdmin = true;
+                await existingAdmin.save();
+                upgraded = true;
+            }
             console.log('⚠️  Default admin and organization already exist — nothing to create.');
             console.log(`   Email: ${DEFAULT_ADMIN.email}`);
             console.log(`   Organization: ${organization.name} (${organization._id})`);
+            if (upgraded) {
+                console.log('✅ Set isPlatformAdmin=true on existing default admin');
+            }
             await ensureDefaultCommunicationSettingsForOrganization(organization._id);
             await mongoose.connection.close();
             return;
