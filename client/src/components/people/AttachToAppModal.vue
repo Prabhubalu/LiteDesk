@@ -661,9 +661,7 @@ const formatAppName = (appKey: string): string => {
 };
 
 const getFieldLabel = (fieldName: string): string => {
-  const metadata = getFieldMetadata(fieldName);
-  const apiLabel = metadata?.label || metadata?.displayName;
-  return resolveFieldLabel('people', { key: fieldName, label: apiLabel }, t, te);
+  return resolveFieldLabel('people', { key: fieldName }, t, te);
 };
 
 // Check if field is required

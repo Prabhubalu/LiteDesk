@@ -43,7 +43,7 @@
       <div v-if="searchSurface" class="px-[0.667rem] pt-[0.667rem] pb-[0.667rem]">
       <button
         type="button"
-        @click="handleNavClick(searchSurface.route, searchSurface.label, $event, { icon: searchSurface.icon })"
+        @click="handleNavClick(searchSurface.route, searchSurface, $event, { icon: searchSurface.icon })"
         class="w-full h-[2.333rem] border border-[#EAEEF4] dark:border-gray-700 rounded-[0.5rem] flex items-center justify-start transition-colors hover:bg-[#F8F9FB] dark:hover:bg-gray-800 bg-white dark:bg-gray-900 px-[0.583rem] py-[0.5rem]"
         :class="collapsed ? '' : 'gap-[0.583rem]'"
         :title="collapsed ? t('actions.search') : ''"

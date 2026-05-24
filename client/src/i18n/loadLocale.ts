@@ -45,8 +45,11 @@ async function loadNamespace(language: string, namespace: SharedNamespace): Prom
     throw new Error(`Missing locale catalog: ${primaryPath}`);
   }
 
-  const mod = await loader();
-  const file = ('default' in mod ? (mod as { default: CatalogFile }).default : mod) as CatalogFile;
+  const mod: unknown = await loader();
+  const file: CatalogFile =
+    mod !== null && typeof mod === 'object' && 'default' in mod
+      ? (mod as { default: CatalogFile }).default
+      : (mod as CatalogFile);
   const messages = flattenCatalog(file, namespace).messages;
 
   if (

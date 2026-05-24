@@ -83,7 +83,7 @@ export function validateKeyNaming(fullKey: string): string[] {
   const segments = fullKey.split('.');
   const leaf = segments[segments.length - 1];
 
-  if (FORBIDDEN_LEAF_SEGMENTS.has(leaf)) {
+  if (leaf && FORBIDDEN_LEAF_SEGMENTS.has(leaf)) {
     issues.push(`Key "${fullKey}" uses forbidden generic leaf segment "${leaf}".`);
   }
 
@@ -118,17 +118,19 @@ export function toTranslationPlatformExport(
 ): Record<string, CatalogEntry> {
   const out: Record<string, CatalogEntry> = {};
   for (const key of Object.keys(messages).sort()) {
+    const message = messages[key];
+    if (message === undefined) continue;
     const meta = metadata[key];
     if (meta?.description || meta?.deprecated) {
       out[key] = {
-        message: messages[key],
+        message,
         description: meta.description,
         deprecated: meta.deprecated,
         deprecatedBy: meta.deprecatedBy,
         context: meta.context,
       };
     } else {
-      out[key] = messages[key];
+      out[key] = message;
     }
   }
   return out;
