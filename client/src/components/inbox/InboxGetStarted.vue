@@ -5,10 +5,15 @@
     >
       <div class="min-w-0">
         <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-3xl">
-          Get started with LiteDesk
+          Get started with Arivu Systems
         </h1>
         <p class="mt-2 max-w-lg text-sm text-gray-600 dark:text-gray-400">
-          Connect your work inbox to send, receive, and manage email alongside your CRM records.
+          <template v-if="inboundParserMode">
+            Set up email forwarding to your unique Arivu address, or join a shared mailbox your team already created.
+          </template>
+          <template v-else>
+            Connect your work inbox to send, receive, and manage email alongside your CRM records.
+          </template>
         </p>
 
         <ul class="mt-8 space-y-3" role="list">
@@ -47,7 +52,7 @@
         </ul>
 
         <p
-          v-if="!gmailOAuthReady"
+          v-if="!inboundParserMode && !gmailOAuthReady"
           class="mt-6 max-w-lg rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
         >
           Gmail isn’t enabled on this server yet. Ask your administrator to add
@@ -109,6 +114,7 @@ import {
 
 defineProps({
   gmailOAuthReady: { type: Boolean, default: true },
+  inboundParserMode: { type: Boolean, default: false },
   connectLoading: { type: Boolean, default: false }
 });
 
@@ -118,7 +124,7 @@ const steps = [
   {
     id: 'mailbox',
     title: 'Set up your mailbox',
-    subtitle: 'Bring all your emails into one place.',
+    subtitle: 'Get a forwarding address for Gmail, Outlook, or any provider.',
     actionLabel: 'Connect',
     primary: true,
     disabled: false,

@@ -20,6 +20,7 @@ const {
   getOrganizationGmailSmtpRelay
 } = require('../../../services/mailboxGmailSmtpService');
 const { getCommunicationConfigForOrganization } = require('../config/communicationConfigService');
+const { isGmailIntegrationEnabled } = require('../../../config/emailFeatureFlags');
 const emailProviderGateway = require('../providers/emailProviderGateway');
 const gmailSendProvider = require('../providers/gmailSendProvider');
 const { uploadsDir } = require('../../../middleware/uploadMiddleware');
@@ -128,13 +129,15 @@ async function canSendEmailNow(context = {}) {
   }
 
   const smtpOk = await emailProviderGateway.isConfigured({ organizationId });
-  const gmailSmtpRelay = await getOrganizationGmailSmtpRelay(organizationId);
+  const gmailEnabled = isGmailIntegrationEnabled();
+  const gmailSmtpRelay = gmailEnabled ? await getOrganizationGmailSmtpRelay(organizationId) : null;
   const user =
     userInput || (userId ? await User.findById(userId).select('_id role isOwner').lean() : null);
-  let gmailCount = user
-    ? await countSendableGmailMailboxesForUser(organizationId, user)
-    : 0;
-  if (user && gmailSmtpRelay) {
+  let gmailCount = 0;
+  if (gmailEnabled && user) {
+    gmailCount = await countSendableGmailMailboxesForUser(organizationId, user);
+  }
+  if (gmailEnabled && user && gmailSmtpRelay) {
     const smtpMailboxes = await Mailbox.find({
       organizationId,
       smtpOutboundEncryptedAppPassword: { $exists: true, $nin: ['', null] }
@@ -266,7 +269,7 @@ async function sendOutboundCommunication(doc) {
     mailboxLean = await findMailboxForOutbound(organizationId, doc.mailboxId);
   }
 
-  if (mailboxLean && isMailboxGmailSmtpReady(mailboxLean)) {
+  if (isGmailIntegrationEnabled() && mailboxLean && isMailboxGmailSmtpReady(mailboxLean)) {
     const replyTo = await buildReplyToForDoc(doc, { mailboxLean });
     const emailAttachments = await loadAttachmentsFromDoc(doc);
     const result = await sendViaMailboxGmailSmtp(doc, mailboxLean, {
@@ -285,7 +288,7 @@ async function sendOutboundCommunication(doc) {
     return result;
   }
 
-  if (mailboxLean && isGmailMailboxReady(mailboxLean)) {
+  if (isGmailIntegrationEnabled() && mailboxLean && isGmailMailboxReady(mailboxLean)) {
     const result = await sendViaGmail(doc, mailboxLean);
     if (result.success && doc.relatedTo?.moduleKey === 'workspace') {
       const { emitInboxUpdated } = require('../../../services/inboxRealtimeService');

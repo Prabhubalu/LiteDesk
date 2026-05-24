@@ -8,6 +8,8 @@ const { getMongoUris, connectMasterWithRetry, MASTER_DB } = require('./lib/mongo
 const { initSentryNode, installExpressSentryErrorHandler, flushSentry } = require('./lib/sentryNode');
 
 validateEnv();
+const { logEmailFeatureFlagsAtStartup } = require('./config/emailFeatureFlags');
+logEmailFeatureFlagsAtStartup();
 initSentryNode();
 
 const express = require('express');
@@ -118,6 +120,9 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+// Arivu Inbound Parser webhook (raw body for HMAC — must be before express.json)
+app.use('/api/webhooks/arivu', require('./routes/arivuInboundWebhookRoutes'));
 
 // Body Parsing
 app.use(express.json({ limit: '10mb' })); // Limit request size
@@ -281,6 +286,7 @@ app.use('/api/inbox', inboxRoutes);
 
 // Platform home snapshot (landing page)
 app.use('/api/platform', require('./routes/platformHomeRoutes'));
+app.use('/api/platform/inbound-parser', require('./routes/platformInboundParserRoutes'));
 
 // Portal Application Routes (App #2)
 app.use('/portal', portalRoutes);

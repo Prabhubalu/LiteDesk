@@ -558,6 +558,7 @@ const getTitleForPath = (path, params = {}) => {
     '/control': 'Control Plane',
     '/control/demo-requests': 'Demo Requests',
     '/control/instances': 'Instances',
+    '/control/inbound-parser': 'Inbound Parser',
     '/control/automation-rules': 'Automation Rules',
     '/control/processes': 'Processes',
     '/control/flows': 'Business Flows',

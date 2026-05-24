@@ -18,7 +18,7 @@
               Mailbox folders
             </h2>
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Choose which Gmail labels LiteDesk imports. Sync runs on a schedule and when you use Sync now.
+              Choose which Gmail labels Arivu imports. Sync runs on a schedule and when you use Sync now.
             </p>
           </div>
           <button

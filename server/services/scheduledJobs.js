@@ -4,6 +4,7 @@ const { tick: escalationTick } = require('./escalationResolver');
 const { purgeExpiredRetention } = require('./deletionService');
 const { processDueAssignmentJobs } = require('./assignmentSchedulingService');
 const { tickHelpdeskSlaNotifications } = require('./helpdeskSlaMonitorService');
+const { isGmailIntegrationEnabled } = require('../config/emailFeatureFlags');
 const { tickScheduledGmailInboxSync } = require('./gmailInboxSyncSchedulerService');
 const { tickSnoozeWakeNotifications } = require('./snoozeWakeNotificationSchedulerService');
 const { tickAppointmentReminders } = require('./appointmentReminderSchedulerService');
@@ -16,7 +17,8 @@ const ENABLE_ESCALATION_SCHEDULER = process.env.ENABLE_ESCALATION_SCHEDULER !== 
 const ENABLE_TRASH_RETENTION_SCHEDULER = process.env.ENABLE_TRASH_RETENTION_SCHEDULER !== 'false'; // Default: enabled
 const ENABLE_ASSIGNMENT_SCHEDULER = process.env.ENABLE_ASSIGNMENT_SCHEDULER !== 'false'; // Default: enabled (Helpdesk Step 7C)
 const ENABLE_HELPDESK_SLA_SCHEDULER = process.env.ENABLE_HELPDESK_SLA_SCHEDULER !== 'false'; // Default: enabled (Step 9)
-const ENABLE_GMAIL_INBOX_SYNC_SCHEDULER = process.env.ENABLE_GMAIL_INBOX_SYNC_SCHEDULER !== 'false'; // Default: enabled (Phase 5)
+const ENABLE_GMAIL_INBOX_SYNC_SCHEDULER =
+  isGmailIntegrationEnabled() && process.env.ENABLE_GMAIL_INBOX_SYNC_SCHEDULER !== 'false';
 const ENABLE_SNOOZE_WAKE_NOTIFICATION_SCHEDULER =
   process.env.ENABLE_SNOOZE_WAKE_NOTIFICATION_SCHEDULER !== 'false'; // Default: enabled (Phase 6)
 const ENABLE_APPOINTMENT_REMINDER_SCHEDULER =

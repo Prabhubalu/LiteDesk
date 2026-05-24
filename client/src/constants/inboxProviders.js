@@ -82,8 +82,12 @@ export function getInboxProvider(id) {
   return INBOX_PROVIDERS.find((p) => p.id === id) || null;
 }
 
-export function getAvailableInboxProviders() {
-  return INBOX_PROVIDERS.filter((p) => p.status === 'available');
+export function getAvailableInboxProviders(flags = {}) {
+  const available = INBOX_PROVIDERS.filter((p) => p.status === 'available');
+  if (flags.gmailIntegrationEnabled) {
+    return available;
+  }
+  return available.filter((p) => p.id !== 'google' && p.id !== 'google-smtp');
 }
 
 /**
@@ -98,6 +102,9 @@ export function isMailboxConnectedForProvider(mailbox, providerId) {
   }
   if (providerId === 'google-smtp') {
     return mailbox.gmailSmtpOutbound?.connected === true;
+  }
+  if (providerId === 'forwarding') {
+    return Boolean(String(mailbox.inboundParser?.routingAddress || '').trim());
   }
   return false;
 }

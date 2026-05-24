@@ -55,7 +55,7 @@
               to proceed if you trust this workspace.
             </p>
             <p class="mt-2 text-gray-600 dark:text-gray-400">
-              LiteDesk uses a read-only Gmail scope to import messages you already have access to.
+              Arivu Systems uses a read-only Gmail scope to import messages you already have access to.
             </p>
           </div>
         </div>
