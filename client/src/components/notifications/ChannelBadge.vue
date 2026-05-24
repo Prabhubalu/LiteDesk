@@ -35,6 +35,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { computed, h } from 'vue';
 
 defineEmits(['click']);
@@ -58,6 +59,8 @@ const props = defineProps({
     default: false
   }
 });
+
+const { t } = useI18n();
 
 const channelConfig = {
   inApp: {

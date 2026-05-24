@@ -4,12 +4,8 @@
       class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(280px,420px)] lg:items-center lg:gap-12"
     >
       <div class="min-w-0">
-        <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-3xl">
-          Get started with LiteDesk
-        </h1>
-        <p class="mt-2 max-w-lg text-sm text-gray-600 dark:text-gray-400">
-          Connect your work inbox to send, receive, and manage email alongside your CRM records.
-        </p>
+        <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-3xl">{{ t('inbox.inboxGetStartedGetStartedWithLitedesk') }}</h1>
+        <p class="mt-2 max-w-lg text-sm text-gray-600 dark:text-gray-400">{{ t('inbox.inboxGetStartedConnectYourWorkInboxToSend') }}</p>
 
         <ul class="mt-8 space-y-3" role="list">
           <li
@@ -40,7 +36,7 @@
               :disabled="step.disabled || (step.id === 'mailbox' && connectLoading)"
               @click="onStepAction(step.id)"
             >
-              <span v-if="step.id === 'mailbox' && connectLoading">Connecting…</span>
+              <span v-if="step.id === 'mailbox' && connectLoading">{{ t('inbox.inboxGetStartedConnecting') }}</span>
               <span v-else>{{ step.actionLabel }}</span>
             </button>
           </li>
@@ -49,11 +45,7 @@
         <p
           v-if="!gmailOAuthReady"
           class="mt-6 max-w-lg rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
-        >
-          Gmail isn’t enabled on this server yet. Ask your administrator to add
-          <code class="rounded bg-amber-100/80 px-1 font-mono text-[10px] dark:bg-amber-950/80">GOOGLE_GMAIL_*</code>
-          or open setup from the Connect button.
-        </p>
+        >{{ t('inbox.inboxGetStartedGmailIsntEnabledOnThisServer') }}<code class="rounded bg-amber-100/80 px-1 font-mono text-[10px] dark:bg-amber-950/80">GOOGLE_GMAIL_*</code>{{ t('inbox.inboxGetStartedOrOpenSetupFromTheConnect') }}</p>
       </div>
 
       <div
@@ -100,6 +92,8 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
   ChatBubbleLeftRightIcon,
   EnvelopeIcon,
@@ -112,46 +106,48 @@ defineProps({
   connectLoading: { type: Boolean, default: false }
 });
 
+const { t } = useI18n();
+
 const emit = defineEmits(['connect-mailbox', 'setup-group', 'coming-soon']);
 
-const steps = [
+const steps = computed(() => [
   {
     id: 'mailbox',
-    title: 'Set up your mailbox',
-    subtitle: 'Bring all your emails into one place.',
-    actionLabel: 'Connect',
+    title: t('inbox.inboxGetStartedStepMailboxTitle'),
+    subtitle: t('inbox.inboxGetStartedStepMailboxSubtitle'),
+    actionLabel: t('inbox.inboxGetStartedStepConnect'),
     primary: true,
     disabled: false,
     icon: EnvelopeIcon
   },
   {
     id: 'group',
-    title: 'Manage group mailboxes',
-    subtitle: 'Organize email with your team.',
-    actionLabel: 'Setup',
+    title: t('inbox.inboxGetStartedStepGroupTitle'),
+    subtitle: t('inbox.inboxGetStartedStepGroupSubtitle'),
+    actionLabel: t('inbox.inboxGetStartedStepSetup'),
     primary: false,
     disabled: false,
     icon: UserGroupIcon
   },
   {
     id: 'social',
-    title: 'Add social accounts',
-    subtitle: 'Connect WhatsApp, Instagram, and more.',
-    actionLabel: 'Connect',
+    title: t('inbox.inboxGetStartedStepSocialTitle'),
+    subtitle: t('inbox.inboxGetStartedStepSocialSubtitle'),
+    actionLabel: t('inbox.inboxGetStartedStepConnect'),
     primary: false,
     disabled: true,
     icon: ShareIcon
   },
   {
     id: 'chat',
-    title: 'Live chat',
-    subtitle: 'Engage with your customers in real time.',
-    actionLabel: 'Connect',
+    title: t('inbox.inboxGetStartedStepChatTitle'),
+    subtitle: t('inbox.inboxGetStartedStepChatSubtitle'),
+    actionLabel: t('inbox.inboxGetStartedStepConnect'),
     primary: false,
     disabled: true,
     icon: ChatBubbleLeftRightIcon
   }
-];
+]);
 
 const orbitNodes = [
   { id: 'gmail', label: 'Gmail', letter: 'G', style: 'background: conic-gradient(from -45deg, #ea4335, #fbbc05, #34a853, #4285f4, #ea4335)' },
@@ -164,13 +160,12 @@ const orbitNodes = [
   { id: 'x', label: 'X', letter: 'X', bgClass: 'bg-gray-900 dark:bg-gray-100 dark:!text-gray-900' }
 ];
 
-const featureTips = [
-  'Assign each email in a group mailbox for follow-up.',
-  'Collaborate using <strong>@mentions</strong> in comments.',
-  'Automate &amp; save time with canned replies.',
-  'Emails <strong>auto-link</strong> to contacts and records.',
-  '<strong>Mark as done</strong> to close conversations.'
-];
+const featureTips = computed(() => [
+  t('inbox.inboxGetStartedTipAssign'),
+  t('inbox.inboxGetStartedTipMentions'),
+  t('inbox.inboxGetStartedTipCanned'),
+  t('inbox.inboxGetStartedTipEmails'),
+]);
 
 function orbitPosition(index, total) {
   const angle = (index / total) * 2 * Math.PI - Math.PI / 2;

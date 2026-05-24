@@ -1,11 +1,11 @@
 <template>
   <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-    <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">GPS Tracking Map</h3>
+    <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">{{ t('events.eventMapViewGpsTrackingMap') }}</h3>
     
     <div v-if="!mapLoaded" class="flex items-center justify-center h-64 bg-gray-100 dark:bg-gray-900 rounded-lg">
       <div class="text-center">
         <div class="w-12 h-12 border-4 border-gray-300 dark:border-gray-600 border-t-indigo-600 rounded-full animate-spin mx-auto mb-2"></div>
-        <p class="text-sm text-gray-600 dark:text-gray-400">Loading map...</p>
+        <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('events.eventMapViewLoadingMap') }}</p>
       </div>
     </div>
     
@@ -16,33 +16,30 @@
       <div class="flex items-center gap-4">
         <div class="flex items-center gap-2">
           <div class="w-3 h-3 rounded-full bg-green-500"></div>
-          <span>Check-In</span>
+          <span>{{ t('events.eventMapViewCheckIn') }}</span>
         </div>
         <div class="flex items-center gap-2">
           <div class="w-3 h-3 rounded-full bg-red-500"></div>
-          <span>Check-Out</span>
+          <span>{{ t('events.eventMapViewCheckOut') }}</span>
         </div>
         <div class="flex items-center gap-2">
           <div class="w-3 h-3 rounded-full bg-blue-500"></div>
-          <span>Current</span>
+          <span>{{ t('forms.comparisonCurrent') }}</span>
         </div>
       </div>
       <button
         @click="centerMap"
         class="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-xs"
-      >
-        Center Map
-      </button>
+      >{{ t('events.eventMapViewCenterMap') }}</button>
     </div>
     
     <!-- No tracking data -->
-    <div v-if="mapLoaded && trackingPoints.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">
-      No GPS tracking data available
-    </div>
+    <div v-if="mapLoaded && trackingPoints.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">{{ t('events.eventMapViewNoGpsTrackingDataAvailable') }}</div>
   </div>
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 
 const props = defineProps({
@@ -55,6 +52,8 @@ const props = defineProps({
     default: null
   }
 });
+
+const { t } = useI18n();
 
 let map = null;
 let markers = [];

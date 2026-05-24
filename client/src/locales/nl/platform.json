@@ -1,0 +1,458 @@
+{
+  "appPulseCardOpenApp": {
+    "message": "Applicatie openen",
+    "description": "Auto-migrated from appPulseCard"
+  },
+  "appRegistryThisAppIsAvailableForDiscovery": {
+    "message": "Deze app is beschikbaar voor ontdekking. Installatie- en configuratiefuncties zullen beschikbaar zijn in een toekomstige update.",
+    "description": "Auto-migrated from appRegistry"
+  },
+  "appRegistryInstallationComingSoon": {
+    "message": "Installatie binnenkort beschikbaar.",
+    "description": "Auto-migrated from appRegistry"
+  },
+  "appRegistryNoApplicationsAvailable": {
+    "message": "Geen applicaties beschikbaar.",
+    "description": "Auto-migrated from appRegistry"
+  },
+  "appRegistryDiscoverAndManageYourApplications": {
+    "message": "Ontdek en beheer uw applicaties",
+    "description": "Auto-migrated from appRegistry"
+  },
+  "appRegistryAppRegistry": {
+    "message": "App-register",
+    "description": "Auto-migrated from appRegistry"
+  },
+  "attentionSurfaceAttentionShowsTasksAndEventsOnly": {
+    "message": "Aandacht toont taken en gebeurtenissen alleen wanneer actie nodig is.",
+    "description": "Auto-migrated from attentionSurface"
+  },
+  "attentionSurfaceThingsThatNeedYourAttentionRight": {
+    "message": "Dingen die nu uw aandacht nodig hebben",
+    "description": "Auto-migrated from attentionSurface"
+  },
+  "attentionSurfaceAttention": {
+    "message": "Aandacht",
+    "description": "Auto-migrated from attentionSurface"
+  },
+  "platformHomeAlerts": {
+    "message": "Waarschuwingen",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeQuickAccess": {
+    "message": "Snelle toegang",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeYourApps": {
+    "message": "Jouw apps",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeContinueWhereYouLeftOff": {
+    "message": "Ga verder waar je was gebleven",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeNeedsYourAttention": {
+    "message": "Heeft uw aandacht nodig",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeTasksEventsAndAlertsFromYour": {
+    "message": "Taken, gebeurtenissen en waarschuwingen van uw apps worden hier weergegeven wanneer u aan de slag gaat.",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeWelcomeToYourHome": {
+    "message": "Welkom bij je thuis",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeWhatNeedsYourAttentionRightNow": {
+    "message": "Wat heeft op dit moment jouw aandacht nodig",
+    "description": "Auto-migrated from platformHome"
+  },
+  "instanceManagementManageInstance": {
+    "message": "Beheer exemplaar",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementUsername": {
+    "message": "Gebruikersnaam:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementDatabase": {
+    "message": "Database:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementPort": {
+    "message": "Haven:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementHost": {
+    "message": "Gastheer:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementDatabaseConnection": {
+    "message": "Databaseverbinding",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementStorageUsed": {
+    "message": "Gebruikte opslag:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTotalDeals": {
+    "message": "Totaal aanbiedingen:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTotalContacts": {
+    "message": "Totaal aantal contacten:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTotalUsers": {
+    "message": "Totaal aantal gebruikers:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTrialEnd": {
+    "message": "Proefeinde:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementStatus": {
+    "message": "Status:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTier": {
+    "message": "Laag:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementSubscription": {
+    "message": "Abonnement",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementApi": {
+    "message": "API:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementFrontend": {
+    "message": "Frontend:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementUrls": {
+    "message": "URL's",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementStatus2": {
+    "message": "Status:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementKubernetesNamespace": {
+    "message": "Kubernetes-naamruimte:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementSubdomain": {
+    "message": "Subdomein:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementInstanceName": {
+    "message": "Instantienaam:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementInstanceInformation": {
+    "message": "Instantie-informatie",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementNoCustomerInstancesMatchYourCurrent": {
+    "message": "Er zijn geen klantexemplaren die overeenkomen met uw huidige filters.",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementNoInstancesFound": {
+    "message": "Geen exemplaren gevonden",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementManage": {
+    "message": "Beheren",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementSubscription2": {
+    "message": "Abonnement",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementHealth": {
+    "message": "Gezondheid",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementSubdomain2": {
+    "message": "Subdomein",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementInstance": {
+    "message": "Aanleg",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementLoadingInstances": {
+    "message": "Instanties laden...",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementUnhealthy": {
+    "message": "Ongezond",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementDegraded": {
+    "message": "Gedegradeerd",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementHealthy": {
+    "message": "Gezond",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementAllHealth": {
+    "message": "Alle gezondheid",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementCanceled": {
+    "message": "Geannuleerd",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementPastDue": {
+    "message": "Verleden tijd",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementAllSubscriptions": {
+    "message": "Alle abonnementen",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTerminated": {
+    "message": "Beëindigd",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementProvisioning": {
+    "message": "Voorzieningen",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementSearchInstances": {
+    "message": "Instanties zoeken...",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementMonthlyRevenue": {
+    "message": "Maandelijkse omzet",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementProvisioning2": {
+    "message": "Voorzieningen",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementActiveInstances": {
+    "message": "Actieve instanties",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTotalInstances": {
+    "message": "Totaal aantal exemplaren",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementMonitorAndManageAllCustomerInstances": {
+    "message": "Bewaak en beheer alle klantinstanties",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementInstanceManagement": {
+    "message": "Instantiebeheer",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "landingPageAdminLogin": {
+    "message": "Beheerder inloggen",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageRequestDemo": {
+    "message": "Demo aanvragen",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageStopWrestlingWithBloatedCrmPlug": {
+    "message": "Stop met worstelen met opgeblazen CRM. Sluit aan, definieer uw proces en automatiseer de klantbetrokkenheid in minder dan een dag.",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageDesignYourPerfectSalesFlow": {
+    "message": "Ontwerp uw perfecte verkoopstroom.",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageReadMore": {
+    "message": "Lees meer",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPagePlugAndPlayToolForAny": {
+    "message": "Plug-and-play-tool voor elke branche.",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageLogIn": {
+    "message": "Inloggen",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageCloseMenu": {
+    "message": "Menu sluiten",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageNurtura": {
+    "message": "Nurtura",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageLogIn2": {
+    "message": "Inloggen",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageOpenMainMenu": {
+    "message": "Hoofdmenu openen",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageNurtura2": {
+    "message": "Nurtura",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageGlobal": {
+    "message": "Globaal",
+    "description": "Auto-migrated from landingPage"
+  },
+  "genericModuleUnknownModuleOrRoute": {
+    "message": "Onbekende module of route.",
+    "description": "Auto-migrated from genericModule"
+  },
+  "listViewAllItems": {
+    "message": "Alle artikelen",
+    "description": "Items list default view title"
+  },
+  "listViewActiveItems": {
+    "message": "Actieve artikelen",
+    "description": "Items list active view title"
+  },
+  "listViewProducts": {
+    "message": "Producten",
+    "description": "Items list products view title"
+  },
+  "listViewServices": {
+    "message": "Diensten",
+    "description": "Items list services view title"
+  },
+  "listViewLowStock": {
+    "message": "Lage voorraad",
+    "description": "Items list low stock view title"
+  },
+  "listViewOutOfStock": {
+    "message": "Niet op voorraad",
+    "description": "Items list out of stock view title"
+  },
+  "listCreateItem": {
+    "message": "Nieuw artikel",
+    "description": "Items list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "Artikelen zoeken...",
+    "description": "Items list search placeholder"
+  },
+  "listStatTotalItems": {
+    "message": "Totaal aantal artikelen",
+    "description": "Items list statistics card"
+  },
+  "listStatActiveItems": {
+    "message": "Actief",
+    "description": "Items list statistics card"
+  },
+  "listStatProducts": {
+    "message": "Producten",
+    "description": "Items list statistics card"
+  },
+  "listStatServices": {
+    "message": "Diensten",
+    "description": "Items list statistics card"
+  },
+  "listStatLowStock": {
+    "message": "Lage voorraad",
+    "description": "Items list statistics card"
+  },
+  "listStatOutOfStock": {
+    "message": "Niet op voorraad",
+    "description": "Items list statistics card"
+  },
+  "platformHomeNeedAttentionCount": {
+    "message": "{count} heeft aandacht nodig",
+    "description": "Today strip chip count"
+  },
+  "platformHomeApprovalCountOne": {
+    "message": "{count} goedkeuring",
+    "description": "Today strip chip count singular"
+  },
+  "platformHomeApprovalCountMany": {
+    "message": "{count} goedkeuringen",
+    "description": "Today strip chip count plural"
+  },
+  "platformHomeUnreadCountOne": {
+    "message": "{count} ongelezen",
+    "description": "Today strip chip count singular"
+  },
+  "platformHomeUnreadCountMany": {
+    "message": "{count} ongelezen",
+    "description": "Today strip chip count plural"
+  },
+  "platformHomeOverdueCount": {
+    "message": "{count} te laat",
+    "description": "Attention summary overdue count"
+  },
+  "platformHomeDueTodayCount": {
+    "message": "{count} moet vandaag worden verwacht",
+    "description": "Attention summary due today count"
+  },
+  "platformHomeItemCountOne": {
+    "message": "{count} artikel",
+    "description": "Attention summary fallback singular"
+  },
+  "platformHomeItemCountMany": {
+    "message": "{count} artikelen",
+    "description": "Attention summary fallback plural"
+  },
+  "platformHomeAlertInstanceSuspendedTitle": {
+    "message": "Instantie opgeschort",
+    "description": "Platform home alert title"
+  },
+  "platformHomeAlertInstanceSuspendedMessage": {
+    "message": "Deze instantie is momenteel opgeschort. Neem contact op met de ondersteuning om de toegang te herstellen.",
+    "description": "Platform home alert message"
+  },
+  "platformHomeAlertTrialEndedTitle": {
+    "message": "Proef beëindigd",
+    "description": "Platform home alert title"
+  },
+  "platformHomeAlertTrialEndedMessage": {
+    "message": "Uw proefperiode is afgelopen. Abonneer u om door te gaan.",
+    "description": "Platform home alert message"
+  },
+  "platformHomeAlertTrialEndingSoonTitle": {
+    "message": "Proefperiode eindigt binnenkort",
+    "description": "Platform home alert title"
+  },
+  "platformHomeAlertTrialEndingSoonMessageOne": {
+    "message": "Uw proefperiode eindigt over {count} dag.",
+    "description": "Platform home alert message singular"
+  },
+  "platformHomeAlertTrialEndingSoonMessageMany": {
+    "message": "Uw proefperiode eindigt over {count} dagen.",
+    "description": "Platform home alert message plural"
+  },
+  "platformHomeAuditDashboard": {
+    "message": "Auditdashboard",
+    "description": "Tab title fallback for audit app"
+  },
+  "platformHomeGreetingMorning": {
+    "message": "Goedemorgen",
+    "description": "Platform home greeting"
+  },
+  "platformHomeGreetingMorningWithName": {
+    "message": "Goedemorgen, {name}",
+    "description": "Platform home greeting"
+  },
+  "platformHomeGreetingAfternoon": {
+    "message": "Goedemiddag",
+    "description": "Platform home greeting"
+  },
+  "platformHomeGreetingAfternoonWithName": {
+    "message": "Goedemiddag, {name}",
+    "description": "Platform home greeting"
+  },
+  "platformHomeGreetingEvening": {
+    "message": "Goedeavond",
+    "description": "Platform home greeting"
+  },
+  "platformHomeGreetingEveningWithName": {
+    "message": "Goedenavond, {name}",
+    "description": "Platform home greeting"
+  }
+}

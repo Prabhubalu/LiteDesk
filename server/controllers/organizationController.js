@@ -21,6 +21,15 @@ const User = require('../models/User');
 const ModuleDefinition = require('../models/ModuleDefinition');
 const { getAppConfig, isAppEnabledForOrg } = require('../utils/appAccessUtils');
 const { ensureSubscriptionForApp } = require('../services/subscriptionBootstrapService');
+const { invalidateTenantPermissionCaches } = require('../services/rolePermissionCatalogService');
+
+function invalidatePermissionCachesForOrg(organizationId) {
+    try {
+        invalidateTenantPermissionCaches(organizationId);
+    } catch (err) {
+        console.warn('[organizationController] permission cache invalidation failed:', err.message);
+    }
+}
 
 // --- Get organization details ---
 exports.getOrganization = async (req, res) => {
@@ -358,6 +367,7 @@ exports.enableApp = async (req, res) => {
         });
 
         await organization.save();
+        invalidatePermissionCachesForOrg(organization._id);
 
         // Bootstrap trial subscription if needed (after app is enabled)
         try {
@@ -494,6 +504,7 @@ exports.disableApp = async (req, res) => {
         }
 
         await organization.save();
+        invalidatePermissionCachesForOrg(organization._id);
 
         // Clean up app-owned fields from module definitions
         // For complete uninstall rules, see: /docs/field-governance.md

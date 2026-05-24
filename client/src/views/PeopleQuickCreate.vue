@@ -4,10 +4,8 @@
       <!-- Header -->
       <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
         <div>
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Add Person</h2>
-          <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            Create a core Person identity
-          </p>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('people.peopleQuickCreateAddPerson') }}</h2>
+          <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('people.peopleQuickCreateCreateACorePersonIdentity') }}</p>
         </div>
         <button
           @click="handleClose"
@@ -24,7 +22,7 @@
         <div v-if="loading" class="flex items-center justify-center py-8">
           <div class="text-center">
             <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
-            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Loading fields...</p>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ t('people.peopleQuickCreateLoadingFields') }}</p>
           </div>
         </div>
 
@@ -35,9 +33,7 @@
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
             </svg>
             <div class="flex-1">
-              <h3 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-1">
-                Error
-              </h3>
+              <h3 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-1">{{ t('people.peopleQuickCreateError') }}</h3>
               <p class="text-sm text-red-700 dark:text-red-300">{{ error }}</p>
             </div>
           </div>
@@ -102,16 +98,14 @@
               type="button"
               @click="handleClose"
               class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-            >
-              Cancel
-            </button>
+            >{{ t('performance.cancelWizard') }}</button>
             <button
               type="submit"
               :disabled="submitting"
               class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              <span v-if="submitting">Creating...</span>
-              <span v-else>Create Person</span>
+              <span v-if="submitting">{{ t('settings.settingsModFormCreating') }}</span>
+              <span v-else>{{ t('people.peopleQuickCreateCreatePerson') }}</span>
             </button>
           </div>
         </form>
@@ -121,6 +115,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
@@ -137,6 +132,8 @@ import {
 } from '@/platform/fields/peopleFieldModel';
 
 const props = defineProps({});
+
+const { t } = useI18n();
 
 const emit = defineEmits(['close', 'created']);
 

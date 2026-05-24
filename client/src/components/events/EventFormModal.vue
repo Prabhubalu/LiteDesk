@@ -20,39 +20,37 @@
         <form @submit.prevent="handleSubmit" @keydown.enter.prevent="handleSubmit" class="p-6 space-y-6">
           <!-- Basic Information -->
           <div class="space-y-4">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">Basic Information</h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">{{ t('process.ruleFormBasicInfo') }}</h3>
             
             <!-- Event Name -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Event Name <span class="text-red-500">*</span>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('events.eventFormModalEventName') }}<span class="text-red-500">*</span>
               </label>
               <input
                 v-model="form.eventName"
                 type="text"
                 required
                 maxlength="255"
-                placeholder="Enter event name"
+                :placeholder="t('events.eventFormModalEnterEventName')"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
 
             <!-- Notes -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('forms.fieldNotes') }}</label>
               <textarea
                 v-model="form.notes"
                 rows="3"
                 maxlength="5000"
-                placeholder="Add notes or description..."
+                :placeholder="t('events.eventFormModalAddNotesOrDescription')"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               ></textarea>
             </div>
 
             <!-- Event Type -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Event Type <span class="text-red-500">*</span>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.integrationsEventType') }}<span class="text-red-500">*</span>
                 <span v-if="showTypeSelector && isPlatformOwned" class="text-gray-500 dark:text-gray-400 text-xs ml-2">(based on app configuration)</span>
               </label>
               <!-- Phase 2B: Show filtered options based on projection metadata -->
@@ -88,22 +86,19 @@
                 This app creates {{ defaultType.modelValue }}s by default
               </p>
               <!-- Helper text explaining audit event exclusion -->
-              <p v-if="!isEditing" class="mt-1 text-xs text-gray-500 dark:text-gray-400 italic">
-                Audit events are scheduled from the Audit module.
-              </p>
+              <p v-if="!isEditing" class="mt-1 text-xs text-gray-500 dark:text-gray-400 italic">{{ t('events.eventFormModalAuditEventsAreScheduledFromThe') }}</p>
             </div>
 
             <!-- Event Owner -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Event Owner <span class="text-red-500">*</span>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('events.eventFormModalEventOwner') }}<span class="text-red-500">*</span>
               </label>
               <select
                 v-model="form.eventOwnerId"
                 required
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               >
-                <option value="">Select user...</option>
+                <option value="">{{ t('events.eventFormModalSelectUser') }}</option>
                 <option v-for="user in users" :key="user._id" :value="user._id">
                   {{ user.firstName }} {{ user.lastName }} {{ user._id === currentUser._id ? '(Me)' : '' }}
                 </option>
@@ -148,15 +143,15 @@
 
           <!-- Location -->
           <div class="space-y-4">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">Location</h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">{{ t('events.eventFormModalLocation') }}</h3>
             
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Location (Address or URL)</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('events.eventFormModalLocationAddressOrUrl') }}</label>
               <input
                 v-model="form.location"
                 type="text"
                 maxlength="1024"
-                placeholder="Physical address or meeting URL"
+                :placeholder="t('events.eventFormModalPhysicalAddressOrMeetingUrl')"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
@@ -164,48 +159,48 @@
 
           <!-- Recurrence -->
           <div v-if="showRecurrence" class="space-y-4">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">Recurrence</h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">{{ t('events.eventFormModalRecurrence') }}</h3>
             
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Recurrence Pattern</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('events.eventFormModalRecurrencePattern') }}</label>
               <select
                 v-model="form.recurrence"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               >
-                <option :value="null">None</option>
-                <option value="Daily">Daily</option>
-                <option value="Weekly">Weekly</option>
-                <option value="Monthly">Monthly</option>
-                <option value="Custom">Custom</option>
+                <option :value="null">{{ t('settings.settingsBhNone') }}</option>
+                <option value="Daily">{{ t('settings.assignRulesFreqDaily') }}</option>
+                <option value="Weekly">{{ t('settings.assignRulesFreqWeekly') }}</option>
+                <option value="Monthly">{{ t('events.eventFormModalMonthly') }}</option>
+                <option value="Custom">{{ t('settings.modFieldsBadgeCustomField') }}</option>
               </select>
             </div>
           </div>
 
           <!-- Visibility -->
           <div class="space-y-4">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">Visibility</h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">{{ t('settings.modFieldsDepVisibility') }}</h3>
             
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Visibility</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.modFieldsDepVisibility') }}</label>
               <select
                 v-model="form.visibility"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               >
-                <option value="Internal">Internal</option>
-                <option value="Partner">Partner</option>
-                <option value="Public">Public</option>
+                <option value="Internal">{{ t('settings.inviteInternal') }}</option>
+                <option value="Partner">{{ t('forms.visibilityPartner') }}</option>
+                <option value="Public">{{ t('records.tagsPublic') }}</option>
               </select>
             </div>
           </div>
 
           <!-- Event Type Specific Fields -->
           <div v-if="showEventTypeFields" :key="`event-type-${form.eventType}`" class="space-y-4">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">Event Configuration</h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">{{ t('events.eventFormModalEventConfiguration') }}</h3>
             
             <!-- GEO Required Toggle -->
             <div v-if="showGeoToggle" class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                   <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">GEO Required</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('events.eventFormModalGeoRequired2') }}</label>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   {{ geoRequiredDescription }}
                 </p>
@@ -219,26 +214,23 @@
             
             <div v-else-if="geoRequiredForced" class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
               <p class="text-sm text-blue-800 dark:text-blue-300">
-                <strong>GEO Required:</strong> Always enabled for {{ form.eventType }}
+                <strong>{{ t('events.eventFormModalGeoRequired') }}</strong> Always enabled for {{ form.eventType }}
               </p>
           </div>
             
             <!-- Organization (for audit events) -->
             <div v-if="requiresLinkedOrg" class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Organization <span class="text-red-500">*</span>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.profileMetaOrg') }}<span class="text-red-500">*</span>
                 </label>
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  The organization this event is associated with.
-                </p>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('events.eventFormModalTheOrganizationThisEventIsAssociated') }}</p>
                 <select
                   v-model="form.relatedToId"
                   @change="fetchOrganizations"
                   required
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 >
-                  <option value="">Select Organization...</option>
+                  <option value="">{{ t('events.eventFormModalSelectOrganization') }}</option>
                   <option v-for="org in organizations" :key="org._id" :value="org._id">
                     {{ org.name }}
                   </option>
@@ -249,38 +241,29 @@
             <!-- Form Selection -->
             <div v-if="requiresAuditForm" :key="`audit-form-${form.eventType}-${auditForms.length}`" class="grid grid-cols-2 gap-4">
               <div class="col-span-2">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Form <span class="text-red-500">*</span>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.modFieldsPbResourceForm') }}<span class="text-red-500">*</span>
                 </label>
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  The form that will be executed as part of this event.
-                </p>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('events.eventFormModalTheFormThatWillBeExecuted') }}</p>
                 <select
                   v-model="form.linkedFormId"
                   :required="linkedFormIdDependencyState.required"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 >
-                  <option value="">Select Form...</option>
-                  <option v-if="auditForms.length === 0 && !loadingForms" value="" disabled>
-                    No forms available (create a form first)
-                  </option>
+                  <option value="">{{ t('events.eventFormModalSelectForm') }}</option>
+                  <option v-if="auditForms.length === 0 && !loadingForms" value="" disabled>{{ t('events.eventFormModalNoFormsAvailableCreateAForm') }}</option>
                   <option v-for="formItem in auditForms" :key="formItem._id" :value="formItem._id">
                     {{ formItem.name }} {{ formItem.status === 'Ready' ? '(Ready - will activate)' : formItem.status === 'Active' ? '(Active)' : '' }}
                   </option>
                 </select>
-                <p v-if="requiresAuditForm && auditForms.length === 0 && !loadingForms" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  Create a form first in the Forms module
-                </p>
+                <p v-if="requiresAuditForm && auditForms.length === 0 && !loadingForms" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('events.eventFormModalCreateAFormFirstInThe') }}</p>
               </div>
             </div>
 
             <!-- Controlled Self Review (audit events only; dependency-driven visibility) -->
             <div v-if="showAllowSelfReview" class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
               <div class="pr-4">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Allow Self Review</label>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Enable only if the auditor is responsible for both execution and approval.
-                </p>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('events.eventFormModalAllowSelfReview') }}</label>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ t('events.eventFormModalEnableOnlyIfTheAuditorIs') }}</p>
               </div>
               <HeadlessSwitch
                 v-model="form.allowSelfReview"
@@ -291,8 +274,7 @@
             <!-- Multi-Org Route (External Audit Beat, Field Sales Beat) -->
             <div v-if="isMultiOrgRoute" class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Organization List <span class="text-red-500">*</span>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('events.eventFormModalOrganizationList') }}<span class="text-red-500">*</span>
                 </label>
                 <div class="space-y-2 max-h-48 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-lg p-3">
                   <div v-for="(org, index) in form.orgList" :key="index" class="flex items-center gap-2">
@@ -300,14 +282,14 @@
                       type="number"
                       v-model.number="org.sequence"
                       min="1"
-                      placeholder="Sequence"
+                      :placeholder="t('events.eventFormModalSequence')"
                       class="w-20 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
                     />
                     <select
                       v-model="org.organizationId"
                       class="flex-1 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
                     >
-                      <option value="">Select Org...</option>
+                      <option value="">{{ t('events.eventFormModalSelectOrg') }}</option>
                       <option v-for="orgOption in organizations" :key="orgOption._id" :value="orgOption._id">
                         {{ orgOption.name }}
                       </option>
@@ -338,21 +320,19 @@
                   v-model="form.backgroundTracking"
                   checkbox-class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                 />
-                <label class="text-sm text-gray-700 dark:text-gray-300">Enable Background Tracking</label>
+                <label class="text-sm text-gray-700 dark:text-gray-300">{{ t('events.eventFormModalEnableBackgroundTracking') }}</label>
               </div>
             </div>
             
             <!-- Min Visit Duration -->
             <div v-if="showMinVisitDuration" class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Minimum Visit Duration (minutes)
-                </label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('events.eventFormModalMinimumVisitDurationMinutes') }}</label>
                 <input
                   type="number"
                   v-model.number="form.minVisitDuration"
                   min="1"
-                  placeholder="e.g., 30"
+                  :placeholder="t('events.eventFormModalEG30')"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
               </div>
@@ -361,28 +341,28 @@
             <!-- Field Sales Specific -->
             <div v-if="form.eventType === 'Field Sales Beat'" class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Allowed Actions</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('events.eventFormModalAllowedActions') }}</label>
                 <div class="space-y-2">
                   <label class="flex items-center gap-2">
                     <HeadlessCheckbox
                       v-model="form.allowedActions.orders"
                       checkbox-class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                     />
-                    <span class="text-sm text-gray-700 dark:text-gray-300">Orders</span>
+                    <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('events.eventFormModalOrders') }}</span>
                   </label>
                   <label class="flex items-center gap-2">
                     <HeadlessCheckbox
                       v-model="form.allowedActions.payments"
                       checkbox-class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                     />
-                    <span class="text-sm text-gray-700 dark:text-gray-300">Payments</span>
+                    <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('events.eventFormModalPayments') }}</span>
                   </label>
                   <label class="flex items-center gap-2">
                     <HeadlessCheckbox
                       v-model="form.allowedActions.feedback"
                       checkbox-class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                     />
-                    <span class="text-sm text-gray-700 dark:text-gray-300">Feedback</span>
+                    <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('forms.typeFeedback') }}</span>
                   </label>
                 </div>
               </div>
@@ -394,16 +374,16 @@
                 v-model="form.partnerVisibility"
                 checkbox-class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
               />
-              <label class="text-sm text-gray-700 dark:text-gray-300">Partner Visibility (for guest auditor)</label>
+              <label class="text-sm text-gray-700 dark:text-gray-300">{{ t('events.eventFormModalPartnerVisibilityForGuestAuditor') }}</label>
             </div>
           </div>
 
 
           <!-- Attachments -->
           <div v-if="showAttachments" class="space-y-4">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">Attachments</h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">{{ t('events.eventFormModalAttachments') }}</h3>
             <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center">
-              <p class="text-sm text-gray-500 dark:text-gray-400">File upload functionality to be implemented</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('events.eventFormModalFileUploadFunctionalityToBeImplemented') }}</p>
             </div>
           </div>
 
@@ -413,9 +393,7 @@
               type="button"
               @click="close"
               class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg font-medium transition-colors"
-            >
-              Cancel
-            </button>
+            >{{ t('performance.cancelWizard') }}</button>
             <button
               type="button"
               @click="handleSubmit"
@@ -437,6 +415,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, watch, computed, onMounted, nextTick } from 'vue';
 import apiClient from '@/utils/apiClient';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
@@ -457,6 +436,8 @@ const props = defineProps({
     default: null
   }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['close', 'saved']);
 
@@ -989,22 +970,22 @@ const handleSubmit = async (e) => {
   
   // Validate required fields
   if (!form.value.eventName || !form.value.eventName.trim()) {
-    alert('Event Name is required');
+    alert(t('events.eventFormModalToastEventNameIsRequired'));
     return;
   }
   
   if (!form.value.startDateTime) {
-    alert('Start Date/Time is required');
+    alert(t('events.eventFormModalToastStartDateTimeIsRequired'));
     return;
   }
   
   if (!form.value.endDateTime) {
-    alert('End Date/Time is required');
+    alert(t('events.eventFormModalToastEndDateTimeIsRequired'));
     return;
   }
   
   if (!form.value.eventOwnerId && !currentUser.value._id) {
-    alert('Event Owner is required');
+    alert(t('events.eventFormModalToastEventOwnerIsRequired'));
     return;
   }
   
@@ -1019,7 +1000,7 @@ const handleSubmit = async (e) => {
         throw new Error('Invalid start date/time');
       }
     } catch (error) {
-      alert('Invalid start date/time. Please select a valid date and time.');
+      alert(t('events.eventFormModalToastInvalidStartDateTimePlease'));
       saving.value = false;
       return;
     }
@@ -1030,13 +1011,13 @@ const handleSubmit = async (e) => {
         throw new Error('Invalid end date/time');
       }
     } catch (error) {
-      alert('Invalid end date/time. Please select a valid date and time.');
+      alert(t('events.eventFormModalToastInvalidEndDateTimePlease'));
       saving.value = false;
       return;
     }
     
     if (endDate <= startDate) {
-      alert('End date/time must be after start date/time.');
+      alert(t('events.eventFormModalToastEndDateTimeMustBe'));
       saving.value = false;
       return;
     }

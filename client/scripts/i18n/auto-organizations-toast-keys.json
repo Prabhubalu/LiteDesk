@@ -1,0 +1,6 @@
+{
+  "organizationFormModalToastFailedToSaveOrganization": {
+    "message": "Failed to save organization",
+    "description": "Toast from OrganizationFormModal.vue"
+  }
+}

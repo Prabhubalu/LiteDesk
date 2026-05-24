@@ -31,6 +31,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 import { Switch } from '@headlessui/vue';
 
@@ -58,6 +59,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:modelValue', 'change', 'focus', 'blur', 'click']);
+
+const { t } = useI18n();
 
 const resolvedChecked = computed(() => {
   if (typeof props.modelValue === 'boolean') return props.modelValue;

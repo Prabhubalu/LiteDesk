@@ -22,16 +22,11 @@
                 </div>
                 <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
                   <DialogTitle as="h3" class="text-base font-semibold text-gray-900 dark:text-white">
-                    Delete {{ isBulk ? `${bulkCount} ${recordTypeLabelPlural}` : recordTypeLabel }}
+                    {{ deleteDialogTitle }}
                   </DialogTitle>
                   <div class="mt-2">
                     <p class="text-sm text-gray-500 dark:text-gray-400">
-                      <span v-if="isBulk">
-                        Are you sure you want to delete {{ bulkCount }} {{ bulkCount === 1 ? recordTypeLabel.toLowerCase() : recordTypeLabelPlural.toLowerCase() }}? This action cannot be undone.
-                      </span>
-                      <span v-else>
-                        Are you sure you want to delete {{ recordName ? `"${recordName}"` : 'this ' + recordTypeLabel.toLowerCase() }}? This action cannot be undone.
-                      </span>
+                      {{ deleteDialogMessage }}
                     </p>
                   </div>
                 </div>
@@ -41,14 +36,14 @@
                   class="inline-flex w-full justify-center rounded-md bg-red-600 dark:bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 dark:hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 dark:focus-visible:outline-red-500 sm:ml-3 sm:w-auto"
                   :disabled="deleting"
                   @click="handleConfirm">
-                  <span v-if="deleting">Deleting...</span>
-                  <span v-else>Delete</span>
+                  <span v-if="deleting">{{ t('common.deleteInProgress') }}</span>
+                  <span v-else>{{ t('actions.delete') }}</span>
                 </button>
                 <button type="button"
                   class="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-500 sm:mt-0 sm:w-auto"
                   :disabled="deleting"
                   @click="handleClose">
-                  Cancel
+                  {{ t('actions.cancel') }}
                 </button>
               </div>
             </DialogPanel>
@@ -61,8 +56,11 @@
 
 <script setup>
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ExclamationTriangleIcon } from '@heroicons/vue/24/outline';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
+
+const { t } = useI18n();
 
 const props = defineProps({
   show: {
@@ -108,6 +106,33 @@ const recordTypeLabel = computed(() => {
     'trash item': 'Trash item'
   };
   return labels[type] || type.charAt(0).toUpperCase() + type.slice(1);
+});
+
+const deleteDialogTitle = computed(() => {
+  if (props.isBulk) {
+    return t('common.deleteTitleBulk', {
+      count: props.bulkCount,
+      recordTypePlural: recordTypeLabelPlural.value,
+    });
+  }
+  return t('common.deleteTitleSingle', { recordType: recordTypeLabel.value });
+});
+
+const deleteDialogMessage = computed(() => {
+  if (props.isBulk) {
+    const label =
+      props.bulkCount === 1
+        ? recordTypeLabel.value.toLowerCase()
+        : recordTypeLabelPlural.value.toLowerCase();
+    return t('common.deleteConfirmBulk', {
+      count: props.bulkCount,
+      recordTypeLabel: label,
+    });
+  }
+  const target = props.recordName
+    ? `"${props.recordName}"`
+    : `this ${recordTypeLabel.value.toLowerCase()}`;
+  return t('common.deleteConfirmSingle', { target });
 });
 
 const recordTypeLabelPlural = computed(() => {

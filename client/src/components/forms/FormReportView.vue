@@ -2,7 +2,7 @@
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
     <div class="p-6 border-b border-gray-200 dark:border-gray-700">
       <div class="flex items-center justify-between">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Form Report</h2>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('forms.reportHeading') }}</h2>
         <div class="flex items-center gap-2 flex-wrap">
           <div class="flex flex-col gap-1">
             <button
@@ -10,10 +10,10 @@
               :disabled="generating || !canGenerateReport"
               class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {{ generating ? 'Generating...' : 'Generate Report' }}
+              {{ generating ? t('forms.reportGenerating') : t('forms.reportGenerate') }}
             </button>
             <p v-if="isStatusBlocked" class="text-xs text-gray-500 dark:text-gray-400">
-              Report can be generated after the response is approved.
+              {{ t('forms.reportBlockedHint') }}
             </p>
           </div>
           <div class="flex flex-col gap-1">
@@ -21,7 +21,7 @@
               @click="generateComprehensiveReport"
               :disabled="generatingComprehensive || !canGenerateReport"
               class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              title="Generate world-class comprehensive PDF report with charts, tables, and detailed analysis"
+              :title="t('forms.reportComprehensiveTitle')"
             >
               <svg v-if="generatingComprehensive" class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -30,10 +30,10 @@
               <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              {{ generatingComprehensive ? 'Generating...' : 'Generate Comprehensive Report' }}
+              {{ generatingComprehensive ? t('forms.reportGenerating') : t('forms.reportComprehensive') }}
             </button>
             <p v-if="isStatusBlocked" class="text-xs text-gray-500 dark:text-gray-400">
-              Report can be generated after the response is approved.
+              {{ t('forms.reportBlockedHint') }}
             </p>
           </div>
           <button
@@ -41,7 +41,7 @@
             @click="downloadReport"
             class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 font-medium transition-colors"
           >
-            Download PDF
+            {{ t('forms.reportDownloadPdf') }}
           </button>
           <button
             v-if="comprehensiveReportUrl"
@@ -51,7 +51,7 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            Download Comprehensive PDF
+            {{ t('forms.reportDownloadComprehensivePdf') }}
           </button>
           <button
             v-if="reportData"
@@ -66,48 +66,44 @@
             <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            {{ exportingExcel ? 'Exporting...' : 'Export Excel' }}
+            {{ exportingExcel ? t('forms.reportExporting') : t('forms.reportExportExcel') }}
           </button>
         </div>
       </div>
     </div>
-    
+
     <div class="p-6">
-      <!-- Report Content -->
       <div v-if="reportData" class="space-y-6">
-        <!-- Report Header -->
         <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ form?.name }}</h1>
           <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            Generated on {{ formatDate(new Date()) }}
+            {{ t('forms.reportGeneratedOn', { date: formatDate(new Date()) }) }}
           </p>
         </div>
 
-        <!-- Summary Section -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
-            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Overall Score</h3>
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{{ t('forms.reportOverallScore') }}</h3>
             <p class="text-2xl font-bold text-gray-900 dark:text-white">
               {{ reportData.overallScore || calculateOverallScore(response.sectionScores) }}%
             </p>
           </div>
           <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
-            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Compliance</h3>
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{{ t('forms.reportCompliance') }}</h3>
             <p class="text-2xl font-bold text-gray-900 dark:text-white">
               {{ reportData.compliancePercentage || response.kpis?.compliancePercentage || 0 }}%
             </p>
           </div>
           <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
-            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Pass Rate</h3>
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{{ t('forms.reportPassRate') }}</h3>
             <p class="text-2xl font-bold text-gray-900 dark:text-white">
               {{ reportData.passRate || response.kpis?.passRate || 0 }}%
             </p>
           </div>
         </div>
 
-        <!-- Section Scores -->
         <div v-if="response.sectionScores" class="space-y-4">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Section Scores</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('forms.reportSectionScores') }}</h3>
           <div class="space-y-2">
             <div
               v-for="(score, sectionId) in response.sectionScores"
@@ -132,9 +128,8 @@
           </div>
         </div>
 
-        <!-- Corrective Actions Summary -->
         <div v-if="response.correctiveActions && response.correctiveActions.length > 0" class="space-y-4">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Corrective Actions</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('forms.reportCorrectiveActions') }}</h3>
           <div class="space-y-3">
             <div
               v-for="(action, index) in response.correctiveActions"
@@ -145,24 +140,17 @@
                 {{ action.questionText }}
               </h4>
               <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                {{ action.managerAction?.comment || 'No comment' }}
+                {{ action.managerAction?.comment || t('forms.reportNoComment') }}
               </p>
               <div class="flex items-center gap-2">
                 <BadgeCell
-                  :value="action.managerAction?.status || 'Pending'"
-                  :variant-map="{
-                    'Resolved': 'success',
-                    'In Progress': 'warning',
-                    'Pending': 'default'
-                  }"
+                  :value="mapManagerStatus(action.managerAction?.status)"
+                  :variant-map="managerStatusVariantMap"
                 />
                 <BadgeCell
                   v-if="action.auditorVerification"
-                  :value="action.auditorVerification.approved ? 'Approved' : 'Rejected'"
-                  :variant-map="{
-                    'Approved': 'success',
-                    'Rejected': 'danger'
-                  }"
+                  :value="action.auditorVerification.approved ? t('forms.auditorApproved') : t('forms.auditorRejected')"
+                  :variant-map="verificationVariantMap"
                 />
               </div>
             </div>
@@ -170,12 +158,11 @@
         </div>
       </div>
 
-      <!-- No Report Generated -->
       <div v-else class="text-center py-12 text-gray-500 dark:text-gray-400">
         <svg class="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
-        <p>No report generated yet. Click "Generate Report" to create one.</p>
+        <p>{{ t('forms.reportNoReportYet') }}</p>
       </div>
     </div>
   </div>
@@ -183,8 +170,11 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
+
+const { t } = useI18n();
 
 const props = defineProps({
   form: {
@@ -203,16 +193,35 @@ const exportingExcel = ref(false);
 const reportData = ref(null);
 const reportUrl = ref(null);
 const comprehensiveReportUrl = ref(null);
-const excelUrl = ref(null);
 
-// Check if report generation is allowed based on status
+const managerStatusVariantMap = computed(() => ({
+  [t('forms.auditorStatusResolved')]: 'success',
+  [t('forms.correctiveStatusInProgress')]: 'warning',
+  [t('forms.auditorStatusPending')]: 'default',
+}));
+
+const verificationVariantMap = computed(() => ({
+  [t('forms.auditorApproved')]: 'success',
+  [t('forms.auditorRejected')]: 'danger',
+}));
+
+const mapManagerStatus = (status) => {
+  const statusMap = {
+    Resolved: t('forms.auditorStatusResolved'),
+    'In Progress': t('forms.correctiveStatusInProgress'),
+    Pending: t('forms.auditorStatusPending'),
+    open: t('forms.correctiveStatusOpen'),
+    in_progress: t('forms.correctiveStatusInProgress'),
+    completed: t('forms.correctiveStatusCompleted'),
+  };
+  return statusMap[status] || t('forms.auditorStatusPending');
+};
+
 const canGenerateReport = computed(() => {
   const status = props.response?.reviewStatus || props.response?.status;
-  // Only allow when status is 'Approved' or 'Closed'
   return status === 'Approved' || status === 'Closed';
 });
 
-// Check if status prevents report generation
 const isStatusBlocked = computed(() => {
   const status = props.response?.reviewStatus || props.response?.status;
   return status === 'Pending Corrective Action' || status === 'Needs Auditor Review';
@@ -237,7 +246,7 @@ const getSectionName = (sectionId) => {
 };
 
 const formatDate = (date) => {
-  return new Date(date).toLocaleString('en-US', {
+  return new Date(date).toLocaleString(undefined, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -259,7 +268,7 @@ const generateReport = async () => {
     }
   } catch (error) {
     console.error('Error generating report:', error);
-    alert('Failed to generate report. Please try again.');
+    alert(t('forms.reportFailedGenerate'));
   } finally {
     generating.value = false;
   }
@@ -276,31 +285,21 @@ const generateComprehensiveReport = async () => {
   try {
     const result = await apiClient(`/forms/${props.form._id}/responses/${props.response._id}/generate-comprehensive-report`, {
       method: 'POST',
-      body: JSON.stringify({
-        // You can customize the template here if needed
-        // templateConfig: {
-        //   companyName: "Your Company Name",
-        //   hotelName: "Hotel Name",
-        //   benchmarkScore: 80
-        // },
-        // includeComparison: true,
-        // previousResponseId: "previous-response-id"
-      })
+      body: JSON.stringify({})
     });
 
     if (result.success) {
       comprehensiveReportUrl.value = result.data.reportUrl || null;
-      // Automatically open the PDF in a new tab
       if (comprehensiveReportUrl.value) {
         window.open(comprehensiveReportUrl.value, '_blank');
       }
-      alert('Comprehensive report generated successfully!');
+      alert(t('forms.reportComprehensiveSuccess'));
     } else {
-      alert(result.message || 'Failed to generate comprehensive report. Please try again.');
+      alert(result.message || t('forms.reportFailedComprehensive'));
     }
   } catch (error) {
     console.error('Error generating comprehensive report:', error);
-    alert('Failed to generate comprehensive report. Please try again.');
+    alert(t('forms.reportFailedComprehensive'));
   } finally {
     generatingComprehensive.value = false;
   }
@@ -320,18 +319,15 @@ const exportToExcel = async () => {
     });
 
     if (result.success && result.data.excelUrl) {
-      excelUrl.value = result.data.excelUrl;
-      // Open Excel file in new tab
       window.open(result.data.excelUrl, '_blank');
     } else {
-      alert('Failed to export Excel. Please try again.');
+      alert(t('forms.reportFailedExport'));
     }
   } catch (error) {
     console.error('Error exporting Excel:', error);
-    alert('Failed to export Excel. Please try again.');
+    alert(t('forms.reportFailedExport'));
   } finally {
     exportingExcel.value = false;
   }
 };
 </script>
-

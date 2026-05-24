@@ -6,7 +6,7 @@
         <button
           @click="drawerOpen = !drawerOpen"
           class="-m-2.5 p-2.5 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white lg:hidden"
-          aria-label="Toggle menu"
+          :aria-label="t('navigation.toggleMenu')"
         >
           <svg class="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path v-if="!drawerOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -28,7 +28,7 @@
             v-if="pendingCount > 0"
             @click="syncDrawerOpen = true"
             class="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            aria-label="Sync status"
+            :aria-label="t('navigation.syncStatus')"
           >
             <svg class="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -70,7 +70,7 @@
                       'text-gray-700 dark:text-gray-200'
                     ]"
                   >
-                    Settings
+                    {{ t('navigation.settings') }}
                   </button>
                 </MenuItem>
                 <MenuItem v-slot="{ active }">
@@ -95,7 +95,7 @@
                       'text-red-600 dark:text-red-400'
                     ]"
                   >
-                    Sign out
+                    {{ t('navigation.signOut') }}
                   </button>
                 </MenuItem>
               </MenuItems>
@@ -130,7 +130,7 @@
         v-else-if="!loadingSidebar && !sidebarStructure"
         class="px-3 py-4 text-center text-sm text-gray-500 dark:text-gray-400"
       >
-        No navigation available
+        {{ t('navigation.noNav') }}
       </div>
     </aside>
 
@@ -171,7 +171,7 @@
               >
                 <div class="absolute top-0 left-full flex w-16 justify-center pt-5">
                   <button type="button" class="-m-2.5 p-2.5" @click="drawerOpen = false">
-                    <span class="sr-only">Close sidebar</span>
+                    <span class="sr-only">{{ t('navigation.closeSidebar') }}</span>
                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -194,7 +194,7 @@
                   />
 
                   <div v-if="!loadingSidebar && !sidebarStructure" class="px-2 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                    No navigation available
+                    {{ t('navigation.noNav') }}
                   </div>
                 </div>
               </div>
@@ -254,6 +254,9 @@
  */
 
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { RouterView, RouterLink, useRouter, useRoute } from 'vue-router';
 import { Dialog, DialogPanel, Menu, MenuButton, MenuItem, MenuItems, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -439,9 +442,9 @@ const toggleColorModeFromMenu = () => {
   toggleColorMode(newMode);
 };
 
-const colorModeLabel = computed(() => {
-  return colorMode.value === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode';
-});
+const colorModeLabel = computed(() =>
+  colorMode.value === 'light' ? `🌙 ${t('common.darkMode')}` : `☀️ ${t('common.lightMode')}`
+);
 
 const mobileHeaderTitle = computed(() => {
   const path = route.path || '';

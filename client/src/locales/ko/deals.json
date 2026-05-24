@@ -1,0 +1,462 @@
+{
+  "dealFormModalNextFollowUpDate": {
+    "message": "다음 후속 날짜",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalAddDetailsAboutThisDealRequirements": {
+    "message": "이 거래, 요구 사항, 메모 등에 대한 세부 정보를 추가하세요.",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalAdditionalDetails": {
+    "message": "추가 세부정보",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalLinkThisDealToAContact": {
+    "message": "이 거래를 연락처에 연결",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalSelectContact": {
+    "message": "연락처 선택",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalEnterprisePriorityDemo": {
+    "message": "엔터프라이즈, 우선 순위, 데모",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalTagsCommaSeparated": {
+    "message": "태그(쉼표로 구분)",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalUrgent": {
+    "message": "긴급한",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalCrossSell": {
+    "message": "교차판매",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalRenewal": {
+    "message": "갱신",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalUpsell": {
+    "message": "상향 판매",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalExistingCustomer": {
+    "message": "기존 고객",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalNewBusiness": {
+    "message": "신규 사업",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalSelectType": {
+    "message": "유형 선택",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalDealType": {
+    "message": "거래 유형",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalClassification": {
+    "message": "분류",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalChangingStageUpdatesStatusAndProbability": {
+    "message": "스테이지 업데이트 상태 및 확률 자동 변경",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalSelectPipeline": {
+    "message": "파이프라인 선택...",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalExpectedCloseDate": {
+    "message": "예상 마감일",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalEGAcmeCorpCrmImplementation": {
+    "message": "예: Acme Corp - CRM 구현",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalDealName": {
+    "message": "거래명",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalDealInformation": {
+    "message": "거래 정보",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealRelationshipEditorSelectOrganization": {
+    "message": "조직 선택...",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorNoOrganizationsLinkedYet": {
+    "message": "아직 연결된 조직이 없습니다.",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorRemoveFromDeal": {
+    "message": "거래에서 제거",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorSetAsPrimaryCustomer": {
+    "message": "주요 고객으로 설정",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorOrganizationsOnThisDeal": {
+    "message": "이 거래에 참여한 조직",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorShowingContactsFor": {
+    "message": "연락처 표시 중",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorSelectPerson": {
+    "message": "사람을 선택하세요...",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorNoPeopleLinkedYet": {
+    "message": "아직 연결된 사용자가 없습니다.",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorRemoveFromDeal2": {
+    "message": "거래에서 제거",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorSetAsPrimaryContact": {
+    "message": "기본 연락처로 설정",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorPeopleOnThisDeal": {
+    "message": "이 거래에 참여한 사람들",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "relatedDealsWidgetCreateFirstDeal": {
+    "message": "첫 번째 거래 만들기",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetNoDealsYet": {
+    "message": "아직 거래 없음",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetAddDeal": {
+    "message": "거래 추가",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetLinkDeals": {
+    "message": "링크 딜",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetRelatedDeals": {
+    "message": "관련 상품",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "dealsAddDeal": {
+    "message": "거래 추가",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsNoDealsInThisStage": {
+    "message": "이 단계에서는 거래가 없습니다.",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsLoadingPipeline": {
+    "message": "파이프라인 로드 중...",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsNewDeal": {
+    "message": "뉴딜",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsGroupStage": {
+    "message": "그룹: 무대",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsUpgradePlan": {
+    "message": "업그레이드 계획",
+    "description": "Auto-migrated from deals"
+  },
+  "dealDetailAddANote": {
+    "message": "메모 추가...",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailAddEvent": {
+    "message": "이벤트 추가",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailAge": {
+    "message": "나이",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailExpectedClose": {
+    "message": "예상 마감",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailOrganizationsOnThisDeal": {
+    "message": "이 거래에 참여한 조직",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailPeopleOnThisDeal": {
+    "message": "이 거래에 참여한 사람들",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailPrimaryCustomer": {
+    "message": "주요 고객",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailPrimaryContact": {
+    "message": "기본 연락처",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailSystemOwnedComputedFromStage": {
+    "message": "시스템 소유(단계에서 계산)",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailBackToDeals": {
+    "message": "거래로 돌아가기",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailLoadingDeal": {
+    "message": "거래 로드 중...",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealFormModalToastFailedToSaveDeal": {
+    "message": "거래를 저장하지 못했습니다.",
+    "description": "Toast from DealFormModal.vue"
+  },
+  "sysFieldName": {
+    "message": "거래명",
+    "description": "System deal field label"
+  },
+  "sysFieldStage": {
+    "message": "거래 단계",
+    "description": "System deal field label"
+  },
+  "sysFieldAmount": {
+    "message": "기대값",
+    "description": "System deal field label"
+  },
+  "sysFieldProbability": {
+    "message": "확률(%)",
+    "description": "System deal field label"
+  },
+  "sysFieldExpectedCloseDate": {
+    "message": "마감일",
+    "description": "System deal field label"
+  },
+  "sysFieldOwnerId": {
+    "message": "거래 소유자",
+    "description": "System deal field label"
+  },
+  "sysFieldAccountId": {
+    "message": "조직",
+    "description": "System deal field label"
+  },
+  "sysFieldContactId": {
+    "message": "연락하다",
+    "description": "System deal field label"
+  },
+  "sysFieldType": {
+    "message": "거래 유형",
+    "description": "System deal field label"
+  },
+  "sysFieldPipeline": {
+    "message": "관로",
+    "description": "System deal field label"
+  },
+  "sysFieldNextStep": {
+    "message": "다음 단계",
+    "description": "System deal field label"
+  },
+  "sysFieldTags": {
+    "message": "태그",
+    "description": "System deal field label"
+  },
+  "sysFieldAssignedTo": {
+    "message": "할당 대상",
+    "description": "System deal field label"
+  },
+  "sysFieldDescription": {
+    "message": "설명",
+    "description": "System deal field label"
+  },
+  "sysFieldDealType": {
+    "message": "거래 유형",
+    "description": "Alias for deal type field"
+  },
+  "activityCreatedDeal": {
+    "message": "이 거래를 만들었습니다",
+    "description": "Deal record created activity fragment"
+  },
+  "activityUpdatedDeal": {
+    "message": "이 거래를 업데이트했습니다",
+    "description": "Deal record updated activity fragment"
+  },
+  "activityYouCreatedDeal": {
+    "message": "{actor}이(가) 이 거래를 생성했습니다.",
+    "description": "Deal created system activity line"
+  },
+  "activityYouUpdatedDeal": {
+    "message": "{actor}이 거래를 업데이트했습니다.",
+    "description": "Deal updated system activity line"
+  },
+  "picklistNew": {
+    "message": "새로운",
+    "description": "Default pipeline stage"
+  },
+  "picklistNewBusiness": {
+    "message": "신규 사업",
+    "description": "Common deal type value"
+  },
+  "picklistUpsell": {
+    "message": "상향 판매",
+    "description": "Deal type picklist value"
+  },
+  "picklistCrossSell": {
+    "message": "교차판매",
+    "description": "Deal type picklist value"
+  },
+  "picklistRenewal": {
+    "message": "갱신",
+    "description": "Deal type picklist value"
+  },
+  "picklistExistingCustomer": {
+    "message": "기존 고객",
+    "description": "Deal type picklist value"
+  },
+  "stageNew": {
+    "message": "새로운",
+    "description": "Default pipeline stage name"
+  },
+  "stageQualified": {
+    "message": "자격 있는",
+    "description": "Pipeline stage name"
+  },
+  "stageProposal": {
+    "message": "제안",
+    "description": "Pipeline stage name"
+  },
+  "stageNegotiation": {
+    "message": "협상",
+    "description": "Pipeline stage name"
+  },
+  "stageWon": {
+    "message": "이겼다",
+    "description": "Pipeline stage name"
+  },
+  "stageLost": {
+    "message": "잃어버린",
+    "description": "Pipeline stage name"
+  },
+  "stageClosedWon": {
+    "message": "마감 수주",
+    "description": "Pipeline stage name"
+  },
+  "stageClosedLost": {
+    "message": "마감 분실",
+    "description": "Pipeline stage name"
+  },
+  "stageDiscovery": {
+    "message": "발견",
+    "description": "Pipeline stage name"
+  },
+  "stageNeedsAnalysis": {
+    "message": "요구 분석",
+    "description": "Pipeline stage name"
+  },
+  "stageValueProposition": {
+    "message": "가치 제안",
+    "description": "Pipeline stage name"
+  },
+  "stageIdDecisionMakers": {
+    "message": "ID. 의사결정자",
+    "description": "Pipeline stage name"
+  },
+  "stagePerceptionAnalysis": {
+    "message": "인식 분석",
+    "description": "Pipeline stage name"
+  },
+  "stageProposalPriceQuote": {
+    "message": "제안/가격 견적",
+    "description": "Pipeline stage name"
+  },
+  "stageNegotiationReview": {
+    "message": "협상/검토",
+    "description": "Pipeline stage name"
+  },
+  "pipelineSales": {
+    "message": "판매 파이프라인",
+    "description": "Tenant pipeline display name"
+  },
+  "pipelineDefault": {
+    "message": "기본 파이프라인",
+    "description": "Tenant pipeline display name"
+  },
+  "pipelineMarketing": {
+    "message": "마케팅 파이프라인",
+    "description": "Tenant pipeline display name"
+  },
+  "pipelinePartner": {
+    "message": "파트너 파이프라인",
+    "description": "Tenant pipeline display name"
+  },
+  "listViewAll": {
+    "message": "All Deals",
+    "description": "Deals list default view title"
+  },
+  "listViewMy": {
+    "message": "My Deals",
+    "description": "Deals list assigned-to-me view title"
+  },
+  "listViewOpen": {
+    "message": "Open",
+    "description": "Deals list open view title"
+  },
+  "listViewWon": {
+    "message": "Won",
+    "description": "Deals list won view title"
+  },
+  "listViewLost": {
+    "message": "Lost",
+    "description": "Deals list lost view title"
+  },
+  "listCreate": {
+    "message": "New Deal",
+    "description": "Deals list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "Search deals...",
+    "description": "Deals list search placeholder"
+  },
+  "listStatPipelineValue": {
+    "message": "Pipeline Value",
+    "description": "Deals list statistics card"
+  },
+  "listStatOpenDeals": {
+    "message": "Open Deals",
+    "description": "Deals list statistics card"
+  },
+  "listStatWonThisMonth": {
+    "message": "Won This Month",
+    "description": "Deals list statistics card"
+  },
+  "listStatWinRate": {
+    "message": "Win Rate",
+    "description": "Deals list statistics card"
+  },
+  "dealsFeatureNotAvailable": {
+    "message": "Feature Not Available",
+    "description": "Deals plan limitation error title"
+  },
+  "dealsErrorLoading": {
+    "message": "Error Loading Deals",
+    "description": "Deals load error title"
+  },
+  "dealsDealDetail": {
+    "message": "Deal Detail",
+    "description": "Deal record tab title fallback"
+  },
+  "dealsStageUpdateFailed": {
+    "message": "Failed to update deal stage",
+    "description": "Kanban stage change error"
+  }
+}

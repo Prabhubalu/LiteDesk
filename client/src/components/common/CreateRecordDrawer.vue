@@ -47,7 +47,7 @@
                         @click="closeDrawer"
                       >
                         <span class="absolute -inset-2.5" />
-                        <span class="sr-only">Close panel</span>
+                        <span class="sr-only">{{ t('common.closePanel') }}</span>
                         <XMarkIcon class="size-6" aria-hidden="true" />
                       </button>
                     </div>
@@ -120,7 +120,7 @@
                       class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 cursor-pointer"
                       @click="toggleFullMode"
                     >
-                      {{ fullMode ? 'Back to quick create' : 'Show all fields' }}
+                      {{ fullMode ? t('common.drawerBackQuickCreate') : t('common.drawerShowAllFields') }}
                     </button>
                     <span v-else />
                     <div class="flex gap-3">
@@ -129,14 +129,14 @@
                         class="rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                         @click="closeDrawer"
                       >
-                        Cancel
+                        {{ t('actions.cancel') }}
                       </button>
                       <button
                         type="submit"
                         :disabled="saving"
                         class="inline-flex justify-center rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 dark:hover:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                       >
-                        {{ saving ? 'Saving...' : (isEditing ? 'Update' : 'Save') }}
+                        {{ saving ? t('states.saving') : (isEditing ? t('actions.update') : t('actions.save')) }}
                       </button>
                     </div>
                   </div>
@@ -153,6 +153,9 @@
 
 <script setup>
 import { ref, watch, computed, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import DynamicForm from './DynamicForm.vue';

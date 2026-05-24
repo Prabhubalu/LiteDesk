@@ -27,6 +27,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import apiClient from '@/utils/apiClient';
@@ -169,7 +172,7 @@ const deleteOrganization = async () => {
     }
   } catch (err) {
     console.error('Error deleting organization:', err);
-    alert(err.message || 'Failed to delete organization. Please try again.');
+    alert(err.message || t('common.organizationDetailToastFailedToDeleteOrganizationPlease'));
   } finally {
     deleting.value = false;
   }

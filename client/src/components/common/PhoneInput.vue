@@ -83,6 +83,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { computed, ref, watch } from 'vue';
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/24/outline';
@@ -137,6 +138,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:modelValue', 'blur', 'enter', 'escape']);
+
+const { t } = useI18n();
 
 const inputRef = ref(null);
 const selectedCountry = ref(getPhoneCountry(props.defaultCountry));

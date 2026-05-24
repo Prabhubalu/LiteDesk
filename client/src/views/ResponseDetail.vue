@@ -4,7 +4,7 @@
     <div v-if="loading" class="flex items-center justify-center min-h-screen">
       <div class="text-center">
         <div class="w-16 h-16 border-4 border-gray-200 dark:border-gray-700 border-t-indigo-600 dark:border-t-indigo-500 rounded-full animate-spin mx-auto mb-4"></div>
-        <p class="text-gray-600 dark:text-gray-400 font-medium">Loading response...</p>
+        <p class="text-gray-600 dark:text-gray-400 font-medium">{{ t('forms.hubResponseDetailLoading') }}</p>
       </div>
     </div>
 
@@ -14,11 +14,9 @@
         <svg class="mx-auto h-12 w-12 text-red-500 dark:text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Error Loading Response</h2>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ t('audit.responseDetailErrorLoadingResponse') }}</h2>
         <p class="text-gray-600 dark:text-gray-400 mb-6">{{ error }}</p>
-        <button @click="$router.push('/forms')" class="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium">
-          Back to Forms
-        </button>
+        <button @click="$router.push('/forms')" class="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium">{{ t('forms.builderShellBackToForms') }}</button>
       </div>
     </div>
 
@@ -30,7 +28,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
           <div class="flex-1">
-            <h3 class="text-lg font-semibold text-yellow-800 dark:text-yellow-300 mb-2">Read-Only Access</h3>
+            <h3 class="text-lg font-semibold text-yellow-800 dark:text-yellow-300 mb-2">{{ t('audit.responseDetailReadOnlyAccess') }}</h3>
             <p class="text-sm text-yellow-700 dark:text-yellow-400">
               {{ accessDeniedMessage || 'You have read-only access to this response. Navigation is restricted based on app boundaries.' }}
             </p>
@@ -47,7 +45,7 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          <span class="font-medium">Back to Forms</span>
+          <span class="font-medium">{{ t('forms.builderShellBackToForms') }}</span>
         </button>
       </div>
 
@@ -99,7 +97,7 @@
 
           <!-- Execution Summary Card -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 space-y-3">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Execution Summary</h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('audit.responseDetailExecutionSummary') }}</h3>
             
             <!-- Form Name -->
             <div class="flex items-start gap-3">
@@ -107,7 +105,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               <div class="flex-1 min-w-0">
-                <div class="text-xs text-gray-500 dark:text-gray-400">Form</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsPbResourceForm') }}</div>
                 <div class="text-sm font-medium text-gray-900 dark:text-white mt-0.5 truncate">
                   {{ responseDetail.formName }}
                 </div>
@@ -120,7 +118,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <div class="flex-1 min-w-0">
-                <div class="text-xs text-gray-500 dark:text-gray-400">Event</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsPbActionEvent') }}</div>
                 <div class="text-sm font-medium text-gray-900 dark:text-white mt-0.5 truncate">
                   {{ responseDetail.eventReference.eventName || 'Event' }}
                 </div>
@@ -136,7 +134,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div class="flex-1">
-                <div class="text-xs text-gray-500 dark:text-gray-400">Submitted</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">{{ t('forms.hubExecutionSubmitted') }}</div>
                 <div class="text-sm font-medium text-gray-900 dark:text-white mt-0.5">
                   {{ formatDateTime(responseDetail.submittedAt) }}
                 </div>
@@ -152,7 +150,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
               <div class="flex-1">
-                <div class="text-xs text-gray-500 dark:text-gray-400">Auditor</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">{{ t('audit.responseDetailAuditor') }}</div>
                 <div class="text-sm font-medium text-gray-900 dark:text-white mt-0.5">
                   {{ responseDetail.auditor.name }}
                 </div>
@@ -162,26 +160,26 @@
 
           <!-- KPI Card -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Summary</h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('settings.modFieldsActivitySummary') }}</h3>
             <div class="space-y-2">
               <div class="flex items-center justify-between text-sm">
-                <span class="text-gray-600 dark:text-gray-400">Compliance</span>
+                <span class="text-gray-600 dark:text-gray-400">{{ t('forms.reportCompliance') }}</span>
                 <span class="font-medium text-gray-900 dark:text-white">{{ responseDetail.compliancePercentage }}%</span>
               </div>
               <div class="flex items-center justify-between text-sm">
-                <span class="text-gray-600 dark:text-gray-400">Total Questions</span>
+                <span class="text-gray-600 dark:text-gray-400">{{ t('audit.responseDetailTotalQuestions') }}</span>
                 <span class="font-medium text-gray-900 dark:text-white">{{ responseDetail.totalQuestions }}</span>
               </div>
               <div class="flex items-center justify-between text-sm">
-                <span class="text-gray-600 dark:text-gray-400">Passed</span>
+                <span class="text-gray-600 dark:text-gray-400">{{ t('process.execLogsPassed') }}</span>
                 <span class="font-medium text-green-600 dark:text-green-400">{{ responseDetail.totalPassed }}</span>
               </div>
               <div class="flex items-center justify-between text-sm">
-                <span class="text-gray-600 dark:text-gray-400">Failed</span>
+                <span class="text-gray-600 dark:text-gray-400">{{ t('process.execFailed') }}</span>
                 <span class="font-medium text-red-600 dark:text-red-400">{{ responseDetail.totalFailed }}</span>
               </div>
               <div class="flex items-center justify-between text-sm">
-                <span class="text-gray-600 dark:text-gray-400">Final Score</span>
+                <span class="text-gray-600 dark:text-gray-400">{{ t('audit.responseDetailFinalScore') }}</span>
                 <span class="font-medium text-gray-900 dark:text-white">{{ responseDetail.finalScore }}%</span>
               </div>
             </div>
@@ -192,7 +190,7 @@
         <div class="lg:col-span-2 space-y-4">
           <!-- Failed Questions Section -->
           <div v-if="responseDetail.failedQuestions && responseDetail.failedQuestions.length > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Failed Questions</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('forms.rbTypeFailedQuestions') }}</h3>
             <div class="space-y-3">
               <div
                 v-for="(question, index) in responseDetail.failedQuestions"
@@ -219,8 +217,8 @@
           <!-- Corrective Actions Section (Read-Only) -->
           <div v-if="responseDetail.correctiveActions && responseDetail.correctiveActions.length > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Corrective Actions</h3>
-              <span class="text-xs text-gray-500 dark:text-gray-400">Read-Only</span>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('forms.reportCorrectiveActions') }}</h3>
+              <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsReadOnly') }}</span>
             </div>
             <div class="space-y-3">
               <div
@@ -242,7 +240,7 @@
                   </span>
                 </div>
                 <div class="flex items-center gap-2 mt-2 text-xs text-gray-500 dark:text-gray-400">
-                  <span>Owner:</span>
+                  <span>{{ t('settings.modFieldsMetadataOwner') }}</span>
                   <span class="font-medium text-gray-700 dark:text-gray-300">{{ action.owner?.name || 'Unassigned' }}</span>
                   <span v-if="action.addedAt" class="ml-2">• Added {{ formatDateTime(action.addedAt) }}</span>
                 </div>
@@ -252,7 +250,7 @@
 
           <!-- Timeline Section -->
           <div v-if="responseDetail.timeline && responseDetail.timeline.length > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Timeline</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('audit.responseDetailTimeline') }}</h3>
             <div class="space-y-4">
               <div
                 v-for="(entry, index) in responseDetail.timeline"
@@ -291,7 +289,7 @@
 
           <!-- Related Records Panel (Phase 0F.1: Show Corrective Actions) -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Related Records</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('records.taskRelatedRecordsTab') }}</h3>
             <!-- SAFETY: Response Detail is read-only. Any execution or review mutations must occur via CRM execution controllers only. -->
             <RelatedRecordsPanel
               app-key="SALES"
@@ -307,6 +305,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import apiClient from '@/utils/apiClient';

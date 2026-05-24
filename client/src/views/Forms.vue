@@ -1,57 +1,24 @@
 <template>
   <div class="mx-auto w-full">
     <ListView
-      title="Forms"
-      description="Create and manage forms, surveys, audits, and feedback"
+      :title="t('forms.hubTitle')"
+      :description="t('forms.hubDescription')"
       module-key="forms"
-      create-label="New Form"
-      search-placeholder="Search forms..."
+      :create-label="t('forms.hubCreateLabel')"
+      :search-placeholder="t('forms.hubSearchPlaceholder')"
       :data="forms"
       :columns="columns"
       :loading="loading"
       :statistics="statistics"
-      :stats-config="[
-        { name: 'Total Forms', key: 'total', formatter: 'number' },
-        { name: 'Active', key: 'active', formatter: 'number' },
-        { name: 'Draft', key: 'draft', formatter: 'number' },
-        { name: 'Total Responses', key: 'totalResponses', formatter: 'number' }
-      ]"
+      :stats-config="statsConfig"
       :pagination="{ currentPage: pagination.currentPage, totalPages: pagination.totalPages, totalRecords: pagination.totalForms, limit: pagination.formsPerPage }"
       :sort-field="sortField"
       :sort-order="sortOrder"
-      :filter-config="[
-        {
-          key: 'formType',
-          label: 'All Types',
-          options: [
-            { value: 'Audit', label: 'Audit' },
-            { value: 'Survey', label: 'Survey' },
-            { value: 'Feedback', label: 'Feedback' },
-            { value: 'Inspection', label: 'Inspection' },
-            { value: 'Custom', label: 'Custom' }
-          ]
-        },
-        {
-          key: 'status',
-          label: 'All Status',
-          options: [
-            { value: 'Draft', label: 'Draft' },
-            { value: 'Active', label: 'Active' },
-            { value: 'Closed', label: 'Closed' }
-          ]
-        },
-        {
-          key: 'assignedTo',
-          label: 'All Assignees',
-          options: [
-            { value: 'me', label: 'My Forms' }
-          ]
-        }
-      ]"
+      :filter-config="filterConfig"
       table-id="forms-table"
       row-key="_id"
-      empty-title="No forms yet"
-      empty-message="Forms let you collect information from customers and team members. Create your first form to start gathering responses."
+      :empty-title="t('forms.hubEmptyTitle')"
+      :empty-message="t('forms.hubEmptyMessage')"
       @create="openCreateForm"
       @import="showImportModal = true"
       @export="exportForms"
@@ -72,39 +39,25 @@
 
       <!-- Custom Form Type Cell with Badge -->
       <template #cell-formType="{ value }">
-        <BadgeCell 
-          :value="value" 
-          :variant-map="{
-            'Audit': 'warning',
-            'Survey': 'info',
-            'Feedback': 'success',
-            'Inspection': 'danger',
-            'Custom': 'default'
-          }"
+        <BadgeCell
+          :value="formTypeLabel(value)"
+          :variant="formTypeVariant(value)"
         />
       </template>
 
       <!-- Custom Status Cell with Badge -->
       <template #cell-status="{ value }">
-        <BadgeCell 
-          :value="value" 
-          :variant-map="{
-            'Draft': 'default',
-            'Active': 'success',
-            'Closed': 'danger'
-          }"
+        <BadgeCell
+          :value="formStatusLabel(value)"
+          :variant="formStatusVariant(value)"
         />
       </template>
 
       <!-- Custom Visibility Cell -->
       <template #cell-visibility="{ value }">
-        <BadgeCell 
-          :value="value" 
-          :variant-map="{
-            'Internal': 'default',
-            'Partner': 'info',
-            'Public': 'success'
-          }"
+        <BadgeCell
+          :value="formVisibilityLabel(value)"
+          :variant="formVisibilityVariant(value)"
         />
       </template>
 
@@ -123,7 +76,7 @@
             {{ row.assignedTo.firstName }} {{ row.assignedTo.lastName }}
           </span>
         </div>
-        <span v-else class="text-sm text-gray-500 dark:text-gray-400">Unassigned</span>
+        <span v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('records.editableUnassigned') }}</span>
       </template>
 
       <!-- Custom Organization ID Cell -->
@@ -144,7 +97,7 @@
           <button
             @click.stop="viewFormDetail(row)"
             class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-            title="View Form Details"
+            :title="t('forms.hubActionViewForm')"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -154,7 +107,7 @@
           <button
             @click.stop="openFormBuilder(row)"
             class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-            title="Edit Form"
+            :title="t('actions.edit')"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -163,7 +116,7 @@
           <button
             @click.stop="duplicateForm(row)"
             class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-            title="Duplicate Form"
+            :title="t('actions.duplicate')"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -172,7 +125,7 @@
           <button
             @click.stop="viewResponses(row)"
             class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-            title="View Responses"
+            :title="t('forms.hubActionViewResponses')"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -210,8 +163,8 @@
         <div class="bg-white dark:bg-gray-900 w-full max-w-3xl rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <div>
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Choose a form type</h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400">Start with the right template for your workflow.</p>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('forms.hubPickerHeading') }}</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('forms.hubPickerSubheading') }}</p>
             </div>
             <button
               @click="showTypePicker = false"
@@ -228,9 +181,8 @@
               @click="startFormWithType(type.value)"
               class="group relative text-left rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition p-4 flex items-start gap-3"
             >
-              <!-- Phase 2B: Show default indicator -->
               <span v-if="defaultType && type.value === defaultType.modelValue" class="absolute top-2 right-2 text-xs px-2 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded">
-                Default
+                {{ t('forms.hubPickerDefault') }}
               </span>
               <div
                 class="w-10 h-10 rounded-full flex items-center justify-center text-white flex-shrink-0"
@@ -258,6 +210,7 @@
 <script setup>
 import { ref, computed, onMounted, onActivated, watch, onBeforeMount } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
@@ -268,10 +221,75 @@ import UniversalImportModal from '@/components/import/UniversalImportModal.vue';
 import { XMarkIcon, ClipboardDocumentCheckIcon, ChatBubbleLeftRightIcon, HandThumbUpIcon } from '@heroicons/vue/24/outline';
 import { useProjectionCreate } from '@/composables/useProjectionCreate';
 
+const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 const { openTab, findTabByPath, switchToTab, closeTab, tabs } = useTabs();
+
+const FORM_TYPE_VARIANTS = {
+  Audit: 'warning',
+  Survey: 'info',
+  Feedback: 'success',
+  Inspection: 'danger',
+  Custom: 'default',
+};
+
+const FORM_STATUS_VARIANTS = {
+  Draft: 'default',
+  Active: 'success',
+  Closed: 'danger',
+};
+
+const FORM_VISIBILITY_VARIANTS = {
+  Internal: 'default',
+  Partner: 'info',
+  Public: 'success',
+};
+
+function formTypeLabel(value) {
+  const keyByValue = {
+    Audit: 'forms.typeAudit',
+    Survey: 'forms.typeSurvey',
+    Feedback: 'forms.typeFeedback',
+    Inspection: 'forms.typeInspection',
+    Custom: 'forms.typeCustom',
+  };
+  const key = keyByValue[value];
+  return key ? t(key) : value;
+}
+
+function formTypeVariant(value) {
+  return FORM_TYPE_VARIANTS[value] || 'default';
+}
+
+function formStatusLabel(value) {
+  const keyByValue = {
+    Draft: 'forms.statusDraft',
+    Active: 'forms.statusActive',
+    Closed: 'forms.statusClosed',
+  };
+  const key = keyByValue[value];
+  return key ? t(key) : value;
+}
+
+function formStatusVariant(value) {
+  return FORM_STATUS_VARIANTS[value] || 'default';
+}
+
+function formVisibilityLabel(value) {
+  const keyByValue = {
+    Internal: 'forms.visibilityInternal',
+    Partner: 'forms.visibilityPartner',
+    Public: 'forms.visibilityPublic',
+  };
+  const key = keyByValue[value];
+  return key ? t(key) : value;
+}
+
+function formVisibilityVariant(value) {
+  return FORM_VISIBILITY_VARIANTS[value] || 'default';
+}
 
 // State
 const forms = ref([]);
@@ -279,59 +297,55 @@ const loading = ref(false);
 const showImportModal = ref(false);
 const showTypePicker = ref(false);
 
-// Phase 2B: Projection-aware form creation
 const {
   allowedTypes,
   defaultType,
   isPlatformOwned,
-  showTypeSelector,
   hideTypeSelector,
   load: loadProjection
 } = useProjectionCreate('forms');
 
-// Base type options (will be filtered by projection)
-const baseTypeOptions = [
+const baseTypeOptions = computed(() => [
   {
     value: 'Audit',
     projectionType: 'AUDIT',
-    label: 'Audit',
-    subtitle: 'Checklists & compliance',
-    description: 'Structured audits with scoring, evidence capture, and approvals.',
+    label: t('forms.typeAudit'),
+    subtitle: t('forms.hubTypeAuditSubtitle'),
+    description: t('forms.hubTypeAuditDesc'),
     badge: 'bg-amber-500',
     icon: ClipboardDocumentCheckIcon
   },
   {
     value: 'Survey',
     projectionType: 'SURVEY',
-    label: 'Survey',
-    subtitle: 'Customer & employee insights',
-    description: 'Multi-question surveys with logic, branching, and scoring.',
+    label: t('forms.typeSurvey'),
+    subtitle: t('forms.hubTypeSurveySubtitle'),
+    description: t('forms.hubTypeSurveyDesc'),
     badge: 'bg-blue-500',
     icon: ChatBubbleLeftRightIcon
   },
   {
     value: 'Feedback',
     projectionType: 'FEEDBACK',
-    label: 'Feedback',
-    subtitle: 'NPS / CSAT / CES',
-    description: 'Quick feedback with ratings, comments, and optional follow-up.',
+    label: t('forms.typeFeedback'),
+    subtitle: t('forms.hubTypeFeedbackSubtitle'),
+    description: t('forms.hubTypeFeedbackDesc'),
     badge: 'bg-emerald-500',
     icon: HandThumbUpIcon
   }
-];
+]);
 
-// Phase 2B: Filter type options based on projection metadata
 const typeOptions = computed(() => {
   if (!isPlatformOwned.value || !allowedTypes.value || allowedTypes.value.length === 0) {
-    return baseTypeOptions; // Show all if no projection
+    return baseTypeOptions.value;
   }
-  
-  // Filter to only show allowed types
-  const allowedProjectionTypes = allowedTypes.value.map(t => t.projectionType.toUpperCase());
-  return baseTypeOptions.filter(option => 
+
+  const allowedProjectionTypes = allowedTypes.value.map(type => type.projectionType.toUpperCase());
+  return baseTypeOptions.value.filter(option =>
     allowedProjectionTypes.includes(option.projectionType.toUpperCase())
   );
 });
+
 const searchQuery = ref('');
 const sortField = ref('createdAt');
 const sortOrder = ref('desc');
@@ -355,16 +369,52 @@ const statistics = ref({
   totalResponses: 0
 });
 
-// Columns configuration
-const columns = [
-  { key: 'formId', label: 'Form ID', sortable: true, visible: true, showInTable: true, visibility: { list: true } },
-  { key: 'name', label: 'Name', sortable: true, visible: true, showInTable: true, visibility: { list: true } },
-  { key: 'formType', label: 'Type', sortable: true, visible: true, showInTable: true, visibility: { list: true } },
-  { key: 'status', label: 'Status', sortable: true, visible: true, showInTable: true, visibility: { list: true } },
-  { key: 'visibility', label: 'Visibility', sortable: true, visible: true, showInTable: true, visibility: { list: true } },
-  { key: 'assignedTo', label: 'Assigned To', sortable: true, visible: true, showInTable: true, visibility: { list: true } },
-  { key: 'createdAt', label: 'Created', sortable: true, visible: true, showInTable: true, visibility: { list: true } }
-];
+const statsConfig = computed(() => [
+  { name: t('forms.hubStatTotalForms'), key: 'total', formatter: 'number' },
+  { name: t('forms.statusActive'), key: 'active', formatter: 'number' },
+  { name: t('forms.statusDraft'), key: 'draft', formatter: 'number' },
+  { name: t('forms.hubStatTotalResponses'), key: 'totalResponses', formatter: 'number' }
+]);
+
+const filterConfig = computed(() => [
+  {
+    key: 'formType',
+    label: t('forms.hubFilterAllTypes'),
+    options: [
+      { value: 'Audit', label: t('forms.typeAudit') },
+      { value: 'Survey', label: t('forms.typeSurvey') },
+      { value: 'Feedback', label: t('forms.typeFeedback') },
+      { value: 'Inspection', label: t('forms.typeInspection') },
+      { value: 'Custom', label: t('forms.typeCustom') }
+    ]
+  },
+  {
+    key: 'status',
+    label: t('forms.hubFilterAllStatus'),
+    options: [
+      { value: 'Draft', label: t('forms.statusDraft') },
+      { value: 'Active', label: t('forms.statusActive') },
+      { value: 'Closed', label: t('forms.statusClosed') }
+    ]
+  },
+  {
+    key: 'assignedTo',
+    label: t('forms.hubFilterAllAssignees'),
+    options: [
+      { value: 'me', label: t('forms.hubFilterMyForms') }
+    ]
+  }
+]);
+
+const columns = computed(() => [
+  { key: 'formId', label: t('forms.fieldFormId'), sortable: true, visible: true, showInTable: true, visibility: { list: true } },
+  { key: 'name', label: t('forms.hubColName'), sortable: true, visible: true, showInTable: true, visibility: { list: true } },
+  { key: 'formType', label: t('forms.hubColType'), sortable: true, visible: true, showInTable: true, visibility: { list: true } },
+  { key: 'status', label: t('forms.fieldStatus'), sortable: true, visible: true, showInTable: true, visibility: { list: true } },
+  { key: 'visibility', label: t('forms.hubColVisibility'), sortable: true, visible: true, showInTable: true, visibility: { list: true } },
+  { key: 'assignedTo', label: t('forms.hubColAssignedTo'), sortable: true, visible: true, showInTable: true, visibility: { list: true } },
+  { key: 'createdAt', label: t('forms.hubColCreated'), sortable: true, visible: true, showInTable: true, visibility: { list: true } }
+]);
 
 // Methods
 const fetchForms = async () => {
@@ -379,7 +429,6 @@ const fetchForms = async () => {
       ...filters.value
     };
 
-    // Remove empty filters
     Object.keys(params).forEach(key => {
       if (params[key] === '' || params[key] === null) {
         delete params[key];
@@ -392,17 +441,13 @@ const fetchForms = async () => {
     });
 
     if (response.success) {
-      // Backend returns: { success: true, data: forms[], pagination: {...}, statistics: {...} }
-      // response.data is the array of forms directly
       forms.value = Array.isArray(response.data) ? response.data : [];
-      
-      // Handle pagination
+
       if (response.pagination) {
         pagination.value.totalForms = response.pagination.totalForms || 0;
         pagination.value.totalPages = response.pagination.totalPages || 1;
       }
-      
-      // Handle statistics
+
       if (response.statistics) {
         statistics.value = {
           total: response.statistics.totalForms || 0,
@@ -411,7 +456,6 @@ const fetchForms = async () => {
           totalResponses: response.statistics.totalResponses || 0
         };
       } else {
-        // Fallback: calculate from forms array
         statistics.value = {
           total: forms.value.length,
           active: forms.value.filter(f => f.status === 'Active').length,
@@ -440,15 +484,13 @@ const handleSort = ({ key, order }) => {
 };
 
 const openCreateForm = async () => {
-  // Phase 2B: Load projection metadata before showing type picker
   await loadProjection();
-  
-  // If only one type allowed and default exists, skip picker
+
   if (hideTypeSelector.value && defaultType.value) {
     startFormWithType(defaultType.value.modelValue);
     return;
   }
-  
+
   showTypePicker.value = true;
 };
 
@@ -456,47 +498,44 @@ const startFormWithType = (type) => {
   showTypePicker.value = false;
   const pathBase = '/forms/create';
   const query = { formType: type };
+  const typeLabel = formTypeLabel(type);
 
-  // Utility: close all create-form tabs except one to keep things clean
   const closeOtherCreateTabs = (keepId = null) => {
     tabs.value
       .filter(tab => tab.path && tab.path.startsWith(pathBase) && tab.id !== keepId)
       .forEach(tab => closeTab(tab.id));
   };
 
-  // Reuse any existing create-form tab (always keyed on /forms/create)
   const existingTab = findTabByPath(pathBase);
 
   if (existingTab) {
     closeOtherCreateTabs(existingTab.id);
-    existingTab.title = `New ${type}`;
+    existingTab.title = t('forms.hubTabNewForm', { type: typeLabel });
     switchToTab(existingTab.id);
   } else {
     closeOtherCreateTabs();
     openTab(pathBase, {
       name: 'form-create',
-      title: `New ${type}`,
+      title: t('forms.hubTabNewForm', { type: typeLabel }),
       component: 'FormCreate',
       params: {},
       query
     });
   }
 
-  // Navigate with the selected type to ensure the form picks it up (no new tab path)
   router.replace({ path: pathBase, query }).catch(() => {});
 };
 
 const openFormBuilder = (form) => {
   openTab(`/forms/builder/${form._id}`, {
     name: `form-builder-${form._id}`,
-    title: form.name || 'Form Builder',
+    title: form.name || t('forms.hubTabFormBuilder'),
     component: 'FormBuilder',
     params: { formId: form._id },
     insertAdjacent: true
   });
   router.push(`/forms/builder/${form._id}`);
 };
-
 
 const duplicateForm = async (form) => {
   try {
@@ -506,7 +545,6 @@ const duplicateForm = async (form) => {
 
     if (response.success) {
       await fetchForms();
-      // Optionally open the duplicated form
       openFormBuilder(response.data.data);
     }
   } catch (error) {
@@ -517,7 +555,7 @@ const duplicateForm = async (form) => {
 const viewFormDetail = (form) => {
   openTab(`/forms/${form._id}/detail`, {
     name: `form-detail-${form._id}`,
-    title: form.name || 'Form Details',
+    title: form.name || t('forms.hubTabFormDetails'),
     icon: 'clipboard-document',
     insertAdjacent: true
   });
@@ -527,7 +565,7 @@ const viewFormDetail = (form) => {
 const viewResponses = (form) => {
   openTab(`/forms/${form._id}/responses`, {
     name: `form-responses-${form._id}`,
-    title: `${form.name} - Responses`,
+    title: t('forms.hubTabResponsesTitle', { name: form.name }),
     component: 'FormResponses',
     params: { formId: form._id },
     insertAdjacent: true
@@ -553,8 +591,6 @@ const handleBulkAction = async (actionId, selectedRows) => {
   const formIds = selectedRows.map(form => form._id);
 
   try {
-    // For forms, the ListView already shows a confirmation modal for bulk delete,
-    // so we don't need an additional browser confirm here.
     if (actionId === 'bulk-delete' || actionId === 'delete') {
       if (!formIds.length) return;
 
@@ -566,10 +602,9 @@ const handleBulkAction = async (actionId, selectedRows) => {
 
       await fetchForms();
     }
-    // Placeholder: add other bulk actions (e.g., export) here if needed
   } catch (error) {
     console.error('Error performing bulk action on forms:', error);
-    alert('Error performing bulk action. Please try again.');
+    alert(t('forms.hubBulkActionError'));
   }
 };
 
@@ -599,9 +634,7 @@ const handleImportSuccess = () => {
   fetchForms();
 };
 
-// Lifecycle - Ensure all columns are visible by default
 onBeforeMount(() => {
-  // Check and reset column visibility if columns don't match expected
   if (typeof window !== 'undefined') {
     const expectedKeys = new Set([
       'formId',
@@ -612,50 +645,44 @@ onBeforeMount(() => {
       'assignedTo',
       'createdAt'
     ]);
-    
+
     const listViewKey = 'arivu-listview-forms-columns';
     const savedListView = localStorage.getItem(listViewKey);
     let shouldReset = false;
-    
+
     if (savedListView) {
       try {
         const parsed = JSON.parse(savedListView);
         if (Array.isArray(parsed)) {
           const savedKeys = new Set(parsed.map(c => c.key || c));
-          
-          // Check if saved columns match expected columns
+
           const hasAllExpected = [...expectedKeys].every(key => savedKeys.has(key));
           const hasOnlyExpected = [...savedKeys].every(key => expectedKeys.has(key));
           const sizeMatches = savedKeys.size === expectedKeys.size;
-          
+
           if (!hasAllExpected || !hasOnlyExpected || !sizeMatches) {
-            console.log('Forms columns mismatch - resetting. Expected:', [...expectedKeys].sort(), 'Saved:', [...savedKeys].sort());
             shouldReset = true;
           } else {
-            // Check if all columns are visible
             const allVisible = parsed.every(c => {
               const key = c.key || c;
               return expectedKeys.has(key) && (c.visible !== false);
             });
             if (!allVisible) {
-              console.log('Some Forms columns are hidden - resetting visibility');
               shouldReset = true;
             }
           }
         } else {
           shouldReset = true;
         }
-      } catch (e) {
-        console.log('Error parsing saved Forms columns - resetting:', e);
+      } catch {
         shouldReset = true;
       }
     } else {
-      shouldReset = true; // No saved settings, need to set our columns
+      shouldReset = true;
     }
-    
+
     if (shouldReset) {
-      // Save our 7 columns to localStorage with all visible
-      const columnsToSave = columns.map(col => ({
+      const columnsToSave = columns.value.map(col => ({
         key: col.key,
         label: col.label,
         visible: true,
@@ -663,9 +690,8 @@ onBeforeMount(() => {
         dataType: col.dataType || 'Text',
         showInTable: true
       }));
-      
+
       localStorage.setItem(listViewKey, JSON.stringify(columnsToSave));
-      console.log('Saved Forms columns to localStorage:', columnsToSave.map(c => c.key));
     }
   }
 });
@@ -674,16 +700,13 @@ onMounted(() => {
   fetchForms();
 });
 
-// Refresh forms when tab becomes active (if using KeepAlive)
 onActivated(() => {
   fetchForms();
 });
 
-// Watch for route changes to refresh forms list
 watch(() => route.path, (newPath) => {
   if (newPath === '/forms') {
     fetchForms();
   }
 });
 </script>
-

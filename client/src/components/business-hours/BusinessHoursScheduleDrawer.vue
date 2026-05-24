@@ -33,7 +33,7 @@
                     <div class="bg-indigo-700 dark:bg-indigo-800 px-4 py-6 sm:px-6 flex-shrink-0">
                       <div class="flex items-center justify-between">
                         <DialogTitle class="text-base font-semibold text-white">
-                          {{ isEdit ? 'Edit schedule' : 'Create schedule' }}
+                          {{ isEdit ? t('settings.settingsBhEditSchedule') : t('settings.settingsBhCreateSchedule') }}
                         </DialogTitle>
                         <button
                           type="button"
@@ -41,18 +41,22 @@
                           @click="handleClose"
                         >
                           <span class="absolute -inset-2.5" />
-                          <span class="sr-only">Close</span>
+                          <span class="sr-only">{{ t('actions.close') }}</span>
                           <XMarkIcon class="size-6" aria-hidden="true" />
                         </button>
                       </div>
                       <p class="mt-1 text-sm text-indigo-300">
-                        {{ isEdit ? 'Update working hours for this scope.' : 'Define when this group is available for booking and SLAs.' }}
+                        {{
+                          isEdit
+                            ? t('settings.settingsBhEditScheduleDesc')
+                            : t('settings.settingsBhCreateScheduleDesc')
+                        }}
                       </p>
                     </div>
 
                     <div class="h-0 flex-1 overflow-y-auto">
                       <div v-if="loading" class="px-6 py-12 text-center text-sm text-gray-500 dark:text-gray-400">
-                        Loading schedule…
+                        {{ t('settings.settingsBhLoadingSchedule') }}
                       </div>
                       <div v-else class="px-4 sm:px-6 py-6 space-y-4">
                         <div
@@ -83,7 +87,7 @@
                         :disabled="saving || loading"
                         @click="remove"
                       >
-                        Delete
+                        {{ t('actions.delete') }}
                       </button>
                       <span v-else />
                       <div class="flex gap-3">
@@ -93,14 +97,22 @@
                           :disabled="saving"
                           @click="handleClose"
                         >
-                          Cancel
+                          {{ t('actions.cancel') }}
                         </button>
                         <button
                           type="submit"
                           class="rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 dark:hover:bg-indigo-600 disabled:opacity-50"
                           :disabled="saving || loading"
                         >
-                          {{ saving ? (isEdit ? 'Saving…' : 'Creating…') : (isEdit ? 'Save changes' : 'Create schedule') }}
+                          {{
+                            saving
+                              ? isEdit
+                                ? t('states.saving')
+                                : t('settings.settingsBhCreating')
+                              : isEdit
+                                ? t('settings.saveChanges')
+                                : t('settings.settingsBhCreateSchedule')
+                          }}
                         </button>
                       </div>
                     </div>
@@ -117,6 +129,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
   Dialog,
   DialogPanel,
@@ -147,19 +160,20 @@ const props = defineProps({
 
 const emit = defineEmits(['saved', 'deleted']);
 
+const { t } = useI18n();
 const { fetchSet, createSet, updateSet, deleteSet } = useBusinessHours();
 const { success, error: notifyError } = useNotifications();
 
-const scopeOptions = [
-  { value: 'company', label: 'Everyone in company' },
-  { value: 'group', label: 'Team' },
-  { value: 'user', label: 'Individual' }
-];
+const scopeOptions = computed(() => [
+  { value: 'company', label: t('settings.settingsBhScopeEveryone') },
+  { value: 'group', label: t('settings.settingsBhScopeTeam') },
+  { value: 'user', label: t('settings.settingsBhScopeIndividual') }
+]);
 
-const statusOptions = [
-  { value: 'active', label: 'Active' },
-  { value: 'inactive', label: 'Inactive' }
-];
+const statusOptions = computed(() => [
+  { value: 'active', label: t('settings.settingsBhStatusActive') },
+  { value: 'inactive', label: t('settings.settingsBhStatusInactive') }
+]);
 
 const isEdit = computed(() => props.mode === 'edit' && !!props.scheduleId);
 const loading = ref(false);
@@ -172,7 +186,7 @@ const users = ref([]);
 const groupOptions = computed(() =>
   groups.value.map((g) => ({
     value: g._id,
-    label: g.name || 'Unnamed team'
+    label: g.name || t('settings.settingsBhUnnamedTeam')
   }))
 );
 
@@ -181,7 +195,7 @@ const userOptions = computed(() =>
     const name = [u.firstName, u.lastName].filter(Boolean).join(' ').trim();
     return {
       value: u._id,
-      label: name || u.email || u.username || 'User'
+      label: name || u.email || u.username || t('settings.settingsBhUserFallback')
     };
   })
 );
@@ -249,7 +263,7 @@ async function loadForm() {
       status: set.status
     };
   } catch (e) {
-    formError.value = e?.message || 'Failed to load schedule';
+    formError.value = e?.message || t('settings.settingsBhFailedLoadSchedule');
     notifyError(formError.value);
   } finally {
     loading.value = false;
@@ -263,9 +277,9 @@ function handleClose() {
 
 async function save() {
   formError.value = '';
-  const validationError = validateScheduleForm(form.value);
-  if (validationError) {
-    formError.value = validationError;
+  const validationKey = validateScheduleForm(form.value);
+  if (validationKey) {
+    formError.value = t(`settings.${validationKey}`);
     return;
   }
 
@@ -277,15 +291,15 @@ async function save() {
     });
     if (isEdit.value) {
       await updateSet(props.scheduleId, payload);
-      success('Schedule updated');
+      success(t('settings.settingsBhScheduleUpdated'));
     } else {
       await createSet(payload);
-      success('Schedule created');
+      success(t('settings.settingsBhScheduleCreated'));
     }
     open.value = false;
     emit('saved');
   } catch (e) {
-    formError.value = e?.message || 'Could not save schedule';
+    formError.value = e?.message || t('settings.settingsBhSaveFailed');
     notifyError(formError.value);
   } finally {
     saving.value = false;
@@ -293,15 +307,15 @@ async function save() {
 }
 
 async function remove() {
-  if (!isEdit.value || !confirm('Delete this schedule?')) return;
+  if (!isEdit.value || !confirm(t('settings.settingsBhDeleteScheduleConfirm'))) return;
   saving.value = true;
   try {
     await deleteSet(props.scheduleId);
-    success('Schedule deleted');
+    success(t('settings.settingsBhScheduleDeleted'));
     open.value = false;
     emit('deleted');
   } catch (e) {
-    notifyError(e?.message || 'Delete failed');
+    notifyError(e?.message || t('settings.settingsBhDeleteFailed'));
   } finally {
     saving.value = false;
   }

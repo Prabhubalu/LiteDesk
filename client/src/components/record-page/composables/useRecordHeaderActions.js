@@ -1,3 +1,7 @@
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
+
 import { ref } from 'vue';
 
 const escapeCsvValue = (value) => {
@@ -65,7 +69,7 @@ export const useRecordHeaderActions = ({
       if (typeof onCopySuccess === 'function') {
         onCopySuccess();
       } else {
-        alert('URL copied to clipboard!');
+        alert(t('records.useRecordHeaderActionsToastUrlCopiedToClipboard'));
       }
     } catch (err) {
       console.error('Error copying URL:', err);
@@ -109,7 +113,7 @@ export const useRecordHeaderActions = ({
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Error exporting record:', err);
-      alert('Error exporting record. Please try again.');
+      alert(t('records.useRecordHeaderActionsToastErrorExportingRecordPleaseTry'));
     }
   };
 
@@ -127,7 +131,7 @@ export const useRecordHeaderActions = ({
       showDeleteModal.value = false;
     } catch (err) {
       console.error('Error deleting record:', err);
-      alert('Error deleting record. Please try again.');
+      alert(t('records.useRecordHeaderActionsToastErrorDeletingRecordPleaseTry'));
     } finally {
       deleting.value = false;
     }

@@ -4,7 +4,7 @@
     <button 
       @click.stop="$emit('view', row)"
       class="inline-flex items-center h-8 gap-1.5 px-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors text-sm" 
-      title="View"
+      :title="t('common.viewRecord')"
     >
       <EyeIcon class="w-4 h-4" />
     </button>
@@ -14,7 +14,7 @@
       v-if="authStore.can(module, 'edit')"
       @click.stop="$emit('edit', row)"
       class="inline-flex items-center h-8 gap-1.5 px-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors text-sm" 
-      title="Edit"
+      :title="t('actions.edit')"
     >
       <PencilSquareIcon class="w-4 h-4" />
     </button>
@@ -24,7 +24,7 @@
       v-if="authStore.can(module, 'delete')"
       @click.stop="$emit('delete', row)"
       class="inline-flex items-center h-8 gap-1.5 px-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors text-sm" 
-      title="Delete"
+      :title="t('actions.delete')"
     >
       <TrashIcon class="w-4 h-4" />
     </button>
@@ -37,6 +37,9 @@
 <script setup>
 import { useAuthStore } from '@/stores/authRegistry';
 import { EyeIcon, PencilSquareIcon, TrashIcon } from '@heroicons/vue/24/outline';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 defineProps({
   row: {

@@ -36,6 +36,20 @@ test('viewAll when module scope is all', () => {
   assert.equal(p.contacts.viewAll, true);
 });
 
+test('cases envelope prefers role.permissions.cases over appAccess', () => {
+  const role = {
+    name: 'Agent',
+    canViewAllData: false,
+    permissions: {
+      cases: { read: true, create: true, update: false, delete: false, scope: 'own' }
+    }
+  };
+  const p = projectRoleToUserPermissions(role, []);
+  assert.equal(p.cases.view, true);
+  assert.equal(p.cases.create, true);
+  assert.equal(p.cases.edit, false);
+});
+
 test('HELPDESK cases envelope from appAccess', () => {
   const c = buildCasesEnvelopeFromAppAccess([
     { appKey: APP_KEYS.HELPDESK, roleKey: 'AGENT', status: 'ACTIVE' }

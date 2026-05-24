@@ -1,0 +1,658 @@
+{
+  "attachToAppModalDetailFields": {
+    "message": "حقول التفاصيل",
+    "description": "Auto-migrated from attachToAppModal"
+  },
+  "attachToAppModalStateFields": {
+    "message": "حقول الدولة",
+    "description": "Auto-migrated from attachToAppModal"
+  },
+  "attachToAppModalValidationErrors": {
+    "message": "أخطاء التحقق من الصحة",
+    "description": "Auto-migrated from attachToAppModal"
+  },
+  "attachToAppModalAddingParticipation": {
+    "message": "إضافة المشاركة",
+    "description": "Auto-migrated from attachToAppModal"
+  },
+  "attachToAppModalAddThisPersonToTheApp": {
+    "message": "أضف هذا الشخص إلى التطبيق وقم بتعيين حقول المشاركة",
+    "description": "Auto-migrated from attachToAppModal"
+  },
+  "detachFromAppModalThisWillRemoveThisPersonFrom": {
+    "message": "سيؤدي هذا إلى إزالة هذا الشخص من",
+    "description": "Auto-migrated from detachFromAppModal"
+  },
+  "detachFromAppModalHistoricalRecordsAndActivityLogsWill": {
+    "message": "سيتم الاحتفاظ بالسجلات التاريخية وسجلات الأنشطة",
+    "description": "Auto-migrated from detachFromAppModal"
+  },
+  "historyLayerActivityTimeline": {
+    "message": "الجدول الزمني للنشاط",
+    "description": "Auto-migrated from historyLayer"
+  },
+  "historyLayerHistory": {
+    "message": "تاريخ",
+    "description": "Auto-migrated from historyLayer"
+  },
+  "identityLayerFullName": {
+    "message": "الاسم الكامل",
+    "description": "Auto-migrated from identityLayer"
+  },
+  "identityLayerEditProfile": {
+    "message": "تحرير الملف الشخصي",
+    "description": "Auto-migrated from identityLayer"
+  },
+  "identityLayerRecognitionFirstIdentityInformation": {
+    "message": "التعرف على معلومات الهوية أولاً",
+    "description": "Auto-migrated from identityLayer"
+  },
+  "momentumLayerAllSystemsAreUpToDate": {
+    "message": "جميع الأنظمة محدثة.",
+    "description": "Auto-migrated from momentumLayer"
+  },
+  "momentumLayerNothingNeedsAttentionRightNow": {
+    "message": "لا شيء يحتاج إلى الاهتمام في الوقت الحالي.",
+    "description": "Auto-migrated from momentumLayer"
+  },
+  "momentumLayerShowLess": {
+    "message": "عرض أقل",
+    "description": "Auto-migrated from momentumLayer"
+  },
+  "momentumLayerCurrentActivityAndPriorities": {
+    "message": "النشاط والأولويات الحالية",
+    "description": "Auto-migrated from momentumLayer"
+  },
+  "momentumLayerMomentum": {
+    "message": "دَفعَة",
+    "description": "Auto-migrated from momentumLayer"
+  },
+  "participationCardNoAdditionalInformationAvailable": {
+    "message": "لا توجد معلومات إضافية متاحة.",
+    "description": "Auto-migrated from participationCard"
+  },
+  "participationCardHideDetails": {
+    "message": "إخفاء التفاصيل",
+    "description": "Auto-migrated from participationCard"
+  },
+  "participationCardViewDetails": {
+    "message": "عرض التفاصيل",
+    "description": "Auto-migrated from participationCard"
+  },
+  "participationEditModalDetailFields": {
+    "message": "حقول التفاصيل",
+    "description": "Auto-migrated from participationEditModal"
+  },
+  "participationEditModalChangingTypeUpdatesStatusAutomatically": {
+    "message": "تغيير حالة تحديثات النوع تلقائيًا",
+    "description": "Auto-migrated from participationEditModal"
+  },
+  "participationEditModalValidationErrors": {
+    "message": "أخطاء التحقق من الصحة",
+    "description": "Auto-migrated from participationEditModal"
+  },
+  "participationEditModalEditingParticipationDetails": {
+    "message": "تعديل تفاصيل المشاركة",
+    "description": "Auto-migrated from participationEditModal"
+  },
+  "participationEditModalUpdateParticipationDetailsForThisPerson": {
+    "message": "تحديث تفاصيل المشاركة لهذا الشخص",
+    "description": "Auto-migrated from participationEditModal"
+  },
+  "participationLayerAttachToApp": {
+    "message": "نعلق على التطبيق",
+    "description": "Auto-migrated from participationLayer"
+  },
+  "participationLayerThisPersonIsNotParticipatingIn": {
+    "message": "هذا الشخص لا يشارك في أي تطبيقات حتى الآن.",
+    "description": "Auto-migrated from participationLayer"
+  },
+  "participationLayerNoAppParticipations": {
+    "message": "لا توجد مشاركات التطبيق",
+    "description": "Auto-migrated from participationLayer"
+  },
+  "participationLayerAppParticipationsAndRoles": {
+    "message": "مشاركات التطبيق والأدوار",
+    "description": "Auto-migrated from participationLayer"
+  },
+  "participationLayerAttachToApp2": {
+    "message": "نعلق على التطبيق",
+    "description": "Auto-migrated from participationLayer"
+  },
+  "participationOverviewPanelAvailableApps": {
+    "message": "التطبيقات المتاحة",
+    "description": "Auto-migrated from participationOverviewPanel"
+  },
+  "participationOverviewPanelNoAppParticipationsYet": {
+    "message": "لا توجد مشاركات التطبيق حتى الآن.",
+    "description": "Auto-migrated from participationOverviewPanel"
+  },
+  "participationOverviewPanelSummaryOfThisPersonsParticipationAcross": {
+    "message": "ملخص مشاركة هذا الشخص عبر التطبيقات",
+    "description": "Auto-migrated from participationOverviewPanel"
+  },
+  "participationOverviewPanelParticipationOverview": {
+    "message": "نظرة عامة على المشاركة",
+    "description": "Auto-migrated from participationOverviewPanel"
+  },
+  "participationOverviewPanelPlatformMediated": {
+    "message": "بوساطة منصة",
+    "description": "Auto-migrated from participationOverviewPanel"
+  },
+  "peopleQuickCreateDrawerCouldNotLoadPeopleModulePlease": {
+    "message": "تعذر تحميل وحدة الأشخاص. يرجى المحاولة مرة أخرى.",
+    "description": "Auto-migrated from peopleQuickCreateDrawer"
+  },
+  "peopleQuickCreateDrawerAddToApp": {
+    "message": "أضف إلى التطبيق",
+    "description": "Auto-migrated from peopleQuickCreateDrawer"
+  },
+  "peopleQuickCreateDrawerCreatesIdentityOnlyNoAppParticipation": {
+    "message": "يخلق الهوية فقط. لا توجد مشاركة التطبيق.",
+    "description": "Auto-migrated from peopleQuickCreateDrawer"
+  },
+  "peopleQuickCreateDrawerOptionalChooseAnAppBelowTo": {
+    "message": "اختياري: اختر أحد التطبيقات أدناه لإضافة المشاركة، أو الحفظ للهوية فقط.",
+    "description": "Auto-migrated from peopleQuickCreateDrawer"
+  },
+  "peopleQuickCreateDrawerCreatePerson": {
+    "message": "إنشاء شخص",
+    "description": "Auto-migrated from peopleQuickCreateDrawer"
+  },
+  "relationshipDrillDownsViewAllCases": {
+    "message": "عرض جميع الحالات",
+    "description": "Auto-migrated from relationshipDrillDowns"
+  },
+  "relationshipDrillDownsViewAllMeetings": {
+    "message": "عرض كافة الاجتماعات",
+    "description": "Auto-migrated from relationshipDrillDowns"
+  },
+  "relationshipDrillDownsViewAllTasks": {
+    "message": "عرض كافة المهام",
+    "description": "Auto-migrated from relationshipDrillDowns"
+  },
+  "relationshipDrillDownsViewAllDeals": {
+    "message": "عرض جميع العروض",
+    "description": "Auto-migrated from relationshipDrillDowns"
+  },
+  "salesConvertLeadModalNoContactFieldsAvailable": {
+    "message": "لا توجد حقول اتصال متاحة.",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "salesConvertLeadModalDetailFields": {
+    "message": "حقول التفاصيل",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "salesConvertLeadModalStateFields": {
+    "message": "حقول الدولة",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "salesConvertLeadModalValidationErrors": {
+    "message": "أخطاء التحقق من الصحة",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "salesConvertLeadModalCoreIdentityFieldsNameEmailEtc": {
+    "message": "لا يتم تعديل حقول الهوية الأساسية (الاسم والبريد الإلكتروني وما إلى ذلك). الحقول الخاصة بالرصاص ستكون\n                              مسح.",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "salesConvertLeadModalConvertingSalesParticipation": {
+    "message": "تحويل مشاركة المبيعات",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "salesConvertLeadModalConvertLeadToContact": {
+    "message": "تحويل الرصاص إلى جهة اتصال",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "contactFormModalRecordType": {
+    "message": "نوع السجل",
+    "description": "Auto-migrated from contactFormModal"
+  },
+  "peopleCreateChooseHowYouWantToAdd": {
+    "message": "اختر الطريقة التي تريد بها إضافة هذا الشخص. سيتم قفل هذه النية طوال جلسة الإنشاء بأكملها.",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreateSelectIntent": {
+    "message": "حدد النية",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreateError": {
+    "message": "خطأ",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreateResolvingAppContext": {
+    "message": "جارٍ حل سياق التطبيق...",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreatePleaseSelectWhichAppToUse": {
+    "message": "الرجاء تحديد التطبيق الذي تريد استخدامه:",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreateTypeOwnershipAmbiguity": {
+    "message": "نوع غموض الملكية",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreatePleaseSelectAnAppContextTo": {
+    "message": "الرجاء تحديد سياق التطبيق لإنشاء شخص:",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreateAmbiguousAppContext": {
+    "message": "سياق التطبيق الغامض",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleDetailThisActionWillBeLoggedIn": {
+    "message": "سيتم تسجيل هذا الإجراء في الجدول الزمني للنشاط",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailContactStatusWillBeSetTo": {
+    "message": "سيتم ضبط حالة الاتصال على نشطة (إذا لم تكن مضبوطة بالفعل)",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailLeadSpecificFieldsWillBeCleared": {
+    "message": "سيتم مسح الحقول الخاصة بالعميل المتوقع",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailPersonsRoleChangesFromLeadTo": {
+    "message": "يتغير دور الشخص من العميل المتوقع إلى جهة الاتصال",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailThisWillUpdateThisPersonsRole": {
+    "message": "سيؤدي هذا إلى تحديث دور هذا الشخص في المبيعات.",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailConvertSalesLeadToContact": {
+    "message": "تحويل عميل المبيعات إلى جهة اتصال",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailReEngage": {
+    "message": "إعادة المشاركة",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailNurturing": {
+    "message": "رعاية",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailDisqualified": {
+    "message": "غير مؤهل",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailQualified": {
+    "message": "مؤهَل",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailContacted": {
+    "message": "تم الاتصال به",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailSelectStatus": {
+    "message": "اختر الحالة...",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailLeadStatus": {
+    "message": "حالة الرصاص",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailInfluencer": {
+    "message": "المؤثر",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailDecisionMaker": {
+    "message": "صانع القرار",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailSelectRole": {
+    "message": "حدد الدور...",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailDoNotContact": {
+    "message": "لا تتصل",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailSelectStatus2": {
+    "message": "اختر الحالة...",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailContactStatus": {
+    "message": "حالة الاتصال",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailYouAreAddingThisPersonTo": {
+    "message": "أنت تقوم بإضافة هذا الشخص إلى",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailThisPersonIsAlreadyPartOf": {
+    "message": "هذا الشخص هو بالفعل جزء من جميع التطبيقات المتاحة.",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAllAppsAttached": {
+    "message": "جميع التطبيقات مرفقة",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailChooseHowYouWantToAdd": {
+    "message": "اختر الطريقة التي تريد بها إضافة هذا الشخص إلى التطبيق",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailSelectIntent": {
+    "message": "حدد النية",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailValidationErrors": {
+    "message": "أخطاء التحقق من الصحة",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAddThisPersonToAnotherApp": {
+    "message": "أضف هذا الشخص إلى تطبيق آخر",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAttachToApp": {
+    "message": "نعلق على التطبيق",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailImmutableAuditStreamForThisPerson": {
+    "message": "دفق التدقيق غير قابل للتغيير لهذا الشخص",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailActivityTimeline": {
+    "message": "الجدول الزمني للنشاط",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailEntity": {
+    "message": "كيان",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAppAwareAttachmentsForThisPerson": {
+    "message": "المرفقات المدركة للتطبيقات لهذا الشخص",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailFiles": {
+    "message": "ملفات",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailEntity2": {
+    "message": "كيان",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAppAwareNotesForThisPerson": {
+    "message": "ملاحظات علم التطبيق لهذا الشخص",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailEntity3": {
+    "message": "كيان",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailChangesThisPersonsRoleWithinSales": {
+    "message": "تغيير دور هذا الشخص ضمن المبيعات",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAppSpecificFields": {
+    "message": "الحقول الخاصة بالتطبيق",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailDoNotContact2": {
+    "message": "لا تتصل",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailMobileNumber": {
+    "message": "رقم الهاتف المحمول",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailMobile": {
+    "message": "متحرك",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailLastUpdated": {
+    "message": "آخر تحديث",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailDoNotContact3": {
+    "message": "لا تتصل",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailCreatedVia": {
+    "message": "تم إنشاؤها عبر",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailSharedAcrossAllApps": {
+    "message": "مشتركة عبر جميع التطبيقات",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailCoreInformation": {
+    "message": "المعلومات الأساسية",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailEntity4": {
+    "message": "كيان",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailThisPersonIsAlreadyPartOf2": {
+    "message": "هذا الشخص هو بالفعل جزء من جميع التطبيقات المتاحة.",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAddsThisPersonToANew": {
+    "message": "إضافة هذا الشخص إلى تطبيق جديد دون إنشاء نسخة مكررة.",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAttachToAnotherApp": {
+    "message": "نعلق على تطبيق آخر",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAddThisPersonToAnotherApp2": {
+    "message": "أضف هذا الشخص إلى تطبيق آخر",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAttachToApp2": {
+    "message": "نعلق على التطبيق",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAppContext": {
+    "message": "سياق التطبيق",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailViewingIn": {
+    "message": "عرض في",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailErrorLoadingProfile": {
+    "message": "حدث خطأ أثناء تحميل الملف الشخصي",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleQuickCreateCreatePerson": {
+    "message": "إنشاء شخص",
+    "description": "Auto-migrated from peopleQuickCreate"
+  },
+  "peopleQuickCreateError": {
+    "message": "خطأ",
+    "description": "Auto-migrated from peopleQuickCreate"
+  },
+  "peopleQuickCreateLoadingFields": {
+    "message": "جارٍ تحميل الحقول...",
+    "description": "Auto-migrated from peopleQuickCreate"
+  },
+  "peopleQuickCreateCreateACorePersonIdentity": {
+    "message": "إنشاء هوية شخصية أساسية",
+    "description": "Auto-migrated from peopleQuickCreate"
+  },
+  "peopleQuickCreateAddPerson": {
+    "message": "إضافة شخص",
+    "description": "Auto-migrated from peopleQuickCreate"
+  },
+  "peopleSurfaceThisPersonIsAlreadyPartOf": {
+    "message": "هذا الشخص هو بالفعل جزء من جميع التطبيقات المتاحة.",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceAllAppsAttached": {
+    "message": "جميع التطبيقات مرفقة",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceChooseHowYouWantToAdd": {
+    "message": "اختر الطريقة التي تريد بها إضافة هذا الشخص إلى التطبيق",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceSelectIntent": {
+    "message": "حدد النية",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceValidationErrors": {
+    "message": "أخطاء التحقق من الصحة",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceAddThisPersonToAnotherApp": {
+    "message": "أضف هذا الشخص إلى تطبيق آخر",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceAttachToApp": {
+    "message": "نعلق على التطبيق",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceActionAvailability": {
+    "message": "توافر العمل",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceErrorLoadingProfile": {
+    "message": "حدث خطأ أثناء تحميل الملف الشخصي",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "contactDetailNoTasks": {
+    "message": "لا توجد مهام",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailNoDeals": {
+    "message": "لا صفقات",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailNoOrg": {
+    "message": "لا يوجد منظمة",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailRelations": {
+    "message": "العلاقات",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailDoNotContact": {
+    "message": "لا تتصل",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailBackToContacts": {
+    "message": "العودة إلى جهات الاتصال",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailErrorLoadingContact": {
+    "message": "حدث خطأ أثناء تحميل جهة الاتصال",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailLoadingContact": {
+    "message": "جارٍ تحميل جهة الاتصال...",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactFormModalToastFailedToSaveContactPlease": {
+    "message": "فشل حفظ جهة الاتصال. يرجى التحقق من وحدة التحكم للحصول على التفاصيل.",
+    "description": "Toast from ContactFormModal.vue"
+  },
+  "statusDropdownToastFailedToUpdateStatus": {
+    "message": "فشل تحديث الحالة",
+    "description": "Toast from StatusDropdown.vue"
+  },
+  "statusDropdownToastErrorUpdatingStatus": {
+    "message": "حدث خطأ أثناء تحديث الحالة",
+    "description": "Toast from StatusDropdown.vue"
+  },
+  "sysFieldAssignedTo": {
+    "message": "تم تعيينه ل",
+    "description": "System people field label"
+  },
+  "sysFieldEmail": {
+    "message": "بريد إلكتروني",
+    "description": "System people field label"
+  },
+  "sysFieldPhone": {
+    "message": "هاتف",
+    "description": "System people field label"
+  },
+  "sysFieldMobile": {
+    "message": "متحرك",
+    "description": "System people field label"
+  },
+  "sysFieldFirstName": {
+    "message": "الاسم الأول",
+    "description": "System people field label"
+  },
+  "sysFieldLastName": {
+    "message": "اسم العائلة",
+    "description": "System people field label"
+  },
+  "sysFieldName": {
+    "message": "اسم",
+    "description": "System people field label"
+  },
+  "sysFieldOrganization": {
+    "message": "منظمة",
+    "description": "System people field label"
+  },
+  "sysFieldDescription": {
+    "message": "وصف",
+    "description": "System people field label"
+  },
+  "sysFieldTags": {
+    "message": "العلامات",
+    "description": "System people field label"
+  },
+  "sysFieldDoNotContact": {
+    "message": "لا تتصل",
+    "description": "System people field label"
+  },
+  "sysFieldTitle": {
+    "message": "عنوان",
+    "description": "System people field label"
+  },
+  "sysFieldType": {
+    "message": "يكتب",
+    "description": "System people field label"
+  },
+  "sysFieldStatus": {
+    "message": "حالة",
+    "description": "System people field label"
+  },
+  "sysFieldSource": {
+    "message": "مصدر",
+    "description": "System people field label"
+  },
+  "sysFieldOwner": {
+    "message": "مالك",
+    "description": "System people field label"
+  },
+  "sysFieldCreatedBy": {
+    "message": "تم الإنشاء بواسطة",
+    "description": "System people field label"
+  },
+  "contextAllApps": {
+    "message": "All Apps",
+    "description": "People list app context tab"
+  },
+  "listViewAll": {
+    "message": "All People",
+    "description": "People list default view title"
+  },
+  "listViewMy": {
+    "message": "My People",
+    "description": "People list assigned-to-me view title"
+  },
+  "listCreate": {
+    "message": "New Person",
+    "description": "People list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "Search people...",
+    "description": "People list search placeholder"
+  },
+  "listStatTotal": {
+    "message": "Total People",
+    "description": "People list statistics card"
+  },
+  "listStatWithOrganization": {
+    "message": "With Organization",
+    "description": "People list statistics card"
+  },
+  "listStatWithoutOrganization": {
+    "message": "Without Organization",
+    "description": "People list statistics card"
+  }
+}

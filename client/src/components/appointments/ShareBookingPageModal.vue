@@ -29,10 +29,10 @@
             >
               <div class="border-b border-gray-200 px-5 py-4 dark:border-gray-700">
                 <DialogTitle class="text-lg font-semibold text-gray-900 dark:text-white">
-                  Share booking page
+                  {{ t('appointments.shareModalTitle') }}
                 </DialogTitle>
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                  Email your booking link to contacts from your workspace.
+                  {{ t('appointments.shareModalHint') }}
                 </p>
                 <p v-if="pageTitle" class="mt-2 truncate text-sm font-medium text-indigo-600 dark:text-indigo-400">
                   {{ pageTitle }}
@@ -40,12 +40,12 @@
               </div>
 
               <div class="px-5 py-4">
-                <label class="sr-only" for="share-contact-search">Search contacts</label>
+                <label class="sr-only" for="share-contact-search">{{ t('appointments.searchContactsSr') }}</label>
                 <input
                   id="share-contact-search"
                   v-model="searchQuery"
                   type="search"
-                  placeholder="Search contacts by name or email…"
+                  :placeholder="t('appointments.searchContactsPh')"
                   class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
                   @input="scheduleSearch"
                 />
@@ -60,7 +60,7 @@
                   v-else-if="contactsWithEmail.length === 0"
                   class="py-8 text-center text-sm text-gray-500 dark:text-gray-400"
                 >
-                  {{ searchQuery.trim() ? 'No contacts match your search.' : 'No contacts with an email address yet.' }}
+                  {{ searchQuery.trim() ? t('appointments.noContactsSearch') : t('appointments.noContactsEmail') }}
                 </p>
                 <ul
                   v-else
@@ -93,7 +93,7 @@
                 </ul>
 
                 <p v-if="selectedCount > 0" class="mt-3 text-xs text-gray-500 dark:text-gray-400">
-                  {{ selectedCount }} contact{{ selectedCount === 1 ? '' : 's' }} selected
+                  {{ t('appointments.contactsSelected', { count: selectedCount }) }}
                 </p>
               </div>
 
@@ -103,7 +103,7 @@
                   class="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
                   @click="close"
                 >
-                  Cancel
+                  {{ t('actions.cancel') }}
                 </button>
                 <button
                   type="button"
@@ -111,7 +111,7 @@
                   :disabled="selectedCount === 0"
                   @click="composeEmail"
                 >
-                  Compose email
+                  {{ t('appointments.composeEmail') }}
                 </button>
               </div>
             </DialogPanel>
@@ -124,6 +124,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
   Dialog,
   DialogPanel,
@@ -140,6 +141,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close', 'compose']);
+
+const { t } = useI18n();
 
 const searchQuery = ref('');
 const contacts = ref([]);
@@ -164,7 +167,7 @@ function contactLabel(contact) {
   const first = contact.firstName || contact.first_name || '';
   const last = contact.lastName || contact.last_name || '';
   const name = [first, last].filter(Boolean).join(' ');
-  return name || contact.email || 'Contact';
+  return name || contact.email || t('appointments.contactFallback');
 }
 
 function normalizePeopleResponse(response) {
@@ -184,7 +187,7 @@ async function fetchContacts() {
     const res = await apiClient.get('/people', { params });
     contacts.value = normalizePeopleResponse(res);
   } catch (e) {
-    loadError.value = e?.message || 'Could not load contacts';
+    loadError.value = e?.message || t('appointments.loadContactsFailed');
     contacts.value = [];
   } finally {
     loading.value = false;
@@ -213,13 +216,13 @@ function composeEmail() {
   if (!selected.length || !props.bookingUrl) return;
 
   const to = selected.map((c) => contactEmail(c)).join(', ');
-  const title = props.pageTitle || 'my calendar';
-  const subject = `Book a meeting – ${title}`;
+  const title = props.pageTitle || t('appointments.shareEmailTitleFallback');
+  const subject = t('appointments.shareEmailSubject', { title });
   const body = [
-    '<p>Hi,</p>',
-    '<p>Please use the link below to view my availability and book a time that works for you:</p>',
+    t('appointments.shareEmailBodyHi'),
+    t('appointments.shareEmailBodyLink'),
     `<p><a href="${props.bookingUrl}">${props.bookingUrl}</a></p>`,
-    '<p>Looking forward to connecting.</p>'
+    t('appointments.shareEmailBodyClosing')
   ].join('');
 
   emit('compose', { to, subject, body, recipients: selected });

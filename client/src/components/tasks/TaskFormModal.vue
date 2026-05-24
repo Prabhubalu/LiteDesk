@@ -21,41 +21,41 @@
             type="text" 
             required
             class="input" 
-            placeholder="Enter task title"
+            :placeholder="t('tasks.taskFormModalEnterTaskTitle')"
           />
         </div>
 
         <!-- Description -->
         <div>
-          <label class="label">Description</label>
+          <label class="label">{{ t('settings.coreModDetailDescription') }}</label>
           <textarea 
             v-model="formData.description" 
             rows="3"
             class="input" 
-            placeholder="Enter task description"
+            :placeholder="t('tasks.taskFormModalEnterTaskDescription')"
           ></textarea>
         </div>
 
         <!-- Row: Status & Priority -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="label">Status</label>
+            <label class="label">{{ t('settings.settingsBhFieldStatus') }}</label>
             <select v-model="formData.status" class="input">
-              <option value="todo">To Do</option>
-              <option value="in_progress">In Progress</option>
-              <option value="waiting">Waiting</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
+              <option value="todo">{{ t('tasks.taskFormModalToDo') }}</option>
+              <option value="in_progress">{{ t('forms.hubExecutionInProgress') }}</option>
+              <option value="waiting">{{ t('tasks.taskFormModalWaiting') }}</option>
+              <option value="completed">{{ t('process.execCompleted') }}</option>
+              <option value="cancelled">{{ t('appointments.statsCancelled') }}</option>
             </select>
           </div>
 
           <div>
-            <label class="label">Priority</label>
+            <label class="label">{{ t('settings.modFieldsPriorityLabel') }}</label>
             <select v-model="formData.priority" class="input">
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="urgent">Urgent</option>
+              <option value="low">{{ t('settings.helpdeskExecPriorityLow') }}</option>
+              <option value="medium">{{ t('settings.helpdeskExecPriorityMedium') }}</option>
+              <option value="high">{{ t('settings.helpdeskExecPriorityHigh') }}</option>
+              <option value="urgent">{{ t('tasks.taskFormModalUrgent') }}</option>
             </select>
           </div>
         </div>
@@ -63,7 +63,7 @@
         <!-- Row: Due Date & Assigned To -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="label">Due Date</label>
+            <label class="label">{{ t('forms.correctiveDueDate') }}</label>
             <input 
               v-model="formData.dueDate" 
               type="date"
@@ -75,7 +75,7 @@
           <div>
             <label class="label">Assigned To *</label>
             <select v-model="formData.assignedTo" required class="input">
-              <option value="">Select assignee...</option>
+              <option value="">{{ t('tasks.taskFormModalSelectAssignee') }}</option>
               <option :value="currentUser._id">{{ currentUser.firstName }} {{ currentUser.lastName }} (Me)</option>
               <!-- Add other team members here when available -->
             </select>
@@ -84,7 +84,7 @@
 
         <!-- Estimated Hours -->
         <div>
-          <label class="label">Estimated Hours</label>
+          <label class="label">{{ t('tasks.taskFormModalEstimatedHours') }}</label>
           <input 
             v-model.number="formData.estimatedHours" 
             type="number"
@@ -97,25 +97,25 @@
 
         <!-- Tags -->
         <div>
-          <label class="label">Tags (comma-separated)</label>
+          <label class="label">{{ t('tasks.taskFormModalTagsCommaSeparated') }}</label>
           <input 
             v-model="tagsInput" 
             type="text"
             class="input" 
-            placeholder="e.g., urgent, client, bug-fix"
+            :placeholder="t('tasks.taskFormModalEGUrgentClientBugFix')"
           />
         </div>
 
         <!-- Subtasks -->
         <div>
-          <label class="label">Subtasks</label>
+          <label class="label">{{ t('common.taskSubtasksLabel') }}</label>
           <div class="space-y-2">
             <div v-for="(subtask, index) in formData.subtasks" :key="index" class="flex items-center gap-2">
               <input 
                 v-model="subtask.title" 
                 type="text"
                 class="input flex-1" 
-                placeholder="Subtask title"
+                :placeholder="t('tasks.taskFormModalSubtaskTitle')"
               />
               <button 
                 type="button"
@@ -134,19 +134,15 @@
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-              </svg>
-              Add Subtask
-            </button>
+              </svg>{{ t('tasks.taskFormModalAddSubtask') }}</button>
           </div>
         </div>
 
         <!-- Form Actions -->
         <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <button type="button" @click="$emit('close')" class="btn-secondary">
-            Cancel
-          </button>
+          <button type="button" @click="$emit('close')" class="btn-secondary">{{ t('performance.cancelWizard') }}</button>
           <button type="submit" :disabled="saving" class="btn-primary">
-            <span v-if="saving">Saving...</span>
+            <span v-if="saving">{{ t('states.saving') }}</span>
             <span v-else>{{ task ? 'Update Task' : 'Create Task' }}</span>
           </button>
         </div>
@@ -156,6 +152,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, reactive, watch, computed } from 'vue';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '../../utils/apiClient';
@@ -167,6 +164,8 @@ const props = defineProps({
     default: null
   }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['close', 'save']);
 
@@ -244,7 +243,7 @@ const handleSubmit = async () => {
     emit('save');
   } catch (error) {
     console.error('Error saving task:', error);
-    alert('Error saving task. Please try again.');
+    alert(t('tasks.taskFormModalToastErrorSavingTaskPleaseTry'));
   } finally {
     saving.value = false;
   }

@@ -6,26 +6,18 @@
         <div>
           <!-- Breadcrumb -->
           <nav class="mb-4 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-            <router-link to="/settings" class="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-              Settings
-            </router-link>
+            <router-link to="/settings" class="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">{{ t('settings.modFieldsSourceSettings') }}</router-link>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
-            <router-link to="/settings?tab=notifications&notificationPage=overview" class="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-              Notifications
-            </router-link>
+            <router-link to="/settings?tab=notifications&notificationPage=overview" class="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">{{ t('settings.helpdeskExecNotifications') }}</router-link>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
-            <span class="text-gray-900 dark:text-white">Preferences</span>
+            <span class="text-gray-900 dark:text-white">{{ t('common.notificationPreferencesPreferences') }}</span>
           </nav>
-          <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-            Notification Preferences
-          </h1>
-          <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            Control in-app and email notifications for this workspace.
-          </p>
+          <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{{ t('common.notificationPreferencesNotificationPreferences') }}</h1>
+          <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('common.notificationPreferencesControlInAppAndEmailNotifications') }}</p>
         </div>
         <div class="flex items-center gap-3 flex-wrap">
           <!-- Link to notification rules (Phase 17) -->
@@ -35,9 +27,7 @@
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-            Notification Rules
-          </router-link>
+            </svg>{{ t('common.notificationPreferencesNotificationRules') }}</router-link>
           <!-- Admin link to health dashboard (Phase 15) -->
           <router-link
             v-if="authStore.isAdminLike"
@@ -46,18 +36,14 @@
           >
             <svg class="w-4 h-4" viewBox="0 0 20 20" fill="none">
               <path d="M10 2a6 6 0 0 0-6 6v3.586l-.707.707A1 1 0 0 0 4 14h12a1 1 0 0 0 .707-1.707L16 11.586V8a6 6 0 0 0-6-6ZM10 18a3 3 0 0 1-3-3h6a3 3 0 0 1-3 3Z" fill="currentColor" />
-            </svg>
-            Health Dashboard
-          </router-link>
+            </svg>{{ t('common.notificationPreferencesHealthDashboard') }}</router-link>
         </div>
         <div class="flex items-center gap-3 text-xs sm:text-sm">
           <span
             v-if="saving"
             class="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400"
           >
-            <span class="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" aria-hidden="true"></span>
-            Saving…
-          </span>
+            <span class="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" aria-hidden="true"></span>{{ t('settings.integrationsSavingGmailOAuth') }}</span>
           <span
             v-else-if="lastSavedAt && !error"
             class="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400"
@@ -72,9 +58,7 @@
                 d="M16.704 5.29a1 1 0 0 0-1.408-1.42L8 11.293 4.707 8a1 1 0 0 0-1.414 1.414l4 4a1 1 0 0 0 1.414 0l8-8.125Z"
                 fill="currentColor"
               />
-            </svg>
-            Saved
-          </span>
+            </svg>{{ t('states.saved') }}</span>
           <span
             v-if="error"
             class="inline-flex items-center gap-1 text-red-600 dark:text-red-400"
@@ -90,7 +74,7 @@
                 fill="currentColor"
               />
             </svg>
-            <span>Couldn’t save changes. Please try again.</span>
+            <span>{{ t('common.notificationPreferencesCouldntSaveChangesPleaseTryAgain') }}</span>
           </span>
         </div>
       </header>
@@ -99,10 +83,7 @@
       <div
         v-if="!loading && !hasLoaded && error"
         class="rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/30 dark:border-red-900 px-4 py-3 text-sm text-red-700 dark:text-red-300"
-      >
-        We couldn’t load your notification preferences right now. Notifications will
-        continue using their defaults. You can keep using the app safely.
-      </div>
+      >{{ t('common.notificationPreferencesWeCouldntLoadYourNotificationPreferences') }}</div>
 
       <!-- Loading state -->
       <div v-if="loading" class="space-y-3">
@@ -133,9 +114,7 @@
           class="mb-6 p-4 sm:p-5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
         >
           <div class="flex items-center justify-between mb-3">
-            <h2 class="text-sm font-semibold text-gray-900 dark:text-white">
-              Notification delivery
-            </h2>
+            <h2 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('common.notificationPreferencesNotificationDelivery') }}</h2>
           </div>
           <div class="flex flex-wrap items-center gap-2 sm:gap-3">
             <ChannelBadge
@@ -177,9 +156,7 @@
               @click="scrollToChannel('sms')"
             />
           </div>
-          <p class="mt-3 text-xs text-gray-600 dark:text-gray-400">
-            Click a channel to jump to its settings. Disabled channels are not available for this app.
-          </p>
+          <p class="mt-3 text-xs text-gray-600 dark:text-gray-400">{{ t('common.notificationPreferencesClickAChannelToJumpTo') }}</p>
         </div>
         <div
           v-for="group in groupedEvents"
@@ -248,9 +225,7 @@
                     <p
                       v-if="event.isUnknown"
                       class="mt-1 text-[11px] uppercase tracking-wide text-amber-600 dark:text-amber-400 font-semibold"
-                    >
-                      System event (managed by Arivu)
-                    </p>
+                    >{{ t('common.notificationPreferencesSystemEventManagedByArivu') }}</p>
                   </div>
 
                   <!-- Channel badges and toggles (Phase 14) -->
@@ -290,9 +265,7 @@
                     <!-- Toggles (compact) -->
                     <div class="flex gap-3 sm:gap-2 justify-end">
                       <div class="flex items-center gap-2">
-                        <span class="text-xs text-gray-600 dark:text-gray-400">
-                          In app
-                        </span>
+                        <span class="text-xs text-gray-600 dark:text-gray-400">{{ t('common.notificationPreferencesInApp') }}</span>
                         <button
                           :key="`inApp-${event.eventType}-${event.inAppEnabled}-${renderKey}`"
                           type="button"
@@ -313,9 +286,7 @@
                       </div>
 
                       <div class="flex items-center gap-2">
-                        <span class="text-xs text-gray-600 dark:text-gray-400">
-                          Email
-                        </span>
+                        <span class="text-xs text-gray-600 dark:text-gray-400">{{ t('settings.settingsAddFieldTypeEmail') }}</span>
                         <button
                           :key="`email-${event.eventType}-${event.emailEnabled}-${renderKey}`"
                           type="button"
@@ -346,10 +317,7 @@
         <div
           v-if="groupedEvents.length === 0 && hasLoaded"
           class="rounded-xl border border-dashed border-gray-300 dark:border-gray-700 px-4 py-8 text-center text-sm text-gray-600 dark:text-gray-400"
-        >
-          There are no configurable notification events for this app yet.
-          Notifications will continue using their safe defaults.
-        </div>
+        >{{ t('common.notificationPreferencesThereAreNoConfigurableNotificationEvents') }}</div>
 
         <!-- Channel-Specific Sections (Phase 14) -->
         <div class="space-y-4 mt-8">
@@ -361,7 +329,7 @@
           >
             <NotificationChannelSection
               channel="push"
-              title="Push Notifications"
+              :title="t('common.notificationPreferencesPushNotifications')"
               description="Receive notifications even when the app is closed"
               helper-text="Used for critical alerts only. Requires browser permission."
               :available="true"
@@ -376,23 +344,17 @@
                   type="button"
                   @click="requestPushPermission"
                   class="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  Enable Push Notifications
-                </button>
+                >{{ t('common.notificationPreferencesEnablePushNotifications') }}</button>
                 <button
                   v-if="pushPermissionStatus === 'granted'"
                   type="button"
                   @click="testPushNotification"
                   class="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  Test Notification
-                </button>
+                >{{ t('common.notificationPreferencesTestNotification') }}</button>
                 <p
                   v-if="pushPermissionStatus === 'denied'"
                   class="text-xs text-amber-600 dark:text-amber-400"
-                >
-                  Push notifications are blocked. Enable them in your browser settings.
-                </p>
+                >{{ t('common.notificationPreferencesPushNotificationsAreBlockedEnableThem') }}</p>
               </div>
             </NotificationChannelSection>
           </div>
@@ -404,7 +366,7 @@
           >
             <NotificationChannelSection
               channel="whatsapp"
-              title="WhatsApp Notifications"
+              :title="t('common.notificationPreferencesWhatsappNotifications')"
               description="Receive critical alerts via WhatsApp"
               helper-text="Used for critical lifecycle events only. One message per event. No marketing content."
               :available="true"
@@ -412,9 +374,7 @@
               :default-open="false"
               @toggle="handleChannelGlobalToggle('whatsapp', $event)"
             >
-              <p class="text-xs text-gray-600 dark:text-gray-400">
-                WhatsApp notifications are only sent for high-priority events in Audit and Portal apps.
-              </p>
+              <p class="text-xs text-gray-600 dark:text-gray-400">{{ t('common.notificationPreferencesWhatsappNotificationsAreOnlySentFor') }}</p>
             </NotificationChannelSection>
           </div>
 
@@ -425,7 +385,7 @@
           >
             <NotificationChannelSection
               channel="sms"
-              title="SMS Notifications"
+              :title="t('common.notificationPreferencesSmsNotifications')"
               description="Emergency fallback for critical alerts"
               helper-text="Used only when push and email are both unavailable. Short messages under 160 characters."
               :available="true"
@@ -438,9 +398,7 @@
                 <p class="text-xs text-amber-600 dark:text-amber-400 font-medium">
                   ⚠️ Use sparingly
                 </p>
-                <p class="text-xs text-gray-600 dark:text-gray-400">
-                  SMS is only used as a last resort when other channels are unavailable. Messages are kept short and include deep links when possible.
-                </p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">{{ t('common.notificationPreferencesSmsIsOnlyUsedAsA') }}</p>
               </div>
             </NotificationChannelSection>
           </div>
@@ -457,12 +415,8 @@
                     <path d="M10 2a6 6 0 0 0-6 6v3.586l-.707.707A1 1 0 0 0 4 14h12a1 1 0 0 0 .707-1.707L16 11.586V8a6 6 0 0 0-6-6ZM10 18a3 3 0 0 1-3-3h6a3 3 0 0 1-3 3Z" fill="currentColor" />
                   </svg>
                   <div>
-                    <h3 class="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">
-                      Notification Digests
-                    </h3>
-                    <p class="mt-0.5 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                      Receive summaries instead of real-time notifications
-                    </p>
+                    <h3 class="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">{{ t('common.notificationPreferencesNotificationDigests') }}</h3>
+                    <p class="mt-0.5 text-xs sm:text-sm text-gray-600 dark:text-gray-400">{{ t('common.notificationPreferencesReceiveSummariesInsteadOfRealTime') }}</p>
                   </div>
                 </div>
               </div>
@@ -472,15 +426,11 @@
                 <!-- Daily Digest -->
                 <div class="flex items-start justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-0">
                   <div class="flex-1">
-                    <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-1">
-                      Daily Digest
-                    </h4>
-                    <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">
-                      Receive a daily summary of your notifications. Reduces notification noise while keeping you informed.
-                    </p>
+                    <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-1">{{ t('common.notificationPreferencesDailyDigest') }}</h4>
+                    <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">{{ t('common.notificationPreferencesReceiveADailySummaryOfYour') }}</p>
                     <div class="flex flex-wrap items-center gap-3">
                       <div class="flex items-center gap-2">
-                        <span class="text-xs text-gray-600 dark:text-gray-400">In-app</span>
+                        <span class="text-xs text-gray-600 dark:text-gray-400">{{ t('settings.modFieldsPbAlertInApp') }}</span>
                         <button
                           type="button"
                           class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -497,7 +447,7 @@
                         </button>
                       </div>
                       <div class="flex items-center gap-2">
-                        <span class="text-xs text-gray-600 dark:text-gray-400">Email</span>
+                        <span class="text-xs text-gray-600 dark:text-gray-400">{{ t('settings.settingsAddFieldTypeEmail') }}</span>
                         <button
                           type="button"
                           class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -520,15 +470,11 @@
                 <!-- Weekly Digest -->
                 <div class="flex items-start justify-between py-3">
                   <div class="flex-1">
-                    <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-1">
-                      Weekly Digest
-                    </h4>
-                    <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">
-                      Receive a weekly summary via email. Perfect for staying informed without daily interruptions.
-                    </p>
+                    <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-1">{{ t('common.notificationPreferencesWeeklyDigest') }}</h4>
+                    <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">{{ t('common.notificationPreferencesReceiveAWeeklySummaryViaEmail') }}</p>
                     <div class="flex flex-wrap items-center gap-3">
                       <div class="flex items-center gap-2">
-                        <span class="text-xs text-gray-600 dark:text-gray-400">Email</span>
+                        <span class="text-xs text-gray-600 dark:text-gray-400">{{ t('settings.settingsAddFieldTypeEmail') }}</span>
                         <button
                           type="button"
                           class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -557,6 +503,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useNotificationStore } from '@/stores/notifications';
@@ -1072,7 +1021,7 @@ const pushStatusText = computed(() => {
 
 async function requestPushPermission() {
   if (!('Notification' in window) || !('serviceWorker' in navigator)) {
-    alert('Push notifications are not supported in this browser.');
+    alert(t('common.notificationPreferencesToastPushNotificationsAreNotSupported'));
     return;
   }
 
@@ -1139,13 +1088,13 @@ async function testPushNotification() {
   // Double-check permission status (it might have changed)
   const currentPermission = Notification.permission;
   if (currentPermission !== 'granted') {
-    alert(`Push notification permission is "${currentPermission}". Please enable push notifications first by clicking "Enable Push Notifications".`);
+    alert(`Push notification permission is "${currentPermission}". Please enable push notifications first by clicking t('common.notificationPreferencesToastEnablePushNotifications').`);
     pushPermissionStatus.value = currentPermission; // Update status
     return;
   }
   
   if (!('Notification' in window)) {
-    alert('Notifications are not supported in this browser.');
+    alert(t('common.notificationPreferencesToastNotificationsAreNotSupportedIn'));
     return;
   }
   
@@ -1170,7 +1119,7 @@ async function testPushNotification() {
             requireInteraction: false
           });
           console.log('[NotificationPreferences] Test notification shown via service worker');
-          toast.success('Test notification triggered. Check your system notifications.');
+          toast.success(t('common.notificationPreferencesToastTestNotificationTriggeredCheckYour'));
           return;
         }
       } catch (swError) {
@@ -1244,11 +1193,11 @@ async function testPushNotification() {
       documentVisibility: document.visibilityState,
       windowFocused: document.hasFocus()
     });
-    toast.success('Test notification triggered. If you don’t see it, check Notification Center / browser OS settings.');
+    toast.success(t('common.notificationPreferencesToastTestNotificationTriggeredIfYou'));
   } catch (error) {
     console.error('[NotificationPreferences] Failed to show test notification:', error);
-    alert(`Failed to show test notification: ${error.message || 'Unknown error'}. Please check the console for details.`);
-    toast.error('Test notification failed. See console for details.');
+    alert(`Failed to show test notification: ${error.message || t('common.notificationPreferencesToastUnknownError')}. Please check the console for details.`);
+    toast.error(t('common.notificationPreferencesToastTestNotificationFailedSeeConsole'));
   }
 }
 

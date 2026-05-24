@@ -265,6 +265,18 @@ export const useAuthStore = defineStore('auth', {
                     ? String(userData.organization._id)
                     : (userData.organizationId ? String(userData.organizationId) : undefined),
             });
+
+            void this.syncI18nFromOrganization();
+        },
+
+        async syncI18nFromOrganization() {
+            try {
+                const { initI18n } = await import('@/i18n');
+                const orgLang = this.organization?.settings?.language ?? null;
+                await initI18n({ orgLanguage: orgLang, userLanguage: null });
+            } catch (_e) {
+                /* i18n optional at bootstrap */
+            }
         },
         
         clearUser() {

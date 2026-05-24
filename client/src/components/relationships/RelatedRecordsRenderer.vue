@@ -8,11 +8,9 @@
       <div class="flex items-start">
         <ExclamationTriangleIcon class="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-0.5 mr-3 flex-shrink-0" />
         <div class="flex-1">
-          <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-            Required Relationships Missing
-          </h3>
+          <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-200">{{ t('records.relatedRecordsRendererRequiredRelationshipsMissing') }}</h3>
           <div class="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
-            <p>The following required relationships must be linked before saving:</p>
+            <p>{{ t('records.relatedRecordsRendererTheFollowingRequiredRelationshipsMustBe') }}</p>
             <ul class="mt-1 list-disc list-inside">
               <li v-for="rel in requiredRelationships" :key="rel.relationshipKey">
                 {{ rel.ui?.label || rel.label || rel.relationshipKey }}
@@ -32,9 +30,7 @@
       Error loading relationships: {{ error.message }}
     </div>
 
-    <div v-else-if="!hasAnyRelationships" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">
-      No relationships configured for this record type.
-    </div>
+    <div v-else-if="!hasAnyRelationships" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">{{ t('records.relatedRecordsRendererNoRelationshipsConfiguredForThisRecord') }}</div>
 
     <div v-else class="space-y-6">
       <!-- TAB Relationships -->
@@ -80,6 +76,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { computed, onMounted, watch } from 'vue';
 import { ExclamationTriangleIcon } from '@heroicons/vue/24/outline';
 import { useRecordContext } from '@/composables/useRecordContext';
@@ -92,6 +89,8 @@ const props = defineProps({
   moduleKey: { type: String, required: true },
   recordId: { type: [String, Object], required: true }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['required-relationship-unsatisfied', 'required-relationship-satisfied']);
 

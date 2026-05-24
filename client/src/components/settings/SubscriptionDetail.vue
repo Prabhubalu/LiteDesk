@@ -8,7 +8,7 @@
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
       </svg>
-      <span>Back to Subscriptions</span>
+      <span>{{ t('settings.settingsSubDetailBack') }}</span>
     </button>
 
     <!-- Header -->
@@ -20,7 +20,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
         </div>
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ subscription?.appName || 'Subscription Detail' }}</h2>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ subscription?.appName || t('settings.settingsSubDetailTitleFallback') }}</h2>
       </div>
       <!-- Plan Badge -->
       <div v-if="subscription" class="flex items-center gap-2">
@@ -30,7 +30,7 @@
             getPlanBadgeClass(subscription.plan)
           ]"
         >
-          {{ subscription.plan }}
+          {{ planLabel(subscription.plan) }}
         </span>
       </div>
     </div>
@@ -47,7 +47,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <p class="text-sm text-red-800 dark:text-red-300">
-          {{ error.message || 'Failed to load subscription details' }}
+          {{ error.message || t('settings.settingsSubDetailLoadFailed') }}
         </p>
       </div>
     </div>
@@ -56,7 +56,7 @@
     <div v-else-if="subscription" class="space-y-6">
       <!-- Description -->
       <div>
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Description</h3>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.settingsSubDetailSectionDescription') }}</h3>
         <p class="text-sm text-gray-600 dark:text-gray-400">
           {{ subscription.description }}
         </p>
@@ -64,36 +64,36 @@
 
       <!-- Plan Details -->
       <div v-if="subscription.planDetails" class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Plan Details</h3>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('settings.settingsSubDetailSectionPlanDetails') }}</h3>
         <div class="space-y-3">
           <div class="flex items-center justify-between">
-            <span class="text-sm text-gray-600 dark:text-gray-400">Plan Name</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.settingsSubDetailPlanName') }}</span>
             <span class="text-sm font-medium text-gray-900 dark:text-white">{{ subscription.planDetails.name }}</span>
           </div>
           <div v-if="subscription.planDetails.period?.start" class="flex items-center justify-between">
-            <span class="text-sm text-gray-600 dark:text-gray-400">Period Start</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.settingsSubDetailPeriodStart') }}</span>
             <span class="text-sm font-medium text-gray-900 dark:text-white">
-              {{ formatDate(subscription.planDetails.period.start) }}
+              {{ formatSubscriptionDate(subscription.planDetails.period.start) }}
             </span>
           </div>
           <div v-if="subscription.planDetails.period?.end" class="flex items-center justify-between">
             <span class="text-sm text-gray-600 dark:text-gray-400">
-              {{ subscription.plan === 'Trial' ? 'Trial Ends' : 'Period End' }}
+              {{ subscription.plan === 'Trial' ? t('settings.settingsSubDetailTrialEnds') : t('settings.settingsSubDetailPeriodEnd') }}
             </span>
             <span class="text-sm font-medium text-gray-900 dark:text-white">
-              {{ formatDate(subscription.planDetails.period.end) }}
+              {{ formatSubscriptionDate(subscription.planDetails.period.end) }}
             </span>
           </div>
           <div v-if="subscription.planDetails.daysRemaining !== undefined" class="flex items-center justify-between">
-            <span class="text-sm text-gray-600 dark:text-gray-400">Days Remaining</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.settingsSubDetailDaysRemaining') }}</span>
             <span class="text-sm font-medium text-gray-900 dark:text-white">
-              {{ subscription.planDetails.daysRemaining }} days
+              {{ t('settings.settingsSubDetailDaysCount', { count: subscription.planDetails.daysRemaining }) }}
             </span>
           </div>
           <div v-if="subscription.planDetails.autoRenew !== undefined" class="flex items-center justify-between">
-            <span class="text-sm text-gray-600 dark:text-gray-400">Auto Renew</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.settingsSubDetailAutoRenew') }}</span>
             <span class="text-sm font-medium text-gray-900 dark:text-white">
-              {{ subscription.planDetails.autoRenew ? 'Enabled' : 'Disabled' }}
+              {{ subscription.planDetails.autoRenew ? t('settings.settingsAppsStatusEnabled') : t('settings.settingsAppsStatusDisabled') }}
             </span>
           </div>
         </div>
@@ -101,12 +101,12 @@
 
       <!-- Usage Section -->
       <div>
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Usage</h3>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('settings.settingsSubDetailSectionUsage') }}</h3>
         <div class="space-y-4">
           <!-- Users Usage -->
           <div v-if="subscription.usage?.users" class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-2">
-              <span class="text-sm font-medium text-gray-900 dark:text-white">Users</span>
+              <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.settingsSubsUsageUsers') }}</span>
               <span class="text-sm text-gray-600 dark:text-gray-400">
                 {{ subscription.usage.users.current }} / {{ subscription.usage.users.limit }} {{ subscription.usage.users.unit || '' }}
               </span>
@@ -118,14 +118,14 @@
               ></div>
             </div>
             <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
-              {{ getUsagePercentage(subscription.usage.users.current, subscription.usage.users.limit) }}% of limit used
+              {{ t('settings.settingsSubDetailUsagePercent', { percent: getUsagePercentage(subscription.usage.users.current, subscription.usage.users.limit) }) }}
             </p>
           </div>
 
           <!-- Contacts Usage -->
           <div v-if="subscription.usage?.contacts" class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-2">
-              <span class="text-sm font-medium text-gray-900 dark:text-white">Contacts</span>
+              <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.settingsSubsUsageContacts') }}</span>
               <span class="text-sm text-gray-600 dark:text-gray-400">
                 {{ subscription.usage.contacts.current }} / {{ subscription.usage.contacts.limit }} {{ subscription.usage.contacts.unit || '' }}
               </span>
@@ -137,14 +137,14 @@
               ></div>
             </div>
             <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
-              {{ getUsagePercentage(subscription.usage.contacts.current, subscription.usage.contacts.limit) }}% of limit used
+              {{ t('settings.settingsSubDetailUsagePercent', { percent: getUsagePercentage(subscription.usage.contacts.current, subscription.usage.contacts.limit) }) }}
             </p>
           </div>
 
           <!-- Deals Usage -->
           <div v-if="subscription.usage?.deals" class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-2">
-              <span class="text-sm font-medium text-gray-900 dark:text-white">Deals</span>
+              <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.settingsSubDetailUsageDeals') }}</span>
               <span class="text-sm text-gray-600 dark:text-gray-400">
                 {{ subscription.usage.deals.current }} / {{ subscription.usage.deals.limit }} {{ subscription.usage.deals.unit || '' }}
               </span>
@@ -156,14 +156,14 @@
               ></div>
             </div>
             <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
-              {{ getUsagePercentage(subscription.usage.deals.current, subscription.usage.deals.limit) }}% of limit used
+              {{ t('settings.settingsSubDetailUsagePercent', { percent: getUsagePercentage(subscription.usage.deals.current, subscription.usage.deals.limit) }) }}
             </p>
           </div>
 
           <!-- Storage Usage -->
           <div v-if="subscription.usage?.storage" class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-2">
-              <span class="text-sm font-medium text-gray-900 dark:text-white">Storage</span>
+              <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.settingsSubsUsageStorage') }}</span>
               <span class="text-sm text-gray-600 dark:text-gray-400">
                 {{ subscription.usage.storage.current }} / {{ subscription.usage.storage.limit }} {{ subscription.usage.storage.unit || 'GB' }}
               </span>
@@ -175,7 +175,7 @@
               ></div>
             </div>
             <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
-              {{ getUsagePercentage(subscription.usage.storage.current, subscription.usage.storage.limit) }}% of limit used
+              {{ t('settings.settingsSubDetailUsagePercent', { percent: getUsagePercentage(subscription.usage.storage.current, subscription.usage.storage.limit) }) }}
             </p>
           </div>
         </div>
@@ -183,24 +183,24 @@
 
       <!-- Limits Section -->
       <div>
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Limits</h3>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('settings.settingsSubDetailSectionLimits') }}</h3>
         <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div v-if="subscription.limits?.users !== undefined" class="flex items-center justify-between">
-              <span class="text-sm text-gray-600 dark:text-gray-400">Max Users</span>
+              <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.settingsSubDetailMaxUsers') }}</span>
               <span class="text-sm font-medium text-gray-900 dark:text-white">{{ subscription.limits.users }}</span>
             </div>
             <div v-if="subscription.limits?.contacts !== undefined" class="flex items-center justify-between">
-              <span class="text-sm text-gray-600 dark:text-gray-400">Max Contacts</span>
+              <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.settingsSubDetailMaxContacts') }}</span>
               <span class="text-sm font-medium text-gray-900 dark:text-white">{{ subscription.limits.contacts }}</span>
             </div>
             <div v-if="subscription.limits?.deals !== undefined" class="flex items-center justify-between">
-              <span class="text-sm text-gray-600 dark:text-gray-400">Max Deals</span>
+              <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.settingsSubDetailMaxDeals') }}</span>
               <span class="text-sm font-medium text-gray-900 dark:text-white">{{ subscription.limits.deals }}</span>
             </div>
             <div v-if="subscription.limits?.storage !== undefined" class="flex items-center justify-between">
-              <span class="text-sm text-gray-600 dark:text-gray-400">Max Storage</span>
-              <span class="text-sm font-medium text-gray-900 dark:text-white">{{ subscription.limits.storage }} GB</span>
+              <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.settingsSubDetailMaxStorage') }}</span>
+              <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.settingsSubsStorageGb', { amount: subscription.limits.storage }) }}</span>
             </div>
           </div>
         </div>
@@ -213,15 +213,15 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
           <div class="flex-1">
-            <h3 class="text-base font-semibold text-indigo-800 dark:text-indigo-300">Upgrade Available</h3>
+            <h3 class="text-base font-semibold text-indigo-800 dark:text-indigo-300">{{ t('settings.settingsSubDetailUpgradeTitle') }}</h3>
             <p class="mt-1 text-sm text-indigo-700 dark:text-indigo-400">
-              Upgrade your {{ subscription.appName }} subscription to access more features and higher limits.
+              {{ t('settings.settingsSubDetailUpgradeBody', { app: subscription.appName }) }}
             </p>
             <button
               @click="handleUpgrade"
               class="mt-3 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
             >
-              <span>Upgrade {{ subscription.appName }}</span>
+              <span>{{ t('settings.settingsSubsUpgradeCta', { appName: subscription.appName }) }}</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
@@ -236,8 +236,12 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
+import { useLocale } from '@/composables/useLocale';
 
+const { t } = useI18n();
+const { formatDate } = useLocale();
 const route = useRoute();
 const router = useRouter();
 
@@ -245,13 +249,27 @@ const subscription = ref(null);
 const loading = ref(true);
 const error = ref(null);
 
+const PLAN_LABEL_KEYS = {
+  Trial: 'settings.settingsSubsPlanTrial',
+  Paid: 'settings.settingsSubsPlanPaid',
+  Active: 'settings.settingsSubsPlanActive',
+  Suspended: 'settings.settingsSubsPlanSuspended',
+  'Not Subscribed': 'settings.settingsSubsPlanNotSubscribed',
+  DISABLED: 'settings.settingsAppsStatusDisabled',
+};
+
 const appKey = computed(() => {
   return route.query.appKey || route.params.appKey;
 });
 
+const planLabel = (plan) => {
+  const key = PLAN_LABEL_KEYS[plan];
+  return key ? t(key) : plan;
+};
+
 const fetchSubscription = async () => {
   if (!appKey.value) {
-    error.value = new Error('Application key is required');
+    error.value = new Error(t('settings.settingsSubDetailAppKeyRequired'));
     loading.value = false;
     return;
   }
@@ -267,7 +285,7 @@ const fetchSubscription = async () => {
     if (data && data.success && data.appKey) {
       subscription.value = data;
     } else {
-      error.value = new Error('Invalid response from server');
+      error.value = new Error(t('settings.settingsSubDetailInvalidResponse'));
       subscription.value = null;
     }
   } catch (err) {
@@ -284,19 +302,16 @@ const goBack = () => {
 };
 
 const handleUpgrade = () => {
-  // Placeholder for upgrade action
-  // In a real implementation, this would navigate to a billing/upgrade page
-  alert(`Upgrade functionality for ${subscription.value?.appName} will be implemented here.`);
+  alert(t('settings.settingsSubDetailUpgradeAlert', { app: subscription.value?.appName }));
 };
 
-const formatDate = (dateString) => {
+const formatSubscriptionDate = (dateString) => {
   if (!dateString) return '-';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  });
+  return formatDate(dateString, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }) || '-';
 };
 
 const getUsagePercentage = (current, limit) => {
@@ -320,4 +335,3 @@ onMounted(() => {
   fetchSubscription();
 });
 </script>
-

@@ -1,8 +1,10 @@
 <script setup>
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useColorMode } from '@/composables/useColorMode';
 import LoginForm from '@/components/LoginForm.vue';
 
+const { t } = useI18n();
 const { colorMode } = useColorMode();
 
 /** Matches Tailwind dark mode: explicit dark, or system when OS prefers dark */
@@ -38,18 +40,20 @@ const brandLogoSrc = computed(() =>
               class="mx-auto h-10 w-auto"
             />
 
-            <h2 class="mt-6 text-center text-2xl/9 font-bold tracking-tight text-gray-900 dark:text-white">Sign in to
-              your account</h2>
+            <h2 class="mt-6 text-center text-2xl/9 font-bold tracking-tight text-gray-900 dark:text-white">
+              {{ t('auth.signInTitle') }}
+            </h2>
           </div>
 
           <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm md:max-w-md">
             <LoginForm />
 
             <p class="mt-10 text-center text-smd/6 text-gray-500">
-              Don't have an account?
+              {{ t('auth.noAccount') }}
               {{ ' ' }}
-              <router-link to="/demo" class="font-semibold text-indigo-600 hover:text-indigo-500">Request a
-                Demo</router-link>
+              <router-link to="/demo" class="font-semibold text-indigo-600 hover:text-indigo-500">
+                {{ t('auth.requestDemo') }}
+              </router-link>
             </p>
           </div>
         </div>

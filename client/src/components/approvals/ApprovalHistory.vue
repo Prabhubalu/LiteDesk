@@ -2,7 +2,7 @@
   <div class="w-full">
     <!-- Header -->
     <header class="mb-6">
-      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Approval History</h2>
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('records.approvalHistoryApprovalHistory') }}</h2>
       <p class="text-sm text-gray-600 dark:text-gray-400">
         History of approvals for {{ entityType }}: {{ entityName }}
       </p>
@@ -15,7 +15,7 @@
 
     <!-- Empty State -->
     <div v-else-if="approvals.length === 0" class="text-center py-8 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-      <p class="text-sm text-gray-600 dark:text-gray-400">No approval history found</p>
+      <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('records.approvalHistoryNoApprovalHistoryFound') }}</p>
     </div>
 
     <!-- History Timeline -->
@@ -49,23 +49,21 @@
 
             <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
               <div v-if="approval.decidedBy">
-                <span class="font-medium">Decided by:</span>
+                <span class="font-medium">{{ t('records.approvalHistoryDecidedBy') }}</span>
                 {{ getDeciderName(approval) }}
               </div>
               <div v-if="approval.reason">
-                <span class="font-medium">Reason:</span>
+                <span class="font-medium">{{ t('records.approvalHistoryReason') }}</span>
                 {{ approval.reason }}
               </div>
               <div v-if="approval.processId?.name">
-                <span class="font-medium">Process:</span>
+                <span class="font-medium">{{ t('records.approvalHistoryProcess') }}</span>
                 {{ approval.processId.name }}
               </div>
             </div>
 
             <!-- Escalation History -->
-            <div v-if="approval.escalatedApprovers && approval.escalatedApprovers.length > 0" class="mt-2 text-xs text-blue-600 dark:text-blue-400">
-              Escalated to new approvers
-            </div>
+            <div v-if="approval.escalatedApprovers && approval.escalatedApprovers.length > 0" class="mt-2 text-xs text-blue-600 dark:text-blue-400">{{ t('records.approvalHistoryEscalatedToNewApprovers') }}</div>
           </div>
         </div>
       </div>
@@ -74,6 +72,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, onMounted } from 'vue';
 import apiClient from '@/utils/apiClient';
 
@@ -91,6 +90,8 @@ const props = defineProps({
     default: ''
   }
 });
+
+const { t } = useI18n();
 
 const approvals = ref([]);
 const loading = ref(true);

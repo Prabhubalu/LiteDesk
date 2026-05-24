@@ -3,9 +3,9 @@
     <!-- Header with Tabs -->
     <div class="mb-6">
       <div>
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Users & Access</h2>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.tabUsersAccess') }}</h2>
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-          Manage users, roles, permissions, and teams for your organization
+          {{ t('settings.usersAccessSubtitle') }}
         </p>
       </div>
       
@@ -23,7 +23,7 @@
               'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors'
             ]"
           >
-            {{ tab.name }}
+            {{ t(tab.nameKey) }}
           </button>
         </nav>
       </div>
@@ -51,6 +51,9 @@
 
 <script setup>
 import { ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import UserManagement from './UserManagement.vue';
 import RolesPermissions from './RolesPermissions.vue';
 import GroupsSettings from './GroupsSettings.vue';
@@ -59,9 +62,9 @@ const USERS_ACCESS_TAB_KEY = 'arivu-users-access-tab';
 const activeTab = ref(localStorage.getItem(USERS_ACCESS_TAB_KEY) || 'users');
 
 const tabs = [
-  { id: 'users', name: 'User Management' },
-  { id: 'roles', name: 'Roles & Permissions' },
-  { id: 'groups', name: 'Groups & Teams' }
+  { id: 'users', nameKey: 'settings.usersTabManagement' },
+  { id: 'roles', nameKey: 'settings.usersTabRoles' },
+  { id: 'groups', nameKey: 'settings.usersTabGroups' }
 ];
 
 // Persist sub-tab selection

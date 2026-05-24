@@ -57,9 +57,7 @@
                   <!-- Fixed Header -->
                   <div class="flex-shrink-0 bg-indigo-700 dark:bg-indigo-800 px-4 py-6 sm:px-6 border-b border-indigo-600 dark:border-indigo-700">
                     <div class="flex items-center justify-between">
-                      <DialogTitle class="text-base font-semibold text-white">
-                        Create Person
-                      </DialogTitle>
+                      <DialogTitle class="text-base font-semibold text-white">{{ t('people.peopleQuickCreateDrawerCreatePerson') }}</DialogTitle>
                       <div class="ml-3 flex h-7 items-center">
                         <button 
                           type="button" 
@@ -67,7 +65,7 @@
                           @click="closeDrawer"
                         >
                           <span class="absolute -inset-2.5"></span>
-                          <span class="sr-only">Close panel</span>
+                          <span class="sr-only">{{ t('forms.previewClosePanelSr') }}</span>
                           <XMarkIcon class="size-6" aria-hidden="true" />
                         </button>
                       </div>
@@ -80,12 +78,8 @@
                         <p v-if="appContextHint" class="text-xs text-indigo-200 dark:text-indigo-300 mt-2">
                           {{ appContextHint }}
                         </p>
-                        <p v-else-if="optionalAppParticipation && !effectiveAppKey" class="text-xs text-indigo-200 dark:text-indigo-300 mt-2">
-                          Optional: choose an app below to add participation, or save for identity only.
-                        </p>
-                        <p v-else-if="!effectiveAppKey" class="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                          Creates identity only. No app participation.
-                        </p>
+                        <p v-else-if="optionalAppParticipation && !effectiveAppKey" class="text-xs text-indigo-200 dark:text-indigo-300 mt-2">{{ t('people.peopleQuickCreateDrawerOptionalChooseAnAppBelowTo') }}</p>
+                        <p v-else-if="!effectiveAppKey" class="text-xs text-gray-400 dark:text-gray-500 mt-2">{{ t('people.peopleQuickCreateDrawerCreatesIdentityOnlyNoAppParticipation') }}</p>
                       </div>
                   </div>
 
@@ -137,18 +131,14 @@
                             v-if="optionalAppParticipation && contextAppKeyPropIsNull"
                             class="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6"
                           >
-                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">
-                              App participation
-                            </h3>
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">{{ t('records.genericAppParticipation') }}</h3>
                             <Listbox
                               :model-value="selectedOptionalAppKey"
                               as="div"
                               class="block"
                               @update:model-value="onOptionalAppChange"
                             >
-                              <ListboxLabel class="block text-sm/6 font-medium text-gray-900 dark:text-white mb-1">
-                                Add to app
-                              </ListboxLabel>
+                              <ListboxLabel class="block text-sm/6 font-medium text-gray-900 dark:text-white mb-1">{{ t('people.peopleQuickCreateDrawerAddToApp') }}</ListboxLabel>
                               <div class="relative mt-2">
                                 <ListboxButton
                                   type="button"
@@ -213,9 +203,7 @@
                             :errors="errors"
                           />
                         </template>
-                        <p v-else-if="isOpen" class="text-sm text-amber-600 dark:text-amber-400">
-                          Could not load People module. Please try again.
-                        </p>
+                        <p v-else-if="isOpen" class="text-sm text-amber-600 dark:text-amber-400">{{ t('people.peopleQuickCreateDrawerCouldNotLoadPeopleModulePlease') }}</p>
                       </div>
                     </div>
                   </div>
@@ -227,9 +215,7 @@
                         type="button" 
                         class="rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" 
                         @click="closeDrawer"
-                      >
-                        Cancel
-                      </button>
+                      >{{ t('performance.cancelWizard') }}</button>
                       <button 
                         type="submit" 
                         :disabled="saving || submitDisabled" 
@@ -250,6 +236,7 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 // Type declaration for process.env (used in DEV-ONLY guards)
 declare const process: {
   env: {
@@ -311,6 +298,8 @@ const props = defineProps({
     default: false
   }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['close', 'saved']);
 

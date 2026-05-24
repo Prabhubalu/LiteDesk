@@ -26,7 +26,7 @@
           >
             <DialogPanel class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900">
               <DialogTitle class="text-lg font-semibold text-gray-900 dark:text-white">
-                Reschedule appointment
+                {{ t('appointments.rescheduleTitle') }}
               </DialogTitle>
               <p v-if="guestLabel" class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 {{ guestLabel }}
@@ -36,7 +36,7 @@
                 {{ error }}
               </p>
 
-              <p class="mt-4 text-sm font-medium text-gray-700 dark:text-gray-300">Pick a new date</p>
+              <p class="mt-4 text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('appointments.pickNewDate') }}</p>
               <div class="mt-2 flex gap-2 overflow-x-auto pb-2">
                 <button
                   v-for="d in dateOptions"
@@ -53,9 +53,9 @@
                 </button>
               </div>
 
-              <div v-if="slotsLoading" class="py-8 text-center text-sm text-gray-500">Loading times…</div>
+              <div v-if="slotsLoading" class="py-8 text-center text-sm text-gray-500">{{ t('appointments.loadingTimes') }}</div>
               <div v-else-if="selectedDate && !slots.length" class="py-8 text-center text-sm text-gray-500">
-                No times available this day.
+                {{ t('appointments.noTimesThisDay') }}
               </div>
               <div v-else class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
                 <button
@@ -74,7 +74,7 @@
 
               <label class="mt-4 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                 <input v-model="notifyGuest" type="checkbox" class="rounded border-gray-300 text-indigo-600" />
-                Email guest with updated time
+                {{ t('appointments.emailGuestUpdated') }}
               </label>
 
               <div class="mt-6 flex justify-end gap-2">
@@ -84,7 +84,7 @@
                   :disabled="submitting"
                   @click="close"
                 >
-                  Cancel
+                  {{ t('actions.cancel') }}
                 </button>
                 <button
                   type="button"
@@ -92,7 +92,7 @@
                   :disabled="!selectedSlot || submitting"
                   @click="submit"
                 >
-                  {{ submitting ? 'Saving…' : 'Confirm new time' }}
+                  {{ submitting ? t('states.saving') : t('appointments.confirmNewTime') }}
                 </button>
               </div>
             </DialogPanel>
@@ -105,6 +105,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
   Dialog,
   DialogPanel,
@@ -122,6 +123,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:open', 'rescheduled']);
+
+const { t } = useI18n();
 
 const error = ref('');
 const submitting = ref(false);
@@ -174,10 +177,10 @@ async function fetchSlots() {
       params: { date: selectedDate.value }
     });
     slots.value = res.success ? res.data?.slots || [] : [];
-    if (!res.success) error.value = res.message || 'Could not load times';
+    if (!res.success) error.value = res.message || t('appointments.loadTimesFailed');
   } catch (e) {
     slots.value = [];
-    error.value = e?.message || 'Could not load times';
+    error.value = e?.message || t('appointments.loadTimesFailed');
   } finally {
     slotsLoading.value = false;
   }
@@ -198,13 +201,13 @@ async function submit() {
       notifyGuest: notifyGuest.value
     });
     if (!res.success) {
-      error.value = res.message || 'Reschedule failed';
+      error.value = res.message || t('appointments.rescheduleFailed');
       return;
     }
     emit('rescheduled', res.data);
     close();
   } catch (e) {
-    error.value = e?.message || 'Reschedule failed';
+    error.value = e?.message || t('appointments.rescheduleFailed');
   } finally {
     submitting.value = false;
   }

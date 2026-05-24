@@ -29,7 +29,7 @@
                 ? 'text-yellow-900 dark:text-yellow-200'
                 : 'text-red-900 dark:text-red-200'
             ]">
-              {{ error.type === 'plan_limitation' ? 'Feature Not Available' : 'Error Loading Deals' }}
+              {{ error.type === 'plan_limitation' ? t('deals.dealsFeatureNotAvailable') : t('deals.dealsErrorLoading') }}
             </h3>
             <p :class="[
               'text-sm',
@@ -46,9 +46,7 @@
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              Upgrade Plan
-            </button>
+              </svg>{{ t('deals.dealsUpgradePlan') }}</button>
           </div>
         </div>
       </div>
@@ -80,9 +78,7 @@
           type="button"
           class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200/80 dark:border-blue-800/80 text-sm font-medium transition-colors h-10"
         >
-          <RectangleStackIcon class="w-4 h-4" />
-          Group: Stage
-        </button>
+          <RectangleStackIcon class="w-4 h-4" />{{ t('deals.dealsGroupStage') }}</button>
       </template>
       -->
 
@@ -101,22 +97,18 @@
               class="relative z-10 flex-1 flex items-center justify-center gap-2 pl-3 pr-3 py-0 rounded-lg text-sm font-semibold transition-colors duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:ring-offset-gray-800 overflow-visible"
               :class="currentView === 'kanban' ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-600/50'"
             >
-              <ViewColumnsIcon class="w-5 h-5 shrink-0" />
-              Pipeline
-            </button>
+              <ViewColumnsIcon class="w-5 h-5 shrink-0" />{{ t('settings.assignRulesCondFieldPipeline') }}</button>
             <button
               type="button"
               @click="switchView('list')"
               class="relative z-10 flex-1 flex items-center justify-center gap-2 pl-3 pr-3 py-0 rounded-lg text-sm font-semibold transition-colors duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:ring-offset-gray-800 overflow-visible"
               :class="currentView === 'list' ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-600/50'"
             >
-              <ListBulletIcon class="w-5 h-5 shrink-0" />
-              List
-            </button>
+              <ListBulletIcon class="w-5 h-5 shrink-0" />{{ t('forms.rbLayoutList') }}</button>
           </div>
           <ModuleActions 
             module="deals"
-            create-label="New Deal"
+            create-:label="t('deals.dealsNewDeal')"
             @create="openCreateModal"
             @import="showImportModal = true"
             @export="exportDeals"
@@ -195,7 +187,7 @@
             {{ getUserDisplayName(row.ownerId) }}
           </span>
         </div>
-        <span v-else class="text-sm text-gray-500 dark:text-gray-400">Unassigned</span>
+        <span v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('records.editableUnassigned') }}</span>
       </template>
 
       <!-- Custom Close Date Cell -->
@@ -234,14 +226,14 @@
       style="min-height: 400px;"
     >
       <div v-if="pipelines.length > 1" class="flex items-center gap-2 mb-3">
-        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Pipeline</label>
+        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('settings.assignRulesCondFieldPipeline') }}</label>
         <select
           v-model="selectedPipelineKey"
           class="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 min-w-[180px]"
           @change="onPipelineChange"
         >
           <option v-for="p in pipelines" :key="p.key" :value="p.key">
-            {{ p.label }}{{ p.isDefault ? ' (Default)' : '' }}
+            {{ p.label }}{{ p.isDefault ? ` ${t('common.phraseDefaultInParens')}` : '' }}
           </option>
         </select>
       </div>
@@ -251,7 +243,7 @@
         stage-key="stage"
         item-id-key="_id"
         :loading="kanbanLoading"
-        loading-label="Loading pipeline..."
+        loading-:label="t('deals.dealsLoadingPipeline')"
         :get-column-stats="(s) => ({ value: getStageValue(s) })"
         :get-stage-color="getStageColor"
         :card-size="kanbanCardSize"
@@ -359,7 +351,7 @@
         </template>
         <template #empty>
           <InboxIcon class="w-10 h-10 mx-auto mb-2 text-gray-300 dark:text-gray-600" />
-          <p class="text-sm text-gray-500 dark:text-gray-400">No deals in this stage</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('deals.dealsNoDealsInThisStage') }}</p>
         </template>
         <template #add-item="{ stage, isEmpty, stageColor }">
           <button
@@ -374,9 +366,7 @@
             ]"
             :style="stageColor ? { color: stageColor, '--add-btn-hover-bg': hexToRgba(stageColor, 0.12) } : {}"
           >
-            <PlusIcon class="w-4 h-4 flex-shrink-0" />
-            Add Deal
-          </button>
+            <PlusIcon class="w-4 h-4 flex-shrink-0" />{{ t('deals.dealsAddDeal') }}</button>
         </template>
       </KanbanBoard>
     </div>
@@ -402,6 +392,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, computed, onMounted, onUnmounted, onActivated, watch, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -868,7 +861,7 @@ const handleRowClick = (row) => {
 };
 
 const viewDeal = (dealId, event = null, titleOverride = null) => {
-  const title = titleOverride || kanbanDeals.value.find(d => d._id === dealId)?.name || 'Deal Detail';
+  const title = titleOverride || kanbanDeals.value.find(d => d._id === dealId)?.name || t('deals.dealsDealDetail');
   const openInBackground = event && (event.button === 1 || event.metaKey || event.ctrlKey);
   const navContextToken = persistDealNavigationContext(getCurrentDealNavigationIds());
   const routePath = navContextToken
@@ -886,7 +879,7 @@ const handleDelete = async (row) => {
     if (moduleListRef.value?.refresh) moduleListRef.value.refresh();
   } catch (err) {
     console.error('Delete deal error:', err);
-    alert(err?.response?.data?.message || 'Error deleting deal. Please try again.');
+    alert(err?.response?.data?.message || t('common.dealsToastErrorDeletingDealPleaseTry'));
   }
 };
 
@@ -909,7 +902,7 @@ const handleBulkAction = async (action, rows) => {
     }
   } catch (err) {
     console.error('Bulk action error:', err);
-    alert('Error performing bulk action. Please try again.');
+    alert(t('common.dealsToastErrorPerformingBulkActionPlease'));
   }
 };
 
@@ -953,7 +946,7 @@ const exportDeals = async () => {
     document.body.removeChild(a);
   } catch (err) {
     console.error('Export error:', err);
-    alert('Failed to export deals.');
+    alert(t('common.dealsToastFailedToExportDeals'));
   }
 };
 
@@ -977,7 +970,7 @@ const handleKanbanUpdate = async ({ item, newStage, newIndex, previousStage }) =
     if (moduleListRef.value?.refresh) moduleListRef.value.refresh();
   } catch (err) {
     console.error('Error updating stage:', err);
-    const msg = err?.response?.data?.message || err?.message || 'Failed to update deal stage';
+    const msg = err?.response?.data?.message || err?.message || t('deals.dealsStageUpdateFailed');
     alert(msg);
   }
 };
@@ -999,10 +992,10 @@ const formatDate = (date) => {
 };
 
 const getUserDisplayName = (user) => {
-  if (!user) return 'Unassigned';
+  if (!user) return t('records.editableUnassigned');
   const first = user.firstName || user.first_name || '';
   const last = user.lastName || user.last_name || '';
-  return `${first} ${last}`.trim() || user.email || user.username || 'Unassigned';
+  return `${first} ${last}`.trim() || user.email || user.username || t('records.editableUnassigned');
 };
 
 const getInitials = (user) => {

@@ -1,0 +1,210 @@
+{
+  "hubCreateOutcomesAuditOnly": {
+    "message": "Outcomes & Rules are only available for Audit forms.",
+    "description": "Form create wizard step 3 non-audit message"
+  },
+  "hubCreateOutcomesSkipped": {
+    "message": "This step is skipped for Survey and Feedback forms.",
+    "description": "Form create wizard step 3 skipped hint"
+  },
+  "hubCreateStep1RequiredAlert": {
+    "message": "Please complete all sections and questions. All questions must have text.",
+    "description": "Form create wizard sections step validation"
+  },
+  "hubCreateAuditRuleRequired": {
+    "message": "Please select an Audit Result Rule before proceeding.",
+    "description": "Form create wizard outcomes step validation"
+  },
+  "hubCreateValidationFixPrefix": {
+    "message": "Please fix the following issues before saving:\n\n{issues}",
+    "description": "Form create final save validation alert prefix"
+  },
+  "hubCreateDraftSaved": {
+    "message": "Draft saved",
+    "description": "Form create auto-save indicator"
+  },
+  "hubCreateUnsavedTitle": {
+    "message": "Unsaved Changes",
+    "description": "Form create close confirmation title"
+  },
+  "hubCreateUnsavedBody": {
+    "message": "You have unsaved changes. Are you sure you want to leave? Your changes will be lost.",
+    "description": "Form create close confirmation body"
+  },
+  "hubCreateLeaveWithoutSaving": {
+    "message": "Leave Without Saving",
+    "description": "Form create discard changes button"
+  },
+  "hubCreateLoadEditFailed": {
+    "message": "Failed to load form for editing",
+    "description": "Form create edit load error"
+  },
+  "hubCreateLoadDuplicateFailed": {
+    "message": "Failed to load form for duplication",
+    "description": "Form create duplicate load error"
+  },
+  "hubCreateSaveError": {
+    "message": "Error saving form: {detail}",
+    "description": "Form create save error alert"
+  },
+  "hubCreateFormIdRequired": {
+    "message": "Form ID is required for editing",
+    "description": "Form create edit without id error"
+  },
+  "hubCreateVisibilityExternal": {
+    "message": "External",
+    "description": "Form create visibility option (external)"
+  },
+  "hubCreateSubsectionDefault": {
+    "message": "Subsection {number}",
+    "description": "Default subsection name on save"
+  },
+  "hubFillLoadingSubtext": {
+    "message": "Please wait while we prepare your form",
+    "description": "Form fill loading subtext"
+  },
+  "hubFillNotFoundTitle": {
+    "message": "Form Not Found",
+    "description": "Form fill error heading"
+  },
+  "hubFillSubmitSuccessTitle": {
+    "message": "Form Submitted Successfully!",
+    "description": "Form fill success heading"
+  },
+  "hubFillSubmitSuccessBody": {
+    "message": "Your response has been saved and recorded.",
+    "description": "Form fill success body"
+  },
+  "hubFillReturnToEventHint": {
+    "message": "You can now return to the event to complete the audit process.",
+    "description": "Form fill success event hint"
+  },
+  "hubFillReturnToEvent": {
+    "message": "Return to Event",
+    "description": "Form fill return to event button"
+  },
+  "hubFillEventLinked": {
+    "message": "Event Linked",
+    "description": "Form fill event linked badge"
+  },
+  "hubFillBackToEventTitle": {
+    "message": "Back to Event",
+    "description": "Form fill back to event tooltip"
+  },
+  "hubFillQuestionsProgress": {
+    "message": "{answered} / {total} questions answered",
+    "description": "Form fill header progress"
+  },
+  "hubFillPercentComplete": {
+    "message": "{percent}% complete",
+    "description": "Form fill completion percentage"
+  },
+  "hubFillAutoSaveSaved": {
+    "message": "All changes saved",
+    "description": "Form fill auto-save saved state"
+  },
+  "hubFillSectionQuestions": {
+    "message": "{answered} of {total} questions answered",
+    "description": "Form fill section progress"
+  },
+  "hubFillSectionFallback": {
+    "message": "Section {number}",
+    "description": "Form fill unnamed section title"
+  },
+  "hubFillCriticalBadge": {
+    "message": "Critical",
+    "description": "Form fill critical question badge"
+  },
+  "hubFillCriticalTitle": {
+    "message": "Critical Question",
+    "description": "Form fill critical question tooltip"
+  },
+  "hubFillRequiredTitle": {
+    "message": "Required",
+    "description": "Form fill required question tooltip"
+  },
+  "hubFillScoringPts": {
+    "message": "{points} pts",
+    "description": "Form fill question scoring weight"
+  },
+  "hubFillNumberPh": {
+    "message": "Enter a number",
+    "description": "Form fill number input placeholder"
+  },
+  "hubFillDropdownPh": {
+    "message": "Select an option...",
+    "description": "Form fill dropdown empty option"
+  },
+  "hubFillFileUploadPrompt": {
+    "message": "Click to upload or drag and drop",
+    "description": "Form fill file upload prompt"
+  },
+  "hubFillFileFormats": {
+    "message": "PDF, DOC, JPG, PNG up to 10MB",
+    "description": "Form fill file upload formats hint"
+  },
+  "hubFillEvidenceAttachHint": {
+    "message": "Please attach supporting documents or photos for this answer.",
+    "description": "Form fill evidence attachment hint"
+  },
+  "hubFillSubmitErrorHeading": {
+    "message": "Error Submitting Form",
+    "description": "Form fill submit error heading"
+  },
+  "hubFillRequiredRemaining": {
+    "message": "{count, plural, one {# required question remaining} other {# required questions remaining}}",
+    "description": "Form fill required questions remaining"
+  },
+  "hubFillAllRequiredAnswered": {
+    "message": "✓ All required questions answered",
+    "description": "Form fill all required complete"
+  },
+  "hubFillSubmitting": {
+    "message": "Submitting...",
+    "description": "Form fill submit in progress"
+  },
+  "hubFillNotFoundDenied": {
+    "message": "Form not found or access denied",
+    "description": "Form fill fetch not found"
+  },
+  "hubFillLoadFailed": {
+    "message": "Failed to load form",
+    "description": "Form fill fetch error"
+  },
+  "hubFillRequiredAnswerAlert": {
+    "message": "Please answer all required questions ({count} remaining)",
+    "description": "Form fill validation before submit"
+  },
+  "hubFillSubmitFailed": {
+    "message": "Failed to submit form",
+    "description": "Form fill submit error"
+  },
+  "hubFillSubmitFailedRetry": {
+    "message": "Failed to submit form. Please try again.",
+    "description": "Form fill submit error with retry hint"
+  },
+  "hubPublicFormIdLabel": {
+    "message": "Form ID: {id}",
+    "description": "Public form header form id"
+  },
+  "hubPublicTypeLabel": {
+    "message": "Type: {type}",
+    "description": "Public form header type"
+  },
+  "hubPublicThankYou": {
+    "message": "Thank you for your submission.",
+    "description": "Public form success message"
+  },
+  "hubPublicFormNotFound": {
+    "message": "Form not found",
+    "description": "Public form fetch not found"
+  },
+  "hubPublicLoadFailed": {
+    "message": "Failed to load form. Please try again.",
+    "description": "Public form fetch error"
+  },
+  "hubPublicSubmitFailed": {
+    "message": "Failed to submit form. Please try again.",
+    "description": "Public form submit error"
+  }
+}

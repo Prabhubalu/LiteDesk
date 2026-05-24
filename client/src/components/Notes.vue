@@ -4,7 +4,7 @@
     <div v-if="loading" class="flex items-center justify-center py-8">
       <div class="text-center">
         <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
-        <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">Loading notes...</p>
+        <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">{{ t('records.notesLoadingNotes') }}</p>
       </div>
     </div>
 
@@ -15,9 +15,7 @@
           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
         </svg>
         <div class="flex-1">
-          <h3 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-1">
-            Error Loading Notes
-          </h3>
+          <h3 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-1">{{ t('records.notesErrorLoadingNotes') }}</h3>
           <p class="text-sm text-red-700 dark:text-red-300">{{ error }}</p>
         </div>
       </div>
@@ -30,11 +28,9 @@
           <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
         </svg>
         <div class="flex-1">
-          <h3 class="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-1">
-            Cannot Load Notes
-          </h3>
+          <h3 class="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-1">{{ t('records.notesCannotLoadNotes') }}</h3>
           <p class="text-sm text-yellow-700 dark:text-yellow-300">
-            {{ blockedReason || 'App context is ambiguous. Cannot determine which notes to show.' }}
+            {{ blockedReason || t('records.notesBlockedContext') }}
           </p>
         </div>
       </div>
@@ -46,13 +42,11 @@
       <div v-if="canCreate" class="mb-6">
         <form @submit.prevent="createNote" class="space-y-3">
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Add Note
-            </label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('records.notesAddNote') }}</label>
             <textarea
               v-model="newNoteContent"
               rows="3"
-              placeholder="Write a note..."
+              :placeholder="t('records.notesWriteANote')"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
               :disabled="creating"
             ></textarea>
@@ -66,9 +60,7 @@
               @click="newNoteContent = ''; createError = null"
               :disabled="creating"
               class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Clear
-            </button>
+            >{{ t('settings.modFieldsClear') }}</button>
             <button
               type="submit"
               :disabled="creating || !newNoteContent.trim()"
@@ -80,7 +72,7 @@
               <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
               </svg>
-              {{ creating ? 'Adding...' : 'Add Note' }}
+              {{ creating ? t('records.notesAdding') : t('records.notesAddNoteBtn') }}
             </button>
           </div>
         </form>
@@ -97,7 +89,7 @@
             <div class="flex-1 min-w-0">
               <p class="text-sm text-gray-900 dark:text-white whitespace-pre-wrap">{{ note.content }}</p>
               <div class="mt-2 flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
-                <span class="font-medium">{{ note.authorName || 'User' }}</span>
+                <span class="font-medium">{{ note.authorName || t('records.notesUserFallback') }}</span>
                 <span>•</span>
                 <span>{{ formatDate(note.createdAt) }}</span>
                 <span v-if="note.appContext" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200">
@@ -111,11 +103,7 @@
 
       <!-- Empty State -->
       <div v-else-if="!loading && !error && !blocked" class="text-center py-8">
-        <p class="text-sm text-gray-500 dark:text-gray-400 italic">
-          No notes yet.
-          <span v-if="canCreate" class="text-indigo-600 dark:text-indigo-400">
-            Add a note above to get started.
-          </span>
+        <p class="text-sm text-gray-500 dark:text-gray-400 italic">{{ t('records.notesNoNotesYet') }}<span v-if="canCreate" class="text-indigo-600 dark:text-indigo-400">{{ t('records.notesAddANoteAboveToGet') }}</span>
         </p>
       </div>
     </div>
@@ -123,6 +111,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import apiClient from '@/utils/apiClient';
@@ -146,6 +135,8 @@ const props = defineProps({
     default: true
   }
 });
+
+const { t } = useI18n();
 
 const route = useRoute();
 

@@ -3,7 +3,7 @@
     <div class="border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 p-4">
       <div class="flex items-center justify-between mb-2">
         <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-          {{ label || 'Signature' }}
+          {{ label || t('forms.signatureDefaultLabel') }}
           <span v-if="required" class="text-red-500">*</span>
         </label>
         <button
@@ -12,7 +12,7 @@
           type="button"
           class="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
         >
-          Clear
+          {{ t('forms.signatureClear') }}
         </button>
       </div>
       
@@ -38,7 +38,7 @@
           v-if="!signatureData"
           class="absolute inset-0 flex items-center justify-center text-gray-400 dark:text-gray-500 text-sm"
         >
-          Sign here
+          {{ t('forms.signatureSignHere') }}
         </div>
       </div>
       
@@ -49,6 +49,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
   modelValue: String,
@@ -59,6 +60,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:modelValue']);
+
+const { t } = useI18n();
 
 const canvas = ref(null);
 const canvasContainer = ref(null);
@@ -208,4 +211,3 @@ canvas {
   height: 100%;
 }
 </style>
-

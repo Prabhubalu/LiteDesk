@@ -1,0 +1,1214 @@
+{
+  "shellErrorTitle": {
+    "message": "Erro ao carregar registro",
+    "description": "Record page load error heading"
+  },
+  "shellLoadFailed": {
+    "message": "Falha ao carregar registro",
+    "description": "Record page load error fallback"
+  },
+  "contextTabsAria": {
+    "message": "Guias do painel de contexto",
+    "description": "Vertical context tab rail aria label"
+  },
+  "fieldsHeadingSr": {
+    "message": "Campos de registro",
+    "description": "Screen reader heading for record fields section"
+  },
+  "customFieldsHeadingSr": {
+    "message": "Campos personalizados",
+    "description": "Screen reader heading for custom fields section"
+  },
+  "relatedRecordsHeadingSr": {
+    "message": "Registros relacionados",
+    "description": "Screen reader heading for related records section"
+  },
+  "activityHeadingSr": {
+    "message": "Atividade (mais recente na parte inferior)",
+    "description": "Activity timeline screen reader heading"
+  },
+  "activityReply": {
+    "message": "Responder",
+    "description": "Reply to comment action"
+  },
+  "activityEmpty": {
+    "message": "Nenhuma atividade ainda.",
+    "description": "Empty activity feed"
+  },
+  "activityCommentPh": {
+    "message": "Escreva um comentário...",
+    "description": "Comment composer placeholder"
+  },
+  "activityAddAttachment": {
+    "message": "Adicionar anexo",
+    "description": "Add attachment button title"
+  },
+  "activityMention": {
+    "message": "Menção",
+    "description": "Mention button title"
+  },
+  "activityEmoji": {
+    "message": "Emoji",
+    "description": "Emoji picker button title"
+  },
+  "activityCommentBtn": {
+    "message": "Comentário",
+    "description": "Submit comment button"
+  },
+  "activityUpdated": {
+    "message": "atualizado",
+    "description": "Default system activity verb"
+  },
+  "activitySystemWithAction": {
+    "message": "{action} este registro",
+    "description": "System activity fallback with action verb"
+  },
+  "tagsTitle": {
+    "message": "Etiquetas",
+    "description": "Tags popover title"
+  },
+  "tagsNewTag": {
+    "message": "Nova etiqueta",
+    "description": "New tag button"
+  },
+  "tagsNoPermission": {
+    "message": "Você não tem permissão para editar tags.",
+    "description": "Tags read-only message"
+  },
+  "tagsRemoveFromRecord": {
+    "message": "Remover deste registro",
+    "description": "Remove tag from record action"
+  },
+  "tagsEditTag": {
+    "message": "Editar etiqueta",
+    "description": "Edit tag action"
+  },
+  "tagsDeleteFromModule": {
+    "message": "Excluir tag do módulo",
+    "description": "Delete tag from module action"
+  },
+  "tagsSearchHint": {
+    "message": "Clique na caixa de pesquisa para visualizar as tags disponíveis.",
+    "description": "Tags search hint"
+  },
+  "tagsNoneYet": {
+    "message": "Nenhuma tag criada ainda nesta instância.",
+    "description": "Empty tags list"
+  },
+  "tagsCreateFirst": {
+    "message": "Crie a primeira tag",
+    "description": "Create first tag CTA"
+  },
+  "tagsPublic": {
+    "message": "Público",
+    "description": "Public tag badge"
+  },
+  "tagsTagName": {
+    "message": "Nome da etiqueta",
+    "description": "Tag name field label"
+  },
+  "tagsColor": {
+    "message": "Cor",
+    "description": "Tag color field label"
+  },
+  "tagsMakePublic": {
+    "message": "Tornar a tag pública",
+    "description": "Make tag public checkbox"
+  },
+  "tagsSearchPh": {
+    "message": "Pesquise ou crie uma tag",
+    "description": "Tag search placeholder"
+  },
+  "tagsTagActions": {
+    "message": "Ações de tags",
+    "description": "Tag actions menu aria label"
+  },
+  "tagsNamePh": {
+    "message": "Insira o nome da etiqueta",
+    "description": "Tag name input placeholder"
+  },
+  "detailsTitle": {
+    "message": "Detalhes",
+    "description": "Details section title"
+  },
+  "detailsSelectOption": {
+    "message": "Selecione uma opção",
+    "description": "Empty picklist placeholder"
+  },
+  "detailsLinkRecord": {
+    "message": "Clique para vincular o registro",
+    "description": "Empty lookup field placeholder"
+  },
+  "relatedTitle": {
+    "message": "Relacionado",
+    "description": "Related section title"
+  },
+  "relatedEmpty": {
+    "message": "Ainda não há registros relacionados.",
+    "description": "Empty related list"
+  },
+  "relatedEmptyHint": {
+    "message": "Vincule este registro aos itens associados.",
+    "description": "Empty related hint"
+  },
+  "relatedUnlink": {
+    "message": "Desvincular",
+    "description": "Unlink related record"
+  },
+  "relatedActionsAria": {
+    "message": "Ações de registro relacionadas",
+    "description": "Related record actions menu aria"
+  },
+  "stageHistoryTitle": {
+    "message": "História do palco",
+    "description": "Stage history section title"
+  },
+  "subtasksEditAria": {
+    "message": "Editar subtarefa",
+    "description": "Edit subtask button title"
+  },
+  "subtasksDeleteAria": {
+    "message": "Excluir subtarefa",
+    "description": "Delete subtask button title"
+  },
+  "subtasksNamePh": {
+    "message": "Nome da tarefa",
+    "description": "New subtask name placeholder"
+  },
+  "subtasksEmpty": {
+    "message": "Nenhuma subtarefa ainda.",
+    "description": "Empty subtasks list"
+  },
+  "stateHeadingSr": {
+    "message": "Estado do registro",
+    "description": "Record state section screen reader heading"
+  },
+  "descriptionTitle": {
+    "message": "Descrição",
+    "description": "Description section default title"
+  },
+  "descriptionEmpty": {
+    "message": "Sem descrição",
+    "description": "Empty description placeholder"
+  },
+  "tabSummary": {
+    "message": "Resumo",
+    "description": "Right pane summary tab"
+  },
+  "tabDetails": {
+    "message": "Detalhes",
+    "description": "Right pane details tab"
+  },
+  "tabUpdates": {
+    "message": "Atualizações",
+    "description": "Right pane updates tab"
+  },
+  "tabContentFallback": {
+    "message": "{name} conteúdo",
+    "description": "Right pane tab placeholder content"
+  },
+  "sectionActionFallback": {
+    "message": "Ação",
+    "description": "Section stack action button fallback label"
+  },
+  "descriptionAdd": {
+    "message": "Adicionar descrição",
+    "description": "Editable empty description CTA"
+  },
+  "descriptionEmptyReadonly": {
+    "message": "Nenhuma descrição ainda.",
+    "description": "Read-only empty description"
+  },
+  "subtasksHeader": {
+    "message": "Subtarefas ({completed}/{total})",
+    "description": "Subtasks section header with counts"
+  },
+  "subtasksUntitled": {
+    "message": "Subtarefa sem título",
+    "description": "Subtask without title"
+  },
+  "subtasksViewAll": {
+    "message": "Ver tudo ({count})",
+    "description": "View all subtasks link"
+  },
+  "relatedUntitled": {
+    "message": "Sem título",
+    "description": "Related record without title"
+  },
+  "genericLoading": {
+    "message": "Carregando {module}…",
+    "description": "Record page loading message"
+  },
+  "genericErrorTitle": {
+    "message": "Erro ao carregar {module}",
+    "description": "Record page error title"
+  },
+  "genericNavPrevious": {
+    "message": "Anterior {singular}",
+    "description": "Previous record navigation"
+  },
+  "genericNavNext": {
+    "message": "Próximo __UTI_0__",
+    "description": "Next record navigation"
+  },
+  "genericTagsAria": {
+    "message": "Etiquetas",
+    "description": "Tags button aria"
+  },
+  "genericCopyUrl": {
+    "message": "Copiar URL",
+    "description": "Copy URL button"
+  },
+  "genericMoreActions": {
+    "message": "Mais ações",
+    "description": "More actions menu"
+  },
+  "genericSendEmail": {
+    "message": "Enviar e-mail",
+    "description": "Send email menu action"
+  },
+  "genericBackTo": {
+    "message": "Voltar para __UTI_0__",
+    "description": "Back from expanded section"
+  },
+  "genericCollapseSection": {
+    "message": "Recolher seção",
+    "description": "Collapse section aria"
+  },
+  "genericCollapse": {
+    "message": "Colapso",
+    "description": "Collapse button title"
+  },
+  "genericNoDescInVersion": {
+    "message": "Nenhuma descrição nesta versão.",
+    "description": "Empty description version"
+  },
+  "genericVersionHistory": {
+    "message": "Histórico de versões",
+    "description": "Description version history title"
+  },
+  "genericCurrentVersion": {
+    "message": "Versão Atual",
+    "description": "Current version label"
+  },
+  "genericVersionRetention": {
+    "message": "O histórico de versões é armazenado por até 365 dias.",
+    "description": "Version retention note"
+  },
+  "genericRestoreVersion": {
+    "message": "Restaurar esta versão",
+    "description": "Restore description version"
+  },
+  "genericRestoring": {
+    "message": "Restaurando…",
+    "description": "Restore in progress"
+  },
+  "genericSomeone": {
+    "message": "Alguém",
+    "description": "Unknown version author"
+  },
+  "genericKeyFields": {
+    "message": "Campos-chave",
+    "description": "Key fields section heading"
+  },
+  "genericAppParticipation": {
+    "message": "Participação no aplicativo",
+    "description": "People app participation section"
+  },
+  "genericConvertToContact": {
+    "message": "Converter em contato",
+    "description": "Convert lead to contact"
+  },
+  "genericNotInAnyApp": {
+    "message": "Esta pessoa ainda não faz parte de nenhum aplicativo",
+    "description": "Empty people participation"
+  },
+  "genericAddRecord": {
+    "message": "Adicionar registro",
+    "description": "Add related record button"
+  },
+  "genericLinkRecord": {
+    "message": "Registro de link",
+    "description": "Link record button"
+  },
+  "genericShowEmptyFields": {
+    "message": "Mostrar campos vazios",
+    "description": "Show empty fields toggle"
+  },
+  "genericNoFieldsMatch": {
+    "message": "Nenhum campo corresponde ao seu filtro.",
+    "description": "Details filter no match"
+  },
+  "genericNoFieldsToShow": {
+    "message": "Não há campos para mostrar.",
+    "description": "Empty details fields"
+  },
+  "genericNoRecordLoaded": {
+    "message": "Nenhum registro carregado.",
+    "description": "No record state"
+  },
+  "genericIntegrations": {
+    "message": "Integrações",
+    "description": "Integrations section title"
+  },
+  "genericNoIntegrations": {
+    "message": "Nenhuma integração configurada.",
+    "description": "Empty integrations"
+  },
+  "genericFilterFieldsPh": {
+    "message": "Filtrar campos…",
+    "description": "Details field filter placeholder"
+  },
+  "genericOpenInNewTab": {
+    "message": "Abrir em nova aba",
+    "description": "Open record in new tab"
+  },
+  "genericEditParticipation": {
+    "message": "Editar participação",
+    "description": "Edit app participation"
+  },
+  "genericAddToApp": {
+    "message": "Adicionar a {app}",
+    "description": "Add person to app"
+  },
+  "genericLinkDrawerAddAndLink": {
+    "message": "Adicionar e vincular registros",
+    "description": "Link drawer title multi"
+  },
+  "genericLinkDrawerLink": {
+    "message": "Registro de link",
+    "description": "Link drawer title single"
+  },
+  "genericReactorUnavailable": {
+    "message": "Detalhes do reator indisponíveis",
+    "description": "Reactor panel unavailable"
+  },
+  "genericUnlinkFailed": {
+    "message": "Erro ao desvincular registro. Por favor, tente novamente.",
+    "description": "Unlink related record error"
+  },
+  "genericThreadAssigned": {
+    "message": "Tópico atribuído",
+    "description": "Thread assign success"
+  },
+  "genericThreadUnassigned": {
+    "message": "Tópico não atribuído",
+    "description": "Thread unassign success"
+  },
+  "genericThreadAssignFailed": {
+    "message": "Falha ao atribuir tópico",
+    "description": "Thread assign error"
+  },
+  "genericThreadUnassignFailed": {
+    "message": "Falha ao cancelar atribuição do tópico",
+    "description": "Thread unassign error"
+  },
+  "genericTagAdded": {
+    "message": "Etiqueta adicionada",
+    "description": "Tag add success"
+  },
+  "genericTagAddFailed": {
+    "message": "Falha ao adicionar tag",
+    "description": "Tag add error"
+  },
+  "genericTagRemoved": {
+    "message": "Etiqueta removida",
+    "description": "Tag remove success"
+  },
+  "genericTagRemoveFailed": {
+    "message": "Falha ao remover tag",
+    "description": "Tag remove error"
+  },
+  "genericThreadMarkedDone": {
+    "message": "Tópico marcado como concluído",
+    "description": "Thread done success"
+  },
+  "genericThreadReopened": {
+    "message": "Tópico reaberto",
+    "description": "Thread reopen success"
+  },
+  "genericThreadStatusFailed": {
+    "message": "Falha ao atualizar o status do tópico",
+    "description": "Thread status error"
+  },
+  "genericConfirmCancelAppt": {
+    "message": "Cancelar este compromisso? O hóspede pode reservar novamente usando seu link público.",
+    "description": "Cancel appointment confirm"
+  },
+  "genericApptCancelled": {
+    "message": "Agendamento cancelado",
+    "description": "Appointment cancel success"
+  },
+  "genericApptCancelFailed": {
+    "message": "Não foi possível cancelar o agendamento",
+    "description": "Appointment cancel error"
+  },
+  "genericConfirmCompleteAppt": {
+    "message": "Marcar este compromisso como concluído?",
+    "description": "Complete appointment confirm"
+  },
+  "genericApptCompleted": {
+    "message": "Consulta concluída",
+    "description": "Appointment complete success"
+  },
+  "genericApptCompleteFailed": {
+    "message": "Não foi possível concluir o compromisso",
+    "description": "Appointment complete error"
+  },
+  "genericConfirmNoShowAppt": {
+    "message": "Marcar este compromisso como não comparecimento? O evento permanecerá em sua agenda conforme planejado.",
+    "description": "No-show appointment confirm"
+  },
+  "genericApptNoShow": {
+    "message": "Marcado como não comparecimento",
+    "description": "No-show success"
+  },
+  "genericApptNoShowFailed": {
+    "message": "Não foi possível marcar o não comparecimento",
+    "description": "No-show error"
+  },
+  "genericApptRescheduled": {
+    "message": "Consulta remarcada",
+    "description": "Appointment reschedule success"
+  },
+  "genericEmailSent": {
+    "message": "E-mail enviado",
+    "description": "Email send success"
+  },
+  "genericEmailSendFailed": {
+    "message": "Falha ao enviar e-mail",
+    "description": "Email send error"
+  },
+  "genericNotParticipatingIn": {
+    "message": "Ainda não participa de {app}",
+    "description": "People not in app context"
+  },
+  "genericDetailsEmptyValuesHint": {
+    "message": "Nenhum campo com valores. Ative “Mostrar campos vazios” para ver o resto.",
+    "description": "Details tab empty values hint"
+  },
+  "genericPersonReacted": {
+    "message": "pessoa reagiu",
+    "description": "Single reaction tooltip suffix"
+  },
+  "genericPeopleReacted": {
+    "message": "as pessoas reagiram",
+    "description": "Multiple reactions tooltip suffix"
+  },
+  "genericTabActivity": {
+    "message": "Atividade",
+    "description": "Right pane activity tab"
+  },
+  "commentComposerDefaultPh": {
+    "message": "Escreva um comentário... @mencione usuários ou grupos",
+    "description": "Default comment composer placeholder"
+  },
+  "commentAddFile": {
+    "message": "Adicionar um arquivo",
+    "description": "Attach file toolbar button"
+  },
+  "commentMentionTitle": {
+    "message": "Mencione alguém ({atSymbol})",
+    "description": "Mention toolbar button"
+  },
+  "commentAddEmoji": {
+    "message": "Adicionar emoji",
+    "description": "Emoji picker toolbar button"
+  },
+  "commentSubmitLabel": {
+    "message": "Comentário",
+    "description": "Submit comment button label"
+  },
+  "commentMentionLoading": {
+    "message": "Carregando…",
+    "description": "Mention dropdown loading"
+  },
+  "commentMentionGroup": {
+    "message": "Grupo",
+    "description": "Mention item group badge"
+  },
+  "commentMentionEmpty": {
+    "message": "Nenhum usuário ou grupo encontrado",
+    "description": "Empty mention search"
+  },
+  "commentRemoveAttachment": {
+    "message": "Remover {name}",
+    "description": "Remove attachment aria-label"
+  },
+  "editableListboxSearchPh": {
+    "message": "Procurar…",
+    "description": "Inline field listbox search"
+  },
+  "editablePhonePh": {
+    "message": "Número de telefone",
+    "description": "Phone field edit placeholder"
+  },
+  "editableUnassigned": {
+    "message": "Não atribuído",
+    "description": "Empty user field value"
+  },
+  "editableSelectOption": {
+    "message": "Selecione uma opção",
+    "description": "Empty select/entity option"
+  },
+  "editableNoMatches": {
+    "message": "Nenhuma correspondência.",
+    "description": "Listbox filter empty state"
+  },
+  "editableUnknownUser": {
+    "message": "Usuário desconhecido",
+    "description": "User option fallback label"
+  },
+  "dealLoading": {
+    "message": "Carregando oferta…",
+    "description": "Deal record page loading"
+  },
+  "dealErrorTitle": {
+    "message": "Erro ao carregar negócio",
+    "description": "Deal record page error title"
+  },
+  "dealNavPrevious": {
+    "message": "Acordo anterior",
+    "description": "Previous deal navigation"
+  },
+  "dealNavNext": {
+    "message": "Próxima oferta",
+    "description": "Next deal navigation"
+  },
+  "dealModuleLabel": {
+    "message": "Negócio",
+    "description": "Deal module singular label"
+  },
+  "dealBackTo": {
+    "message": "Voltar ao acordo",
+    "description": "Collapse expanded deal section"
+  },
+  "dealEmailContact": {
+    "message": "Contato por e-mail",
+    "description": "Email contact action"
+  },
+  "dealEditAria": {
+    "message": "Editar oferta",
+    "description": "Edit deal action"
+  },
+  "dealVersionRetentionNote": {
+    "message": "O histórico de versões será armazenado por até 365 dias nas descrições das ofertas.",
+    "description": "Deal description version retention"
+  },
+  "dealWeightedAmount": {
+    "message": "Ponderado {amount}",
+    "description": "Deal weighted amount label"
+  },
+  "dealExpectedValuePh": {
+    "message": "Valor esperado",
+    "description": "Deal amount field placeholder"
+  },
+  "dealProbabilityPh": {
+    "message": "Probabilidade",
+    "description": "Deal probability placeholder"
+  },
+  "dealCloseDatePh": {
+    "message": "Data de encerramento",
+    "description": "Deal expected close date placeholder"
+  },
+  "dealStarAria": {
+    "message": "Estrela",
+    "description": "Star/follow deal"
+  },
+  "dealUnstarAria": {
+    "message": "Remover estrela",
+    "description": "Unfollow deal"
+  },
+  "dealRelatedRecordsTab": {
+    "message": "Registros Relacionados",
+    "description": "Deal right pane related tab"
+  },
+  "dealDuplicateNotImplemented": {
+    "message": "Ação duplicada ainda não foi implementada para negócios.",
+    "description": "Deal duplicate stub alert"
+  },
+  "dealExportNotImplemented": {
+    "message": "A ação de exportação ainda não foi implementada para negócios.",
+    "description": "Deal export stub alert"
+  },
+  "dealDeleteFailed": {
+    "message": "Falha ao excluir a oferta",
+    "description": "Deal delete error"
+  },
+  "dealCopyUrlFailed": {
+    "message": "Falha ao copiar o URL",
+    "description": "Deal copy URL error"
+  },
+  "dealCommentAddFailed": {
+    "message": "Falha ao adicionar comentário",
+    "description": "Deal add comment error"
+  },
+  "dealCommentUpdateFailed": {
+    "message": "Falha ao atualizar o comentário",
+    "description": "Deal edit comment error"
+  },
+  "dealCreateTaskFailed": {
+    "message": "Falha ao criar tarefa",
+    "description": "Deal create related task error"
+  },
+  "dealCreateCaseFailed": {
+    "message": "Falha ao criar o caso",
+    "description": "Deal create related case error"
+  },
+  "dealAttachedFilesFallback": {
+    "message": "Arquivo(s) anexado(s)",
+    "description": "Comment with attachments only"
+  },
+  "dealUnnamedOrganization": {
+    "message": "Organização sem nome",
+    "description": "Organization picker fallback"
+  },
+  "dealUnnamedPerson": {
+    "message": "Sem nome",
+    "description": "Person picker fallback"
+  },
+  "taskLoading": {
+    "message": "Carregando tarefa…",
+    "description": "Task record page loading"
+  },
+  "taskErrorTitle": {
+    "message": "Erro ao carregar tarefa",
+    "description": "Task record page error title"
+  },
+  "taskNavPrevious": {
+    "message": "Tarefa anterior",
+    "description": "Previous task navigation"
+  },
+  "taskNavNext": {
+    "message": "Próxima tarefa",
+    "description": "Next task navigation"
+  },
+  "taskModuleLabel": {
+    "message": "Tarefa",
+    "description": "Task module singular label"
+  },
+  "taskBackTo": {
+    "message": "Voltar à tarefa",
+    "description": "Collapse expanded task section"
+  },
+  "taskEditAria": {
+    "message": "Editar tarefa",
+    "description": "Edit task action"
+  },
+  "taskEmailAssignee": {
+    "message": "Responsável por e-mail",
+    "description": "Email task assignee action"
+  },
+  "taskVersionRetentionNote": {
+    "message": "O histórico de versões será armazenado por até 365 dias nas descrições das tarefas.",
+    "description": "Task description version retention"
+  },
+  "taskStarAria": {
+    "message": "Estrela",
+    "description": "Star/follow task"
+  },
+  "taskUnstarAria": {
+    "message": "Remover estrela",
+    "description": "Unfollow task"
+  },
+  "taskRelatedRecordsTab": {
+    "message": "Registros Relacionados",
+    "description": "Task right pane related tab"
+  },
+  "taskCopyUrlSuccess": {
+    "message": "URL copiado para a área de transferência!",
+    "description": "Task copy URL success"
+  },
+  "taskLinkModuleFailed": {
+    "message": "Erro ao vincular {moduleKey}. Por favor, tente novamente.",
+    "description": "Task link related record error"
+  },
+  "taskRelatedGroupProject": {
+    "message": "Projeto",
+    "description": "Related project group heading"
+  },
+  "taskRelatedGroupPeople": {
+    "message": "Pessoas",
+    "description": "Related people group heading"
+  },
+  "taskRelatedGroupEvents": {
+    "message": "Eventos",
+    "description": "Related events group heading"
+  },
+  "taskRelatedGroupDeals": {
+    "message": "Ofertas",
+    "description": "Related deals group heading"
+  },
+  "taskRelatedGroupForms": {
+    "message": "Formulários",
+    "description": "Related forms group heading"
+  },
+  "taskCloseTimestampDetails": {
+    "message": "Fechar detalhes do carimbo de data/hora",
+    "description": "Close timestamp popover aria"
+  },
+  "activityCloseSearchAria": {
+    "message": "Fechar pesquisa",
+    "description": "Close activity search bar"
+  },
+  "activityNotificationsAria": {
+    "message": "Notificações",
+    "description": "Activity notifications button"
+  },
+  "activityFilterAria": {
+    "message": "Filtrar atividades",
+    "description": "Activity filter menu button"
+  },
+  "activityFilterHeading": {
+    "message": "Atividades",
+    "description": "Activity filter menu title"
+  },
+  "activityUnselectAll": {
+    "message": "Desmarcar tudo",
+    "description": "Clear all activity filters"
+  },
+  "activitySelectAll": {
+    "message": "Selecionar tudo",
+    "description": "Enable all activity filters"
+  },
+  "activityFilterComments": {
+    "message": "Comentários",
+    "description": "Activity filter: comments"
+  },
+  "activityFilterEmail": {
+    "message": "E-mail",
+    "description": "Activity filter: email"
+  },
+  "activityFilterUpdates": {
+    "message": "Atualizações",
+    "description": "Activity filter: updates"
+  },
+  "activityFilterDoneThreads": {
+    "message": "Tópicos concluídos",
+    "description": "Activity filter: done threads"
+  },
+  "activityFilterAssignedToMe": {
+    "message": "Atribuído a mim",
+    "description": "Activity filter: assigned to me"
+  },
+  "activityFilterTaggedThreads": {
+    "message": "Tópicos marcados",
+    "description": "Activity filter: tagged threads"
+  },
+  "activityFilterUntaggedThreads": {
+    "message": "Tópicos não marcados",
+    "description": "Activity filter: untagged threads"
+  },
+  "activitySearchPh": {
+    "message": "Procurar…",
+    "description": "Activity search input placeholder"
+  },
+  "activityClearSearchAria": {
+    "message": "Limpar pesquisa",
+    "description": "Clear activity search"
+  },
+  "activityClearSearchTitle": {
+    "message": "Claro",
+    "description": "Clear search button title"
+  },
+  "activityThreadBy": {
+    "message": "Thread por",
+    "description": "Thread view author prefix"
+  },
+  "activityNothingFound": {
+    "message": "Nada encontrado",
+    "description": "No activities match filters"
+  },
+  "activitySelectOneFilter": {
+    "message": "Selecione pelo menos um filtro.",
+    "description": "Empty filter state hint"
+  },
+  "activityResetFilters": {
+    "message": "Redefinir filtros",
+    "description": "Reset activity filters button"
+  },
+  "activityReplyPh": {
+    "message": "Responder ao comentário…",
+    "description": "Thread reply composer placeholder"
+  },
+  "activityCommentEdited": {
+    "message": "(editado)",
+    "description": "Comment edited indicator"
+  },
+  "activityEditCommentAria": {
+    "message": "Editar comentário",
+    "description": "Edit comment button aria"
+  },
+  "activityReplyToCommentAria": {
+    "message": "Responder ao comentário",
+    "description": "Reply to comment button aria"
+  },
+  "activityEditCommentPh": {
+    "message": "Editar comentário…",
+    "description": "Edit comment composer placeholder"
+  },
+  "notesBlockedContext": {
+    "message": "O contexto do aplicativo é ambíguo. Não é possível determinar quais notas mostrar.",
+    "description": "Notes blocked when app context unclear"
+  },
+  "notesAdding": {
+    "message": "Adicionando…",
+    "description": "Submit note in progress"
+  },
+  "notesAddNoteBtn": {
+    "message": "Adicionar nota",
+    "description": "Submit new note button"
+  },
+  "notesUserFallback": {
+    "message": "Usuário",
+    "description": "Author name fallback in notes list"
+  },
+  "notesAddANoteAboveToGet": {
+    "message": "Adicione uma observação acima para começar.",
+    "description": "Auto-migrated from notes"
+  },
+  "notesNoNotesYet": {
+    "message": "Ainda não há notas.",
+    "description": "Auto-migrated from notes"
+  },
+  "notesWriteANote": {
+    "message": "Escreva uma nota...",
+    "description": "Auto-migrated from notes"
+  },
+  "notesAddNote": {
+    "message": "Adicionar nota",
+    "description": "Auto-migrated from notes"
+  },
+  "notesCannotLoadNotes": {
+    "message": "Não é possível carregar notas",
+    "description": "Auto-migrated from notes"
+  },
+  "notesErrorLoadingNotes": {
+    "message": "Erro ao carregar notas",
+    "description": "Auto-migrated from notes"
+  },
+  "notesLoadingNotes": {
+    "message": "Carregando notas...",
+    "description": "Auto-migrated from notes"
+  },
+  "filesUploadAFileAboveToGet": {
+    "message": "Carregue um arquivo acima para começar.",
+    "description": "Auto-migrated from files"
+  },
+  "filesNoFilesUploadedYet": {
+    "message": "Nenhum arquivo enviado ainda.",
+    "description": "Auto-migrated from files"
+  },
+  "filesDownload": {
+    "message": "Download",
+    "description": "Auto-migrated from files"
+  },
+  "filesAllowedImagesPdfWordExcelCsv": {
+    "message": "Permitido: imagens, PDF, Word, Excel, CSV (máximo de 10 MB)",
+    "description": "Auto-migrated from files"
+  },
+  "filesUploadFile": {
+    "message": "Carregar arquivo",
+    "description": "Auto-migrated from files"
+  },
+  "filesCannotLoadFiles": {
+    "message": "Não é possível carregar arquivos",
+    "description": "Auto-migrated from files"
+  },
+  "filesErrorLoadingFiles": {
+    "message": "Erro ao carregar arquivos",
+    "description": "Auto-migrated from files"
+  },
+  "filesLoadingFiles": {
+    "message": "Carregando arquivos...",
+    "description": "Auto-migrated from files"
+  },
+  "activityTimelineCannotLoadActivities": {
+    "message": "Não é possível carregar atividades",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "activityTimelineErrorLoadingActivities": {
+    "message": "Erro ao carregar atividades",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "activityTimelineLoadingActivities": {
+    "message": "Carregando atividades...",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "taskDescriptionEditorInsertLink": {
+    "message": "Inserir link",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorRemoveLink": {
+    "message": "Remover link",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorNumberedList": {
+    "message": "Lista numerada",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorBulletList": {
+    "message": "Lista com marcadores",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorStrikethrough": {
+    "message": "Tachado",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorItalic": {
+    "message": "itálico",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorBold": {
+    "message": "Audacioso",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading3": {
+    "message": "Título 3",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading2": {
+    "message": "Título 2",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading1": {
+    "message": "Título 1",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "recordDetailThisRecordTypeIsNotConfigured": {
+    "message": "Este tipo de registro não está configurado.",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "recordDetailRecordNotFound": {
+    "message": "Registro não encontrado",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "recordDetailLoading": {
+    "message": "Carregando...",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "relatedRecordsPanelThisRecordRequiresTheFollowingRelationships": {
+    "message": "Este registro requer que os seguintes relacionamentos sejam vinculados:",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelRequiredRelationships": {
+    "message": "Relacionamentos Necessários",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelLinkThisRecordToPeopleOrganizations": {
+    "message": "Vincule este registro a pessoas, organizações, tarefas, eventos ou formulários.",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelNoRelationshipsConfiguredForThisRecord": {
+    "message": "Nenhum relacionamento configurado para este tipo de registro.",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelErrorLoadingRelatedRecords": {
+    "message": "Erro ao carregar registros relacionados",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelLoadingRelatedRecords": {
+    "message": "Carregando registros relacionados...",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsRendererNoRelationshipsConfiguredForThisRecord": {
+    "message": "Nenhum relacionamento configurado para este tipo de registro.",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsRendererTheFollowingRequiredRelationshipsMustBe": {
+    "message": "Os seguintes relacionamentos obrigatórios devem ser vinculados antes de salvar:",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsRendererRequiredRelationshipsMissing": {
+    "message": "Relacionamentos obrigatórios ausentes",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsTabLinkExisting": {
+    "message": "Link existente",
+    "description": "Auto-migrated from relatedRecordsTab"
+  },
+  "relationshipUnlinkConfirmAreYouSureYouWantTo": {
+    "message": "Tem certeza de que deseja desvincular",
+    "description": "Auto-migrated from relationshipUnlinkConfirm"
+  },
+  "reactionBarReactToComment": {
+    "message": "Reaja ao comentário",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarLikeComment": {
+    "message": "Curtir, comentar",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarReactToComment2": {
+    "message": "Reaja ao comentário",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarLikeComment2": {
+    "message": "Curtir, comentar",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "activitySystemRowShowMore": {
+    "message": "Mostrar mais",
+    "description": "Auto-migrated from activitySystemRow"
+  },
+  "approvalHistoryEscalatedToNewApprovers": {
+    "message": "Escalado para novos aprovadores",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryProcess": {
+    "message": "Processo:",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryReason": {
+    "message": "Razão:",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryDecidedBy": {
+    "message": "Decidido por:",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryNoApprovalHistoryFound": {
+    "message": "Nenhum histórico de aprovação encontrado",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryApprovalHistory": {
+    "message": "Histórico de aprovação",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "linkRecordModalLinking": {
+    "message": "Vinculando...",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "linkRecordModalSelectARecordType": {
+    "message": "Selecione um tipo de registro...",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "linkRecordModalRecordType": {
+    "message": "Tipo de registro",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "recordDetailToastFailedToDeleteRecordPlease": {
+    "message": "Falha ao excluir registro. Por favor, tente novamente.",
+    "description": "Toast from RecordDetail.vue"
+  },
+  "instanceManagementToastInstanceManagementUiComingSoon": {
+    "message": "UI de gerenciamento de instâncias em breve!",
+    "description": "Toast from InstanceManagement.vue"
+  },
+  "useRecordHeaderActionsToastUrlCopiedToClipboard": {
+    "message": "URL copiado para a área de transferência!",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "useRecordHeaderActionsToastErrorExportingRecordPleaseTry": {
+    "message": "Erro ao exportar registro. Por favor, tente novamente.",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "useRecordHeaderActionsToastErrorDeletingRecordPleaseTry": {
+    "message": "Erro ao excluir registro. Por favor, tente novamente.",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "tabPreview": {
+    "message": "Visualização",
+    "description": "Form summary preview tab"
+  },
+  "tabUsage": {
+    "message": "Uso",
+    "description": "Form summary usage tab"
+  },
+  "tabResponses": {
+    "message": "Respostas",
+    "description": "Form summary responses tab"
+  },
+  "tabTenantDetails": {
+    "message": "Detalhes do inquilino",
+    "description": "Organization tenant details tab"
+  },
+  "relatedRecordsTitle": {
+    "message": "Registros Relacionados",
+    "description": "Left column related records section title"
+  },
+  "subtasksTitle": {
+    "message": "Subtarefas",
+    "description": "Task record subtasks section title"
+  },
+  "subtasksTitleWithCount": {
+    "message": "Subtarefas ({completed}/{total})",
+    "description": "Task subtasks section title with completion counts"
+  },
+  "sectionAddSubtask": {
+    "message": "Adicionar subtarefa",
+    "description": "Add subtask action label"
+  },
+  "sectionExpand": {
+    "message": "Expandir",
+    "description": "Expand record section action"
+  },
+  "sectionHistory": {
+    "message": "História",
+    "description": "Description history action"
+  },
+  "sectionLinkRecord": {
+    "message": "Registro de link",
+    "description": "Link related record action"
+  },
+  "sectionAddRecord": {
+    "message": "Adicionar registro",
+    "description": "Add related record action"
+  },
+  "sectionViewMore": {
+    "message": "Ver mais",
+    "description": "Load more subtasks action"
+  },
+  "sectionViewLess": {
+    "message": "Ver menos",
+    "description": "Collapse field list action"
+  },
+  "sectionViewAll": {
+    "message": "Ver tudo ({count})",
+    "description": "Expand details field list"
+  },
+  "sectionGroupCore": {
+    "message": "Essencial",
+    "description": "Field group label"
+  },
+  "sectionGroupSystem": {
+    "message": "Sistema",
+    "description": "Field group label"
+  },
+  "sectionGroupOther": {
+    "message": "Outro",
+    "description": "Field group label"
+  },
+  "sectionCreatedVia": {
+    "message": "Criado por meio de",
+    "description": "Record source field label"
+  },
+  "sectionGroupRecord": {
+    "message": "Registro",
+    "description": "Record metadata group label"
+  },
+  "activitySystemActorSystem": {
+    "message": "Sistema",
+    "description": "System actor label in activity feed"
+  },
+  "activitySystemFieldFallback": {
+    "message": "campo",
+    "description": "Fallback when system event field label is unknown"
+  },
+  "activitySystemChanged": {
+    "message": "mudado",
+    "description": "System field change activity between actor and field"
+  },
+  "activitySystemChangedTo": {
+    "message": "Alterado {field} para",
+    "description": "Tags/system field change lead-in"
+  },
+  "activitySystemChangedFromTo": {
+    "message": "{field} alterado de \"{from}\" para \"{to}\"",
+    "description": "Generic field change summary"
+  },
+  "activityUpdatedRecord": {
+    "message": "Atualizado este registro",
+    "description": "Generic system activity fallback"
+  }
+}

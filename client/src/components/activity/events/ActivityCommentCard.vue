@@ -28,20 +28,20 @@
             >
               {{ ui.formatRelativeActivityTime(event.createdAt) }}
             </span>
-            <span v-if="event.editedAt" class="text-xs text-gray-400 dark:text-gray-500">(edited)</span>
+            <span v-if="event.editedAt" class="text-xs text-gray-400 dark:text-gray-500">{{ t('records.activityCommentEdited') }}</span>
           </div>
         </div>
         <div class="ml-2 flex items-center gap-1 opacity-0 group-hover/comment:opacity-100 focus-within:opacity-100 transition-opacity">
           <HoverTooltip
             v-if="ui.canEditComment(event)"
-            content="Edit"
+            :content="t('actions.edit')"
             anchor-selector="button"
             class="inline-flex"
           >
             <button
               type="button"
               class="inline-flex h-7 w-7 items-center justify-center rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
-              aria-label="Edit comment"
+              :aria-label="t('records.activityEditCommentAria')"
               @click="ui.startEditComment(event)"
             >
               <PencilSquareIcon class="h-4 w-4" />
@@ -49,14 +49,14 @@
           </HoverTooltip>
           <HoverTooltip
             v-if="!isThreadViewActive"
-            content="Reply"
+            :content="t('records.activityReply')"
             anchor-selector="button"
             class="inline-flex"
           >
             <button
               type="button"
               class="inline-flex h-7 w-7 items-center justify-center rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
-              aria-label="Reply to comment"
+              :aria-label="t('records.activityReplyToCommentAria')"
               @click="ui.openCommentThread(event)"
             >
               <ArrowUturnLeftIcon class="h-4 w-4" />
@@ -72,7 +72,7 @@
           :show-submit="true"
           :submit-on-enter="true"
           variant="activity"
-          placeholder="Edit comment..."
+          :placeholder="t('records.activityEditCommentPh')"
           class="mb-2"
           @files-change="ui.handleEditCommentFilesChange"
           @submit="ui.saveEditComment"
@@ -83,7 +83,7 @@
               class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600"
               @click="ui.cancelEditComment"
             >
-              Cancel
+              {{ t('actions.cancel') }}
             </button>
             <button
               type="button"
@@ -91,7 +91,7 @@
               class="px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
               @click="submit"
             >
-              Save
+              {{ t('actions.save') }}
             </button>
           </template>
         </CommentInput>
@@ -120,6 +120,7 @@
 
 <script setup>
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { PencilSquareIcon, ArrowUturnLeftIcon } from '@heroicons/vue/24/outline';
 import Avatar from '@/components/common/Avatar.vue';
 import HoverTooltip from '@/components/common/HoverTooltip.vue';
@@ -127,6 +128,8 @@ import CommentInput from '@/components/record-page/CommentInput.vue';
 import CommentContent from '@/components/record-page/CommentContent.vue';
 import ReactionBar from '../controls/ReactionBar.vue';
 import AttachmentList from '../controls/AttachmentList.vue';
+
+const { t } = useI18n();
 
 const props = defineProps({
   event: { type: Object, required: true },

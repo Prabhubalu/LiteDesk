@@ -1,0 +1,38 @@
+{
+  "loading": {
+    "message": "Laden…",
+    "description": "Generic loading indicator label"
+  },
+  "empty": {
+    "message": "Hier ist noch nichts",
+    "description": "Empty list or panel placeholder"
+  },
+  "genericFailure": {
+    "message": "Etwas ist schief gelaufen",
+    "description": "Generic error state headline"
+  },
+  "saved": {
+    "message": "Gespeichert",
+    "description": "Toast after successful save"
+  },
+  "saving": {
+    "message": "Sparen...",
+    "description": "Submit button while save is in progress"
+  },
+  "offline": {
+    "message": "Du bist offline",
+    "description": "Network unavailable banner"
+  },
+  "severityCritical": {
+    "message": "Kritisch",
+    "description": "Critical severity label"
+  },
+  "severityWarning": {
+    "message": "Warnung",
+    "description": "Warning severity label"
+  },
+  "severityInfo": {
+    "message": "Info",
+    "description": "Info severity label"
+  }
+}

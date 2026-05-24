@@ -1,0 +1,38 @@
+{
+  "loading": {
+    "message": "Caricamento…",
+    "description": "Generic loading indicator label"
+  },
+  "empty": {
+    "message": "Niente qui ancora",
+    "description": "Empty list or panel placeholder"
+  },
+  "genericFailure": {
+    "message": "Qualcosa è andato storto",
+    "description": "Generic error state headline"
+  },
+  "saved": {
+    "message": "Salvato",
+    "description": "Toast after successful save"
+  },
+  "saving": {
+    "message": "Risparmio...",
+    "description": "Submit button while save is in progress"
+  },
+  "offline": {
+    "message": "Sei offline",
+    "description": "Network unavailable banner"
+  },
+  "severityCritical": {
+    "message": "Critico",
+    "description": "Critical severity label"
+  },
+  "severityWarning": {
+    "message": "Avvertimento",
+    "description": "Warning severity label"
+  },
+  "severityInfo": {
+    "message": "Informazioni",
+    "description": "Info severity label"
+  }
+}

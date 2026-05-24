@@ -11,7 +11,7 @@
       <button
         type="button"
         :class="['p-2 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700', editor.isActive('heading', { level: 1 }) ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white' : '']"
-        title="Heading 1"
+        :title="t('records.taskDescriptionEditorHeading1')"
         @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
       >
         <span class="font-bold text-base">H1</span>
@@ -19,7 +19,7 @@
       <button
         type="button"
         :class="['p-2 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700', editor.isActive('heading', { level: 2 }) ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white' : '']"
-        title="Heading 2"
+        :title="t('records.taskDescriptionEditorHeading2')"
         @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
       >
         <span class="font-semibold text-sm">H2</span>
@@ -27,7 +27,7 @@
       <button
         type="button"
         :class="['p-2 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700', editor.isActive('heading', { level: 3 }) ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white' : '']"
-        title="Heading 3"
+        :title="t('records.taskDescriptionEditorHeading3')"
         @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
       >
         <span class="font-medium text-sm">H3</span>
@@ -36,7 +36,7 @@
       <button
         type="button"
         :class="['p-2 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700', editor.isActive('bold') ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white' : '']"
-        title="Bold"
+        :title="t('records.taskDescriptionEditorBold')"
         @click="editor.chain().focus().toggleBold().run()"
       >
         <span class="font-bold text-sm">B</span>
@@ -44,7 +44,7 @@
       <button
         type="button"
         :class="['p-2 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700', editor.isActive('italic') ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white' : '']"
-        title="Italic"
+        :title="t('records.taskDescriptionEditorItalic')"
         @click="editor.chain().focus().toggleItalic().run()"
       >
         <span class="italic text-sm">I</span>
@@ -52,7 +52,7 @@
       <button
         type="button"
         :class="['p-2 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700', editor.isActive('strike') ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white' : '']"
-        title="Strikethrough"
+        :title="t('records.taskDescriptionEditorStrikethrough')"
         @click="editor.chain().focus().toggleStrike().run()"
       >
         <span class="line-through text-sm">S</span>
@@ -61,7 +61,7 @@
       <button
         type="button"
         :class="['p-2 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700', editor.isActive('bulletList') ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white' : '']"
-        title="Bullet list"
+        :title="t('records.taskDescriptionEditorBulletList')"
         @click="editor.chain().focus().toggleBulletList().run()"
       >
         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -71,7 +71,7 @@
       <button
         type="button"
         :class="['p-2 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700', editor.isActive('orderedList') ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white' : '']"
-        title="Numbered list"
+        :title="t('records.taskDescriptionEditorNumberedList')"
         @click="editor.chain().focus().toggleOrderedList().run()"
       >
         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -83,7 +83,7 @@
         <PopoverButton
           type="button"
           :class="['p-2 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700', editor.isActive('link') ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white' : '']"
-          title="Link"
+          :title="t('settings.modFieldsPbResourceLink')"
           @click="handleLinkButtonClick"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -109,17 +109,13 @@
                 type="button"
                 class="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
                 @click="close"
-              >
-                Cancel
-              </button>
+              >{{ t('performance.cancelWizard') }}</button>
               <button
                 type="button"
                 :disabled="!canApplyLink"
                 class="px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
                 @click="applyLink(close)"
-              >
-                Apply
-              </button>
+              >{{ t('actions.apply') }}</button>
             </div>
           </div>
         </PopoverPanel>
@@ -128,7 +124,7 @@
         v-if="editor.isActive('link')"
         type="button"
         class="p-2 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-        title="Remove link"
+        :title="t('records.taskDescriptionEditorRemoveLink')"
         @click="editor.chain().focus().unsetLink().run()"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -149,7 +145,7 @@
         class="task-description-link-shortcut w-72 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg p-3 z-[12000]"
         :style="shortcutLinkPanelStyle"
         role="dialog"
-        aria-label="Insert link"
+        :aria-label="t('records.taskDescriptionEditorInsertLink')"
         @mousedown.prevent
       >
         <div class="space-y-2">
@@ -168,17 +164,13 @@
               type="button"
               class="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
               @click="closeShortcutLinkPanel"
-            >
-              Cancel
-            </button>
+            >{{ t('performance.cancelWizard') }}</button>
             <button
               type="button"
               :disabled="!canApplyLink"
               class="px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
               @click="applyShortcutLink"
-            >
-              Apply
-            </button>
+            >{{ t('actions.apply') }}</button>
           </div>
         </div>
       </div>
@@ -187,6 +179,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { useEditor, EditorContent, BubbleMenu } from '@tiptap/vue-3';
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue';
 import StarterKit from '@tiptap/starter-kit';
@@ -207,6 +200,8 @@ const props = defineProps({
     default: "Write or type '/' for commands"
   }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['update:modelValue', 'blur', 'cancel']);
 

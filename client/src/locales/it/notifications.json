@@ -1,0 +1,378 @@
+{
+  "panelAria": {
+    "message": "Notifiche",
+    "description": "Notifications drawer/sheet dialog aria-label"
+  },
+  "drawerHeading": {
+    "message": "Notifiche",
+    "description": "Notifications panel heading"
+  },
+  "markAllRead": {
+    "message": "Segna tutto come letto",
+    "description": "Mark all notifications read action"
+  },
+  "markAllReadAria": {
+    "message": "Contrassegna tutte le notifiche come lette",
+    "description": "Mark all notifications read button aria-label"
+  },
+  "closePanelAria": {
+    "message": "Chiudi le notifiche",
+    "description": "Close notifications panel aria-label"
+  },
+  "offlineBanner": {
+    "message": "Offline: le notifiche potrebbero essere obsolete.",
+    "description": "Offline state banner in notification panel"
+  },
+  "caughtUp": {
+    "message": "Sei tutto preso",
+    "description": "Empty state headline when no unread notifications"
+  },
+  "emptyList": {
+    "message": "Nessuna notifica ancora.",
+    "description": "Empty state body when notification list is empty"
+  },
+  "noUpdatesDigest": {
+    "message": "Nessun aggiornamento: non hai nuove notifiche.",
+    "description": "Digest placeholder when there are no new items"
+  },
+  "settingsLink": {
+    "message": "Impostazioni di notifica",
+    "description": "Link to notification settings from panel footer"
+  },
+  "itemNew": {
+    "message": "Nuovo",
+    "description": "Badge on unread notification item"
+  },
+  "itemUnavailable": {
+    "message": "Questo articolo non è più disponibile.",
+    "description": "Warning when linked record is gone"
+  },
+  "whyReceived": {
+    "message": "Perché hai ricevuto questa notifica",
+    "description": "Explainability popover heading"
+  },
+  "whyIntro": {
+    "message": "Una rapida spiegazione basata sui dettagli della notifica.",
+    "description": "Explainability popover subheading"
+  },
+  "happenedBecause": {
+    "message": "Questo è successo perché",
+    "description": "Explainability trigger section label"
+  },
+  "receivedBecause": {
+    "message": "Hai ricevuto questo perché lo sei",
+    "description": "Explainability role section label"
+  },
+  "deliveredVia": {
+    "message": "Consegnato tramite",
+    "description": "Explainability delivery channel label"
+  },
+  "controlHeading": {
+    "message": "Controllare",
+    "description": "Explainability control section label"
+  },
+  "controlBody": {
+    "message": "Puoi gestire notifiche come questa nelle Impostazioni di notifica.",
+    "description": "Explainability control section body"
+  },
+  "openSettings": {
+    "message": "Apri le impostazioni di notifica",
+    "description": "Link to notification settings"
+  },
+  "reviewRules": {
+    "message": "Esaminare le regole di notifica",
+    "description": "Link to notification rules list"
+  },
+  "markRead": {
+    "message": "Segna come letto",
+    "description": "Mark single notification read tooltip"
+  },
+  "markReadAria": {
+    "message": "Contrassegna la notifica come letta",
+    "description": "Mark read button aria-label"
+  },
+  "dismiss": {
+    "message": "Congedare",
+    "description": "Dismiss notification tooltip"
+  },
+  "dismissAria": {
+    "message": "Ignora notifica",
+    "description": "Dismiss button aria-label"
+  },
+  "snooze": {
+    "message": "Posticipare",
+    "description": "Snooze notification tooltip"
+  },
+  "snoozeAria": {
+    "message": "Opzioni di posticipazione",
+    "description": "Snooze button aria-label"
+  },
+  "acknowledge": {
+    "message": "Riconosci: contrassegna questa notifica come gestita. Non modifica il record sottostante.",
+    "description": "Acknowledge notification tooltip"
+  },
+  "acknowledgeAria": {
+    "message": "Conferma notifica (non modifica il record)",
+    "description": "Acknowledge button aria-label"
+  },
+  "whyAmISeeing": {
+    "message": "Perché vedo questo?",
+    "description": "Open explainability popover aria-label"
+  },
+  "channelComingSoon": {
+    "message": "Prossimamente",
+    "description": "Unavailable notification channel section state"
+  },
+  "channelUnavailable": {
+    "message": "Non disponibile per questa app",
+    "description": "Disabled channel option hint"
+  },
+  "channelToggleAria": {
+    "message": "Attiva/disattiva le notifiche {channel}",
+    "description": "Channel section global toggle aria-label"
+  },
+  "channelOptionAria": {
+    "message": "{channel} notifiche",
+    "description": "Channel checkbox aria-label in rule builder"
+  },
+  "assignToMe": {
+    "message": "Assegnato a me",
+    "description": "Notification rule assigned-to condition"
+  },
+  "assignAnyone": {
+    "message": "Assegnato a chiunque",
+    "description": "Notification rule assigned-to anyone condition"
+  },
+  "noStatusOptions": {
+    "message": "Nessuna opzione di stato disponibile per questo modulo",
+    "description": "Empty status condition picker"
+  },
+  "ruleCreateHeading": {
+    "message": "Crea regola di notifica",
+    "description": "Rule builder modal title when creating"
+  },
+  "ruleEditHeading": {
+    "message": "Modifica regola di notifica",
+    "description": "Rule builder modal title when editing"
+  },
+  "ruleStepAria": {
+    "message": "Passaggio {index}: {step}",
+    "description": "Rule builder step button aria-label"
+  },
+  "ruleStepModule": {
+    "message": "Modulo",
+    "description": "Rule builder step: module"
+  },
+  "ruleStepEvent": {
+    "message": "Evento",
+    "description": "Rule builder step: event"
+  },
+  "ruleStepConditions": {
+    "message": "Condizioni",
+    "description": "Rule builder step: conditions"
+  },
+  "ruleStepChannels": {
+    "message": "Canali",
+    "description": "Rule builder step: channels"
+  },
+  "ruleStepReview": {
+    "message": "Revisione",
+    "description": "Rule builder step: review"
+  },
+  "ruleModule": {
+    "message": "Modulo",
+    "description": "Rule builder module field label"
+  },
+  "ruleSelectModule": {
+    "message": "Seleziona un modulo...",
+    "description": "Rule builder module select placeholder"
+  },
+  "ruleModuleHint": {
+    "message": "Scegli a quale modulo si applica questa regola.",
+    "description": "Rule builder module field help"
+  },
+  "ruleMaxReached": {
+    "message": "Hai raggiunto il massimo di 5 regole per questo modulo.",
+    "description": "Rule limit warning per module"
+  },
+  "ruleEventType": {
+    "message": "Tipo di evento",
+    "description": "Rule builder event type label"
+  },
+  "ruleConditionsOptional": {
+    "message": "Condizioni (facoltativo)",
+    "description": "Rule builder conditions section label"
+  },
+  "ruleAddCondition": {
+    "message": "+ Aggiungi condizione",
+    "description": "Add another rule condition"
+  },
+  "ruleNoConditions": {
+    "message": "Nessuna condizione. Questa regola verrà attivata per tutti gli eventi {module} {event}.",
+    "description": "Rule builder empty conditions explanation"
+  },
+  "ruleSelectCondition": {
+    "message": "Seleziona condizione...",
+    "description": "Condition field select placeholder"
+  },
+  "ruleRemoveCondition": {
+    "message": "Rimuovi condizione {index}",
+    "description": "Remove condition button aria-label"
+  },
+  "ruleSelectEvent": {
+    "message": "Seleziona {event}",
+    "description": "Select event type radio aria-label"
+  },
+  "ruleChannels": {
+    "message": "Canali di notifica",
+    "description": "Rule builder channels section label"
+  },
+  "ruleChannelsHint": {
+    "message": "Seleziona come desideri ricevere le notifiche per questa regola. È necessario selezionare almeno un canale.",
+    "description": "Rule builder channels help text"
+  },
+  "ruleChannelsRequired": {
+    "message": "Seleziona almeno un canale di notifica.",
+    "description": "Rule builder channels validation hint"
+  },
+  "ruleSummary": {
+    "message": "Riepilogo delle regole",
+    "description": "Rule builder review summary heading"
+  },
+  "ruleWhen": {
+    "message": "Quando:",
+    "description": "Rule summary when label"
+  },
+  "ruleNotifyVia": {
+    "message": "Avvisare tramite:",
+    "description": "Rule summary channels label"
+  },
+  "ruleFixIssues": {
+    "message": "Risolvi i seguenti problemi:",
+    "description": "Rule builder validation errors heading"
+  },
+  "ruleUpdate": {
+    "message": "Aggiorna regola",
+    "description": "Save button when editing rule"
+  },
+  "ruleCreate": {
+    "message": "Crea regola",
+    "description": "Save button when creating rule"
+  },
+  "groupMarkAllAria": {
+    "message": "Contrassegna tutte le notifiche {count} come lette",
+    "description": "Mark grouped notifications read aria-label"
+  },
+  "countInGroupAria": {
+    "message": "{count} notifiche",
+    "description": "Notification group count aria-label"
+  },
+  "groupEntryAria": {
+    "message": "{label} ({count} elementi)",
+    "description": "Grouped notification section aria-label"
+  },
+  "groupLatest": {
+    "message": "Ultimi: {title} – {time}",
+    "description": "Grouped notification preview line"
+  },
+  "snoozeOneHour": {
+    "message": "1 ora",
+    "description": "Snooze option: one hour"
+  },
+  "snoozeOneHourHelp": {
+    "message": "Nascondi questa notifica per 1 ora. Riappare automaticamente.",
+    "description": "Snooze one hour help text"
+  },
+  "snoozeTomorrow": {
+    "message": "Fino a domani",
+    "description": "Snooze option: until tomorrow"
+  },
+  "snoozeTomorrowHelp": {
+    "message": "Nascondi questa notifica fino a domani. Riappare automaticamente.",
+    "description": "Snooze until tomorrow help"
+  },
+  "snoozeNextWeek": {
+    "message": "Fino alla prossima settimana",
+    "description": "Snooze option: until next week"
+  },
+  "snoozeNextWeekHelp": {
+    "message": "Nascondi questa notifica fino alla prossima settimana. Riappare automaticamente.",
+    "description": "Snooze until next week help"
+  },
+  "snoozeDueDate": {
+    "message": "Fino alla data di scadenza",
+    "description": "Snooze option: until due date"
+  },
+  "snoozeDueDateHelp": {
+    "message": "Nascondi questa notifica fino alla data di scadenza. Riappare automaticamente.",
+    "description": "Snooze until due date help"
+  },
+  "snoozeOptionAria": {
+    "message": "Posticipa per {label}",
+    "description": "Snooze menu item aria-label"
+  },
+  "loadMore": {
+    "message": "Carica di più",
+    "description": "Load more notifications button"
+  },
+  "sectionToday": {
+    "message": "Oggi",
+    "description": "Notification list section: today"
+  },
+  "sectionYesterday": {
+    "message": "Ieri",
+    "description": "Notification list section: yesterday"
+  },
+  "sectionEarlier": {
+    "message": "Prima",
+    "description": "Notification list section: earlier"
+  },
+  "sectionNew": {
+    "message": "Nuovo",
+    "description": "Notification list section: new since opened"
+  },
+  "bellAria": {
+    "message": "Notifiche",
+    "description": "Notification bell button aria-label when no unread"
+  },
+  "bellAriaUnread": {
+    "message": "Notifiche, elementi non letti presenti",
+    "description": "Notification bell aria-label when unread exist"
+  },
+  "feedbackMarkedRead": {
+    "message": "Contrassegnato come letto",
+    "description": "Inline feedback after marking notification read"
+  },
+  "feedbackDismissed": {
+    "message": "Licenziato",
+    "description": "Inline feedback after dismissing notification"
+  },
+  "feedbackAcknowledged": {
+    "message": "Riconosciuto",
+    "description": "Inline feedback after acknowledging notification"
+  },
+  "ruleErrorModuleRequired": {
+    "message": "Il modulo è obbligatorio",
+    "description": "Rule builder validation"
+  },
+  "ruleErrorEventRequired": {
+    "message": "Il tipo di evento è obbligatorio",
+    "description": "Rule builder validation"
+  },
+  "ruleErrorChannelRequired": {
+    "message": "È necessario selezionare almeno un canale di notifica",
+    "description": "Rule builder validation"
+  },
+  "ruleErrorConditionField": {
+    "message": "Nella condizione {index} manca un campo",
+    "description": "Rule builder validation for incomplete condition"
+  },
+  "bellTooltipUnreadOne": {
+    "message": "{count} notifica non letta",
+    "description": "Notification bell tooltip when one unread item"
+  },
+  "bellTooltipUnreadMany": {
+    "message": "{count} notifiche non lette",
+    "description": "Notification bell tooltip when multiple unread items"
+  }
+}

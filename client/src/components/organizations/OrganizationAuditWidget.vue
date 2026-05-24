@@ -1,38 +1,36 @@
 <template>
   <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
     <div class="flex items-center justify-between mb-4">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Audit History</h3>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('organizations.organizationAuditWidgetAuditHistory') }}</h3>
       <button
         v-if="audits.length > 0"
         @click="viewAllAudits"
         class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-500 font-medium"
-      >
-        View All
-      </button>
+      >{{ t('organizations.organizationAuditWidgetViewAll') }}</button>
     </div>
 
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-8">
       <div class="w-8 h-8 border-2 border-gray-200 dark:border-gray-700 border-t-indigo-600 dark:border-t-indigo-500 rounded-full animate-spin mx-auto mb-2"></div>
-      <p class="text-sm text-gray-500 dark:text-gray-400">Loading audit history...</p>
+      <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('organizations.organizationAuditWidgetLoadingAuditHistory') }}</p>
     </div>
 
     <!-- Summary KPIs -->
     <div v-else-if="summary" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
       <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-3 text-center">
-        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Audits</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('organizations.organizationAuditWidgetTotalAudits') }}</p>
         <p class="text-xl font-bold text-gray-900 dark:text-white">{{ summary.totalAudits }}</p>
       </div>
       <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-3 text-center">
-        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Avg Compliance</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('forms.widgetAvgCompliance') }}</p>
         <p class="text-xl font-bold text-green-600 dark:text-green-400">{{ summary.avgCompliance }}%</p>
       </div>
       <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-3 text-center">
-        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Pass Rate</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('forms.reportPassRate') }}</p>
         <p class="text-xl font-bold text-blue-600 dark:text-blue-400">{{ summary.passRate }}%</p>
       </div>
       <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-3 text-center">
-        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Trend</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('organizations.organizationAuditWidgetTrend') }}</p>
         <div class="flex items-center justify-center gap-1">
           <svg
             v-if="summary.trend === 'improving'"
@@ -104,11 +102,11 @@
             </div>
             <div class="flex items-center gap-4">
               <div class="flex items-center gap-1">
-                <span class="text-xs text-gray-500 dark:text-gray-400">Score:</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('organizations.organizationAuditWidgetScore') }}</span>
                 <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ audit.score }}%</span>
               </div>
               <div class="flex items-center gap-1">
-                <span class="text-xs text-gray-500 dark:text-gray-400">Compliance:</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('organizations.organizationAuditWidgetCompliance') }}</span>
                 <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ audit.compliance }}%</span>
               </div>
               <BadgeCell
@@ -134,7 +132,7 @@
               v-if="audit.reportUrl"
               @click.stop="downloadReport(audit.reportUrl)"
               class="p-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-              title="Download Report"
+              :title="t('organizations.organizationAuditWidgetDownloadReport')"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -150,12 +148,13 @@
       <svg class="w-12 h-12 mx-auto mb-3 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
-      <p class="text-sm text-gray-500 dark:text-gray-400">No audit history available</p>
+      <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('organizations.organizationAuditWidgetNoAuditHistoryAvailable') }}</p>
     </div>
   </div>
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useTabs } from '@/composables/useTabs';
@@ -172,6 +171,8 @@ const props = defineProps({
     default: 5
   }
 });
+
+const { t } = useI18n();
 
 const router = useRouter();
 const { openTab } = useTabs();

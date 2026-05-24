@@ -1,0 +1,22 @@
+{
+  "taskLoading": { "message": "Loading task…", "description": "Task record page loading" },
+  "taskErrorTitle": { "message": "Error Loading Task", "description": "Task record page error title" },
+  "taskNavPrevious": { "message": "Previous task", "description": "Previous task navigation" },
+  "taskNavNext": { "message": "Next task", "description": "Next task navigation" },
+  "taskModuleLabel": { "message": "Task", "description": "Task module singular label" },
+  "taskBackTo": { "message": "Back to task", "description": "Collapse expanded task section" },
+  "taskEditAria": { "message": "Edit task", "description": "Edit task action" },
+  "taskEmailAssignee": { "message": "Email assignee", "description": "Email task assignee action" },
+  "taskVersionRetentionNote": { "message": "Version history will be stored for up to 365 days in task descriptions.", "description": "Task description version retention" },
+  "taskStarAria": { "message": "Star", "description": "Star/follow task" },
+  "taskUnstarAria": { "message": "Unstar", "description": "Unfollow task" },
+  "taskRelatedRecordsTab": { "message": "Related Records", "description": "Task right pane related tab" },
+  "taskCopyUrlSuccess": { "message": "URL copied to clipboard!", "description": "Task copy URL success" },
+  "taskLinkModuleFailed": { "message": "Error linking {moduleKey}. Please try again.", "description": "Task link related record error" },
+  "taskRelatedGroupProject": { "message": "Project", "description": "Related project group heading" },
+  "taskRelatedGroupPeople": { "message": "People", "description": "Related people group heading" },
+  "taskRelatedGroupEvents": { "message": "Events", "description": "Related events group heading" },
+  "taskRelatedGroupDeals": { "message": "Deals", "description": "Related deals group heading" },
+  "taskRelatedGroupForms": { "message": "Forms", "description": "Related forms group heading" },
+  "taskCloseTimestampDetails": { "message": "Close timestamp details", "description": "Close timestamp popover aria" }
+}

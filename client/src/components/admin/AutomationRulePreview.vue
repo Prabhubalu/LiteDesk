@@ -26,7 +26,7 @@
           <DialogPanel class="w-full max-w-2xl rounded-lg bg-white dark:bg-gray-800 shadow-xl p-6">
             <div class="flex items-center justify-between mb-4">
               <DialogTitle class="text-lg font-semibold text-gray-900 dark:text-white">
-                Rule Preview
+                {{ t('process.rulePreviewHeading') }}
               </DialogTitle>
               <button
                 type="button"
@@ -47,13 +47,13 @@
 
             <div v-else-if="previewData" class="space-y-4">
               <div>
-                <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Test Event</h4>
+                <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">{{ t('process.rulePreviewTestEvent') }}</h4>
                 <pre class="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded border border-gray-200 dark:border-gray-700 overflow-auto">{{ JSON.stringify(previewData.testEvent, null, 2) }}</pre>
               </div>
               <div>
-                <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Planned Actions</h4>
+                <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">{{ t('process.rulePreviewPlannedActions') }}</h4>
                 <div v-if="previewData.plan.length === 0" class="text-sm text-gray-500 dark:text-gray-400">
-                  No actions would be planned for this event.
+                  {{ t('process.rulePreviewNoActions') }}
                 </div>
                 <div v-else class="space-y-2">
                   <div
@@ -65,16 +65,16 @@
                       {{ action.actionType }}
                     </div>
                     <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                      Rule: {{ action.ruleName }}
+                      {{ t('process.rulePreviewRuleLabel', { name: action.ruleName }) }}
                     </div>
                     <pre class="text-xs mt-2 text-gray-500 dark:text-gray-400 overflow-auto">{{ JSON.stringify(action.actionParams, null, 2) }}</pre>
                   </div>
                 </div>
               </div>
               <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-700">
-                <span>Executed: {{ previewData.executed }}</span>
-                <span>Skipped: {{ previewData.skipped }}</span>
-                <span>Failed: {{ previewData.failed }}</span>
+                <span>{{ t('process.rulePreviewExecuted', { count: previewData.executed }) }}</span>
+                <span>{{ t('process.rulePreviewSkipped', { count: previewData.skipped }) }}</span>
+                <span>{{ t('process.rulePreviewFailed', { count: previewData.failed }) }}</span>
               </div>
             </div>
           </DialogPanel>
@@ -86,9 +86,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import apiClient from '@/utils/apiClient';
+
+const { t } = useI18n();
 
 const props = defineProps({
   rule: {
@@ -97,7 +100,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['close']);
+defineEmits(['close']);
 
 const loading = ref(true);
 const error = ref(null);
@@ -110,7 +113,7 @@ async function loadPreview() {
     const res = await apiClient.post('/admin/automation-rules/preview', { rule: props.rule });
     previewData.value = res.data.data;
   } catch (err) {
-    error.value = err.response?.data?.message || 'Failed to preview rule';
+    error.value = err.response?.data?.message || t('process.rulePreviewLoadFailed');
   } finally {
     loading.value = false;
   }

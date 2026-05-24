@@ -8,7 +8,7 @@
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
       </svg>
-      Back to Core Modules
+      {{ t('settings.coreModDetailBack') }}
     </button>
 
     <!-- Loading State -->
@@ -23,7 +23,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <p class="text-sm text-red-800 dark:text-red-300">
-          {{ error.message || 'Failed to load core module' }}
+          {{ error.message || t('settings.coreModDetailLoadFailed') }}
         </p>
       </div>
     </div>
@@ -56,7 +56,7 @@
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
-                  Platform-Owned
+                  {{ t('settings.coreModDetailPlatformOwnedBadge') }}
                 </span>
 
                 <!-- Shared Badge -->
@@ -67,21 +67,17 @@
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
-                  Shared by {{ module.applications.length }} {{ module.applications.length === 1 ? 'application' : 'applications' }}
+                  {{ sharedByLabel(module.applications.length) }}
                 </span>
               </div>
             </div>
           </div>
-          <!-- One-line Description -->
-          <!-- <p class="text-sm text-gray-600 dark:text-gray-400 ml-16">
-            Platform identity module shared across applications
-          </p> -->
         </div>
 
         <!-- ModulesAndFields with its own tabs (Module details, Field Configurations, Relationships, Quick Create) -->
         <ModulesAndFields 
           :module-filter="peopleModuleFilter" 
-          :title="'People'"
+          :title="t('settings.coreModDetailModulePeople')"
           :hide-field-creation="false"
           :hide-header="true"
         >
@@ -89,17 +85,17 @@
             <!-- Apps Using This Module Section -->
             <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
               <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">
-                Apps Using This Module
+                {{ t('settings.coreModDetailAppsUsingTitle') }}
               </h3>
 
               <!-- Required Applications -->
               <div v-if="requiredApplications.length > 0" class="mb-6">
                 <div class="flex items-center gap-2 mb-3">
                   <h4 class="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-                    Required
+                    {{ t('settings.coreModDetailRequired') }}
                   </h4>
                   <span class="text-xs text-gray-500 dark:text-gray-500">
-                    ({{ requiredApplications.length }} {{ requiredApplications.length === 1 ? 'application' : 'applications' }})
+                    {{ applicationCountLabel(requiredApplications.length) }}
                   </span>
                 </div>
                 <div class="space-y-3">
@@ -116,7 +112,7 @@
                           </h4>
                           <!-- Required Badge -->
                           <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300">
-                            Required
+                            {{ t('settings.coreModDetailRequired') }}
                           </span>
                           <!-- Lock Icon -->
                           <svg
@@ -124,7 +120,7 @@
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
-                            title="This application requires this module and cannot be disabled"
+                            :title="t('settings.coreModDetailAppRequiredLock')"
                           >
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                           </svg>
@@ -144,7 +140,7 @@
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        Enabled
+                        {{ t('settings.settingsAppsStatusEnabled') }}
                       </span>
                     </div>
                   </div>
@@ -155,10 +151,10 @@
               <div v-if="optionalApplications.length > 0">
                 <div class="flex items-center gap-2 mb-3">
                   <h4 class="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-                    Optional
+                    {{ t('settings.coreModDetailOptional') }}
                   </h4>
                   <span class="text-xs text-gray-500 dark:text-gray-500">
-                    ({{ optionalApplications.length }} {{ optionalApplications.length === 1 ? 'application' : 'applications' }})
+                    {{ applicationCountLabel(optionalApplications.length) }}
                   </span>
                 </div>
                 <div class="space-y-3">
@@ -190,7 +186,7 @@
                             updatingApps.includes(app.appKey) ? 'opacity-50 cursor-not-allowed' : ''
                           ]"
                         >
-                          <span class="sr-only">{{ app.enabled ? 'Disable' : 'Enable' }} {{ app.appName }}</span>
+                          <span class="sr-only">{{ appToggleSrLabel(app.enabled, app.appName) }}</span>
                           <span
                             aria-hidden="true"
                             :class="[
@@ -200,7 +196,7 @@
                           />
                         </Switch>
                         <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          {{ app.enabled ? 'Enabled' : 'Disabled' }}
+                          {{ appStatusLabel(app.enabled) }}
                         </span>
                         <div v-if="updatingApps.includes(app.appKey)" class="ml-2">
                           <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
@@ -225,7 +221,7 @@
                         >
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        {{ app.enabled ? 'Enabled' : 'Disabled' }}
+                        {{ appStatusLabel(app.enabled) }}
                       </span>
                     </div>
                   </div>
@@ -235,7 +231,7 @@
               <!-- No Applications Message -->
               <div v-if="requiredApplications.length === 0 && optionalApplications.length === 0" class="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700">
                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                  This module is not currently used by any applications.
+                  {{ t('settings.coreModDetailNoApps') }}
                 </p>
               </div>
             </div>
@@ -269,7 +265,7 @@
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
-                  Platform-Owned
+                  {{ t('settings.coreModDetailPlatformOwnedBadge') }}
                 </span>
 
                 <!-- Shared Badge -->
@@ -280,7 +276,7 @@
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
-                  Shared by {{ module.applications.length }} {{ module.applications.length === 1 ? 'application' : 'applications' }}
+                  {{ sharedByLabel(module.applications.length) }}
                 </span>
               </div>
             </div>
@@ -290,7 +286,7 @@
         <!-- ModulesAndFields with its own tabs (Module details, Field Configurations, Status & Types, Relationships, Quick Create) -->
         <ModulesAndFields 
           :module-filter="organizationsModuleFilter" 
-          :title="'Organizations'"
+          :title="t('settings.coreModDetailModuleOrganizations')"
           :hide-field-creation="false"
           :hide-header="true"
         >
@@ -298,14 +294,13 @@
             <!-- Apps Using This Module Section -->
             <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
               <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">
-                Apps Using This Module
+                {{ t('settings.coreModDetailAppsUsingTitle') }}
               </h3>
 
               <!-- Helper Text -->
               <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                 <p class="text-xs text-blue-800 dark:text-blue-400">
-                  <strong>Note:</strong> Organizations are shared business entities (Customer, Partner, Vendor, etc.) used across applications. 
-                  App participation is controlled at the application level, not here. This view is read-only for transparency.
+                  {{ t('settings.coreModDetailNoteOrganizations') }}
                 </p>
               </div>
 
@@ -313,10 +308,10 @@
               <div v-if="requiredApplications.length > 0" class="mb-6">
                 <div class="flex items-center gap-2 mb-3">
                   <h4 class="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-                    Required
+                    {{ t('settings.coreModDetailRequired') }}
                   </h4>
                   <span class="text-xs text-gray-500 dark:text-gray-500">
-                    ({{ requiredApplications.length }} {{ requiredApplications.length === 1 ? 'application' : 'applications' }})
+                    {{ applicationCountLabel(requiredApplications.length) }}
                   </span>
                 </div>
                 <div class="space-y-3">
@@ -333,7 +328,7 @@
                           </h4>
                           <!-- Required Badge -->
                           <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300">
-                            Required
+                            {{ t('settings.coreModDetailRequired') }}
                           </span>
                           <!-- Lock Icon -->
                           <svg
@@ -341,7 +336,7 @@
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
-                            title="This application requires this module and cannot be disabled"
+                            :title="t('settings.coreModDetailAppRequiredLock')"
                           >
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                           </svg>
@@ -361,7 +356,7 @@
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        Enabled
+                        {{ t('settings.settingsAppsStatusEnabled') }}
                       </span>
                     </div>
                   </div>
@@ -372,10 +367,10 @@
               <div v-if="optionalApplications.length > 0">
                 <div class="flex items-center gap-2 mb-3">
                   <h4 class="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-                    Optional
+                    {{ t('settings.coreModDetailOptional') }}
                   </h4>
                   <span class="text-xs text-gray-500 dark:text-gray-500">
-                    ({{ optionalApplications.length }} {{ optionalApplications.length === 1 ? 'application' : 'applications' }})
+                    {{ applicationCountLabel(optionalApplications.length) }}
                   </span>
                 </div>
                 <div class="space-y-3">
@@ -414,7 +409,7 @@
                         >
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        {{ app.enabled ? 'Enabled' : 'Disabled' }}
+                        {{ appStatusLabel(app.enabled) }}
                       </span>
                     </div>
                   </div>
@@ -424,7 +419,7 @@
               <!-- No Applications Message -->
               <div v-if="requiredApplications.length === 0 && optionalApplications.length === 0" class="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700">
                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                  This module is not currently used by any applications.
+                  {{ t('settings.coreModDetailNoApps') }}
                 </p>
               </div>
             </div>
@@ -458,7 +453,7 @@
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
-                  Platform-Owned
+                  {{ t('settings.coreModDetailPlatformOwnedBadge') }}
                 </span>
 
                 <!-- Shared Badge -->
@@ -469,7 +464,7 @@
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
-                  Shared by {{ module.applications.length }} {{ module.applications.length === 1 ? 'application' : 'applications' }}
+                  {{ sharedByLabel(module.applications.length) }}
                 </span>
               </div>
             </div>
@@ -489,7 +484,7 @@
         -->
         <ModulesAndFields 
           :module-filter="tasksModuleFilter" 
-          :title="'Tasks'"
+          :title="t('settings.coreModDetailModuleTasks')"
           :hide-field-creation="false"
           :hide-header="true"
         >
@@ -497,14 +492,13 @@
             <!-- Apps Using This Module Section -->
             <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
               <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">
-                Apps Using This Module
+                {{ t('settings.coreModDetailAppsUsingTitle') }}
               </h3>
 
               <!-- Helper Text -->
               <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                 <p class="text-xs text-blue-800 dark:text-blue-400">
-                  <strong>Note:</strong> Tasks are shared work objects used across applications. 
-                  App participation is controlled at the application level, not here. This view is read-only for transparency.
+                  {{ t('settings.coreModDetailNoteTasks') }}
                 </p>
               </div>
 
@@ -512,10 +506,10 @@
               <div v-if="requiredApplications.length > 0" class="mb-6">
                 <div class="flex items-center gap-2 mb-3">
                   <h4 class="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-                    Required
+                    {{ t('settings.coreModDetailRequired') }}
                   </h4>
                   <span class="text-xs text-gray-500 dark:text-gray-500">
-                    ({{ requiredApplications.length }} {{ requiredApplications.length === 1 ? 'application' : 'applications' }})
+                    {{ applicationCountLabel(requiredApplications.length) }}
                   </span>
                 </div>
                 <div class="space-y-3">
@@ -532,7 +526,7 @@
                           </h4>
                           <!-- Required Badge -->
                           <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300">
-                            Required
+                            {{ t('settings.coreModDetailRequired') }}
                           </span>
                           <!-- Lock Icon -->
                           <svg
@@ -540,7 +534,7 @@
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
-                            title="This application requires this module and cannot be disabled"
+                            :title="t('settings.coreModDetailAppRequiredLock')"
                           >
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                           </svg>
@@ -560,7 +554,7 @@
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        Enabled
+                        {{ t('settings.settingsAppsStatusEnabled') }}
                       </span>
                     </div>
                   </div>
@@ -571,10 +565,10 @@
               <div v-if="optionalApplications.length > 0">
                 <div class="flex items-center gap-2 mb-3">
                   <h4 class="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-                    Optional
+                    {{ t('settings.coreModDetailOptional') }}
                   </h4>
                   <span class="text-xs text-gray-500 dark:text-gray-500">
-                    ({{ optionalApplications.length }} {{ optionalApplications.length === 1 ? 'application' : 'applications' }})
+                    {{ applicationCountLabel(optionalApplications.length) }}
                   </span>
                 </div>
                 <div class="space-y-3">
@@ -613,7 +607,7 @@
                         >
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        {{ app.enabled ? 'Enabled' : 'Disabled' }}
+                        {{ appStatusLabel(app.enabled) }}
                       </span>
                     </div>
                   </div>
@@ -623,7 +617,7 @@
               <!-- No Applications Message -->
               <div v-if="requiredApplications.length === 0 && optionalApplications.length === 0" class="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700">
                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                  This module is not currently used by any applications.
+                  {{ t('settings.coreModDetailNoApps') }}
                 </p>
               </div>
             </div>
@@ -667,7 +661,7 @@
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
-                  Platform-Owned
+                  {{ t('settings.coreModDetailPlatformOwnedBadge') }}
                 </span>
 
                 <!-- Shared Badge -->
@@ -678,14 +672,14 @@
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
-                  Shared by {{ module.applications.length }} {{ module.applications.length === 1 ? 'application' : 'applications' }}
+                  {{ sharedByLabel(module.applications.length) }}
                 </span>
               </div>
             </div>
           </div>
           <!-- Helper Text -->
           <p class="text-sm text-gray-600 dark:text-gray-400 ml-16 mt-2">
-            Events define time-based work across the platform. This settings area configures event structure and constraints, not scheduling or execution.
+            {{ t('settings.coreModDetailEventsIntro') }}
           </p>
         </div>
 
@@ -729,7 +723,7 @@
         -->
         <ModulesAndFields 
           :module-filter="eventsModuleFilter" 
-          :title="'Events'"
+          :title="t('settings.coreModDetailModuleEvents')"
           :hide-field-creation="false"
           :hide-header="true"
         >
@@ -737,15 +731,13 @@
             <!-- Apps Using This Module Section -->
             <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
               <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">
-                Apps Using This Module
+                {{ t('settings.coreModDetailAppsUsingTitle') }}
               </h3>
 
               <!-- Helper Text -->
               <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                 <p class="text-xs text-blue-800 dark:text-blue-400">
-                  <strong>Note:</strong> Events are shared time-based work objects used across applications (Audit, Sales, Calendar). 
-                  App participation is controlled at the application level, not here. This view is read-only for transparency. 
-                  Events cannot be disabled per app as they are core platform capabilities.
+                  {{ t('settings.coreModDetailNoteEvents') }}
                 </p>
               </div>
 
@@ -753,10 +745,10 @@
               <div v-if="requiredApplications.length > 0" class="mb-6">
                 <div class="flex items-center gap-2 mb-3">
                   <h4 class="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-                    Required
+                    {{ t('settings.coreModDetailRequired') }}
                   </h4>
                   <span class="text-xs text-gray-500 dark:text-gray-500">
-                    ({{ requiredApplications.length }} {{ requiredApplications.length === 1 ? 'application' : 'applications' }})
+                    {{ applicationCountLabel(requiredApplications.length) }}
                   </span>
                 </div>
                 <div class="space-y-3">
@@ -773,7 +765,7 @@
                           </h4>
                           <!-- Required Badge -->
                           <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300">
-                            Required
+                            {{ t('settings.coreModDetailRequired') }}
                           </span>
                           <!-- Lock Icon -->
                           <svg
@@ -781,7 +773,7 @@
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
-                            title="This application requires this module and cannot be disabled"
+                            :title="t('settings.coreModDetailAppRequiredLock')"
                           >
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                           </svg>
@@ -801,7 +793,7 @@
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        Enabled
+                        {{ t('settings.settingsAppsStatusEnabled') }}
                       </span>
                     </div>
                   </div>
@@ -812,10 +804,10 @@
               <div v-if="optionalApplications.length > 0">
                 <div class="flex items-center gap-2 mb-3">
                   <h4 class="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-                    Optional
+                    {{ t('settings.coreModDetailOptional') }}
                   </h4>
                   <span class="text-xs text-gray-500 dark:text-gray-500">
-                    ({{ optionalApplications.length }} {{ optionalApplications.length === 1 ? 'application' : 'applications' }})
+                    {{ applicationCountLabel(optionalApplications.length) }}
                   </span>
                 </div>
                 <div class="space-y-3">
@@ -854,7 +846,7 @@
                         >
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        {{ app.enabled ? 'Enabled' : 'Disabled' }}
+                        {{ appStatusLabel(app.enabled) }}
                       </span>
                     </div>
                   </div>
@@ -864,7 +856,7 @@
               <!-- No Applications Message -->
               <div v-if="requiredApplications.length === 0 && optionalApplications.length === 0" class="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700">
                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                  This module is not currently used by any applications.
+                  {{ t('settings.coreModDetailNoApps') }}
                 </p>
               </div>
             </div>
@@ -906,7 +898,7 @@
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
-                  Platform-Owned
+                  {{ t('settings.coreModDetailPlatformOwnedBadge') }}
                 </span>
 
                 <!-- Shared Badge -->
@@ -917,40 +909,39 @@
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
-                  Shared by {{ module.applications.length }} {{ module.applications.length === 1 ? 'application' : 'applications' }}
+                  {{ sharedByLabel(module.applications.length) }}
                 </span>
               </div>
             </div>
           </div>
           <!-- Helper Text -->
           <p class="text-sm text-gray-600 dark:text-gray-400 ml-16 mt-2">
-            Forms define data collection structures across the platform. This settings area configures form behavior, lifecycle, and outcomes. Form content is edited in the Form Builder.
+            {{ t('settings.coreModDetailFormsIntro') }}
           </p>
         </div>
 
         <!-- ModulesAndFields with its own tabs (Module details, Field Configurations, Logic & Rules, Outcomes, Access) -->
         <ModulesAndFields 
           :module-filter="formsModuleFilter" 
-          :title="'Forms'"
+          :title="t('settings.coreModDetailModuleForms')"
           :hide-field-creation="false"
           :hide-header="true"
         >
           <template #details-extra>
             <!-- Form Configuration Section -->
             <section class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-              <h2 class="module-section-title text-lg font-semibold text-gray-900 dark:text-white mb-2">Form Configuration</h2>
+              <h2 class="module-section-title text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.coreModDetailFormConfigTitle') }}</h2>
               <p class="module-section-help text-sm text-gray-600 dark:text-gray-400 mb-4">
-                Configure form behavior, lifecycle, and outcomes.
-                Form content is edited in the Form Builder.
+                {{ t('settings.coreModDetailFormConfigHelp') }}
               </p>
               
               <!-- Capability Declaration -->
               <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                <p class="text-xs font-semibold text-blue-900 dark:text-blue-300 mb-2">Form Settings Capabilities</p>
+                <p class="text-xs font-semibold text-blue-900 dark:text-blue-300 mb-2">{{ t('settings.coreModDetailFormCapabilitiesTitle') }}</p>
                 <div class="space-y-1 text-xs text-blue-800 dark:text-blue-400">
-                  <p><strong>Can:</strong> Configure fields, lifecycle, access, behavior rules, and outcomes</p>
-                  <p><strong>Cannot:</strong> Edit form structure, content, scoring weights, or execute workflows</p>
-                  <p class="mt-2 italic">See: client/src/platform/forms/formSettingsCapabilities.ts</p>
+                  <p>{{ t('settings.coreModDetailFormCapabilitiesCan') }}</p>
+                  <p>{{ t('settings.coreModDetailFormCapabilitiesCannot') }}</p>
+                  <p class="mt-2 italic">{{ t('settings.coreModDetailFormCapabilitiesSee') }}</p>
                 </div>
               </div>
             </section>
@@ -958,14 +949,13 @@
             <!-- Apps Using This Module Section -->
             <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
               <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">
-                Apps Using This Module
+                {{ t('settings.coreModDetailAppsUsingTitle') }}
               </h3>
 
               <!-- Helper Text -->
               <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                 <p class="text-xs text-blue-800 dark:text-blue-400">
-                  <strong>Note:</strong> Forms are shared data collection structures used across applications. 
-                  App participation is controlled at the application level, not here. This view is read-only for transparency.
+                  {{ t('settings.coreModDetailNoteForms') }}
                 </p>
               </div>
 
@@ -973,10 +963,10 @@
               <div v-if="requiredApplications.length > 0" class="mb-6">
                 <div class="flex items-center gap-2 mb-3">
                   <h4 class="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-                    Required
+                    {{ t('settings.coreModDetailRequired') }}
                   </h4>
                   <span class="text-xs text-gray-500 dark:text-gray-500">
-                    ({{ requiredApplications.length }} {{ requiredApplications.length === 1 ? 'application' : 'applications' }})
+                    {{ applicationCountLabel(requiredApplications.length) }}
                   </span>
                 </div>
                 <div class="space-y-3">
@@ -993,7 +983,7 @@
                           </h4>
                           <!-- Required Badge -->
                           <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300">
-                            Required
+                            {{ t('settings.coreModDetailRequired') }}
                           </span>
                           <!-- Lock Icon -->
                           <svg
@@ -1001,7 +991,7 @@
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
-                            title="This application requires this module and cannot be disabled"
+                            :title="t('settings.coreModDetailAppRequiredLock')"
                           >
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                           </svg>
@@ -1021,7 +1011,7 @@
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        Enabled
+                        {{ t('settings.settingsAppsStatusEnabled') }}
                       </span>
                     </div>
                   </div>
@@ -1032,10 +1022,10 @@
               <div v-if="optionalApplications.length > 0">
                 <div class="flex items-center gap-2 mb-3">
                   <h4 class="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-                    Optional
+                    {{ t('settings.coreModDetailOptional') }}
                   </h4>
                   <span class="text-xs text-gray-500 dark:text-gray-500">
-                    ({{ optionalApplications.length }} {{ optionalApplications.length === 1 ? 'application' : 'applications' }})
+                    {{ applicationCountLabel(optionalApplications.length) }}
                   </span>
                 </div>
                 <div class="space-y-3">
@@ -1074,7 +1064,7 @@
                         >
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        {{ app.enabled ? 'Enabled' : 'Disabled' }}
+                        {{ appStatusLabel(app.enabled) }}
                       </span>
                     </div>
                   </div>
@@ -1084,7 +1074,7 @@
               <!-- No Applications Message -->
               <div v-if="requiredApplications.length === 0 && optionalApplications.length === 0" class="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700">
                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                  This module is not currently used by any applications.
+                  {{ t('settings.coreModDetailNoApps') }}
                 </p>
               </div>
             </div>
@@ -1118,7 +1108,7 @@
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
-                  Platform-Owned
+                  {{ t('settings.coreModDetailPlatformOwnedBadge') }}
                 </span>
 
                 <!-- Shared Badge -->
@@ -1129,7 +1119,7 @@
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
-                  Shared by {{ module.applications.length }} {{ module.applications.length === 1 ? 'application' : 'applications' }}
+                  {{ sharedByLabel(module.applications.length) }}
                 </span>
               </div>
             </div>
@@ -1139,7 +1129,7 @@
         <!-- ModulesAndFields with its own tabs (Module details, Field Configurations, Status & Types, Relationships, Quick Create) -->
         <ModulesAndFields 
           :module-filter="itemsModuleFilter" 
-          :title="'Items'"
+          :title="t('settings.coreModDetailModuleItems')"
           :hide-field-creation="false"
           :hide-header="true"
         >
@@ -1147,17 +1137,17 @@
             <!-- Apps Using This Module Section -->
             <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
               <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">
-                Apps Using This Module
+                {{ t('settings.coreModDetailAppsUsingTitle') }}
               </h3>
 
               <!-- Required Applications -->
               <div v-if="requiredApplications.length > 0" class="mb-6">
                 <div class="flex items-center gap-2 mb-3">
                   <h4 class="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-                    Required
+                    {{ t('settings.coreModDetailRequired') }}
                   </h4>
                   <span class="text-xs text-gray-500 dark:text-gray-500">
-                    ({{ requiredApplications.length }} {{ requiredApplications.length === 1 ? 'application' : 'applications' }})
+                    {{ applicationCountLabel(requiredApplications.length) }}
                   </span>
                 </div>
                 <div class="space-y-3">
@@ -1174,7 +1164,7 @@
                           </h4>
                           <!-- Required Badge -->
                           <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300">
-                            Required
+                            {{ t('settings.coreModDetailRequired') }}
                           </span>
                         </div>
                         <p v-if="app.usage" class="text-sm text-gray-600 dark:text-gray-400">
@@ -1189,7 +1179,7 @@
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        Enabled
+                        {{ t('settings.settingsAppsStatusEnabled') }}
                       </span>
                     </div>
                   </div>
@@ -1200,10 +1190,10 @@
               <div v-if="optionalApplications.length > 0">
                 <div class="flex items-center gap-2 mb-3">
                   <h4 class="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-                    Optional
+                    {{ t('settings.coreModDetailOptional') }}
                   </h4>
                   <span class="text-xs text-gray-500 dark:text-gray-500">
-                    ({{ optionalApplications.length }} {{ optionalApplications.length === 1 ? 'application' : 'applications' }})
+                    {{ applicationCountLabel(optionalApplications.length) }}
                   </span>
                 </div>
                 <div class="space-y-3">
@@ -1233,7 +1223,7 @@
                             updatingApps.includes(app.appKey) ? 'opacity-50 cursor-not-allowed' : ''
                           ]"
                         >
-                          <span class="sr-only">{{ app.enabled ? 'Disable' : 'Enable' }} {{ app.appName }}</span>
+                          <span class="sr-only">{{ appToggleSrLabel(app.enabled, app.appName) }}</span>
                           <span
                             aria-hidden="true"
                             :class="[
@@ -1243,7 +1233,7 @@
                           />
                         </Switch>
                         <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          {{ app.enabled ? 'Enabled' : 'Disabled' }}
+                          {{ appStatusLabel(app.enabled) }}
                         </span>
                       </div>
                       <!-- Read-only Status -->
@@ -1265,7 +1255,7 @@
                         >
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        {{ app.enabled ? 'Enabled' : 'Disabled' }}
+                        {{ appStatusLabel(app.enabled) }}
                       </span>
                     </div>
                   </div>
@@ -1275,7 +1265,7 @@
               <!-- No Applications Message -->
               <div v-if="requiredApplications.length === 0 && optionalApplications.length === 0" class="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700">
                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                  This module is not currently used by any applications.
+                  {{ t('settings.coreModDetailNoApps') }}
                 </p>
               </div>
             </div>
@@ -1309,7 +1299,7 @@
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
-                Platform-Owned
+                {{ t('settings.coreModDetailPlatformOwnedBadge') }}
               </span>
 
               <!-- Shared Badge -->
@@ -1320,7 +1310,7 @@
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
-                Shared by {{ module.applications.length }} {{ module.applications.length === 1 ? 'application' : 'applications' }}
+                {{ sharedByLabel(module.applications.length) }}
               </span>
             </div>
           </div>
@@ -1335,10 +1325,10 @@
           </svg>
           <div>
             <h3 class="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-1">
-              Platform-Owned Capability
+              {{ t('settings.modFieldsPlatformOwnedTitle') }}
             </h3>
             <p class="text-sm text-blue-800 dark:text-blue-400">
-              This is a shared platform capability owned by the platform. It cannot be deleted, renamed, or modified. Applications can use this capability, but they cannot change its core definition.
+              {{ t('settings.modFieldsPlatformOwnedBody') }}
             </p>
           </div>
         </div>
@@ -1346,7 +1336,7 @@
 
       <!-- Description -->
       <div>
-        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Description</h3>
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.coreModDetailDescription') }}</h3>
         <p class="text-sm text-gray-600 dark:text-gray-400">
           {{ module.description }}
         </p>
@@ -1361,10 +1351,10 @@
           </svg>
           <div>
             <h3 class="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-1">
-              Platform-Owned Capability
+              {{ t('settings.modFieldsPlatformOwnedTitle') }}
             </h3>
             <p class="text-sm text-blue-800 dark:text-blue-400">
-              This is a shared platform capability owned by the platform. It cannot be deleted, renamed, or modified. Applications can use this capability, but they cannot change its core definition.
+              {{ t('settings.modFieldsPlatformOwnedBody') }}
             </p>
           </div>
         </div>
@@ -1372,7 +1362,7 @@
 
       <!-- Description -->
       <div>
-        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Description</h3>
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.coreModDetailDescription') }}</h3>
         <p class="text-sm text-gray-600 dark:text-gray-400">
           {{ module.description }}
         </p>
@@ -1381,30 +1371,30 @@
       <!-- Shared Usage Explanation -->
       <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
         <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-          About Shared Capabilities
+          {{ t('settings.coreModDetailAboutSharedTitle') }}
         </h3>
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-          Core modules are shared platform capabilities that can be used by multiple applications. When an application uses a core module, it gains access to the module's functionality without needing to implement it separately.
+          {{ t('settings.coreModDetailAboutSharedBody1') }}
         </p>
         <p class="text-sm text-gray-600 dark:text-gray-400">
-          Some applications require certain core modules to function properly. These required modules cannot be disabled. Other applications may use core modules optionally, allowing you to control which applications have access to each capability.
+          {{ t('settings.coreModDetailAboutSharedBody2') }}
         </p>
       </div>
 
       <!-- Applications Using This Module -->
       <div>
         <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">
-          Applications Using This Module
+          {{ t('settings.coreModDetailApplicationsUsingTitle') }}
         </h3>
 
         <!-- Required Applications -->
         <div v-if="requiredApplications.length > 0" class="mb-6">
           <div class="flex items-center gap-2 mb-3">
             <h4 class="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-              Required
+              {{ t('settings.coreModDetailRequired') }}
             </h4>
             <span class="text-xs text-gray-500 dark:text-gray-500">
-              ({{ requiredApplications.length }} {{ requiredApplications.length === 1 ? 'application' : 'applications' }})
+              {{ applicationCountLabel(requiredApplications.length) }}
             </span>
           </div>
           <div class="space-y-3">
@@ -1421,7 +1411,7 @@
                     </h4>
                     <!-- Required Badge -->
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300">
-                      Required
+                      {{ t('settings.coreModDetailRequired') }}
                     </span>
                     <!-- Lock Icon -->
                     <svg
@@ -1429,7 +1419,7 @@
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
-                      title="This application requires this module and cannot be disabled"
+                      :title="t('settings.coreModDetailAppRequiredLock')"
                     >
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
@@ -1449,7 +1439,7 @@
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                   </svg>
-                  Enabled
+                  {{ t('settings.settingsAppsStatusEnabled') }}
                 </span>
               </div>
             </div>
@@ -1460,10 +1450,10 @@
         <div v-if="optionalApplications.length > 0">
           <div class="flex items-center gap-2 mb-3">
             <h4 class="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-              Optional
+              {{ t('settings.coreModDetailOptional') }}
             </h4>
             <span class="text-xs text-gray-500 dark:text-gray-500">
-              ({{ optionalApplications.length }} {{ optionalApplications.length === 1 ? 'application' : 'applications' }})
+              {{ applicationCountLabel(optionalApplications.length) }}
             </span>
           </div>
           <div class="space-y-3">
@@ -1495,7 +1485,7 @@
                       updatingApps.includes(app.appKey) ? 'opacity-50 cursor-not-allowed' : ''
                     ]"
                   >
-                    <span class="sr-only">{{ app.enabled ? 'Disable' : 'Enable' }} {{ app.appName }}</span>
+                    <span class="sr-only">{{ appToggleSrLabel(app.enabled, app.appName) }}</span>
                     <span
                       aria-hidden="true"
                       :class="[
@@ -1505,7 +1495,7 @@
                     />
                   </Switch>
                   <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {{ app.enabled ? 'Enabled' : 'Disabled' }}
+                    {{ appStatusLabel(app.enabled) }}
                   </span>
                   <div v-if="updatingApps.includes(app.appKey)" class="ml-2">
                     <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
@@ -1530,7 +1520,7 @@
                   >
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                   </svg>
-                  {{ app.enabled ? 'Enabled' : 'Disabled' }}
+                  {{ appStatusLabel(app.enabled) }}
                 </span>
               </div>
             </div>
@@ -1540,7 +1530,7 @@
         <!-- No Applications Message -->
         <div v-if="requiredApplications.length === 0 && optionalApplications.length === 0" class="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700">
           <p class="text-sm text-gray-500 dark:text-gray-400">
-            This module is not currently used by any applications.
+            {{ t('settings.coreModDetailNoApps') }}
           </p>
         </div>
       </div>
@@ -1571,14 +1561,14 @@
               </div>
               <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
                 <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">
-                  {{ pendingAction.newState ? 'Enable' : 'Disable' }} {{ pendingAction.app.appName }}?
+                  {{ confirmToggleTitle(pendingAction.newState, pendingAction.app.appName) }}
                 </h3>
                 <div class="mt-2">
                   <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                    You're about to {{ pendingAction.newState ? 'enable' : 'disable' }} {{ pendingAction.app.appName }}'s use of this module.
+                    {{ confirmToggleBody(pendingAction.newState, pendingAction.app.appName) }}
                   </p>
                   <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
-                    <p class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Impact:</p>
+                    <p class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">{{ t('settings.coreModDetailImpact') }}</p>
                     <ul class="text-xs text-gray-600 dark:text-gray-400 space-y-1">
                       <li v-for="(impact, index) in getImpactExplanation()" :key="index" class="flex items-start gap-2">
                         <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1598,14 +1588,14 @@
               :disabled="updatingApps.includes(pendingAction?.app?.appKey)"
               class="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {{ pendingAction.newState ? 'Enable' : 'Disable' }}
+              {{ confirmToggleAction(pendingAction.newState) }}
             </button>
             <button
               @click="cancelToggle"
               :disabled="updatingApps.includes(pendingAction?.app?.appKey)"
               class="inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Cancel
+              {{ t('actions.cancel') }}
             </button>
           </div>
         </div>
@@ -1619,6 +1609,7 @@
 // Form Settings are configuration-only and must respect domain boundaries
 
 import { ref, computed, onMounted, Teleport, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { Switch } from '@headlessui/vue';
 import apiClient from '@/utils/apiClient';
@@ -1636,8 +1627,43 @@ if (process.env.NODE_ENV === 'development') {
   );
 }
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
+
+function appStatusLabel(enabled) {
+  return enabled ? t('settings.settingsAppsStatusEnabled') : t('settings.settingsAppsStatusDisabled');
+}
+
+function appToggleSrLabel(enabled, appName) {
+  return enabled
+    ? t('settings.coreModDetailToggleDisable', { appName })
+    : t('settings.coreModDetailToggleEnable', { appName });
+}
+
+function applicationCountLabel(count) {
+  return t('settings.coreModDetailApplicationCount', { count });
+}
+
+function sharedByLabel(count) {
+  return t('settings.coreModDetailSharedBy', { count });
+}
+
+function confirmToggleTitle(newState, appName) {
+  return newState
+    ? t('settings.coreModDetailConfirmEnableTitle', { appName })
+    : t('settings.coreModDetailConfirmDisableTitle', { appName });
+}
+
+function confirmToggleBody(newState, appName) {
+  return newState
+    ? t('settings.coreModDetailConfirmEnableBody', { appName })
+    : t('settings.coreModDetailConfirmDisableBody', { appName });
+}
+
+function confirmToggleAction(newState) {
+  return newState ? t('settings.coreModDetailEnable') : t('settings.coreModDetailDisable');
+}
 
 const module = ref(null);
 const loading = ref(true);
@@ -1760,7 +1786,7 @@ const optionalApplications = computed(() => {
 
 const fetchCoreModule = async () => {
   if (!moduleKey.value) {
-    error.value = new Error('Module key is required');
+    error.value = new Error(t('settings.coreModDetailModuleKeyRequired'));
     loading.value = false;
     return;
   }
@@ -1776,7 +1802,7 @@ const fetchCoreModule = async () => {
     if (data && data.success && data.moduleKey) {
       module.value = data;
     } else {
-      error.value = new Error('Invalid response from server');
+      error.value = new Error(t('settings.coreModDetailInvalidResponse'));
       module.value = null;
     }
   } catch (err) {
@@ -1877,13 +1903,15 @@ const confirmToggle = async () => {
     } else {
       // Rollback on error
       app.enabled = previousState;
-      throw new Error(response?.message || 'Failed to update application participation');
+      throw new Error(response?.message || t('settings.coreModDetailUpdateFailed'));
     }
   } catch (err) {
     console.error('Failed to toggle app participation:', err);
     // Rollback on error
     app.enabled = previousState;
-    error.value = new Error(err.message || err.response?.data?.message || 'Failed to update application participation. Please try again.');
+    error.value = new Error(
+      err.message || err.response?.data?.message || t('settings.coreModDetailUpdateFailedRetry')
+    );
   } finally {
     updatingApps.value = updatingApps.value.filter(key => key !== appKey);
     pendingAction.value = null;
@@ -1906,13 +1934,14 @@ const getImpactExplanation = () => {
   const { app, newState } = pendingAction.value;
   const impacts = [];
   
+  const appName = app.appName;
   if (newState) {
-    impacts.push(`${app.appName} will be able to use this module`);
-    impacts.push(`Users with ${app.appName} access will see this module's functionality`);
+    impacts.push(t('settings.coreModDetailImpactEnableUse', { appName }));
+    impacts.push(t('settings.coreModDetailImpactEnableAccess', { appName }));
   } else {
-    impacts.push(`${app.appName} will no longer be able to use this module`);
-    impacts.push(`Users with ${app.appName} access will lose access to this module's functionality`);
-    impacts.push(`No data will be deleted - existing data remains but cannot be accessed`);
+    impacts.push(t('settings.coreModDetailImpactDisableUse', { appName }));
+    impacts.push(t('settings.coreModDetailImpactDisableAccess', { appName }));
+    impacts.push(t('settings.coreModDetailImpactDisableData'));
   }
   
   return impacts;

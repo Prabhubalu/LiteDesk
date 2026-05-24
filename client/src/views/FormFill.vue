@@ -10,7 +10,7 @@
                 v-if="eventId"
                 @click="goBackToEvent"
                 class="flex-shrink-0 p-2 text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
-                title="Back to Event"
+                :title="t('forms.hubFillBackToEventTitle')"
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -18,14 +18,14 @@
               </button>
               <h1 class="text-xl font-bold text-gray-900 dark:text-white truncate">{{ form.name }}</h1>
               <span v-if="eventId" class="flex-shrink-0 px-2.5 py-1 text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 rounded-full">
-                Event Linked
+                {{ t('forms.hubFillEventLinked') }}
               </span>
             </div>
             <div class="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
               <span class="font-medium">{{ form.formId }}</span>
               <span v-if="form.formType" class="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{{ form.formType }}</span>
               <span v-if="totalQuestions > 0" class="text-gray-400 dark:text-gray-500">
-                {{ answeredQuestions }} / {{ totalQuestions }} questions answered
+                {{ t('forms.hubFillQuestionsProgress', { answered: answeredQuestions, total: totalQuestions }) }}
               </span>
             </div>
           </div>
@@ -36,7 +36,7 @@
                 :style="{ width: `${completionPercentage}%` }"
               ></div>
             </div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">{{ Math.round(completionPercentage) }}% complete</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">{{ t('forms.hubFillPercentComplete', { percent: Math.round(completionPercentage) }) }}</p>
           </div>
         </div>
       </div>
@@ -46,8 +46,8 @@
       <!-- Loading State -->
       <div v-if="loading" class="text-center py-20">
         <div class="w-20 h-20 border-4 border-gray-200 dark:border-gray-700 border-t-indigo-600 dark:border-t-indigo-500 rounded-full animate-spin mx-auto mb-6"></div>
-        <p class="text-lg font-medium text-gray-700 dark:text-gray-300">Loading form...</p>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Please wait while we prepare your form</p>
+        <p class="text-lg font-medium text-gray-700 dark:text-gray-300">{{ t('forms.builderShellLoading') }}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">{{ t('forms.hubFillLoadingSubtext') }}</p>
       </div>
 
       <!-- Error State -->
@@ -58,13 +58,13 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h2 class="text-2xl font-bold text-red-800 dark:text-red-200 mb-2">Form Not Found</h2>
+          <h2 class="text-2xl font-bold text-red-800 dark:text-red-200 mb-2">{{ t('forms.hubFillNotFoundTitle') }}</h2>
           <p class="text-red-600 dark:text-red-400 mb-6">{{ error }}</p>
           <button 
             @click="goBack" 
             class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors shadow-lg hover:shadow-xl"
           >
-            Back to Forms
+            {{ t('forms.builderShellBackToForms') }}
           </button>
         </div>
       </div>
@@ -77,12 +77,12 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-3">Form Submitted Successfully!</h2>
+          <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-3">{{ t('forms.hubFillSubmitSuccessTitle') }}</h2>
           <p class="text-lg text-gray-600 dark:text-gray-400 mb-2">
-            Your response has been saved and recorded.
+            {{ t('forms.hubFillSubmitSuccessBody') }}
           </p>
           <p v-if="eventId" class="text-sm text-indigo-600 dark:text-indigo-400 mb-8">
-            You can now return to the event to complete the audit process.
+            {{ t('forms.hubFillReturnToEventHint') }}
           </p>
           <div class="flex flex-col sm:flex-row gap-3 justify-center">
             <button
@@ -90,13 +90,13 @@
               @click="goBackToEvent"
               class="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors shadow-lg hover:shadow-xl"
             >
-              Return to Event
+              {{ t('forms.hubFillReturnToEvent') }}
             </button>
             <button
               @click="goBack"
               class="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 font-medium transition-colors"
             >
-              Back to Forms
+              {{ t('forms.builderShellBackToForms') }}
             </button>
           </div>
         </div>
@@ -122,7 +122,7 @@
             </div>
             <div v-if="autoSaveStatus" class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
               <div class="w-2 h-2 rounded-full" :class="autoSaveStatus === 'saving' ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'"></div>
-              <span>{{ autoSaveStatus === 'saving' ? 'Saving...' : 'All changes saved' }}</span>
+              <span>{{ autoSaveStatus === 'saving' ? t('states.saving') : t('forms.hubFillAutoSaveSaved') }}</span>
             </div>
           </div>
         </div>
@@ -143,9 +143,9 @@
                     {{ sectionIndex + 1 }}
                   </div>
                   <div>
-                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ section.name || `Section ${sectionIndex + 1}` }}</h2>
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ sectionTitle(section, sectionIndex) }}</h2>
                     <p v-if="getSectionQuestionCount(section) > 0" class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      {{ getSectionAnsweredCount(section) }} of {{ getSectionQuestionCount(section) }} questions answered
+                      {{ t('forms.hubFillSectionQuestions', { answered: getSectionAnsweredCount(section), total: getSectionQuestionCount(section) }) }}
                     </p>
                   </div>
                 </div>
@@ -185,9 +185,9 @@
                         <label class="flex-1 text-base font-semibold text-gray-900 dark:text-white leading-relaxed">
                           <span class="inline-flex items-center gap-2">
                             <span>{{ question.questionText }}</span>
-                            <span v-if="question.mandatory" class="text-red-500 font-bold" title="Required">*</span>
-                            <span v-if="question.scoring?.critical" class="px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-bold rounded-full" title="Critical Question">
-                              Critical
+                            <span v-if="question.mandatory" class="text-red-500 font-bold" :title="t('forms.hubFillRequiredTitle')">*</span>
+                            <span v-if="question.scoring?.critical" class="px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-bold rounded-full" :title="t('forms.hubFillCriticalTitle')">
+                              {{ t('forms.hubFillCriticalBadge') }}
                             </span>
                           </span>
                         </label>
@@ -195,7 +195,7 @@
                           <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                           </svg>
-                          <span class="text-xs font-semibold text-indigo-700 dark:text-indigo-300">{{ question.scoring.weight || 0 }} pts</span>
+                          <span class="text-xs font-semibold text-indigo-700 dark:text-indigo-300">{{ t('forms.hubFillScoringPts', { points: question.scoring.weight || 0 }) }}</span>
                         </div>
                       </div>
                       
@@ -217,7 +217,7 @@
                         @input="handleInputChange"
                         type="text"
                         :required="question.mandatory"
-                        :placeholder="question.placeholder || 'Enter your answer'"
+                        :placeholder="question.placeholder || t('forms.textAnswerPh')"
                         class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-base"
                       />
                       
@@ -228,7 +228,7 @@
                         @input="handleInputChange"
                         type="number"
                         :required="question.mandatory"
-                        :placeholder="question.placeholder || 'Enter a number'"
+                        :placeholder="question.placeholder || t('forms.hubFillNumberPh')"
                         class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-base"
                       />
                       
@@ -238,7 +238,7 @@
                         v-model="formData[question.questionId]"
                         @input="handleInputChange"
                         :required="question.mandatory"
-                        :placeholder="question.placeholder || 'Enter your answer'"
+                        :placeholder="question.placeholder || t('forms.textAnswerPh')"
                         rows="5"
                         class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-base resize-y"
                       ></textarea>
@@ -251,7 +251,7 @@
                         :required="question.mandatory"
                         class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-base appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpolyline points=%226 9 12 15 18 9%22%3E%3C/polyline%3E%3C/svg%3E')] bg-no-repeat bg-right-4 pr-10"
                       >
-                        <option value="">Select an option...</option>
+                        <option value="">{{ t('forms.hubFillDropdownPh') }}</option>
                         <option v-for="option in question.options" :key="option" :value="option">{{ option }}</option>
                       </select>
                       
@@ -274,7 +274,7 @@
                             :required="question.mandatory"
                             class="w-5 h-5 text-indigo-600 border-gray-300 focus:ring-indigo-500 cursor-pointer"
                           />
-                          <span class="flex-1 text-gray-900 dark:text-white font-medium">{{ option }}</span>
+                          <span class="flex-1 text-gray-900 dark:text-white font-medium">{{ formatFillOptionLabel(option) }}</span>
                           <div v-if="formData[question.questionId] === option" class="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center">
                             <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
@@ -340,9 +340,9 @@
                             </svg>
                             <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
                               <span v-if="formData[question.questionId]">{{ formData[question.questionId] }}</span>
-                              <span v-else>Click to upload or drag and drop</span>
+                              <span v-else>{{ t('forms.hubFillFileUploadPrompt') }}</span>
                             </p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">PDF, DOC, JPG, PNG up to 10MB</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ t('forms.hubFillFileFormats') }}</p>
                           </div>
                         </label>
                       </div>
@@ -354,9 +354,9 @@
                         <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                         </svg>
-                        Evidence Required
+                        {{ t('forms.evidenceRequiredHeading') }}
                       </p>
-                      <p class="text-xs text-gray-500 dark:text-gray-400">Please attach supporting documents or photos for this answer.</p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('forms.hubFillEvidenceAttachHint') }}</p>
                     </div>
                   </div>
                 </div>
@@ -384,9 +384,9 @@
                         <label class="flex-1 text-base font-semibold text-gray-900 dark:text-white leading-relaxed">
                           <span class="inline-flex items-center gap-2">
                             <span>{{ question.questionText }}</span>
-                            <span v-if="question.mandatory" class="text-red-500 font-bold" title="Required">*</span>
-                            <span v-if="question.scoring?.critical" class="px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-bold rounded-full" title="Critical Question">
-                              Critical
+                            <span v-if="question.mandatory" class="text-red-500 font-bold" :title="t('forms.hubFillRequiredTitle')">*</span>
+                            <span v-if="question.scoring?.critical" class="px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-bold rounded-full" :title="t('forms.hubFillCriticalTitle')">
+                              {{ t('forms.hubFillCriticalBadge') }}
                             </span>
                           </span>
                         </label>
@@ -394,7 +394,7 @@
                           <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                           </svg>
-                          <span class="text-xs font-semibold text-indigo-700 dark:text-indigo-300">{{ question.scoring.weight || 0 }} pts</span>
+                          <span class="text-xs font-semibold text-indigo-700 dark:text-indigo-300">{{ t('forms.hubFillScoringPts', { points: question.scoring.weight || 0 }) }}</span>
                         </div>
                       </div>
                       
@@ -416,7 +416,7 @@
                         @input="handleInputChange"
                         type="text"
                         :required="question.mandatory"
-                        :placeholder="question.placeholder || 'Enter your answer'"
+                        :placeholder="question.placeholder || t('forms.textAnswerPh')"
                         class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-base"
                       />
                       
@@ -427,7 +427,7 @@
                         @input="handleInputChange"
                         type="number"
                         :required="question.mandatory"
-                        :placeholder="question.placeholder || 'Enter a number'"
+                        :placeholder="question.placeholder || t('forms.hubFillNumberPh')"
                         class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-base"
                       />
                       
@@ -437,7 +437,7 @@
                         v-model="formData[question.questionId]"
                         @input="handleInputChange"
                         :required="question.mandatory"
-                        :placeholder="question.placeholder || 'Enter your answer'"
+                        :placeholder="question.placeholder || t('forms.textAnswerPh')"
                         rows="5"
                         class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-base resize-y"
                       ></textarea>
@@ -450,7 +450,7 @@
                         :required="question.mandatory"
                         class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-base appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpolyline points=%226 9 12 15 18 9%22%3E%3C/polyline%3E%3C/svg%3E')] bg-no-repeat bg-right-4 pr-10"
                       >
-                        <option value="">Select an option...</option>
+                        <option value="">{{ t('forms.hubFillDropdownPh') }}</option>
                         <option v-for="option in question.options" :key="option" :value="option">{{ option }}</option>
                       </select>
                       
@@ -473,7 +473,7 @@
                             :required="question.mandatory"
                             class="w-5 h-5 text-indigo-600 border-gray-300 focus:ring-indigo-500 cursor-pointer"
                           />
-                          <span class="flex-1 text-gray-900 dark:text-white font-medium">{{ option }}</span>
+                          <span class="flex-1 text-gray-900 dark:text-white font-medium">{{ formatFillOptionLabel(option) }}</span>
                           <div v-if="formData[question.questionId] === option" class="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center">
                             <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
@@ -539,9 +539,9 @@
                             </svg>
                             <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
                               <span v-if="formData[question.questionId]">{{ formData[question.questionId] }}</span>
-                              <span v-else>Click to upload or drag and drop</span>
+                              <span v-else>{{ t('forms.hubFillFileUploadPrompt') }}</span>
                             </p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">PDF, DOC, JPG, PNG up to 10MB</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ t('forms.hubFillFileFormats') }}</p>
                           </div>
                         </label>
                       </div>
@@ -553,9 +553,9 @@
                         <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                         </svg>
-                        Evidence Required
+                        {{ t('forms.evidenceRequiredHeading') }}
                       </p>
-                      <p class="text-xs text-gray-500 dark:text-gray-400">Please attach supporting documents or photos for this answer.</p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('forms.hubFillEvidenceAttachHint') }}</p>
                     </div>
                   </div>
                   </div>
@@ -571,7 +571,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div>
-                <h3 class="font-semibold text-red-800 dark:text-red-200 mb-1">Error Submitting Form</h3>
+                <h3 class="font-semibold text-red-800 dark:text-red-200 mb-1">{{ t('forms.hubFillSubmitErrorHeading') }}</h3>
                 <p class="text-red-700 dark:text-red-300">{{ error }}</p>
               </div>
             </div>
@@ -582,10 +582,10 @@
             <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
               <div class="text-sm text-gray-600 dark:text-gray-400">
                 <span v-if="hasUnansweredRequired" class="text-red-600 dark:text-red-400 font-medium">
-                  {{ unansweredRequiredCount }} required {{ unansweredRequiredCount === 1 ? 'question' : 'questions' }} remaining
+                  {{ t('forms.hubFillRequiredRemaining', { count: unansweredRequiredCount }) }}
                 </span>
                 <span v-else class="text-green-600 dark:text-green-400 font-medium">
-                  ✓ All required questions answered
+                  {{ t('forms.hubFillAllRequiredAnswered') }}
                 </span>
               </div>
               <div class="flex items-center gap-3">
@@ -594,7 +594,7 @@
                   @click="goBack"
                   class="px-6 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl font-medium transition-colors"
                 >
-                  Cancel
+                  {{ t('actions.cancel') }}
                 </button>
                 <button
                   type="submit"
@@ -605,7 +605,7 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  <span>{{ submitting ? 'Submitting...' : 'Submit Form' }}</span>
+                  <span>{{ submitting ? t('forms.hubFillSubmitting') : t('forms.previewSubmitForm') }}</span>
                 </button>
               </div>
             </div>
@@ -620,11 +620,22 @@
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { openDatePicker } from '@/utils/dateUtils';
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
+
+const sectionTitle = (section, index) =>
+  section.name || t('forms.hubFillSectionFallback', { number: index + 1 });
+
+const formatFillOptionLabel = (option) => {
+  if (option === 'Yes') return t('forms.answerYes');
+  if (option === 'No') return t('forms.answerNo');
+  return option;
+};
 
 const form = ref(null);
 const formData = ref({});
@@ -879,11 +890,11 @@ const fetchForm = async () => {
       // Check if form has already been submitted (persist success state across refreshes)
       await checkIfAlreadySubmitted();
     } else {
-      error.value = 'Form not found or access denied';
+      error.value = t('forms.hubFillNotFoundDenied');
     }
   } catch (err) {
     console.error('Error fetching form:', err);
-    error.value = err.message || 'Failed to load form';
+    error.value = err.message || t('forms.hubFillLoadFailed');
   } finally {
     loading.value = false;
   }
@@ -963,7 +974,7 @@ const handleFileUpload = (questionId, event) => {
 // Submit form
 const submitForm = async () => {
   if (hasUnansweredRequired.value) {
-    error.value = `Please answer all required questions (${unansweredRequiredCount.value} remaining)`;
+    error.value = t('forms.hubFillRequiredAnswerAlert', { count: unansweredRequiredCount.value });
     return;
   }
 
@@ -1137,11 +1148,11 @@ const submitForm = async () => {
         router.push(getPreferredReturnRoute());
       }, 1500);
     } else {
-      error.value = response.message || 'Failed to submit form';
+      error.value = response.message || t('forms.hubFillSubmitFailed');
     }
   } catch (err) {
     console.error('Error submitting form:', err);
-    error.value = err.message || 'Failed to submit form. Please try again.';
+    error.value = err.message || t('forms.hubFillSubmitFailedRetry');
   } finally {
     submitting.value = false;
   }

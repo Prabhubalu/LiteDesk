@@ -1,0 +1,2382 @@
+{
+  "recordsCount": {
+    "message": "{count, plural, one {# record} other {# records}}",
+    "description": "Record list count with ICU pluralization"
+  },
+  "itemsSelected": {
+    "message": "{count, plural, one {# item selected} other {# items selected}}",
+    "description": "Bulk selection count in list views"
+  },
+  "welcomeUser": {
+    "message": "ようこそ、{name}",
+    "description": "Personalized greeting with interpolation"
+  },
+  "assignedToUser": {
+    "message": "Assigned to {gender, select, female {her} male {him} other {them}}",
+    "description": "ICU select example for gendered copy (platform chrome only)"
+  },
+  "localeDevTitle": {
+    "message": "ローカリゼーション QA",
+    "description": "Developer settings section for i18n tools"
+  },
+  "pseudoLocaleHint": {
+    "message": "擬似ロケールはテキストを拡張し、翻訳前にレイアウトの問題を明らかにします。",
+    "description": "Help text for pseudo-locale developer toggle"
+  },
+  "moreActions": {
+    "message": "さらなるアクション",
+    "description": "Overflow menu trigger aria-label"
+  },
+  "loadingList": {
+    "message": "リストをロード中",
+    "description": "List skeleton aria-label"
+  },
+  "viewRecord": {
+    "message": "ビュー",
+    "description": "Row action: open record"
+  },
+  "importData": {
+    "message": "輸入",
+    "description": "Module header import action"
+  },
+  "exportData": {
+    "message": "輸出",
+    "description": "Module header export action"
+  },
+  "listSaveView": {
+    "message": "Save view",
+    "description": "List view: save current filters/columns"
+  },
+  "listFilters": {
+    "message": "フィルター",
+    "description": "List view filters panel title"
+  },
+  "listAllRecords": {
+    "message": "全て",
+    "description": "List filter tab: all records"
+  },
+  "listClearFilters": {
+    "message": "フィルターをクリアする",
+    "description": "Reset active list filters"
+  },
+  "listLoadingOptions": {
+    "message": "オプションを読み込み中…",
+    "description": "Filter dropdown loading state"
+  },
+  "listClear": {
+    "message": "クリア",
+    "description": "Clear single filter or selection"
+  },
+  "listViewName": {
+    "message": "ビュー名",
+    "description": "Saved view name field label"
+  },
+  "listDeleteView": {
+    "message": "ビューの削除",
+    "description": "Delete saved list view action"
+  },
+  "listCustomizeView": {
+    "message": "ビューのカスタマイズ",
+    "description": "Open list view customization drawer"
+  },
+  "listLayoutOptions": {
+    "message": "レイアウトオプション",
+    "description": "List layout section title"
+  },
+  "listRowHeight": {
+    "message": "行の高さ",
+    "description": "Table row height setting"
+  },
+  "listReset": {
+    "message": "リセット",
+    "description": "Reset view settings to defaults"
+  },
+  "listColumnWidths": {
+    "message": "列幅",
+    "description": "Column width customization section"
+  },
+  "listDefaultView": {
+    "message": "デフォルトのビュー",
+    "description": "Mark view as org default"
+  },
+  "listManageFields": {
+    "message": "フィールドの管理",
+    "description": "Open field visibility manager"
+  },
+  "listFieldRequired": {
+    "message": "必須",
+    "description": "Field cannot be hidden"
+  },
+  "listFieldLocked": {
+    "message": "ロックされています",
+    "description": "Field locked from reorder"
+  },
+  "listFieldHidden": {
+    "message": "隠れた",
+    "description": "Hidden fields section"
+  },
+  "listNoHiddenFields": {
+    "message": "隠しフィールドはありません",
+    "description": "Empty hidden fields state"
+  },
+  "listNewCustomField": {
+    "message": "新しいカスタムフィールド",
+    "description": "Create custom field from list manager"
+  },
+  "listCustomizeKanban": {
+    "message": "かんばんのカスタマイズ",
+    "description": "Kanban board customization"
+  },
+  "deleteTitleBulk": {
+    "message": "{count} {recordTypePlural} を削除",
+    "description": "Bulk delete dialog title"
+  },
+  "deleteTitleSingle": {
+    "message": "{recordType} を削除",
+    "description": "Single delete dialog title"
+  },
+  "deleteConfirmBulk": {
+    "message": "{count} {recordTypeLabel} を削除してもよろしいですか?この操作は元に戻すことができません。",
+    "description": "Bulk delete confirmation"
+  },
+  "deleteConfirmSingle": {
+    "message": "{target} を削除してもよろしいですか?この操作は元に戻すことができません。",
+    "description": "Single delete confirmation; target is quoted name or type"
+  },
+  "deleteInProgress": {
+    "message": "削除中…",
+    "description": "Delete button in progress"
+  },
+  "listEditView": {
+    "message": "ビューの編集",
+    "description": "Edit saved list view action title"
+  },
+  "listDeleteViewAction": {
+    "message": "ビューの削除",
+    "description": "Delete saved list view action title"
+  },
+  "listSaveViewHint": {
+    "message": "現在のビューを新しい保存済みビューとして保存します",
+    "description": "Save view button tooltip"
+  },
+  "listHideStatistics": {
+    "message": "統計を非表示にする",
+    "description": "Stats panel toggle tooltip when visible"
+  },
+  "listShowStatistics": {
+    "message": "統計を表示する",
+    "description": "Stats panel toggle tooltip when hidden"
+  },
+  "listStatsShort": {
+    "message": "統計",
+    "description": "Short stats toggle label"
+  },
+  "listHideShort": {
+    "message": "隠れる",
+    "description": "Short hide label for stats toggle"
+  },
+  "listSuggestedLabel": {
+    "message": "提案:",
+    "description": "Suggested filters section prefix"
+  },
+  "listSuggestedHint": {
+    "message": "一般的な使用法に基づいた提案。何も自動的に適用されません。",
+    "description": "Suggested filters tooltip"
+  },
+  "listSuggestedConfigure": {
+    "message": "クリックして {filter} フィルターを構成します",
+    "description": "Suggested filter chip tooltip"
+  },
+  "listClearSearch": {
+    "message": "{title} の検索をクリア",
+    "description": "Clear search input aria-label"
+  },
+  "listViewNameExample": {
+    "message": "例: 営業担当者",
+    "description": "Saved view name placeholder"
+  },
+  "listViewDescOptional": {
+    "message": "説明 (オプション)",
+    "description": "Saved view description field label"
+  },
+  "listViewDescPlaceholder": {
+    "message": "このビューの説明 (オプション)",
+    "description": "Saved view description placeholder"
+  },
+  "listSaveCurrentView": {
+    "message": "現在のビューを保存する",
+    "description": "Save view modal title"
+  },
+  "listEditViewTitle": {
+    "message": "ビューの編集",
+    "description": "Edit view modal title"
+  },
+  "listDeleteViewConfirm": {
+    "message": "「{viewName}」を削除してもよろしいですか?この操作は元に戻すことができません。",
+    "description": "Delete saved view confirmation"
+  },
+  "listClearSelection": {
+    "message": "選択をクリア",
+    "description": "Bulk selection clear button tooltip"
+  },
+  "listRowsSelected": {
+    "message": "{count, plural, one {# {singular} selected} other {# {plural} selected}}",
+    "description": "Bulk row selection count in list"
+  },
+  "listSearchFields": {
+    "message": "検索フィールド",
+    "description": "Field manager search placeholder"
+  },
+  "listShownCount": {
+    "message": "表示 ({count})",
+    "description": "Visible fields section header"
+  },
+  "listKanbanOptions": {
+    "message": "かんばんオプション",
+    "description": "Kanban settings section title"
+  },
+  "listCardSize": {
+    "message": "カードサイズ",
+    "description": "Kanban card size setting"
+  },
+  "listStackFields": {
+    "message": "スタックフィールド",
+    "description": "Kanban stack fields toggle"
+  },
+  "listCollapseEmpty": {
+    "message": "空の列を折りたたむ",
+    "description": "Kanban collapse empty columns toggle"
+  },
+  "listShowEmptyFields": {
+    "message": "空のフィールドを表示",
+    "description": "Kanban show empty fields toggle"
+  },
+  "listShowClosedRecords": {
+    "message": "閉じられたレコードを表示する",
+    "description": "Kanban show closed records toggle"
+  },
+  "darkMode": {
+    "message": "ダークモード",
+    "description": "Dark color mode menu option"
+  },
+  "lightMode": {
+    "message": "ライトモード",
+    "description": "Light color mode menu option"
+  },
+  "tableClearSelection": {
+    "message": "選択をクリア",
+    "description": "Clear bulk row selection"
+  },
+  "tableAllPageSelected": {
+    "message": "このページのすべての {count} 項目が選択されています。",
+    "description": "Select-all banner when current page is fully selected"
+  },
+  "tableSelectAllItems": {
+    "message": "すべての {count} 項目を選択します",
+    "description": "Expand selection to all pages"
+  },
+  "tableAllSelected": {
+    "message": "すべての{count}が選択されました",
+    "description": "All records across pages selected"
+  },
+  "tableSelectedCount": {
+    "message": "{count, plural, one {# selected} other {# selected}}",
+    "description": "Bulk selection count in data table"
+  },
+  "tableDeleteSelected": {
+    "message": "選択したものを削除",
+    "description": "Bulk delete action label"
+  },
+  "tableColumns": {
+    "message": "コラム",
+    "description": "Column settings button label"
+  },
+  "tableColumnSettings": {
+    "message": "列の設定",
+    "description": "Column settings modal title"
+  },
+  "tableManageColumns": {
+    "message": "列の管理",
+    "description": "Column manager section title"
+  },
+  "tableManageColumnsHint": {
+    "message": "表示を切り替えてドラッグして並べ替えます",
+    "description": "Column manager help text"
+  },
+  "tableVisibleCount": {
+    "message": "{visible}/{total} が表示されます",
+    "description": "Visible column count in settings"
+  },
+  "tableUnfreezeColumn": {
+    "message": "カラムの凍結を解除する",
+    "description": "Unfreeze sticky column tooltip"
+  },
+  "tableFreezeColumn": {
+    "message": "カラムを凍結する",
+    "description": "Freeze sticky column tooltip"
+  },
+  "tableFreezeMax": {
+    "message": "最大 2 列を固定可能",
+    "description": "Freeze limit tooltip"
+  },
+  "tableFrozen": {
+    "message": "凍った",
+    "description": "Frozen column badge"
+  },
+  "tableResetDefault": {
+    "message": "デフォルトにリセットする",
+    "description": "Reset column settings"
+  },
+  "tableShowingResults": {
+    "message": "{total} の結果の {start} から {end} を表示しています",
+    "description": "Pagination summary"
+  },
+  "tableSortAscending": {
+    "message": "昇順に並べ替えます",
+    "description": "Table column sort ascending"
+  },
+  "tableSortDescending": {
+    "message": "降順で並べ替え",
+    "description": "Table column sort descending"
+  },
+  "tableClearSort": {
+    "message": "ソートをクリア",
+    "description": "Remove column sort"
+  },
+  "tableToggleSort": {
+    "message": "{column} の並べ替えを切り替え",
+    "description": "Sort toggle aria-label"
+  },
+  "tableRowSelectSr": {
+    "message": "行番号と行の選択",
+    "description": "Screen reader label for selection column"
+  },
+  "tableLoadingSr": {
+    "message": "ローディングテーブル",
+    "description": "Screen reader label for table loading skeleton"
+  },
+  "metricsTitle": {
+    "message": "メトリクス",
+    "description": "Metrics widget card title"
+  },
+  "metricsConfigure": {
+    "message": "メトリクスの構成",
+    "description": "Open metrics configuration"
+  },
+  "metricsEmptyYet": {
+    "message": "メトリクスはまだ設定されていません。",
+    "description": "Empty metrics widget state"
+  },
+  "metricsEmptyPanel": {
+    "message": "メトリクスが設定されていません。",
+    "description": "Empty metrics config panel"
+  },
+  "metricsAdd": {
+    "message": "メトリックの追加",
+    "description": "Add a new metric row"
+  },
+  "metricsLabel": {
+    "message": "ラベル",
+    "description": "Metric label column"
+  },
+  "metricsSource": {
+    "message": "ソース",
+    "description": "Metric data source column"
+  },
+  "metricsField": {
+    "message": "分野",
+    "description": "Metric field column"
+  },
+  "metricsAggregation": {
+    "message": "集計",
+    "description": "Metric aggregation column"
+  },
+  "metricsDragReorder": {
+    "message": "ドラッグして並べ替えます",
+    "description": "Metric row drag handle tooltip"
+  },
+  "metricsDelete": {
+    "message": "メトリックの削除",
+    "description": "Remove metric row"
+  },
+  "metricsClosePanel": {
+    "message": "パネルを閉じる",
+    "description": "Close metrics config drawer"
+  },
+  "keyFieldsTitle": {
+    "message": "主要なフィールド",
+    "description": "Key fields widget title"
+  },
+  "keyFieldsEmptyValue": {
+    "message": "空の",
+    "description": "Empty key field value placeholder"
+  },
+  "keyFieldsNone": {
+    "message": "キーフィールドが設定されていません",
+    "description": "No key fields empty state"
+  },
+  "keyFieldsHint": {
+    "message": "モジュール設定でフィールドを「キー フィールド」としてマークする",
+    "description": "Key fields configuration hint"
+  },
+  "closePanel": {
+    "message": "パネルを閉じる",
+    "description": "Screen reader label for closing a side panel"
+  },
+  "formAssignToMe": {
+    "message": "私に割り当ててください",
+    "description": "Assign current user to a reviewer field"
+  },
+  "formNoOptions": {
+    "message": "利用可能なオプションはありません。",
+    "description": "Empty picklist dropdown"
+  },
+  "formNoMatchingRecords": {
+    "message": "一致するレコードが見つかりませんでした。",
+    "description": "Empty lookup combobox search results"
+  },
+  "formNoRecordsFound": {
+    "message": "記録が見つかりませんでした",
+    "description": "Empty lookup modal list"
+  },
+  "formSelected": {
+    "message": "選択済み",
+    "description": "Lookup row already selected badge"
+  },
+  "formCreateNew": {
+    "message": "新規作成",
+    "description": "Create related record from lookup footer"
+  },
+  "formSearchOptions": {
+    "message": "検索オプション...",
+    "description": "Picklist search placeholder"
+  },
+  "formSearchRecords": {
+    "message": "レコードを検索...",
+    "description": "Lookup combobox search placeholder"
+  },
+  "formBrowseRecords": {
+    "message": "記録を閲覧する",
+    "description": "Open lookup record picker modal"
+  },
+  "formCreateAndSelect": {
+    "message": "作成して選択する",
+    "description": "Create new lookup record shortcut"
+  },
+  "formUploading": {
+    "message": "アップロード中...",
+    "description": "Image upload in progress"
+  },
+  "formUploadImage": {
+    "message": "画像をアップロードする",
+    "description": "Image upload trigger button"
+  },
+  "formRefreshing": {
+    "message": "爽やかな...",
+    "description": "Lookup modal refresh in progress"
+  },
+  "formLookupSelectTitle": {
+    "message": "{label} を選択してください",
+    "description": "Lookup modal title"
+  },
+  "formLookupChooseOne": {
+    "message": "{field} を満たす {module} を 1 つ選択してください",
+    "description": "Lookup modal subtitle"
+  },
+  "formLookupSearchModule": {
+    "message": "{module} を検索...",
+    "description": "Lookup modal search placeholder"
+  },
+  "formLookupNoMatch": {
+    "message": "「{query}」に一致する {module} はありません。",
+    "description": "Lookup modal empty state with search query"
+  },
+  "formLookupNoRecordsYet": {
+    "message": "選択できる {module} はまだありません。",
+    "description": "Lookup modal empty state without query"
+  },
+  "formLookupCreateModule": {
+    "message": "新しい {module} を作成する",
+    "description": "Lookup modal create CTA with module name"
+  },
+  "lifecycleStageTitle": {
+    "message": "ライフサイクルステージ",
+    "description": "Lifecycle stage widget title"
+  },
+  "lifecycleType": {
+    "message": "タイプ：",
+    "description": "Lifecycle widget type label"
+  },
+  "lifecycleAge": {
+    "message": "年：",
+    "description": "Lifecycle widget age label"
+  },
+  "lifecycleJustCreated": {
+    "message": "作成したばかりの",
+    "description": "Record age when created today"
+  },
+  "lifecycleAgeDays": {
+    "message": "{days, plural, one {# day} other {# days}}",
+    "description": "Record age in days"
+  },
+  "lifecycleAgeZero": {
+    "message": "0日",
+    "description": "Record age fallback when no createdAt"
+  },
+  "searchPlaceholder": {
+    "message": "検索...",
+    "description": "Generic search input placeholder"
+  },
+  "filterAll": {
+    "message": "全て",
+    "description": "Filter option: no restriction"
+  },
+  "filterAllNamed": {
+    "message": "すべて {label}",
+    "description": "Filter option: all values for a named field"
+  },
+  "filterDays": {
+    "message": "日数",
+    "description": "Relative date filter days input label"
+  },
+  "filterDate": {
+    "message": "日付",
+    "description": "Single date filter input label"
+  },
+  "filterFrom": {
+    "message": "から",
+    "description": "Date range filter start label"
+  },
+  "filterTo": {
+    "message": "に",
+    "description": "Date range filter end label"
+  },
+  "filterDaysPlaceholder": {
+    "message": "例えば7",
+    "description": "Relative date filter days input placeholder"
+  },
+  "dependencyNoFields": {
+    "message": "表示するフィールドがありません",
+    "description": "Dependency popup empty state"
+  },
+  "drawerBackQuickCreate": {
+    "message": "クイック作成に戻る",
+    "description": "Toggle from full create form to quick create"
+  },
+  "drawerShowAllFields": {
+    "message": "すべてのフィールドを表示",
+    "description": "Expand quick create drawer to full form"
+  },
+  "formQuickCreateFields": {
+    "message": "クイック作成フィールド",
+    "description": "Section heading for quick-create field group"
+  },
+  "taskDescriptionPlaceholder": {
+    "message": "コマンドの場合は「/」を書くか入力します",
+    "description": "Task description editor placeholder"
+  },
+  "taskDescriptionFallback": {
+    "message": "説明",
+    "description": "Task description field fallback label"
+  },
+  "taskRelatedToFallback": {
+    "message": "関連するもの",
+    "description": "Task related-to field fallback label"
+  },
+  "taskSubtasksLabel": {
+    "message": "サブタスク",
+    "description": "Task subtasks field label"
+  },
+  "tagsTitle": {
+    "message": "タグ",
+    "description": "Tags picker panel title"
+  },
+  "tagsNewTag": {
+    "message": "新しいタグ",
+    "description": "Create a new tag definition"
+  },
+  "tagsSearchPlaceholder": {
+    "message": "タグを検索または作成する",
+    "description": "Tags picker search input"
+  },
+  "tagsClickSearchHint": {
+    "message": "検索ボックスをクリックして、使用可能なタグを表示します。",
+    "description": "Tags picker collapsed hint"
+  },
+  "tagsNoTagsYet": {
+    "message": "このワークスペースにはまだタグがありません。",
+    "description": "Empty workspace tags list"
+  },
+  "tagsCreateFirst": {
+    "message": "最初のタグを作成する",
+    "description": "CTA when no tags exist"
+  },
+  "tagsCreateNamed": {
+    "message": "「{name}」を作成します",
+    "description": "Create tag from search query"
+  },
+  "tagsPublic": {
+    "message": "公共",
+    "description": "Public tag badge"
+  },
+  "tagsRemoveTag": {
+    "message": "タグを削除する",
+    "description": "Remove tag from selection aria-label"
+  },
+  "tagsEditTag": {
+    "message": "タグを編集する",
+    "description": "Edit tag definition action"
+  },
+  "tagsTagActions": {
+    "message": "タグアクション",
+    "description": "Tag row overflow menu aria-label"
+  },
+  "tagsTagName": {
+    "message": "タグ名",
+    "description": "Tag editor name field label"
+  },
+  "tagsEnterTagName": {
+    "message": "タグ名を入力してください",
+    "description": "Tag editor name placeholder"
+  },
+  "tagsColor": {
+    "message": "色",
+    "description": "Tag editor color field label"
+  },
+  "tagsMakePublic": {
+    "message": "タグを公開する",
+    "description": "Tag editor public toggle label"
+  },
+  "tagsRemoveFromSelection": {
+    "message": "選択範囲から削除",
+    "description": "Unassign tag from current record"
+  },
+  "tagsAddToSelection": {
+    "message": "選択に追加",
+    "description": "Assign tag to current record"
+  },
+  "tagsDeleteFromModule": {
+    "message": "モジュールからタグを削除",
+    "description": "Delete tag definition from module"
+  },
+  "tagsRemovedNamed": {
+    "message": "「{name}」を削除しました。",
+    "description": "Tag removal pending undo banner"
+  },
+  "tagsUndoSeconds": {
+    "message": "元に戻す ({seconds})",
+    "description": "Undo tag removal countdown"
+  },
+  "linkRecordsBackToType": {
+    "message": "レコードタイプに戻る",
+    "description": "Return to link records type selector"
+  },
+  "linkRecordsLinked": {
+    "message": "リンク済み",
+    "description": "Already-linked record type badge"
+  },
+  "linkRecordsNoTypes": {
+    "message": "このモジュールにはリンク可能なレコード タイプが設定されていません。 「設定」→「モジュール」で関係を設定します。",
+    "description": "Empty linkable types state"
+  },
+  "linkRecordsNoMatch": {
+    "message": "一致するレコードが見つかりませんでした。検索またはフィルターを調整してみてください。",
+    "description": "Empty link records search results"
+  },
+  "linkRecordsCreateNew": {
+    "message": "新規作成",
+    "description": "Create record from link drawer"
+  },
+  "linkRecordsSelectedCount": {
+    "message": "{count, plural, one {# selected} other {# selected}}",
+    "description": "Link drawer multi-select count"
+  },
+  "linkRecordsLink": {
+    "message": "リンク",
+    "description": "Confirm link records action"
+  },
+  "kanbanExpandColumn": {
+    "message": "列を展開する",
+    "description": "Expand collapsed kanban column"
+  },
+  "kanbanNoItems": {
+    "message": "アイテムがありません",
+    "description": "Empty kanban column placeholder"
+  },
+  "summaryLoadingRecord": {
+    "message": "{type}をロード中...",
+    "description": "Record summary page loading state"
+  },
+  "summaryErrorLoadingTitle": {
+    "message": "{type} のロード中にエラーが発生しました",
+    "description": "Record summary page error headline"
+  },
+  "summaryNoTagsYet": {
+    "message": "まだタグがありません",
+    "description": "Empty tags on record header"
+  },
+  "summaryManageTags": {
+    "message": "タグの管理",
+    "description": "Open tag manager when tags exist"
+  },
+  "summaryAddTag": {
+    "message": "タグの追加",
+    "description": "Add a tag to the record"
+  },
+  "summaryAddAnotherTag": {
+    "message": "別のタグを追加する",
+    "description": "Add another tag when some exist"
+  },
+  "summaryCopyLink": {
+    "message": "リンクをコピー",
+    "description": "Copy record URL to clipboard"
+  },
+  "summarySelectPlaceholder": {
+    "message": "選択してください...",
+    "description": "Unset lifecycle/status dropdown value"
+  },
+  "summaryAddRelation": {
+    "message": "リレーションの追加",
+    "description": "Add related record menu"
+  },
+  "summaryViewResponses": {
+    "message": "回答を見る",
+    "description": "Open form responses list"
+  },
+  "summaryDeleteRecord": {
+    "message": "レコードの削除",
+    "description": "Delete current record action"
+  },
+  "summaryFormNotActive": {
+    "message": "フォームはまだアクティブではありません",
+    "description": "Inactive form empty state title"
+  },
+  "summaryFormNotActiveHint": {
+    "message": "このフォームはまだ使用されていません。イベント経由で割り当てて、応答の収集を開始します。",
+    "description": "Inactive form empty state body"
+  },
+  "summaryAddWidget": {
+    "message": "ウィジェットの追加",
+    "description": "Add dashboard widget CTA"
+  },
+  "summaryAddCustomWidget": {
+    "message": "カスタムウィジェットの追加",
+    "description": "Add widget floating button tooltip"
+  },
+  "summaryShowEmptyFields": {
+    "message": "空のフィールドを表示",
+    "description": "Toggle empty fields in details tab"
+  },
+  "summaryTenantFields": {
+    "message": "テナントフィールド",
+    "description": "Tenant details tab section title"
+  },
+  "summaryTenantFieldsHint": {
+    "message": "サブスクリプション、制限、組織の設定",
+    "description": "Tenant details tab subtitle"
+  },
+  "summaryTenantFieldsNoMatch": {
+    "message": "検索に一致するテナント フィールドはありません。",
+    "description": "Tenant fields search empty"
+  },
+  "summaryTenantFieldsNoValues": {
+    "message": "表示する値を含むテナント フィールドはありません。",
+    "description": "Tenant fields all empty hidden"
+  },
+  "summaryTenantFieldsNone": {
+    "message": "使用可能なテナントフィールドはありません。",
+    "description": "No tenant fields configured"
+  },
+  "summaryManageFields": {
+    "message": "フィールドの管理",
+    "description": "Open field management settings"
+  },
+  "summaryNotAvailable": {
+    "message": "利用不可",
+    "description": "Field value unavailable placeholder"
+  },
+  "summaryFieldsNoMatch": {
+    "message": "検索に一致するフィールドはありません。",
+    "description": "Details tab search empty"
+  },
+  "summaryFieldsNoValues": {
+    "message": "表示する値を含むフィールドはありません。",
+    "description": "Details tab all empty hidden"
+  },
+  "summaryFieldsNone": {
+    "message": "使用可能なフィールドはありません。",
+    "description": "No fields configured on module"
+  },
+  "summaryFormUsage": {
+    "message": "フォームの使用法",
+    "description": "Form submissions section title"
+  },
+  "summaryFormUsageHint": {
+    "message": "ステータス、スコア、送信日を含むフォーム送信のリスト。",
+    "description": "Form submissions section subtitle"
+  },
+  "summaryLoadingSubmissions": {
+    "message": "提出物を読み込んでいます...",
+    "description": "Form submissions table loading"
+  },
+  "summaryColSubmitted": {
+    "message": "提出済み",
+    "description": "Submission date column"
+  },
+  "summaryColSubmittedBy": {
+    "message": "提出者",
+    "description": "Submitter column"
+  },
+  "summaryColStatus": {
+    "message": "状態",
+    "description": "Status column header"
+  },
+  "summaryColScore": {
+    "message": "スコア",
+    "description": "Score column header"
+  },
+  "summaryColActions": {
+    "message": "アクション",
+    "description": "Actions column header"
+  },
+  "summaryColKpis": {
+    "message": "KPI",
+    "description": "KPI column header"
+  },
+  "summaryAnonymous": {
+    "message": "匿名",
+    "description": "Anonymous submitter label"
+  },
+  "summaryNoSubmissions": {
+    "message": "まだ提出はありません",
+    "description": "Empty form submissions state"
+  },
+  "summaryNoSubmissionsHint": {
+    "message": "このフォームはまだ送信を受け付けていません。",
+    "description": "Empty form submissions body"
+  },
+  "summaryFormPreview": {
+    "message": "フォームのプレビュー",
+    "description": "Form preview section title"
+  },
+  "summaryFormPreviewHint": {
+    "message": "このフォームに入力するときにユーザーにどのように表示されるかをプレビューします。",
+    "description": "Form preview section subtitle"
+  },
+  "summaryFormResponses": {
+    "message": "フォームの回答",
+    "description": "Form responses section title"
+  },
+  "summaryFormResponsesHint": {
+    "message": "View and manage all responses submitted for this form.",
+    "description": "Form responses section subtitle"
+  },
+  "summaryLoadingResponses": {
+    "message": "回答を読み込んでいます...",
+    "description": "Form responses table loading"
+  },
+  "summaryNoResponses": {
+    "message": "まだ回答はありません",
+    "description": "Empty form responses state"
+  },
+  "summaryNoResponsesHint": {
+    "message": "このフォームにはまだ回答がありません。",
+    "description": "Empty form responses body"
+  },
+  "summaryViewAllResponses": {
+    "message": "すべての回答を表示",
+    "description": "Navigate to full responses list"
+  },
+  "summaryUser": {
+    "message": "ユーザー",
+    "description": "Activity filter user label"
+  },
+  "summaryAllUsers": {
+    "message": "すべてのユーザー",
+    "description": "Activity filter all users option"
+  },
+  "summaryType": {
+    "message": "タイプ",
+    "description": "Activity filter type label"
+  },
+  "summaryAllTypes": {
+    "message": "全種類",
+    "description": "Activity filter all types option"
+  },
+  "summaryComments": {
+    "message": "コメント",
+    "description": "Activity type filter comments"
+  },
+  "summaryFieldChanges": {
+    "message": "フィールドの変更",
+    "description": "Activity type filter field changes"
+  },
+  "summaryNoActivity": {
+    "message": "まだ活動はありません",
+    "description": "Empty activity feed"
+  },
+  "summarySelectWidget": {
+    "message": "ダッシュボードに追加するウィジェットを選択してください",
+    "description": "Add widget drawer subtitle"
+  },
+  "summaryResetToDefault": {
+    "message": "デフォルトにリセット",
+    "description": "Reset widget layout action"
+  },
+  "summaryResetWidgetLayout": {
+    "message": "ウィジェットのレイアウトをリセット",
+    "description": "Reset layout confirmation title"
+  },
+  "summaryResetLayoutConfirmBody": {
+    "message": "ウィジェットのレイアウトをデフォルトにリセットしてもよろしいですか?これにより、ウィジェットの位置、サイズ、追加または削除したウィジェットを含むすべてのカスタマイズが削除されます。",
+    "description": "Reset layout confirmation body"
+  },
+  "summaryResetLayoutTooltip": {
+    "message": "ウィジェットのレイアウトをデフォルトの順序にリセット",
+    "description": "Reset layout button tooltip"
+  },
+  "summaryNoMetrics": {
+    "message": "利用可能な指標はありません。",
+    "description": "Empty metrics widget fallback"
+  },
+  "summaryKeyFieldsPlaceholder": {
+    "message": "キーフィールドがここに表示されます。",
+    "description": "Empty key fields widget fallback"
+  },
+  "summaryWidgetContent": {
+    "message": "ウィジェットのコンテンツ",
+    "description": "Generic widget placeholder"
+  },
+  "summaryTabsAria": {
+    "message": "タブ",
+    "description": "Record summary tab list aria-label"
+  },
+  "summarySearchTenantFields": {
+    "message": "テナントフィールドを検索...",
+    "description": "Tenant fields search placeholder"
+  },
+  "summarySearchFields": {
+    "message": "検索フィールド...",
+    "description": "Details fields search placeholder"
+  },
+  "summarySearchActivities": {
+    "message": "アクティビティを検索...",
+    "description": "Activity feed search placeholder"
+  },
+  "summaryUrlCopied": {
+    "message": "URL がクリップボードにコピーされました!",
+    "description": "Copy link success toast"
+  },
+  "summaryResetLayoutFailed": {
+    "message": "レイアウトのリセットに失敗しました。もう一度試してください。",
+    "description": "Reset layout error toast"
+  },
+  "summarySaveFieldsFailed": {
+    "message": "フィールドの更新を保存できませんでした。もう一度試してください。",
+    "description": "Inline field save error toast"
+  },
+  "moduleListTheListForThisModuleIs": {
+    "message": "このモジュールのリストはありません。",
+    "description": "Auto-migrated from moduleList"
+  },
+  "moduleListListNotFound": {
+    "message": "リストが見つかりません",
+    "description": "Auto-migrated from moduleList"
+  },
+  "targetWizardStepperTargetCreationProgress": {
+    "message": "ターゲット作成の進捗状況",
+    "description": "Auto-migrated from targetWizardStepper"
+  },
+  "trashRestore": {
+    "message": "復元する",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAutoDeleteIn": {
+    "message": "自動削除",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedBy": {
+    "message": "削除者",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedItemsWillAppearHereYou": {
+    "message": "削除されたアイテムがここに表示されます。有効期限が切れる前に、それらを復元したり、完全に削除したりできます。",
+    "description": "Auto-migrated from trash"
+  },
+  "trashTrashIsEmpty": {
+    "message": "ゴミ箱が空です",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletePermanently": {
+    "message": "完全に削除",
+    "description": "Auto-migrated from trash"
+  },
+  "trashRestoreSelected": {
+    "message": "選択したものを復元する",
+    "description": "Auto-migrated from trash"
+  },
+  "trashEmptyTrash": {
+    "message": "ゴミ箱を空にする",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedTo": {
+    "message": "に削除されました",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedFrom": {
+    "message": "から削除されました",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAllUsers": {
+    "message": "すべてのユーザー",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAllModules": {
+    "message": "すべてのモジュール",
+    "description": "Auto-migrated from trash"
+  },
+  "trashSearchNameModuleDeletedBy": {
+    "message": "名前、モジュール、削除者を検索...",
+    "description": "Auto-migrated from trash"
+  },
+  "trashRetention": {
+    "message": "保持",
+    "description": "Auto-migrated from trash"
+  },
+  "trashOldestItem": {
+    "message": "最も古いアイテム",
+    "description": "Auto-migrated from trash"
+  },
+  "trashExpiringIn7Days": {
+    "message": "7 日以内に期限切れになります",
+    "description": "Auto-migrated from trash"
+  },
+  "trashTotalInTrash": {
+    "message": "ゴミ箱内の合計",
+    "description": "Auto-migrated from trash"
+  },
+  "approvalDetailEnterRejectionReason": {
+    "message": "拒否理由を入力してください...",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailReason": {
+    "message": "理由",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailRejectingWillBlockThisAction": {
+    "message": "拒否するとこのアクションはブロックされます。",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailRejectApproval": {
+    "message": "承認の拒否",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailYouAreNotAuthorizedToApprove": {
+    "message": "このリクエストを承認または拒否する権限がありません。",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailReason2": {
+    "message": "理由：",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecidedAt": {
+    "message": "決定日:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecidedBy": {
+    "message": "決定者:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecisionAlreadyMade": {
+    "message": "すでに決定済み",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailYourDecision": {
+    "message": "あなたの決断",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailThisApprovalWasEscalatedDueTo": {
+    "message": "制限時間内に応答がなかったため、この承認はエスカレーションされました。新しい承認者に通知されました。",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailEscalated": {
+    "message": "エスカレート",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailIfRejected": {
+    "message": "拒否された場合",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailIfApproved": {
+    "message": "承認された場合",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailWhatWillHappen": {
+    "message": "何が起こるでしょうか",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailWhyApprovalIsRequired": {
+    "message": "なぜ承認が必要なのか",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailEntity": {
+    "message": "実在物",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailContext": {
+    "message": "コンテクスト",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailBackToApprovals": {
+    "message": "承認に戻る",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalInboxEnterRejectionReason": {
+    "message": "拒否理由を入力してください...",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxReason": {
+    "message": "理由",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRejectingWillBlockThisActionPlease": {
+    "message": "拒否するとこのアクションはブロックされます。理由を教えてください。",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRejectApproval": {
+    "message": "承認の拒否",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxDueIn": {
+    "message": "期限:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRequestedAt": {
+    "message": "リクエスト先:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRequestedBy": {
+    "message": "リクエスト者:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxAllCaughtUpYouHaveNo": {
+    "message": "全員追いついた！保留中の承認リクエストはありません。",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxNoApprovalsPending": {
+    "message": "保留中の承認はありません",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxReviewAndApprovePendingRequests": {
+    "message": "保留中のリクエストを確認して承認する",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxApprovals": {
+    "message": "承認",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "demoRequestsEnterprise": {
+    "message": "企業",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsProfessional": {
+    "message": "プロ",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsStarter": {
+    "message": "スターター",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsTrial15Days": {
+    "message": "お試し（15日間）",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSubscriptionTier": {
+    "message": "サブスクリプション層",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsEnterTemporaryPasswordForOwner": {
+    "message": "所有者の一時パスワードを入力してください",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvert": {
+    "message": "変換する",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvertToOrganization": {
+    "message": "組織に変換する",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted": {
+    "message": "変換された",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoCompleted": {
+    "message": "デモが完了しました",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoScheduled": {
+    "message": "デモの予定",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContacted": {
+    "message": "連絡済み",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsUpdateStatus": {
+    "message": "ステータスの更新",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisContactExistsInASeparate": {
+    "message": "この連絡先は別の組織に存在します。ログインすると、自分の CRM データが表示されます。",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactPhone": {
+    "message": "連絡先電話番号:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactEmail": {
+    "message": "連絡先メールアドレス:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContact": {
+    "message": "接触：",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsOrganization": {
+    "message": "組織：",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisProspectIsAlreadyInYour": {
+    "message": "この見込み客はすでに CRM に登録されています。",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsJobTitle": {
+    "message": "役職：",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsPhone": {
+    "message": "電話：",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsEmail": {
+    "message": "電子メール:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactName": {
+    "message": "連絡先名:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactInformation": {
+    "message": "連絡先",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanySize": {
+    "message": "会社規模:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsIndustry": {
+    "message": "業界：",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanyName": {
+    "message": "会社名：",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanyInformation": {
+    "message": "会社情報",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoRequestDetails": {
+    "message": "デモリクエストの詳細",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsNoDemoRequestsFound": {
+    "message": "デモリクエストが見つかりませんでした",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvert2": {
+    "message": "変換する",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvertToOrganization2": {
+    "message": "組織に変換する",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSize": {
+    "message": "サイズ",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsLoadingDemoRequests": {
+    "message": "デモリクエストを読み込んでいます...",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted2": {
+    "message": "変換された",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoCompleted2": {
+    "message": "デモが完了しました",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoScheduled2": {
+    "message": "デモの予定",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContacted2": {
+    "message": "連絡済み",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSearchDemoRequests": {
+    "message": "デモリクエストを検索...",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted3": {
+    "message": "変換された",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisMonth": {
+    "message": "今月",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsTotalRequests": {
+    "message": "総リクエスト数",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "publicBookingViewPoweredByYourCrm": {
+    "message": "CRMを活用",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYourDetails": {
+    "message": "あなたの詳細",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYourTime": {
+    "message": "あなたの時間",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewAvailableTimes": {
+    "message": "利用可能時間",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewPickADate": {
+    "message": "日付を選択してください",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewBookWithOurTeam": {
+    "message": "私たちのチームにご予約ください",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewRescheduleOrCancel": {
+    "message": "スケジュール変更またはキャンセル",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewAConfirmationHasBeenSentTo": {
+    "message": "確認メールがあなたの電子メールに送信されました。予約の前にリマインダーが届きます。",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYoureBooked": {
+    "message": "予約されましたよ！",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewPageUnavailable": {
+    "message": "ページが利用できません",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewLoadingCalendar": {
+    "message": "カレンダーを読み込み中…",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "notificationOverviewOpenHealthDashboard": {
+    "message": "健康ダッシュボードを開く",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewViewDeliveryStatisticsChannelHealthEvent": {
+    "message": "配信統計、チャネルの健全性、イベントの量、ユーザー通知パターンを表示します。潜在的な問題がチームに影響を与える前に特定します。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewHealthDashboard": {
+    "message": "健康ダッシュボード",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewMonitorNotificationDeliveryHealthAndAnalytics": {
+    "message": "組織全体の通知デリバリー ヘルスと分析を監視します。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAdminTools": {
+    "message": "管理ツール",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageDigests": {
+    "message": "ダイジェストの管理",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewReceiveDailyOrWeeklySummariesOf": {
+    "message": "リアルタイムのアラートではなく、毎日または毎週の通知の概要を受け取ります。通知ノイズを軽減しながら最新情報を入手できます。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewDigests": {
+    "message": "ダイジェスト",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageRules": {
+    "message": "ルールの管理",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewCreateCustomNotificationConditionsSetUp": {
+    "message": "カスタム通知条件を作成します。割り当て、優先順位、ステータスなどに基づいてルールを設定します。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManagePreferences": {
+    "message": "設定の管理",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewToggleWhatTypesOfNotificationsYou": {
+    "message": "イベントごとに受信する通知の種類を切り替えます。各通知タイプに使用するチャネルを制御します。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewPreferences": {
+    "message": "設定",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewCustomizeYourNotificationExperienceToMatch": {
+    "message": "ワークフローに合わせて通知エクスペリエンスをカスタマイズします。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewYourNotificationControl": {
+    "message": "通知コントロール",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageDeliveryChannels": {
+    "message": "配信チャネルを管理する",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable": {
+    "message": "設定可能",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable2": {
+    "message": "設定可能",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhatsapp": {
+    "message": "ワッツアップ",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable3": {
+    "message": "設定可能",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewPush": {
+    "message": "押す",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable4": {
+    "message": "設定可能",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAlwaysOn": {
+    "message": "常時オン",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewChooseWhereAndHowYouReceive": {
+    "message": "さまざまな配信チャネルにわたって通知を受信する場所と方法を選択します。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewHowYoureNotified": {
+    "message": "通知の受け取り方",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined": {
+    "message": "システム定義",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAccountActivitySystemUpdatesAndCompliance": {
+    "message": "アカウントアクティビティ、システムアップデート、コンプライアンス関連の通知。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined2": {
+    "message": "システム定義",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewActivityThatInvolvesCollaborationAndReview": {
+    "message": "コラボレーションとレビューを伴うアクティビティ。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConversations": {
+    "message": "会話",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewRemindersForUpcomingOrOverdueItems": {
+    "message": "今後のアイテムまたは期限を過ぎたアイテムのリマインダー。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewDeadlines": {
+    "message": "締め切り",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewStatusChangesSubmissionsApprovalsAndOther": {
+    "message": "ステータスの変更、提出、承認、その他の重要な更新。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined3": {
+    "message": "システム定義",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhenTasksAuditsOrCorrectiveActions": {
+    "message": "タスク、監査、または是正措置があなたに割り当てられたとき。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAssignments": {
+    "message": "課題",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewNotificationsAreOrganizedByIntentTo": {
+    "message": "通知は目的別に整理されているため、圧倒されることなく最新情報を入手できます。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhatYoureNotifiedAbout": {
+    "message": "通知される内容",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewLearnHowNotificationsWorkAndWhat": {
+    "message": "通知がどのように機能するのか、また何を制御できるのかを学びましょう。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewNotificationOverview": {
+    "message": "通知の概要",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationHealthHighVolume": {
+    "message": "大音量",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoUserDataAvailable": {
+    "message": "利用可能なユーザーデータがありません",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthFlag": {
+    "message": "フラグ",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthReceived": {
+    "message": "受け取った",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthHighVolumeUsers": {
+    "message": "大量のユーザー",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoEventDataAvailable": {
+    "message": "利用可能なイベント データがありません",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthTopEventTypes": {
+    "message": "上位のイベントの種類",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoChannelDataAvailable": {
+    "message": "利用可能なチャネル データがありません",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthLastFailure": {
+    "message": "最後の失敗",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthSent": {
+    "message": "送信済み",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthChannelHealth": {
+    "message": "チャネルの健全性",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthDegradedChannels": {
+    "message": "劣化したチャネル",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthActiveChannels": {
+    "message": "アクティブなチャネル",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthReadRate": {
+    "message": "読み取り速度",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthTotalNotifications": {
+    "message": "合計通知数",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthMonitorNotificationDeliveryAndChannelHealth": {
+    "message": "通知配信とチャネルの健全性を監視する",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNotificationHealth": {
+    "message": "通知の状態",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthHealth": {
+    "message": "健康",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationPreferencesReceiveAWeeklySummaryViaEmail": {
+    "message": "毎週の概要を電子メールで受け取ります。日常を中断することなく最新情報を得るのに最適です。",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWeeklyDigest": {
+    "message": "ウィークリーダイジェスト",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesReceiveADailySummaryOfYour": {
+    "message": "毎日の通知の概要を受け取ります。通知ノイズを軽減しながら、常に最新の情報を入手できます。",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesDailyDigest": {
+    "message": "毎日のダイジェスト",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesReceiveSummariesInsteadOfRealTime": {
+    "message": "リアルタイム通知の代わりに概要を受け取る",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationDigests": {
+    "message": "通知ダイジェスト",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSmsIsOnlyUsedAsA": {
+    "message": "SMS は、他のチャネルが利用できない場合の最後の手段としてのみ使用されます。メッセージは短くし、可能な場合はディープリンクを含めます。",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSmsNotifications": {
+    "message": "SMS通知",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWhatsappNotificationsAreOnlySentFor": {
+    "message": "WhatsApp 通知は、監査アプリとポータル アプリの優先度の高いイベントに対してのみ送信されます。",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWhatsappNotifications": {
+    "message": "WhatsApp通知",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPushNotificationsAreBlockedEnableThem": {
+    "message": "プッシュ通知はブロックされています。ブラウザの設定で有効にしてください。",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesTestNotification": {
+    "message": "テスト通知",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesEnablePushNotifications": {
+    "message": "プッシュ通知を有効にする",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPushNotifications": {
+    "message": "プッシュ通知",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesThereAreNoConfigurableNotificationEvents": {
+    "message": "このアプリには設定可能な通知イベントがまだありません。\n          通知は引き続き安全なデフォルトを使用します。",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesInApp": {
+    "message": "アプリ内",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSystemEventManagedByArivu": {
+    "message": "システムイベント（Arivuが管理）",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesClickAChannelToJumpTo": {
+    "message": "チャンネルをクリックしてその設定にジャンプします。無効なチャンネルはこのアプリでは利用できません。",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationDelivery": {
+    "message": "通知の配信",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWeCouldntLoadYourNotificationPreferences": {
+    "message": "現在、通知設定を読み込むことができませんでした。通知は\n        デフォルトを使用し続けます。アプリを安全に使い続けることができます。",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesCouldntSaveChangesPleaseTryAgain": {
+    "message": "変更を保存できませんでした。もう一度試してください。",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesHealthDashboard": {
+    "message": "ヘルスダッシュボード",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationRules": {
+    "message": "通知ルール",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesControlInAppAndEmailNotifications": {
+    "message": "このワークスペースのアプリ内通知と電子メール通知を制御します。",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationPreferences": {
+    "message": "通知設定",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPreferences": {
+    "message": "設定",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationRulesDeleteRule": {
+    "message": "ルールの削除",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesEditRule": {
+    "message": "ルールの編集",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesCreateYourFirstRule": {
+    "message": "最初のルールを作成する",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesGetStartedByCreatingYourFirst": {
+    "message": "最初の通知ルールを作成することから始めます。",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesNoNotificationRulesYet": {
+    "message": "通知ルールはまだありません",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesFailedToLoadNotificationRules": {
+    "message": "通知ルールのロードに失敗しました",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesDeleteAnExistingRuleToCreate": {
+    "message": "新しいルールを作成するには、既存のルールを削除します。",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesCreateCustomNotificationTriggersForModules": {
+    "message": "関心のあるモジュールのカスタム通知トリガーを作成します。",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesNotificationRules": {
+    "message": "通知ルール",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "contactDetailToastFailedToDeleteContact": {
+    "message": "連絡先の削除に失敗しました",
+    "description": "Toast from ContactDetail.vue"
+  },
+  "contactDetailToastFailedToUnlinkOrganization": {
+    "message": "組織のリンクを解除できませんでした",
+    "description": "Toast from ContactDetail.vue"
+  },
+  "dealDetailToastFailedToDeleteDeal": {
+    "message": "取引を削除できませんでした",
+    "description": "Toast from DealDetail.vue"
+  },
+  "dealDetailToastFailedToAddNote": {
+    "message": "メモの追加に失敗しました",
+    "description": "Toast from DealDetail.vue"
+  },
+  "dealsToastErrorDeletingDealPleaseTry": {
+    "message": "取引の削除中にエラーが発生しました。もう一度試してください。",
+    "description": "Toast from Deals.vue"
+  },
+  "dealsToastErrorPerformingBulkActionPlease": {
+    "message": "一括アクションの実行中にエラーが発生しました。もう一度試してください。",
+    "description": "Toast from Deals.vue"
+  },
+  "dealsToastFailedToExportDeals": {
+    "message": "取引のエクスポートに失敗しました。",
+    "description": "Toast from Deals.vue"
+  },
+  "demoRequestsToastFailedToUpdateStatus": {
+    "message": "ステータスの更新に失敗しました",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "demoRequestsToastSuccessfullyConvertedToOrganization": {
+    "message": "組織転換に成功しました！",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "demoRequestsToastFailedToConvertRequest": {
+    "message": "リクエストの変換に失敗しました",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "eventDetailToastFailedToDeleteEvent": {
+    "message": "イベントの削除に失敗しました",
+    "description": "Toast from EventDetail.vue"
+  },
+  "eventDetailToastFailedToAddNote": {
+    "message": "メモの追加に失敗しました",
+    "description": "Toast from EventDetail.vue"
+  },
+  "eventExecutionSurfaceToastLocationIsRequiredForCheck": {
+    "message": "チェックインには場所が必要です。位置情報へのアクセスを許可して、もう一度お試しください。",
+    "description": "Toast from EventExecutionSurface.vue"
+  },
+  "eventsToastErrorPerformingBulkActionPlease": {
+    "message": "一括アクションの実行中にエラーが発生しました。もう一度試してください。",
+    "description": "Toast from Events.vue"
+  },
+  "eventsToastErrorExportingEventsPleaseTry": {
+    "message": "イベントのエクスポート中にエラーが発生しました。もう一度試してください。",
+    "description": "Toast from Events.vue"
+  },
+  "groupDetailToastFailedToLoadGroup": {
+    "message": "グループのロードに失敗しました",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToAddMember": {
+    "message": "メンバーの追加に失敗しました",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToRemoveMember": {
+    "message": "メンバーの削除に失敗しました",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToDeleteGroup": {
+    "message": "グループの削除に失敗しました",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupsToastErrorPerformingBulkActionPlease": {
+    "message": "一括アクションの実行中にエラーが発生しました。もう一度試してください。",
+    "description": "Toast from Groups.vue"
+  },
+  "groupsToastErrorDeletingGroupPleaseTry": {
+    "message": "グループの削除中にエラーが発生しました。もう一度試してください。",
+    "description": "Toast from Groups.vue"
+  },
+  "organizationDetailToastFailedToDeleteOrganizationPlease": {
+    "message": "組織の削除に失敗しました。もう一度試してください。",
+    "description": "Toast from OrganizationDetail.vue"
+  },
+  "organizationsToastUnknownError": {
+    "message": "不明なエラー",
+    "description": "Toast from Organizations.vue"
+  },
+  "organizationsToastErrorExportingOrganizationsPleaseTry": {
+    "message": "組織のエクスポート中にエラーが発生しました。もう一度試してください。",
+    "description": "Toast from Organizations.vue"
+  },
+  "organizationsToastErrorExportingOrganizationsPleaseTry2": {
+    "message": "組織のエクスポート中にエラーが発生しました。もう一度試してください。",
+    "description": "Toast from Organizations.vue"
+  },
+  "peopleToastUnknownError": {
+    "message": "不明なエラー",
+    "description": "Toast from People.vue"
+  },
+  "peopleToastErrorExportingPeoplePleaseTry": {
+    "message": "人物のエクスポート中にエラーが発生しました。もう一度試してください。",
+    "description": "Toast from People.vue"
+  },
+  "peopleToastErrorExportingContactsPleaseTry": {
+    "message": "連絡先のエクスポートでエラーが発生しました。もう一度試してください。",
+    "description": "Toast from People.vue"
+  },
+  "responsesToastFormIdNotFoundPlease": {
+    "message": "フォームIDが見つかりません。ページを更新して、もう一度お試しください。",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToApproveResponsePlease": {
+    "message": "応答を承認できませんでした。もう一度試してください。",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease2": {
+    "message": "フォームIDが見つかりません。ページを更新して、もう一度お試しください。",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToRejectResponsePlease": {
+    "message": "応答の拒否に失敗しました。もう一度試してください。",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease3": {
+    "message": "フォームIDが見つかりません。ページを更新して、もう一度お試しください。",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease4": {
+    "message": "フォームIDが見つかりません。ページを更新して、もう一度お試しください。",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToRestoreResponsePlease": {
+    "message": "応答を復元できませんでした。もう一度試してください。",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastSubmittedResponsesCannotBeDeleted": {
+    "message": "送信された回答は削除できません。代わりにアーカイブまたは無効化を使用してください。",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease5": {
+    "message": "フォームIDが見つかりません。ページを更新して、もう一度お試しください。",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToDeleteResponsePlease": {
+    "message": "応答の削除に失敗しました。もう一度試してください。",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastExportFunctionalityForAllResponses": {
+    "message": "すべての回答のエクスポート機能は近日公開予定です。",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastAnErrorOccurredDuringExport": {
+    "message": "エクスポート中にエラーが発生しました。",
+    "description": "Toast from Responses.vue"
+  },
+  "tasksToastFailedToUpdateTaskStatus": {
+    "message": "タスクのステータスを更新できませんでした",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastFailedToDeleteTask": {
+    "message": "タスクの削除に失敗しました。",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastErrorPerformingBulkActionPlease": {
+    "message": "一括アクションの実行中にエラーが発生しました。もう一度試してください。",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastErrorExportingTasksPleaseTry": {
+    "message": "タスクのエクスポート中にエラーが発生しました。もう一度試してください。",
+    "description": "Toast from Tasks.vue"
+  },
+  "trashToastRestoredSomeParentRecordsWere": {
+    "message": "復元されました。一部の親レコードは完全に削除されました。",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToRestore": {
+    "message": "復元に失敗しました",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToRestore2": {
+    "message": "復元に失敗しました",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToDelete": {
+    "message": "削除に失敗しました",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToDelete2": {
+    "message": "削除に失敗しました",
+    "description": "Toast from Trash.vue"
+  },
+  "notificationPreferencesToastPushNotificationsAreNotSupported": {
+    "message": "このブラウザではプッシュ通知がサポートされていません。",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastEnablePushNotifications": {
+    "message": "プッシュ通知を有効にする",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastNotificationsAreNotSupportedIn": {
+    "message": "このブラウザでは通知がサポートされていません。",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationTriggeredCheckYour": {
+    "message": "テスト通知がトリガーされました。システム通知を確認してください。",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationTriggeredIfYou": {
+    "message": "テスト通知がトリガーされました。表示されない場合は、通知センター/ブラウザ OS の設定を確認してください。",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastUnknownError": {
+    "message": "不明なエラー",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationFailedSeeConsole": {
+    "message": "テスト通知に失敗しました。詳細については、コンソールを参照してください。",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationRulesToastFailedToDeleteRulePlease": {
+    "message": "ルールの削除に失敗しました。もう一度試してください。",
+    "description": "Toast from NotificationRules.vue"
+  },
+  "pronounYou": {
+    "message": "あなた",
+    "description": "First-person actor label in activity feed"
+  },
+  "relativeJustNow": {
+    "message": "たった今",
+    "description": "Relative time under one minute"
+  },
+  "relativeOneMinuteAgo": {
+    "message": "1分前",
+    "description": "Relative time one minute"
+  },
+  "relativeManyMinutesAgo": {
+    "message": "{count}分前",
+    "description": "Relative time multiple minutes"
+  },
+  "relativeOneHourAgo": {
+    "message": "1時間前",
+    "description": "Relative time one hour"
+  },
+  "relativeManyHoursAgo": {
+    "message": "{count}時間前",
+    "description": "Relative time multiple hours"
+  },
+  "relativeOneDayAgo": {
+    "message": "1日前",
+    "description": "Relative time one day"
+  },
+  "relativeManyDaysAgo": {
+    "message": "{count}日前",
+    "description": "Relative time multiple days"
+  },
+  "relativeOneMonthAgo": {
+    "message": "1か月前",
+    "description": "Relative time one month"
+  },
+  "relativeManyMonthsAgo": {
+    "message": "{count}か月前",
+    "description": "Relative time multiple months"
+  },
+  "relativeOneYearAgo": {
+    "message": "1年前",
+    "description": "Relative time one year"
+  },
+  "relativeManyYearsAgo": {
+    "message": "{count}年前",
+    "description": "Relative time multiple years"
+  },
+  "phraseAnnualRevenue": {
+    "message": "年間収益",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLeadSource": {
+    "message": "鉛源",
+    "description": "Common tenant custom field label"
+  },
+  "phraseIndustry": {
+    "message": "業界",
+    "description": "Common tenant custom field label"
+  },
+  "phraseWebsite": {
+    "message": "Webサイト",
+    "description": "Common tenant custom field label"
+  },
+  "phraseFax": {
+    "message": "ファックス",
+    "description": "Common tenant custom field label"
+  },
+  "phraseAddress": {
+    "message": "住所",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCity": {
+    "message": "市",
+    "description": "Common tenant custom field label"
+  },
+  "phraseState": {
+    "message": "州",
+    "description": "Common tenant custom field label"
+  },
+  "phraseZipCode": {
+    "message": "郵便番号",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCountry": {
+    "message": "国",
+    "description": "Common tenant custom field label"
+  },
+  "phraseDepartment": {
+    "message": "部門",
+    "description": "Common tenant custom field label"
+  },
+  "phraseJobTitle": {
+    "message": "役職",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLinkedin": {
+    "message": "リンクトイン",
+    "description": "Common tenant custom field label"
+  },
+  "phrasePriority": {
+    "message": "優先度",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRating": {
+    "message": "評価",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCategory": {
+    "message": "カテゴリ",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSubcategory": {
+    "message": "サブカテゴリ",
+    "description": "Common tenant custom field label"
+  },
+  "phraseProduct": {
+    "message": "製品",
+    "description": "Common tenant custom field label"
+  },
+  "phraseQuantity": {
+    "message": "量",
+    "description": "Common tenant custom field label"
+  },
+  "phraseUnitPrice": {
+    "message": "単価",
+    "description": "Common tenant custom field label"
+  },
+  "phraseDiscount": {
+    "message": "割引",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTax": {
+    "message": "税",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTotal": {
+    "message": "合計",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSubtotal": {
+    "message": "小計",
+    "description": "Common tenant custom field label"
+  },
+  "phraseContractStart": {
+    "message": "契約開始",
+    "description": "Common tenant custom field label"
+  },
+  "phraseContractEnd": {
+    "message": "契約終了",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRenewalDate": {
+    "message": "更新日",
+    "description": "Common tenant custom field label"
+  },
+  "phraseMrr": {
+    "message": "MRR",
+    "description": "Common tenant custom field label"
+  },
+  "phraseArr": {
+    "message": "到着後",
+    "description": "Common tenant custom field label"
+  },
+  "phraseEmployees": {
+    "message": "従業員",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRevenue": {
+    "message": "収益",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTerritory": {
+    "message": "地域",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRegion": {
+    "message": "地域",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTimezone": {
+    "message": "タイムゾーン",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCurrency": {
+    "message": "通貨",
+    "description": "Common tenant custom field label"
+  },
+  "phrasePoNumber": {
+    "message": "PO番号",
+    "description": "Common tenant custom field label"
+  },
+  "phraseInvoiceNumber": {
+    "message": "請求書番号",
+    "description": "Common tenant custom field label"
+  },
+  "phraseOrderNumber": {
+    "message": "注文番号",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSerialNumber": {
+    "message": "シリアルナンバー",
+    "description": "Common tenant custom field label"
+  },
+  "phraseExternalId": {
+    "message": "外部ID",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLastActivity": {
+    "message": "最後のアクティビティ",
+    "description": "Common tenant custom field label"
+  },
+  "phraseNextFollowUp": {
+    "message": "次回のフォローアップ",
+    "description": "Common tenant custom field label"
+  },
+  "phraseInfluencer": {
+    "message": "インフルエンサー",
+    "description": "Common tenant custom field label"
+  },
+  "phraseMobile": {
+    "message": "携帯",
+    "description": "Common tenant custom field label"
+  },
+  "phraseColor": {
+    "message": "色",
+    "description": "Common tenant custom field label"
+  },
+  "phraseEmoji": {
+    "message": "絵文字",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTrend": {
+    "message": "傾向",
+    "description": "Common tenant custom field label"
+  },
+  "phraseAccount": {
+    "message": "アカウント",
+    "description": "Common tenant custom field label"
+  },
+  "phraseHelpdesk": {
+    "message": "ヘルプデスク",
+    "description": "App/product name"
+  },
+  "phrasePortal": {
+    "message": "ポータル",
+    "description": "App/product name"
+  },
+  "fieldRequiredBadge": {
+    "message": "Required",
+    "description": "Badge on required fields in settings and forms"
+  },
+  "required": {
+    "message": "Required",
+    "description": "Required field indicator (alias for settings badges)"
+  },
+  "listSearchModule": {
+    "message": "Search {module}...",
+    "description": "Module list search placeholder"
+  },
+  "listCreateModule": {
+    "message": "New {module}",
+    "description": "Generic module list create button"
+  },
+  "listViewAllModule": {
+    "message": "All {module}",
+    "description": "Generic all-records list view title"
+  },
+  "listViewMyModule": {
+    "message": "My {module}",
+    "description": "Generic assigned-to-me list view title"
+  },
+  "listViewCustom": {
+    "message": "Custom",
+    "description": "List view title when filters or search are applied"
+  },
+  "listStatAssignedToMe": {
+    "message": "Assigned to Me",
+    "description": "List statistics card label"
+  },
+  "listStatUnassigned": {
+    "message": "Unassigned",
+    "description": "List statistics card label"
+  },
+  "listStatCompleted": {
+    "message": "Completed",
+    "description": "List statistics card label"
+  },
+  "listStatOverdue": {
+    "message": "Overdue",
+    "description": "List statistics card label"
+  },
+  "listDefaultViewTooltip": {
+    "message": "Default list (loads when opening)",
+    "description": "Tooltip on active default saved list view"
+  },
+  "listSetDefaultViewTooltip": {
+    "message": "Set as default list",
+    "description": "Tooltip to mark a saved list view as default"
+  },
+  "listCoreFields": {
+    "message": "Core Fields",
+    "description": "Customize list field group label"
+  },
+  "listParticipationFields": {
+    "message": "Participation",
+    "description": "Customize list field group label"
+  },
+  "listSystemFields": {
+    "message": "System Fields",
+    "description": "Customize list field group label"
+  },
+  "listParticipationApp": {
+    "message": "Participation: {app}",
+    "description": "Customize list participation field group label"
+  },
+  "listRowHeightSmall": {
+    "message": "Small",
+    "description": "List row height option"
+  },
+  "listRowHeightMedium": {
+    "message": "Medium",
+    "description": "List row height option"
+  },
+  "listRowHeightLarge": {
+    "message": "Large",
+    "description": "List row height option"
+  },
+  "listRowHeightHuge": {
+    "message": "Huge",
+    "description": "List row height option"
+  },
+  "listEmptyTitle": {
+    "message": "No records yet",
+    "description": "Default list empty state title"
+  },
+  "listEmptyMessage": {
+    "message": "Start by adding your first record",
+    "description": "Default list empty state description"
+  },
+  "listEmptyNoModuleYet": {
+    "message": "No {module} yet",
+    "description": "Module list empty state title"
+  },
+  "listEmptyModuleWillAppear": {
+    "message": "{module} will appear here as you add them.",
+    "description": "Module list empty state description"
+  },
+  "listEmptyNoMatchFilters": {
+    "message": "No {module} match your filters",
+    "description": "List empty title when filters are active"
+  },
+  "listEmptyNoMatchSearchAndFilters": {
+    "message": "No {module} match your search or filters. Try adjusting them or clear everything to start over.",
+    "description": "List empty message when search and filters are active"
+  },
+  "listEmptyNoMatchSearch": {
+    "message": "We couldn't find any {module} matching \"{query}\". Try a different keyword or clear the search.",
+    "description": "List empty message when search is active"
+  },
+  "listEmptyNoMatchFiltersOnly": {
+    "message": "No {module} match your filters. Try adjusting or clearing them to see more results.",
+    "description": "List empty message when only filters are active"
+  },
+  "listClearSearchAndFilters": {
+    "message": "Clear search & filters",
+    "description": "Button to reset list search and filters"
+  },
+  "listFilterAll": {
+    "message": "All {filter}",
+    "description": "Filter dropdown placeholder when no value selected"
+  },
+  "listUnknown": {
+    "message": "Unknown",
+    "description": "Fallback label for unknown filter option"
+  },
+  "listNoDataAvailable": {
+    "message": "No data available",
+    "description": "Table empty state title fallback"
+  },
+  "listNoRecordsFound": {
+    "message": "No records found.",
+    "description": "Table empty state message fallback"
+  },
+  "listEmptyIllustrationAlt": {
+    "message": "No records illustration",
+    "description": "Alt text for list empty state illustration"
+  },
+  "phraseDefaultInParens": {
+    "message": "(Default)",
+    "description": "Suffix for default pipeline or option"
+  }
+}

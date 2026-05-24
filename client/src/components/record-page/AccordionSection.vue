@@ -23,6 +23,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, onMounted } from 'vue';
 import { ChevronDownIcon } from '@heroicons/vue/24/outline';
 
@@ -44,6 +45,8 @@ const props = defineProps({
     default: ''
   }
 });
+
+const { t } = useI18n();
 
 const isOpen = ref(props.defaultOpen);
 

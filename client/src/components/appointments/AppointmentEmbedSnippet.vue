@@ -3,9 +3,9 @@
     v-if="slug"
     class="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm dark:border-gray-700/80 dark:bg-gray-900/80"
   >
-    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Embed on your website</h2>
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('appointments.embedHeading') }}</h2>
     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-      Add booking to any page with an iframe or script tag. Save your page first so the slug is live.
+      {{ t('appointments.embedHint') }}
     </p>
 
     <div class="mt-4 flex gap-2 border-b border-gray-200 dark:border-gray-700">
@@ -24,11 +24,11 @@
     </div>
 
     <div class="mt-3">
-      <label class="text-xs font-medium uppercase tracking-wide text-gray-500">Preview</label>
+      <label class="text-xs font-medium uppercase tracking-wide text-gray-500">{{ t('appointments.embedPreview') }}</label>
       <div class="mt-2 overflow-hidden rounded-xl border border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-gray-900">
         <iframe
           :src="embedUrl"
-          title="Booking embed preview"
+          :title="t('appointments.embedPreviewTitle')"
           class="mx-auto block w-full max-w-[480px] rounded-lg border-0 bg-gray-50"
           :style="{ height: `${previewHeight}px` }"
         />
@@ -37,13 +37,13 @@
 
     <div class="mt-4">
       <div class="flex items-center justify-between gap-2">
-        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Code to copy</label>
+        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('appointments.embedCodeToCopy') }}</label>
         <button
           type="button"
           class="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
           @click="copySnippet"
         >
-          {{ copied ? 'Copied' : 'Copy' }}
+          {{ copied ? t('appointments.embedCopied') : t('actions.copy') }}
         </button>
       </div>
       <pre
@@ -52,7 +52,7 @@
     </div>
 
     <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
-      Embed URL:
+      {{ t('appointments.embedUrlLabel') }}
       <a :href="embedUrl" target="_blank" rel="noopener" class="text-indigo-600 underline dark:text-indigo-400">{{ embedUrl }}</a>
     </p>
   </section>
@@ -60,6 +60,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
   buildBookingPageUrl,
   buildBookingIframeSnippet,
@@ -72,15 +73,16 @@ const props = defineProps({
   previewHeight: { type: Number, default: 640 }
 });
 
+const { t } = useI18n();
 const { success: notifySuccess } = useNotifications();
 
 const activeTab = ref('iframe');
 const copied = ref(false);
 
-const tabs = [
-  { id: 'iframe', label: 'Iframe' },
-  { id: 'script', label: 'Script' }
-];
+const tabs = computed(() => [
+  { id: 'iframe', label: t('appointments.embedTabIframe') },
+  { id: 'script', label: t('appointments.embedTabScript') }
+]);
 
 const origin = computed(() =>
   typeof window !== 'undefined' ? window.location.origin : ''
@@ -108,7 +110,7 @@ async function copySnippet() {
   if (!activeSnippet.value) return;
   await navigator.clipboard.writeText(activeSnippet.value);
   copied.value = true;
-  notifySuccess('Embed code copied');
+  notifySuccess(t('appointments.embedCodeCopied'));
   setTimeout(() => {
     copied.value = false;
   }, 2000);

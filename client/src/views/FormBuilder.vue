@@ -4,7 +4,7 @@
     <div v-if="loading" class="flex items-center justify-center min-h-screen">
       <div class="text-center">
         <div class="w-16 h-16 border-4 border-gray-200 dark:border-gray-700 border-t-indigo-600 dark:border-t-indigo-500 rounded-full animate-spin mx-auto mb-4"></div>
-        <p class="text-gray-600 dark:text-gray-400 font-medium">Loading form...</p>
+        <p class="text-gray-600 dark:text-gray-400 font-medium">{{ t('forms.builderShellLoading') }}</p>
       </div>
     </div>
 
@@ -20,12 +20,12 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            <span class="font-medium">Back to Forms</span>
+            <span class="font-medium">{{ t('forms.builderShellBackToForms') }}</span>
           </button>
           
           <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-              {{ form?.name || 'New Form' }}
+              {{ form?.name || t('forms.builderShellNewForm') }}
             </h1>
             <p v-if="form?.formId" class="text-sm text-gray-600 dark:text-gray-400 mt-1">
               {{ form.formId }}
@@ -86,7 +86,7 @@
             <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
-            {{ saving ? 'Saving...' : 'Save' }}
+            {{ saving ? t('states.saving') : t('actions.save') }}
           </button>
           
           <button
@@ -98,7 +98,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
             </svg>
-            Preview
+            {{ t('forms.builderShellPreview') }}
           </button>
         </div>
       </div>
@@ -173,7 +173,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
           <!-- Modal Header -->
           <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Form Preview</h2>
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('forms.builderShellPreviewModalTitle') }}</h2>
             <button
               @click="closePreviewModal"
               class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
@@ -200,7 +200,10 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
+
+const { t } = useI18n();
 import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
 import { canEditForm } from '@/utils/formEditPermissions';
@@ -257,12 +260,12 @@ const form = ref({
   formVersion: 1
 });
 
-const tabs = [
-  { id: 'details', label: 'Details' },
-  { id: 'sections', label: 'Sections & Questions' },
-  { id: 'settings', label: 'Settings' },
-  { id: 'template', label: 'Response Template' }
-];
+const tabs = computed(() => [
+  { id: 'details', label: t('forms.builderShellTabDetails') },
+  { id: 'sections', label: t('forms.builderShellTabSections') },
+  { id: 'settings', label: t('forms.builderShellTabSettings') },
+  { id: 'template', label: t('forms.tabTemplateHeading') },
+]);
 
 // Computed
 const formIdFromRoute = computed(() => {
@@ -385,7 +388,7 @@ const saveForm = async (isAutoSave = false) => {
 
     // Ensure required fields are present
     if (!formData.name || !formData.name.trim()) {
-      throw new Error('Form name is required');
+      throw new Error(t('forms.builderShellNameRequired'));
     }
     if (!formData.formType) {
       formData.formType = 'Audit';
@@ -542,7 +545,7 @@ const saveForm = async (isAutoSave = false) => {
           const { openTab } = useTabs();
           openTab(`/forms/builder/${savedForm._id}`, {
             name: `form-builder-${savedForm._id}`,
-            title: savedForm.name || 'Form Builder',
+            title: savedForm.name || t('forms.builderShellPageTitle'),
             component: 'FormBuilder',
             params: { formId: savedForm._id },
             insertAdjacent: true
@@ -573,7 +576,7 @@ const saveForm = async (isAutoSave = false) => {
     if (!isAutoSave) {
       // Extract detailed error message from response
       const errorDetails = error.response?.data;
-      let errorMsg = error.message || 'Error saving form. Please try again.';
+      let errorMsg = error.message || t('forms.builderShellSaveError');
       
       if (errorDetails?.error) {
         errorMsg = errorDetails.error;
@@ -632,12 +635,12 @@ const enablePublicLink = async () => {
           window.open(`/forms/public/${slug}`, '_blank');
         } else {
           console.error('Public link enabled but slug is missing');
-          errorMessage.value = 'Public link enabled but slug is missing.';
+          errorMessage.value = t('forms.builderShellPublicSlugMissing');
           setTimeout(() => { errorMessage.value = ''; }, 5000);
         }
       } else {
         console.error('Public link not found in response:', response);
-        errorMessage.value = 'Public link not found in server response.';
+        errorMessage.value = t('forms.builderShellPublicLinkNotInResponse');
         setTimeout(() => { errorMessage.value = ''; }, 5000);
       }
     } else {
@@ -647,7 +650,7 @@ const enablePublicLink = async () => {
     }
   } catch (error) {
     console.error('Error enabling public link:', error);
-    errorMessage.value = 'Failed to enable public link. Please try again.';
+    errorMessage.value = t('forms.builderShellEnablePublicFailed');
     setTimeout(() => {
       errorMessage.value = '';
     }, 5000);

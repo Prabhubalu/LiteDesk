@@ -45,7 +45,7 @@
                   </h3>
                   <ul class="text-sm text-warning-700 dark:text-warning-300 space-y-2 list-disc list-inside">
                     <li>This person will be removed from {{ formatAppName(appKey) }}</li>
-                    <li>Historical records and activity logs will be preserved</li>
+                    <li>{{ t('people.detachFromAppModalHistoricalRecordsAndActivityLogsWill') }}</li>
                     <li>You can re-attach this person to {{ formatAppName(appKey) }} later if needed</li>
                     <li v-if="detachReason">{{ detachReason }}</li>
                   </ul>
@@ -67,8 +67,7 @@
 
             <!-- Confirmation Message -->
             <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg">
-              <p class="text-sm text-gray-700 dark:text-gray-300">
-                This will remove this person from <strong>{{ formatAppName(appKey) }}</strong>.
+              <p class="text-sm text-gray-700 dark:text-gray-300">{{ t('people.detachFromAppModalThisWillRemoveThisPersonFrom') }}<strong>{{ formatAppName(appKey) }}</strong>.
                 {{ getDetachMessage() }}
               </p>
             </div>
@@ -80,9 +79,7 @@
                 @click="close"
                 :disabled="loading"
                 class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Cancel
-              </button>
+              >{{ t('performance.cancelWizard') }}</button>
               <button
                 type="button"
                 @click="handleDetach"
@@ -104,6 +101,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, computed } from 'vue';
 import apiClient from '@/utils/apiClient';
 import { getDetachReason } from './detachPolicy';
@@ -123,6 +121,8 @@ const props = defineProps({
     required: true
   }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['close', 'detached']);
 

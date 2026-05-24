@@ -11,8 +11,8 @@
               class="inline-flex h-7 w-7 items-center justify-center rounded border border-gray-200 text-gray-500 transition-colors dark:border-gray-700 dark:text-gray-400"
               :class="canPrevious ? 'hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200' : 'opacity-40 cursor-not-allowed'"
               :disabled="!canPrevious"
-              :aria-label="previousLabel"
-              :title="shortcutPrev ? `${previousLabel} (${shortcutPrev})` : previousLabel"
+              :aria-label="resolvedPreviousLabel"
+              :title="shortcutPrev ? `${resolvedPreviousLabel} (${shortcutPrev})` : resolvedPreviousLabel"
               @click="$emit('previous')"
             >
               <ArrowLeftIcon class="h-4 w-4" />
@@ -22,8 +22,8 @@
               class="inline-flex h-7 w-7 items-center justify-center rounded border border-gray-200 text-gray-500 transition-colors dark:border-gray-700 dark:text-gray-400"
               :class="canNext ? 'hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200' : 'opacity-40 cursor-not-allowed'"
               :disabled="!canNext"
-              :aria-label="nextLabel"
-              :title="shortcutNext ? `${nextLabel} (${shortcutNext})` : nextLabel"
+              :aria-label="resolvedNextLabel"
+              :title="shortcutNext ? `${resolvedNextLabel} (${shortcutNext})` : resolvedNextLabel"
               @click="$emit('next')"
             >
               <ArrowRightIcon class="h-4 w-4" />
@@ -48,7 +48,11 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/vue/24/outline';
+
+const { t } = useI18n();
 
 /**
  * RecordHeader – identity and primary control with breadcrumbs.
@@ -65,7 +69,7 @@ import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/vue/24/outline';
  * - #pageActions: Top-right page actions
  * - #statusControl, #primaryAction, #actionsMenu
  */
-defineProps({
+const props = defineProps({
   title: { type: String, default: '' },
   recordType: { type: String, default: '' },
   recordId: { type: String, default: '' },
@@ -73,11 +77,14 @@ defineProps({
   showNavigation: { type: Boolean, default: false },
   canPrevious: { type: Boolean, default: false },
   canNext: { type: Boolean, default: false },
-  previousLabel: { type: String, default: 'Previous' },
-  nextLabel: { type: String, default: 'Next' },
+  previousLabel: { type: String, default: '' },
+  nextLabel: { type: String, default: '' },
   shortcutPrev: { type: String, default: '' },
   shortcutNext: { type: String, default: '' }
 });
+
+const resolvedPreviousLabel = computed(() => props.previousLabel || t('actions.previous'));
+const resolvedNextLabel = computed(() => props.nextLabel || t('actions.next'));
 
 defineEmits(['previous', 'next']);
 </script>

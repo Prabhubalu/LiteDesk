@@ -1,0 +1,2762 @@
+{
+  "paletteAddStep": {
+    "message": "चरण जोड़ें",
+    "description": "Process designer palette heading"
+  },
+  "paletteBlockedDefault": {
+    "message": "पहले प्रोसेस सेटिंग्स (दाएं पैनल) में यह प्रक्रिया शुरू करने वाले को चुनें।",
+    "description": "Palette disabled hint when trigger not configured"
+  },
+  "paletteTypeCondition": {
+    "message": "अगर",
+    "description": "Condition step palette label"
+  },
+  "paletteTypeConditionDesc": {
+    "message": "शाखा हां/नहीं",
+    "description": "Condition step palette description"
+  },
+  "paletteTypeFieldRule": {
+    "message": "क्षेत्र नियम",
+    "description": "Field rule step palette label"
+  },
+  "paletteTypeFieldRuleDesc": {
+    "message": "अनिवार्य, डिफ़ॉल्ट, दृश्यता",
+    "description": "Field rule step palette description"
+  },
+  "paletteTypeOwnership": {
+    "message": "स्वामित्व",
+    "description": "Ownership step palette label"
+  },
+  "paletteTypeOwnershipDesc": {
+    "message": "मालिक को नियुक्त करें",
+    "description": "Ownership step palette description"
+  },
+  "paletteTypeStatusGuard": {
+    "message": "स्थिति रक्षक",
+    "description": "Status guard step palette label"
+  },
+  "paletteTypeStatusGuardDesc": {
+    "message": "संक्रमणों को अवरुद्ध करें या अनुमति दें",
+    "description": "Status guard step palette description"
+  },
+  "paletteTypeApproval": {
+    "message": "अनुमोदन",
+    "description": "Approval step palette label"
+  },
+  "paletteTypeApprovalDesc": {
+    "message": "मानव अनुमोदन द्वार",
+    "description": "Approval step palette description"
+  },
+  "paletteTypeWait": {
+    "message": "इंतज़ार",
+    "description": "Wait step palette label"
+  },
+  "paletteTypeWaitDesc": {
+    "message": "मिनटों, घंटों या दिनों के लिए रुकें",
+    "description": "Wait step palette description"
+  },
+  "paletteTypeAction": {
+    "message": "कार्रवाई",
+    "description": "Action step palette label"
+  },
+  "paletteTypeActionDesc": {
+    "message": "स्वचालित क्रिया",
+    "description": "Action step palette description"
+  },
+  "paletteTypeEnd": {
+    "message": "अंत",
+    "description": "End step palette label"
+  },
+  "paletteTypeEndDesc": {
+    "message": "प्रक्रिया रोकें",
+    "description": "End step palette description"
+  },
+  "statusActive": {
+    "message": "सक्रिय",
+    "description": "Process or flow status badge"
+  },
+  "statusDraft": {
+    "message": "मसौदा",
+    "description": "Process or flow status badge"
+  },
+  "statusArchived": {
+    "message": "संग्रहीत",
+    "description": "Process status badge"
+  },
+  "statusEnabled": {
+    "message": "सक्रिय",
+    "description": "Automation rule status badge"
+  },
+  "statusDisabled": {
+    "message": "अक्षम",
+    "description": "Automation rule status badge"
+  },
+  "labelApp": {
+    "message": "अनुप्रयोग:",
+    "description": "Metadata label for app key"
+  },
+  "labelTrigger": {
+    "message": "चालू कर देना:",
+    "description": "Metadata label for trigger"
+  },
+  "labelNodes": {
+    "message": "नोड्स:",
+    "description": "Metadata label for node count"
+  },
+  "labelUpdated": {
+    "message": "अद्यतन:",
+    "description": "Metadata label for last updated"
+  },
+  "labelEntity": {
+    "message": "इकाई:",
+    "description": "Metadata label for entity type"
+  },
+  "labelAction": {
+    "message": "कार्रवाई:",
+    "description": "Metadata label for action type"
+  },
+  "filterApps": {
+    "message": "सभी ऐप्स",
+    "description": "Process list app filter"
+  },
+  "filterStatus": {
+    "message": "सभी स्थिति",
+    "description": "Process list status filter"
+  },
+  "filterEntities": {
+    "message": "सभी संस्थाएँ",
+    "description": "Automation rules entity filter"
+  },
+  "filterEntityPeople": {
+    "message": "लोग",
+    "description": "Entity filter option"
+  },
+  "filterEntityOrganization": {
+    "message": "संगठन",
+    "description": "Entity filter option"
+  },
+  "filterEntityDeal": {
+    "message": "सौदा",
+    "description": "Entity filter option"
+  },
+  "filterEntityEvents": {
+    "message": "घटनाएँ/नियुक्तियाँ",
+    "description": "Entity filter option"
+  },
+  "filterEnabled": {
+    "message": "सक्रिय",
+    "description": "Rules enabled filter option"
+  },
+  "filterDisabled": {
+    "message": "अक्षम",
+    "description": "Rules disabled filter option"
+  },
+  "triggerWebhook": {
+    "message": "WEbhook",
+    "description": "Trigger type label in list"
+  },
+  "triggerManual": {
+    "message": "नियमावली",
+    "description": "Trigger type label in list"
+  },
+  "triggerManualSummary": {
+    "message": "मैनुअल ट्रिगर",
+    "description": "Trigger summary when manual"
+  },
+  "triggerOnRecordCreated": {
+    "message": "रिकॉर्ड बनने पर चलता है",
+    "description": "Domain event trigger summary"
+  },
+  "triggerOnRecordUpdated": {
+    "message": "रिकॉर्ड अपडेट होने पर चलता है",
+    "description": "Domain event trigger summary"
+  },
+  "triggerOnStatusChanged": {
+    "message": "स्थिति बदलने पर चलता है",
+    "description": "Domain event trigger summary"
+  },
+  "triggerOnStageChanged": {
+    "message": "स्टेज बदलने पर चलता है",
+    "description": "Domain event trigger summary"
+  },
+  "triggerOnEvent": {
+    "message": "{eventType} पर चलता है",
+    "description": "Generic domain event trigger summary"
+  },
+  "triggerHealthRecordCreated": {
+    "message": "ऑन रिकॉर्ड बनाया गया",
+    "description": "Health view trigger label"
+  },
+  "triggerHealthRecordUpdated": {
+    "message": "ऑन रिकार्ड अद्यतन किया गया",
+    "description": "Health view trigger label"
+  },
+  "triggerHealthStatusChanged": {
+    "message": "स्थिति परिवर्तन पर",
+    "description": "Health view trigger label"
+  },
+  "triggerHealthStageChanged": {
+    "message": "मंच पर बदलाव",
+    "description": "Health view trigger label"
+  },
+  "eventRecordCreated": {
+    "message": "रिकॉर्ड बनाया गया",
+    "description": "Timeline domain event label"
+  },
+  "eventRecordUpdated": {
+    "message": "रिकॉर्ड अपडेट किया गया",
+    "description": "Timeline domain event label"
+  },
+  "eventStatusChanged": {
+    "message": "स्थिति बदल गई",
+    "description": "Timeline domain event label"
+  },
+  "eventStageChanged": {
+    "message": "मंच बदला गया",
+    "description": "Timeline domain event label"
+  },
+  "eventDescRecordCreated": {
+    "message": "एक नया रिकॉर्ड बन गया",
+    "description": "Timeline domain event description"
+  },
+  "eventDescRecordUpdated": {
+    "message": "एक रिकॉर्ड अद्यतन किया गया था",
+    "description": "Timeline domain event description"
+  },
+  "eventDescStatusChanged": {
+    "message": "रिकॉर्ड की स्थिति बदल गई",
+    "description": "Timeline domain event description"
+  },
+  "eventDescStageChanged": {
+    "message": "एक रिकॉर्ड का चरण बदल गया",
+    "description": "Timeline domain event description"
+  },
+  "eventDescGeneric": {
+    "message": "घटना: {eventType}",
+    "description": "Fallback timeline event description"
+  },
+  "processListTitle": {
+    "message": "प्रक्रियाओं",
+    "description": "Processes admin list page title"
+  },
+  "processListDescription": {
+    "message": "प्रक्रियाएँ नियंत्रित करती हैं कि आपका सिस्टम स्वचालित रूप से कैसे व्यवहार करता है।",
+    "description": "Processes admin list page subtitle"
+  },
+  "processNew": {
+    "message": "नई प्रक्रिया",
+    "description": "Create process button"
+  },
+  "processEmptyTitle": {
+    "message": "कोई प्रक्रिया नहीं",
+    "description": "Empty processes list heading"
+  },
+  "processTooltipViewLogs": {
+    "message": "लॉग देखें",
+    "description": "Icon button tooltip"
+  },
+  "processTooltipActivate": {
+    "message": "सक्रिय करें",
+    "description": "Icon button tooltip"
+  },
+  "processTooltipDeactivate": {
+    "message": "निष्क्रिय करें",
+    "description": "Icon button tooltip"
+  },
+  "processLoadFailed": {
+    "message": "प्रक्रियाएं लोड करने में विफल",
+    "description": "Processes list load error"
+  },
+  "processDuplicateFailed": {
+    "message": "प्रक्रिया की नकल करने में विफल",
+    "description": "Duplicate process error"
+  },
+  "processActivateSuccess": {
+    "message": "प्रक्रिया सफलतापूर्वक सक्रिय हो गई",
+    "description": "Activate success alert"
+  },
+  "processDeactivateSuccess": {
+    "message": "प्रक्रिया सफलतापूर्वक निष्क्रिय कर दी गई",
+    "description": "Deactivate success alert"
+  },
+  "processActivateFailed": {
+    "message": "प्रक्रिया सक्रिय करने में विफल",
+    "description": "Activate error alert"
+  },
+  "processDeactivateFailed": {
+    "message": "प्रक्रिया निष्क्रिय करने में विफल",
+    "description": "Deactivate error alert"
+  },
+  "processListPageTitle": {
+    "message": "प्रक्रियाएं | अरिवु",
+    "description": "Browser tab title"
+  },
+  "flowListTitle": {
+    "message": "व्यापार प्रवाह",
+    "description": "Business flows list page title"
+  },
+  "flowListDescription": {
+    "message": "शुरू से अंत तक व्यावसायिक कहानियों में अनेक प्रक्रियाओं का दृश्य समूहन",
+    "description": "Business flows list subtitle"
+  },
+  "flowStartWithTemplate": {
+    "message": "टेम्पलेट से प्रारंभ करें",
+    "description": "Header CTA for templates"
+  },
+  "flowCreateFromScratch": {
+    "message": "स्क्रैच से बनाएं",
+    "description": "Header CTA for blank flow"
+  },
+  "flowEmptyTitle": {
+    "message": "तैयार प्रवाह के साथ तेजी से शुरुआत करें",
+    "description": "Empty flows heading"
+  },
+  "flowEmptyMessage": {
+    "message": "सामान्य व्यावसायिक प्रक्रियाओं को मिनटों में सेट करने के लिए सिद्ध टेम्पलेट का उपयोग करें। आप आयात के बाद सब कुछ संपादित कर सकते हैं.",
+    "description": "Empty flows body"
+  },
+  "flowStartWithTemplateBtn": {
+    "message": "एक टेम्पलेट से प्रारंभ करें",
+    "description": "Empty state primary CTA"
+  },
+  "flowCreateFromScratchBtn": {
+    "message": "शुरुआत से बनाएं",
+    "description": "Empty state secondary CTA"
+  },
+  "flowMetaProcesses": {
+    "message": "प्रक्रियाएं:",
+    "description": "Flow card metadata label"
+  },
+  "flowProcessCount": {
+    "message": "{count, plural, one {# process} other {# processes}}",
+    "description": "Flow card process count"
+  },
+  "flowMetaLastUpdated": {
+    "message": "आखरी अपडेट:",
+    "description": "Flow card metadata label"
+  },
+  "flowDeleteModalTitle": {
+    "message": "व्यवसाय प्रवाह हटाएँ",
+    "description": "Delete confirmation modal title"
+  },
+  "flowDeleteConfirm": {
+    "message": "क्या आप वाकई \"{name}\" को हटाना चाहते हैं? इस एक्शन को वापस नहीं किया जा सकता।",
+    "description": "Delete confirmation body"
+  },
+  "flowDeleting": {
+    "message": "हटाया जा रहा है...",
+    "description": "Delete button in progress"
+  },
+  "flowTemplateModalTitle": {
+    "message": "एक व्यवसाय प्रवाह टेम्पलेट चुनें",
+    "description": "Template picker modal title"
+  },
+  "flowTemplateModalHint": {
+    "message": "टेम्प्लेट आपको तेज़ी से लाइव होने में मदद करते हैं। आप आयात के बाद सब कुछ संपादित कर सकते हैं.",
+    "description": "Template picker modal hint"
+  },
+  "flowLoadingTemplates": {
+    "message": "टेम्प्लेट लोड हो रहे हैं...",
+    "description": "Template picker loading"
+  },
+  "flowTemplateHighlights": {
+    "message": "यह क्या स्थापित करता है:",
+    "description": "Template card highlights heading"
+  },
+  "flowTemplateSelect": {
+    "message": "→ चुनें",
+    "description": "Template card select affordance"
+  },
+  "flowNoTemplates": {
+    "message": "कोई टेम्पलेट उपलब्ध नहीं है",
+    "description": "Empty template list"
+  },
+  "flowImportTitle": {
+    "message": "\"{name}\" आयात करें",
+    "description": "Template import confirmation title"
+  },
+  "flowImportBody": {
+    "message": "This will create {count, plural, one {# process} other {# processes}} and a Business Flow.",
+    "description": "Template import confirmation body"
+  },
+  "flowImportWhatCreated": {
+    "message": "क्या बनाया जाएगा:",
+    "description": "Import confirmation highlights heading"
+  },
+  "flowImportNote": {
+    "message": "आप आयात के बाद सब कुछ संपादित कर सकते हैं. सभी प्रक्रियाएं ड्राफ्ट के रूप में शुरू होती हैं और सक्रियण से पहले आपकी समीक्षा की आवश्यकता होती है।",
+    "description": "Import confirmation note"
+  },
+  "flowImportTemplate": {
+    "message": "टेम्पलेट आयात करें",
+    "description": "Import confirmation primary button"
+  },
+  "flowImporting": {
+    "message": "आयात किया जा रहा है...",
+    "description": "Import button in progress"
+  },
+  "flowImportSuccess": {
+    "message": "टेम्प्लेट सफलतापूर्वक आयात किया गया. तैयार होने पर प्रक्रियाओं की समीक्षा करें और सक्रिय करें।",
+    "description": "Template import success toast"
+  },
+  "flowImportFailed": {
+    "message": "टेम्प्लेट आयात करने में विफल",
+    "description": "Template import error"
+  },
+  "flowDeleteSuccess": {
+    "message": "व्यवसाय प्रवाह हटा दिया गया",
+    "description": "Delete success toast"
+  },
+  "flowDeleteFailed": {
+    "message": "हटाने में विफल",
+    "description": "Delete error toast"
+  },
+  "flowLoadFailed": {
+    "message": "व्यावसायिक प्रवाह लोड करने में विफल",
+    "description": "Flows list load error"
+  },
+  "flowListPageTitle": {
+    "message": "व्यापार प्रवाह | अरिवु",
+    "description": "Browser tab title"
+  },
+  "flowDetailPageTitle": {
+    "message": "व्यवसाय प्रवाह | अरिवु",
+    "description": "Browser tab title"
+  },
+  "flowViewHealth": {
+    "message": "स्वास्थ्य देखें",
+    "description": "Flow detail action"
+  },
+  "flowTimelineHeading": {
+    "message": "प्रवाह समयरेखा",
+    "description": "Flow detail timeline section"
+  },
+  "flowCompleteLabel": {
+    "message": "प्रवाह पूर्ण",
+    "description": "Timeline outcome label"
+  },
+  "flowCompleteDesc": {
+    "message": "इस प्रवाह की सभी प्रक्रियाएँ निष्पादित हो चुकी हैं",
+    "description": "Timeline outcome description"
+  },
+  "flowDomainEventTitle": {
+    "message": "डोमेन इवेंट",
+    "description": "Event drawer title"
+  },
+  "flowEventName": {
+    "message": "घटना नाम:",
+    "description": "Event drawer field label"
+  },
+  "flowDescription": {
+    "message": "विवरण:",
+    "description": "Event drawer field label"
+  },
+  "flowEntityType": {
+    "message": "इकाई प्रकार:",
+    "description": "Event drawer field label"
+  },
+  "flowDetailLoadFailed": {
+    "message": "व्यवसाय प्रवाह लोड करने में विफल",
+    "description": "Flow detail load error"
+  },
+  "flowActionCreateTask": {
+    "message": "कार्य बनाएँ: \"{title}\"",
+    "description": "Timeline process action summary"
+  },
+  "flowActionNotifyUser": {
+    "message": "अधिसूचना भेजें",
+    "description": "Timeline process action summary"
+  },
+  "flowActionStartProcess": {
+    "message": "दूसरी प्रक्रिया प्रारंभ करें",
+    "description": "Timeline process action summary"
+  },
+  "flowActionMandatoryField": {
+    "message": "\"{field}\" को अनिवार्य बनाएं",
+    "description": "Timeline process action summary"
+  },
+  "flowActionDefaultField": {
+    "message": "\"{field}\" डिफ़ॉल्ट मान सेट करें",
+    "description": "Timeline process action summary"
+  },
+  "flowActionAssignOwnership": {
+    "message": "स्वामित्व सौंपें",
+    "description": "Timeline process action summary"
+  },
+  "flowActionStatusGuard": {
+    "message": "स्थिति परिवर्तन को नियंत्रित करें",
+    "description": "Timeline process action summary"
+  },
+  "flowActionApproval": {
+    "message": "अनुमोदन का अनुरोध करें",
+    "description": "Timeline process action summary"
+  },
+  "flowUntitledTask": {
+    "message": "शीर्षकहीन",
+    "description": "Fallback task title in action summary"
+  },
+  "flowFormEditTitle": {
+    "message": "व्यवसाय प्रवाह संपादित करें",
+    "description": "Flow form page title"
+  },
+  "flowFormCreateTitle": {
+    "message": "व्यवसाय प्रवाह बनाएँ",
+    "description": "Flow form page title"
+  },
+  "flowFormName": {
+    "message": "प्रवाह का नाम",
+    "description": "Flow form field label"
+  },
+  "flowFormNamePh": {
+    "message": "उदाहरण के लिए, लीड टू डील रूपांतरण प्रवाह",
+    "description": "Flow form name placeholder"
+  },
+  "flowFormDescription": {
+    "message": "विवरण",
+    "description": "Flow form field label"
+  },
+  "flowFormDescriptionPh": {
+    "message": "वर्णन करें कि ये प्रक्रियाएँ एक साथ कैसे काम करती हैं...",
+    "description": "Flow form description placeholder"
+  },
+  "flowFormApp": {
+    "message": "अनुप्रयोग",
+    "description": "Flow form field label"
+  },
+  "flowFormSelectApp": {
+    "message": "ऐप चुनें",
+    "description": "Flow form app placeholder"
+  },
+  "flowFormProcesses": {
+    "message": "प्रक्रियाओं",
+    "description": "Flow form field label"
+  },
+  "flowFormProcessesHint": {
+    "message": "एक साथ कल्पना करने के लिए एकाधिक प्रक्रियाओं का चयन करें। ऑर्डर का अनुमान स्वचालित रूप से लगाया जाता है.",
+    "description": "Flow form processes hint"
+  },
+  "flowFormLoadingProcesses": {
+    "message": "प्रक्रियाएँ लोड हो रही हैं...",
+    "description": "Flow form processes loading"
+  },
+  "flowFormNoProcesses": {
+    "message": "इस ऐप के लिए कोई प्रक्रिया नहीं मिली. पहले प्रक्रियाएँ बनाएँ.",
+    "description": "Flow form empty processes"
+  },
+  "flowFormUpdateSuccess": {
+    "message": "व्यवसाय प्रवाह अद्यतन किया गया",
+    "description": "Flow form save success"
+  },
+  "flowFormCreateSuccess": {
+    "message": "व्यवसाय प्रवाह निर्मित हुआ",
+    "description": "Flow form save success"
+  },
+  "flowFormSaveFailed": {
+    "message": "सहेजने में विफल",
+    "description": "Flow form save error"
+  },
+  "flowFormEditPageTitle": {
+    "message": "व्यवसाय प्रवाह संपादित करें | अरिवु",
+    "description": "Browser tab title"
+  },
+  "flowFormCreatePageTitle": {
+    "message": "बिजनेस फ्लो बनाएं | अरिवु",
+    "description": "Browser tab title"
+  },
+  "flowHealthPageTitle": {
+    "message": "प्रवाह स्वास्थ्य | अरिवु",
+    "description": "Browser tab title"
+  },
+  "flowHealthTitleSuffix": {
+    "message": "- स्वास्थ्य",
+    "description": "Health page title suffix after flow name"
+  },
+  "flowHealthSubtitle": {
+    "message": "इस व्यवसाय प्रवाह के लिए परिचालन दृश्यता",
+    "description": "Health page subtitle"
+  },
+  "flowHealthLast7": {
+    "message": "पिछले 7 दिन",
+    "description": "Health time range filter"
+  },
+  "flowHealthLast30": {
+    "message": "पिछले 30 दिन",
+    "description": "Health time range filter"
+  },
+  "flowHealthLast90": {
+    "message": "पिछले 90 दिन",
+    "description": "Health time range filter"
+  },
+  "flowHealthCardStatus": {
+    "message": "स्थिति",
+    "description": "Health summary card label"
+  },
+  "flowHealthCardExecutions": {
+    "message": "फांसी",
+    "description": "Health summary card label"
+  },
+  "flowHealthCardCompletion": {
+    "message": "पूर्णता दर",
+    "description": "Health summary card label"
+  },
+  "flowHealthCardAvgTime": {
+    "message": "औसत समय",
+    "description": "Health summary card label"
+  },
+  "flowHealthCardApprovalPauses": {
+    "message": "अनुमोदन रुका हुआ है",
+    "description": "Health summary card label"
+  },
+  "flowHealthCardFailureRate": {
+    "message": "विफलता दर",
+    "description": "Health summary card label"
+  },
+  "flowHealthStatusHealthy": {
+    "message": "स्वस्थ",
+    "description": "Health status display (API value healthy)"
+  },
+  "flowHealthStatusNeedsAttention": {
+    "message": "ध्यान देने की जरूरत है",
+    "description": "Health status display (API needs_attention)"
+  },
+  "flowHealthStatusUnhealthy": {
+    "message": "बीमार",
+    "description": "Health status display fallback"
+  },
+  "flowHealthBottlenecks": {
+    "message": "{count, plural, one {# Bottleneck} other {# Bottlenecks}} Detected",
+    "description": "Bottleneck alert heading"
+  },
+  "flowHealthBottleneckSummary": {
+    "message": "{critical} गंभीर, {warning} चेतावनियाँ",
+    "description": "Bottleneck alert summary"
+  },
+  "flowHealthProcessMetrics": {
+    "message": "प्रक्रिया मेट्रिक्स",
+    "description": "Process metrics section heading"
+  },
+  "flowHealthMetricExecutions": {
+    "message": "फांसी",
+    "description": "Process metric label"
+  },
+  "flowHealthMetricCompletion": {
+    "message": "समापन",
+    "description": "Process metric label"
+  },
+  "flowHealthMetricAvgTime": {
+    "message": "औसत समय",
+    "description": "Process metric label"
+  },
+  "flowHealthMetricFailures": {
+    "message": "विफलताओं",
+    "description": "Process metric label"
+  },
+  "flowHealthApprovalGate": {
+    "message": "अनुमोदन द्वार",
+    "description": "Approval metrics subsection"
+  },
+  "flowHealthPending": {
+    "message": "लंबित",
+    "description": "Approval metric label"
+  },
+  "flowHealthApproved": {
+    "message": "अनुमत",
+    "description": "Approval metric label"
+  },
+  "flowHealthRejected": {
+    "message": "अस्वीकार कर दिया",
+    "description": "Approval metric label"
+  },
+  "flowHealthAvgWait": {
+    "message": "औसत प्रतीक्षा करें",
+    "description": "Approval metric label"
+  },
+  "flowHealthNoData": {
+    "message": "इस अवधि के लिए कोई प्रक्रिया डेटा उपलब्ध नहीं है.",
+    "description": "Empty process metrics"
+  },
+  "flowHealthBottleneckDetails": {
+    "message": "अड़चन विवरण",
+    "description": "Bottleneck section heading"
+  },
+  "flowHealthExecStats": {
+    "message": "निष्पादन सांख्यिकी",
+    "description": "Process drilldown section"
+  },
+  "flowHealthTotalExecutions": {
+    "message": "कुल निष्पादन",
+    "description": "Drilldown stat label"
+  },
+  "flowHealthCompleted": {
+    "message": "पुरा होना।",
+    "description": "Drilldown stat label"
+  },
+  "flowHealthFailed": {
+    "message": "असफल",
+    "description": "Drilldown stat label"
+  },
+  "flowHealthWaitingApproval": {
+    "message": "अनुमोदन की प्रतीक्षा है",
+    "description": "Drilldown stat label"
+  },
+  "flowHealthApprovalStats": {
+    "message": "अनुमोदन सांख्यिकी",
+    "description": "Drilldown section"
+  },
+  "flowHealthTotalApprovals": {
+    "message": "कुल स्वीकृतियाँ",
+    "description": "Drilldown stat label"
+  },
+  "flowHealthAvgWaitTime": {
+    "message": "औसत प्रतीक्षा समय",
+    "description": "Drilldown stat label"
+  },
+  "flowHealthTimedOut": {
+    "message": "समय समााप्त",
+    "description": "Drilldown stat label"
+  },
+  "flowHealthRejectionRate": {
+    "message": "अस्वीकृति दर",
+    "description": "Drilldown stat label"
+  },
+  "flowHealthViewLogs": {
+    "message": "निष्पादन लॉग देखें",
+    "description": "Drilldown action"
+  },
+  "flowHealthViewProcess": {
+    "message": "प्रक्रिया देखें",
+    "description": "Drilldown action"
+  },
+  "flowHealthLoadFailed": {
+    "message": "स्वास्थ्य डेटा लोड करने में विफल",
+    "description": "Health page load error"
+  },
+  "durationZero": {
+    "message": "0 मी",
+    "description": "Zero duration display"
+  },
+  "durationMinutes": {
+    "message": "{minutes}m",
+    "description": "Duration in minutes"
+  },
+  "durationHoursMinutes": {
+    "message": "{hours}h {minutes}m",
+    "description": "Duration hours and minutes"
+  },
+  "durationHours": {
+    "message": "{hours}h",
+    "description": "Duration in hours only"
+  },
+  "durationDaysHours": {
+    "message": "{days}d {hours}h",
+    "description": "Duration days and hours"
+  },
+  "durationDays": {
+    "message": "{days}d",
+    "description": "Duration in days only"
+  },
+  "designerPageTitle": {
+    "message": "प्रोसेस डिज़ाइनर | अरिवु",
+    "description": "Browser tab title"
+  },
+  "designerGoBack": {
+    "message": "वापस जाओ",
+    "description": "Designer back button aria-label"
+  },
+  "designerNamePh": {
+    "message": "प्रक्रिया नाम",
+    "description": "Designer title input placeholder"
+  },
+  "designerDuplicateEdit": {
+    "message": "डुप्लिकेट और संपादित करें",
+    "description": "Designer header action"
+  },
+  "designerTidyLayout": {
+    "message": "सुव्यवस्थित लेआउट",
+    "description": "Designer header action"
+  },
+  "designerNoChanges": {
+    "message": "सहेजने के लिए कोई परिवर्तन नहीं",
+    "description": "Save button tooltip when clean"
+  },
+  "designerActivate": {
+    "message": "सक्रिय करें",
+    "description": "Designer activate button"
+  },
+  "designerLoading": {
+    "message": "डिज़ाइनर लोड हो रहा है...",
+    "description": "Designer loading state"
+  },
+  "designerVersionRun": {
+    "message": "यह रन संस्करण {runVersion} का उपयोग करता है।",
+    "description": "Insight version banner part 1"
+  },
+  "designerVersionCurrent": {
+    "message": "यह प्रक्रिया अब संस्करण {currentVersion} के रूप में प्रकाशित की गई है।",
+    "description": "Insight version banner part 2"
+  },
+  "designerVersionCanvas": {
+    "message": "कैनवास उस समय का ग्राफ़ दिखाता है जब यह रन शुरू हुआ था।",
+    "description": "Insight version banner part 3"
+  },
+  "designerTriggerBannerTitle": {
+    "message": "चुनें कि यह प्रक्रिया किससे प्रारंभ होती है",
+    "description": "Trigger setup banner title"
+  },
+  "designerTriggerBannerBody": {
+    "message": "जब प्रवाह चलता है तो ट्रिगर परिभाषित होते हैं। उसके बाद IF चरण और क्रियाएं जोड़ें - ट्रिगर में नहीं।",
+    "description": "Trigger setup banner body"
+  },
+  "designerTriggerBannerCta": {
+    "message": "\"प्रारंभ कब होगा\" → सेट करें",
+    "description": "Trigger setup banner CTA"
+  },
+  "designerSaveBlockedTrigger": {
+    "message": "सहेजने से पहले प्रक्रिया सेटिंग्स में चुनें कि यह प्रक्रिया क्या शुरू करती है।",
+    "description": "Save blocked message"
+  },
+  "designerSaveBlockedScope": {
+    "message": "ऐप और मॉड्यूल आवश्यक हैं - उन्हें प्रोसेस सेटिंग्स में सेट करें, फिर सेव करें।",
+    "description": "Save blocked message"
+  },
+  "designerGraphErrorsTitle": {
+    "message": "सहेजने या सक्रिय करने से पहले ग्राफ़ संबंधी समस्याओं को ठीक करें:",
+    "description": "Graph validation banner"
+  },
+  "designerEmptyCanvasTitle": {
+    "message": "अपना प्रवाह दो चरणों में बनाएं",
+    "description": "Empty canvas overlay title"
+  },
+  "designerEmptyCanvasStep1": {
+    "message": "प्रक्रिया सेटिंग्स में प्रारंभ होने पर चुनें →",
+    "description": "Empty canvas step 1"
+  },
+  "designerEmptyCanvasStep2": {
+    "message": "बाईं ओर पैलेट से चरण जोड़ें",
+    "description": "Empty canvas step 2"
+  },
+  "designerChooseTrigger": {
+    "message": "ट्रिगर चुनें",
+    "description": "Empty canvas CTA"
+  },
+  "designerInsightFailed": {
+    "message": "{duration}{message} के बाद विफल",
+    "description": "Insight node detail failed"
+  },
+  "designerInsightCompleted": {
+    "message": "{duration}{message} में पूरा हुआ",
+    "description": "Insight node detail completed"
+  },
+  "designerInsightStepFailed": {
+    "message": "चरण विफल",
+    "description": "Insight fallback failed"
+  },
+  "designerInsightStepCompleted": {
+    "message": "चरण पूरा हुआ",
+    "description": "Insight fallback completed"
+  },
+  "designerInsightSkipped": {
+    "message": "इस चरण में इस चरण तक नहीं पहुंचा जा सका",
+    "description": "Insight skipped step"
+  },
+  "designerInsightRunning": {
+    "message": "वर्तमान में चल रहा है...",
+    "description": "Insight running step"
+  },
+  "designerModulePeople": {
+    "message": "लोग",
+    "description": "Process designer module option"
+  },
+  "designerModuleOrganization": {
+    "message": "संगठन",
+    "description": "Process designer module option"
+  },
+  "designerModuleDeal": {
+    "message": "सौदा",
+    "description": "Process designer module option"
+  },
+  "designerModuleUnknown": {
+    "message": "—",
+    "description": "Unknown module label"
+  },
+  "designerWebhookSecret": {
+    "message": "वेबहुक रहस्य (अभी कॉपी करें - एक बार दिखाया गया):\n\n{secret}",
+    "description": "Webhook secret alert"
+  },
+  "designerInvalidConnection": {
+    "message": "अमान्य कनेक्शन",
+    "description": "Connection rejected alert fallback"
+  },
+  "designerLoadExecutionFailed": {
+    "message": "निष्पादन लोड करने में विफल",
+    "description": "Execution overlay error"
+  },
+  "designerTestFailed": {
+    "message": "परीक्षण विफल रहा",
+    "description": "Test simulation error"
+  },
+  "designerNotFound": {
+    "message": "प्रक्रिया नहीं मिली",
+    "description": "Load process error"
+  },
+  "designerSaveFailed": {
+    "message": "सहेजना विफल",
+    "description": "Save error fallback"
+  },
+  "designerSaved": {
+    "message": "प्रक्रिया सहेजी गई",
+    "description": "Save success toast"
+  },
+  "designerSaveError": {
+    "message": "सहेजने में विफल",
+    "description": "Save error toast"
+  },
+  "designerActivated": {
+    "message": "प्रक्रिया सक्रिय",
+    "description": "Activate success toast fallback"
+  },
+  "designerActivatedVersion": {
+    "message": "प्रक्रिया सक्रिय और संस्करण {version} के रूप में प्रकाशित",
+    "description": "Activate success with version"
+  },
+  "designerActivateFailed": {
+    "message": "सक्रियण विफल",
+    "description": "Activate error toast"
+  },
+  "designerDuplicateFailed": {
+    "message": "डुप्लिकेट विफल",
+    "description": "Duplicate error alert"
+  },
+  "designerLoadFailed": {
+    "message": "लोड करने में विफल",
+    "description": "Designer load error"
+  },
+  "setupBackToProcesses": {
+    "message": "← प्रक्रियाएं",
+    "description": "Setup wizard back link"
+  },
+  "setupTitle": {
+    "message": "नई प्रक्रिया",
+    "description": "Process setup page title"
+  },
+  "setupDescription": {
+    "message": "कार्यक्षेत्र को परिभाषित करें और यह प्रक्रिया कब चलती है। आप आगे कैनवास पर प्रवाह का निर्माण करेंगे।",
+    "description": "Process setup page subtitle"
+  },
+  "setupProcessName": {
+    "message": "प्रक्रिया नाम",
+    "description": "Setup form field label"
+  },
+  "setupProcessNamePh": {
+    "message": "जैसे डील फॉलो-अप",
+    "description": "Setup form name placeholder"
+  },
+  "setupApp": {
+    "message": "अनुप्रयोग",
+    "description": "Setup form field label"
+  },
+  "setupSelectApp": {
+    "message": "ऐप चुनें…",
+    "description": "Setup app select placeholder"
+  },
+  "setupModule": {
+    "message": "मॉड्यूल",
+    "description": "Setup form field label"
+  },
+  "setupSelectModule": {
+    "message": "मॉड्यूल का चयन करें...",
+    "description": "Setup module select placeholder"
+  },
+  "setupModuleHint": {
+    "message": "यह प्रक्रिया किस रिकॉर्ड पर लागू होती है",
+    "description": "Setup module hint"
+  },
+  "setupStep1": {
+    "message": "स्टेप 1",
+    "description": "Trigger section step badge"
+  },
+  "setupStartsWhen": {
+    "message": "कब शुरू होता है",
+    "description": "Trigger field label"
+  },
+  "setupSelectModuleFirst": {
+    "message": "पहले मॉड्यूल चुनें...",
+    "description": "Trigger select disabled placeholder"
+  },
+  "setupChooseTrigger": {
+    "message": "चुनें कि यह प्रक्रिया किससे प्रारंभ होती है...",
+    "description": "Trigger select placeholder"
+  },
+  "setupPickModuleForTrigger": {
+    "message": "ट्रिगर चुनने के लिए एक मॉड्यूल चुनें।",
+    "description": "Trigger hint when no module"
+  },
+  "setupWatchChanges": {
+    "message": "में परिवर्तन देखें",
+    "description": "Record updated watch field label"
+  },
+  "setupWatchHint": {
+    "message": "इसके बाद व्यावसायिक नियमों के लिए IF चरणों का उपयोग करें।",
+    "description": "Watch field hint"
+  },
+  "setupFrequency": {
+    "message": "आवृत्ति",
+    "description": "Schedule preset label"
+  },
+  "setupHour": {
+    "message": "घंटा (0–23)",
+    "description": "Schedule hour label"
+  },
+  "setupMinute": {
+    "message": "मिनट",
+    "description": "Schedule minute label"
+  },
+  "setupWebhookNote": {
+    "message": "आपके जारी रखने के बाद वेबहुक यूआरएल और सीक्रेट डिज़ाइनर में कॉन्फ़िगर किए गए हैं।",
+    "description": "Webhook trigger note"
+  },
+  "setupSummary": {
+    "message": "सारांश",
+    "description": "Setup summary section label"
+  },
+  "setupContinue": {
+    "message": "डिज़ाइनर के लिए जारी रखें →",
+    "description": "Setup submit button"
+  },
+  "setupCreating": {
+    "message": "बनाया जा रहा है...",
+    "description": "Setup submit in progress"
+  },
+  "setupUntitled": {
+    "message": "शीर्षकहीन प्रक्रिया",
+    "description": "Default process name on create"
+  },
+  "setupCreateFailed": {
+    "message": "प्रक्रिया बनाने में विफल",
+    "description": "Setup create error"
+  },
+  "setupPageTitle": {
+    "message": "नई प्रक्रिया | अरिवु",
+    "description": "Browser tab title"
+  },
+  "rulesTitle": {
+    "message": "स्वचालन नियम",
+    "description": "Automation rules list title"
+  },
+  "rulesDescription": {
+    "message": "डोमेन ईवेंट द्वारा ट्रिगर की गई स्वचालित कार्रवाइयां कॉन्फ़िगर करें.",
+    "description": "Automation rules list subtitle"
+  },
+  "rulesNew": {
+    "message": "नया नियम",
+    "description": "Create rule button"
+  },
+  "rulesEmptyTitle": {
+    "message": "कोई स्वचालन नियम नहीं",
+    "description": "Empty rules heading"
+  },
+  "rulesEmptyMessage": {
+    "message": "डोमेन ईवेंट के आधार पर क्रियाओं को स्वचालित करने के लिए अपना पहला स्वचालन नियम बनाएं।",
+    "description": "Empty rules body"
+  },
+  "rulesTooltipPreview": {
+    "message": "पूर्व दर्शन",
+    "description": "Rule row action tooltip"
+  },
+  "rulesTooltipEnable": {
+    "message": "सक्षम",
+    "description": "Rule row action tooltip"
+  },
+  "rulesTooltipDisable": {
+    "message": "अक्षम करना",
+    "description": "Rule row action tooltip"
+  },
+  "rulesLoadFailed": {
+    "message": "स्वचालन नियम लोड करने में विफल",
+    "description": "Rules list load error"
+  },
+  "rulesToggleFailed": {
+    "message": "नियम टॉगल करने में विफल",
+    "description": "Toggle rule error"
+  },
+  "rulesDeleteConfirm": {
+    "message": "नियम \"{name}\" हटाएं? यह इसे अक्षम कर देगा (सॉफ्ट डिलीट)।",
+    "description": "Delete rule confirm dialog"
+  },
+  "rulesDeleteFailed": {
+    "message": "नियम हटाने में विफल",
+    "description": "Delete rule error"
+  },
+  "rulesPageTitle": {
+    "message": "स्वचालन नियम | अरिवु",
+    "description": "Browser tab title"
+  },
+  "wizardCreateHeading": {
+    "message": "प्रक्रिया बनाएँ",
+    "description": "Process creation wizard modal title"
+  },
+  "wizardCreateSubheading": {
+    "message": "सिस्टम व्यवहार को नियंत्रित करने वाली प्रक्रिया बनाने के लिए चरणों का पालन करें",
+    "description": "Process creation wizard subtitle"
+  },
+  "wizardProgressAria": {
+    "message": "प्रगति",
+    "description": "Wizard stepper aria label"
+  },
+  "wizardStepScope": {
+    "message": "दायरा",
+    "description": "Wizard step name"
+  },
+  "wizardStepWhat": {
+    "message": "क्या",
+    "description": "Wizard step name"
+  },
+  "wizardStepReview": {
+    "message": "समीक्षा",
+    "description": "Wizard step name"
+  },
+  "wizardScopeHeading": {
+    "message": "प्रक्रिया का दायरा",
+    "description": "Wizard step 1 heading"
+  },
+  "wizardScopeIntro": {
+    "message": "ऐप, मॉड्यूल और यह प्रक्रिया किससे शुरू होती है उसे चुनें",
+    "description": "Wizard step 1 intro"
+  },
+  "wizardWhatHeading": {
+    "message": "सिस्टम को क्या नियंत्रित करना चाहिए?",
+    "description": "Wizard step 2 heading"
+  },
+  "wizardWhatIntro": {
+    "message": "चुनें कि इस प्रक्रिया को किन व्यवहारों को नियंत्रित करना चाहिए",
+    "description": "Wizard step 2 intro"
+  },
+  "wizardReviewHeading": {
+    "message": "समीक्षा करें और बनाएं",
+    "description": "Wizard step 3 heading"
+  },
+  "wizardReviewIntro": {
+    "message": "इसे बनाने से पहले अपनी प्रक्रिया कॉन्फ़िगरेशन की समीक्षा करें",
+    "description": "Wizard step 3 intro"
+  },
+  "wizardReviewScope": {
+    "message": "दायरा",
+    "description": "Review section scope label"
+  },
+  "wizardReviewThen": {
+    "message": "तब",
+    "description": "Review section then label"
+  },
+  "wizardReviewFieldRule": {
+    "message": "\"{field}\" {rule} बनाएं",
+    "description": "Review bullet for field rule"
+  },
+  "wizardReviewOwnership": {
+    "message": "{target} ({assignment}) को स्वामित्व सौंपें",
+    "description": "Review bullet for ownership"
+  },
+  "wizardReviewStatusAllow": {
+    "message": "{field} को \"{from}\" से \"{to}\" में बदलने की अनुमति दें",
+    "description": "Review status guard allow"
+  },
+  "wizardReviewStatusBlock": {
+    "message": "ब्लॉक {field} को \"{from}\" से \"{to}\" में बदलें: {reason}",
+    "description": "Review status guard block"
+  },
+  "wizardReviewCondition": {
+    "message": "यदि {field} {operator} {value}",
+    "description": "Review optional condition line"
+  },
+  "wizardCreating": {
+    "message": "बनाया जा रहा है...",
+    "description": "Create process button loading"
+  },
+  "wizardCreateProcess": {
+    "message": "प्रक्रिया बनाएँ",
+    "description": "Create process button"
+  },
+  "wizardCreateFailed": {
+    "message": "प्रक्रिया बनाने में विफल",
+    "description": "Create process error"
+  },
+  "wizardStartsWhenPhModule": {
+    "message": "पहले मॉड्यूल चुनें...",
+    "description": "Starts when placeholder before module"
+  },
+  "wizardStartsWhenPh": {
+    "message": "चुनें कि यह प्रक्रिया किससे प्रारंभ होती है...",
+    "description": "Starts when placeholder"
+  },
+  "wizardStartsWhenHintModule": {
+    "message": "पहले एक मॉड्यूल चुनें.",
+    "description": "Starts when hint before module"
+  },
+  "wizardWebhookHint": {
+    "message": "आपके द्वारा प्रक्रिया बनाने के बाद वेबहुक यूआरएल और सीक्रेट फ्लो डिजाइनर में कॉन्फ़िगर किए जाते हैं।",
+    "description": "Webhook trigger hint"
+  },
+  "wizardApplySomeCases": {
+    "message": "केवल कुछ मामलों में ही लागू करें",
+    "description": "Optional condition toggle"
+  },
+  "wizardControlFieldBehavior": {
+    "message": "फ़ील्ड व्यवहार पर नियंत्रण रखें",
+    "description": "Control checkbox title"
+  },
+  "wizardControlFieldBehaviorDesc": {
+    "message": "फ़ील्ड को अनिवार्य बनाएं, डिफ़ॉल्ट सेट करें, या दृश्यता को नियंत्रित करें",
+    "description": "Control checkbox description"
+  },
+  "wizardControlOwnership": {
+    "message": "स्वामित्व और असाइनमेंट पर नियंत्रण रखें",
+    "description": "Control checkbox title"
+  },
+  "wizardControlOwnershipDesc": {
+    "message": "रिकॉर्ड स्वामित्व निर्दिष्ट या पुन: असाइन करें",
+    "description": "Control checkbox description"
+  },
+  "wizardControlStatus": {
+    "message": "नियंत्रण स्थिति/चरण परिवर्तन",
+    "description": "Control checkbox title"
+  },
+  "wizardControlStatusDesc": {
+    "message": "स्थिति परिवर्तन की अनुमति दें या अवरोधित करें",
+    "description": "Control checkbox description"
+  },
+  "wizardControlActions": {
+    "message": "क्रियाएँ चलाएँ",
+    "description": "Control checkbox title"
+  },
+  "wizardControlActionsDesc": {
+    "message": "कार्य बनाएं, सूचनाएं भेजें, या अन्य स्वचालित कार्रवाइयां भेजें",
+    "description": "Control checkbox description"
+  },
+  "wizardFieldMandatoryHint": {
+    "message": "प्रक्रिया चलने पर यह फ़ील्ड अनिवार्य होगी",
+    "description": "Mandatory field rule hint"
+  },
+  "wizardOwnershipHint": {
+    "message": "असाइनमेंट मौजूदा अनुमति नियमों का पालन करेगा।",
+    "description": "Ownership assignment hint"
+  },
+  "wizardActionCreateTask": {
+    "message": "कार्य बनाएँ: \"{title}\"",
+    "description": "Review action create task"
+  },
+  "wizardActionNotify": {
+    "message": "सूचित करें{recipient}",
+    "description": "Review action notify"
+  },
+  "wizardActionNotifyOwner": {
+    "message": "मालिक",
+    "description": "Notify recipient owner shorthand"
+  },
+  "wizardActionNotifyUser": {
+    "message": "उपयोगकर्ता",
+    "description": "Notify recipient user shorthand"
+  },
+  "wizardActionRun": {
+    "message": "कार्रवाई चलाएँ",
+    "description": "Review generic action"
+  },
+  "wizardFieldRuleMandatory": {
+    "message": "अनिवार्य",
+    "description": "Field rule description mandatory"
+  },
+  "wizardFieldRuleDefault": {
+    "message": "डिफ़ॉल्ट \"{value}\"",
+    "description": "Field rule description default"
+  },
+  "wizardFieldRuleVisible": {
+    "message": "दृश्यमान",
+    "description": "Field rule description visible"
+  },
+  "wizardFieldRuleHidden": {
+    "message": "छिपा हुआ",
+    "description": "Field rule description hidden"
+  },
+  "fieldApp": {
+    "message": "अनुप्रयोग",
+    "description": "App field label"
+  },
+  "fieldModule": {
+    "message": "मॉड्यूल",
+    "description": "Module field label"
+  },
+  "fieldStartsWhen": {
+    "message": "कब शुरू होता है",
+    "description": "Process trigger field label"
+  },
+  "fieldWatchChanges": {
+    "message": "में परिवर्तन देखें",
+    "description": "Record updated watch field label"
+  },
+  "fieldFrequency": {
+    "message": "आवृत्ति",
+    "description": "Schedule frequency label"
+  },
+  "fieldField": {
+    "message": "मैदान",
+    "description": "Generic field label"
+  },
+  "fieldOperator": {
+    "message": "संचालिका",
+    "description": "Condition operator label"
+  },
+  "fieldValue": {
+    "message": "कीमत",
+    "description": "Value field label"
+  },
+  "fieldRuleType": {
+    "message": "नियम प्रकार",
+    "description": "Field rule type label"
+  },
+  "fieldDefaultValue": {
+    "message": "डिफ़ॉल्ट मान",
+    "description": "Default value label"
+  },
+  "fieldShowField": {
+    "message": "फ़ील्ड दिखाएँ",
+    "description": "Visibility checkbox label"
+  },
+  "fieldAssignmentType": {
+    "message": "असाइनमेंट प्रकार",
+    "description": "Ownership assignment type"
+  },
+  "fieldTarget": {
+    "message": "लक्ष्य",
+    "description": "Ownership target label"
+  },
+  "fieldFrom": {
+    "message": "से",
+    "description": "Status transition from"
+  },
+  "fieldTo": {
+    "message": "को",
+    "description": "Status transition to"
+  },
+  "fieldBlockReason": {
+    "message": "ब्लॉक कारण (उपयोगकर्ताओं को दिखाया गया)",
+    "description": "Status guard block reason"
+  },
+  "fieldActionType": {
+    "message": "क्रिया प्रकार",
+    "description": "Action type label"
+  },
+  "fieldTaskTitle": {
+    "message": "कार्य शीर्षक",
+    "description": "Task title label"
+  },
+  "fieldDescription": {
+    "message": "विवरण",
+    "description": "Description label"
+  },
+  "fieldAssignTo": {
+    "message": "के लिए आवंटित",
+    "description": "Task assignee label"
+  },
+  "fieldMessage": {
+    "message": "संदेश",
+    "description": "Notification message label"
+  },
+  "fieldRecipient": {
+    "message": "प्राप्तकर्ता",
+    "description": "Notification recipient label"
+  },
+  "fieldProcessName": {
+    "message": "प्रक्रिया नाम",
+    "description": "Process name label"
+  },
+  "fieldDescriptionOptional": {
+    "message": "विवरण (वैकल्पिक)",
+    "description": "Optional description label"
+  },
+  "fieldEntityType": {
+    "message": "इकाई प्रकार",
+    "description": "Entity type label"
+  },
+  "fieldRecord": {
+    "message": "अभिलेख",
+    "description": "Test record label"
+  },
+  "fieldEventType": {
+    "message": "इवेंट प्रकार",
+    "description": "Automation event type label"
+  },
+  "fieldName": {
+    "message": "नाम",
+    "description": "Rule name label"
+  },
+  "fieldDueInDays": {
+    "message": "देय (दिनों में)",
+    "description": "Task due days label"
+  },
+  "fieldRelatedEntity": {
+    "message": "संबंधित इकाई",
+    "description": "Related entity label"
+  },
+  "fieldConditionOptional": {
+    "message": "शर्त (वैकल्पिक)",
+    "description": "Optional trigger condition"
+  },
+  "phSelectApp": {
+    "message": "एक ऐप चुनें...",
+    "description": "App select placeholder"
+  },
+  "phSelectModule": {
+    "message": "एक मॉड्यूल चुनें...",
+    "description": "Module select placeholder"
+  },
+  "phSelectAction": {
+    "message": "कार्रवाई चुनें…",
+    "description": "Action select placeholder"
+  },
+  "phSelectEntityType": {
+    "message": "इकाई प्रकार चुनें...",
+    "description": "Entity type placeholder"
+  },
+  "phSelectEvent": {
+    "message": "ईवेंट चुनें...",
+    "description": "Event type placeholder"
+  },
+  "phSelectField": {
+    "message": "फ़ील्ड चुनें...",
+    "description": "Condition field placeholder"
+  },
+  "phAmount": {
+    "message": "जैसे मात्रा",
+    "description": "Condition field example"
+  },
+  "phAmountValue": {
+    "message": "जैसे 100000",
+    "description": "Condition value example"
+  },
+  "phApproval": {
+    "message": "जैसे अनुमोदन",
+    "description": "Field key example"
+  },
+  "phDefaultValue": {
+    "message": "डिफ़ॉल्ट मान दर्ज करें",
+    "description": "Default value placeholder"
+  },
+  "phOwnershipTarget": {
+    "message": "उपयोगकर्ता आईडी, भूमिका का नाम, या नियम संदर्भ",
+    "description": "Ownership target placeholder"
+  },
+  "phStatusFrom": {
+    "message": "जैसे खुला",
+    "description": "Status from placeholder"
+  },
+  "phStatusTo": {
+    "message": "जैसे बंद जीत गया",
+    "description": "Status to placeholder"
+  },
+  "phBlockReason": {
+    "message": "जैसे अनुमोदन की आवश्यकता",
+    "description": "Block reason placeholder"
+  },
+  "phTaskTitle": {
+    "message": "जैसे सौदे का पालन करें",
+    "description": "Task title placeholder"
+  },
+  "phTaskDescription": {
+    "message": "कार्य विवरण...",
+    "description": "Task description placeholder"
+  },
+  "phNotifyMessage": {
+    "message": "अधिसूचना संदेश...",
+    "description": "Notification placeholder"
+  },
+  "phProcessName": {
+    "message": "जैसे डील अनुमोदन प्रक्रिया",
+    "description": "Process name placeholder"
+  },
+  "phProcessDescription": {
+    "message": "बताएं कि यह प्रक्रिया क्या करती है...",
+    "description": "Process description placeholder"
+  },
+  "phRuleName": {
+    "message": "उदाहरण के लिए, डील जीतने पर कार्य बनाएं",
+    "description": "Automation rule name placeholder"
+  },
+  "phRuleDescription": {
+    "message": "वैकल्पिक विवरण",
+    "description": "Automation rule description placeholder"
+  },
+  "phConditionValue": {
+    "message": "कीमत",
+    "description": "Condition value placeholder"
+  },
+  "phRecordId": {
+    "message": "रिकॉर्ड आईडी दर्ज करें या खोजें...",
+    "description": "Test record id placeholder"
+  },
+  "phRelatedEntityId": {
+    "message": "आईडी या '__ट्रिगर__'",
+    "description": "Related entity id placeholder"
+  },
+  "phNotifyMessageShort": {
+    "message": "अधिसूचना संदेश",
+    "description": "Notify message placeholder short"
+  },
+  "opEquals": {
+    "message": "बराबर (=)",
+    "description": "Condition operator equals"
+  },
+  "opNotEquals": {
+    "message": "बराबर नहीं (≠)",
+    "description": "Condition operator not equals"
+  },
+  "opGreaterThan": {
+    "message": "(>) से बड़ा",
+    "description": "Condition operator greater"
+  },
+  "opLessThan": {
+    "message": "(<) से कम",
+    "description": "Condition operator less"
+  },
+  "opContains": {
+    "message": "रोकना",
+    "description": "Condition operator contains"
+  },
+  "opSymbolContains": {
+    "message": "रोकना",
+    "description": "Condition operator symbol in summary"
+  },
+  "fieldRuleMandatory": {
+    "message": "अनिवार्य करें",
+    "description": "Field rule option mandatory"
+  },
+  "fieldRuleDefault": {
+    "message": "डिफ़ॉल्ट मान सेट करें",
+    "description": "Field rule option default"
+  },
+  "fieldRuleVisibility": {
+    "message": "फ़ील्ड दिखाएँ/छिपाएँ",
+    "description": "Field rule option visibility"
+  },
+  "ownershipSpecificUser": {
+    "message": "विशिष्ट उपयोगकर्ता",
+    "description": "Ownership assignment user"
+  },
+  "ownershipRole": {
+    "message": "भूमिका",
+    "description": "Ownership assignment role"
+  },
+  "ownershipRuleBased": {
+    "message": "नियम-आधारित",
+    "description": "Ownership assignment rule"
+  },
+  "statusFieldStatus": {
+    "message": "स्थिति",
+    "description": "Status guard field status"
+  },
+  "statusFieldLifecycle": {
+    "message": "जीवन चक्र",
+    "description": "Status guard field lifecycle"
+  },
+  "statusFieldStage": {
+    "message": "अवस्था",
+    "description": "Status guard field stage"
+  },
+  "actionCreateTask": {
+    "message": "कार्य बनाएँ",
+    "description": "Action type create task"
+  },
+  "actionCreateTaskLower": {
+    "message": "कार्य बनाएँ",
+    "description": "Action type create task lowercase"
+  },
+  "actionNotifyUser": {
+    "message": "अधिसूचना भेजें",
+    "description": "Action type notify"
+  },
+  "actionNotifyUserLower": {
+    "message": "अधिसूचना भेजें",
+    "description": "Action type notify lowercase"
+  },
+  "actionStartProcess": {
+    "message": "प्रक्रिया प्रारंभ करें",
+    "description": "Action type start process"
+  },
+  "actionStartProcessLower": {
+    "message": "प्रक्रिया प्रारंभ करें",
+    "description": "Action type start process lowercase"
+  },
+  "actionGeneric": {
+    "message": "कार्रवाई",
+    "description": "Generic action label"
+  },
+  "assigneeTriggeredBy": {
+    "message": "उपयोगकर्ता जिसने ट्रिगर किया",
+    "description": "Assignee triggered by user"
+  },
+  "assigneeOwner": {
+    "message": "रिकार्ड स्वामी",
+    "description": "Assignee record owner"
+  },
+  "assigneeOwnerTitle": {
+    "message": "रिकॉर्ड स्वामी",
+    "description": "Assignee record owner title case"
+  },
+  "assigneeTriggeredByTitle": {
+    "message": "उपयोगकर्ता जिसने ट्रिगर किया",
+    "description": "Assignee triggered title case"
+  },
+  "entityAny": {
+    "message": "कोई",
+    "description": "Entity type any"
+  },
+  "entityPeople": {
+    "message": "लोग",
+    "description": "Entity type people"
+  },
+  "entityOrganization": {
+    "message": "संगठन",
+    "description": "Entity type organization"
+  },
+  "entityDeal": {
+    "message": "सौदा",
+    "description": "Entity type deal"
+  },
+  "entityEvents": {
+    "message": "घटनाएँ/नियुक्तियाँ",
+    "description": "Entity type events"
+  },
+  "entityEventAppointment": {
+    "message": "घटना/नियुक्ति",
+    "description": "Entity type event single"
+  },
+  "entityNone": {
+    "message": "कोई नहीं",
+    "description": "Related entity none"
+  },
+  "ruleFormEditHeading": {
+    "message": "स्वचालन नियम संपादित करें",
+    "description": "Automation rule form edit title"
+  },
+  "ruleFormNewHeading": {
+    "message": "नया स्वचालन नियम",
+    "description": "Automation rule form new title"
+  },
+  "ruleFormBasicInfo": {
+    "message": "मूल जानकारी",
+    "description": "Automation rule basic section"
+  },
+  "ruleFormEnabled": {
+    "message": "सक्रिय",
+    "description": "Rule enabled checkbox"
+  },
+  "ruleFormRespectHours": {
+    "message": "व्यावसायिक घंटों का सम्मान करें",
+    "description": "Business hours checkbox"
+  },
+  "ruleFormRespectHoursHint": {
+    "message": "कार्य घंटों के बाहर ट्रिगर होने पर इस क्रिया को अगली खुली विंडो पर चलाएँ।",
+    "description": "Business hours hint"
+  },
+  "ruleFormApptQuickStart": {
+    "message": "नियुक्ति शीघ्र प्रारंभ",
+    "description": "Appointment templates section"
+  },
+  "ruleFormApptQuickStartHint": {
+    "message": "सामान्य बुकिंग वर्कफ़्लो के लिए एक नियम पहले से भरें।",
+    "description": "Appointment templates hint"
+  },
+  "ruleFormTrigger": {
+    "message": "चालू कर देना",
+    "description": "Trigger section heading"
+  },
+  "ruleFormApptEntityHint": {
+    "message": "इकाई प्रकार {entityType} का उपयोग करें ताकि बुक की गई बैठकों के लिए नियम लागू हो जाएं।",
+    "description": "Appointment entity hint"
+  },
+  "ruleFormConditionHint": {
+    "message": "विशिष्ट राज्य मानों से मेल खाने के लिए शर्तें जोड़ें (उदाहरण के लिए, चरण = \"बंद जीत\")",
+    "description": "Condition help text"
+  },
+  "ruleFormAddCondition": {
+    "message": "+ शर्त जोड़ें",
+    "description": "Add condition button"
+  },
+  "ruleFormActionSection": {
+    "message": "कार्रवाई",
+    "description": "Action section heading"
+  },
+  "ruleFormRelatedTriggerHint": {
+    "message": "ईवेंट इकाई से लिंक करने के लिए \"__trigger__\" का उपयोग करें",
+    "description": "Related entity trigger hint"
+  },
+  "ruleFormPreview": {
+    "message": "पूर्व दर्शन",
+    "description": "Preview rule button"
+  },
+  "ruleFormPreviewAlert": {
+    "message": "पूर्वावलोकन: {count} कार्रवाई की योजना बनाई जाएगी",
+    "description": "Preview alert message"
+  },
+  "ruleFormPreviewFailed": {
+    "message": "पूर्वावलोकन विफल रहा",
+    "description": "Preview error"
+  },
+  "ruleFormSaveFailed": {
+    "message": "नियम सहेजने में विफल",
+    "description": "Save rule error"
+  },
+  "tplNotifyBooked": {
+    "message": "बुक होने पर मेज़बान को सूचित करें",
+    "description": "Appointment template label"
+  },
+  "tplTaskNoShow": {
+    "message": "नो-शो पर कार्य",
+    "description": "Appointment template label"
+  },
+  "tplNotifyCancelled": {
+    "message": "रद्द होने पर होस्ट को सूचित करें",
+    "description": "Appointment template label"
+  },
+  "rulePreviewHeading": {
+    "message": "नियम पूर्वावलोकन",
+    "description": "Rule preview modal title"
+  },
+  "rulePreviewTestEvent": {
+    "message": "परीक्षण घटना",
+    "description": "Preview test event heading"
+  },
+  "rulePreviewPlannedActions": {
+    "message": "नियोजित कार्यवाहियाँ",
+    "description": "Preview planned actions heading"
+  },
+  "rulePreviewNoActions": {
+    "message": "इस आयोजन के लिए किसी भी कार्य की योजना नहीं बनाई जाएगी.",
+    "description": "Preview empty plan"
+  },
+  "rulePreviewRuleLabel": {
+    "message": "नियम: {name}",
+    "description": "Preview rule name label"
+  },
+  "rulePreviewExecuted": {
+    "message": "निष्पादित: {count}",
+    "description": "Preview executed count"
+  },
+  "rulePreviewSkipped": {
+    "message": "छोड़ा गया: {count}",
+    "description": "Preview skipped count"
+  },
+  "rulePreviewFailed": {
+    "message": "विफल: {count}",
+    "description": "Preview failed count"
+  },
+  "rulePreviewLoadFailed": {
+    "message": "नियम का पूर्वावलोकन करने में विफल",
+    "description": "Preview load error"
+  },
+  "execLogsHeading": {
+    "message": "निष्पादन लॉग",
+    "description": "Execution logs modal title"
+  },
+  "execLogsEmptyHeading": {
+    "message": "अभी तक कोई निष्पादन नहीं",
+    "description": "Empty executions heading"
+  },
+  "execLogsEmptyBody": {
+    "message": "यह प्रक्रिया अभी तक नहीं चली है.",
+    "description": "Empty executions body"
+  },
+  "execLogsViewDetails": {
+    "message": "विवरण देखें",
+    "description": "View execution details button"
+  },
+  "execLogsBackToList": {
+    "message": "सूची पर वापस जाएं",
+    "description": "Back to execution list"
+  },
+  "execLogsStatusCompleted": {
+    "message": "पुरा होना।",
+    "description": "Execution status completed"
+  },
+  "execLogsStatusFailed": {
+    "message": "असफल",
+    "description": "Execution status failed"
+  },
+  "execLogsStatusRunning": {
+    "message": "दौड़ना",
+    "description": "Execution status running"
+  },
+  "execLogsTrigger": {
+    "message": "चालू कर देना:",
+    "description": "Execution trigger label"
+  },
+  "execLogsEntity": {
+    "message": "इकाई:",
+    "description": "Execution entity label"
+  },
+  "execLogsDuration": {
+    "message": "अवधि:",
+    "description": "Execution duration label"
+  },
+  "execLogsTriggeredBy": {
+    "message": "द्वारा सक्रिय करना:",
+    "description": "Triggered by label"
+  },
+  "execLogsTriggeredByUser": {
+    "message": "उपयोगकर्ता ({id})",
+    "description": "Triggered by user with id"
+  },
+  "execLogsProcessStarted": {
+    "message": "प्रक्रिया प्रारंभ",
+    "description": "Timeline process started"
+  },
+  "execLogsRuleEvaluated": {
+    "message": "नियम का मूल्यांकन किया गया",
+    "description": "Timeline rule evaluated"
+  },
+  "execLogsCondition": {
+    "message": "स्थिति:",
+    "description": "Timeline condition label"
+  },
+  "execLogsResult": {
+    "message": "परिणाम:",
+    "description": "Timeline result label"
+  },
+  "execLogsPassed": {
+    "message": "उत्तीर्ण",
+    "description": "Condition passed"
+  },
+  "execLogsSkipped": {
+    "message": "छोड़ा गया",
+    "description": "Condition skipped"
+  },
+  "execLogsBehaviorProposed": {
+    "message": "व्यवहार प्रस्तावित",
+    "description": "Timeline behavior proposed"
+  },
+  "execLogsFieldRule": {
+    "message": "फ़ील्ड नियम:",
+    "description": "Timeline field rule label"
+  },
+  "execLogsOwnershipRule": {
+    "message": "स्वामित्व नियम:",
+    "description": "Timeline ownership rule label"
+  },
+  "execLogsStatusGuard": {
+    "message": "स्थिति रक्षक:",
+    "description": "Timeline status guard label"
+  },
+  "execLogsActionExecuted": {
+    "message": "कार्यवाही निष्पादित",
+    "description": "Timeline action executed"
+  },
+  "execLogsSuccess": {
+    "message": "सफलता",
+    "description": "Action success result"
+  },
+  "execLogsProcessCompleted": {
+    "message": "प्रक्रिया पूरी हो गई",
+    "description": "Timeline process completed"
+  },
+  "execLogsProcessFailed": {
+    "message": "प्रक्रिया विफल",
+    "description": "Timeline process failed"
+  },
+  "execLogsError": {
+    "message": "गलती:",
+    "description": "Timeline error label"
+  },
+  "execLogsUnknownError": {
+    "message": "अज्ञात त्रुटि",
+    "description": "Unknown error fallback"
+  },
+  "execLogsCompletedSuccess": {
+    "message": "प्रक्रिया सफलतापूर्वक पूर्ण हुई",
+    "description": "Process completed message"
+  },
+  "testModalHeading": {
+    "message": "परीक्षण प्रक्रिया",
+    "description": "Test process modal title"
+  },
+  "testModalBanner": {
+    "message": "यह टेस्ट है। कोई डेटा नहीं बदला जाएगा.",
+    "description": "Test mode banner"
+  },
+  "testModalSelectRecordHeading": {
+    "message": "टेस्ट रिकॉर्ड चुनें",
+    "description": "Test step 1 heading"
+  },
+  "testModalSelectRecordIntro": {
+    "message": "इस प्रक्रिया का परीक्षण करने के लिए एक रिकॉर्ड चुनें",
+    "description": "Test step 1 intro"
+  },
+  "testModalRecordIdHint": {
+    "message": "मौजूदा {entityType} रिकॉर्ड की आईडी दर्ज करें",
+    "description": "Test record id hint"
+  },
+  "testModalSimulateTrigger": {
+    "message": "ट्रिगर का अनुकरण करें",
+    "description": "Simulate trigger label"
+  },
+  "testModalSimulateHint": {
+    "message": "जब आप परीक्षण चलाएंगे तो यह ट्रिगर सिम्युलेटेड हो जाएगा",
+    "description": "Simulate trigger hint"
+  },
+  "testModalResultsHeading": {
+    "message": "परीक्षा के परिणाम",
+    "description": "Test results heading"
+  },
+  "testModalResultsIntro": {
+    "message": "इस प्रक्रिया के चलने पर क्या होगा इसका पूर्वावलोकन",
+    "description": "Test results intro"
+  },
+  "testModalRunning": {
+    "message": "परीक्षण चल रहा है...",
+    "description": "Test running message"
+  },
+  "testModalRunTest": {
+    "message": "चालू परीक्षण",
+    "description": "Run test button"
+  },
+  "testModalProcessStartedTest": {
+    "message": "प्रक्रिया प्रारंभ (परीक्षण)",
+    "description": "Test timeline started"
+  },
+  "testModalTestRecord": {
+    "message": "टेस्ट रिकॉर्ड:",
+    "description": "Test record label"
+  },
+  "testModalTriggerManual": {
+    "message": "नियमावली",
+    "description": "Manual trigger label"
+  },
+  "testModalWouldPass": {
+    "message": "परिणाम: उत्तीर्ण होगा",
+    "description": "Test condition would pass"
+  },
+  "testModalActionWouldExecute": {
+    "message": "कार्रवाई अमल में लाई जाएगी",
+    "description": "Test action would execute"
+  },
+  "testModalWouldSucceed": {
+    "message": "परिणाम: सफल होंगे",
+    "description": "Test action would succeed"
+  },
+  "testModalWouldComplete": {
+    "message": "प्रक्रिया पूरी होगी",
+    "description": "Test would complete title"
+  },
+  "testModalWouldCompleteBody": {
+    "message": "प्रक्रिया सफलतापूर्वक पूरी होगी (कोई डेटा नहीं बदला गया)",
+    "description": "Test would complete body"
+  },
+  "rulePanelEditHeading": {
+    "message": "नियम संपादित करें",
+    "description": "Rule edit panel title"
+  },
+  "summaryConditionCheck": {
+    "message": "हालत की जांच",
+    "description": "Fallback condition summary"
+  },
+  "summaryFieldMandatory": {
+    "message": "\"{field}\" को अनिवार्य बनाएं",
+    "description": "Field rule mandatory summary"
+  },
+  "summaryFieldDefault": {
+    "message": "\"{field}\" को डिफ़ॉल्ट रूप से \"{value}\" पर सेट करें",
+    "description": "Field rule default summary"
+  },
+  "summaryFieldShow": {
+    "message": "फ़ील्ड दिखाएं \"{field}\"",
+    "description": "Field rule show summary"
+  },
+  "summaryFieldHide": {
+    "message": "फ़ील्ड छिपाएँ \"{field}\"",
+    "description": "Field rule hide summary"
+  },
+  "summaryFieldRuleApplied": {
+    "message": "फ़ील्ड नियम लागू किया गया",
+    "description": "Field rule fallback summary"
+  },
+  "summaryOwnership": {
+    "message": "{target} ({assignment}) को स्वामित्व सौंपें",
+    "description": "Ownership rule summary"
+  },
+  "summaryStatusGuard": {
+    "message": "नियंत्रण {field} संक्रमण: {transition}",
+    "description": "Status guard summary"
+  },
+  "summaryActionUntitled": {
+    "message": "शीर्षकहीन",
+    "description": "Untitled task in summary"
+  },
+  "summaryNotifyTo": {
+    "message": "प्रति: {recipient}",
+    "description": "Notify action summary"
+  },
+  "summaryNotifyUserFallback": {
+    "message": "उपयोगकर्ता",
+    "description": "Notify recipient fallback"
+  },
+  "summaryStartProcess": {
+    "message": "प्रक्रिया: {processId}",
+    "description": "Start process summary"
+  },
+  "summaryProcessUnknown": {
+    "message": "अज्ञात",
+    "description": "Unknown process id"
+  },
+  "summaryActionExecuted": {
+    "message": "कार्रवाई अमल में लाई गई",
+    "description": "Action executed fallback"
+  },
+  "appFlowsHeading": {
+    "message": "यह ऐप कैसे काम करता है",
+    "description": "App flows section heading"
+  },
+  "appFlowsEmpty": {
+    "message": "अभी तक कोई व्यवसाय प्रवाह नहीं है.",
+    "description": "App flows empty state"
+  },
+  "appFlowsEmptyHint": {
+    "message": "यह ऐप कैसे काम करता है यह देखने के लिए सेटिंग्स → ऑटोमेशन से एक टेम्पलेट आयात करें।",
+    "description": "App flows empty hint"
+  },
+  "appFlowsGoTo": {
+    "message": "बिज़नेस फ़्लो → पर जाएँ",
+    "description": "App flows link"
+  },
+  "appFlowsActive": {
+    "message": "सक्रिय",
+    "description": "Flow active badge"
+  },
+  "appFlowsProcessCount": {
+    "message": "{count, plural, one {# process} other {# processes}}",
+    "description": "Flow process count"
+  },
+  "appFlowsLoadFailed": {
+    "message": "प्रवाह लोड करने में विफल",
+    "description": "App flows load error"
+  },
+  "contextHeading": {
+    "message": "स्वचालन",
+    "description": "Automation context section"
+  },
+  "contextActive": {
+    "message": "सक्रिय",
+    "description": "Automation active badge"
+  },
+  "contextInactive": {
+    "message": "निष्क्रिय",
+    "description": "Automation inactive badge"
+  },
+  "contextEmpty": {
+    "message": "इस रिकॉर्ड पर वर्तमान में कोई स्वचालन लागू नहीं होता है.",
+    "description": "No automation message"
+  },
+  "contextViewProcess": {
+    "message": "प्रक्रिया देखें",
+    "description": "View process link"
+  },
+  "contextLoadFailed": {
+    "message": "स्वचालन संदर्भ लोड करने में विफल",
+    "description": "Context load error"
+  },
+  "badgeTooltip": {
+    "message": "यह रिकॉर्ड स्वचालन (अनुमोदन, अधिसूचना) द्वारा नियंत्रित होता है।",
+    "description": "Automation badge tooltip"
+  },
+  "controlPlaneHeading": {
+    "message": "नियंत्रण विमान",
+    "description": "Control plane page title"
+  },
+  "controlPlaneSubheading": {
+    "message": "अरिवु आंतरिक प्लेटफ़ॉर्म संचालन",
+    "description": "Control plane subtitle"
+  },
+  "controlPlaneDemoRequests": {
+    "message": "डेमो अनुरोध",
+    "description": "Control plane module demo requests"
+  },
+  "controlPlaneDemoRequestsDesc": {
+    "message": "संभावित ग्राहकों से सभी डेमो अनुरोधों को प्रबंधित और ट्रैक करें",
+    "description": "Demo requests description"
+  },
+  "controlPlaneInstances": {
+    "message": "उदाहरण",
+    "description": "Control plane module instances"
+  },
+  "controlPlaneInstancesDesc": {
+    "message": "सभी ग्राहक उदाहरणों और तैनाती की निगरानी और प्रबंधन करें",
+    "description": "Instances description"
+  },
+  "controlPlaneViewModule": {
+    "message": "मॉड्यूल देखें",
+    "description": "View module link"
+  },
+  "controlPlanePlatformOnly": {
+    "message": "प्लेटफ़ॉर्म-केवल पहुंच",
+    "description": "Platform only notice heading"
+  },
+  "controlPlanePlatformOnlyBody": {
+    "message": "नियंत्रण विमान केवल प्लेटफ़ॉर्म प्रशासकों के लिए ही पहुंच योग्य है। ये मॉड्यूल किरायेदार उपयोगकर्ताओं को दिखाई नहीं देते हैं और इन्हें स्वचालित नहीं किया जा सकता है।",
+    "description": "Platform only notice body"
+  },
+  "controlPlaneDocTitle": {
+    "message": "नियंत्रण विमान | अरिवु",
+    "description": "Control plane document title"
+  },
+  "execLogsTriggerDomain": {
+    "message": "डोमेन इवेंट",
+    "description": "Domain event trigger label"
+  },
+  "execLogsTriggerManual": {
+    "message": "मैनुअल ट्रिगर",
+    "description": "Manual trigger label"
+  },
+  "testModalTestFailed": {
+    "message": "परीक्षण विफल रहा",
+    "description": "Test failed error"
+  },
+  "testModalRunFailed": {
+    "message": "परीक्षण चलाने में विफल",
+    "description": "Run test error"
+  },
+  "testModalEventType": {
+    "message": "इवेंट प्रकार:",
+    "description": "Simulated event type label"
+  },
+  "edgeYes": {
+    "message": "हाँ",
+    "description": "Condition branch edge label on flow canvas"
+  },
+  "edgeNo": {
+    "message": "नहीं",
+    "description": "Condition branch edge label on flow canvas"
+  },
+  "execCompleted": {
+    "message": "पुरा होना।",
+    "description": "Process node execution status label"
+  },
+  "execRunning": {
+    "message": "दौड़ना",
+    "description": "Process node execution status label"
+  },
+  "execFailed": {
+    "message": "असफल",
+    "description": "Process node execution status label"
+  },
+  "execSkipped": {
+    "message": "छोड़ा गया",
+    "description": "Process node execution status label"
+  },
+  "execCompletedDuration": {
+    "message": "{status} · {durationMs}ms",
+    "description": "Completed execution status with duration"
+  },
+  "inspectorSelectStep": {
+    "message": "इसे कॉन्फ़िगर करने के लिए कैनवास पर एक चरण का चयन करें।",
+    "description": "Node inspector empty state"
+  },
+  "inspectorProcessSettings": {
+    "message": "प्रक्रिया सेटिंग्स",
+    "description": "Link to process settings panel from inspector"
+  },
+  "inspectorSchemaVersion": {
+    "message": "स्कीमा v{version}",
+    "description": "Node schema version subtitle in inspector"
+  },
+  "inspectorSummaryHeading": {
+    "message": "सारांश",
+    "description": "Inspector summary section heading"
+  },
+  "inspectorTriggerConfigured": {
+    "message": "ट्रिगर के अंतर्गत कॉन्फ़िगर किया गया है",
+    "description": "Trigger node read-only hint prefix in inspector"
+  },
+  "inspectorOpenProcessSettings": {
+    "message": "प्रक्रिया सेटिंग्स",
+    "description": "Inline link to process settings from trigger inspector"
+  },
+  "inspectorAppliesToModule": {
+    "message": "{module} रिकॉर्ड पर लागू होता है",
+    "description": "IF condition module scope hint"
+  },
+  "inspectorFieldHeading": {
+    "message": "मैदान",
+    "description": "Condition field select heading"
+  },
+  "inspectorSelectField": {
+    "message": "फ़ील्ड चुनें…",
+    "description": "Empty option for condition field select"
+  },
+  "inspectorCustomPathPh": {
+    "message": "घटना.वर्तमान स्थिति.राशि",
+    "description": "Placeholder for custom condition field path"
+  },
+  "inspectorOperatorHeading": {
+    "message": "संचालिका",
+    "description": "Condition operator select heading"
+  },
+  "inspectorValueHeading": {
+    "message": "कीमत",
+    "description": "Condition value input heading"
+  },
+  "inspectorSelectValue": {
+    "message": "मान चुनें…",
+    "description": "Empty option for condition value select"
+  },
+  "inspectorSelectGeneric": {
+    "message": "चुनना…",
+    "description": "Generic empty select option in inspector"
+  },
+  "inspectorEnterValuePh": {
+    "message": "मान दर्ज करें",
+    "description": "Condition text value placeholder"
+  },
+  "inspectorLoadingFieldOptions": {
+    "message": "फ़ील्ड विकल्प लोड हो रहे हैं...",
+    "description": "Condition value options loading hint"
+  },
+  "inspectorNoPicklistOptions": {
+    "message": "कोई चयन सूची विकल्प नहीं मिला. सेटिंग्स → डील में चरणों को कॉन्फ़िगर करें, या कस्टम पथ का उपयोग करें।",
+    "description": "Empty picklist for condition value"
+  },
+  "inspectorConnectHandles": {
+    "message": "हां/नहीं हैंडल को अगले चरण से कनेक्ट करें।",
+    "description": "Hint for wiring condition branches"
+  },
+  "inspectorModulePrefix": {
+    "message": "मॉड्यूल: {module}",
+    "description": "Field rule module scope line"
+  },
+  "inspectorDefaultValuePh": {
+    "message": "डिफ़ॉल्ट मान",
+    "description": "Field rule default value placeholder"
+  },
+  "inspectorOwnerTargetPh": {
+    "message": "उपयोगकर्ता आईडी, भूमिका या नियम",
+    "description": "Ownership rule target placeholder"
+  },
+  "inspectorStatusFromPh": {
+    "message": "से",
+    "description": "Status guard transition from placeholder"
+  },
+  "inspectorStatusToPh": {
+    "message": "को",
+    "description": "Status guard transition to placeholder"
+  },
+  "inspectorBlockReasonPh": {
+    "message": "उपयोगकर्ताओं को ब्लॉक करने का कारण दिखाया गया",
+    "description": "Status guard block reason placeholder"
+  },
+  "inspectorActionHeading": {
+    "message": "कार्रवाई",
+    "description": "Action step type select heading"
+  },
+  "inspectorSelectAction": {
+    "message": "कार्रवाई चुनें",
+    "description": "Empty action type select"
+  },
+  "inspectorApproverRolePh": {
+    "message": "अनुमोदनकर्ता की भूमिका (जैसे प्रबंधक)",
+    "description": "Approval gate approver placeholder"
+  },
+  "inspectorTimeoutHoursPh": {
+    "message": "समयबाह्य (घंटे)",
+    "description": "Approval gate timeout placeholder"
+  },
+  "inspectorWaitHint": {
+    "message": "विलंब समाप्त होने तक प्रक्रिया रुक जाती है, फिर स्वचालित रूप से जारी रहती है।",
+    "description": "Wait step configuration hint"
+  },
+  "inspectorDurationPh": {
+    "message": "अवधि",
+    "description": "Wait duration input placeholder"
+  },
+  "inspectorNoConfig": {
+    "message": "इस चरण के लिए कोई अतिरिक्त कॉन्फ़िगरेशन नहीं.",
+    "description": "Inspector fallback when step has no config"
+  },
+  "inspectorRemoveStep": {
+    "message": "चरण हटाएँ",
+    "description": "Delete step button in inspector"
+  },
+  "inspectorDuplicateToEdit": {
+    "message": "चरणों को संपादित करने के लिए इस प्रक्रिया को डुप्लिकेट करें।",
+    "description": "Read-only inspector hint for active processes"
+  },
+  "inspectorStepDefault": {
+    "message": "कदम",
+    "description": "Default node label when none provided"
+  },
+  "inspectorCustomPathOption": {
+    "message": "कस्टम पथ…",
+    "description": "Custom condition field path option"
+  },
+  "inspectorRecordsFallback": {
+    "message": "अभिलेख",
+    "description": "Fallback module label in inspector"
+  },
+  "boolTrue": {
+    "message": "हाँ सत्य",
+    "description": "Boolean condition value option"
+  },
+  "boolFalse": {
+    "message": "नहीं/झूठा",
+    "description": "Boolean condition value option"
+  },
+  "ownershipOwner": {
+    "message": "विशिष्ट उपयोगकर्ता",
+    "description": "Ownership assignment type"
+  },
+  "ownershipRule": {
+    "message": "नियम-आधारित",
+    "description": "Ownership assignment type"
+  },
+  "guardFieldStage": {
+    "message": "अवस्था",
+    "description": "Status guard field option"
+  },
+  "guardFieldStatus": {
+    "message": "स्थिति",
+    "description": "Status guard field option"
+  },
+  "guardFieldLifecycle": {
+    "message": "जीवन चक्र",
+    "description": "Status guard field option"
+  },
+  "waitUnitMinutes": {
+    "message": "मिनट",
+    "description": "Wait duration unit"
+  },
+  "waitUnitHours": {
+    "message": "घंटे",
+    "description": "Wait duration unit"
+  },
+  "waitUnitDays": {
+    "message": "दिन",
+    "description": "Wait duration unit"
+  },
+  "waitPreset15Min": {
+    "message": "15 मि",
+    "description": "Wait step quick preset"
+  },
+  "waitPreset1Hour": {
+    "message": "1 घंटा",
+    "description": "Wait step quick preset"
+  },
+  "waitPreset2Days": {
+    "message": "2 दिन",
+    "description": "Wait step quick preset"
+  },
+  "waitPreset1Week": {
+    "message": "1 सप्ताह",
+    "description": "Wait step quick preset"
+  },
+  "settingsHeading": {
+    "message": "प्रक्रिया सेटिंग्स",
+    "description": "Process settings panel title"
+  },
+  "settingsSubtitle": {
+    "message": "ऐप, मॉड्यूल और यह प्रक्रिया किससे शुरू होती है",
+    "description": "Process settings panel subtitle"
+  },
+  "settingsSummaryHeading": {
+    "message": "सारांश",
+    "description": "Process settings summary section heading"
+  },
+  "settingsActiveDuplicate": {
+    "message": "सक्रिय प्रक्रिया - सेटिंग्स संपादित करने के लिए डुप्लिकेट।",
+    "description": "Read-only warning on active process settings"
+  },
+  "settingsAppHeading": {
+    "message": "अनुप्रयोग",
+    "description": "App select field heading"
+  },
+  "settingsSelectApp": {
+    "message": "ऐप चुनें…",
+    "description": "Empty app select option"
+  },
+  "settingsModuleHeading": {
+    "message": "मॉड्यूल",
+    "description": "Module select field heading"
+  },
+  "settingsSelectModule": {
+    "message": "मॉड्यूल का चयन करें...",
+    "description": "Empty module select option"
+  },
+  "settingsModuleHint": {
+    "message": "यह प्रक्रिया किस रिकॉर्ड पर लागू होती है",
+    "description": "Module field help text"
+  },
+  "settingsStep1Badge": {
+    "message": "स्टेप 1",
+    "description": "Starts-when setup step badge"
+  },
+  "settingsStep1Hint": {
+    "message": "फिर कैनवास पर चरण जोड़ें",
+    "description": "Hint after choosing starts-when"
+  },
+  "settingsStartsWhenHeading": {
+    "message": "कब शुरू होता है",
+    "description": "Core trigger select heading"
+  },
+  "settingsSelectModuleFirst": {
+    "message": "पहले मॉड्यूल चुनें...",
+    "description": "Starts-when placeholder before module chosen"
+  },
+  "settingsChooseStart": {
+    "message": "चुनें कि यह प्रक्रिया किससे प्रारंभ होती है...",
+    "description": "Starts-when empty placeholder"
+  },
+  "settingsPickModuleFirst": {
+    "message": "पहले एक मॉड्यूल चुनें.",
+    "description": "Starts-when hint before module chosen"
+  },
+  "settingsWatchChangesHeading": {
+    "message": "में परिवर्तन देखें",
+    "description": "Record updated watch field heading"
+  },
+  "settingsWatchIfHint": {
+    "message": "व्यावसायिक नियमों के लिए IF चरणों का उपयोग करें (उदाहरण के लिए चरण = समापन जीत गया, सौदा जीत गया)।",
+    "description": "Hint for record-updated watch configuration"
+  },
+  "settingsFrequencyHeading": {
+    "message": "आवृत्ति",
+    "description": "Schedule frequency select heading"
+  },
+  "settingsHourHeading": {
+    "message": "घंटा (0–23)",
+    "description": "Schedule hour input label"
+  },
+  "settingsMinuteHeading": {
+    "message": "मिनट",
+    "description": "Schedule minute input label"
+  },
+  "settingsScheduleRunnerHint": {
+    "message": "शेड्यूल किए गए रन के लिए सर्वर पर प्रोसेस शेड्यूल रनर को सक्षम करना आवश्यक है।",
+    "description": "Schedule trigger server requirement warning"
+  },
+  "settingsWebhookUrlHeading": {
+    "message": "वेबहुक यूआरएल",
+    "description": "Webhook URL field heading"
+  },
+  "settingsWebhookSaveHint": {
+    "message": "वेबहुक यूआरएल जनरेट करने की प्रक्रिया सहेजें।",
+    "description": "Webhook URL empty state"
+  },
+  "settingsSecretConfigured": {
+    "message": "गुप्त कॉन्फ़िगर किया गया",
+    "description": "Webhook secret status when set"
+  },
+  "settingsSecretNotSet": {
+    "message": "रहस्य सेट नहीं है",
+    "description": "Webhook secret status when missing"
+  },
+  "settingsRotatingSecret": {
+    "message": "घूम रहा है...",
+    "description": "Webhook secret rotate in progress"
+  },
+  "settingsRotateSecret": {
+    "message": "गुप्त घुमाएँ",
+    "description": "Webhook secret rotate action"
+  },
+  "settingsWebhookAuthHint": {
+    "message": "प्राधिकरण भेजें: प्रत्येक पोस्ट पर वाहक [गुप्त]।",
+    "description": "Webhook authentication hint"
+  },
+  "settingsPayloadMappingHeading": {
+    "message": "पेलोड → डेटा मैपिंग",
+    "description": "Webhook payload mapping section heading"
+  },
+  "settingsDataBagKeyPh": {
+    "message": "डेटाबैग कुंजी",
+    "description": "Webhook mapping dataBag key placeholder"
+  },
+  "settingsBodyFieldPh": {
+    "message": "शरीर.क्षेत्र",
+    "description": "Webhook mapping source path placeholder"
+  },
+  "settingsAddMapping": {
+    "message": "+ मैपिंग जोड़ें",
+    "description": "Add webhook payload mapping row"
+  },
+  "settingsDescriptionHeading": {
+    "message": "विवरण",
+    "description": "Process description field heading"
+  },
+  "settingsDescriptionPh": {
+    "message": "आपकी टीम के लिए वैकल्पिक नोट्स",
+    "description": "Process description textarea placeholder"
+  },
+  "settingsRotateSecretFailed": {
+    "message": "गुप्त घुमाने में विफल",
+    "description": "Webhook secret rotation error alert"
+  },
+  "recordPickerSearching": {
+    "message": "खोज रहे हैं...",
+    "description": "Record picker search loading state"
+  },
+  "recordPickerSelected": {
+    "message": "चयनित: {name}",
+    "description": "Record picker selected record line"
+  },
+  "recordPickerSearchPh": {
+    "message": "नाम से खोजें...",
+    "description": "Record picker search input placeholder"
+  },
+  "testModalBody": {
+    "message": "पूर्वावलोकन करें कि क्या होगा. कोई डेटा नहीं बदला जाएगा.",
+    "description": "Process test simulation modal intro"
+  },
+  "testModalModuleHeading": {
+    "message": "मॉड्यूल",
+    "description": "Test modal module select heading"
+  },
+  "testModalSampleRecordHeading": {
+    "message": "नमूना रिकॉर्ड (वैकल्पिक)",
+    "description": "Test modal record picker heading"
+  },
+  "testModalSyntheticHint": {
+    "message": "सिंथेटिक परीक्षण रिकॉर्ड का उपयोग करने के लिए इसे खाली छोड़ दें।",
+    "description": "Test modal empty record hint"
+  },
+  "testModalSampleJsonHeading": {
+    "message": "नमूना फ़ील्ड मान (JSON, वैकल्पिक)",
+    "description": "Test modal JSON state heading"
+  },
+  "testModalSampleJsonPh": {
+    "message": "'{ \"stage\": \"Negotiation\", \"amount\": 500000 }'",
+    "description": "Test modal JSON textarea placeholder"
+  },
+  "testModalRunSimulation": {
+    "message": "सिमुलेशन चलाएँ",
+    "description": "Test modal primary action"
+  },
+  "testModalInvalidJson": {
+    "message": "नमूना फ़ील्ड मानों के लिए अमान्य JSON",
+    "description": "Test modal JSON parse error alert"
+  },
+  "insightTabDesign": {
+    "message": "डिज़ाइन",
+    "description": "Process designer mode tab"
+  },
+  "insightTabRun": {
+    "message": "अंतर्दृष्टि चलाएँ",
+    "description": "Process execution insight mode tab"
+  },
+  "insightSelectRun": {
+    "message": "एक रन चुनें...",
+    "description": "Execution history empty select"
+  },
+  "insightSimulating": {
+    "message": "अनुकरण...",
+    "description": "Test simulation in progress button"
+  },
+  "insightSimulateTest": {
+    "message": "अनुकरण परीक्षण",
+    "description": "Open test simulation button"
+  },
+  "insightDryRunBadge": {
+    "message": "परीक्षण चलाएँ - कोई डेटा नहीं बदला गया",
+    "description": "Dry-run execution badge"
+  },
+  "insightRunVersion": {
+    "message": "v{version} · {status} चलाएँ",
+    "description": "Execution version and status line"
+  },
+  "insightRunStatus": {
+    "message": "स्थिति: {status}",
+    "description": "Execution status without version"
+  },
+  "insightRunUnknownTime": {
+    "message": "अज्ञात",
+    "description": "Fallback when execution start time missing"
+  },
+  "insightRunOption": {
+    "message": "{status} · {startedAt}",
+    "description": "Execution select option label"
+  },
+  "designerAppSales": {
+    "message": "बिक्री",
+    "description": "Process designer app option"
+  },
+  "designerAppAudit": {
+    "message": "अंकेक्षण",
+    "description": "Process designer app option"
+  },
+  "designerAppPortal": {
+    "message": "पोर्टल",
+    "description": "Process designer app option"
+  },
+  "designerModulePerson": {
+    "message": "व्यक्ति",
+    "description": "Singular module name in scope sentences"
+  },
+  "designerTriggerRecordCreated": {
+    "message": "रिकॉर्ड बनाया गया",
+    "description": "Core trigger option"
+  },
+  "designerTriggerRecordUpdated": {
+    "message": "रिकॉर्ड अपडेट किया गया",
+    "description": "Core trigger option"
+  },
+  "designerTriggerSchedule": {
+    "message": "अनुसूची",
+    "description": "Core trigger option"
+  },
+  "designerTriggerWebhook": {
+    "message": "WEbhook",
+    "description": "Core trigger option"
+  },
+  "designerTriggerManual": {
+    "message": "नियमावली",
+    "description": "Core trigger option"
+  },
+  "designerTriggerDescRecordCreated": {
+    "message": "चयनित मॉड्यूल में नया रिकॉर्ड बनने पर चलता है।",
+    "description": "Core trigger description"
+  },
+  "designerTriggerDescRecordUpdated": {
+    "message": "मौजूदा रिकॉर्ड अद्यतन होने पर चलता है। किस फ़ील्ड को सीमित करने के लिए \"परिवर्तन देखें\" का उपयोग करें, या व्यावसायिक नियमों के लिए IF चरण जोड़ें (उदाहरण के लिए चरण या सौदा जीता)।",
+    "description": "Core trigger description"
+  },
+  "designerTriggerDescSchedule": {
+    "message": "दोहराए जाने वाले शेड्यूल (प्रति घंटा, दैनिक या साप्ताहिक) पर चलता है। सक्षम होने पर शेड्यूल्ड निष्पादन प्रक्रिया शेड्यूल रनर का उपयोग करता है।",
+    "description": "Core trigger description"
+  },
+  "designerTriggerDescWebhook": {
+    "message": "तब चलता है जब कोई बाहरी सिस्टम आपके वेबहुक URL पर एक प्रमाणित HTTP POST भेजता है।",
+    "description": "Core trigger description"
+  },
+  "designerTriggerDescManual": {
+    "message": "केवल तभी चलता है जब मैन्युअल रूप से प्रारंभ किया जाता है (परीक्षण रन, एपीआई, या परिचालन क्रिया)।",
+    "description": "Core trigger description"
+  },
+  "designerScheduleHourly": {
+    "message": "हर घंटे",
+    "description": "Schedule preset option"
+  },
+  "designerScheduleDaily": {
+    "message": "दैनिक",
+    "description": "Schedule preset option"
+  },
+  "designerScheduleWeekly": {
+    "message": "साप्ताहिक",
+    "description": "Schedule preset option"
+  },
+  "designerWatchAnyField": {
+    "message": "किसी भी क्षेत्र",
+    "description": "Record-updated watch any field option"
+  },
+  "designerWatchLifecycle": {
+    "message": "जीवन चक्र",
+    "description": "Watch field option"
+  },
+  "designerWatchSalesRole": {
+    "message": "बिक्री भूमिका",
+    "description": "People watch field option"
+  },
+  "designerWatchLeadStatus": {
+    "message": "लीड स्थिति",
+    "description": "People watch field option"
+  },
+  "designerWatchContactStatus": {
+    "message": "संपर्क स्थिति",
+    "description": "People watch field option"
+  },
+  "designerWatchType": {
+    "message": "प्रकार",
+    "description": "Organization watch field option"
+  },
+  "designerWatchCustomerStatus": {
+    "message": "ग्राहक की स्थिति",
+    "description": "Organization watch field option"
+  },
+  "designerWatchPartnerStatus": {
+    "message": "साथी का दर्जा",
+    "description": "Organization watch field option"
+  },
+  "designerWatchVendorStatus": {
+    "message": "विक्रेता की स्थिति",
+    "description": "Organization watch field option"
+  },
+  "designerWatchStage": {
+    "message": "अवस्था",
+    "description": "Deal watch field option"
+  },
+  "designerWatchPipeline": {
+    "message": "पाइपलाइन",
+    "description": "Deal watch field option"
+  },
+  "designerWatchAmount": {
+    "message": "मात्रा",
+    "description": "Deal watch field option"
+  },
+  "designerWatchOwner": {
+    "message": "मालिक",
+    "description": "Deal watch field option"
+  },
+  "designerCondSalesType": {
+    "message": "बिक्री का प्रकार",
+    "description": "IF condition field option"
+  },
+  "designerCondStatus": {
+    "message": "स्थिति",
+    "description": "IF condition field option"
+  },
+  "designerScopeSelectStart": {
+    "message": "चुनें कि यह प्रक्रिया किससे प्रारंभ होती है",
+    "description": "Process scope summary when trigger not chosen"
+  },
+  "designerScopeManual": {
+    "message": "मैन्युअल रूप से ट्रिगर होने पर चलता है",
+    "description": "Process scope summary for manual trigger"
+  },
+  "designerScopeWebhook": {
+    "message": "वेबहुक अनुरोध प्राप्त होने पर चलता है",
+    "description": "Process scope summary for webhook trigger"
+  },
+  "designerScopeScheduleHourly": {
+    "message": "हर घंटे चलता है",
+    "description": "Process scope summary for hourly schedule"
+  },
+  "designerScopeScheduleWeekly": {
+    "message": "{time} पर साप्ताहिक चलता है",
+    "description": "Process scope summary for weekly schedule"
+  },
+  "designerScopeScheduleDaily": {
+    "message": "हर दिन {time} पर चलता है",
+    "description": "Process scope summary for daily schedule"
+  },
+  "designerScopeRecordCreated": {
+    "message": "{module} बनने पर चलता है",
+    "description": "Process scope summary for record created"
+  },
+  "designerScopeRecordUpdated": {
+    "message": "{module} अपडेट होने पर चलता है",
+    "description": "Process scope summary for record updated"
+  },
+  "designerScopeRecordUpdatedField": {
+    "message": "{module} अपडेट होने पर चलता है ({field} बदल गया)",
+    "description": "Process scope summary when watching specific field"
+  },
+  "designerScopeGeneric": {
+    "message": "{module} के लिए प्रक्रिया",
+    "description": "Fallback process scope summary"
+  },
+  "designerModuleRecordFallback": {
+    "message": "अभिलेख",
+    "description": "Fallback singular module in scope sentences"
+  },
+  "appKeySales": {
+    "message": "बिक्री",
+    "description": "Sales app key label"
+  },
+  "appKeyAudit": {
+    "message": "अंकेक्षण",
+    "description": "Audit app key label"
+  },
+  "appKeyPortal": {
+    "message": "पोर्टल",
+    "description": "Portal app key label"
+  }
+}

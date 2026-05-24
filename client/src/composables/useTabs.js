@@ -26,6 +26,9 @@ import {
   LifebuoyIcon,
   TicketIcon
 } from '@heroicons/vue/24/outline';
+import { enrichTabWithTitleKey, getTabTitleMetaForPath } from '@/utils/navigationLabels';
+import { resolveModuleDisplayName } from '@/utils/configurableLabelResolver';
+import { i18n } from '@/i18n/index';
 
 const tabsDebugEnabled = () => {
   if (!import.meta.env.DEV) return false;
@@ -277,7 +280,7 @@ const loadTabsFromStorage = () => {
         }));
       }
 
-      tabs.value = loadedTabs;
+      tabs.value = loadedTabs.map((tab) => enrichTabWithTitleKey(tab));
       activeTabId.value = loadedActiveTabId;
       
       // Convert icon identifiers back to components
@@ -437,6 +440,7 @@ const createDefaultTab = () => {
   
   const homeTab = {
     id: 'home',
+    titleKey: 'navigation.home',
     title: 'Home',
     path: '/platform/home',
     icon: getIconComponent('home'), // Convert to component immediately
@@ -558,9 +562,9 @@ const getTitleForPath = (path, params = {}) => {
     '/control': 'Control Plane',
     '/control/demo-requests': 'Demo Requests',
     '/control/instances': 'Instances',
-    '/control/automation-rules': 'Automation Rules',
-    '/control/processes': 'Processes',
-    '/control/flows': 'Business Flows',
+    '/settings/automation/automation-rules': 'Automation Rules',
+    '/settings/automation/processes': 'Processes',
+    '/settings/automation/flows': 'Business Flows',
     // Audit app routes
     '/audit/dashboard': 'Audit Dashboard',
     '/audit/audits': 'My Audits'
@@ -582,19 +586,22 @@ const getTitleForPath = (path, params = {}) => {
   
   // Special case: Control Plane routes (handle detail pages)
   if (path.startsWith('/control/')) {
-    // Check for flow detail pages: /control/flows/:id, /control/flows/:id/health, /control/flows/:id/edit
-    if (segments[2] === 'flows' && segments[3]) {
-      if (segments[4] === 'health') {
+    return titles[`/control/${segments[2]}`] || 'Control Plane';
+  }
+
+  // Settings → Automation routes (handle flow detail pages)
+  if (path.startsWith('/settings/automation/')) {
+    if (segments[3] === 'flows' && segments[4]) {
+      if (segments[5] === 'health') {
         return 'Flow Health';
-      } else if (segments[4] === 'edit') {
+      } else if (segments[5] === 'edit') {
         return 'Edit Business Flow';
-      } else if (segments[3] === 'create') {
+      } else if (segments[4] === 'create') {
         return 'Create Business Flow';
       }
       return 'Business Flow';
     }
-    // For other control routes, return the base title or Control Plane
-    return titles[`/control/${segments[2]}`] || 'Control Plane';
+    return titles[`/settings/automation/${segments[3]}`] || 'Automation';
   }
   
   // Special case: Audit app routes (should not use tabs system)
@@ -657,18 +664,17 @@ const getTitleForPath = (path, params = {}) => {
 
   // If it's a detail page (has ID), customize title
   // But skip if it's an audit route or control route (handled above)
-  if (path.split('/').length > 2 && !path.startsWith('/audit/') && !path.startsWith('/control/') && segments[1] !== 'dashboard') {
+  if (path.split('/').length > 2 && !path.startsWith('/audit/') && !path.startsWith('/control/') && !path.startsWith('/settings/automation/') && segments[1] !== 'dashboard') {
     const module = segments[1];
-    
-    // Capitalize module name
-    const moduleName = module.charAt(0).toUpperCase() + module.slice(1);
-    
-    // If we have a name in params, use it
+    const t = i18n.global.t.bind(i18n.global);
+    const te = i18n.global.te.bind(i18n.global);
+    const moduleName = resolveModuleDisplayName(module, t, te);
+
     if (params.name) {
-      return `${moduleName}: ${params.name}`;
+      return t('navigation.tabRecordNamed', { module: moduleName, name: params.name });
     }
-    
-    return `${moduleName} Detail`;
+
+    return t('navigation.tabRecordDetail', { module: moduleName });
   }
   
   return titles[basePath] || titles[path] || 'Page';
@@ -1274,7 +1280,7 @@ export function useTabs() {
             newPathWithoutQuery === '/people' || newPathWithoutQuery === '/organizations' || newPathWithoutQuery === '/forms' ||
             newPathWithoutQuery === '/items' || newPathWithoutQuery === '/imports' || newPathWithoutQuery === '/trash' ||
             newPathWithoutQuery === '/helpdesk/cases' ||
-            newPathWithoutQuery === '/platform/home' || newPathWithoutQuery === '/sales/dashboard' || newPathWithoutQuery.startsWith('/control/');
+            newPathWithoutQuery === '/platform/home' || newPathWithoutQuery === '/sales/dashboard' || newPathWithoutQuery.startsWith('/control/') || newPathWithoutQuery.startsWith('/settings/automation/');
           if (isListRoute) {
             const moduleTitle = getTitleForPath(newPathWithoutQuery, currentActiveTab.params || {});
             if (moduleTitle && currentActiveTab.title !== moduleTitle) {
@@ -1344,7 +1350,7 @@ export function useTabs() {
           newPathBase === '/people' || newPathBase === '/organizations' || newPathBase === '/forms' ||
           newPathBase === '/items' || newPathBase === '/imports' || newPathBase === '/trash' ||
           newPathBase === '/helpdesk/cases' ||
-          newPathBase === '/platform/home' || newPathBase === '/sales/dashboard' || newPathBase.startsWith('/control/');
+          newPathBase === '/platform/home' || newPathBase === '/sales/dashboard' || newPathBase.startsWith('/control/') || newPathBase.startsWith('/settings/automation/');
         if (isListRoute) {
           const titleForPath = getTitleForPath(newPathBase, existingTabForRoute.params || {});
           if (titleForPath) existingTabForRoute.title = titleForPath;
@@ -1589,9 +1595,16 @@ export function useTabs() {
         : getIconForPath(pathOnly);
 
     // Create new tab
+    const titleMeta = options.titleKey
+      ? { titleKey: options.titleKey, titleParams: options.titleParams || {} }
+      : options.title
+        ? { title: options.title }
+        : getTabTitleMetaForPath(path, options.params || {});
+
     const newTab = {
       id: options.id || generateTabId(),
-      title: options.title || getTitleForPath(path, options.params),
+      ...titleMeta,
+      title: options.title || (titleMeta.titleKey ? undefined : getTitleForPath(path, options.params)),
       path: path,
       icon: getIconComponent(tabIconId),
       closable: options.closable !== false, // Default to closable
@@ -1685,7 +1698,7 @@ export function useTabs() {
           pathBase === '/people' || pathBase === '/organizations' || pathBase === '/forms' ||
           pathBase === '/items' || pathBase === '/imports' || pathBase === '/trash' ||
           pathBase === '/helpdesk/cases' ||
-          pathBase === '/platform/home' || pathBase === '/sales/dashboard' || pathBase.startsWith('/control/');
+          pathBase === '/platform/home' || pathBase === '/sales/dashboard' || pathBase.startsWith('/control/') || pathBase.startsWith('/settings/automation/');
         if (isListPath) {
           const listTitle = getTitleForPath(pathBase, newActiveTab.params || {});
           if (listTitle) newActiveTab.title = listTitle;

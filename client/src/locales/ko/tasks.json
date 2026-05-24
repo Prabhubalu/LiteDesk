@@ -1,0 +1,186 @@
+{
+  "relatedTasksWidgetCreateFirstTask": {
+    "message": "첫 번째 작업 만들기",
+    "description": "Auto-migrated from relatedTasksWidget"
+  },
+  "relatedTasksWidgetNoTasksYet": {
+    "message": "아직 할 일이 없습니다.",
+    "description": "Auto-migrated from relatedTasksWidget"
+  },
+  "relatedTasksWidgetAddTask": {
+    "message": "작업 추가",
+    "description": "Auto-migrated from relatedTasksWidget"
+  },
+  "relatedTasksWidgetLinkTasks": {
+    "message": "링크 작업",
+    "description": "Auto-migrated from relatedTasksWidget"
+  },
+  "relatedTasksWidgetRelatedTasks": {
+    "message": "관련 업무",
+    "description": "Auto-migrated from relatedTasksWidget"
+  },
+  "taskDetailModalEstimatedHours": {
+    "message": "예상 시간",
+    "description": "Auto-migrated from taskDetailModal"
+  },
+  "taskDetailModalCreatedBy": {
+    "message": "작성자",
+    "description": "Auto-migrated from taskDetailModal"
+  },
+  "taskDetailModalWaiting": {
+    "message": "대기 중",
+    "description": "Auto-migrated from taskDetailModal"
+  },
+  "taskDetailModalToDo": {
+    "message": "할 일",
+    "description": "Auto-migrated from taskDetailModal"
+  },
+  "taskDetailModalTaskDetails": {
+    "message": "작업 세부정보",
+    "description": "Auto-migrated from taskDetailModal"
+  },
+  "taskEditDrawerWriteOrType": {
+    "message": "명령에 대해 '/'를 쓰거나 입력합니다.",
+    "description": "Task description editor placeholder"
+  },
+  "taskEditDrawerUpdateTheTaskInformationBelow": {
+    "message": "아래 작업 정보를 업데이트하세요.",
+    "description": "Auto-migrated from taskEditDrawer"
+  },
+  "taskEditDrawerEditTask": {
+    "message": "작업 편집",
+    "description": "Auto-migrated from taskEditDrawer"
+  },
+  "taskFormModalAddSubtask": {
+    "message": "하위 작업 추가",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalSubtaskTitle": {
+    "message": "하위 작업 제목",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalEGUrgentClientBugFix": {
+    "message": "예: 긴급, 클라이언트, 버그 수정",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalTagsCommaSeparated": {
+    "message": "태그(쉼표로 구분)",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalEstimatedHours": {
+    "message": "예상 시간",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalSelectAssignee": {
+    "message": "담당자 선택...",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalUrgent": {
+    "message": "긴급한",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalWaiting": {
+    "message": "대기 중",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalToDo": {
+    "message": "할 일",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalEnterTaskDescription": {
+    "message": "작업 설명 입력",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalEnterTaskTitle": {
+    "message": "작업 제목을 입력하세요",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskSubtasksFieldAddSubtask": {
+    "message": "하위 할 일 추가",
+    "description": "Auto-migrated from taskSubtasksField"
+  },
+  "taskSubtasksFieldSubtaskTitle": {
+    "message": "하위 작업 제목",
+    "description": "Auto-migrated from taskSubtasksField"
+  },
+  "taskSubtasksFieldAddSubtask2": {
+    "message": "하위 할 일 추가",
+    "description": "Auto-migrated from taskSubtasksField"
+  },
+  "taskSubtasksFieldAddSubtask3": {
+    "message": "하위 할 일 추가",
+    "description": "Auto-migrated from taskSubtasksField"
+  },
+  "taskSubtasksFieldAddSubtask4": {
+    "message": "하위 할 일 추가",
+    "description": "Auto-migrated from taskSubtasksField"
+  },
+  "tasksAddTask": {
+    "message": "작업 추가",
+    "description": "Auto-migrated from tasks"
+  },
+  "tasksNoTasksInThisStatus": {
+    "message": "이 상태에는 작업이 없습니다.",
+    "description": "Auto-migrated from tasks"
+  },
+  "tasksLoadingBoard": {
+    "message": "보드 로드 중...",
+    "description": "Auto-migrated from tasks"
+  },
+  "tasksNoDueDate": {
+    "message": "마감일 없음",
+    "description": "Auto-migrated from tasks"
+  },
+  "tasksNewTask": {
+    "message": "새 작업",
+    "description": "Auto-migrated from tasks"
+  },
+  "tasksBoard": {
+    "message": "판자",
+    "description": "Auto-migrated from tasks"
+  },
+  "taskFormModalToastErrorSavingTaskPleaseTry": {
+    "message": "작업을 저장하는 중에 오류가 발생했습니다. 다시 시도해 주세요.",
+    "description": "Toast from TaskFormModal.vue"
+  },
+  "sysFieldTitle": {
+    "message": "제목",
+    "description": "System task field label"
+  },
+  "sysFieldStatus": {
+    "message": "상태",
+    "description": "System task field label"
+  },
+  "sysFieldAssignedTo": {
+    "message": "할당 대상",
+    "description": "System task field label"
+  },
+  "sysFieldDueDate": {
+    "message": "마감일",
+    "description": "System task field label"
+  },
+  "sysFieldDescription": {
+    "message": "설명",
+    "description": "System task field label"
+  },
+  "listViewAll": {
+    "message": "All Tasks",
+    "description": "Tasks list default view title"
+  },
+  "listViewMy": {
+    "message": "My Tasks",
+    "description": "Tasks list assigned-to-me view title"
+  },
+  "listCreate": {
+    "message": "New Task",
+    "description": "Tasks list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "Search tasks...",
+    "description": "Tasks list search placeholder"
+  },
+  "listStatTotal": {
+    "message": "Total Tasks",
+    "description": "Tasks list statistics card"
+  }
+}

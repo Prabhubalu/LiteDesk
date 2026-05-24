@@ -37,14 +37,13 @@
       type="button"
       class="mt-4 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
       @click="$emit('open', pulse)"
-    >
-      Open app
-      <ArrowRightIcon class="w-4 h-4" />
+    >{{ t('platform.appPulseCardOpenApp') }}<ArrowRightIcon class="w-4 h-4" />
     </button>
   </article>
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { ArrowRightIcon } from '@heroicons/vue/24/outline';
 
@@ -54,6 +53,8 @@ defineProps({
     required: true
   }
 });
+
+const { t } = useI18n();
 
 defineEmits(['open']);
 

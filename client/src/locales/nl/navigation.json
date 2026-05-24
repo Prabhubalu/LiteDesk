@@ -1,0 +1,422 @@
+{
+  "settings": {
+    "message": "Instellingen",
+    "description": "Settings area navigation label"
+  },
+  "home": {
+    "message": "Thuis",
+    "description": "Home dashboard navigation label"
+  },
+  "profile": {
+    "message": "Profiel",
+    "description": "User profile settings navigation label"
+  },
+  "inbox": {
+    "message": "Postvak IN",
+    "description": "Communications inbox navigation label"
+  },
+  "signOut": {
+    "message": "Meld u af",
+    "description": "Sign out of the application"
+  },
+  "noNav": {
+    "message": "Geen navigatie beschikbaar",
+    "description": "Empty sidebar when no modules are configured"
+  },
+  "userMenu": {
+    "message": "Gebruikersmenu",
+    "description": "User avatar menu aria-label"
+  },
+  "toggleMenu": {
+    "message": "Schakelmenu",
+    "description": "Mobile navigation menu toggle"
+  },
+  "closeSidebar": {
+    "message": "Sluit zijbalk",
+    "description": "Screen reader label for mobile drawer close"
+  },
+  "openSidebar": {
+    "message": "Zijbalk openen",
+    "description": "Screen reader label for mobile drawer open"
+  },
+  "syncStatus": {
+    "message": "Synchronisatiestatus",
+    "description": "Audit offline sync status button"
+  },
+  "portalAudits": {
+    "message": "Audits",
+    "description": "Portal bottom nav audits tab"
+  },
+  "portalActions": {
+    "message": "Acties",
+    "description": "Portal bottom nav actions tab"
+  },
+  "collapseSidebar": {
+    "message": "Zijbalk samenvouwen",
+    "description": "Collapse app sidebar tooltip"
+  },
+  "coreModules": {
+    "message": "Kernmodules",
+    "description": "Core modules section tooltip"
+  },
+  "coreSection": {
+    "message": "Kern",
+    "description": "Core modules section heading"
+  },
+  "help": {
+    "message": "Hulp",
+    "description": "Sidebar help link"
+  },
+  "loadingNavigation": {
+    "message": "Navigatie laden",
+    "description": "Sidebar skeleton aria-label"
+  },
+  "salesAppFallback": {
+    "message": "Verkoop",
+    "description": "Default app name when active app is unset"
+  },
+  "tabClose": {
+    "message": "Dichtbij",
+    "description": "Close single tab context menu item"
+  },
+  "tabCloseOthers": {
+    "message": "Sluit overige",
+    "description": "Close other tabs context menu item"
+  },
+  "tabCloseToRight": {
+    "message": "Sluit tabbladen aan de rechterkant",
+    "description": "Close tabs to the right context menu item"
+  },
+  "tabCloseAll": {
+    "message": "Sluit alle tabbladen",
+    "description": "Close all tabs context menu item"
+  },
+  "tabAccount": {
+    "message": "Rekening",
+    "description": "Tab bar account menu tooltip"
+  },
+  "tabCloseTab": {
+    "message": "Tabblad sluiten",
+    "description": "Close tab button aria-label"
+  },
+  "globalSearchPlaceholder": {
+    "message": "Zoek of voer een opdracht uit...",
+    "description": "Global search modal input placeholder"
+  },
+  "globalSearchSearching": {
+    "message": "Zoeken…",
+    "description": "Global search loading state"
+  },
+  "globalSearchNoCommands": {
+    "message": "Geen overeenkomende opdrachten",
+    "description": "Command palette no matches"
+  },
+  "globalSearchNoCommandsHint": {
+    "message": "Probeer een andere opdracht of druk op ESC om af te sluiten.",
+    "description": "Command palette no matches hint"
+  },
+  "globalSearchNoResults": {
+    "message": "Geen resultaten gevonden",
+    "description": "Global search no entity results"
+  },
+  "globalSearchNoResultsHint": {
+    "message": "Probeer te zoeken op naam, e-mailadres of trefwoord.",
+    "description": "Global search no results hint"
+  },
+  "globalSearchConfirmTitle": {
+    "message": "Weet je het zeker?",
+    "description": "Destructive command confirmation title"
+  },
+  "globalSearchToCancel": {
+    "message": "annuleren",
+    "description": "Keyboard hint fragment after ESC"
+  },
+  "globalSearchToConfirm": {
+    "message": "bevestigen",
+    "description": "Keyboard hint fragment after Enter"
+  },
+  "globalSearchCommandsHeader": {
+    "message": "Commando's",
+    "description": "Command palette section header"
+  },
+  "globalSearchTypeToFind": {
+    "message": "Typ om een ​​opdracht te vinden",
+    "description": "Command palette empty query hint"
+  },
+  "globalSearchStartTyping": {
+    "message": "Begin met typen om te zoeken",
+    "description": "Search mode empty state"
+  },
+  "globalSearchSlashHint": {
+    "message": "Gebruik / om te maken, te koppelen of te navigeren",
+    "description": "Discoverability hint for command mode trigger"
+  },
+  "globalSearchGroupPeople": {
+    "message": "Mensen",
+    "description": "Search results group label"
+  },
+  "globalSearchGroupOrganizations": {
+    "message": "Organisaties",
+    "description": "Search results group label"
+  },
+  "globalSearchGroupWork": {
+    "message": "Werk",
+    "description": "Search results group label"
+  },
+  "globalSearchGroupConfiguration": {
+    "message": "Configuratie",
+    "description": "Search results group label"
+  },
+  "globalSearchUnknownUser": {
+    "message": "Onbekende gebruiker",
+    "description": "Fallback display name in search"
+  },
+  "globalSearchLinkModule": {
+    "message": "Link {module}",
+    "description": "Link drawer title when module name capitalized"
+  },
+  "userAccountFallback": {
+    "message": "Uw rekening",
+    "description": "User menu display name fallback"
+  },
+  "userStatusLabel": {
+    "message": "Status: {label}",
+    "description": "User menu status dot aria-label"
+  },
+  "userClearStatus": {
+    "message": "Duidelijke status",
+    "description": "Clear custom status button title"
+  },
+  "userSetAvailability": {
+    "message": "Beschikbaarheid instellen",
+    "description": "Availability picker listbox aria-label"
+  },
+  "userSetCustomStatus": {
+    "message": "Aangepaste status instellen…",
+    "description": "Open custom status editor"
+  },
+  "userEditCustomStatus": {
+    "message": "Aangepaste status bewerken…",
+    "description": "Edit existing custom status"
+  },
+  "userStatusPlaceholder": {
+    "message": "Wat is uw status?",
+    "description": "Custom status input placeholder"
+  },
+  "userPickEmoji": {
+    "message": "Kies emoji",
+    "description": "Emoji picker button title"
+  },
+  "userYourProfile": {
+    "message": "Jouw profiel",
+    "description": "User menu profile link"
+  },
+  "userControlPanel": {
+    "message": "Bedieningspaneel",
+    "description": "Admin control panel link"
+  },
+  "userBookingPages": {
+    "message": "Boekingspagina's",
+    "description": "User menu appointments link"
+  },
+  "userTrash": {
+    "message": "Afval",
+    "description": "User menu trash link"
+  },
+  "userSwitchToLight": {
+    "message": "Schakel over naar de lichtmodus",
+    "description": "Theme toggle label when dark"
+  },
+  "userSwitchToDark": {
+    "message": "Schakel over naar de donkere modus",
+    "description": "Theme toggle label when light"
+  },
+  "tabBookingPages": {
+    "message": "Boekingspagina's",
+    "description": "Tab title for appointments pages"
+  },
+  "approvals": {
+    "message": "Goedkeuringen",
+    "description": "Approvals shell navigation label"
+  },
+  "attention": {
+    "message": "Aandacht",
+    "description": "Attention shell navigation label"
+  },
+  "search": {
+    "message": "Zoekopdracht",
+    "description": "Search shell navigation label"
+  },
+  "dashboard": {
+    "message": "Overzicht",
+    "description": "App dashboard navigation label"
+  },
+  "modulePeople": {
+    "message": "Mensen",
+    "description": "People module navigation label"
+  },
+  "moduleContacts": {
+    "message": "Contacten",
+    "description": "Contacts module navigation label"
+  },
+  "moduleOrganizations": {
+    "message": "Organisaties",
+    "description": "Organizations module navigation label"
+  },
+  "moduleTasks": {
+    "message": "Taken",
+    "description": "Tasks module navigation label"
+  },
+  "moduleEvents": {
+    "message": "Evenementen",
+    "description": "Events module navigation label"
+  },
+  "moduleForms": {
+    "message": "Formulieren",
+    "description": "Forms module navigation label"
+  },
+  "moduleItems": {
+    "message": "Artikelen",
+    "description": "Items module navigation label"
+  },
+  "moduleDeals": {
+    "message": "Deals",
+    "description": "Deals module navigation label"
+  },
+  "moduleResponses": {
+    "message": "Reacties",
+    "description": "Form responses module navigation label"
+  },
+  "moduleImports": {
+    "message": "Importeren",
+    "description": "Imports module navigation label"
+  },
+  "moduleCases": {
+    "message": "Gevallen",
+    "description": "Helpdesk cases module navigation label"
+  },
+  "moduleFindings": {
+    "message": "Bevindingen",
+    "description": "Audit findings module navigation label"
+  },
+  "moduleAudits": {
+    "message": "Audits",
+    "description": "Audits module navigation label"
+  },
+  "appSales": {
+    "message": "Verkoop",
+    "description": "Sales app name in app switcher"
+  },
+  "appAudit": {
+    "message": "Controle",
+    "description": "Audit app name in app switcher"
+  },
+  "appHelpdesk": {
+    "message": "Klantenservice",
+    "description": "Helpdesk app name in app switcher"
+  },
+  "appProjects": {
+    "message": "Projecten",
+    "description": "Projects app name in app switcher"
+  },
+  "appPortal": {
+    "message": "Portaal",
+    "description": "Portal app name in app switcher"
+  },
+  "salesDashboard": {
+    "message": "Verkoopdashboard",
+    "description": "Sales dashboard tab title"
+  },
+  "auditDashboard": {
+    "message": "Auditdashboard",
+    "description": "Audit dashboard tab title"
+  },
+  "appDashboard": {
+    "message": "{app} Dashboard",
+    "description": "App-scoped dashboard tab title"
+  },
+  "tabDemoRequests": {
+    "message": "Demo-aanvragen",
+    "description": "Demo requests tab title"
+  },
+  "tabInstances": {
+    "message": "Instanties",
+    "description": "Instances tab title"
+  },
+  "tabAutomationRules": {
+    "message": "Automatiseringsregels",
+    "description": "Automation rules tab title"
+  },
+  "tabProcesses": {
+    "message": "Processen",
+    "description": "Processes tab title"
+  },
+  "tabBusinessFlows": {
+    "message": "Bedrijfsstromen",
+    "description": "Business flows tab title"
+  },
+  "tabAutomation": {
+    "message": "Automatisering",
+    "description": "Automation settings tab title"
+  },
+  "tabFlowHealth": {
+    "message": "Stroom gezondheid",
+    "description": "Business flow health tab title"
+  },
+  "tabEditBusinessFlow": {
+    "message": "Bedrijfsstroom bewerken",
+    "description": "Edit business flow tab title"
+  },
+  "tabCreateBusinessFlow": {
+    "message": "Creëer bedrijfsstroom",
+    "description": "Create business flow tab title"
+  },
+  "tabBusinessFlow": {
+    "message": "Bedrijfsstroom",
+    "description": "Business flow detail tab title"
+  },
+  "tabMyAudits": {
+    "message": "Mijn audits",
+    "description": "My audits tab title"
+  },
+  "tabAuditDetail": {
+    "message": "Auditdetail",
+    "description": "Audit detail tab title"
+  },
+  "tabPersonalBooking": {
+    "message": "Persoonlijke boekingspagina",
+    "description": "Personal booking page tab title"
+  },
+  "tabTeamBooking": {
+    "message": "Teamboekingspagina",
+    "description": "Team booking page tab title"
+  },
+  "tabNewTeamPage": {
+    "message": "Nieuwe teampagina",
+    "description": "New team booking page tab title"
+  },
+  "tabBookingPage": {
+    "message": "Boekingspagina",
+    "description": "User booking page tab title"
+  },
+  "tabCaseDetail": {
+    "message": "Zaakdetail",
+    "description": "Helpdesk case detail tab title"
+  },
+  "tabFormResponseDetail": {
+    "message": "({id}) Details",
+    "description": "Form response detail tab title"
+  },
+  "tabRecordNamed": {
+    "message": "{module}: {name}",
+    "description": "Record tab with entity name"
+  },
+  "tabRecordDetail": {
+    "message": "{module} Details",
+    "description": "Record detail tab title without name"
+  },
+  "tabPage": {
+    "message": "Pagina",
+    "description": "Generic fallback tab title"
+  }
+}

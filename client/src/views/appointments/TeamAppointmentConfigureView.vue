@@ -5,16 +5,16 @@
       class="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 transition hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
       @click="goToPagesHub"
     >
-      ← Booking Pages
+      {{ t('appointments.backToPages') }}
     </button>
       <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p class="text-sm font-medium text-indigo-600 dark:text-indigo-400">Team booking</p>
+          <p class="text-sm font-medium text-indigo-600 dark:text-indigo-400">{{ t('appointments.teamEyebrow') }}</p>
           <h1 class="mt-1 text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-            {{ isEdit ? 'Edit team page' : 'Create team page' }}
+            {{ isEdit ? t('appointments.teamEditTitle') : t('appointments.teamCreateTitle') }}
           </h1>
           <p class="mt-2 max-w-xl text-gray-600 dark:text-gray-400">
-            One link for customers — meetings are assigned to your team automatically.
+            {{ t('appointments.teamConfigureHint') }}
           </p>
         </div>
         <button
@@ -23,7 +23,7 @@
           :disabled="saving || !slugAvailable || form.memberUserIds.length === 0"
           @click="handleSave"
         >
-          {{ saving ? 'Saving…' : 'Save team page' }}
+          {{ saving ? t('states.saving') : t('appointments.saveTeamPage') }}
         </button>
       </div>
 
@@ -37,20 +37,20 @@
 
       <div v-else class="space-y-6">
         <section class="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm dark:border-gray-700/80 dark:bg-gray-900/80">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Team details</h2>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('appointments.teamDetails') }}</h2>
           <div class="mt-4 space-y-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Team name</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('appointments.teamName') }}</label>
               <input
                 v-model="form.displayName"
                 type="text"
                 class="mt-1.5 w-full rounded-xl border border-gray-200 px-4 py-2.5 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                placeholder="e.g. Sales team"
+                :placeholder="t('appointments.teamNamePh')"
                 @blur="maybeAutoSlug"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Public URL</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('appointments.publicUrl') }}</label>
               <div class="mt-1.5 flex overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
                 <span class="flex items-center bg-gray-100 px-3 text-sm text-gray-500 dark:bg-gray-800">/book/</span>
                 <input
@@ -60,28 +60,27 @@
                   @input="onSlugInput"
                 />
               </div>
-              <p v-if="!slugAvailable" class="mt-1 text-xs text-amber-600">URL already taken</p>
+              <p v-if="!slugAvailable" class="mt-1 text-xs text-amber-600">{{ t('appointments.urlTaken') }}</p>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Assignment</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('appointments.assignment') }}</label>
               <select
                 v-model="form.assignmentStrategy"
                 class="mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
               >
-                <option value="round_robin">Round robin (rotate fairly)</option>
-                <option value="first_available">First available member</option>
+                <option value="round_robin">{{ t('appointments.assignRoundRobin') }}</option>
+                <option value="first_available">{{ t('appointments.assignFirstAvailable') }}</option>
               </select>
             </div>
           </div>
         </section>
 
         <section class="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm dark:border-gray-700/80 dark:bg-gray-900/80">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Team members</h2>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('appointments.teamMembers') }}</h2>
           <p class="mt-1 text-sm text-gray-500">
-            Only selected members can receive bookings from this page. Each member’s personal booking page
-            calendar connection (Google or Microsoft, matching the meeting format below) is used to hide busy times.
+            {{ t('appointments.teamMembersHint') }}
           </p>
-          <div v-if="usersLoading" class="mt-4 text-sm text-gray-500">Loading users…</div>
+          <div v-if="usersLoading" class="mt-4 text-sm text-gray-500">{{ t('appointments.loadingUsers') }}</div>
           <div v-else class="mt-4 max-h-64 space-y-2 overflow-y-auto">
             <label
               v-for="u in orgUsers"
@@ -99,7 +98,7 @@
               </span>
             </label>
           </div>
-          <p v-if="form.memberUserIds.length === 0" class="mt-2 text-xs text-amber-600">Select at least one member.</p>
+          <p v-if="form.memberUserIds.length === 0" class="mt-2 text-xs text-amber-600">{{ t('appointments.selectOneMember') }}</p>
         </section>
 
         <AppointmentBookingScheduleSection
@@ -115,24 +114,24 @@
         <AppointmentCustomFieldsEditor v-model="form.customFields" />
 
         <section class="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm dark:border-gray-700/80 dark:bg-gray-900/80">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Branding</h2>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('appointments.branding') }}</h2>
           <div class="mt-4">
-            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Accent color</label>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('appointments.accentColor') }}</label>
             <input v-model="form.branding.themeColor" type="color" class="mt-2 h-10 w-full cursor-pointer rounded-lg" />
           </div>
           <div class="mt-4">
-            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Welcome note</label>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('appointments.welcomeNote') }}</label>
             <textarea
               v-model="form.branding.welcomeNote"
               rows="3"
               class="mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-              placeholder="Book time with our team…"
+              :placeholder="t('appointments.welcomeNotePh')"
             />
           </div>
         </section>
 
         <div v-if="bookingUrl" class="rounded-xl bg-indigo-50 p-4 dark:bg-indigo-950/40">
-          <p class="text-sm font-medium text-indigo-900 dark:text-indigo-200">Team booking link</p>
+          <p class="text-sm font-medium text-indigo-900 dark:text-indigo-200">{{ t('appointments.teamBookingLink') }}</p>
           <a :href="bookingUrl" target="_blank" rel="noopener" class="mt-1 block truncate text-sm text-indigo-600 hover:underline dark:text-indigo-400">{{ bookingUrl }}</a>
         </div>
 
@@ -144,6 +143,7 @@
 <script setup>
 import { reactive, ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { useTabs } from '@/composables/useTabs';
 import { useNotifications } from '@/composables/useNotifications';
@@ -153,6 +153,7 @@ import AppointmentEmbedSnippet from '@/components/appointments/AppointmentEmbedS
 import AppointmentBookingScheduleSection from '@/components/appointments/AppointmentBookingScheduleSection.vue';
 import { useAuthStore } from '@/stores/authRegistry';
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
@@ -162,7 +163,7 @@ const { success: notifySuccess } = useNotifications();
 const teamOwnerId = computed(() => (authStore.user?._id ? String(authStore.user._id) : null));
 
 function goToPagesHub() {
-  openTab('/appointments/pages', { title: 'Booking Pages', icon: '📅' });
+  openTab('/appointments/pages', { title: t('appointments.hubTitle'), icon: '📅' });
   router.push({ name: 'appointments-pages' });
 }
 
@@ -205,7 +206,7 @@ const bookingUrl = computed(() => {
 
 function userLabel(u) {
   const name = [u.firstName, u.lastName].filter(Boolean).join(' ');
-  return name || u.email || u.username || 'User';
+  return name || u.email || u.username || t('appointments.userFallback');
 }
 
 let slugDebounce;
@@ -271,7 +272,7 @@ async function loadTeam() {
       });
     }
   } catch (e) {
-    error.value = e.message || 'Failed to load team page';
+    error.value = e.message || t('appointments.loadTeamFailed');
   } finally {
     loading.value = false;
   }
@@ -290,15 +291,15 @@ async function handleSave() {
       : await apiClient.post('/appointments/config/team', payload);
     if (res.success) {
       savedConfig.value = res.data;
-      notifySuccess('Team booking page saved');
+      notifySuccess(t('appointments.teamPageSaved'));
       if (!isEdit.value && res.data._id) {
         router.replace({ name: 'appointments-team-configure', params: { id: res.data._id } });
       }
     } else {
-      throw new Error(res.message || 'Save failed');
+      throw new Error(res.message || t('appointments.saveFailed'));
     }
   } catch (e) {
-    error.value = e.message || 'Save failed';
+    error.value = e.message || t('appointments.saveFailed');
   } finally {
     saving.value = false;
   }

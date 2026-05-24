@@ -20,7 +20,7 @@
             v-if="dismissible"
             @click="handleDismiss"
             class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-            title="Dismiss"
+            :title="t('notifications.dismiss')"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -33,6 +33,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import SignalCard from '@/components/ui/SignalCard.vue';
 import SuggestedActionLink from '@/components/ui/SuggestedActionLink.vue';
 import { computed } from 'vue';
@@ -60,6 +61,8 @@ const props = defineProps({
     default: false
   }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['dismiss', 'action']);
 

@@ -1,0 +1,1006 @@
+{
+  "daySun": {
+    "message": "सूरज",
+    "description": "Weekday abbreviation"
+  },
+  "dayMon": {
+    "message": "सोम",
+    "description": "Weekday abbreviation"
+  },
+  "dayTue": {
+    "message": "मंगल",
+    "description": "Weekday abbreviation"
+  },
+  "dayWed": {
+    "message": "बुध",
+    "description": "Weekday abbreviation"
+  },
+  "dayThu": {
+    "message": "गुरु",
+    "description": "Weekday abbreviation"
+  },
+  "dayFri": {
+    "message": "शुक्र",
+    "description": "Weekday abbreviation"
+  },
+  "daySat": {
+    "message": "बैठा",
+    "description": "Weekday abbreviation"
+  },
+  "slot15": {
+    "message": "15 मिनटों",
+    "description": "Slot duration option"
+  },
+  "slot30": {
+    "message": "30 मिनट",
+    "description": "Slot duration option"
+  },
+  "slot45": {
+    "message": "45 मिनट",
+    "description": "Slot duration option"
+  },
+  "slot60": {
+    "message": "1 घंटा",
+    "description": "Slot duration option"
+  },
+  "buffer0": {
+    "message": "कोई बफ़र नहीं",
+    "description": "Buffer between meetings option"
+  },
+  "buffer5": {
+    "message": "5 मिनट",
+    "description": "Buffer between meetings option"
+  },
+  "buffer10": {
+    "message": "10 मिनट",
+    "description": "Buffer between meetings option"
+  },
+  "buffer15": {
+    "message": "15 मि",
+    "description": "Buffer between meetings option"
+  },
+  "buffer30": {
+    "message": "30 मि",
+    "description": "Buffer between meetings option"
+  },
+  "meetInPerson": {
+    "message": "स्वयं",
+    "description": "Meeting format option"
+  },
+  "meetGoogle": {
+    "message": "गूगल मीट",
+    "description": "Meeting format option"
+  },
+  "meetTeams": {
+    "message": "माइक्रोसॉफ्ट टीमें",
+    "description": "Meeting format option"
+  },
+  "typeDemo": {
+    "message": "डेमो",
+    "description": "Appointment type label"
+  },
+  "typeConsultation": {
+    "message": "परामर्श",
+    "description": "Appointment type label"
+  },
+  "typeSupport": {
+    "message": "सहायता",
+    "description": "Appointment type label"
+  },
+  "typeOther": {
+    "message": "अन्य",
+    "description": "Appointment type label"
+  },
+  "sourcePublicPage": {
+    "message": "सार्वजनिक पृष्ठ",
+    "description": "Booking source label"
+  },
+  "sourceManual": {
+    "message": "नियमावली",
+    "description": "Booking source label"
+  },
+  "sourceIntegration": {
+    "message": "एकीकरण",
+    "description": "Booking source label"
+  },
+  "sourceCampaign": {
+    "message": "अभियान",
+    "description": "Booking source label"
+  },
+  "sourceUnknown": {
+    "message": "—",
+    "description": "Fallback booking source label"
+  },
+  "availHeading": {
+    "message": "उपलब्धता",
+    "description": "Booking schedule section title"
+  },
+  "availHint": {
+    "message": "नियंत्रित करता है कि आगंतुक कब बुकिंग कर सकते हैं। स्लॉट की लंबाई और बफ़र्स आपके शेड्यूल के शीर्ष पर लागू होते हैं।",
+    "description": "Booking schedule section subtitle"
+  },
+  "scheduleInherit": {
+    "message": "मेरे व्यावसायिक घंटों का उपयोग करें",
+    "description": "Schedule source radio label"
+  },
+  "scheduleInheritHint": {
+    "message": "सेटिंग्स से → व्यावसायिक घंटे (व्यक्तिगत, टीम या कंपनी डिफ़ॉल्ट)।",
+    "description": "Schedule source radio hint"
+  },
+  "scheduleCustom": {
+    "message": "सहेजे गए शेड्यूल का उपयोग करें",
+    "description": "Schedule source radio label"
+  },
+  "scheduleCustomHint": {
+    "message": "व्यावसायिक घंटों में आपके द्वारा बनाया गया शेड्यूल चुनें।",
+    "description": "Schedule source radio hint"
+  },
+  "scheduleLegacy": {
+    "message": "केवल इस बुकिंग पृष्ठ के लिए घंटे",
+    "description": "Schedule source radio label"
+  },
+  "scheduleLegacyHint": {
+    "message": "कस्टम दिन और समय जो आपके मुख्य शेड्यूल को नहीं बदलते हैं।",
+    "description": "Schedule source radio hint"
+  },
+  "inheritedSchedule": {
+    "message": "विरासत में मिला कार्यक्रम",
+    "description": "Availability source card label"
+  },
+  "savedSchedule": {
+    "message": "शेड्यूल सहेजा गया",
+    "description": "Business hours set select label"
+  },
+  "selectSchedulePh": {
+    "message": "एक शेड्यूल चुनें...",
+    "description": "Business hours set placeholder"
+  },
+  "loadingSchedules": {
+    "message": "शेड्यूल लोड हो रहा है...",
+    "description": "Schedule list loading"
+  },
+  "noSchedules": {
+    "message": "अभी तक कोई शेड्यूल नहीं है.",
+    "description": "Empty schedule list"
+  },
+  "createScheduleInSettings": {
+    "message": "सेटिंग्स में एक बनाएं",
+    "description": "Link to create business hours"
+  },
+  "availableDays": {
+    "message": "उपलब्ध दिन",
+    "description": "Day picker label"
+  },
+  "timeFrom": {
+    "message": "से",
+    "description": "Working hours start"
+  },
+  "timeTo": {
+    "message": "को",
+    "description": "Working hours end"
+  },
+  "timezone": {
+    "message": "समयक्षेत्र",
+    "description": "Timezone select label"
+  },
+  "slotLength": {
+    "message": "स्लॉट की लंबाई",
+    "description": "Slot duration label"
+  },
+  "bufferBetween": {
+    "message": "बैठकों के बीच बफर",
+    "description": "Buffer duration label"
+  },
+  "embedHeading": {
+    "message": "अपनी वेबसाइट पर एम्बेड करें",
+    "description": "Embed section title"
+  },
+  "embedHint": {
+    "message": "आईफ्रेम या स्क्रिप्ट टैग के साथ किसी भी पेज पर बुकिंग जोड़ें। पहले अपना पृष्ठ सहेजें ताकि स्लग लाइव रहे।",
+    "description": "Embed section subtitle"
+  },
+  "embedTabIframe": {
+    "message": "इफ़्रेम",
+    "description": "Embed code tab"
+  },
+  "embedTabScript": {
+    "message": "लिखी हुई कहानी",
+    "description": "Embed code tab"
+  },
+  "embedPreview": {
+    "message": "पूर्व दर्शन",
+    "description": "Embed preview label"
+  },
+  "embedPreviewTitle": {
+    "message": "बुकिंग एंबेड पूर्वावलोकन",
+    "description": "Iframe title for embed preview"
+  },
+  "embedCodeToCopy": {
+    "message": "कॉपी करने के लिए कोड",
+    "description": "Snippet copy section label"
+  },
+  "embedCopied": {
+    "message": "कॉपी किया गया",
+    "description": "Copy button after success"
+  },
+  "embedUrlLabel": {
+    "message": "यूआरएल एम्बेड करें:",
+    "description": "Embed URL label prefix"
+  },
+  "embedCodeCopied": {
+    "message": "एंबेड कोड कॉपी किया गया",
+    "description": "Toast after copying embed snippet"
+  },
+  "detailBadge": {
+    "message": "नियुक्ति",
+    "description": "Appointment detail card badge"
+  },
+  "bookedVia": {
+    "message": "{source} के माध्यम से बुक किया गया",
+    "description": "Booking source line"
+  },
+  "bookedBy": {
+    "message": "द्वारा बुक किया हुआ",
+    "description": "Booked by field label"
+  },
+  "guestTimezone": {
+    "message": "अतिथि समय क्षेत्र",
+    "description": "Guest timezone label"
+  },
+  "bookingPage": {
+    "message": "बुकिंग पेज",
+    "description": "Public page slug label"
+  },
+  "meetingLink": {
+    "message": "मीटिंग लिंक",
+    "description": "Meeting link label"
+  },
+  "joinMeeting": {
+    "message": "बैठक में शामिल",
+    "description": "Meeting link anchor text"
+  },
+  "bookingAnswers": {
+    "message": "बुकिंग उत्तर",
+    "description": "Custom form responses heading"
+  },
+  "markedNoShow": {
+    "message": "नो-शो के रूप में चिह्नित",
+    "description": "No-show banner"
+  },
+  "join": {
+    "message": "जोड़ना",
+    "description": "Join meeting button"
+  },
+  "reschedule": {
+    "message": "पुनर्निर्धारित",
+    "description": "Reschedule action"
+  },
+  "linkCopied": {
+    "message": "लिंक कॉपी किया गया",
+    "description": "Copy booking URL toast"
+  },
+  "copyGuestLink": {
+    "message": "अतिथि लिंक कॉपी करें",
+    "description": "Copy guest manage link action"
+  },
+  "markCompleted": {
+    "message": "पूर्ण चिह्नित करें",
+    "description": "Complete appointment action"
+  },
+  "markNoShow": {
+    "message": "नो-शो चिह्नित करें",
+    "description": "No-show action"
+  },
+  "cancelAppointment": {
+    "message": "अपॉइंटमेंट रद्द करें",
+    "description": "Cancel appointment action"
+  },
+  "guestLinkLoadFailed": {
+    "message": "अतिथि लिंक लोड नहीं किया जा सका",
+    "description": "Guest link API error"
+  },
+  "guestLinkCopyFailed": {
+    "message": "अतिथि लिंक कॉपी नहीं किया जा सका",
+    "description": "Guest link clipboard error"
+  },
+  "statsTotal": {
+    "message": "कुल",
+    "description": "Stats card label"
+  },
+  "statsCompleted": {
+    "message": "पुरा होना।",
+    "description": "Stats card label"
+  },
+  "statsCancelled": {
+    "message": "रद्द कर दिया गया",
+    "description": "Stats card label"
+  },
+  "statsNoShowRate": {
+    "message": "कोई शो नहीं %",
+    "description": "Stats card label"
+  },
+  "rescheduleTitle": {
+    "message": "नियुक्ति पुनः निर्धारित करें",
+    "description": "Reschedule modal title"
+  },
+  "pickNewDate": {
+    "message": "एक नई तारीख चुनें",
+    "description": "Reschedule date picker label"
+  },
+  "loadingTimes": {
+    "message": "लोड होने का समय...",
+    "description": "Slot loading state"
+  },
+  "noTimesThisDay": {
+    "message": "इस दिन कोई समय उपलब्ध नहीं है.",
+    "description": "Empty slots state"
+  },
+  "emailGuestUpdated": {
+    "message": "अद्यतन समय के साथ अतिथि को ईमेल करें",
+    "description": "Reschedule notify checkbox"
+  },
+  "confirmNewTime": {
+    "message": "नये समय की पुष्टि करें",
+    "description": "Reschedule submit button"
+  },
+  "loadTimesFailed": {
+    "message": "समय लोड नहीं किया जा सका",
+    "description": "Slots fetch error"
+  },
+  "rescheduleFailed": {
+    "message": "पुनर्निर्धारण विफल रहा",
+    "description": "Reschedule submit error"
+  },
+  "customFieldsHeading": {
+    "message": "बुकिंग प्रश्न",
+    "description": "Custom fields editor title"
+  },
+  "customFieldsHint": {
+    "message": "बुकिंग के समय मेहमान वैकल्पिक अतिरिक्त फ़ील्ड भरते हैं (नाम और ईमेल के बाद)।",
+    "description": "Custom fields editor subtitle"
+  },
+  "addQuestion": {
+    "message": "+ प्रश्न जोड़ें",
+    "description": "Add custom field button"
+  },
+  "noCustomQuestions": {
+    "message": "अभी तक कोई कस्टम प्रश्न नहीं.",
+    "description": "Empty custom fields state"
+  },
+  "questionN": {
+    "message": "प्रश्न {n}",
+    "description": "Custom field index label"
+  },
+  "fieldLabel": {
+    "message": "लेबल",
+    "description": "Custom field label input"
+  },
+  "fieldType": {
+    "message": "क्षेत्र प्रकार",
+    "description": "Custom field type select"
+  },
+  "fieldKey": {
+    "message": "फ़ील्ड कुंजी",
+    "description": "Custom field key input"
+  },
+  "fieldRequired": {
+    "message": "आवश्यक",
+    "description": "Custom field required checkbox"
+  },
+  "fieldOptions": {
+    "message": "विकल्प (प्रति पंक्ति एक)",
+    "description": "Select field options textarea"
+  },
+  "fieldTypeText": {
+    "message": "लघु पाठ",
+    "description": "Custom field type option"
+  },
+  "fieldTypeTextarea": {
+    "message": "लंबा पाठ",
+    "description": "Custom field type option"
+  },
+  "fieldTypeEmail": {
+    "message": "ईमेल",
+    "description": "Custom field type option"
+  },
+  "fieldTypePhone": {
+    "message": "फ़ोन",
+    "description": "Custom field type option"
+  },
+  "fieldTypeSelect": {
+    "message": "ड्रॉप डाउन",
+    "description": "Custom field type option"
+  },
+  "labelPhCompany": {
+    "message": "जैसे कंपनी का नाम",
+    "description": "Custom field label placeholder"
+  },
+  "keyPhCompany": {
+    "message": "कंपनी का नाम",
+    "description": "Custom field key placeholder"
+  },
+  "optionsPh": {
+    "message": "विकल्प ए\nविकल्प बी",
+    "description": "Select options placeholder"
+  },
+  "shareModalTitle": {
+    "message": "बुकिंग पेज साझा करें",
+    "description": "Share modal title"
+  },
+  "shareModalHint": {
+    "message": "अपने कार्यस्थल से संपर्कों को अपना बुकिंग लिंक ईमेल करें।",
+    "description": "Share modal subtitle"
+  },
+  "searchContactsSr": {
+    "message": "संपर्क खोजें",
+    "description": "Share modal search sr-only label"
+  },
+  "searchContactsPh": {
+    "message": "नाम या ईमेल द्वारा संपर्क खोजें...",
+    "description": "Share modal search placeholder"
+  },
+  "noContactsSearch": {
+    "message": "कोई भी संपर्क आपकी खोज से मेल नहीं खाता.",
+    "description": "Share modal empty search"
+  },
+  "noContactsEmail": {
+    "message": "ईमेल पते के साथ अभी तक कोई संपर्क नहीं.",
+    "description": "Share modal empty list"
+  },
+  "contactsSelected": {
+    "message": "{count, plural, one {# contact selected} other {# contacts selected}}",
+    "description": "Share modal selection count"
+  },
+  "composeEmail": {
+    "message": "ईमेल लिखें",
+    "description": "Share modal primary action"
+  },
+  "loadContactsFailed": {
+    "message": "संपर्क लोड नहीं किये जा सके",
+    "description": "Share modal fetch error"
+  },
+  "contactFallback": {
+    "message": "संपर्क",
+    "description": "Contact row fallback name"
+  },
+  "shareEmailSubject": {
+    "message": "मीटिंग बुक करें - {title}",
+    "description": "Default share email subject"
+  },
+  "shareEmailTitleFallback": {
+    "message": "मेरे पंचांग",
+    "description": "Share email subject fallback title"
+  },
+  "shareEmailBodyHi": {
+    "message": "<p>नमस्कार,</p>",
+    "description": "Default share email body paragraph"
+  },
+  "shareEmailBodyLink": {
+    "message": "<p>कृपया मेरी उपलब्धता देखने और आपके लिए उपयुक्त समय बुक करने के लिए नीचे दिए गए लिंक का उपयोग करें:</p>",
+    "description": "Default share email body paragraph"
+  },
+  "shareEmailBodyClosing": {
+    "message": "<p>जुड़ने के लिए उत्सुक हूं।</p>",
+    "description": "Default share email body paragraph"
+  },
+  "backToPages": {
+    "message": "← बुकिंग पेज",
+    "description": "Back link to pages hub"
+  },
+  "adminBookingPage": {
+    "message": "व्यवस्थापक · बुकिंग पृष्ठ",
+    "description": "Configure view admin eyebrow"
+  },
+  "personalBookingPage": {
+    "message": "व्यक्तिगत बुकिंग पृष्ठ",
+    "description": "Configure view personal eyebrow"
+  },
+  "bookingPageTitle": {
+    "message": "बुकिंग पेज",
+    "description": "Configure view title"
+  },
+  "userBookingPage": {
+    "message": "उपयोगकर्ता बुकिंग पृष्ठ",
+    "description": "Admin edit default title"
+  },
+  "adminConfigureHint": {
+    "message": "इस उपयोगकर्ता के सार्वजनिक बुकिंग पृष्ठ और उपलब्धता को कॉन्फ़िगर करें।",
+    "description": "Admin configure subtitle"
+  },
+  "personalConfigureHint": {
+    "message": "अपना लिंक साझा करें ताकि ग्राहक आपके कैलेंडर पर समय बुक कर सकें। प्रत्येक बुकिंग स्वचालित रूप से एक ईवेंट बनाती है।",
+    "description": "Personal configure subtitle"
+  },
+  "automationsLink": {
+    "message": "बुकिंग के लिए ऑटोमेशन सेट करें →",
+    "description": "Link to automation rules"
+  },
+  "pageLive": {
+    "message": "पेज लाइव",
+    "description": "Enable toggle label"
+  },
+  "publicLinkHeading": {
+    "message": "सार्वजनिक लिंक",
+    "description": "Public link section title"
+  },
+  "publicLinkHint": {
+    "message": "यह वह URL है जिसे आप ग्राहकों के साथ साझा करते हैं।",
+    "description": "Public link section subtitle"
+  },
+  "pageName": {
+    "message": "पेज का नाम",
+    "description": "Display name field"
+  },
+  "pageNamePh": {
+    "message": "जैसे एलेक्स के साथ एक डेमो बुक करें",
+    "description": "Display name placeholder"
+  },
+  "urlPath": {
+    "message": "यूआरएल पथ",
+    "description": "Slug field label"
+  },
+  "slugTaken": {
+    "message": "यह यूआरएल पहले ही लिया जा चुका है",
+    "description": "Slug availability warning"
+  },
+  "meetingFormat": {
+    "message": "बैठक का प्रारूप",
+    "description": "Meeting type section title"
+  },
+  "msTeamsHeading": {
+    "message": "माइक्रोसॉफ्ट आउटलुक और टीमें",
+    "description": "Microsoft calendar section"
+  },
+  "msTeamsHint": {
+    "message": "जब आप आउटलुक पर व्यस्त हों तो स्वचालित रूप से टीम लिंक बनाने और समय छिपाने के लिए Microsoft 365 को कनेक्ट करें।",
+    "description": "Microsoft calendar section hint"
+  },
+  "msOAuthNotConfigured": {
+    "message": "Microsoft OAuth अभी तक API सर्वर पर कॉन्फ़िगर नहीं किया गया है। अपने व्यवस्थापक से सेट करने के लिए कहें",
+    "description": "Microsoft OAuth warning prefix"
+  },
+  "savePageFirstMs": {
+    "message": "पहले इस पेज को सेव करें, फिर माइक्रोसॉफ्ट कैलेंडर कनेक्ट करें।",
+    "description": "Microsoft connect prerequisite"
+  },
+  "connectedAs": {
+    "message": "{email} के रूप में जुड़ा हुआ",
+    "description": "Calendar connected status"
+  },
+  "notConnected": {
+    "message": "जुड़े नहीं हैं",
+    "description": "Calendar disconnected status"
+  },
+  "opening": {
+    "message": "खुल रहा है...",
+    "description": "OAuth popup opening state"
+  },
+  "connectMicrosoft": {
+    "message": "माइक्रोसॉफ्ट से कनेक्ट करें",
+    "description": "Connect Microsoft button"
+  },
+  "disconnect": {
+    "message": "डिस्कनेक्ट",
+    "description": "Disconnect calendar button"
+  },
+  "msAzureHint": {
+    "message": "में एक ऐप रजिस्टर करें",
+    "description": "Microsoft setup hint prefix"
+  },
+  "msAzureLink": {
+    "message": "Azure ऐप पंजीकरण",
+    "description": "Microsoft setup link text"
+  },
+  "msAzureHintSuffix": {
+    "message": "प्रत्यायोजित अनुमतियों के साथ: Calendars.Read, Calendars.ReadWrite, OnlineMeetings.ReadWrite, User.Read।",
+    "description": "Microsoft setup hint suffix"
+  },
+  "msRedirectHint": {
+    "message": "इस रीडायरेक्ट यूआरआई को Azure → प्रमाणीकरण → वेब में जोड़ें:",
+    "description": "Microsoft redirect URI hint"
+  },
+  "googleHeading": {
+    "message": "गूगल कैलेंडर और मीट",
+    "description": "Google calendar section"
+  },
+  "googleHint": {
+    "message": "जब आप Google पर व्यस्त हों तो स्वचालित रूप से मीट लिंक बनाने और समय छिपाने के लिए Google कैलेंडर को कनेक्ट करें।",
+    "description": "Google calendar section hint"
+  },
+  "savePageFirstGoogle": {
+    "message": "पहले इस पृष्ठ को सहेजें, फिर Google कैलेंडर कनेक्ट करें।",
+    "description": "Google connect prerequisite"
+  },
+  "connectGoogle": {
+    "message": "Google कैलेंडर कनेक्ट करें",
+    "description": "Connect Google button"
+  },
+  "googleSetupHint": {
+    "message": "जीमेल के समान Google OAuth ऐप का उपयोग करता है (सेटिंग्स → एकीकरण → ईमेल)। सक्षम करें",
+    "description": "Google setup hint part 1"
+  },
+  "googleCalendarApi": {
+    "message": "गूगल कैलेंडर एपीआई",
+    "description": "Google setup bold phrase"
+  },
+  "googleSetupHint2": {
+    "message": "आपके Google क्लाउड प्रोजेक्ट में। यदि आपको \"अपर्याप्त अनुमति\" दिखाई देती है, तो इस ऐप को हटा दें",
+    "description": "Google setup hint part 2"
+  },
+  "googlePermissionsLink": {
+    "message": "Google खाता अनुमतियाँ",
+    "description": "Google permissions link"
+  },
+  "googleSetupHint3": {
+    "message": "फिर दोबारा कनेक्ट करें.",
+    "description": "Google setup hint part 3"
+  },
+  "googleRedirectHint": {
+    "message": "इस सटीक URL को Google क्लाउड → OAuth क्लाइंट → अधिकृत रीडायरेक्ट URI के अंतर्गत जोड़ें:",
+    "description": "Google redirect URI hint"
+  },
+  "branding": {
+    "message": "ब्रांडिंग",
+    "description": "Branding section title"
+  },
+  "accentColor": {
+    "message": "उच्चारण रंग",
+    "description": "Theme color label"
+  },
+  "welcomeMessage": {
+    "message": "स्वागत संदेश",
+    "description": "Welcome note label"
+  },
+  "livePreview": {
+    "message": "लाइव पूर्वावलोकन",
+    "description": "Preview panel label"
+  },
+  "yourName": {
+    "message": "आपका नाम",
+    "description": "Preview fallback name"
+  },
+  "minMeeting": {
+    "message": "{minutes} मिनट की बैठक",
+    "description": "Preview slot duration label"
+  },
+  "welcomePreviewPh": {
+    "message": "स्वागत संदेश पूर्वावलोकन...",
+    "description": "Preview welcome placeholder"
+  },
+  "pagePaused": {
+    "message": "पेज रुका हुआ है",
+    "description": "Preview paused banner"
+  },
+  "pageSaved": {
+    "message": "बुकिंग पृष्ठ सहेजा गया",
+    "description": "Save success toast"
+  },
+  "googleStartFailed": {
+    "message": "Google कनेक्शन प्रारंभ नहीं किया जा सका",
+    "description": "Google OAuth start error"
+  },
+  "msStartFailed": {
+    "message": "Microsoft कनेक्शन प्रारंभ नहीं किया जा सका",
+    "description": "Microsoft OAuth start error"
+  },
+  "connectionFailed": {
+    "message": "कनेक्शन विफल",
+    "description": "OAuth generic error"
+  },
+  "googleDisconnected": {
+    "message": "Google कैलेंडर डिस्कनेक्ट हो गया",
+    "description": "Google disconnect toast"
+  },
+  "msDisconnected": {
+    "message": "Microsoft कैलेंडर डिस्कनेक्ट हो गया",
+    "description": "Microsoft disconnect toast"
+  },
+  "calendarConnected": {
+    "message": "{provider} कैलेंडर जुड़ा",
+    "description": "OAuth success toast"
+  },
+  "calendarConnectFailed": {
+    "message": "{provider} कैलेंडर कनेक्शन विफल",
+    "description": "OAuth error toast"
+  },
+  "hubEyebrow": {
+    "message": "निर्धारण",
+    "description": "Pages hub eyebrow"
+  },
+  "hubTitle": {
+    "message": "बुकिंग पेज",
+    "description": "Pages hub title"
+  },
+  "hubHint": {
+    "message": "एक लिंक साझा करें ताकि ग्राहक आपके कैलेंडर पर समय बुक कर सकें। प्रत्येक बुकिंग स्वचालित रूप से एक ईवेंट बनाती है।",
+    "description": "Pages hub subtitle"
+  },
+  "personalPageBtn": {
+    "message": "+ व्यक्तिगत पेज",
+    "description": "Create personal page button"
+  },
+  "teamPageBtn": {
+    "message": "+ टीम पेज",
+    "description": "Create team page button"
+  },
+  "emptyTitle": {
+    "message": "अपना पहला बुकिंग पेज बनाएं",
+    "description": "Empty state title"
+  },
+  "emptyHint": {
+    "message": "चुनें कि आप ग्राहकों को कैसे शेड्यूल करना चाहते हैं - केवल आपके लिए एक व्यक्तिगत लिंक, या आपकी टीम के लिए एक साझा लिंक।",
+    "description": "Empty state subtitle"
+  },
+  "cardPersonalTitle": {
+    "message": "व्यक्तिगत बुकिंग पृष्ठ",
+    "description": "Empty state card title"
+  },
+  "cardPersonalHint": {
+    "message": "आपकी उपलब्धता के साथ एक लिंक. सलाहकारों और खाता स्वामियों के लिए आदर्श।",
+    "description": "Empty state card hint"
+  },
+  "setupMyPage": {
+    "message": "मेरा पेज सेट करें →",
+    "description": "Empty state personal CTA"
+  },
+  "cardTeamTitle": {
+    "message": "टीम बुकिंग पेज",
+    "description": "Empty state team card title"
+  },
+  "cardTeamHint": {
+    "message": "एक लिंक स्वचालित रूप से टीम के सदस्यों के बीच बैठकों को रूट करता है।",
+    "description": "Empty state team card hint"
+  },
+  "createTeamPage": {
+    "message": "टीम पेज बनाएं →",
+    "description": "Empty state team CTA"
+  },
+  "teamAdminOnly": {
+    "message": "टीम पेज कार्यक्षेत्र व्यवस्थापकों द्वारा बनाए जा सकते हैं।",
+    "description": "Non-admin team hint"
+  },
+  "badgeTeam": {
+    "message": "टीम",
+    "description": "Page list team badge"
+  },
+  "badgePersonal": {
+    "message": "निजी",
+    "description": "Page list personal badge"
+  },
+  "badgeLive": {
+    "message": "रहना",
+    "description": "Page enabled badge"
+  },
+  "badgePaused": {
+    "message": "रुका हुआ",
+    "description": "Page disabled badge"
+  },
+  "copyLink": {
+    "message": "लिंक की प्रतिलिपि करें",
+    "description": "Copy booking link action"
+  },
+  "copied": {
+    "message": "कॉपी किया गया",
+    "description": "Copy link success button label"
+  },
+  "share": {
+    "message": "शेयर करना",
+    "description": "Share page action"
+  },
+  "myBookingPage": {
+    "message": "मेरा बुकिंग पृष्ठ",
+    "description": "Personal page default label"
+  },
+  "teamPageMembers": {
+    "message": "टीम पेज ({count} सदस्य)",
+    "description": "Team page default label"
+  },
+  "userFallback": {
+    "message": "उपयोगकर्ता",
+    "description": "Owner name fallback"
+  },
+  "bookingLinkCopied": {
+    "message": "बुकिंग लिंक कॉपी किया गया",
+    "description": "Copy page link toast"
+  },
+  "loadPagesFailed": {
+    "message": "बुकिंग पेज लोड नहीं हो सके",
+    "description": "Pages list fetch error"
+  },
+  "emailQueued": {
+    "message": "ईमेल कतारबद्ध",
+    "description": "Email send queued toast"
+  },
+  "emailSent": {
+    "message": "ईमेल भेजा गया",
+    "description": "Email send success toast"
+  },
+  "emailSendFailed": {
+    "message": "ईमेल भेजने में विफल",
+    "description": "Email send error toast"
+  },
+  "tabPersonalPage": {
+    "message": "व्यक्तिगत बुकिंग पृष्ठ",
+    "description": "Tab title for personal configure"
+  },
+  "tabTeamNew": {
+    "message": "नया टीम पेज",
+    "description": "Tab title for new team page"
+  },
+  "tabTeamPage": {
+    "message": "टीम पेज",
+    "description": "Tab title for team configure"
+  },
+  "tabPersonalShort": {
+    "message": "व्यक्तिगत पेज",
+    "description": "Tab title for personal page edit"
+  },
+  "tabUserBooking": {
+    "message": "{name} · बुकिंग",
+    "description": "Tab title for admin user configure"
+  },
+  "teamEyebrow": {
+    "message": "टीम बुकिंग",
+    "description": "Team configure eyebrow"
+  },
+  "teamCreateTitle": {
+    "message": "टीम पेज बनाएं",
+    "description": "Team configure new title"
+  },
+  "teamEditTitle": {
+    "message": "टीम पेज संपादित करें",
+    "description": "Team configure edit title"
+  },
+  "teamConfigureHint": {
+    "message": "ग्राहकों के लिए एक लिंक - बैठकें आपकी टीम को स्वचालित रूप से सौंपी जाती हैं।",
+    "description": "Team configure subtitle"
+  },
+  "saveTeamPage": {
+    "message": "टीम पेज सहेजें",
+    "description": "Team save button"
+  },
+  "teamDetails": {
+    "message": "टीम विवरण",
+    "description": "Team details section"
+  },
+  "teamName": {
+    "message": "टीम का नाम",
+    "description": "Team display name label"
+  },
+  "teamNamePh": {
+    "message": "जैसे विक्रय टीम",
+    "description": "Team name placeholder"
+  },
+  "publicUrl": {
+    "message": "सार्वजनिक यूआरएल",
+    "description": "Team slug label"
+  },
+  "urlTaken": {
+    "message": "यूआरएल पहले ही ले लिया गया है",
+    "description": "Team slug warning"
+  },
+  "assignment": {
+    "message": "कार्यभार",
+    "description": "Assignment strategy label"
+  },
+  "assignRoundRobin": {
+    "message": "राउंड रोबिन (निष्पक्ष रूप से घुमाएँ)",
+    "description": "Assignment strategy option"
+  },
+  "assignFirstAvailable": {
+    "message": "प्रथम उपलब्ध सदस्य",
+    "description": "Assignment strategy option"
+  },
+  "teamMembers": {
+    "message": "टीम के सदस्य",
+    "description": "Team members section"
+  },
+  "teamMembersHint": {
+    "message": "केवल चयनित सदस्य ही इस पृष्ठ से बुकिंग प्राप्त कर सकते हैं। प्रत्येक सदस्य के व्यक्तिगत बुकिंग पृष्ठ कैलेंडर कनेक्शन (Google या Microsoft, नीचे मीटिंग प्रारूप से मेल खाते हुए) का उपयोग व्यस्त समय को छिपाने के लिए किया जाता है।",
+    "description": "Team members section hint"
+  },
+  "loadingUsers": {
+    "message": "उपयोगकर्ता लोड हो रहे हैं...",
+    "description": "Org users loading"
+  },
+  "selectOneMember": {
+    "message": "कम से कम एक सदस्य का चयन करें.",
+    "description": "Team members validation"
+  },
+  "welcomeNote": {
+    "message": "स्वागत नोट",
+    "description": "Team branding welcome label"
+  },
+  "welcomeNotePh": {
+    "message": "हमारी टीम के साथ समय बुक करें...",
+    "description": "Team welcome placeholder"
+  },
+  "teamBookingLink": {
+    "message": "टीम बुकिंग लिंक",
+    "description": "Team public URL label"
+  },
+  "teamPageSaved": {
+    "message": "टीम बुकिंग पृष्ठ सहेजा गया",
+    "description": "Team save success toast"
+  },
+  "saveFailed": {
+    "message": "सहेजना विफल",
+    "description": "Generic save error"
+  },
+  "loadTeamFailed": {
+    "message": "टीम पेज लोड करने में विफल",
+    "description": "Team load error"
+  },
+  "publicLoading": {
+    "message": "अपॉइंटमेंट लोड हो रहा है...",
+    "description": "Public manage loading"
+  },
+  "publicUnavailable": {
+    "message": "अनुपलब्ध",
+    "description": "Public manage error title"
+  },
+  "publicCancelledTitle": {
+    "message": "नियुक्ति रद्द",
+    "description": "Public cancel success title"
+  },
+  "publicCancelledHint": {
+    "message": "जरूरत पड़ने पर आप बुकिंग पेज से नया समय बुक कर सकते हैं।",
+    "description": "Public cancel success hint"
+  },
+  "publicUpdatedTitle": {
+    "message": "नियुक्ति अद्यतन की गई",
+    "description": "Public reschedule success title"
+  },
+  "publicUpdatedEmail": {
+    "message": "नए समय के साथ एक पुष्टिकरण ईमेल भेजा गया है.",
+    "description": "Public reschedule success hint"
+  },
+  "publicManageEyebrow": {
+    "message": "नियुक्ति प्रबंधित करें",
+    "description": "Public manage header eyebrow"
+  },
+  "publicWithHost": {
+    "message": "{name} के साथ",
+    "description": "Public manage host line"
+  },
+  "publicScheduled": {
+    "message": "अनुसूचित",
+    "description": "Public manage schedule label"
+  },
+  "publicBack": {
+    "message": "← वापस",
+    "description": "Public reschedule back link"
+  },
+  "publicCancelling": {
+    "message": "रद्द किया जा रहा है...",
+    "description": "Public cancel in progress"
+  },
+  "publicCannotChange": {
+    "message": "इस अपॉइंटमेंट को अब ऑनलाइन नहीं बदला जा सकेगा.",
+    "description": "Public manage locked state"
+  },
+  "publicLinkInvalid": {
+    "message": "यह लिंक अमान्य है या समाप्त हो चुका है.",
+    "description": "Public manage load error"
+  },
+  "publicNotFound": {
+    "message": "नहीं मिला",
+    "description": "Public manage API not found"
+  },
+  "publicCancelFailed": {
+    "message": "रद्द करना विफल रहा",
+    "description": "Public cancel error"
+  },
+  "publicCancelConfirm": {
+    "message": "यह नियुक्ति रद्द करें?",
+    "description": "Public cancel confirm dialog"
+  },
+  "providerGoogle": {
+    "message": "गूगल",
+    "description": "Calendar provider name"
+  },
+  "providerMicrosoft": {
+    "message": "माइक्रोसॉफ्ट",
+    "description": "Calendar provider name"
+  }
+}

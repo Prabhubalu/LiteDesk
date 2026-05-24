@@ -51,13 +51,13 @@
 
           <!-- Department/Description -->
           <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 min-h-[40px] max-w-[200px]">
-            {{ node.description || 'No description' }}
+            {{ node.description || t('settings.rolesNoDescription') }}
           </p>
 
           <!-- Level Badge -->
           <div class="flex items-center gap-2 text-xs">
             <span class="px-2.5 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full font-medium">
-              Level {{ node.level }}
+              {{ t('settings.rolesLevel', { level: node.level }) }}
             </span>
             <span class="px-2.5 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full font-medium flex items-center gap-1">
               <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -93,7 +93,10 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
   node: {

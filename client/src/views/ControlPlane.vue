@@ -3,8 +3,8 @@
     <!-- Header -->
     <div class="flex justify-between items-center mb-8">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Control Plane</h1>
-        <p class="text-lg text-gray-600 dark:text-gray-400 mt-2">Arivu internal platform operations</p>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ t('process.controlPlaneHeading') }}</h1>
+        <p class="text-lg text-gray-600 dark:text-gray-400 mt-2">{{ t('process.controlPlaneSubheading') }}</p>
       </div>
     </div>
 
@@ -23,13 +23,13 @@
           </div>
           <div class="flex-1">
             <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-              Demo Requests
+              {{ t('process.controlPlaneDemoRequests') }}
             </h3>
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              Manage and track all demo requests from potential customers
+              {{ t('process.controlPlaneDemoRequestsDesc') }}
             </p>
             <div class="flex items-center text-sm text-indigo-600 dark:text-indigo-400 font-medium">
-              View Module
+              {{ t('process.controlPlaneViewModule') }}
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
@@ -51,97 +51,13 @@
           </div>
           <div class="flex-1">
             <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-              Instances
+              {{ t('process.controlPlaneInstances') }}
             </h3>
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              Monitor and manage all customer instances and deployments
+              {{ t('process.controlPlaneInstancesDesc') }}
             </p>
             <div class="flex items-center text-sm text-indigo-600 dark:text-indigo-400 font-medium">
-              View Module
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </div>
-          </div>
-        </div>
-      </router-link>
-
-      <!-- Automation Rules Module -->
-      <router-link
-        to="/control/automation-rules"
-        class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md hover:border-indigo-500 dark:hover:border-indigo-500 transition-all cursor-pointer group"
-      >
-        <div class="flex items-start gap-4">
-          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-            </svg>
-          </div>
-          <div class="flex-1">
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-              Automation Rules
-            </h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              Configure automated actions triggered by domain events
-            </p>
-            <div class="flex items-center text-sm text-indigo-600 dark:text-indigo-400 font-medium">
-              View Module
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </div>
-          </div>
-        </div>
-      </router-link>
-
-      <!-- Processes Module -->
-      <router-link
-        to="/control/processes"
-        class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md hover:border-indigo-500 dark:hover:border-indigo-500 transition-all cursor-pointer group"
-      >
-        <div class="flex items-start gap-4">
-          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-          </div>
-          <div class="flex-1">
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-              Processes
-            </h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              Configure multi-step automated processes with approvals and behavior control
-            </p>
-            <div class="flex items-center text-sm text-indigo-600 dark:text-indigo-400 font-medium">
-              View Module
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </div>
-          </div>
-        </div>
-      </router-link>
-
-      <!-- Business Flows Module -->
-      <router-link
-        to="/control/flows"
-        class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md hover:border-indigo-500 dark:hover:border-indigo-500 transition-all cursor-pointer group"
-      >
-        <div class="flex items-start gap-4">
-          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-          </div>
-          <div class="flex-1">
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-              Business Flows
-            </h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              Visual grouping of multiple processes into end-to-end business stories
-            </p>
-            <div class="flex items-center text-sm text-indigo-600 dark:text-indigo-400 font-medium">
-              View Module
+              {{ t('process.controlPlaneViewModule') }}
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
@@ -156,9 +72,9 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <div>
-          <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-1">Platform-Only Access</h4>
+          <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-1">{{ t('process.controlPlanePlatformOnly') }}</h4>
           <p class="text-sm text-blue-800 dark:text-blue-300">
-            The Control Plane is only accessible to platform administrators. These modules are not visible to tenant users and cannot be automated.
+            {{ t('process.controlPlanePlatformOnlyBody') }}
           </p>
         </div>
       </div>
@@ -169,20 +85,19 @@
 <script setup>
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/authRegistry';
 
+const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
 
 onMounted(() => {
-  // Set page title
-  document.title = 'Control Plane | Arivu';
-  
-  // Verify platform admin access
+  document.title = t('process.controlPlaneDocTitle');
+
   if (!authStore.isPlatformAdmin) {
     console.warn('Non-platform admin attempted to access Control Plane');
     router.push({ name: 'dashboard' });
   }
 });
 </script>
-

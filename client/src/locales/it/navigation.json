@@ -1,0 +1,422 @@
+{
+  "settings": {
+    "message": "Impostazioni",
+    "description": "Settings area navigation label"
+  },
+  "home": {
+    "message": "Casa",
+    "description": "Home dashboard navigation label"
+  },
+  "profile": {
+    "message": "Profilo",
+    "description": "User profile settings navigation label"
+  },
+  "inbox": {
+    "message": "Posta in arrivo",
+    "description": "Communications inbox navigation label"
+  },
+  "signOut": {
+    "message": "disconnessione",
+    "description": "Sign out of the application"
+  },
+  "noNav": {
+    "message": "Nessuna navigazione disponibile",
+    "description": "Empty sidebar when no modules are configured"
+  },
+  "userMenu": {
+    "message": "Menù utente",
+    "description": "User avatar menu aria-label"
+  },
+  "toggleMenu": {
+    "message": "Cambia menu",
+    "description": "Mobile navigation menu toggle"
+  },
+  "closeSidebar": {
+    "message": "Chiudi la barra laterale",
+    "description": "Screen reader label for mobile drawer close"
+  },
+  "openSidebar": {
+    "message": "Apri la barra laterale",
+    "description": "Screen reader label for mobile drawer open"
+  },
+  "syncStatus": {
+    "message": "Stato della sincronizzazione",
+    "description": "Audit offline sync status button"
+  },
+  "portalAudits": {
+    "message": "Audit",
+    "description": "Portal bottom nav audits tab"
+  },
+  "portalActions": {
+    "message": "Azioni",
+    "description": "Portal bottom nav actions tab"
+  },
+  "collapseSidebar": {
+    "message": "Comprimi la barra laterale",
+    "description": "Collapse app sidebar tooltip"
+  },
+  "coreModules": {
+    "message": "Moduli principali",
+    "description": "Core modules section tooltip"
+  },
+  "coreSection": {
+    "message": "Nucleo",
+    "description": "Core modules section heading"
+  },
+  "help": {
+    "message": "Aiuto",
+    "description": "Sidebar help link"
+  },
+  "loadingNavigation": {
+    "message": "Caricamento della navigazione",
+    "description": "Sidebar skeleton aria-label"
+  },
+  "salesAppFallback": {
+    "message": "Saldi",
+    "description": "Default app name when active app is unset"
+  },
+  "tabClose": {
+    "message": "Vicino",
+    "description": "Close single tab context menu item"
+  },
+  "tabCloseOthers": {
+    "message": "Chiudi gli altri",
+    "description": "Close other tabs context menu item"
+  },
+  "tabCloseToRight": {
+    "message": "Chiudi le schede a destra",
+    "description": "Close tabs to the right context menu item"
+  },
+  "tabCloseAll": {
+    "message": "Chiudi tutte le schede",
+    "description": "Close all tabs context menu item"
+  },
+  "tabAccount": {
+    "message": "Account",
+    "description": "Tab bar account menu tooltip"
+  },
+  "tabCloseTab": {
+    "message": "Chiudi scheda",
+    "description": "Close tab button aria-label"
+  },
+  "globalSearchPlaceholder": {
+    "message": "Cerca o esegui un comando...",
+    "description": "Global search modal input placeholder"
+  },
+  "globalSearchSearching": {
+    "message": "Ricerca…",
+    "description": "Global search loading state"
+  },
+  "globalSearchNoCommands": {
+    "message": "Nessun comando corrispondente",
+    "description": "Command palette no matches"
+  },
+  "globalSearchNoCommandsHint": {
+    "message": "Prova un comando diverso o premi ESC per uscire.",
+    "description": "Command palette no matches hint"
+  },
+  "globalSearchNoResults": {
+    "message": "Nessun risultato trovato",
+    "description": "Global search no entity results"
+  },
+  "globalSearchNoResultsHint": {
+    "message": "Prova a cercare per nome, email o parola chiave.",
+    "description": "Global search no results hint"
+  },
+  "globalSearchConfirmTitle": {
+    "message": "Sei sicuro?",
+    "description": "Destructive command confirmation title"
+  },
+  "globalSearchToCancel": {
+    "message": "per annullare",
+    "description": "Keyboard hint fragment after ESC"
+  },
+  "globalSearchToConfirm": {
+    "message": "per confermare",
+    "description": "Keyboard hint fragment after Enter"
+  },
+  "globalSearchCommandsHeader": {
+    "message": "Comandi",
+    "description": "Command palette section header"
+  },
+  "globalSearchTypeToFind": {
+    "message": "Digita per trovare un comando",
+    "description": "Command palette empty query hint"
+  },
+  "globalSearchStartTyping": {
+    "message": "Inizia a digitare per cercare",
+    "description": "Search mode empty state"
+  },
+  "globalSearchSlashHint": {
+    "message": "Utilizzare / per creare, collegare o navigare",
+    "description": "Discoverability hint for command mode trigger"
+  },
+  "globalSearchGroupPeople": {
+    "message": "Persone",
+    "description": "Search results group label"
+  },
+  "globalSearchGroupOrganizations": {
+    "message": "Organizzazioni",
+    "description": "Search results group label"
+  },
+  "globalSearchGroupWork": {
+    "message": "Lavoro",
+    "description": "Search results group label"
+  },
+  "globalSearchGroupConfiguration": {
+    "message": "Configurazione",
+    "description": "Search results group label"
+  },
+  "globalSearchUnknownUser": {
+    "message": "Utente sconosciuto",
+    "description": "Fallback display name in search"
+  },
+  "globalSearchLinkModule": {
+    "message": "Collegamento {module}",
+    "description": "Link drawer title when module name capitalized"
+  },
+  "userAccountFallback": {
+    "message": "Il tuo conto",
+    "description": "User menu display name fallback"
+  },
+  "userStatusLabel": {
+    "message": "Stato: {label}",
+    "description": "User menu status dot aria-label"
+  },
+  "userClearStatus": {
+    "message": "Stato chiaro",
+    "description": "Clear custom status button title"
+  },
+  "userSetAvailability": {
+    "message": "Imposta la disponibilità",
+    "description": "Availability picker listbox aria-label"
+  },
+  "userSetCustomStatus": {
+    "message": "Imposta stato personalizzato...",
+    "description": "Open custom status editor"
+  },
+  "userEditCustomStatus": {
+    "message": "Modifica stato personalizzato…",
+    "description": "Edit existing custom status"
+  },
+  "userStatusPlaceholder": {
+    "message": "Qual è il tuo stato?",
+    "description": "Custom status input placeholder"
+  },
+  "userPickEmoji": {
+    "message": "Scegli le emoji",
+    "description": "Emoji picker button title"
+  },
+  "userYourProfile": {
+    "message": "Il tuo profilo",
+    "description": "User menu profile link"
+  },
+  "userControlPanel": {
+    "message": "Pannello di controllo",
+    "description": "Admin control panel link"
+  },
+  "userBookingPages": {
+    "message": "Pagine di prenotazione",
+    "description": "User menu appointments link"
+  },
+  "userTrash": {
+    "message": "Spazzatura",
+    "description": "User menu trash link"
+  },
+  "userSwitchToLight": {
+    "message": "Passa alla modalità luce",
+    "description": "Theme toggle label when dark"
+  },
+  "userSwitchToDark": {
+    "message": "Passa alla modalità oscura",
+    "description": "Theme toggle label when light"
+  },
+  "tabBookingPages": {
+    "message": "Pagine di prenotazione",
+    "description": "Tab title for appointments pages"
+  },
+  "approvals": {
+    "message": "Approvazioni",
+    "description": "Approvals shell navigation label"
+  },
+  "attention": {
+    "message": "Attenzione",
+    "description": "Attention shell navigation label"
+  },
+  "search": {
+    "message": "Ricerca",
+    "description": "Search shell navigation label"
+  },
+  "dashboard": {
+    "message": "Panoramica",
+    "description": "App dashboard navigation label"
+  },
+  "modulePeople": {
+    "message": "Persone",
+    "description": "People module navigation label"
+  },
+  "moduleContacts": {
+    "message": "Contatti",
+    "description": "Contacts module navigation label"
+  },
+  "moduleOrganizations": {
+    "message": "Organizzazioni",
+    "description": "Organizations module navigation label"
+  },
+  "moduleTasks": {
+    "message": "Compiti",
+    "description": "Tasks module navigation label"
+  },
+  "moduleEvents": {
+    "message": "Eventi",
+    "description": "Events module navigation label"
+  },
+  "moduleForms": {
+    "message": "Forme",
+    "description": "Forms module navigation label"
+  },
+  "moduleItems": {
+    "message": "Elementi",
+    "description": "Items module navigation label"
+  },
+  "moduleDeals": {
+    "message": "Trattative",
+    "description": "Deals module navigation label"
+  },
+  "moduleResponses": {
+    "message": "Risposte",
+    "description": "Form responses module navigation label"
+  },
+  "moduleImports": {
+    "message": "Importare",
+    "description": "Imports module navigation label"
+  },
+  "moduleCases": {
+    "message": "Casi",
+    "description": "Helpdesk cases module navigation label"
+  },
+  "moduleFindings": {
+    "message": "Risultati",
+    "description": "Audit findings module navigation label"
+  },
+  "moduleAudits": {
+    "message": "Audit",
+    "description": "Audits module navigation label"
+  },
+  "appSales": {
+    "message": "Saldi",
+    "description": "Sales app name in app switcher"
+  },
+  "appAudit": {
+    "message": "Controllo",
+    "description": "Audit app name in app switcher"
+  },
+  "appHelpdesk": {
+    "message": "Assistenza clienti",
+    "description": "Helpdesk app name in app switcher"
+  },
+  "appProjects": {
+    "message": "Progetti",
+    "description": "Projects app name in app switcher"
+  },
+  "appPortal": {
+    "message": "Portale",
+    "description": "Portal app name in app switcher"
+  },
+  "salesDashboard": {
+    "message": "Cruscotto di vendita",
+    "description": "Sales dashboard tab title"
+  },
+  "auditDashboard": {
+    "message": "Pannello di controllo",
+    "description": "Audit dashboard tab title"
+  },
+  "appDashboard": {
+    "message": "{app} Cruscotto",
+    "description": "App-scoped dashboard tab title"
+  },
+  "tabDemoRequests": {
+    "message": "Richieste di dimostrazione",
+    "description": "Demo requests tab title"
+  },
+  "tabInstances": {
+    "message": "Istanze",
+    "description": "Instances tab title"
+  },
+  "tabAutomationRules": {
+    "message": "Regole di automazione",
+    "description": "Automation rules tab title"
+  },
+  "tabProcesses": {
+    "message": "Processi",
+    "description": "Processes tab title"
+  },
+  "tabBusinessFlows": {
+    "message": "Flussi aziendali",
+    "description": "Business flows tab title"
+  },
+  "tabAutomation": {
+    "message": "Automazione",
+    "description": "Automation settings tab title"
+  },
+  "tabFlowHealth": {
+    "message": "Salute del flusso",
+    "description": "Business flow health tab title"
+  },
+  "tabEditBusinessFlow": {
+    "message": "Modifica flusso aziendale",
+    "description": "Edit business flow tab title"
+  },
+  "tabCreateBusinessFlow": {
+    "message": "Crea flusso aziendale",
+    "description": "Create business flow tab title"
+  },
+  "tabBusinessFlow": {
+    "message": "Flusso aziendale",
+    "description": "Business flow detail tab title"
+  },
+  "tabMyAudits": {
+    "message": "I miei audit",
+    "description": "My audits tab title"
+  },
+  "tabAuditDetail": {
+    "message": "Dettagli dell'audit",
+    "description": "Audit detail tab title"
+  },
+  "tabPersonalBooking": {
+    "message": "Pagina di prenotazione personale",
+    "description": "Personal booking page tab title"
+  },
+  "tabTeamBooking": {
+    "message": "Pagina di prenotazione della squadra",
+    "description": "Team booking page tab title"
+  },
+  "tabNewTeamPage": {
+    "message": "Nuova pagina della squadra",
+    "description": "New team booking page tab title"
+  },
+  "tabBookingPage": {
+    "message": "Pagina di prenotazione",
+    "description": "User booking page tab title"
+  },
+  "tabCaseDetail": {
+    "message": "Dettaglio del caso",
+    "description": "Helpdesk case detail tab title"
+  },
+  "tabFormResponseDetail": {
+    "message": "({id}) Dettagli",
+    "description": "Form response detail tab title"
+  },
+  "tabRecordNamed": {
+    "message": "{module}: {name}",
+    "description": "Record tab with entity name"
+  },
+  "tabRecordDetail": {
+    "message": "{module} Dettaglio",
+    "description": "Record detail tab title without name"
+  },
+  "tabPage": {
+    "message": "Pagina",
+    "description": "Generic fallback tab title"
+  }
+}

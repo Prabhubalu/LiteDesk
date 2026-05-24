@@ -1,0 +1,30 @@
+{
+  "required": {
+    "message": "This field is required",
+    "description": "Generic required field validation"
+  },
+  "emailInvalid": {
+    "message": "Enter a valid email address",
+    "description": "Email format validation"
+  },
+  "minLength": {
+    "message": "Must be at least {min, number} characters",
+    "description": "Minimum length validation with ICU number"
+  },
+  "maxLength": {
+    "message": "Must be at most {max, number} characters",
+    "description": "Maximum length validation with ICU number"
+  },
+  "imageFileRequired": {
+    "message": "Please select an image file",
+    "description": "Image upload wrong file type"
+  },
+  "imageMaxSize": {
+    "message": "Image size must be less than 10MB",
+    "description": "Image upload exceeds size limit"
+  },
+  "imageUploadFailed": {
+    "message": "Failed to upload image. Please try again.",
+    "description": "Image upload network or server error"
+  }
+}

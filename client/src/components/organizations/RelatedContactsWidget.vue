@@ -1,17 +1,17 @@
 <template>
-  <CardWidget title="Related Contacts" class="ld-card-group">
+  <CardWidget :title="t('organizations.relatedContactsWidgetRelatedContacts')" class="ld-card-group">
     <template #actions>
       <button
         @click="$emit('link-contacts')"
         class="rounded-md bg-white dark:bg-gray-800 px-2 py-1.5 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-        title="Link Contacts"
+        :title="t('organizations.relatedContactsWidgetLinkContacts')"
       >
         <LinkIcon class="w-4 h-4 text-gray-700 dark:text-gray-300" />
       </button>
       <button
         @click="$emit('create-contact')"
         class="rounded-md bg-white dark:bg-gray-800 px-2 py-1.5 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-        title="Add Contact"
+        :title="t('organizations.relatedContactsWidgetAddContact2')"
       >
         <PlusIcon class="w-4 h-4 text-gray-700 dark:text-gray-300" />
       </button>
@@ -48,7 +48,7 @@
                   <template v-if="getFieldValue(fieldDef, contact)">
                     {{ getFieldValue(fieldDef, contact) }}
                   </template>
-                  <span v-else class="text-gray-400 dark:text-gray-500 italic">Empty</span>
+                  <span v-else class="text-gray-400 dark:text-gray-500 italic">{{ t('settings.modFieldsQuickCreateEmpty') }}</span>
                 </div>
               </div>
             </div>
@@ -61,11 +61,11 @@
             <transition enter-active-class="transition ease-out duration-100" enter-from-class="transform opacity-0 scale-95" enter-to-class="transform opacity-100 scale-100" leave-active-class="transition ease-in duration-75" leave-from-class="transform opacity-100 scale-100" leave-to-class="transform opacity-0 scale-95">
               <MenuItems class="absolute right-0 mt-2 w-40 rounded-lg shadow-xl py-1 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 z-10">
                 <MenuItem v-slot="{ active }">
-                  <button @click="$emit('unlink-contacts', contact._id)" :class="['w-full text-left px-4 py-2 text-sm', active ? 'bg-gray-100 dark:bg-gray-700' : '']">Unlink</button>
+                  <button @click="$emit('unlink-contacts', contact._id)" :class="['w-full text-left px-4 py-2 text-sm', active ? 'bg-gray-100 dark:bg-gray-700' : '']">{{ t('records.relatedUnlink') }}</button>
                 </MenuItem>
                 <MenuItem v-slot="{ active }" v-if="canDelete">
                   <button @click="$emit('delete-contact', contact._id)" :class="['w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400', active ? 'bg-gray-100 dark:bg-gray-700' : '']">
-                    <span class="inline-flex items-center gap-2"><TrashIcon class="w-4 h-4" /> Delete</span>
+                    <span class="inline-flex items-center gap-2"><TrashIcon class="w-4 h-4" />{{ t('settings.modFieldsDelete') }}</span>
                   </button>
                 </MenuItem>
               </MenuItems>
@@ -78,18 +78,17 @@
       <!-- Empty State -->
       <div v-else class="text-center py-8">
         <UsersIcon class="mx-auto h-10 w-10 text-gray-400 dark:text-gray-600 mb-2" />
-        <p class="text-sm text-gray-500 dark:text-gray-400">No contacts linked yet. Link contacts to this organization to see them here.</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('organizations.relatedContactsWidgetNoContactsLinkedYetLinkContacts') }}</p>
         <button
           @click="$emit('create-contact')"
           class="mt-2 rounded-md bg-white dark:bg-gray-800 px-3 py-1.5 text-xs font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-        >
-          Add contact
-        </button>
+        >{{ t('organizations.relatedContactsWidgetAddContact') }}</button>
       </div>
   </CardWidget>
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, watch, onMounted, computed } from 'vue';
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue';
 import { EllipsisVerticalIcon, TrashIcon } from '@heroicons/vue/24/outline';
@@ -114,6 +113,8 @@ const props = defineProps({
     required: false
   }
 });
+
+const { t } = useI18n();
 
 defineEmits(['view-contact', 'create-contact', 'link-contacts']);
 

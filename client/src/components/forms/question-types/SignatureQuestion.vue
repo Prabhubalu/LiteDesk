@@ -8,6 +8,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import SignaturePad from '../SignaturePad.vue';
 
 defineProps({
@@ -22,4 +23,6 @@ defineProps({
 });
 
 const emit = defineEmits(['update']);
+
+const { t } = useI18n();
 </script>

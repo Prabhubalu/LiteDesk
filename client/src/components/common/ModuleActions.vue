@@ -17,7 +17,7 @@
     <Menu v-if="hasImportOrExport" as="div" class="relative">
       <MenuButton
         class="inline-flex items-center justify-center p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-        aria-label="More actions"
+        :aria-label="t('common.moreActions')"
       >
         <EllipsisVerticalIcon class="w-5 h-5" />
       </MenuButton>
@@ -40,7 +40,7 @@
                 ]"
               >
                 <ArrowDownTrayIcon class="w-4 h-4" />
-                Import
+                {{ t('common.importData') }}
               </button>
             </MenuItem>
             <MenuItem v-if="showExport && canExport" v-slot="{ active }">
@@ -52,7 +52,7 @@
                 ]"
               >
                 <ArrowUpTrayIcon class="w-4 h-4" />
-                Export
+                {{ t('common.exportData') }}
               </button>
             </MenuItem>
           </div>
@@ -68,6 +68,9 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
 import { EllipsisVerticalIcon, ArrowDownTrayIcon, ArrowUpTrayIcon } from '@heroicons/vue/24/outline';
 import PermissionButton from './PermissionButton.vue';
 import { useAuthStore } from '@/stores/authRegistry';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
   module: {

@@ -34,16 +34,14 @@
                     class="flex-shrink-0 border-b border-indigo-600 bg-indigo-700 px-4 py-6 sm:px-6 dark:border-indigo-700 dark:bg-indigo-800"
                   >
                     <div class="flex items-center justify-between">
-                      <DialogTitle class="text-base font-semibold text-white">
-                        Convert Lead to Contact
-                      </DialogTitle>
+                      <DialogTitle class="text-base font-semibold text-white">{{ t('people.salesConvertLeadModalConvertLeadToContact') }}</DialogTitle>
                       <button
                         type="button"
                         class="relative rounded-md text-indigo-200 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                         @click="close"
                       >
                         <span class="absolute -inset-2.5" />
-                        <span class="sr-only">Close panel</span>
+                        <span class="sr-only">{{ t('forms.previewClosePanelSr') }}</span>
                         <XMarkIcon class="size-6" aria-hidden="true" />
                       </button>
                     </div>
@@ -70,13 +68,8 @@
                             />
                           </svg>
                           <div>
-                            <p class="mb-1 text-sm font-medium text-blue-900 dark:text-blue-200">
-                              Converting Sales participation
-                            </p>
-                            <p class="text-sm text-blue-700 dark:text-blue-300">
-                              Core identity fields (name, email, etc.) are not modified. Lead-specific fields will be
-                              cleared.
-                            </p>
+                            <p class="mb-1 text-sm font-medium text-blue-900 dark:text-blue-200">{{ t('people.salesConvertLeadModalConvertingSalesParticipation') }}</p>
+                            <p class="text-sm text-blue-700 dark:text-blue-300">{{ t('people.salesConvertLeadModalCoreIdentityFieldsNameEmailEtc') }}</p>
                           </div>
                         </div>
                       </div>
@@ -120,9 +113,7 @@
                             />
                           </svg>
                           <div class="flex-1">
-                            <h3 class="mb-2 text-sm font-semibold text-danger-800 dark:text-danger-200">
-                              Validation errors
-                            </h3>
+                            <h3 class="mb-2 text-sm font-semibold text-danger-800 dark:text-danger-200">{{ t('people.salesConvertLeadModalValidationErrors') }}</h3>
                             <ul class="list-inside list-disc space-y-2">
                               <li
                                 v-for="(message, field) in validationErrors"
@@ -138,9 +129,7 @@
 
                       <!-- State Fields Section -->
                       <div v-if="visibleStateFields.length > 0">
-                        <h3 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-900 dark:text-white">
-                          State fields
-                        </h3>
+                        <h3 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-900 dark:text-white">{{ t('people.salesConvertLeadModalStateFields') }}</h3>
                         <div class="space-y-4">
                           <div v-for="fieldName in visibleStateFields" :key="fieldName">
                             <label
@@ -182,9 +171,7 @@
 
                       <!-- Detail Fields Section -->
                       <div v-if="detailFields.length > 0">
-                        <h3 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-900 dark:text-white">
-                          Detail fields
-                        </h3>
+                        <h3 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-900 dark:text-white">{{ t('people.salesConvertLeadModalDetailFields') }}</h3>
                         <div class="space-y-4">
                           <div v-for="fieldName in detailFields" :key="fieldName">
                             <label
@@ -271,7 +258,7 @@
                         v-if="visibleStateFields.length === 0 && detailFields.length === 0"
                         class="py-8 text-center"
                       >
-                        <p class="text-sm text-gray-500 dark:text-gray-400">No Contact fields available.</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('people.salesConvertLeadModalNoContactFieldsAvailable') }}</p>
                       </div>
                     </div>
                   </div>
@@ -284,9 +271,7 @@
                       type="button"
                       class="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-white dark:ring-gray-600 dark:hover:bg-gray-700"
                       @click="close"
-                    >
-                      Cancel
-                    </button>
+                    >{{ t('performance.cancelWizard') }}</button>
                     <button
                       type="submit"
                       :disabled="loading"
@@ -319,6 +304,8 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+import { resolveFieldLabel } from '@/utils/fieldLabelResolver';
 import { ref, computed, watch } from 'vue';
 import {
   Dialog,
@@ -350,6 +337,8 @@ const props = defineProps({
     required: true
   }
 });
+
+const { t, te } = useI18n();
 
 const emit = defineEmits(['close', 'converted']);
 
@@ -414,10 +403,9 @@ const detailFields = computed(() => {
 });
 
 const getFieldLabel = (fieldName) => {
-  return fieldName
-    .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+  const metadata = getFieldMetadata(fieldName);
+  const apiLabel = metadata?.label || metadata?.displayName;
+  return resolveFieldLabel('people', { key: fieldName, label: apiLabel }, t, te);
 };
 
 const isFieldRequired = (fieldName) => {

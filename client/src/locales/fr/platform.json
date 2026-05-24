@@ -1,0 +1,458 @@
+{
+  "appPulseCardOpenApp": {
+    "message": "Ouvrir l'application",
+    "description": "Auto-migrated from appPulseCard"
+  },
+  "appRegistryThisAppIsAvailableForDiscovery": {
+    "message": "Cette application est disponible en découverte. Les fonctionnalités d'installation et de configuration seront disponibles dans une prochaine mise à jour.",
+    "description": "Auto-migrated from appRegistry"
+  },
+  "appRegistryInstallationComingSoon": {
+    "message": "Installation à venir.",
+    "description": "Auto-migrated from appRegistry"
+  },
+  "appRegistryNoApplicationsAvailable": {
+    "message": "Aucune application disponible.",
+    "description": "Auto-migrated from appRegistry"
+  },
+  "appRegistryDiscoverAndManageYourApplications": {
+    "message": "Découvrez et gérez vos applications",
+    "description": "Auto-migrated from appRegistry"
+  },
+  "appRegistryAppRegistry": {
+    "message": "Registre des applications",
+    "description": "Auto-migrated from appRegistry"
+  },
+  "attentionSurfaceAttentionShowsTasksAndEventsOnly": {
+    "message": "Attention affiche les tâches et les événements uniquement lorsqu'une action est nécessaire.",
+    "description": "Auto-migrated from attentionSurface"
+  },
+  "attentionSurfaceThingsThatNeedYourAttentionRight": {
+    "message": "Choses qui nécessitent votre attention en ce moment",
+    "description": "Auto-migrated from attentionSurface"
+  },
+  "attentionSurfaceAttention": {
+    "message": "Attention",
+    "description": "Auto-migrated from attentionSurface"
+  },
+  "platformHomeAlerts": {
+    "message": "Alertes",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeQuickAccess": {
+    "message": "Accès rapide",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeYourApps": {
+    "message": "Vos applications",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeContinueWhereYouLeftOff": {
+    "message": "Continuez là où vous vous êtes arrêté",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeNeedsYourAttention": {
+    "message": "A besoin de votre attention",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeTasksEventsAndAlertsFromYour": {
+    "message": "Les tâches, événements et alertes de vos applications apparaîtront ici au fur et à mesure que vous commencerez.",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeWelcomeToYourHome": {
+    "message": "Bienvenue chez vous",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeWhatNeedsYourAttentionRightNow": {
+    "message": "Qu'est-ce qui nécessite votre attention en ce moment",
+    "description": "Auto-migrated from platformHome"
+  },
+  "instanceManagementManageInstance": {
+    "message": "Gérer l'instance",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementUsername": {
+    "message": "Nom d'utilisateur:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementDatabase": {
+    "message": "Base de données :",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementPort": {
+    "message": "Port:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementHost": {
+    "message": "Hôte:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementDatabaseConnection": {
+    "message": "Connexion à la base de données",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementStorageUsed": {
+    "message": "Stockage utilisé :",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTotalDeals": {
+    "message": "Offres totales :",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTotalContacts": {
+    "message": "Nombre total de contacts :",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTotalUsers": {
+    "message": "Nombre total d'utilisateurs :",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTrialEnd": {
+    "message": "Fin de l'essai :",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementStatus": {
+    "message": "Statut:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTier": {
+    "message": "Étage:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementSubscription": {
+    "message": "Abonnement",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementApi": {
+    "message": "API :",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementFrontend": {
+    "message": "L'extrémité avant:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementUrls": {
+    "message": "URL",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementStatus2": {
+    "message": "Statut:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementKubernetesNamespace": {
+    "message": "Espace de noms Kubernetes :",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementSubdomain": {
+    "message": "Sous-domaine :",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementInstanceName": {
+    "message": "Nom de l'instance :",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementInstanceInformation": {
+    "message": "Informations sur les instances",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementNoCustomerInstancesMatchYourCurrent": {
+    "message": "Aucune instance client ne correspond à vos filtres actuels.",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementNoInstancesFound": {
+    "message": "Aucune instance trouvée",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementManage": {
+    "message": "Gérer",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementSubscription2": {
+    "message": "Abonnement",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementHealth": {
+    "message": "Santé",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementSubdomain2": {
+    "message": "Sous-domaine",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementInstance": {
+    "message": "Exemple",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementLoadingInstances": {
+    "message": "Chargement des instances...",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementUnhealthy": {
+    "message": "Malsain",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementDegraded": {
+    "message": "Dégradé",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementHealthy": {
+    "message": "En bonne santé",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementAllHealth": {
+    "message": "Toute la santé",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementCanceled": {
+    "message": "Annulé",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementPastDue": {
+    "message": "En souffrance",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementAllSubscriptions": {
+    "message": "Tous les abonnements",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTerminated": {
+    "message": "Terminé",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementProvisioning": {
+    "message": "Approvisionnement",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementSearchInstances": {
+    "message": "Rechercher des instances...",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementMonthlyRevenue": {
+    "message": "Revenu mensuel",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementProvisioning2": {
+    "message": "Approvisionnement",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementActiveInstances": {
+    "message": "Instances actives",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTotalInstances": {
+    "message": "Nombre total d'instances",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementMonitorAndManageAllCustomerInstances": {
+    "message": "Surveiller et gérer toutes les instances client",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementInstanceManagement": {
+    "message": "Gestion des instances",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "landingPageAdminLogin": {
+    "message": "Connexion administrateur",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageRequestDemo": {
+    "message": "Demander une démo",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageStopWrestlingWithBloatedCrmPlug": {
+    "message": "Arrêtez de vous battre avec un CRM gonflé. Connectez-vous, définissez votre processus et automatisez l'engagement client en moins d'une journée.",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageDesignYourPerfectSalesFlow": {
+    "message": "Concevez votre flux de vente parfait.",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageReadMore": {
+    "message": "En savoir plus",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPagePlugAndPlayToolForAny": {
+    "message": "Outil plug-and-play pour n’importe quel secteur vertical.",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageLogIn": {
+    "message": "Se connecter",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageCloseMenu": {
+    "message": "Fermer le menu",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageNurtura": {
+    "message": "Nurtura",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageLogIn2": {
+    "message": "Se connecter",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageOpenMainMenu": {
+    "message": "Ouvrir le menu principal",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageNurtura2": {
+    "message": "Nurtura",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageGlobal": {
+    "message": "Mondial",
+    "description": "Auto-migrated from landingPage"
+  },
+  "genericModuleUnknownModuleOrRoute": {
+    "message": "Module ou itinéraire inconnu.",
+    "description": "Auto-migrated from genericModule"
+  },
+  "listViewAllItems": {
+    "message": "Tous les articles",
+    "description": "Items list default view title"
+  },
+  "listViewActiveItems": {
+    "message": "Articles actifs",
+    "description": "Items list active view title"
+  },
+  "listViewProducts": {
+    "message": "Produits",
+    "description": "Items list products view title"
+  },
+  "listViewServices": {
+    "message": "Services",
+    "description": "Items list services view title"
+  },
+  "listViewLowStock": {
+    "message": "Stock faible",
+    "description": "Items list low stock view title"
+  },
+  "listViewOutOfStock": {
+    "message": "En rupture de stock",
+    "description": "Items list out of stock view title"
+  },
+  "listCreateItem": {
+    "message": "Nouvel article",
+    "description": "Items list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "Rechercher des éléments...",
+    "description": "Items list search placeholder"
+  },
+  "listStatTotalItems": {
+    "message": "Total des articles",
+    "description": "Items list statistics card"
+  },
+  "listStatActiveItems": {
+    "message": "Actif",
+    "description": "Items list statistics card"
+  },
+  "listStatProducts": {
+    "message": "Produits",
+    "description": "Items list statistics card"
+  },
+  "listStatServices": {
+    "message": "Services",
+    "description": "Items list statistics card"
+  },
+  "listStatLowStock": {
+    "message": "Stock faible",
+    "description": "Items list statistics card"
+  },
+  "listStatOutOfStock": {
+    "message": "En rupture de stock",
+    "description": "Items list statistics card"
+  },
+  "platformHomeNeedAttentionCount": {
+    "message": "{count} a besoin d'attention",
+    "description": "Today strip chip count"
+  },
+  "platformHomeApprovalCountOne": {
+    "message": "Approbation {count}",
+    "description": "Today strip chip count singular"
+  },
+  "platformHomeApprovalCountMany": {
+    "message": "{count} approbations",
+    "description": "Today strip chip count plural"
+  },
+  "platformHomeUnreadCountOne": {
+    "message": "{count} non lu",
+    "description": "Today strip chip count singular"
+  },
+  "platformHomeUnreadCountMany": {
+    "message": "{count} non lu",
+    "description": "Today strip chip count plural"
+  },
+  "platformHomeOverdueCount": {
+    "message": "{count} en retard",
+    "description": "Attention summary overdue count"
+  },
+  "platformHomeDueTodayCount": {
+    "message": "{count} dû aujourd'hui",
+    "description": "Attention summary due today count"
+  },
+  "platformHomeItemCountOne": {
+    "message": "{count} article",
+    "description": "Attention summary fallback singular"
+  },
+  "platformHomeItemCountMany": {
+    "message": "{count} articles",
+    "description": "Attention summary fallback plural"
+  },
+  "platformHomeAlertInstanceSuspendedTitle": {
+    "message": "Instance suspendue",
+    "description": "Platform home alert title"
+  },
+  "platformHomeAlertInstanceSuspendedMessage": {
+    "message": "Cette instance est actuellement suspendue. Veuillez contacter l'assistance pour restaurer l'accès.",
+    "description": "Platform home alert message"
+  },
+  "platformHomeAlertTrialEndedTitle": {
+    "message": "Essai terminé",
+    "description": "Platform home alert title"
+  },
+  "platformHomeAlertTrialEndedMessage": {
+    "message": "Votre essai est terminé. Veuillez vous abonner pour continuer.",
+    "description": "Platform home alert message"
+  },
+  "platformHomeAlertTrialEndingSoonTitle": {
+    "message": "L'essai se termine bientôt",
+    "description": "Platform home alert title"
+  },
+  "platformHomeAlertTrialEndingSoonMessageOne": {
+    "message": "Votre essai se termine dans {count} jour.",
+    "description": "Platform home alert message singular"
+  },
+  "platformHomeAlertTrialEndingSoonMessageMany": {
+    "message": "Votre essai se termine dans {count} jours.",
+    "description": "Platform home alert message plural"
+  },
+  "platformHomeAuditDashboard": {
+    "message": "Tableau de bord d'audit",
+    "description": "Tab title fallback for audit app"
+  },
+  "platformHomeGreetingMorning": {
+    "message": "Bonjour",
+    "description": "Platform home greeting"
+  },
+  "platformHomeGreetingMorningWithName": {
+    "message": "Bonjour, {name}",
+    "description": "Platform home greeting"
+  },
+  "platformHomeGreetingAfternoon": {
+    "message": "Bon après-midi",
+    "description": "Platform home greeting"
+  },
+  "platformHomeGreetingAfternoonWithName": {
+    "message": "Bonjour, {name}",
+    "description": "Platform home greeting"
+  },
+  "platformHomeGreetingEvening": {
+    "message": "Bonne soirée",
+    "description": "Platform home greeting"
+  },
+  "platformHomeGreetingEveningWithName": {
+    "message": "Bonsoir, {name}",
+    "description": "Platform home greeting"
+  }
+}

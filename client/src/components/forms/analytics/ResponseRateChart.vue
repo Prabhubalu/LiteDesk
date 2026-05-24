@@ -6,10 +6,13 @@
 
 <script setup>
 import { ref, onMounted, watch, onBeforeUnmount } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Chart, registerables } from 'chart.js';
 import apiClient from '@/utils/apiClient';
 
 Chart.register(...registerables);
+
+const { t } = useI18n();
 
 const props = defineProps({
   formId: {
@@ -68,7 +71,7 @@ const renderChart = () => {
       labels: chartData.value.labels,
       datasets: [
         {
-          label: 'Responses per Day',
+          label: t('forms.analyticsChartResponsesPerDay'),
           data: chartData.value.rates,
           borderColor: '#10B981', // green-500
           backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -95,7 +98,7 @@ const renderChart = () => {
           intersect: false,
           callbacks: {
             label: function(context) {
-              return `${context.parsed.y} responses`;
+              return t('forms.analyticsTooltipResponses', { count: context.parsed.y });
             }
           }
         }

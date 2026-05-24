@@ -6,7 +6,7 @@
       'transition-all duration-300 ease-in-out',
     ]"
     aria-busy="true"
-    aria-label="Loading navigation"
+    :aria-label="t('navigation.loadingNavigation')"
   >
     <div
       class="relative h-[3.167rem] border-b border-[#EAEEF4] dark:border-gray-700 flex-shrink-0 flex items-center"
@@ -98,6 +98,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = withDefaults(
   defineProps<{

@@ -1,0 +1,2382 @@
+{
+  "recordsCount": {
+    "message": "{count, plural, one {# record} other {# records}}",
+    "description": "Record list count with ICU pluralization"
+  },
+  "itemsSelected": {
+    "message": "{count, plural, one {# item selected} other {# items selected}}",
+    "description": "Bulk selection count in list views"
+  },
+  "welcomeUser": {
+    "message": "환영합니다, {name}",
+    "description": "Personalized greeting with interpolation"
+  },
+  "assignedToUser": {
+    "message": "Assigned to {gender, select, female {her} male {him} other {them}}",
+    "description": "ICU select example for gendered copy (platform chrome only)"
+  },
+  "localeDevTitle": {
+    "message": "현지화 QA",
+    "description": "Developer settings section for i18n tools"
+  },
+  "pseudoLocaleHint": {
+    "message": "의사 로케일은 번역 전에 텍스트를 확장하고 레이아웃 문제를 노출합니다.",
+    "description": "Help text for pseudo-locale developer toggle"
+  },
+  "moreActions": {
+    "message": "추가 작업",
+    "description": "Overflow menu trigger aria-label"
+  },
+  "loadingList": {
+    "message": "로딩 목록",
+    "description": "List skeleton aria-label"
+  },
+  "viewRecord": {
+    "message": "보다",
+    "description": "Row action: open record"
+  },
+  "importData": {
+    "message": "수입",
+    "description": "Module header import action"
+  },
+  "exportData": {
+    "message": "내보내다",
+    "description": "Module header export action"
+  },
+  "listSaveView": {
+    "message": "보기 저장",
+    "description": "List view: save current filters/columns"
+  },
+  "listFilters": {
+    "message": "필터",
+    "description": "List view filters panel title"
+  },
+  "listAllRecords": {
+    "message": "모두",
+    "description": "List filter tab: all records"
+  },
+  "listClearFilters": {
+    "message": "필터 지우기",
+    "description": "Reset active list filters"
+  },
+  "listLoadingOptions": {
+    "message": "옵션 로드 중…",
+    "description": "Filter dropdown loading state"
+  },
+  "listClear": {
+    "message": "분명한",
+    "description": "Clear single filter or selection"
+  },
+  "listViewName": {
+    "message": "이름 보기",
+    "description": "Saved view name field label"
+  },
+  "listDeleteView": {
+    "message": "보기 삭제",
+    "description": "Delete saved list view action"
+  },
+  "listCustomizeView": {
+    "message": "보기 사용자 정의",
+    "description": "Open list view customization drawer"
+  },
+  "listLayoutOptions": {
+    "message": "레이아웃 옵션",
+    "description": "List layout section title"
+  },
+  "listRowHeight": {
+    "message": "행 높이",
+    "description": "Table row height setting"
+  },
+  "listReset": {
+    "message": "다시 놓기",
+    "description": "Reset view settings to defaults"
+  },
+  "listColumnWidths": {
+    "message": "열 너비",
+    "description": "Column width customization section"
+  },
+  "listDefaultView": {
+    "message": "기본 보기",
+    "description": "Mark view as org default"
+  },
+  "listManageFields": {
+    "message": "필드 관리",
+    "description": "Open field visibility manager"
+  },
+  "listFieldRequired": {
+    "message": "필수의",
+    "description": "Field cannot be hidden"
+  },
+  "listFieldLocked": {
+    "message": "잠김",
+    "description": "Field locked from reorder"
+  },
+  "listFieldHidden": {
+    "message": "숨겨진",
+    "description": "Hidden fields section"
+  },
+  "listNoHiddenFields": {
+    "message": "숨겨진 필드 없음",
+    "description": "Empty hidden fields state"
+  },
+  "listNewCustomField": {
+    "message": "새로운 사용자 정의 필드",
+    "description": "Create custom field from list manager"
+  },
+  "listCustomizeKanban": {
+    "message": "칸반 사용자 정의",
+    "description": "Kanban board customization"
+  },
+  "deleteTitleBulk": {
+    "message": "{count} {recordTypePlural} 삭제",
+    "description": "Bulk delete dialog title"
+  },
+  "deleteTitleSingle": {
+    "message": "{recordType} 삭제",
+    "description": "Single delete dialog title"
+  },
+  "deleteConfirmBulk": {
+    "message": "{count} {recordTypeLabel}을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+    "description": "Bulk delete confirmation"
+  },
+  "deleteConfirmSingle": {
+    "message": "{target}을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+    "description": "Single delete confirmation; target is quoted name or type"
+  },
+  "deleteInProgress": {
+    "message": "삭제 중…",
+    "description": "Delete button in progress"
+  },
+  "listEditView": {
+    "message": "편집 보기",
+    "description": "Edit saved list view action title"
+  },
+  "listDeleteViewAction": {
+    "message": "보기 삭제",
+    "description": "Delete saved list view action title"
+  },
+  "listSaveViewHint": {
+    "message": "현재 보기를 새로운 저장된 보기로 저장",
+    "description": "Save view button tooltip"
+  },
+  "listHideStatistics": {
+    "message": "통계 숨기기",
+    "description": "Stats panel toggle tooltip when visible"
+  },
+  "listShowStatistics": {
+    "message": "통계 표시",
+    "description": "Stats panel toggle tooltip when hidden"
+  },
+  "listStatsShort": {
+    "message": "통계",
+    "description": "Short stats toggle label"
+  },
+  "listHideShort": {
+    "message": "숨다",
+    "description": "Short hide label for stats toggle"
+  },
+  "listSuggestedLabel": {
+    "message": "제안:",
+    "description": "Suggested filters section prefix"
+  },
+  "listSuggestedHint": {
+    "message": "일반적인 사용법을 기반으로 한 제안입니다. 자동으로 적용되는 것은 없습니다.",
+    "description": "Suggested filters tooltip"
+  },
+  "listSuggestedConfigure": {
+    "message": "{filter} 필터를 구성하려면 클릭하세요.",
+    "description": "Suggested filter chip tooltip"
+  },
+  "listClearSearch": {
+    "message": "{title}에 대한 검색 지우기",
+    "description": "Clear search input aria-label"
+  },
+  "listViewNameExample": {
+    "message": "예: 판매 리드",
+    "description": "Saved view name placeholder"
+  },
+  "listViewDescOptional": {
+    "message": "설명(선택사항)",
+    "description": "Saved view description field label"
+  },
+  "listViewDescPlaceholder": {
+    "message": "이 보기에 대한 선택적 설명",
+    "description": "Saved view description placeholder"
+  },
+  "listSaveCurrentView": {
+    "message": "현재 보기 저장",
+    "description": "Save view modal title"
+  },
+  "listEditViewTitle": {
+    "message": "편집 보기",
+    "description": "Edit view modal title"
+  },
+  "listDeleteViewConfirm": {
+    "message": "\"{viewName}\"을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+    "description": "Delete saved view confirmation"
+  },
+  "listClearSelection": {
+    "message": "선택 취소",
+    "description": "Bulk selection clear button tooltip"
+  },
+  "listRowsSelected": {
+    "message": "{count, plural, one {# {singular} selected} other {# {plural} selected}}",
+    "description": "Bulk row selection count in list"
+  },
+  "listSearchFields": {
+    "message": "검색 필드",
+    "description": "Field manager search placeholder"
+  },
+  "listShownCount": {
+    "message": "표시됨({count})",
+    "description": "Visible fields section header"
+  },
+  "listKanbanOptions": {
+    "message": "칸반 옵션",
+    "description": "Kanban settings section title"
+  },
+  "listCardSize": {
+    "message": "카드 크기",
+    "description": "Kanban card size setting"
+  },
+  "listStackFields": {
+    "message": "스택 필드",
+    "description": "Kanban stack fields toggle"
+  },
+  "listCollapseEmpty": {
+    "message": "빈 열 축소",
+    "description": "Kanban collapse empty columns toggle"
+  },
+  "listShowEmptyFields": {
+    "message": "빈 필드 표시",
+    "description": "Kanban show empty fields toggle"
+  },
+  "listShowClosedRecords": {
+    "message": "마감된 기록 표시",
+    "description": "Kanban show closed records toggle"
+  },
+  "darkMode": {
+    "message": "다크 모드",
+    "description": "Dark color mode menu option"
+  },
+  "lightMode": {
+    "message": "라이트 모드",
+    "description": "Light color mode menu option"
+  },
+  "tableClearSelection": {
+    "message": "선택 취소",
+    "description": "Clear bulk row selection"
+  },
+  "tableAllPageSelected": {
+    "message": "이 페이지의 모든 {count} 항목이 선택되었습니다.",
+    "description": "Select-all banner when current page is fully selected"
+  },
+  "tableSelectAllItems": {
+    "message": "{count} 항목을 모두 선택하세요.",
+    "description": "Expand selection to all pages"
+  },
+  "tableAllSelected": {
+    "message": "모든 {count} 선택됨",
+    "description": "All records across pages selected"
+  },
+  "tableSelectedCount": {
+    "message": "{count, plural, one {# selected} other {# selected}}",
+    "description": "Bulk selection count in data table"
+  },
+  "tableDeleteSelected": {
+    "message": "선택 항목 삭제",
+    "description": "Bulk delete action label"
+  },
+  "tableColumns": {
+    "message": "열",
+    "description": "Column settings button label"
+  },
+  "tableColumnSettings": {
+    "message": "열 설정",
+    "description": "Column settings modal title"
+  },
+  "tableManageColumns": {
+    "message": "열 관리",
+    "description": "Column manager section title"
+  },
+  "tableManageColumnsHint": {
+    "message": "표시 여부를 전환하고 드래그하여 재정렬하세요.",
+    "description": "Column manager help text"
+  },
+  "tableVisibleCount": {
+    "message": "{total} 중 {visible} 표시됨",
+    "description": "Visible column count in settings"
+  },
+  "tableUnfreezeColumn": {
+    "message": "열 고정 해제",
+    "description": "Unfreeze sticky column tooltip"
+  },
+  "tableFreezeColumn": {
+    "message": "열 고정",
+    "description": "Freeze sticky column tooltip"
+  },
+  "tableFreezeMax": {
+    "message": "최대 2개의 열을 고정할 수 있습니다.",
+    "description": "Freeze limit tooltip"
+  },
+  "tableFrozen": {
+    "message": "언",
+    "description": "Frozen column badge"
+  },
+  "tableResetDefault": {
+    "message": "기본값으로 재설정",
+    "description": "Reset column settings"
+  },
+  "tableShowingResults": {
+    "message": "{total} 결과 중 {start}~{end} 표시 중",
+    "description": "Pagination summary"
+  },
+  "tableSortAscending": {
+    "message": "오름차순 정렬",
+    "description": "Table column sort ascending"
+  },
+  "tableSortDescending": {
+    "message": "내림차순 정렬",
+    "description": "Table column sort descending"
+  },
+  "tableClearSort": {
+    "message": "정렬 지우기",
+    "description": "Remove column sort"
+  },
+  "tableToggleSort": {
+    "message": "{column} 정렬 전환",
+    "description": "Sort toggle aria-label"
+  },
+  "tableRowSelectSr": {
+    "message": "행 번호 및 행 선택",
+    "description": "Screen reader label for selection column"
+  },
+  "tableLoadingSr": {
+    "message": "테이블 로딩",
+    "description": "Screen reader label for table loading skeleton"
+  },
+  "metricsTitle": {
+    "message": "측정항목",
+    "description": "Metrics widget card title"
+  },
+  "metricsConfigure": {
+    "message": "측정항목 구성",
+    "description": "Open metrics configuration"
+  },
+  "metricsEmptyYet": {
+    "message": "아직 구성된 측정항목이 없습니다.",
+    "description": "Empty metrics widget state"
+  },
+  "metricsEmptyPanel": {
+    "message": "구성된 측정항목이 없습니다.",
+    "description": "Empty metrics config panel"
+  },
+  "metricsAdd": {
+    "message": "측정항목 추가",
+    "description": "Add a new metric row"
+  },
+  "metricsLabel": {
+    "message": "상표",
+    "description": "Metric label column"
+  },
+  "metricsSource": {
+    "message": "원천",
+    "description": "Metric data source column"
+  },
+  "metricsField": {
+    "message": "필드",
+    "description": "Metric field column"
+  },
+  "metricsAggregation": {
+    "message": "집합",
+    "description": "Metric aggregation column"
+  },
+  "metricsDragReorder": {
+    "message": "드래그하여 재정렬하세요.",
+    "description": "Metric row drag handle tooltip"
+  },
+  "metricsDelete": {
+    "message": "측정항목 삭제",
+    "description": "Remove metric row"
+  },
+  "metricsClosePanel": {
+    "message": "패널 닫기",
+    "description": "Close metrics config drawer"
+  },
+  "keyFieldsTitle": {
+    "message": "주요 분야",
+    "description": "Key fields widget title"
+  },
+  "keyFieldsEmptyValue": {
+    "message": "비어 있는",
+    "description": "Empty key field value placeholder"
+  },
+  "keyFieldsNone": {
+    "message": "구성된 키 필드가 없습니다.",
+    "description": "No key fields empty state"
+  },
+  "keyFieldsHint": {
+    "message": "모듈 설정에서 필드를 \"키 필드\"로 표시",
+    "description": "Key fields configuration hint"
+  },
+  "closePanel": {
+    "message": "패널 닫기",
+    "description": "Screen reader label for closing a side panel"
+  },
+  "formAssignToMe": {
+    "message": "나에게 할당",
+    "description": "Assign current user to a reviewer field"
+  },
+  "formNoOptions": {
+    "message": "사용 가능한 옵션이 없습니다.",
+    "description": "Empty picklist dropdown"
+  },
+  "formNoMatchingRecords": {
+    "message": "일치하는 기록이 없습니다.",
+    "description": "Empty lookup combobox search results"
+  },
+  "formNoRecordsFound": {
+    "message": "기록을 찾을 수 없습니다",
+    "description": "Empty lookup modal list"
+  },
+  "formSelected": {
+    "message": "선택된",
+    "description": "Lookup row already selected badge"
+  },
+  "formCreateNew": {
+    "message": "새로 만들기",
+    "description": "Create related record from lookup footer"
+  },
+  "formSearchOptions": {
+    "message": "검색 옵션...",
+    "description": "Picklist search placeholder"
+  },
+  "formSearchRecords": {
+    "message": "기록 검색...",
+    "description": "Lookup combobox search placeholder"
+  },
+  "formBrowseRecords": {
+    "message": "기록 찾아보기",
+    "description": "Open lookup record picker modal"
+  },
+  "formCreateAndSelect": {
+    "message": "생성 및 선택",
+    "description": "Create new lookup record shortcut"
+  },
+  "formUploading": {
+    "message": "업로드 중...",
+    "description": "Image upload in progress"
+  },
+  "formUploadImage": {
+    "message": "이미지 업로드",
+    "description": "Image upload trigger button"
+  },
+  "formRefreshing": {
+    "message": "상쾌하다...",
+    "description": "Lookup modal refresh in progress"
+  },
+  "formLookupSelectTitle": {
+    "message": "{label} 선택",
+    "description": "Lookup modal title"
+  },
+  "formLookupChooseOne": {
+    "message": "{module} 하나를 선택하여 {field}을 채웁니다.",
+    "description": "Lookup modal subtitle"
+  },
+  "formLookupSearchModule": {
+    "message": "{module} 검색...",
+    "description": "Lookup modal search placeholder"
+  },
+  "formLookupNoMatch": {
+    "message": "\"{query}\"과(와) 일치하는 {module}이 없습니다.",
+    "description": "Lookup modal empty state with search query"
+  },
+  "formLookupNoRecordsYet": {
+    "message": "아직 선택할 수 있는 {module}이 없습니다.",
+    "description": "Lookup modal empty state without query"
+  },
+  "formLookupCreateModule": {
+    "message": "새 {module} 만들기",
+    "description": "Lookup modal create CTA with module name"
+  },
+  "lifecycleStageTitle": {
+    "message": "수명주기 단계",
+    "description": "Lifecycle stage widget title"
+  },
+  "lifecycleType": {
+    "message": "유형:",
+    "description": "Lifecycle widget type label"
+  },
+  "lifecycleAge": {
+    "message": "나이:",
+    "description": "Lifecycle widget age label"
+  },
+  "lifecycleJustCreated": {
+    "message": "방금 생성됨",
+    "description": "Record age when created today"
+  },
+  "lifecycleAgeDays": {
+    "message": "{days, plural, one {# day} other {# days}}",
+    "description": "Record age in days"
+  },
+  "lifecycleAgeZero": {
+    "message": "0일",
+    "description": "Record age fallback when no createdAt"
+  },
+  "searchPlaceholder": {
+    "message": "찾다...",
+    "description": "Generic search input placeholder"
+  },
+  "filterAll": {
+    "message": "모두",
+    "description": "Filter option: no restriction"
+  },
+  "filterAllNamed": {
+    "message": "모든 {label}",
+    "description": "Filter option: all values for a named field"
+  },
+  "filterDays": {
+    "message": "날",
+    "description": "Relative date filter days input label"
+  },
+  "filterDate": {
+    "message": "날짜",
+    "description": "Single date filter input label"
+  },
+  "filterFrom": {
+    "message": "에서",
+    "description": "Date range filter start label"
+  },
+  "filterTo": {
+    "message": "에게",
+    "description": "Date range filter end label"
+  },
+  "filterDaysPlaceholder": {
+    "message": "예를 들어 7",
+    "description": "Relative date filter days input placeholder"
+  },
+  "dependencyNoFields": {
+    "message": "표시할 필드가 없습니다.",
+    "description": "Dependency popup empty state"
+  },
+  "drawerBackQuickCreate": {
+    "message": "빨리 만들기로 돌아가기",
+    "description": "Toggle from full create form to quick create"
+  },
+  "drawerShowAllFields": {
+    "message": "모든 필드 표시",
+    "description": "Expand quick create drawer to full form"
+  },
+  "formQuickCreateFields": {
+    "message": "빨리 만들기 필드",
+    "description": "Section heading for quick-create field group"
+  },
+  "taskDescriptionPlaceholder": {
+    "message": "명령에 대해 '/'를 쓰거나 입력합니다.",
+    "description": "Task description editor placeholder"
+  },
+  "taskDescriptionFallback": {
+    "message": "설명",
+    "description": "Task description field fallback label"
+  },
+  "taskRelatedToFallback": {
+    "message": "관련 항목",
+    "description": "Task related-to field fallback label"
+  },
+  "taskSubtasksLabel": {
+    "message": "하위 작업",
+    "description": "Task subtasks field label"
+  },
+  "tagsTitle": {
+    "message": "태그",
+    "description": "Tags picker panel title"
+  },
+  "tagsNewTag": {
+    "message": "새 태그",
+    "description": "Create a new tag definition"
+  },
+  "tagsSearchPlaceholder": {
+    "message": "태그 검색 또는 만들기",
+    "description": "Tags picker search input"
+  },
+  "tagsClickSearchHint": {
+    "message": "사용 가능한 태그를 보려면 검색창을 클릭하세요.",
+    "description": "Tags picker collapsed hint"
+  },
+  "tagsNoTagsYet": {
+    "message": "이 작업공간에는 아직 태그가 없습니다.",
+    "description": "Empty workspace tags list"
+  },
+  "tagsCreateFirst": {
+    "message": "첫 번째 태그 만들기",
+    "description": "CTA when no tags exist"
+  },
+  "tagsCreateNamed": {
+    "message": "\"{name}\" 생성",
+    "description": "Create tag from search query"
+  },
+  "tagsPublic": {
+    "message": "공공의",
+    "description": "Public tag badge"
+  },
+  "tagsRemoveTag": {
+    "message": "태그 제거",
+    "description": "Remove tag from selection aria-label"
+  },
+  "tagsEditTag": {
+    "message": "태그 수정",
+    "description": "Edit tag definition action"
+  },
+  "tagsTagActions": {
+    "message": "태그 작업",
+    "description": "Tag row overflow menu aria-label"
+  },
+  "tagsTagName": {
+    "message": "태그 이름",
+    "description": "Tag editor name field label"
+  },
+  "tagsEnterTagName": {
+    "message": "태그 이름을 입력하세요.",
+    "description": "Tag editor name placeholder"
+  },
+  "tagsColor": {
+    "message": "색상",
+    "description": "Tag editor color field label"
+  },
+  "tagsMakePublic": {
+    "message": "태그를 공개로 설정",
+    "description": "Tag editor public toggle label"
+  },
+  "tagsRemoveFromSelection": {
+    "message": "선택에서 제거",
+    "description": "Unassign tag from current record"
+  },
+  "tagsAddToSelection": {
+    "message": "선택 항목에 추가",
+    "description": "Assign tag to current record"
+  },
+  "tagsDeleteFromModule": {
+    "message": "모듈에서 태그 삭제",
+    "description": "Delete tag definition from module"
+  },
+  "tagsRemovedNamed": {
+    "message": "\"{name}\"을(를) 제거했습니다.",
+    "description": "Tag removal pending undo banner"
+  },
+  "tagsUndoSeconds": {
+    "message": "실행 취소({seconds})",
+    "description": "Undo tag removal countdown"
+  },
+  "linkRecordsBackToType": {
+    "message": "레코드 유형으로 돌아가기",
+    "description": "Return to link records type selector"
+  },
+  "linkRecordsLinked": {
+    "message": "연결됨",
+    "description": "Already-linked record type badge"
+  },
+  "linkRecordsNoTypes": {
+    "message": "이 모듈에 대해 구성된 연결 가능한 레코드 유형이 없습니다. 설정 → 모듈에서 관계를 구성합니다.",
+    "description": "Empty linkable types state"
+  },
+  "linkRecordsNoMatch": {
+    "message": "일치하는 기록이 없습니다. 검색이나 필터를 조정해 보세요.",
+    "description": "Empty link records search results"
+  },
+  "linkRecordsCreateNew": {
+    "message": "새로 만들기",
+    "description": "Create record from link drawer"
+  },
+  "linkRecordsSelectedCount": {
+    "message": "{count, plural, one {# selected} other {# selected}}",
+    "description": "Link drawer multi-select count"
+  },
+  "linkRecordsLink": {
+    "message": "링크",
+    "description": "Confirm link records action"
+  },
+  "kanbanExpandColumn": {
+    "message": "열 확장",
+    "description": "Expand collapsed kanban column"
+  },
+  "kanbanNoItems": {
+    "message": "항목 없음",
+    "description": "Empty kanban column placeholder"
+  },
+  "summaryLoadingRecord": {
+    "message": "{type} 로드 중...",
+    "description": "Record summary page loading state"
+  },
+  "summaryErrorLoadingTitle": {
+    "message": "{type} 로드 중 오류가 발생했습니다.",
+    "description": "Record summary page error headline"
+  },
+  "summaryNoTagsYet": {
+    "message": "아직 태그가 없습니다.",
+    "description": "Empty tags on record header"
+  },
+  "summaryManageTags": {
+    "message": "태그 관리",
+    "description": "Open tag manager when tags exist"
+  },
+  "summaryAddTag": {
+    "message": "태그 추가",
+    "description": "Add a tag to the record"
+  },
+  "summaryAddAnotherTag": {
+    "message": "다른 태그 추가",
+    "description": "Add another tag when some exist"
+  },
+  "summaryCopyLink": {
+    "message": "링크 복사",
+    "description": "Copy record URL to clipboard"
+  },
+  "summarySelectPlaceholder": {
+    "message": "선택하다...",
+    "description": "Unset lifecycle/status dropdown value"
+  },
+  "summaryAddRelation": {
+    "message": "관계 추가",
+    "description": "Add related record menu"
+  },
+  "summaryViewResponses": {
+    "message": "응답 보기",
+    "description": "Open form responses list"
+  },
+  "summaryDeleteRecord": {
+    "message": "기록 삭제",
+    "description": "Delete current record action"
+  },
+  "summaryFormNotActive": {
+    "message": "양식이 아직 활성화되지 않았습니다.",
+    "description": "Inactive form empty state title"
+  },
+  "summaryFormNotActiveHint": {
+    "message": "이 양식은 아직 사용되지 않았습니다. 이벤트를 통해 할당하여 응답 수집을 시작하세요.",
+    "description": "Inactive form empty state body"
+  },
+  "summaryAddWidget": {
+    "message": "위젯 추가",
+    "description": "Add dashboard widget CTA"
+  },
+  "summaryAddCustomWidget": {
+    "message": "맞춤 위젯 추가",
+    "description": "Add widget floating button tooltip"
+  },
+  "summaryShowEmptyFields": {
+    "message": "빈 필드 표시",
+    "description": "Toggle empty fields in details tab"
+  },
+  "summaryTenantFields": {
+    "message": "테넌트 필드",
+    "description": "Tenant details tab section title"
+  },
+  "summaryTenantFieldsHint": {
+    "message": "구독, 한도, 조직 설정",
+    "description": "Tenant details tab subtitle"
+  },
+  "summaryTenantFieldsNoMatch": {
+    "message": "검색어와 일치하는 테넌트 필드가 없습니다.",
+    "description": "Tenant fields search empty"
+  },
+  "summaryTenantFieldsNoValues": {
+    "message": "표시할 값이 있는 테넌트 필드가 없습니다.",
+    "description": "Tenant fields all empty hidden"
+  },
+  "summaryTenantFieldsNone": {
+    "message": "사용 가능한 테넌트 필드가 없습니다.",
+    "description": "No tenant fields configured"
+  },
+  "summaryManageFields": {
+    "message": "필드 관리",
+    "description": "Open field management settings"
+  },
+  "summaryNotAvailable": {
+    "message": "사용할 수 없음",
+    "description": "Field value unavailable placeholder"
+  },
+  "summaryFieldsNoMatch": {
+    "message": "검색어와 일치하는 필드가 없습니다.",
+    "description": "Details tab search empty"
+  },
+  "summaryFieldsNoValues": {
+    "message": "표시할 값이 있는 필드가 없습니다.",
+    "description": "Details tab all empty hidden"
+  },
+  "summaryFieldsNone": {
+    "message": "사용 가능한 필드가 없습니다.",
+    "description": "No fields configured on module"
+  },
+  "summaryFormUsage": {
+    "message": "양식 사용법",
+    "description": "Form submissions section title"
+  },
+  "summaryFormUsageHint": {
+    "message": "상태, 점수 및 제출 날짜가 포함된 양식 제출 목록입니다.",
+    "description": "Form submissions section subtitle"
+  },
+  "summaryLoadingSubmissions": {
+    "message": "제출물 로드 중...",
+    "description": "Form submissions table loading"
+  },
+  "summaryColSubmitted": {
+    "message": "제출된",
+    "description": "Submission date column"
+  },
+  "summaryColSubmittedBy": {
+    "message": "제출자",
+    "description": "Submitter column"
+  },
+  "summaryColStatus": {
+    "message": "상태",
+    "description": "Status column header"
+  },
+  "summaryColScore": {
+    "message": "점수",
+    "description": "Score column header"
+  },
+  "summaryColActions": {
+    "message": "행위",
+    "description": "Actions column header"
+  },
+  "summaryColKpis": {
+    "message": "KPI",
+    "description": "KPI column header"
+  },
+  "summaryAnonymous": {
+    "message": "익명의",
+    "description": "Anonymous submitter label"
+  },
+  "summaryNoSubmissions": {
+    "message": "아직 제출된 내용이 없습니다.",
+    "description": "Empty form submissions state"
+  },
+  "summaryNoSubmissionsHint": {
+    "message": "이 양식은 아직 제출된 내용이 없습니다.",
+    "description": "Empty form submissions body"
+  },
+  "summaryFormPreview": {
+    "message": "양식 미리보기",
+    "description": "Form preview section title"
+  },
+  "summaryFormPreviewHint": {
+    "message": "양식을 작성할 때 이 양식이 사용자에게 어떻게 표시되는지 미리 봅니다.",
+    "description": "Form preview section subtitle"
+  },
+  "summaryFormResponses": {
+    "message": "양식 응답",
+    "description": "Form responses section title"
+  },
+  "summaryFormResponsesHint": {
+    "message": "이 양식에 제출된 모든 응답을 보고 관리합니다.",
+    "description": "Form responses section subtitle"
+  },
+  "summaryLoadingResponses": {
+    "message": "응답 로드 중...",
+    "description": "Form responses table loading"
+  },
+  "summaryNoResponses": {
+    "message": "아직 응답이 없습니다",
+    "description": "Empty form responses state"
+  },
+  "summaryNoResponsesHint": {
+    "message": "이 양식은 아직 응답을 받지 못했습니다.",
+    "description": "Empty form responses body"
+  },
+  "summaryViewAllResponses": {
+    "message": "모든 응답 보기",
+    "description": "Navigate to full responses list"
+  },
+  "summaryUser": {
+    "message": "사용자",
+    "description": "Activity filter user label"
+  },
+  "summaryAllUsers": {
+    "message": "모든 사용자",
+    "description": "Activity filter all users option"
+  },
+  "summaryType": {
+    "message": "유형",
+    "description": "Activity filter type label"
+  },
+  "summaryAllTypes": {
+    "message": "모든 유형",
+    "description": "Activity filter all types option"
+  },
+  "summaryComments": {
+    "message": "댓글",
+    "description": "Activity type filter comments"
+  },
+  "summaryFieldChanges": {
+    "message": "필드 변경",
+    "description": "Activity type filter field changes"
+  },
+  "summaryNoActivity": {
+    "message": "아직 활동이 없습니다",
+    "description": "Empty activity feed"
+  },
+  "summarySelectWidget": {
+    "message": "대시보드에 추가할 위젯을 선택하세요.",
+    "description": "Add widget drawer subtitle"
+  },
+  "summaryResetToDefault": {
+    "message": "기본값으로 재설정",
+    "description": "Reset widget layout action"
+  },
+  "summaryResetWidgetLayout": {
+    "message": "위젯 레이아웃 재설정",
+    "description": "Reset layout confirmation title"
+  },
+  "summaryResetLayoutConfirmBody": {
+    "message": "위젯 레이아웃을 기본값으로 재설정하시겠습니까? 이렇게 하면 위젯 위치, 크기, 추가하거나 제거한 모든 위젯을 포함한 모든 맞춤설정이 제거됩니다.",
+    "description": "Reset layout confirmation body"
+  },
+  "summaryResetLayoutTooltip": {
+    "message": "위젯 레이아웃을 기본 순서로 재설정",
+    "description": "Reset layout button tooltip"
+  },
+  "summaryNoMetrics": {
+    "message": "측정항목이 없습니다.",
+    "description": "Empty metrics widget fallback"
+  },
+  "summaryKeyFieldsPlaceholder": {
+    "message": "여기에 주요 필드가 표시됩니다.",
+    "description": "Empty key fields widget fallback"
+  },
+  "summaryWidgetContent": {
+    "message": "위젯 콘텐츠",
+    "description": "Generic widget placeholder"
+  },
+  "summaryTabsAria": {
+    "message": "탭",
+    "description": "Record summary tab list aria-label"
+  },
+  "summarySearchTenantFields": {
+    "message": "테넌트 필드 검색...",
+    "description": "Tenant fields search placeholder"
+  },
+  "summarySearchFields": {
+    "message": "검색 필드...",
+    "description": "Details fields search placeholder"
+  },
+  "summarySearchActivities": {
+    "message": "활동 검색...",
+    "description": "Activity feed search placeholder"
+  },
+  "summaryUrlCopied": {
+    "message": "URL이 클립보드에 복사되었습니다!",
+    "description": "Copy link success toast"
+  },
+  "summaryResetLayoutFailed": {
+    "message": "레이아웃을 재설정하지 못했습니다. 다시 시도해 주세요.",
+    "description": "Reset layout error toast"
+  },
+  "summarySaveFieldsFailed": {
+    "message": "필드 업데이트를 저장하지 못했습니다. 다시 시도해 주세요.",
+    "description": "Inline field save error toast"
+  },
+  "moduleListTheListForThisModuleIs": {
+    "message": "이 모듈의 목록을 사용할 수 없습니다.",
+    "description": "Auto-migrated from moduleList"
+  },
+  "moduleListListNotFound": {
+    "message": "목록을 찾을 수 없음",
+    "description": "Auto-migrated from moduleList"
+  },
+  "targetWizardStepperTargetCreationProgress": {
+    "message": "타겟 생성 진행",
+    "description": "Auto-migrated from targetWizardStepper"
+  },
+  "trashRestore": {
+    "message": "복원하다",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAutoDeleteIn": {
+    "message": "다음에서 자동 삭제",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedBy": {
+    "message": "삭제자:",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedItemsWillAppearHereYou": {
+    "message": "삭제된 항목이 여기에 표시됩니다. 만료되기 전에 복원하거나 영구적으로 삭제할 수 있습니다.",
+    "description": "Auto-migrated from trash"
+  },
+  "trashTrashIsEmpty": {
+    "message": "휴지통이 비어 있습니다.",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletePermanently": {
+    "message": "영구 삭제",
+    "description": "Auto-migrated from trash"
+  },
+  "trashRestoreSelected": {
+    "message": "선택한 복원",
+    "description": "Auto-migrated from trash"
+  },
+  "trashEmptyTrash": {
+    "message": "휴지통 비우기",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedTo": {
+    "message": "삭제 대상:",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedFrom": {
+    "message": "다음에서 삭제됨",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAllUsers": {
+    "message": "모든 사용자",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAllModules": {
+    "message": "모든 모듈",
+    "description": "Auto-migrated from trash"
+  },
+  "trashSearchNameModuleDeletedBy": {
+    "message": "검색 이름, 모듈, 삭제자...",
+    "description": "Auto-migrated from trash"
+  },
+  "trashRetention": {
+    "message": "보유",
+    "description": "Auto-migrated from trash"
+  },
+  "trashOldestItem": {
+    "message": "가장 오래된 항목",
+    "description": "Auto-migrated from trash"
+  },
+  "trashExpiringIn7Days": {
+    "message": "7일 후 만료",
+    "description": "Auto-migrated from trash"
+  },
+  "trashTotalInTrash": {
+    "message": "휴지통에 있는 총계",
+    "description": "Auto-migrated from trash"
+  },
+  "approvalDetailEnterRejectionReason": {
+    "message": "거부 사유를 입력하세요...",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailReason": {
+    "message": "이유",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailRejectingWillBlockThisAction": {
+    "message": "거부하면 이 작업이 차단됩니다.",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailRejectApproval": {
+    "message": "승인 거부",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailYouAreNotAuthorizedToApprove": {
+    "message": "귀하에게는 이 요청을 승인하거나 거부할 권한이 없습니다.",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailReason2": {
+    "message": "이유:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecidedAt": {
+    "message": "결정된 날짜:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecidedBy": {
+    "message": "결정자:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecisionAlreadyMade": {
+    "message": "이미 결정이 내려졌습니다",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailYourDecision": {
+    "message": "당신의 결정",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailThisApprovalWasEscalatedDueTo": {
+    "message": "제한 시간 내에 응답이 없어 승인이 에스컬레이션되었습니다. 새로운 승인자에게 알림이 전송되었습니다.",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailEscalated": {
+    "message": "에스컬레이션됨",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailIfRejected": {
+    "message": "거부된 경우",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailIfApproved": {
+    "message": "승인된 경우",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailWhatWillHappen": {
+    "message": "무슨 일이 일어날까요?",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailWhyApprovalIsRequired": {
+    "message": "승인이 필요한 이유",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailEntity": {
+    "message": "실재",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailContext": {
+    "message": "문맥",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailBackToApprovals": {
+    "message": "승인으로 돌아가기",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalInboxEnterRejectionReason": {
+    "message": "거부 사유를 입력하세요...",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxReason": {
+    "message": "이유",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRejectingWillBlockThisActionPlease": {
+    "message": "거부하면 이 작업이 차단됩니다. 이유를 입력해 주세요.",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRejectApproval": {
+    "message": "승인 거부",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxDueIn": {
+    "message": "마감일:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRequestedAt": {
+    "message": "요청 위치:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRequestedBy": {
+    "message": "요청자:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxAllCaughtUpYouHaveNo": {
+    "message": "모두 따라잡았어! 대기 중인 승인 요청이 없습니다.",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxNoApprovalsPending": {
+    "message": "보류 중인 승인 없음",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxReviewAndApprovePendingRequests": {
+    "message": "대기 중인 요청 검토 및 승인",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxApprovals": {
+    "message": "승인",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "demoRequestsEnterprise": {
+    "message": "기업",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsProfessional": {
+    "message": "전문적인",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsStarter": {
+    "message": "기동기",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsTrial15Days": {
+    "message": "평가판(15일)",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSubscriptionTier": {
+    "message": "구독 등급",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsEnterTemporaryPasswordForOwner": {
+    "message": "소유자의 임시 비밀번호를 입력하세요.",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvert": {
+    "message": "전환하다",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvertToOrganization": {
+    "message": "조직으로 전환",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted": {
+    "message": "변환됨",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoCompleted": {
+    "message": "데모 완료",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoScheduled": {
+    "message": "데모 예정",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContacted": {
+    "message": "연락함",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsUpdateStatus": {
+    "message": "업데이트 상태",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisContactExistsInASeparate": {
+    "message": "이 연락처는 별도의 조직에 존재합니다. 로그인하면 자신의 CRM 데이터가 표시됩니다.",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactPhone": {
+    "message": "연락 전화:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactEmail": {
+    "message": "연락처 이메일:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContact": {
+    "message": "연락하다:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsOrganization": {
+    "message": "조직:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisProspectIsAlreadyInYour": {
+    "message": "이 잠재 고객은 이미 CRM에 있습니다!",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsJobTitle": {
+    "message": "직위:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsPhone": {
+    "message": "핸드폰:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsEmail": {
+    "message": "이메일:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactName": {
+    "message": "담당자 이름:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactInformation": {
+    "message": "연락처 정보",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanySize": {
+    "message": "회사 규모:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsIndustry": {
+    "message": "산업:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanyName": {
+    "message": "회사명:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanyInformation": {
+    "message": "회사 정보",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoRequestDetails": {
+    "message": "데모 요청 세부정보",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsNoDemoRequestsFound": {
+    "message": "데모 요청이 없습니다.",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvert2": {
+    "message": "전환하다",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvertToOrganization2": {
+    "message": "조직으로 전환",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSize": {
+    "message": "크기",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsLoadingDemoRequests": {
+    "message": "데모 요청 로드 중...",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted2": {
+    "message": "변환됨",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoCompleted2": {
+    "message": "데모 완료",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoScheduled2": {
+    "message": "데모 예정",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContacted2": {
+    "message": "연락함",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSearchDemoRequests": {
+    "message": "데모 요청 검색...",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted3": {
+    "message": "변환됨",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisMonth": {
+    "message": "이번 달",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsTotalRequests": {
+    "message": "총 요청 수",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "publicBookingViewPoweredByYourCrm": {
+    "message": "CRM으로 구동",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYourDetails": {
+    "message": "귀하의 세부 정보",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYourTime": {
+    "message": "당신의 시간",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewAvailableTimes": {
+    "message": "이용 가능 시간",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewPickADate": {
+    "message": "날짜를 선택하세요",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewBookWithOurTeam": {
+    "message": "우리 팀과 함께 예약하세요",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewRescheduleOrCancel": {
+    "message": "일정 변경 또는 취소",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewAConfirmationHasBeenSentTo": {
+    "message": "귀하의 이메일로 확인 메일이 발송되었습니다. 약속 시간 전에 알림을 받게 됩니다.",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYoureBooked": {
+    "message": "예약이 완료되었습니다!",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewPageUnavailable": {
+    "message": "페이지를 사용할 수 없음",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewLoadingCalendar": {
+    "message": "캘린더 로드 중…",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "notificationOverviewOpenHealthDashboard": {
+    "message": "상태 대시보드 열기",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewViewDeliveryStatisticsChannelHealthEvent": {
+    "message": "전송 통계, 채널 상태, 이벤트 볼륨 및 사용자 알림 패턴을 봅니다. 팀에 영향을 미치기 전에 잠재적인 문제를 식별하세요.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewHealthDashboard": {
+    "message": "건강 대시보드",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewMonitorNotificationDeliveryHealthAndAnalytics": {
+    "message": "조직 전체의 알림 전달 상태 및 분석을 모니터링하세요.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAdminTools": {
+    "message": "관리 도구",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageDigests": {
+    "message": "다이제스트 관리",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewReceiveDailyOrWeeklySummariesOf": {
+    "message": "실시간 알림 대신 매일 또는 매주 알림 요약을 받아보세요. 최신 정보를 유지하면서 알림 소음을 줄이세요.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewDigests": {
+    "message": "다이제스트",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageRules": {
+    "message": "규칙 관리",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewCreateCustomNotificationConditionsSetUp": {
+    "message": "사용자 정의 알림 조건을 만듭니다. 할당, 우선순위, 상태 등에 따라 규칙을 설정하세요.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManagePreferences": {
+    "message": "환경설정 관리",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewToggleWhatTypesOfNotificationsYou": {
+    "message": "이벤트별로 수신할 알림 유형을 전환합니다. 각 알림 유형에 사용되는 채널을 제어합니다.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewPreferences": {
+    "message": "환경설정",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewCustomizeYourNotificationExperienceToMatch": {
+    "message": "워크플로에 맞게 알림 환경을 맞춤설정하세요.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewYourNotificationControl": {
+    "message": "알림 제어",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageDeliveryChannels": {
+    "message": "배송 채널 관리",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable": {
+    "message": "구성 가능",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable2": {
+    "message": "구성 가능",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhatsapp": {
+    "message": "왓츠앱",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable3": {
+    "message": "구성 가능",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewPush": {
+    "message": "푸시",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable4": {
+    "message": "구성 가능",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAlwaysOn": {
+    "message": "항상 켜짐",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewChooseWhereAndHowYouReceive": {
+    "message": "다양한 전달 채널을 통해 알림을 받을 위치와 방법을 선택하세요.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewHowYoureNotified": {
+    "message": "알림을 받는 방법",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined": {
+    "message": "시스템 정의",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAccountActivitySystemUpdatesAndCompliance": {
+    "message": "계정 활동, 시스템 업데이트, 규정 준수 관련 알림.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined2": {
+    "message": "시스템 정의",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewActivityThatInvolvesCollaborationAndReview": {
+    "message": "협업 및 검토와 관련된 활동입니다.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConversations": {
+    "message": "대화",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewRemindersForUpcomingOrOverdueItems": {
+    "message": "예정된 항목이나 기한이 지난 항목에 대한 알림입니다.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewDeadlines": {
+    "message": "마감일",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewStatusChangesSubmissionsApprovalsAndOther": {
+    "message": "상태 변경, 제출, 승인 및 기타 중요한 업데이트.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined3": {
+    "message": "시스템 정의",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhenTasksAuditsOrCorrectiveActions": {
+    "message": "작업, 감사 또는 시정 조치가 귀하에게 할당된 경우.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAssignments": {
+    "message": "과제",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewNotificationsAreOrganizedByIntentTo": {
+    "message": "알림은 사용자가 당황하지 않고 정보를 계속 얻을 수 있도록 의도적으로 구성됩니다.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhatYoureNotifiedAbout": {
+    "message": "알림을 받는 내용",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewLearnHowNotificationsWorkAndWhat": {
+    "message": "알림이 작동하는 방식과 제어할 수 있는 사항을 알아보세요.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewNotificationOverview": {
+    "message": "알림 개요",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationHealthHighVolume": {
+    "message": "높은 볼륨",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoUserDataAvailable": {
+    "message": "사용 가능한 사용자 데이터가 없습니다.",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthFlag": {
+    "message": "깃발",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthReceived": {
+    "message": "받았다",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthHighVolumeUsers": {
+    "message": "대량 사용자",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoEventDataAvailable": {
+    "message": "사용 가능한 이벤트 데이터가 없습니다.",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthTopEventTypes": {
+    "message": "주요 이벤트 유형",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoChannelDataAvailable": {
+    "message": "사용 가능한 채널 데이터가 없습니다.",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthLastFailure": {
+    "message": "마지막 실패",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthSent": {
+    "message": "전송된",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthChannelHealth": {
+    "message": "채널 상태",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthDegradedChannels": {
+    "message": "저하된 채널",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthActiveChannels": {
+    "message": "활성 채널",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthReadRate": {
+    "message": "읽기 속도",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthTotalNotifications": {
+    "message": "총 알림",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthMonitorNotificationDeliveryAndChannelHealth": {
+    "message": "알림 전달 및 채널 상태 모니터링",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNotificationHealth": {
+    "message": "알림 상태",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthHealth": {
+    "message": "건강",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationPreferencesReceiveAWeeklySummaryViaEmail": {
+    "message": "이메일을 통해 주간 요약을 받아보세요. 매일 방해받지 않고 정보를 얻는 데 적합합니다.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWeeklyDigest": {
+    "message": "주간 다이제스트",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesReceiveADailySummaryOfYour": {
+    "message": "매일 알림 요약을 받아보세요. 정보를 유지하면서 알림 소음을 줄입니다.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesDailyDigest": {
+    "message": "데일리 다이제스트",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesReceiveSummariesInsteadOfRealTime": {
+    "message": "실시간 알림 대신 요약 수신",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationDigests": {
+    "message": "알림 다이제스트",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSmsIsOnlyUsedAsA": {
+    "message": "SMS는 다른 채널을 사용할 수 없을 때 최후의 수단으로만 사용됩니다. 메시지는 짧게 유지되며 가능하면 딥 링크를 포함합니다.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSmsNotifications": {
+    "message": "SMS 알림",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWhatsappNotificationsAreOnlySentFor": {
+    "message": "WhatsApp 알림은 감사 및 포털 앱의 우선순위가 높은 이벤트에 대해서만 전송됩니다.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWhatsappNotifications": {
+    "message": "WhatsApp 알림",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPushNotificationsAreBlockedEnableThem": {
+    "message": "푸시 알림이 차단되었습니다. 브라우저 설정에서 활성화하세요.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesTestNotification": {
+    "message": "테스트 알림",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesEnablePushNotifications": {
+    "message": "푸시 알림 활성화",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPushNotifications": {
+    "message": "푸시 알림",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesThereAreNoConfigurableNotificationEvents": {
+    "message": "이 앱에 대해 구성 가능한 알림 이벤트가 아직 없습니다.\n          알림은 안전한 기본값을 계속 사용합니다.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesInApp": {
+    "message": "인앱",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSystemEventManagedByArivu": {
+    "message": "시스템 이벤트(Arivu에서 관리)",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesClickAChannelToJumpTo": {
+    "message": "채널을 클릭하면 해당 설정으로 이동합니다. 비활성화된 채널은 이 앱에서 사용할 수 없습니다.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationDelivery": {
+    "message": "알림 전달",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWeCouldntLoadYourNotificationPreferences": {
+    "message": "지금은 알림 환경설정을 로드할 수 없습니다. 알림은\n        기본값을 계속 사용합니다. 앱을 안전하게 계속 사용할 수 있습니다.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesCouldntSaveChangesPleaseTryAgain": {
+    "message": "변경사항을 저장할 수 없습니다. 다시 시도해 주세요.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesHealthDashboard": {
+    "message": "건강 대시보드",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationRules": {
+    "message": "알림 규칙",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesControlInAppAndEmailNotifications": {
+    "message": "이 작업 공간에 대한 인앱 및 이메일 알림을 제어합니다.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationPreferences": {
+    "message": "알림 환경설정",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPreferences": {
+    "message": "환경설정",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationRulesDeleteRule": {
+    "message": "규칙 삭제",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesEditRule": {
+    "message": "규칙 수정",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesCreateYourFirstRule": {
+    "message": "첫 번째 규칙 만들기",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesGetStartedByCreatingYourFirst": {
+    "message": "첫 번째 알림 규칙을 만들어 시작해 보세요.",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesNoNotificationRulesYet": {
+    "message": "아직 알림 규칙이 없습니다.",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesFailedToLoadNotificationRules": {
+    "message": "알림 규칙을 로드하지 못했습니다.",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesDeleteAnExistingRuleToCreate": {
+    "message": "새 규칙을 만들려면 기존 규칙을 삭제하세요.",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesCreateCustomNotificationTriggersForModules": {
+    "message": "관심 있는 모듈에 대한 사용자 정의 알림 트리거를 만듭니다.",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesNotificationRules": {
+    "message": "알림 규칙",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "contactDetailToastFailedToDeleteContact": {
+    "message": "연락처를 삭제하지 못했습니다.",
+    "description": "Toast from ContactDetail.vue"
+  },
+  "contactDetailToastFailedToUnlinkOrganization": {
+    "message": "조직을 연결 해제하지 못했습니다.",
+    "description": "Toast from ContactDetail.vue"
+  },
+  "dealDetailToastFailedToDeleteDeal": {
+    "message": "거래를 삭제하지 못했습니다.",
+    "description": "Toast from DealDetail.vue"
+  },
+  "dealDetailToastFailedToAddNote": {
+    "message": "메모를 추가하지 못했습니다.",
+    "description": "Toast from DealDetail.vue"
+  },
+  "dealsToastErrorDeletingDealPleaseTry": {
+    "message": "거래를 삭제하는 중에 오류가 발생했습니다. 다시 시도해 주세요.",
+    "description": "Toast from Deals.vue"
+  },
+  "dealsToastErrorPerformingBulkActionPlease": {
+    "message": "일괄 작업을 수행하는 중에 오류가 발생했습니다. 다시 시도해 주세요.",
+    "description": "Toast from Deals.vue"
+  },
+  "dealsToastFailedToExportDeals": {
+    "message": "거래를 내보내지 못했습니다.",
+    "description": "Toast from Deals.vue"
+  },
+  "demoRequestsToastFailedToUpdateStatus": {
+    "message": "상태를 업데이트하지 못했습니다.",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "demoRequestsToastSuccessfullyConvertedToOrganization": {
+    "message": "조직전환에 성공했습니다!",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "demoRequestsToastFailedToConvertRequest": {
+    "message": "요청을 변환하지 못했습니다.",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "eventDetailToastFailedToDeleteEvent": {
+    "message": "일정을 삭제하지 못했습니다.",
+    "description": "Toast from EventDetail.vue"
+  },
+  "eventDetailToastFailedToAddNote": {
+    "message": "메모를 추가하지 못했습니다.",
+    "description": "Toast from EventDetail.vue"
+  },
+  "eventExecutionSurfaceToastLocationIsRequiredForCheck": {
+    "message": "체크인하려면 위치가 필요합니다. 위치 액세스를 허용하고 다시 시도해 주세요.",
+    "description": "Toast from EventExecutionSurface.vue"
+  },
+  "eventsToastErrorPerformingBulkActionPlease": {
+    "message": "일괄 작업을 수행하는 중에 오류가 발생했습니다. 다시 시도해 주세요.",
+    "description": "Toast from Events.vue"
+  },
+  "eventsToastErrorExportingEventsPleaseTry": {
+    "message": "이벤트를 내보내는 중에 오류가 발생했습니다. 다시 시도해 주세요.",
+    "description": "Toast from Events.vue"
+  },
+  "groupDetailToastFailedToLoadGroup": {
+    "message": "그룹을 로드하지 못했습니다.",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToAddMember": {
+    "message": "구성원을 추가하지 못했습니다.",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToRemoveMember": {
+    "message": "구성원을 제거하지 못했습니다.",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToDeleteGroup": {
+    "message": "그룹을 삭제하지 못했습니다.",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupsToastErrorPerformingBulkActionPlease": {
+    "message": "일괄 작업을 수행하는 중에 오류가 발생했습니다. 다시 시도해 주세요.",
+    "description": "Toast from Groups.vue"
+  },
+  "groupsToastErrorDeletingGroupPleaseTry": {
+    "message": "그룹을 삭제하는 중에 오류가 발생했습니다. 다시 시도해 주세요.",
+    "description": "Toast from Groups.vue"
+  },
+  "organizationDetailToastFailedToDeleteOrganizationPlease": {
+    "message": "조직을 삭제하지 못했습니다. 다시 시도해 주세요.",
+    "description": "Toast from OrganizationDetail.vue"
+  },
+  "organizationsToastUnknownError": {
+    "message": "알 수 없는 오류",
+    "description": "Toast from Organizations.vue"
+  },
+  "organizationsToastErrorExportingOrganizationsPleaseTry": {
+    "message": "조직을 내보내는 중에 오류가 발생했습니다. 다시 시도해 주세요.",
+    "description": "Toast from Organizations.vue"
+  },
+  "organizationsToastErrorExportingOrganizationsPleaseTry2": {
+    "message": "조직을 내보내는 중에 오류가 발생했습니다. 다시 시도해 주세요.",
+    "description": "Toast from Organizations.vue"
+  },
+  "peopleToastUnknownError": {
+    "message": "알 수 없는 오류",
+    "description": "Toast from People.vue"
+  },
+  "peopleToastErrorExportingPeoplePleaseTry": {
+    "message": "인물을 내보내는 중에 오류가 발생했습니다. 다시 시도해 주세요.",
+    "description": "Toast from People.vue"
+  },
+  "peopleToastErrorExportingContactsPleaseTry": {
+    "message": "연락처를 내보내는 중에 오류가 발생했습니다. 다시 시도해 주세요.",
+    "description": "Toast from People.vue"
+  },
+  "responsesToastFormIdNotFoundPlease": {
+    "message": "양식 ID를 찾을 수 없습니다. 페이지를 새로고침한 후 다시 시도하세요.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToApproveResponsePlease": {
+    "message": "응답을 승인하지 못했습니다. 다시 시도해 주세요.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease2": {
+    "message": "양식 ID를 찾을 수 없습니다. 페이지를 새로고침한 후 다시 시도하세요.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToRejectResponsePlease": {
+    "message": "응답을 거부하지 못했습니다. 다시 시도해 주세요.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease3": {
+    "message": "양식 ID를 찾을 수 없습니다. 페이지를 새로고침한 후 다시 시도하세요.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease4": {
+    "message": "양식 ID를 찾을 수 없습니다. 페이지를 새로고침한 후 다시 시도하세요.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToRestoreResponsePlease": {
+    "message": "응답을 복원하지 못했습니다. 다시 시도해 주세요.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastSubmittedResponsesCannotBeDeleted": {
+    "message": "제출된 답변은 삭제할 수 없습니다. 대신 아카이브를 사용하거나 무효화하십시오.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease5": {
+    "message": "양식 ID를 찾을 수 없습니다. 페이지를 새로고침한 후 다시 시도하세요.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToDeleteResponsePlease": {
+    "message": "응답을 삭제하지 못했습니다. 다시 시도해 주세요.",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastExportFunctionalityForAllResponses": {
+    "message": "모든 응답에 대한 내보내기 기능이 곧 제공될 예정입니다!",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastAnErrorOccurredDuringExport": {
+    "message": "내보내는 중에 오류가 발생했습니다.",
+    "description": "Toast from Responses.vue"
+  },
+  "tasksToastFailedToUpdateTaskStatus": {
+    "message": "작업 상태를 업데이트하지 못했습니다.",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastFailedToDeleteTask": {
+    "message": "작업을 삭제하지 못했습니다.",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastErrorPerformingBulkActionPlease": {
+    "message": "일괄 작업을 수행하는 중에 오류가 발생했습니다. 다시 시도해 주세요.",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastErrorExportingTasksPleaseTry": {
+    "message": "작업을 내보내는 중에 오류가 발생했습니다. 다시 시도해 주세요.",
+    "description": "Toast from Tasks.vue"
+  },
+  "trashToastRestoredSomeParentRecordsWere": {
+    "message": "복원되었습니다. 일부 상위 기록이 영구적으로 삭제되었습니다.",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToRestore": {
+    "message": "복원하지 못했습니다.",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToRestore2": {
+    "message": "복원하지 못했습니다.",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToDelete": {
+    "message": "삭제하지 못했습니다.",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToDelete2": {
+    "message": "삭제하지 못했습니다.",
+    "description": "Toast from Trash.vue"
+  },
+  "notificationPreferencesToastPushNotificationsAreNotSupported": {
+    "message": "이 브라우저에서는 푸시 알림이 지원되지 않습니다.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastEnablePushNotifications": {
+    "message": "푸시 알림 활성화",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastNotificationsAreNotSupportedIn": {
+    "message": "이 브라우저에서는 알림이 지원되지 않습니다.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationTriggeredCheckYour": {
+    "message": "테스트 알림이 실행되었습니다. 시스템 알림을 확인하세요.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationTriggeredIfYou": {
+    "message": "테스트 알림이 실행되었습니다. 보이지 않는 경우 알림센터/브라우저 OS 설정을 확인하세요.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastUnknownError": {
+    "message": "알 수 없는 오류",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationFailedSeeConsole": {
+    "message": "테스트 알림에 실패했습니다. 자세한 내용은 콘솔을 참조하세요.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationRulesToastFailedToDeleteRulePlease": {
+    "message": "규칙을 삭제하지 못했습니다. 다시 시도해 주세요.",
+    "description": "Toast from NotificationRules.vue"
+  },
+  "pronounYou": {
+    "message": "너",
+    "description": "First-person actor label in activity feed"
+  },
+  "relativeJustNow": {
+    "message": "방금",
+    "description": "Relative time under one minute"
+  },
+  "relativeOneMinuteAgo": {
+    "message": "1분 전",
+    "description": "Relative time one minute"
+  },
+  "relativeManyMinutesAgo": {
+    "message": "{count}분 전",
+    "description": "Relative time multiple minutes"
+  },
+  "relativeOneHourAgo": {
+    "message": "1시간 전",
+    "description": "Relative time one hour"
+  },
+  "relativeManyHoursAgo": {
+    "message": "{count}시간 전",
+    "description": "Relative time multiple hours"
+  },
+  "relativeOneDayAgo": {
+    "message": "1일 전",
+    "description": "Relative time one day"
+  },
+  "relativeManyDaysAgo": {
+    "message": "{count}일 전",
+    "description": "Relative time multiple days"
+  },
+  "relativeOneMonthAgo": {
+    "message": "1개월 전",
+    "description": "Relative time one month"
+  },
+  "relativeManyMonthsAgo": {
+    "message": "{count}개월 전",
+    "description": "Relative time multiple months"
+  },
+  "relativeOneYearAgo": {
+    "message": "1년 전",
+    "description": "Relative time one year"
+  },
+  "relativeManyYearsAgo": {
+    "message": "{count}년 전",
+    "description": "Relative time multiple years"
+  },
+  "phraseAnnualRevenue": {
+    "message": "세입",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLeadSource": {
+    "message": "리드 소스",
+    "description": "Common tenant custom field label"
+  },
+  "phraseIndustry": {
+    "message": "산업",
+    "description": "Common tenant custom field label"
+  },
+  "phraseWebsite": {
+    "message": "웹사이트",
+    "description": "Common tenant custom field label"
+  },
+  "phraseFax": {
+    "message": "팩스",
+    "description": "Common tenant custom field label"
+  },
+  "phraseAddress": {
+    "message": "주소",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCity": {
+    "message": "도시",
+    "description": "Common tenant custom field label"
+  },
+  "phraseState": {
+    "message": "상태",
+    "description": "Common tenant custom field label"
+  },
+  "phraseZipCode": {
+    "message": "우편 번호",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCountry": {
+    "message": "국가",
+    "description": "Common tenant custom field label"
+  },
+  "phraseDepartment": {
+    "message": "부서",
+    "description": "Common tenant custom field label"
+  },
+  "phraseJobTitle": {
+    "message": "직위",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLinkedin": {
+    "message": "링크드인",
+    "description": "Common tenant custom field label"
+  },
+  "phrasePriority": {
+    "message": "우선 사항",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRating": {
+    "message": "평가",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCategory": {
+    "message": "범주",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSubcategory": {
+    "message": "하위 카테고리",
+    "description": "Common tenant custom field label"
+  },
+  "phraseProduct": {
+    "message": "제품",
+    "description": "Common tenant custom field label"
+  },
+  "phraseQuantity": {
+    "message": "수량",
+    "description": "Common tenant custom field label"
+  },
+  "phraseUnitPrice": {
+    "message": "단가",
+    "description": "Common tenant custom field label"
+  },
+  "phraseDiscount": {
+    "message": "할인",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTax": {
+    "message": "세",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTotal": {
+    "message": "총",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSubtotal": {
+    "message": "소계",
+    "description": "Common tenant custom field label"
+  },
+  "phraseContractStart": {
+    "message": "계약 시작",
+    "description": "Common tenant custom field label"
+  },
+  "phraseContractEnd": {
+    "message": "계약 종료",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRenewalDate": {
+    "message": "갱신 날짜",
+    "description": "Common tenant custom field label"
+  },
+  "phraseMrr": {
+    "message": "MRR",
+    "description": "Common tenant custom field label"
+  },
+  "phraseArr": {
+    "message": "도착",
+    "description": "Common tenant custom field label"
+  },
+  "phraseEmployees": {
+    "message": "직원",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRevenue": {
+    "message": "수익",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTerritory": {
+    "message": "지역",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRegion": {
+    "message": "지역",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTimezone": {
+    "message": "시간대",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCurrency": {
+    "message": "통화",
+    "description": "Common tenant custom field label"
+  },
+  "phrasePoNumber": {
+    "message": "PO 번호",
+    "description": "Common tenant custom field label"
+  },
+  "phraseInvoiceNumber": {
+    "message": "송장 번호",
+    "description": "Common tenant custom field label"
+  },
+  "phraseOrderNumber": {
+    "message": "주문 번호",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSerialNumber": {
+    "message": "일련번호",
+    "description": "Common tenant custom field label"
+  },
+  "phraseExternalId": {
+    "message": "외부 ID",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLastActivity": {
+    "message": "마지막 활동",
+    "description": "Common tenant custom field label"
+  },
+  "phraseNextFollowUp": {
+    "message": "다음 후속 조치",
+    "description": "Common tenant custom field label"
+  },
+  "phraseInfluencer": {
+    "message": "인플루언서",
+    "description": "Common tenant custom field label"
+  },
+  "phraseMobile": {
+    "message": "이동하는",
+    "description": "Common tenant custom field label"
+  },
+  "phraseColor": {
+    "message": "색상",
+    "description": "Common tenant custom field label"
+  },
+  "phraseEmoji": {
+    "message": "이모티콘",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTrend": {
+    "message": "경향",
+    "description": "Common tenant custom field label"
+  },
+  "phraseAccount": {
+    "message": "계정",
+    "description": "Common tenant custom field label"
+  },
+  "phraseHelpdesk": {
+    "message": "헬프데스크",
+    "description": "App/product name"
+  },
+  "phrasePortal": {
+    "message": "문",
+    "description": "App/product name"
+  },
+  "fieldRequiredBadge": {
+    "message": "Required",
+    "description": "Badge on required fields in settings and forms"
+  },
+  "required": {
+    "message": "Required",
+    "description": "Required field indicator (alias for settings badges)"
+  },
+  "listSearchModule": {
+    "message": "Search {module}...",
+    "description": "Module list search placeholder"
+  },
+  "listCreateModule": {
+    "message": "New {module}",
+    "description": "Generic module list create button"
+  },
+  "listViewAllModule": {
+    "message": "All {module}",
+    "description": "Generic all-records list view title"
+  },
+  "listViewMyModule": {
+    "message": "My {module}",
+    "description": "Generic assigned-to-me list view title"
+  },
+  "listViewCustom": {
+    "message": "Custom",
+    "description": "List view title when filters or search are applied"
+  },
+  "listStatAssignedToMe": {
+    "message": "Assigned to Me",
+    "description": "List statistics card label"
+  },
+  "listStatUnassigned": {
+    "message": "Unassigned",
+    "description": "List statistics card label"
+  },
+  "listStatCompleted": {
+    "message": "Completed",
+    "description": "List statistics card label"
+  },
+  "listStatOverdue": {
+    "message": "Overdue",
+    "description": "List statistics card label"
+  },
+  "listDefaultViewTooltip": {
+    "message": "Default list (loads when opening)",
+    "description": "Tooltip on active default saved list view"
+  },
+  "listSetDefaultViewTooltip": {
+    "message": "Set as default list",
+    "description": "Tooltip to mark a saved list view as default"
+  },
+  "listCoreFields": {
+    "message": "Core Fields",
+    "description": "Customize list field group label"
+  },
+  "listParticipationFields": {
+    "message": "Participation",
+    "description": "Customize list field group label"
+  },
+  "listSystemFields": {
+    "message": "System Fields",
+    "description": "Customize list field group label"
+  },
+  "listParticipationApp": {
+    "message": "Participation: {app}",
+    "description": "Customize list participation field group label"
+  },
+  "listRowHeightSmall": {
+    "message": "Small",
+    "description": "List row height option"
+  },
+  "listRowHeightMedium": {
+    "message": "Medium",
+    "description": "List row height option"
+  },
+  "listRowHeightLarge": {
+    "message": "Large",
+    "description": "List row height option"
+  },
+  "listRowHeightHuge": {
+    "message": "Huge",
+    "description": "List row height option"
+  },
+  "listEmptyTitle": {
+    "message": "No records yet",
+    "description": "Default list empty state title"
+  },
+  "listEmptyMessage": {
+    "message": "Start by adding your first record",
+    "description": "Default list empty state description"
+  },
+  "listEmptyNoModuleYet": {
+    "message": "No {module} yet",
+    "description": "Module list empty state title"
+  },
+  "listEmptyModuleWillAppear": {
+    "message": "{module} will appear here as you add them.",
+    "description": "Module list empty state description"
+  },
+  "listEmptyNoMatchFilters": {
+    "message": "No {module} match your filters",
+    "description": "List empty title when filters are active"
+  },
+  "listEmptyNoMatchSearchAndFilters": {
+    "message": "No {module} match your search or filters. Try adjusting them or clear everything to start over.",
+    "description": "List empty message when search and filters are active"
+  },
+  "listEmptyNoMatchSearch": {
+    "message": "We couldn't find any {module} matching \"{query}\". Try a different keyword or clear the search.",
+    "description": "List empty message when search is active"
+  },
+  "listEmptyNoMatchFiltersOnly": {
+    "message": "No {module} match your filters. Try adjusting or clearing them to see more results.",
+    "description": "List empty message when only filters are active"
+  },
+  "listClearSearchAndFilters": {
+    "message": "Clear search & filters",
+    "description": "Button to reset list search and filters"
+  },
+  "listFilterAll": {
+    "message": "All {filter}",
+    "description": "Filter dropdown placeholder when no value selected"
+  },
+  "listUnknown": {
+    "message": "Unknown",
+    "description": "Fallback label for unknown filter option"
+  },
+  "listNoDataAvailable": {
+    "message": "No data available",
+    "description": "Table empty state title fallback"
+  },
+  "listNoRecordsFound": {
+    "message": "No records found.",
+    "description": "Table empty state message fallback"
+  },
+  "listEmptyIllustrationAlt": {
+    "message": "No records illustration",
+    "description": "Alt text for list empty state illustration"
+  },
+  "phraseDefaultInParens": {
+    "message": "(Default)",
+    "description": "Suffix for default pipeline or option"
+  }
+}

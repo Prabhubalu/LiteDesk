@@ -39,9 +39,7 @@
                         <DialogTitle class="text-base font-semibold text-white">
                           Edit {{ formatAppName(appKey) }} Details
                         </DialogTitle>
-                        <p class="mt-1 text-sm text-indigo-200">
-                          Update participation details for this person
-                        </p>
+                        <p class="mt-1 text-sm text-indigo-200">{{ t('people.participationEditModalUpdateParticipationDetailsForThisPerson') }}</p>
                       </div>
                       <button
                         type="button"
@@ -49,7 +47,7 @@
                         @click="close"
                       >
                         <span class="absolute -inset-2.5" />
-                        <span class="sr-only">Close panel</span>
+                        <span class="sr-only">{{ t('forms.previewClosePanelSr') }}</span>
                         <XMarkIcon class="size-6" aria-hidden="true" />
                       </button>
                     </div>
@@ -63,9 +61,7 @@
                   <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
                 </svg>
                 <div>
-                  <p class="text-sm font-medium text-blue-900 dark:text-blue-200 mb-1">
-                    Editing Participation Details
-                  </p>
+                  <p class="text-sm font-medium text-blue-900 dark:text-blue-200 mb-1">{{ t('people.participationEditModalEditingParticipationDetails') }}</p>
                   <p class="text-sm text-blue-700 dark:text-blue-300">
                     You're editing this person's {{ formatAppName(appKey) }} details, not their identity or lifecycle.
                   </p>
@@ -92,9 +88,7 @@
                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                 </svg>
                 <div class="flex-1">
-                  <h3 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">
-                    Validation Errors
-                  </h3>
+                  <h3 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">{{ t('people.participationEditModalValidationErrors') }}</h3>
                   <ul class="list-disc list-inside space-y-2">
                     <li v-for="(message, field) in validationErrors" :key="field" class="text-sm text-red-700 dark:text-red-300">
                       <span class="font-medium">{{ getFieldLabel(field) }}:</span> {{ message }}
@@ -107,26 +101,23 @@
                       <div class="space-y-6">
               <!-- Lifecycle Control (Type): Primary Control for SALES -->
               <div v-if="appKey === 'SALES'" class="space-y-1">
-                <label class="block text-sm/6 font-medium text-gray-900 dark:text-white" :for="'participation-sales-type'">
-                  Type <span class="text-red-500">*</span>
+                <label class="block text-sm/6 font-medium text-gray-900 dark:text-white" :for="'participation-sales-type'">{{ t('settings.modFieldsValidationType') }}<span class="text-red-500">*</span>
                   <span class="ml-2 text-xs font-normal text-gray-500 dark:text-gray-400">(Primary control)</span>
                 </label>
                 <HeadlessSelect
                   id="participation-sales-type"
                   :model-value="formData.sales_type ?? ''"
                   :options="salesTypeListboxOptions"
-                  placeholder="Select type..."
+                  :placeholder="t('settings.groupFormSelectType')"
                   allow-empty
-                  empty-label="Select type..."
+                  empty-:label="t('settings.groupFormSelectType')"
                   empty-value=""
                   wrapper-class="mt-2"
                   :invalid="!!validationErrors.sales_type"
                   :options-class="participationListboxOptionsClass"
                   @update:model-value="(v) => { formData.sales_type = v; }"
                 />
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  Changing type updates status automatically
-                </p>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('people.participationEditModalChangingTypeUpdatesStatusAutomatically') }}</p>
                 <p v-if="validationErrors.sales_type" class="mt-1 text-sm text-red-600 dark:text-red-400">
                   {{ validationErrors.sales_type }}
                 </p>
@@ -134,8 +125,7 @@
 
               <!-- Helpdesk: participation role only (tenant peopleTypes) -->
               <div v-else-if="appKey === 'HELPDESK'" class="space-y-1">
-                <label class="block text-sm/6 font-medium text-gray-900 dark:text-white" :for="'participation-helpdesk-role'">
-                  Role <span class="text-red-500">*</span>
+                <label class="block text-sm/6 font-medium text-gray-900 dark:text-white" :for="'participation-helpdesk-role'">{{ t('settings.modFieldsPbAssignRole') }}<span class="text-red-500">*</span>
                 </label>
                 <HeadlessSelect
                   id="participation-helpdesk-role"
@@ -158,9 +148,7 @@
 
               <!-- Detail Fields Section -->
               <div v-if="visibleDetailFields.length > 0" class="space-y-4 border-t border-gray-200 pt-6 dark:border-gray-700">
-                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
-                  Detail fields
-                </h3>
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('people.participationEditModalDetailFields') }}</h3>
                 <div class="space-y-6">
                   <div v-for="fieldName in visibleDetailFields" :key="fieldName" class="space-y-1">
                     <label :for="fieldName" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
@@ -246,9 +234,7 @@
                         type="button"
                         class="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-white dark:ring-gray-600 dark:hover:bg-gray-700 cursor-pointer"
                         @click="close"
-                      >
-                        Cancel
-                      </button>
+                      >{{ t('performance.cancelWizard') }}</button>
                       <button
                         type="submit"
                         :disabled="loading || submitDisabled"
@@ -273,6 +259,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+import { resolveFieldLabel } from '@/utils/fieldLabelResolver';
+import { getAppNameKey } from '@/utils/navigationLabels';
 import { ref, computed, watch, toRef } from 'vue';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { 
@@ -306,6 +295,8 @@ const props = defineProps({
     default: () => ({ fields: {} })
   }
 });
+
+const { t, te } = useI18n();
 
 const emit = defineEmits(['close', 'updated']);
 
@@ -469,25 +460,16 @@ const submitDisabled = computed(() => {
   return visibleDetailFields.value.length === 0;
 });
 
-// Format app name
 const formatAppName = (appKey) => {
-  const appNames = {
-    'SALES': 'Sales',
-    'HELPDESK': 'Helpdesk',
-    'AUDIT': 'Audit',
-    'PORTAL': 'Portal',
-    'PROJECTS': 'Projects'
-  };
-  return appNames[appKey] || appKey;
+  const nameKey = getAppNameKey(appKey);
+  if (nameKey && te(nameKey)) return t(nameKey);
+  return appKey;
 };
 
-// Get field label
 const getFieldLabel = (fieldName) => {
-  // Convert snake_case to Title Case
-  return fieldName
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+  const metadata = getFieldMetadata(fieldName);
+  const apiLabel = metadata?.label || metadata?.displayName;
+  return resolveFieldLabel('people', { key: fieldName, label: apiLabel }, t, te);
 };
 
 // Check if field is required (only for visible fields in form)

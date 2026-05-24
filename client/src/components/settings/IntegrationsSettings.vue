@@ -2,9 +2,9 @@
   <div class="space-y-6">
     <!-- Header -->
     <div>
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Integrations</h2>
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.integrationsTitle') }}</h2>
       <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        Connect external tools to enhance your workspace. All integrations are optional and can be turned off at any time.
+        {{ t('settings.integrationsSubtitle') }}
       </p>
     </div>
 
@@ -15,9 +15,9 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <div>
-          <h3 class="text-sm font-semibold text-blue-800 dark:text-blue-300">Optional, Safe Integrations</h3>
+          <h3 class="text-sm font-semibold text-blue-800 dark:text-blue-300">{{ t('settings.integrationsBannerTitle') }}</h3>
           <p class="text-sm text-blue-700 dark:text-blue-400 mt-1">
-            Integrations are optional and do not change your core data. Disabling an integration stops new data from flowing but does not delete existing business records.
+            {{ t('settings.integrationsBannerBody') }}
           </p>
         </div>
       </div>
@@ -35,7 +35,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <p class="text-sm text-red-800 dark:text-red-300">
-          {{ error.message || 'Failed to load integrations' }}
+          {{ error.message || t('settings.integrationsLoadFailed') }}
         </p>
       </div>
     </div>
@@ -45,8 +45,8 @@
       <!-- Catalog / List -->
       <div class="lg:col-span-1 space-y-4">
         <div class="flex items-center justify-between">
-          <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Available Integrations</h3>
-          <span class="text-xs text-gray-500 dark:text-gray-400">{{ integrations.length }} integrations</span>
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.integrationsAvailableTitle') }}</h3>
+          <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.integrationsCount', { count: integrations.length }) }}</span>
         </div>
         <div class="space-y-3">
           <button
@@ -66,16 +66,14 @@
                   {{ integration.name }}
                 </h4>
                 <span
-                  v-if="integration.scope === 'platform'"
-                  class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300"
+                  :class="[
+                    'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium',
+                    integration.scope === 'platform'
+                      ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300'
+                      : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
+                  ]"
                 >
-                  Platform-wide
-                </span>
-                <span
-                  v-else
-                  class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300"
-                >
-                  App-specific
+                  {{ scopeBadgeLabel(integration.scope) }}
                 </span>
               </div>
               <p class="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
@@ -90,13 +88,13 @@
                       : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                   ]"
                 >
-                  {{ integration.enabled ? 'Enabled' : 'Disabled' }}
+                  {{ integrationStatusLabel(integration.enabled) }}
                 </span>
                 <span
                   v-if="integration.recommended"
                   class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300"
                 >
-                  Recommended
+                  {{ t('settings.integrationsRecommended') }}
                 </span>
               </div>
             </div>
@@ -108,8 +106,8 @@
       <div class="lg:col-span-2">
         <div v-if="!selectedIntegration" class="h-full flex items-center justify-center border border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-8 bg-gray-50 dark:bg-gray-800/40">
           <div class="text-center">
-            <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">Select an integration to view details</p>
-            <p class="text-xs text-gray-500 dark:text-gray-400">You can safely explore integrations without enabling them.</p>
+            <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">{{ t('settings.integrationsSelectTitle') }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.integrationsSelectHint') }}</p>
           </div>
         </div>
         <div v-else class="space-y-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
@@ -118,16 +116,14 @@
               <div class="flex items-center gap-2 mb-1">
                 <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{{ selectedIntegration.name }}</h3>
                 <span
-                  v-if="selectedIntegration.scope === 'platform'"
-                  class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300"
+                  :class="[
+                    'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium',
+                    selectedIntegration.scope === 'platform'
+                      ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300'
+                      : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
+                  ]"
                 >
-                  Platform-wide
-                </span>
-                <span
-                  v-else
-                  class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300"
-                >
-                  App-specific
+                  {{ scopeBadgeLabel(selectedIntegration.scope) }}
                 </span>
               </div>
               <p class="text-sm text-gray-600 dark:text-gray-400 max-w-2xl">
@@ -143,7 +139,7 @@
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                 ]"
               >
-                {{ selectedIntegration.enabled ? 'Enabled' : 'Disabled' }}
+                {{ integrationStatusLabel(selectedIntegration.enabled) }}
               </span>
               <button
                 v-if="selectedIntegration.enabled"
@@ -152,7 +148,7 @@
                 :disabled="actionLoading"
                 class="px-4 py-2 text-sm font-medium text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Disable Integration
+                {{ t('settings.integrationsDisableButton') }}
               </button>
               <button
                 v-else
@@ -161,7 +157,7 @@
                 :disabled="actionLoading"
                 class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Enable Integration
+                {{ t('settings.integrationsEnableButton') }}
               </button>
             </div>
           </div>
@@ -169,13 +165,13 @@
           <!-- Scope & Apps -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="bg-gray-50 dark:bg-gray-800/60 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Scope</h4>
+              <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.integrationsScopeHeading') }}</h4>
               <p class="text-sm text-gray-600 dark:text-gray-400">
                 <span v-if="selectedIntegration.scope === 'platform'">
-                  This integration is platform-wide and can be used across all applications.
+                  {{ t('settings.integrationsScopePlatformDesc') }}
                 </span>
                 <span v-else>
-                  This integration is app-specific and only affects the applications listed.
+                  {{ t('settings.integrationsScopeAppDesc') }}
                 </span>
               </p>
               <div v-if="selectedIntegration.apps && selectedIntegration.apps.length" class="mt-3 flex flex-wrap gap-2">
@@ -189,12 +185,12 @@
               </div>
             </div>
             <div class="bg-gray-50 dark:bg-gray-800/60 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Connection Status</h4>
+              <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.integrationsConnectionStatusHeading') }}</h4>
               <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                {{ selectedIntegration.enabled ? 'New activity will continue to flow through this integration.' : 'New activity will no longer flow through this integration.' }}
+                {{ connectionStatusMessage(selectedIntegration.enabled) }}
               </p>
               <p class="text-xs text-gray-500 dark:text-gray-400">
-                Existing records in your CRM, helpdesk, or other tools are not deleted when disabling this integration.
+                {{ t('settings.integrationsConnectionNote') }}
               </p>
             </div>
           </div>
@@ -207,12 +203,12 @@
               ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
               : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'"
           >
-            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Configuration</h4>
+            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.integrationsConfigurationHeading') }}</h4>
             <p v-if="selectedIntegration.configStatus === 'configured'" class="text-sm text-green-800 dark:text-green-300">
-              CRM outbound email is configured. Users who connect Gmail send as themselves; everyone else uses your provider below (default: Resend).
+              {{ t('settings.integrationsConfigConfigured') }}
             </p>
             <p v-else class="text-sm text-amber-800 dark:text-amber-300">
-              CRM outbound is not fully configured. Set a From Email and provider credentials below (Resend API key, OCI SMTP, AWS SES, or custom SMTP).
+              {{ t('settings.integrationsConfigNotConfigured') }}
             </p>
             <p
               v-if="selectedIntegration.emailPlatformDefaults?.notificationChannelNote"
@@ -227,7 +223,7 @@
               :disabled="testEmailLoading"
               class="mt-3 px-4 py-2 text-sm font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {{ testEmailLoading ? 'Sending…' : 'Send Test Email' }}
+              {{ testEmailLoading ? t('settings.integrationsSendingTestEmail') : t('settings.integrationsSendTestEmail') }}
             </button>
           </div>
 
@@ -235,17 +231,15 @@
             v-if="selectedIntegration.key === 'email-provider'"
             class="rounded-lg p-4 border border-indigo-200 dark:border-indigo-800 bg-indigo-50/80 dark:bg-indigo-950/25"
           >
-            <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Tenant email settings (overview)</h4>
+            <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.integrationsEmailOverviewTitle') }}</h4>
             <ul class="mt-2 space-y-1.5 text-xs text-gray-700 dark:text-gray-300 list-disc pl-4">
-              <li><strong>CRM outbound</strong> — provider + From address (used when users have not connected Gmail).</li>
-              <li><strong>Send policy</strong> — modules, Inbox rules, suppression, mailbox-only mode.</li>
-              <li><strong>Gmail</strong> — OAuth app (optional) + user mailbox connections from Inbox.</li>
-              <li><strong>Inbound</strong> — webhook URL, diagnostics, suppressions (below).</li>
+              <li>{{ t('settings.integrationsEmailOverviewCrmOutbound') }}</li>
+              <li>{{ t('settings.integrationsEmailOverviewSendPolicy') }}</li>
+              <li>{{ t('settings.integrationsEmailOverviewGmail') }}</li>
+              <li>{{ t('settings.integrationsEmailOverviewInbound') }}</li>
             </ul>
             <p class="mt-2 text-[11px] text-indigo-900/80 dark:text-indigo-200/90">
-              Notification emails use platform
-              <strong>{{ selectedIntegration.emailPlatformDefaults?.notificationProvider || 'oci-email-delivery' }}</strong>
-              (not the CRM provider below).
+              {{ t('settings.integrationsEmailNotificationPlatform', { provider: selectedIntegration.emailPlatformDefaults?.notificationProvider || 'oci-email-delivery' }) }}
             </p>
           </div>
 
@@ -253,25 +247,25 @@
             v-if="selectedIntegration.key === 'email-provider'"
             class="rounded-lg p-4 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40"
           >
-            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">CRM outbound provider</h4>
+            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('settings.integrationsCrmOutboundTitle') }}</h4>
             <p
               v-if="emailCriticalFieldsLocked"
               class="mb-3 text-xs text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2"
             >
-              Critical provider fields are owner-only. You can update non-critical fields like From Name, Reply-To, and SMTP secure mode.
+              {{ t('settings.integrationsCrmOutboundOwnerOnlyHint') }}
             </p>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
               <label class="text-sm">
                 <span class="block mb-1 text-gray-700 dark:text-gray-300">
-                  Provider
-                  <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-1">(owner-only)</span>
+                  {{ t('settings.integrationsProviderLabel') }}
+                  <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-1">{{ t('settings.integrationsOwnerOnlyBadge') }}</span>
                 </span>
                 <select v-model="emailConfig.provider" :disabled="emailCriticalFieldsLocked" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 disabled:opacity-60 disabled:cursor-not-allowed">
-                  <option value="resend">resend</option>
-                  <option value="smtp">smtp</option>
-                  <option value="gmail-smtp">gmail-smtp</option>
-                  <option value="aws-ses">aws-ses</option>
-                  <option value="oci-email-delivery">oci-email-delivery</option>
+                  <option value="resend">{{ t('settings.integrationsProviderOptionResend') }}</option>
+                  <option value="smtp">{{ t('settings.integrationsProviderOptionSmtp') }}</option>
+                  <option value="gmail-smtp">{{ t('settings.integrationsProviderOptionGmailSmtp') }}</option>
+                  <option value="aws-ses">{{ t('settings.integrationsProviderOptionAwsSes') }}</option>
+                  <option value="oci-email-delivery">{{ t('settings.integrationsProviderOptionOci') }}</option>
                 </select>
               </label>
 
@@ -279,141 +273,137 @@
                 v-if="emailConfig.provider === 'resend'"
                 class="md:col-span-2 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-xs text-violet-950 dark:border-violet-900 dark:bg-violet-950/30 dark:text-violet-100"
               >
-                <strong>Resend (recommended)</strong> — default for CRM sends when users have not connected Gmail.
-                Use SMTP user <code class="font-mono text-[11px]">resend</code> and your Resend API key as the SMTP password.
-                Verify your sending domain in Resend and in the Sender Domain section below.
+                <strong>{{ t('settings.integrationsResendHintTitle') }}</strong>{{ t('settings.integrationsResendHintBody', { smtpUser: t('settings.integrationsSmtpUserResend') }) }}
               </p>
 
               <p
                 v-if="emailConfig.provider === 'gmail-smtp'"
                 class="md:col-span-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-950 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-100"
               >
-                <strong>Gmail SMTP</strong> sets the relay to <code class="font-mono text-[11px]">smtp.gmail.com:587</code>.
-                Each user connects their mailbox with a <strong>Google App Password</strong> under Inbox → Connect.
-                Inbox sync still uses Gmail API (OAuth) if you also connect “Gmail” separately.
+                <strong>{{ t('settings.integrationsGmailSmtpHintTitle') }}</strong> {{ t('settings.integrationsGmailSmtpHintSetsRelay') }} <code class="font-mono text-[11px]">{{ t('settings.integrationsSettingsSmtpGmailCom587') }}</code>.
+                {{ t('settings.integrationsGmailSmtpHintBody', { appPassword: t('settings.integrationsGmailSmtpHintAppPassword') }) }}
               </p>
 
               <p
                 v-if="emailConfig.provider === 'smtp'"
                 class="md:col-span-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-800 dark:border-gray-600 dark:bg-gray-900/40 dark:text-gray-200"
               >
-                <strong>Custom SMTP</strong> — any SMTP-compatible host (Mailgun, SendGrid SMTP, etc.).
+                <strong>{{ t('settings.integrationsCustomSmtpHintTitle') }}</strong>{{ t('settings.integrationsCustomSmtpHintBody') }}
               </p>
 
               <label v-if="emailConfig.provider === 'oci-email-delivery'" class="text-sm md:col-span-2">
                 <span class="block mb-1 text-gray-700 dark:text-gray-300">
-                  OCI Region
-                  <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-1">(owner-only)</span>
+                  {{ t('settings.integrationsOciRegionLabel') }}
+                  <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-1">{{ t('settings.integrationsOwnerOnlyBadge') }}</span>
                 </span>
                 <input
                   v-model="emailConfig.ociRegion"
                   :disabled="emailCriticalFieldsLocked"
                   type="text"
                   class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 disabled:opacity-60 disabled:cursor-not-allowed"
-                  placeholder="us-phoenix-1"
+                  :placeholder="t('settings.integrationsPlaceholderOciRegion')"
                 />
                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  Used to build the SMTP host (<code class="text-[11px]">smtp.email.&lt;region&gt;.oci.oraclecloud.com</code>) when SMTP Host is empty.
-                  OCI requires <strong>port 465</strong> with TLS (not 587). Create SMTP credentials under Identity → Users → SMTP Credentials; use an approved sender for From Email.
+                  {{ t('settings.integrationsOciRegionHint', { hostPattern: t('settings.integrationsOciHostPattern'), port465: t('settings.integrationsOciPort465') }) }}
                 </p>
               </label>
 
               <label class="text-sm">
                 <span class="block mb-1 text-gray-700 dark:text-gray-300">
-                  From Email
-                  <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-1">(owner-only)</span>
+                  {{ t('settings.integrationsFromEmail') }}
+                  <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-1">{{ t('settings.integrationsOwnerOnlyBadge') }}</span>
                 </span>
-                <input v-model="emailConfig.fromEmail" :disabled="emailCriticalFieldsLocked" type="email" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 disabled:opacity-60 disabled:cursor-not-allowed" placeholder="hello@yourdomain.com" />
+                <input v-model="emailConfig.fromEmail" :disabled="emailCriticalFieldsLocked" type="email" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 disabled:opacity-60 disabled:cursor-not-allowed" :placeholder="t('settings.integrationsPlaceholderFromEmail')" />
               </label>
 
               <label class="text-sm">
-                <span class="block mb-1 text-gray-700 dark:text-gray-300">From Name</span>
-                <input v-model="emailConfig.fromName" type="text" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2" placeholder="Your Company" />
+                <span class="block mb-1 text-gray-700 dark:text-gray-300">{{ t('settings.integrationsFromName') }}</span>
+                <input v-model="emailConfig.fromName" type="text" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2" :placeholder="t('settings.integrationsPlaceholderFromName')" />
               </label>
 
               <label class="text-sm">
-                <span class="block mb-1 text-gray-700 dark:text-gray-300">Reply-To</span>
-                <input v-model="emailConfig.replyTo" type="email" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2" placeholder="support@yourdomain.com" />
+                <span class="block mb-1 text-gray-700 dark:text-gray-300">{{ t('settings.integrationsReplyTo') }}</span>
+                <input v-model="emailConfig.replyTo" type="email" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2" :placeholder="t('settings.integrationsPlaceholderReplyTo')" />
               </label>
 
               <p
                 v-if="emailConfig.provider === 'aws-ses'"
                 class="md:col-span-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100"
               >
-                <strong>AWS SES</strong> sends via the SES API (SMTP fields below are optional). Verify your From domain in SES.
+                <strong>{{ t('settings.integrationsAwsSesHintTitle') }}</strong>{{ t('settings.integrationsAwsSesHintBody') }}
               </p>
 
               <label v-if="emailConfig.provider !== 'aws-ses'" class="text-sm">
                 <span class="block mb-1 text-gray-700 dark:text-gray-300">
-                  SMTP Host
-                  <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-1">(owner-only)</span>
+                  {{ t('settings.integrationsSmtpHost') }}
+                  <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-1">{{ t('settings.integrationsOwnerOnlyBadge') }}</span>
                 </span>
                 <input
                   v-model="emailConfig.smtpHost"
                   :disabled="emailCriticalFieldsLocked"
                   type="text"
                   class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 disabled:opacity-60 disabled:cursor-not-allowed"
-                  :placeholder="emailConfig.provider === 'oci-email-delivery' ? 'smtp.email.us-phoenix-1.oci.oraclecloud.com' : 'smtp.resend.com'"
+                  :placeholder="smtpHostPlaceholder"
                 />
               </label>
 
               <template v-if="emailConfig.provider !== 'aws-ses'">
                 <label class="text-sm">
                   <span class="block mb-1 text-gray-700 dark:text-gray-300">
-                    SMTP Port
-                    <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-1">(owner-only)</span>
+                    {{ t('settings.integrationsSmtpPort') }}
+                    <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-1">{{ t('settings.integrationsOwnerOnlyBadge') }}</span>
                   </span>
                   <input
                     v-model="emailConfig.smtpPort"
                     :disabled="emailCriticalFieldsLocked"
                     type="number"
                     class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 disabled:opacity-60 disabled:cursor-not-allowed"
-                    :placeholder="emailConfig.provider === 'oci-email-delivery' ? '465' : '587'"
+                    :placeholder="smtpPortPlaceholder"
                   >
                 </label>
 
                 <label class="text-sm">
                   <span class="block mb-1 text-gray-700 dark:text-gray-300">
-                    SMTP User
-                    <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-1">(owner-only)</span>
+                    {{ t('settings.integrationsSmtpUser') }}
+                    <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-1">{{ t('settings.integrationsOwnerOnlyBadge') }}</span>
                   </span>
                   <input
                     v-model="emailConfig.smtpUser"
                     :disabled="emailCriticalFieldsLocked"
                     type="text"
                     class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 disabled:opacity-60 disabled:cursor-not-allowed"
-                    :placeholder="emailConfig.provider === 'oci-email-delivery' ? 'OCI SMTP username' : 'resend'"
+                    :placeholder="smtpUserPlaceholder"
                   >
                 </label>
 
                 <label class="text-sm">
                   <span class="block mb-1 text-gray-700 dark:text-gray-300">
-                    SMTP Password / API Key
-                    <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-1">(owner-only)</span>
-                    <span v-if="emailConfig.hasSmtpPass" class="text-xs text-gray-500 dark:text-gray-400">({{ emailConfig.smtpPassMasked || 'saved' }})</span>
+                    {{ t('settings.integrationsSmtpPassword') }}
+                    <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-1">{{ t('settings.integrationsOwnerOnlyBadge') }}</span>
+                    <span v-if="emailConfig.hasSmtpPass" class="text-xs text-gray-500 dark:text-gray-400">({{ emailConfig.smtpPassMasked || t('settings.integrationsSavedMask') }})</span>
                   </span>
-                  <input v-model="emailConfig.smtpPass" :disabled="emailCriticalFieldsLocked" type="password" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 disabled:opacity-60 disabled:cursor-not-allowed" placeholder="Leave blank to keep existing secret">
+                  <input v-model="emailConfig.smtpPass" :disabled="emailCriticalFieldsLocked" type="password" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 disabled:opacity-60 disabled:cursor-not-allowed" :placeholder="t('settings.integrationsSecretKeepBlank')">
                 </label>
               </template>
 
               <template v-if="emailConfig.provider === 'aws-ses'">
                 <label class="text-sm md:col-span-2">
                   <span class="block mb-1 text-gray-700 dark:text-gray-300">
-                    AWS region
-                    <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-1">(owner-only)</span>
+                    {{ t('settings.integrationsAwsRegion') }}
+                    <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-1">{{ t('settings.integrationsOwnerOnlyBadge') }}</span>
                   </span>
                   <input
                     v-model="emailConfig.awsRegion"
                     :disabled="emailCriticalFieldsLocked"
                     type="text"
                     class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 disabled:opacity-60 disabled:cursor-not-allowed"
-                    placeholder="us-east-1"
+                    :placeholder="t('settings.integrationsPlaceholderAwsRegion')"
                   >
                 </label>
                 <label class="text-sm">
                   <span class="block mb-1 text-gray-700 dark:text-gray-300">
-                    AWS access key ID
-                    <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-1">(owner-only)</span>
+                    {{ t('settings.integrationsAwsAccessKeyId') }}
+                    <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-1">{{ t('settings.integrationsOwnerOnlyBadge') }}</span>
                   </span>
                   <input
                     v-model="emailConfig.awsAccessKeyId"
@@ -425,9 +415,9 @@
                 </label>
                 <label class="text-sm">
                   <span class="block mb-1 text-gray-700 dark:text-gray-300">
-                    AWS secret access key
-                    <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-1">(owner-only)</span>
-                    <span v-if="emailConfig.hasAwsSecretAccessKey" class="text-xs text-gray-500 dark:text-gray-400">({{ emailConfig.awsSecretAccessKeyMasked || 'saved' }})</span>
+                    {{ t('settings.integrationsAwsSecretAccessKey') }}
+                    <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-1">{{ t('settings.integrationsOwnerOnlyBadge') }}</span>
+                    <span v-if="emailConfig.hasAwsSecretAccessKey" class="text-xs text-gray-500 dark:text-gray-400">({{ emailConfig.awsSecretAccessKeyMasked || t('settings.integrationsSavedMask') }})</span>
                   </span>
                   <input
                     v-model="emailConfig.awsSecretAccessKey"
@@ -435,7 +425,7 @@
                     type="password"
                     autocomplete="new-password"
                     class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 disabled:opacity-60 disabled:cursor-not-allowed"
-                    placeholder="Leave blank to keep existing secret"
+                    :placeholder="t('settings.integrationsSecretKeepBlank')"
                   >
                 </label>
               </template>
@@ -448,11 +438,11 @@
                 class="rounded border-gray-300 dark:border-gray-600"
                 :disabled="emailConfig.provider === 'oci-email-delivery'"
               />
-              Use secure SMTP (TLS)
+              {{ t('settings.integrationsUseSecureSmtp') }}
               <span
                 v-if="emailConfig.provider === 'oci-email-delivery'"
                 class="text-xs text-gray-500 dark:text-gray-400"
-              >(required on port 465 for OCI)</span>
+              >{{ t('settings.integrationsOciSecureRequired') }}</span>
             </label>
 
             <div class="mt-4">
@@ -462,7 +452,7 @@
                 :disabled="savingConfig || savingGmailOAuthConfig"
                 class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {{ savingConfig ? 'Saving...' : 'Save Email Settings' }}
+                {{ savingConfig ? t('settings.integrationsSavingEmailSettings') : t('settings.integrationsSaveEmailSettings') }}
               </button>
             </div>
           </div>
@@ -471,13 +461,13 @@
             v-if="selectedIntegration.key === 'email-provider'"
             class="rounded-lg p-4 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40"
           >
-            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Webhook Simulator</h4>
+            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('settings.integrationsWebhookSimulatorTitle') }}</h4>
             <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">
-              Trigger delivery lifecycle events without waiting for provider callbacks.
+              {{ t('settings.integrationsWebhookSimulatorDesc') }}
             </p>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
               <label class="text-sm">
-                <span class="block mb-1 text-gray-700 dark:text-gray-300">Event Type</span>
+                <span class="block mb-1 text-gray-700 dark:text-gray-300">{{ t('settings.integrationsEventType') }}</span>
                 <select
                   v-model="webhookSim.eventType"
                   class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2"
@@ -486,18 +476,18 @@
                 </select>
               </label>
               <label class="text-sm">
-                <span class="block mb-1 text-gray-700 dark:text-gray-300">Provider Label</span>
+                <span class="block mb-1 text-gray-700 dark:text-gray-300">{{ t('settings.integrationsProviderLabelSim') }}</span>
                 <input
                   v-model="webhookSim.provider"
                   type="text"
                   class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2"
-                  placeholder="simulator"
+                  :placeholder="t('settings.integrationsPlaceholderWebhookProvider')"
                 />
               </label>
               <div class="text-sm">
-                <span class="block mb-1 text-gray-700 dark:text-gray-300">Target Message</span>
+                <span class="block mb-1 text-gray-700 dark:text-gray-300">{{ t('settings.integrationsTargetMessage') }}</span>
                 <p class="text-xs text-gray-600 dark:text-gray-400 break-all">
-                  {{ webhookTemplates.latestExternalMessageId || 'No sent message yet' }}
+                  {{ webhookTemplates.latestExternalMessageId || t('settings.integrationsNoSentMessageYet') }}
                 </p>
               </div>
             </div>
@@ -508,7 +498,7 @@
                 :disabled="simulatingWebhook || (!webhookTemplates.latestCommunicationId && !webhookTemplates.latestExternalMessageId)"
                 class="px-4 py-2 text-sm font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {{ simulatingWebhook ? 'Simulating...' : 'Simulate Webhook Event' }}
+                {{ simulatingWebhook ? t('settings.integrationsSimulatingWebhook') : t('settings.integrationsSimulateWebhook') }}
               </button>
             </div>
           </div>
@@ -517,12 +507,12 @@
             v-if="selectedIntegration.key === 'email-provider'"
             class="rounded-lg p-4 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40"
           >
-            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Outbound send policy</h4>
+            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('settings.integrationsOutboundPolicyTitle') }}</h4>
             <p
               v-if="communicationPolicyLocked"
               class="mb-3 text-xs text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2"
             >
-              Communication policy is owner-only.
+              {{ t('settings.integrationsOutboundPolicyOwnerOnly') }}
             </p>
 
             <div class="space-y-3">
@@ -533,7 +523,7 @@
                   class="rounded border-gray-300 dark:border-gray-600"
                   :disabled="communicationPolicyLocked"
                 />
-                Enable outbound email from Communication API
+                {{ t('settings.integrationsEnableOutboundApi') }}
               </label>
 
               <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
@@ -543,11 +533,11 @@
                   class="rounded border-gray-300 dark:border-gray-600"
                   :disabled="communicationPolicyLocked"
                 />
-                Allow Inbox standalone send (workspace-scoped mail without a person/deal record)
+                {{ t('settings.integrationsAllowInboxStandalone') }}
               </label>
 
               <div class="rounded-lg border border-gray-200 bg-white px-3 py-3 dark:border-gray-600 dark:bg-gray-900/40 space-y-2">
-                <p class="text-xs font-semibold text-gray-800 dark:text-gray-200">Mailbox vs platform send</p>
+                <p class="text-xs font-semibold text-gray-800 dark:text-gray-200">{{ t('settings.integrationsMailboxVsPlatform') }}</p>
                 <label class="inline-flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
                   <input
                     v-model="communicationPolicy.outboundEmail.disallowPlatformSmtpForWorkspace"
@@ -556,9 +546,9 @@
                     :disabled="communicationPolicyLocked"
                   />
                   <span>
-                    <span class="font-medium">Inbox requires connected mailbox</span>
+                    <span class="font-medium">{{ t('settings.integrationsInboxRequiresMailbox') }}</span>
                     <span class="block text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                      Disallow Resend/platform SMTP for Inbox. Users must connect Gmail (OAuth or SMTP App Password).
+                      {{ t('settings.integrationsInboxRequiresMailboxHint') }}
                     </span>
                   </span>
                 </label>
@@ -570,9 +560,9 @@
                     :disabled="communicationPolicyLocked"
                   />
                   <span>
-                    <span class="font-medium">All CRM sends require connected mailbox</span>
+                    <span class="font-medium">{{ t('settings.integrationsAllCrmRequiresMailbox') }}</span>
                     <span class="block text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                      Applies to people, deals, tasks, etc. — not only Inbox.
+                      {{ t('settings.integrationsAllCrmRequiresMailboxHint') }}
                     </span>
                   </span>
                 </label>
@@ -586,15 +576,15 @@
                   :disabled="communicationPolicyLocked"
                 />
                 <span>
-                  <span class="font-medium">Require idempotency key on send API</span>
+                  <span class="font-medium">{{ t('settings.integrationsRequireIdempotency') }}</span>
                   <span class="block text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    Clients must send <code class="text-[10px]">Idempotency-Key</code> header to prevent duplicate sends.
+                    {{ t('settings.integrationsRequireIdempotencyHint', { header: t('settings.integrationsIdempotencyHeader') }) }}
                   </span>
                 </span>
               </label>
 
               <label class="text-sm block">
-                <span class="block mb-1 text-gray-700 dark:text-gray-300">Max recipients per message</span>
+                <span class="block mb-1 text-gray-700 dark:text-gray-300">{{ t('settings.integrationsMaxRecipients') }}</span>
                 <input
                   v-model.number="communicationPolicy.outboundEmail.maxRecipientsPerMessage"
                   type="number"
@@ -606,7 +596,7 @@
               </label>
 
               <div>
-                <span class="block mb-1 text-sm text-gray-700 dark:text-gray-300">Allowed modules for outbound emails</span>
+                <span class="block mb-1 text-sm text-gray-700 dark:text-gray-300">{{ t('settings.integrationsAllowedModules') }}</span>
                 <div class="flex flex-wrap gap-2">
                   <label
                     v-for="moduleKey in communicationPolicy.supportedModuleKeys"
@@ -626,7 +616,7 @@
               </div>
 
               <div>
-                <span class="block mb-1 text-sm text-gray-700 dark:text-gray-300">Suppression policy</span>
+                <span class="block mb-1 text-sm text-gray-700 dark:text-gray-300">{{ t('settings.integrationsSuppressionPolicy') }}</span>
                 <div class="flex flex-col gap-2">
                   <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                     <input
@@ -635,7 +625,7 @@
                       class="rounded border-gray-300 dark:border-gray-600"
                       :disabled="communicationPolicyLocked"
                     />
-                    Auto-suppress recipients on bounce events
+                    {{ t('settings.integrationsAutoSuppressBounce') }}
                   </label>
                   <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                     <input
@@ -644,32 +634,28 @@
                       class="rounded border-gray-300 dark:border-gray-600"
                       :disabled="communicationPolicyLocked"
                     />
-                    Auto-suppress recipients on complaint events
+                    {{ t('settings.integrationsAutoSuppressComplaint') }}
                   </label>
                 </div>
               </div>
             </div>
 
             <div class="mt-6 border-t border-gray-200 pt-4 dark:border-gray-600">
-              <h4 class="mb-2 text-sm font-semibold text-gray-900 dark:text-white">Gmail inbox &amp; user mailboxes</h4>
+              <h4 class="mb-2 text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.integrationsGmailMailboxesTitle') }}</h4>
               <div
                 v-if="selectedIntegration.gmailOAuthAppConfigured"
                 class="rounded-lg border border-green-200 bg-green-50 px-3 py-2.5 text-xs text-green-900 dark:border-green-800 dark:bg-green-900/20 dark:text-green-100"
               >
-                <span class="font-medium">Ready for users.</span>
-                Each person connects their own mailbox from <span class="font-medium">Inbox → Connect Gmail</span> (same pattern as other CRMs—no Google Cloud forms here).
+                <span class="font-medium">{{ t('settings.integrationsGmailReady') }}</span>
+                {{ t('settings.integrationsGmailReadyBody', { inboxPath: t('settings.integrationsGmailInboxPath') }) }}
               </div>
               <div
                 v-else
                 class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-950 dark:border-amber-800 dark:bg-amber-900/25 dark:text-amber-100"
               >
-                <span class="font-medium">Not enabled on this API server.</span>
-                For SaaS or shared hosting, your operator sets
-                <code class="mx-0.5 rounded bg-amber-100 px-1 font-mono text-[10px] dark:bg-amber-950/60">GOOGLE_GMAIL_CLIENT_ID</code>,
-                <code class="mx-0.5 rounded bg-amber-100 px-1 font-mono text-[10px] dark:bg-amber-950/60">GOOGLE_GMAIL_CLIENT_SECRET</code>, and
-                <code class="mx-0.5 rounded bg-amber-100 px-1 font-mono text-[10px] dark:bg-amber-950/60">GOOGLE_GMAIL_REDIRECT_URI</code>
-                once on the API process, then users only use Connect Gmail.
-                <span class="mt-1 block">You do <span class="font-medium">not</span> fill Client ID / secret here for every user—only one registration per deployment (env), unless you open Advanced for a rare tenant-specific Google project.</span>
+                <span class="font-medium">{{ t('settings.integrationsGmailNotEnabled') }}</span>
+                {{ t('settings.integrationsGmailNotEnabledBody', { clientId: 'GOOGLE_GMAIL_CLIENT_ID', clientSecret: 'GOOGLE_GMAIL_CLIENT_SECRET', redirectUri: 'GOOGLE_GMAIL_REDIRECT_URI' }) }}
+                <span class="mt-1 block">{{ t('settings.integrationsGmailNotEnabledNote', { emphasis: t('settings.integrationsGmailNotEnabledEmphasis') }) }}</span>
               </div>
 
               <details
@@ -677,17 +663,15 @@
                 class="mt-3 rounded-lg border border-gray-200 bg-white px-3 py-2 dark:border-gray-600 dark:bg-gray-900/40"
               >
                 <summary class="cursor-pointer text-xs font-medium text-gray-800 dark:text-gray-200">
-                  Advanced: custom Google Cloud OAuth app (workspace owner or platform admin)
+                  {{ t('settings.integrationsGmailAdvancedTitle') }}
                 </summary>
                 <p class="mt-2 text-xs leading-relaxed text-gray-600 dark:text-gray-400">
-                  <span class="font-medium text-gray-800 dark:text-gray-200">Skip this</span>
-                  if the API already has <code class="rounded bg-gray-200 px-1 font-mono text-[10px] dark:bg-gray-700">GOOGLE_GMAIL_*</code> in environment variables. Use Advanced only when this workspace must use its own Google Cloud OAuth client instead of the host’s.
-                  Optional tenant overrides are stored in the database. Redirect URI must match Google Cloud → Credentials → OAuth 2.0 Web client → Authorized redirect URIs, ending with
-                  <code class="rounded bg-gray-200 px-1 font-mono text-[10px] text-gray-800 dark:bg-gray-700 dark:text-gray-200">/api/mailboxes/inbox-sync/google/callback</code>.
+                  <span class="font-medium text-gray-800 dark:text-gray-200">{{ t('settings.integrationsGmailAdvancedSkip') }}</span>
+                  {{ t('settings.integrationsGmailAdvancedBody', { envVars: t('settings.integrationsGmailEnvVars'), callbackPath: t('settings.integrationsGmailCallbackPath') }) }}
                 </p>
                 <div class="mt-3 space-y-3">
                   <label class="block text-sm">
-                    <span class="mb-1 block text-gray-700 dark:text-gray-300">Client ID</span>
+                    <span class="mb-1 block text-gray-700 dark:text-gray-300">{{ t('settings.integrationsClientId') }}</span>
                     <input
                       v-model="communicationPolicy.gmailInboxSync.clientId"
                       type="text"
@@ -696,22 +680,22 @@
                     >
                   </label>
                   <label class="block text-sm">
-                    <span class="mb-1 block text-gray-700 dark:text-gray-300">Client secret</span>
+                    <span class="mb-1 block text-gray-700 dark:text-gray-300">{{ t('settings.integrationsClientSecret') }}</span>
                     <input
                       v-model="communicationPolicy.gmailInboxSync.clientSecret"
                       type="password"
                       autocomplete="new-password"
-                      :placeholder="communicationPolicy.gmailInboxSync.hasClientSecret ? '•••••••• (enter new secret to replace)' : 'Required to save overrides'"
+                      :placeholder="gmailClientSecretPlaceholder"
                       class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 font-mono text-xs text-gray-900 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
                     >
                   </label>
                   <label class="block text-sm">
-                    <span class="mb-1 block text-gray-700 dark:text-gray-300">Redirect URI</span>
+                    <span class="mb-1 block text-gray-700 dark:text-gray-300">{{ t('settings.integrationsRedirectUri') }}</span>
                     <input
                       v-model="communicationPolicy.gmailInboxSync.redirectUri"
                       type="url"
                       autocomplete="off"
-                      placeholder="https://your-api.example.com/api/mailboxes/inbox-sync/google/callback"
+                      :placeholder="t('settings.integrationsPlaceholderGmailRedirect')"
                       class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 font-mono text-xs text-gray-900 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
                     >
                   </label>
@@ -721,7 +705,7 @@
                     :disabled="savingGmailOAuthConfig"
                     @click="saveEmailConfig(true)"
                   >
-                    {{ savingGmailOAuthConfig ? 'Saving…' : 'Save custom OAuth app only' }}
+                    {{ savingGmailOAuthConfig ? t('settings.integrationsSavingGmailOAuth') : t('settings.integrationsSaveGmailOAuthOnly') }}
                   </button>
                 </div>
               </details>
@@ -733,27 +717,27 @@
             class="rounded-lg p-4 border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20"
           >
             <div class="flex items-center justify-between gap-3 mb-1">
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Sender Domain Verification</h4>
+              <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.integrationsSenderDomainTitle') }}</h4>
               <button
                 type="button"
                 @click="checkEmailDomainStatus"
                 :disabled="checkingDomainStatus"
                 class="px-3 py-1.5 text-xs font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {{ checkingDomainStatus ? 'Checking...' : 'Check Status' }}
+                {{ checkingDomainStatus ? t('settings.integrationsCheckingStatus') : t('settings.integrationsCheckStatus') }}
               </button>
             </div>
-            <p class="text-xs text-blue-800 dark:text-blue-300 mb-3">Live DNS check for sender domain authentication records.</p>
+            <p class="text-xs text-blue-800 dark:text-blue-300 mb-3">{{ t('settings.integrationsSenderDomainDnsHint') }}</p>
             <p class="text-xs text-gray-600 dark:text-gray-300 mb-3">
-              Domain: <span class="font-medium">{{ selectedIntegration.emailDomainVerification.domain || 'Not set' }}</span>
+              {{ t('settings.integrationsDomainLabel') }} <span class="font-medium">{{ selectedIntegration.emailDomainVerification.domain || t('settings.integrationsDomainNotSet') }}</span>
             </p>
             <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-3" v-if="selectedIntegration.emailDomainVerification.checkedAt">
-              Last checked: {{ formatCheckedAt(selectedIntegration.emailDomainVerification.checkedAt) }}
+              {{ t('settings.integrationsLastChecked') }} {{ formatCheckedAt(selectedIntegration.emailDomainVerification.checkedAt) }}
             </p>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div class="rounded-md border border-blue-200 dark:border-blue-700 px-3 py-2 bg-white dark:bg-gray-900/30">
                 <div class="flex items-center justify-between gap-2">
-                  <p class="text-xs font-semibold text-gray-900 dark:text-white">Sender Identity</p>
+                  <p class="text-xs font-semibold text-gray-900 dark:text-white">{{ t('settings.integrationsSenderIdentity') }}</p>
                   <span :class="['inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium', verificationStatusClass(selectedIntegration.emailDomainVerification.senderIdentity?.status)]">
                     {{ selectedIntegration.emailDomainVerification.senderIdentity?.status || 'not_checked' }}
                   </span>
@@ -771,7 +755,7 @@
               </div>
               <div class="rounded-md border border-blue-200 dark:border-blue-700 px-3 py-2 bg-white dark:bg-gray-900/30">
                 <div class="flex items-center justify-between gap-2">
-                  <p class="text-xs font-semibold text-gray-900 dark:text-white">DKIM</p>
+                  <p class="text-xs font-semibold text-gray-900 dark:text-white">{{ t('settings.integrationsDkim') }}</p>
                   <span :class="['inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium', verificationStatusClass(selectedIntegration.emailDomainVerification.dkim?.status)]">
                     {{ selectedIntegration.emailDomainVerification.dkim?.status || 'not_checked' }}
                   </span>
@@ -780,7 +764,7 @@
               </div>
               <div class="rounded-md border border-blue-200 dark:border-blue-700 px-3 py-2 bg-white dark:bg-gray-900/30">
                 <div class="flex items-center justify-between gap-2">
-                  <p class="text-xs font-semibold text-gray-900 dark:text-white">DMARC</p>
+                  <p class="text-xs font-semibold text-gray-900 dark:text-white">{{ t('settings.integrationsDmarc') }}</p>
                   <span :class="['inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium', verificationStatusClass(selectedIntegration.emailDomainVerification.dmarc?.status)]">
                     {{ selectedIntegration.emailDomainVerification.dmarc?.status || 'not_checked' }}
                   </span>
@@ -795,19 +779,19 @@
             class="rounded-lg p-4 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40"
           >
             <div class="flex items-center justify-between gap-3 mb-3">
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Delivery Diagnostics (24h)</h4>
+              <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.integrationsDeliveryDiagnosticsTitle') }}</h4>
               <button
                 type="button"
                 @click="loadPipelineDiagnostics"
                 :disabled="loadingDiagnostics"
                 class="px-3 py-1.5 text-xs font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {{ loadingDiagnostics ? 'Refreshing...' : 'Refresh' }}
+                {{ loadingDiagnostics ? t('settings.integrationsRefreshing') : t('settings.integrationsRefresh') }}
               </button>
             </div>
 
             <div class="mb-4">
-              <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">Failure categories</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">{{ t('settings.integrationsFailureCategories') }}</p>
               <div v-if="diagnostics.failureBreakdown.length > 0" class="flex flex-wrap gap-2">
                 <span
                   v-for="row in diagnostics.failureBreakdown"
@@ -817,11 +801,11 @@
                   {{ row.category }}: {{ row.count }}
                 </span>
               </div>
-              <p v-else class="text-xs text-gray-500 dark:text-gray-400">No failures recorded in the last 24h.</p>
+              <p v-else class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.integrationsNoFailures24h') }}</p>
             </div>
 
             <div>
-              <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">Recent lifecycle events</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">{{ t('settings.integrationsRecentLifecycleEvents') }}</p>
               <div v-if="diagnostics.recentEvents.length > 0" class="space-y-2 max-h-56 overflow-auto pr-1">
                 <div
                   v-for="evt in diagnostics.recentEvents"
@@ -833,14 +817,14 @@
                     <span class="text-[11px] text-gray-500 dark:text-gray-400">{{ formatCheckedAt(evt.createdAt) }}</span>
                   </div>
                   <p class="text-[11px] text-gray-600 dark:text-gray-300 mt-1">
-                    source: {{ evt.source }}<span v-if="evt.payload?.failureCategory"> | failure: {{ evt.payload.failureCategory }}</span>
+                    {{ t('settings.integrationsEventSourcePrefix') }} {{ evt.source }}<span v-if="evt.payload?.failureCategory"> | {{ t('settings.integrationsEventFailurePrefix') }} {{ evt.payload.failureCategory }}</span>
                   </p>
                   <p v-if="evt.payload?.error" class="text-[11px] text-red-700 dark:text-red-300 mt-1 break-words">
-                    error: {{ evt.payload.error }}
+                    {{ t('settings.integrationsEventErrorPrefix') }} {{ evt.payload.error }}
                   </p>
                 </div>
               </div>
-              <p v-else class="text-xs text-gray-500 dark:text-gray-400">No communication events found for this window.</p>
+              <p v-else class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.integrationsNoCommunicationEvents') }}</p>
             </div>
           </div>
 
@@ -850,12 +834,15 @@
           >
             <div class="flex flex-wrap items-start justify-between gap-3 mb-2">
               <div>
-                <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Inbound MIME webhook</h4>
+                <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.integrationsInboundMimeTitle') }}</h4>
                 <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 max-w-xl">
-                  Point SES, Lambda, Mailgun-style relays, etc. here. Raw <code class="rounded bg-gray-200 dark:bg-gray-700 px-1">message/rfc822</code> body or JSON <code class="rounded bg-gray-200 dark:bg-gray-700 px-1">&#123; rawMime &#125;</code>.
-                  Tenant routing uses the Reply-To token in the message. Optional headers:
-                  <code class="rounded bg-gray-200 dark:bg-gray-700 px-1">X-Organization-Id</code> (or <code class="rounded bg-gray-200 dark:bg-gray-700 px-1">X-Arivu-Organization-Id</code>) for inbound lifecycle stamps;
-                  Bearer or <code class="rounded bg-gray-200 dark:bg-gray-700 px-1">X-Email-Inbound-Webhook-Token</code> when server env <code class="rounded bg-gray-200 dark:bg-gray-700 px-1">EMAIL_INBOUND_WEBHOOK_SECRET</code> is set.
+                  {{ t('settings.integrationsInboundMimeDescIntro', { mimeType: t('settings.integrationsMimeType'), jsonShape: t('settings.integrationsJsonShape') }) }}
+                  {{ t('settings.integrationsInboundMimeDescRouting', {
+                    orgHeader: t('settings.integrationsOrgHeader'),
+                    orgHeaderAlt: t('settings.integrationsOrgHeaderAlt'),
+                    tokenHeader: t('settings.integrationsTokenHeader'),
+                    secretEnv: t('settings.integrationsSecretEnv')
+                  }) }}
                 </p>
               </div>
               <div class="flex flex-wrap gap-2 shrink-0">
@@ -864,14 +851,14 @@
                   class="px-3 py-1.5 text-xs font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors"
                   @click="copyInboundWebhookUrl"
                 >
-                  Copy URL
+                  {{ t('settings.integrationsCopyUrl') }}
                 </button>
                 <button
                   type="button"
                   class="px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   @click="copyInboundWebhookCurlExample"
                 >
-                  Copy curl (JSON + secret)
+                  {{ t('settings.integrationsCopyCurl') }}
                 </button>
               </div>
             </div>
@@ -885,27 +872,27 @@
             class="rounded-lg p-4 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40"
           >
             <div class="flex items-center justify-between gap-3 mb-3">
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Inbound Diagnostics (24h)</h4>
+              <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.integrationsInboundDiagnosticsTitle') }}</h4>
               <button
                 type="button"
                 @click="loadInboundDiagnostics"
                 :disabled="loadingInboundDiagnostics"
                 class="px-3 py-1.5 text-xs font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {{ loadingInboundDiagnostics ? 'Refreshing...' : 'Refresh' }}
+                {{ loadingInboundDiagnostics ? t('settings.integrationsRefreshing') : t('settings.integrationsRefresh') }}
               </button>
             </div>
             <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-3">
-              Webhook URL, headers, and a sample curl are in the “Inbound MIME webhook” section above.
+              {{ t('settings.integrationsInboundDiagnosticsHint') }}
             </p>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3">
               <div class="rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 px-3 py-2">
-                <p class="text-[11px] text-gray-500 dark:text-gray-400">Queue waiting</p>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400">{{ t('settings.integrationsQueueWaiting') }}</p>
                 <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ Number(inboundDiagnostics.queue?.waiting || 0) }}</p>
               </div>
               <div class="rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 px-3 py-2">
-                <p class="text-[11px] text-gray-500 dark:text-gray-400">Queue active</p>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400">{{ t('settings.integrationsQueueActive') }}</p>
                 <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ Number(inboundDiagnostics.queue?.active || 0) }}</p>
               </div>
               <button
@@ -914,21 +901,21 @@
                 :disabled="Number(inboundDiagnostics.deadLetter?.openCount || 0) === 0"
                 @click="scrollToDeadLetterInspector()"
               >
-                <p class="text-[11px] text-amber-800 dark:text-amber-300">Open dead-letters</p>
+                <p class="text-[11px] text-amber-800 dark:text-amber-300">{{ t('settings.integrationsOpenDeadLetters') }}</p>
                 <p class="text-sm font-semibold text-amber-900 dark:text-amber-200">{{ Number(inboundDiagnostics.deadLetter?.openCount || 0) }}</p>
-                <p class="text-[10px] text-amber-700/80 dark:text-amber-400 mt-0.5">Click to open inspector</p>
+                <p class="text-[10px] text-amber-700/80 dark:text-amber-400 mt-0.5">{{ t('settings.integrationsClickOpenInspector') }}</p>
               </button>
             </div>
 
             <div v-if="(inboundDiagnostics.deadLetter?.recent || []).length > 0" class="mb-4">
               <div class="flex items-center justify-between gap-2 mb-2">
-                <p class="text-xs text-gray-600 dark:text-gray-400">Recent open dead-letters</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">{{ t('settings.integrationsRecentOpenDeadLetters') }}</p>
                 <button
                   type="button"
                   class="text-[11px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
                   @click="scrollToDeadLetterInspector()"
                 >
-                  Open inspector
+                  {{ t('settings.integrationsOpenInspector') }}
                 </button>
               </div>
               <div class="space-y-2 max-h-40 overflow-auto pr-1">
@@ -947,14 +934,14 @@
                     class="shrink-0 text-[11px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
                     @click="scrollToDeadLetterInspector(dl._id)"
                   >
-                    Focus
+                    {{ t('settings.integrationsFocus') }}
                   </button>
                 </div>
               </div>
             </div>
 
             <div class="mb-4">
-              <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">Thread strategy breakdown</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">{{ t('settings.integrationsThreadStrategyBreakdown') }}</p>
               <div v-if="inboundDiagnostics.threadStrategyBreakdown.length > 0" class="flex flex-wrap gap-2">
                 <span
                   v-for="row in inboundDiagnostics.threadStrategyBreakdown"
@@ -964,11 +951,11 @@
                   {{ row.strategy }}: {{ row.count }}
                 </span>
               </div>
-              <p v-else class="text-xs text-gray-500 dark:text-gray-400">No inbound threading activity found for this window.</p>
+              <p v-else class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.integrationsNoInboundThreading') }}</p>
             </div>
 
             <div>
-              <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">Recent inbound lifecycle events</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">{{ t('settings.integrationsRecentInboundEvents') }}</p>
               <div v-if="inboundDiagnostics.recentEvents.length > 0" class="space-y-2 max-h-56 overflow-auto pr-1">
                 <div
                   v-for="evt in inboundDiagnostics.recentEvents"
@@ -980,14 +967,14 @@
                     <span class="text-[11px] text-gray-500 dark:text-gray-400">{{ formatCheckedAt(evt.createdAt) }}</span>
                   </div>
                   <p class="text-[11px] text-gray-600 dark:text-gray-300 mt-1">
-                    source: {{ evt.source }}<span v-if="evt.payload?.strategy"> | strategy: {{ evt.payload.strategy }}</span>
+                    {{ t('settings.integrationsEventSourcePrefix') }} {{ evt.source }}<span v-if="evt.payload?.strategy"> | {{ t('settings.integrationsEventStrategyPrefix') }} {{ evt.payload.strategy }}</span>
                   </p>
                   <p v-if="evt.payload?.error" class="text-[11px] text-red-700 dark:text-red-300 mt-1 break-words">
-                    error: {{ evt.payload.error }}
+                    {{ t('settings.integrationsEventErrorPrefix') }} {{ evt.payload.error }}
                   </p>
                 </div>
               </div>
-              <p v-else class="text-xs text-gray-500 dark:text-gray-400">No inbound lifecycle events found for this window.</p>
+              <p v-else class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.integrationsNoInboundEvents') }}</p>
             </div>
           </div>
 
@@ -998,11 +985,11 @@
             class="rounded-lg p-4 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40 scroll-mt-4"
           >
             <div class="flex items-center justify-between gap-3 mb-3">
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Inbound Dead-Letter Inspector</h4>
+              <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.integrationsDeadLetterInspectorTitle') }}</h4>
               <div class="flex flex-wrap items-center justify-end gap-2">
                 <label class="inline-flex items-center gap-1.5 text-[11px] text-gray-600 dark:text-gray-300">
                   <input v-model="inboundIncludeResolved" type="checkbox" class="rounded border-gray-300 dark:border-gray-600" />
-                  Include resolved
+                  {{ t('settings.integrationsIncludeResolved') }}
                 </label>
                 <button
                   type="button"
@@ -1010,7 +997,7 @@
                   :disabled="inboundDeadLetters.length === 0"
                   class="px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Export CSV
+                  {{ t('settings.integrationsExportCsv') }}
                 </button>
                 <button
                   type="button"
@@ -1018,12 +1005,12 @@
                   :disabled="loadingInboundDeadLetters"
                   class="px-3 py-1.5 text-xs font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {{ loadingInboundDeadLetters ? 'Refreshing...' : 'Refresh' }}
+                  {{ loadingInboundDeadLetters ? t('settings.integrationsRefreshing') : t('settings.integrationsRefresh') }}
                 </button>
               </div>
             </div>
             <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">
-              Review failed inbound jobs and replay recoverable ones.
+              {{ t('settings.integrationsDeadLetterReviewHint') }}
             </p>
             <div v-if="inboundDeadLetters.length > 0" class="space-y-2 max-h-72 overflow-auto pr-1">
               <div
@@ -1040,35 +1027,35 @@
                   <div class="flex flex-wrap items-center gap-2">
                     <span class="text-xs font-semibold text-gray-900 dark:text-white">{{ item.stage || 'unknown_stage' }}</span>
                     <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300">
-                      replay: {{ Number(item.replayCount || 0) }}
+                      {{ t('settings.integrationsReplayCount') }} {{ Number(item.replayCount || 0) }}
                     </span>
                     <span
                       v-if="item.resolvedAt"
                       class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300"
                     >
-                      resolved
+                      {{ t('settings.integrationsResolvedBadge') }}
                     </span>
                     <span
                       v-if="deadLetterReplayOutcomeFor(item)?.outcome === 'success'"
                       class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300"
-                      title="Last replay succeeded"
+                      :title="t('settings.integrationsLastReplaySucceeded')"
                     >
-                      replay ok
+                      {{ t('settings.integrationsReplayOk') }}
                     </span>
                     <span
                       v-else-if="deadLetterReplayOutcomeFor(item)?.outcome === 'error'"
                       class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 max-w-[200px] truncate"
-                      :title="deadLetterReplayOutcomeFor(item)?.message || 'Replay failed'"
+                      :title="deadLetterReplayOutcomeFor(item)?.message || t('settings.integrationsNotifyReplayFailed')"
                     >
-                      replay failed
+                      {{ t('settings.integrationsReplayFailed') }}
                     </span>
                   </div>
                   <p class="text-[11px] text-gray-600 dark:text-gray-300 mt-1 break-words">
-                    {{ item.reason || item.error || 'No reason provided' }}
+                    {{ item.reason || item.error || t('settings.integrationsNoReasonProvided') }}
                   </p>
                   <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
-                    created: {{ formatCheckedAt(item.createdAt) }}
-                    <span v-if="item.lastReplayAt"> | last replay: {{ formatCheckedAt(item.lastReplayAt) }}</span>
+                    {{ t('settings.integrationsCreatedPrefix') }} {{ formatCheckedAt(item.createdAt) }}
+                    <span v-if="item.lastReplayAt"> | {{ t('settings.integrationsLastReplayPrefix') }} {{ formatCheckedAt(item.lastReplayAt) }}</span>
                   </p>
                 </div>
                 <button
@@ -1077,13 +1064,13 @@
                   :disabled="!isOwnerLike || replayingDeadLetterId === item._id || item.resolvedAt"
                   class="shrink-0 px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/30"
                 >
-                  {{ replayingDeadLetterId === item._id ? 'Replaying...' : 'Replay' }}
+                  {{ replayingDeadLetterId === item._id ? t('settings.integrationsReplaying') : t('settings.integrationsReplay') }}
                 </button>
               </div>
             </div>
-            <p v-else class="text-xs text-gray-500 dark:text-gray-400">No inbound dead-letter entries found.</p>
+            <p v-else class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.integrationsNoDeadLetterEntries') }}</p>
             <p v-if="!isOwnerLike" class="mt-2 text-[11px] text-amber-700 dark:text-amber-300">
-              Only workspace owner can replay dead-letter entries.
+              {{ t('settings.integrationsOwnerOnlyReplay') }}
             </p>
           </div>
 
@@ -1092,56 +1079,56 @@
             class="rounded-lg p-4 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40"
           >
             <div class="flex items-center justify-between gap-3 mb-3">
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Suppressed Recipients</h4>
+              <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.integrationsSuppressedRecipientsTitle') }}</h4>
               <button
                 type="button"
                 @click="loadSuppressions"
                 :disabled="loadingSuppressions"
                 class="px-3 py-1.5 text-xs font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {{ loadingSuppressions ? 'Refreshing...' : 'Refresh' }}
+                {{ loadingSuppressions ? t('settings.integrationsRefreshing') : t('settings.integrationsRefresh') }}
               </button>
             </div>
             <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">
-              Recipients are auto-suppressed when delivery events report bounce or complaint.
+              {{ t('settings.integrationsSuppressedDesc') }}
             </p>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3">
               <div class="rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 px-3 py-2">
-                <p class="text-[11px] text-gray-500 dark:text-gray-400">Active total</p>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400">{{ t('settings.integrationsActiveTotal') }}</p>
                 <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ suppressionStats.activeTotal }}</p>
               </div>
               <div class="rounded-md border border-amber-200 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 px-3 py-2">
-                <p class="text-[11px] text-amber-800 dark:text-amber-300">Bounced</p>
+                <p class="text-[11px] text-amber-800 dark:text-amber-300">{{ t('settings.integrationsBounced') }}</p>
                 <p class="text-sm font-semibold text-amber-900 dark:text-amber-200">{{ suppressionStats.byReason.bounced }}</p>
               </div>
               <div class="rounded-md border border-red-200 dark:border-red-700 bg-red-50 dark:bg-red-900/20 px-3 py-2">
-                <p class="text-[11px] text-red-800 dark:text-red-300">Complained</p>
+                <p class="text-[11px] text-red-800 dark:text-red-300">{{ t('settings.integrationsComplained') }}</p>
                 <p class="text-sm font-semibold text-red-900 dark:text-red-200">{{ suppressionStats.byReason.complained }}</p>
               </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3">
               <label class="text-xs">
-                <span class="block mb-1 text-gray-700 dark:text-gray-300">Search email</span>
+                <span class="block mb-1 text-gray-700 dark:text-gray-300">{{ t('settings.integrationsSearchEmail') }}</span>
                 <input
                   v-model.trim="suppressionSearch"
                   type="text"
-                  placeholder="name@example.com"
+                  :placeholder="t('settings.integrationsPlaceholderSearchEmail')"
                   class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-2.5 py-1.5"
                 />
               </label>
               <label class="text-xs">
-                <span class="block mb-1 text-gray-700 dark:text-gray-300">Reason filter</span>
+                <span class="block mb-1 text-gray-700 dark:text-gray-300">{{ t('settings.integrationsReasonFilter') }}</span>
                 <select
                   v-model="suppressionReasonFilter"
                   class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-2.5 py-1.5"
                 >
-                  <option value="all">all</option>
-                  <option value="bounced">bounced</option>
-                  <option value="complained">complained</option>
+                  <option value="all">{{ t('settings.integrationsReasonAll') }}</option>
+                  <option value="bounced">{{ t('settings.integrationsReasonBounced') }}</option>
+                  <option value="complained">{{ t('settings.integrationsReasonComplained') }}</option>
                 </select>
               </label>
               <div class="text-xs text-gray-600 dark:text-gray-400 flex items-end">
-                Showing {{ filteredSuppressionRows.length }} of {{ suppressionRows.length }}
+                {{ t('settings.integrationsShowingCount', { shown: filteredSuppressionRows.length, total: suppressionRows.length }) }}
               </div>
             </div>
             <div v-if="filteredSuppressionRows.length > 0" class="space-y-2 max-h-56 overflow-auto pr-1">
@@ -1153,11 +1140,11 @@
                 <div class="min-w-0">
                   <p class="text-xs font-semibold text-gray-900 dark:text-white break-all">{{ row.email }}</p>
                   <p class="text-[11px] text-gray-600 dark:text-gray-300 mt-1">
-                    reason:
+                    {{ t('settings.integrationsSuppressionReasonPrefix') }}
                     <span :class="['inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium ml-1', suppressionReasonClass(row.reason)]">
                       {{ row.reason }}
                     </span>
-                    <span class="ml-2">last event: {{ formatCheckedAt(row.lastEventAt) }}</span>
+                    <span class="ml-2">{{ t('settings.integrationsSuppressionLastEventPrefix') }} {{ formatCheckedAt(row.lastEventAt) }}</span>
                   </p>
                 </div>
                 <button
@@ -1166,19 +1153,19 @@
                   :disabled="!isOwnerLike || removingSuppressionEmail === row.email"
                   class="shrink-0 px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700 hover:bg-red-100 dark:hover:bg-red-900/30"
                 >
-                  {{ removingSuppressionEmail === row.email ? 'Removing...' : 'Remove' }}
+                  {{ removingSuppressionEmail === row.email ? t('settings.integrationsRemoving') : t('actions.remove') }}
                 </button>
               </div>
             </div>
-            <p v-else class="text-xs text-gray-500 dark:text-gray-400">No suppressed recipients match the current filter.</p>
+            <p v-else class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.integrationsNoSuppressedMatch') }}</p>
             <p v-if="!isOwnerLike" class="mt-2 text-[11px] text-amber-700 dark:text-amber-300">
-              Only workspace owner can remove suppression entries.
+              {{ t('settings.integrationsOwnerOnlyRemoveSuppression') }}
             </p>
           </div>
 
           <!-- Data Sharing -->
           <div class="bg-white dark:bg-gray-900/40 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">What data is shared</h4>
+            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.integrationsDataSharedTitle') }}</h4>
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
               {{ selectedIntegration.dataSharedSummary }}
             </p>
@@ -1194,12 +1181,50 @@
 
 <script setup>
 import { computed, ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { useAuthStore } from '@/stores/auth';
 import { useNotifications } from '@/composables/useNotifications';
 
+const { t } = useI18n();
 const authStore = useAuthStore();
 const notifications = useNotifications();
+
+function integrationStatusLabel(enabled) {
+  return enabled ? t('settings.settingsAppsStatusEnabled') : t('settings.settingsAppsStatusDisabled');
+}
+
+function scopeBadgeLabel(scope) {
+  return scope === 'platform' ? t('settings.integrationsScopePlatform') : t('settings.integrationsScopeApp');
+}
+
+function connectionStatusMessage(enabled) {
+  return enabled ? t('settings.integrationsConnectionActive') : t('settings.integrationsConnectionInactive');
+}
+
+const smtpHostPlaceholder = computed(() =>
+  emailConfig.value.provider === 'oci-email-delivery'
+    ? t('settings.integrationsPlaceholderSmtpHostOci')
+    : t('settings.integrationsPlaceholderSmtpHostResend')
+);
+
+const smtpPortPlaceholder = computed(() =>
+  emailConfig.value.provider === 'oci-email-delivery'
+    ? t('settings.integrationsPlaceholderSmtpPortOci')
+    : t('settings.integrationsPlaceholderSmtpPortDefault')
+);
+
+const smtpUserPlaceholder = computed(() =>
+  emailConfig.value.provider === 'oci-email-delivery'
+    ? t('settings.integrationsPlaceholderSmtpUserOci')
+    : t('settings.integrationsPlaceholderSmtpUserResend')
+);
+
+const gmailClientSecretPlaceholder = computed(() =>
+  communicationPolicy.value.gmailInboxSync.hasClientSecret
+    ? t('settings.integrationsClientSecretReplace')
+    : t('settings.integrationsClientSecretRequired')
+);
 const isOwnerLike = computed(() => authStore.isOwner || String(authStore.userRole || '').toLowerCase() === 'owner');
 // Gmail OAuth client credentials are a LiteDesk-platform concern (they identify the
 // Google Cloud project that owns the consent screen), not a per-tenant setting.
@@ -1305,7 +1330,7 @@ const applyResendDefaults = ({ providerJustChanged = false } = {}) => {
   emailConfig.value.smtpUser = 'resend';
   emailConfig.value.smtpSecure = false;
   if (providerJustChanged) {
-    notifications.info('Resend selected — use your Resend API key as the SMTP password.');
+    notifications.info(t('settings.integrationsNotifyResendSelected'));
   }
 };
 
@@ -1315,9 +1340,7 @@ const applyGmailSmtpDefaults = ({ providerJustChanged = false } = {}) => {
   emailConfig.value.smtpPort = 587;
   emailConfig.value.smtpSecure = false;
   if (providerJustChanged) {
-    notifications.info(
-      'Gmail SMTP selected. Save settings, then users connect mailboxes with App Passwords in Inbox.'
-    );
+    notifications.info(t('settings.integrationsNotifyGmailSmtpSelected'));
   }
 };
 
@@ -1341,9 +1364,7 @@ const applyOciEmailDefaults = ({ providerJustChanged = false } = {}) => {
       emailConfig.value.smtpPass = '';
       emailConfig.value.hasSmtpPass = false;
       emailConfig.value.smtpPassMasked = '';
-      notifications.info(
-        'Provider changed to OCI Email Delivery. Enter your OCI SMTP username and password, then save.'
-      );
+      notifications.info(t('settings.integrationsNotifyOciProviderChanged'));
     }
   }
 };
@@ -1381,10 +1402,10 @@ const copyInboundWebhookUrl = async () => {
   const url = inboundMimeWebhookUrl.value;
   try {
     await navigator.clipboard.writeText(url);
-    notifications.success('Inbound webhook URL copied');
+    notifications.success(t('settings.integrationsNotifyWebhookUrlCopied'));
   } catch (err) {
     console.error(err);
-    notifications.error('Unable to copy URL');
+    notifications.error(t('settings.integrationsNotifyUnableCopyUrl'));
   }
 };
 
@@ -1401,10 +1422,10 @@ const copyInboundWebhookCurlExample = async () => {
   ];
   try {
     await navigator.clipboard.writeText(lines.join('\n'));
-    notifications.success('Sample curl copied — replace placeholders');
+    notifications.success(t('settings.integrationsNotifyCurlCopied'));
   } catch (err) {
     console.error(err);
-    notifications.error('Unable to copy curl example');
+    notifications.error(t('settings.integrationsNotifyUnableCopyCurl'));
   }
 };
 
@@ -1427,7 +1448,7 @@ const checkEmailDomainStatus = async () => {
     await fetchIntegrationDetail('email-provider', { forceRefresh: true });
   } catch (err) {
     console.error('Failed to refresh email domain verification status:', err);
-    notifications.error('Failed to refresh sender domain verification status');
+    notifications.error(t('settings.integrationsNotifyDomainRefreshFailed'));
   } finally {
     checkingDomainStatus.value = false;
   }
@@ -1505,10 +1526,10 @@ const loadSuppressions = async () => {
 const removeSuppressedRecipient = async (email) => {
   if (!email) return;
   if (!isOwnerLike.value) {
-    notifications.error('Only workspace owner can remove suppression entries');
+    notifications.error(t('settings.integrationsNotifyOwnerOnlyRemoveSuppression'));
     return;
   }
-  const ok = confirm(`Remove "${email}" from suppression list?`);
+  const ok = confirm(t('settings.integrationsConfirmRemoveSuppression', { email }));
   if (!ok) return;
   removingSuppressionEmail.value = email;
   try {
@@ -1518,13 +1539,13 @@ const removeSuppressedRecipient = async (email) => {
     if (data?.success) {
       suppressionRows.value = suppressionRows.value.filter((row) => row.email !== email);
       await loadSuppressionStats();
-      notifications.success('Suppression removed');
+      notifications.success(t('settings.integrationsNotifySuppressionRemoved'));
     } else {
-      notifications.error(data?.message || 'Failed to remove suppression entry');
+      notifications.error(data?.message || t('settings.integrationsNotifyRemoveSuppressionFailed'));
     }
   } catch (err) {
     console.error('Failed to remove suppression entry:', err);
-    notifications.error(err?.response?.data?.message || err?.message || 'Failed to remove suppression entry');
+    notifications.error(err?.response?.data?.message || err?.message || t('settings.integrationsNotifyRemoveSuppressionFailed'));
   } finally {
     removingSuppressionEmail.value = '';
   }
@@ -1621,7 +1642,7 @@ function csvEscapeCell(value) {
 function exportInboundDeadLettersCsv() {
   const rows = inboundDeadLetters.value || [];
   if (!rows.length) {
-    notifications.warning('No dead-letter rows to export. Refresh the list first.');
+    notifications.warning(t('settings.integrationsNotifyNoDeadLettersExport'));
     return;
   }
   const headers = ['id', 'stage', 'reason', 'error', 'replayCount', 'resolvedAt', 'createdAt', 'lastReplayAt', 'rawSizeBytes'];
@@ -1642,7 +1663,7 @@ function exportInboundDeadLettersCsv() {
   a.download = `inbound-dead-letters-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.csv`;
   a.click();
   URL.revokeObjectURL(url);
-  notifications.success('Exported dead-letter list');
+  notifications.success(t('settings.integrationsNotifyDeadLettersExported'));
 }
 
 function pruneDeadLetterReplayOutcomes() {
@@ -1680,7 +1701,7 @@ const replayInboundDeadLetter = async (item) => {
   const id = item?._id;
   if (!id) return;
   if (!isOwnerLike.value) {
-    notifications.error('Only workspace owner can replay inbound dead-letters');
+    notifications.error(t('settings.integrationsNotifyOwnerOnlyReplay'));
     return;
   }
   replayingDeadLetterId.value = id;
@@ -1689,17 +1710,17 @@ const replayInboundDeadLetter = async (item) => {
       method: 'POST'
     });
     if (data?.success) {
-      notifications.success('Dead-letter replayed successfully');
+      notifications.success(t('settings.integrationsNotifyDeadLetterReplayed'));
       setDeadLetterReplayOutcome(id, 'success', '');
       await Promise.all([loadInboundDiagnostics(), loadInboundDeadLetters()]);
     } else {
-      const msg = data?.message || 'Replay failed';
+      const msg = data?.message || t('settings.integrationsNotifyReplayFailed');
       notifications.error(msg);
       setDeadLetterReplayOutcome(id, 'error', msg);
     }
   } catch (err) {
     console.error('Failed to replay dead letter:', err);
-    const msg = err?.response?.data?.message || err?.message || 'Replay failed';
+    const msg = err?.response?.data?.message || err?.message || t('settings.integrationsNotifyReplayFailed');
     notifications.error(msg);
     setDeadLetterReplayOutcome(id, 'error', msg);
   } finally {
@@ -1727,7 +1748,7 @@ const loadWebhookTemplates = async () => {
 const runWebhookSimulation = async () => {
   if (!selectedIntegration.value || selectedIntegration.value.key !== 'email-provider') return;
   if (!webhookTemplates.value.latestCommunicationId && !webhookTemplates.value.latestExternalMessageId) {
-    notifications.warning('No eligible outbound communication found yet. Send at least one email first.');
+    notifications.warning(t('settings.integrationsNotifyNoOutboundForWebhook'));
     return;
   }
   simulatingWebhook.value = true;
@@ -1744,13 +1765,13 @@ const runWebhookSimulation = async () => {
     });
     if (data?.success) {
       await loadPipelineDiagnostics();
-      notifications.success(`Simulated webhook event: ${webhookSim.value.eventType}`);
+      notifications.success(t('settings.integrationsNotifyWebhookSimulated', { eventType: webhookSim.value.eventType }));
     } else {
-      notifications.error(data?.message || 'Webhook simulation failed');
+      notifications.error(data?.message || t('settings.integrationsNotifyWebhookSimFailed'));
     }
   } catch (err) {
     console.error('Webhook simulation failed:', err);
-    notifications.error(err?.response?.data?.message || err?.message || 'Webhook simulation failed');
+    notifications.error(err?.response?.data?.message || err?.message || t('settings.integrationsNotifyWebhookSimFailed'));
   } finally {
     simulatingWebhook.value = false;
   }
@@ -1878,9 +1899,7 @@ const fetchIntegrationDetail = async (key, options = {}) => {
 const saveEmailConfig = async (includeGmailOAuthApp = false) => {
   if (!selectedIntegration.value || selectedIntegration.value.key !== 'email-provider') return;
   if (includeGmailOAuthApp && !canManageGmailOAuthApp.value) {
-    notifications.error(
-      'Only the workspace owner or a platform administrator can save the Gmail OAuth app here. Or set GOOGLE_GMAIL_* on the API server.'
-    );
+    notifications.error(t('settings.integrationsNotifyGmailOAuthSaveDenied'));
     return;
   }
   if (includeGmailOAuthApp) savingGmailOAuthConfig.value = true;
@@ -1937,7 +1956,7 @@ const saveEmailConfig = async (includeGmailOAuthApp = false) => {
 
     if (data?.success) {
       notifications.success(
-        includeGmailOAuthApp ? 'Custom Gmail OAuth app saved' : 'Email provider settings saved'
+        includeGmailOAuthApp ? t('settings.integrationsNotifyGmailOAuthSaved') : t('settings.integrationsNotifyEmailSettingsSaved')
       );
       emailConfig.value.smtpPass = '';
       emailConfig.value.awsSecretAccessKey = '';
@@ -1945,11 +1964,11 @@ const saveEmailConfig = async (includeGmailOAuthApp = false) => {
       await fetchIntegrationDetail('email-provider');
       await fetchIntegrations();
     } else {
-      notifications.error(data?.message || 'Failed to save email settings');
+      notifications.error(data?.message || t('settings.integrationsNotifySaveEmailFailed'));
     }
   } catch (err) {
     console.error('Failed to save email config:', err);
-    notifications.error(err?.response?.data?.message || err?.message || 'Failed to save email settings');
+    notifications.error(err?.response?.data?.message || err?.message || t('settings.integrationsNotifySaveEmailFailed'));
   } finally {
     savingConfig.value = false;
     savingGmailOAuthConfig.value = false;
@@ -1963,18 +1982,14 @@ const selectIntegration = async (integration) => {
 
 const confirmEnable = async () => {
   if (!selectedIntegration.value) return;
-  const ok = confirm(
-    'Enable this integration? This will start sending and receiving data as described. You can disable it at any time.'
-  );
+  const ok = confirm(t('settings.integrationsConfirmEnable'));
   if (!ok) return;
   await enableIntegration(selectedIntegration.value.key);
 };
 
 const confirmDisable = async () => {
   if (!selectedIntegration.value) return;
-  const ok = confirm(
-    'Disable this integration? New data will stop flowing, but existing records in your tools will not be deleted.'
-  );
+  const ok = confirm(t('settings.integrationsConfirmDisable'));
   if (!ok) return;
   await disableIntegration(selectedIntegration.value.key);
 };
@@ -1987,11 +2002,11 @@ const enableIntegration = async (key) => {
       await fetchIntegrations();
       await fetchIntegrationDetail(key);
     } else {
-      notifications.error(data.message || 'Failed to enable integration');
+      notifications.error(data.message || t('settings.integrationsNotifyEnableFailed'));
     }
   } catch (err) {
     console.error('Failed to enable integration:', err);
-    notifications.error(err?.response?.data?.message || err?.message || 'Failed to enable integration');
+    notifications.error(err?.response?.data?.message || err?.message || t('settings.integrationsNotifyEnableFailed'));
   } finally {
     actionLoading.value = false;
   }
@@ -2005,11 +2020,11 @@ const disableIntegration = async (key) => {
       await fetchIntegrations();
       await fetchIntegrationDetail(key);
     } else {
-      notifications.error(data.message || 'Failed to disable integration');
+      notifications.error(data.message || t('settings.integrationsNotifyDisableFailed'));
     }
   } catch (err) {
     console.error('Failed to disable integration:', err);
-    notifications.error(err?.response?.data?.message || err?.message || 'Failed to disable integration');
+    notifications.error(err?.response?.data?.message || err?.message || t('settings.integrationsNotifyDisableFailed'));
   } finally {
     actionLoading.value = false;
   }
@@ -2021,13 +2036,13 @@ const sendTestEmail = async () => {
   try {
     const data = await apiClient(`/settings/integrations/email-provider/test`, { method: 'POST' });
     if (data && data.success) {
-      notifications.success(data.message || 'Test email sent. Check your inbox (or Mailtrap in dev).');
+      notifications.success(data.message || t('settings.integrationsNotifyTestEmailSent'));
     } else {
-      notifications.error(data.message || data.error || 'Failed to send test email');
+      notifications.error(data.message || data.error || t('settings.integrationsNotifyTestEmailFailed'));
     }
   } catch (err) {
     console.error('Failed to send test email:', err);
-    notifications.error(err?.response?.data?.message || err?.message || 'Failed to send test email');
+    notifications.error(err?.response?.data?.message || err?.message || t('settings.integrationsNotifyTestEmailFailed'));
   } finally {
     testEmailLoading.value = false;
   }

@@ -1,6 +1,6 @@
 <template>
   <section v-if="fields && fields.length > 0" class="custom-fields-section mt-3 pt-3 border-t border-gray-200 dark:border-gray-700" aria-labelledby="custom-fields-heading">
-    <h2 id="custom-fields-heading" class="sr-only">Custom fields</h2>
+    <h2 id="custom-fields-heading" class="sr-only">{{ t('records.customFieldsHeadingSr') }}</h2>
     <AccordionSection
       :title="'Custom Fields'"
       :storage-key="storageKey"
@@ -52,7 +52,10 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import AccordionSection from './AccordionSection.vue';
+
+const { t } = useI18n();
 
 /**
  * CustomFieldsSection – displays custom fields in a clean grid layout.

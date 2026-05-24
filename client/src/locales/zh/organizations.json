@@ -1,0 +1,330 @@
+{
+  "organizationAuditWidgetNoAuditHistoryAvailable": {
+    "message": "没有可用的审计历史记录",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetDownloadReport": {
+    "message": "下载报告",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetCompliance": {
+    "message": "遵守：",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetScore": {
+    "message": "分数：",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetTrend": {
+    "message": "趋势",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetTotalAudits": {
+    "message": "全面审核",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetLoadingAuditHistory": {
+    "message": "正在加载审核历史记录...",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetViewAll": {
+    "message": "查看全部",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetAuditHistory": {
+    "message": "审计历史",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationQuickCreateDrawerBackToQuick": {
+    "message": "返回快速",
+    "description": "Auto-migrated from organizationQuickCreateDrawer"
+  },
+  "organizationQuickCreateDrawerFullForm": {
+    "message": "完整表格",
+    "description": "Auto-migrated from organizationQuickCreateDrawer"
+  },
+  "organizationQuickCreateDrawerOtherFields": {
+    "message": "其他领域",
+    "description": "Auto-migrated from organizationQuickCreateDrawer"
+  },
+  "organizationQuickCreateDrawerQuickCreateFields": {
+    "message": "快速创建字段",
+    "description": "Auto-migrated from organizationQuickCreateDrawer"
+  },
+  "relatedContactsWidgetAddContact": {
+    "message": "添加联系人",
+    "description": "Auto-migrated from relatedContactsWidget"
+  },
+  "relatedContactsWidgetNoContactsLinkedYetLinkContacts": {
+    "message": "尚未链接任何联系人。将联系人链接到该组织以在此处查看他们。",
+    "description": "Auto-migrated from relatedContactsWidget"
+  },
+  "relatedContactsWidgetAddContact2": {
+    "message": "添加联系人",
+    "description": "Auto-migrated from relatedContactsWidget"
+  },
+  "relatedContactsWidgetLinkContacts": {
+    "message": "链接联系方式",
+    "description": "Auto-migrated from relatedContactsWidget"
+  },
+  "relatedContactsWidgetRelatedContacts": {
+    "message": "相关联系人",
+    "description": "Auto-migrated from relatedContactsWidget"
+  },
+  "relatedOrganizationWidgetNoOrganizationLinked": {
+    "message": "没有组织关联",
+    "description": "Auto-migrated from relatedOrganizationWidget"
+  },
+  "relatedOrganizationWidgetLinkOrganization": {
+    "message": "链接组织",
+    "description": "Auto-migrated from relatedOrganizationWidget"
+  },
+  "relatedOrganizationWidgetRelatedOrganizations": {
+    "message": "相关组织",
+    "description": "Auto-migrated from relatedOrganizationWidget"
+  },
+  "relatedUsersWidgetAddUser": {
+    "message": "添加用户",
+    "description": "Auto-migrated from relatedUsersWidget"
+  },
+  "relatedUsersWidgetNoUsersLinkedYetLinkUsers": {
+    "message": "还没有用户链接。将用户链接到该组织以在此处查看他们。",
+    "description": "Auto-migrated from relatedUsersWidget"
+  },
+  "relatedUsersWidgetAddUser2": {
+    "message": "添加用户",
+    "description": "Auto-migrated from relatedUsersWidget"
+  },
+  "relatedUsersWidgetRelatedUsers": {
+    "message": "相关用户",
+    "description": "Auto-migrated from relatedUsersWidget"
+  },
+  "organizationSurfaceRecentActivity": {
+    "message": "最近的活动",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceActionAvailability": {
+    "message": "行动可用性",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceEmployees": {
+    "message": "雇员：",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceRevenue": {
+    "message": "收入：",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceAddress": {
+    "message": "地址：",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfacePhone": {
+    "message": "电话：",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceWebsite": {
+    "message": "网站：",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceTheseDetailsAreManagedByThe": {
+    "message": "这些详细信息由使用它们的应用程序（例如销售、帮助台）管理。",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceEditBusinessDetails": {
+    "message": "编辑业务详细信息",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceBusinessDetails": {
+    "message": "业务详情",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceWorkExistsForThisApp": {
+    "message": "此应用程序存在工作。",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfacePeopleAssociatedWithThisOrganization": {
+    "message": "与该组织相关的人员",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfacePrimaryContact": {
+    "message": "主要联系人：",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceTryAgain": {
+    "message": "再试一次",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceErrorLoadingOrganization": {
+    "message": "加载组织时出错",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "createOrganizationSurfaceStreetAddressCityStateZip": {
+    "message": "街道地址、城市、州、邮政编码",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceAddress": {
+    "message": "地址",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceHttpsExampleCom": {
+    "message": "https://example.com",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceWebsite": {
+    "message": "网站",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceEGTechnologyHealthcareManufacturing": {
+    "message": "例如，技术、医疗保健、制造",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceOptionalBusinessContext": {
+    "message": "可选的业务环境",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceSelectStatus": {
+    "message": "选择状态...",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceSelectStatus2": {
+    "message": "选择状态...",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceSelectStatus3": {
+    "message": "选择状态...",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceTypesCannotBeChangedOnceThe": {
+    "message": "一旦组织投入使用，类型就无法更改",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceOrganizationName": {
+    "message": "组织名称",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceCoreBusinessIdentity": {
+    "message": "核心业务形象",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceError": {
+    "message": "错误",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceLoadingOrganizationData": {
+    "message": "正在加载组织数据...",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceValidationErrors": {
+    "message": "验证错误",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "groupsNoGroupsFound": {
+    "message": "未找到群组",
+    "description": "Auto-migrated from groups"
+  },
+  "groupsOrganizeUsersIntoTeamsAndDepartments": {
+    "message": "将用户组织成团队和部门",
+    "description": "Auto-migrated from groups"
+  },
+  "groupsGroups": {
+    "message": "团体",
+    "description": "Auto-migrated from groups"
+  },
+  "groupDetailSelectAUser": {
+    "message": "选择一个用户...",
+    "description": "Auto-migrated from groupDetail"
+  },
+  "groupDetailAddMember": {
+    "message": "添加会员",
+    "description": "Auto-migrated from groupDetail"
+  },
+  "groupDetailNoMembersYetAddMembersTo": {
+    "message": "还没有会员。添加成员即可开始。",
+    "description": "Auto-migrated from groupDetail"
+  },
+  "groupDetailRemoveMember": {
+    "message": "删除成员",
+    "description": "Auto-migrated from groupDetail"
+  },
+  "groupDetailAddMember2": {
+    "message": "添加会员",
+    "description": "Auto-migrated from groupDetail"
+  },
+  "groupDetailLoadingGroup": {
+    "message": "正在加载组...",
+    "description": "Auto-migrated from groupDetail"
+  },
+  "organizationFormModalToastFailedToSaveOrganization": {
+    "message": "保存组织失败",
+    "description": "Toast from OrganizationFormModal.vue"
+  },
+  "sysFieldName": {
+    "message": "姓名",
+    "description": "System organization field label"
+  },
+  "sysFieldEmail": {
+    "message": "电子邮件",
+    "description": "System organization field label"
+  },
+  "sysFieldPhone": {
+    "message": "电话",
+    "description": "System organization field label"
+  },
+  "sysFieldWebsite": {
+    "message": "网站",
+    "description": "System organization field label"
+  },
+  "sysFieldIndustry": {
+    "message": "行业",
+    "description": "System organization field label"
+  },
+  "sysFieldAssignedTo": {
+    "message": "分配给",
+    "description": "System organization field label"
+  },
+  "sysFieldDescription": {
+    "message": "描述",
+    "description": "System organization field label"
+  },
+  "sysFieldTags": {
+    "message": "标签",
+    "description": "System organization field label"
+  },
+  "listViewAll": {
+    "message": "All Organizations",
+    "description": "Organizations list default view title"
+  },
+  "listViewMy": {
+    "message": "My Organizations",
+    "description": "Organizations list assigned-to-me view title"
+  },
+  "listViewActive": {
+    "message": "Active",
+    "description": "Organizations list active view title"
+  },
+  "listViewTrial": {
+    "message": "Trial",
+    "description": "Organizations list trial view title"
+  },
+  "listCreate": {
+    "message": "New Organization",
+    "description": "Organizations list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "Search organizations...",
+    "description": "Organizations list search placeholder"
+  },
+  "listStatTotal": {
+    "message": "Total Organizations",
+    "description": "Organizations list statistics card"
+  },
+  "listStatActive": {
+    "message": "Active",
+    "description": "Organizations list statistics card"
+  },
+  "listStatTrial": {
+    "message": "Trial",
+    "description": "Organizations list statistics card"
+  }
+}

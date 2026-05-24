@@ -3,7 +3,7 @@
     ref="modulesAndFieldsRef"
     :module-filter="helpdeskSchemaFilter"
     :excluded-tabs="['pipeline', 'playbooks']"
-    title="Helpdesk Modules"
+    :title="t('settings.appsHelpdeskModules')"
     :hide-header="true"
     :start-with-module-list="shouldStartWithModuleList"
   />
@@ -11,7 +11,10 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
+
+const { t } = useI18n();
 import { useAuthStore } from '@/stores/authRegistry';
 import ModulesAndFields from './ModulesAndFields.vue';
 

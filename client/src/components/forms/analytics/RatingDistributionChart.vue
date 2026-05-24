@@ -6,10 +6,13 @@
 
 <script setup>
 import { ref, onMounted, watch, onBeforeUnmount } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Chart, registerables } from 'chart.js';
 import apiClient from '@/utils/apiClient';
 
 Chart.register(...registerables);
+
+const { t } = useI18n();
 
 const props = defineProps({
   formId: {
@@ -45,7 +48,13 @@ const fetchData = async () => {
       });
       
       chartData.value = {
-        labels: ['1 Star', '2 Stars', '3 Stars', '4 Stars', '5 Stars'],
+        labels: [
+          t('forms.analyticsStar1'),
+          t('forms.analyticsStar2'),
+          t('forms.analyticsStar3'),
+          t('forms.analyticsStar4'),
+          t('forms.analyticsStar5'),
+        ],
         data: [ratingCounts[1], ratingCounts[2], ratingCounts[3], ratingCounts[4], ratingCounts[5]]
       };
       renderChart();
@@ -70,7 +79,7 @@ const renderChart = () => {
       labels: chartData.value.labels,
       datasets: [
         {
-          label: 'Number of Responses',
+          label: t('forms.analyticsChartNumResponses'),
           data: chartData.value.data,
           backgroundColor: [
             'rgba(239, 68, 68, 0.8)',   // red-500
@@ -100,7 +109,7 @@ const renderChart = () => {
         tooltip: {
           callbacks: {
             label: function(context) {
-              return `${context.parsed.y} responses`;
+              return t('forms.analyticsTooltipResponses', { count: context.parsed.y });
             }
           }
         }

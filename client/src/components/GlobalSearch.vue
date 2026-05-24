@@ -29,7 +29,7 @@
                 ref="searchInputRef"
                 v-model="searchQuery"
                 type="text"
-                placeholder="Search or run a command…"
+                :placeholder="t('navigation.globalSearchPlaceholder')"
                 class="flex-1 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none text-lg"
                 @keydown.esc="handleEscape"
                 @keydown.down.prevent="navigateResults(1)"
@@ -50,7 +50,7 @@
             <!-- Loading -->
             <div v-if="loading" class="px-4 py-8 text-center">
               <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-              <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Searching...</p>
+              <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{{ t('navigation.globalSearchSearching') }}</p>
             </div>
 
             <!-- No Results -->
@@ -62,10 +62,10 @@
               class="px-4 py-8 text-center"
             >
               <p class="text-sm font-medium text-gray-900 dark:text-white">
-                {{ mode === 'command' ? 'No matching commands' : 'No results found' }}
+                {{ mode === 'command' ? t('navigation.globalSearchNoCommands') : t('navigation.globalSearchNoResults') }}
               </p>
               <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {{ mode === 'command' ? 'Try a different command or press ESC to exit.' : 'Try searching by name, email, or keyword.' }}
+                {{ mode === 'command' ? t('navigation.globalSearchNoCommandsHint') : t('navigation.globalSearchNoResultsHint') }}
               </p>
             </div>
 
@@ -84,17 +84,17 @@
             <div v-if="!loading && pendingDestructiveCommand" class="px-4 py-8">
               <div class="text-center">
                 <p class="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                  Are you sure?
+                  {{ t('navigation.globalSearchConfirmTitle') }}
                 </p>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
                   {{ pendingDestructiveCommand.label }}
                 </p>
                 <div class="flex items-center justify-center gap-2 text-xs text-gray-400 dark:text-gray-500">
                   <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded">ESC</kbd>
-                  <span>to cancel</span>
+                  <span>{{ t('navigation.globalSearchToCancel') }}</span>
                   <span class="mx-2">•</span>
                   <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded">Enter</kbd>
-                  <span>to confirm</span>
+                  <span>{{ t('navigation.globalSearchToConfirm') }}</span>
                 </div>
               </div>
             </div>
@@ -125,7 +125,7 @@
               <template v-if="mode === 'command'">
                 <!-- Commands Header -->
                 <div class="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider bg-gray-50 dark:bg-gray-900/50">
-                  Commands
+                  {{ t('navigation.globalSearchCommandsHeader') }}
                 </div>
                 
                 <!-- Commands List (flat, no grouping) -->
@@ -210,7 +210,7 @@
                 class="px-4 py-2 border-t border-gray-200 dark:border-gray-700"
               >
                 <p class="text-xs text-gray-400 dark:text-gray-500 text-center">
-                  Use / to create, link, or navigate
+                  {{ t('navigation.globalSearchSlashHint') }}
                 </p>
               </div>
             </div>
@@ -234,7 +234,7 @@
               <!-- Command Mode Empty State -->
               <template v-if="mode === 'command'">
                 <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-4">
-                  {{ isCommandQueryEmpty ? 'Type to find a command' : 'No matching commands' }}
+                  {{ isCommandQueryEmpty ? t('navigation.globalSearchTypeToFind') : t('navigation.globalSearchNoCommands') }}
                 </p>
                 <!-- Example commands as hints (non-clickable) -->
                 <!-- 
@@ -256,14 +256,14 @@
               <!-- Search Mode Empty State -->
               <template v-else>
                 <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-2">
-                  Start typing to search
+                  {{ t('navigation.globalSearchStartTyping') }}
                 </p>
                 <!-- Discoverability hint in empty state -->
                 <p 
                   v-if="!hasUsedCommandTrigger"
                   class="text-xs text-gray-400 dark:text-gray-500 text-center"
                 >
-                  Use / to create, link, or navigate
+                  {{ t('navigation.globalSearchSlashHint') }}
                 </p>
               </template>
             </div>
@@ -332,6 +332,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter, useRoute } from 'vue-router';
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import { useTabs } from '@/composables/useTabs';
@@ -383,6 +384,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'open']);
 
+const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
 const { openTab } = useTabs();
@@ -597,7 +599,8 @@ watch(() => props.isOpen, (isOpen) => {
 const handleLinkDrawerOpen = (event: CustomEvent) => {
   const { moduleKey, title, context, allowCreate } = event.detail;
   linkDrawerModuleKey.value = moduleKey;
-  linkDrawerTitle.value = title || `Link ${moduleKey.charAt(0).toUpperCase() + moduleKey.slice(1)}`;
+  const moduleLabel = moduleKey.charAt(0).toUpperCase() + moduleKey.slice(1);
+  linkDrawerTitle.value = title || t('navigation.globalSearchLinkModule', { module: moduleLabel });
   linkDrawerContext.value = context;
   linkDrawerAllowCreate.value = allowCreate || false;
   showLinkDrawer.value = true;
@@ -777,10 +780,10 @@ const performSearch = async (query: string) => {
 // Get group label for UX categories
 const getGroupLabel = (groupKey: GroupKey) => {
   const labels: Record<GroupKey, string> = {
-    people: 'People',
-    organizations: 'Organizations',
-    work: 'Work',
-    configuration: 'Configuration'
+    people: t('navigation.globalSearchGroupPeople'),
+    organizations: t('navigation.globalSearchGroupOrganizations'),
+    work: t('navigation.globalSearchGroupWork'),
+    configuration: t('navigation.globalSearchGroupConfiguration')
   };
   return labels[groupKey] || String(groupKey);
 };
@@ -1360,9 +1363,9 @@ const handleCreateDrawerSaved = async (savedRecord?: any) => {
  */
 const getCurrentUserName = () => {
   if (authStore.user) {
-    return authStore.user.name || authStore.user.email || 'Unknown User';
+    return authStore.user.name || authStore.user.email || t('navigation.globalSearchUnknownUser');
   }
-  return 'Unknown User';
+  return t('navigation.globalSearchUnknownUser');
 };
 
 /**

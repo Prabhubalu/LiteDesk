@@ -92,9 +92,7 @@
           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
         </svg>
         <div class="flex-1">
-          <h3 class="text-sm font-semibold text-danger-800 dark:text-danger-200 mb-2">
-            Error Loading Profile
-          </h3>
+          <h3 class="text-sm font-semibold text-danger-800 dark:text-danger-200 mb-2">{{ t('people.peopleSurfaceErrorLoadingProfile') }}</h3>
           <p class="text-sm text-danger-700 dark:text-danger-300">{{ error }}</p>
         </div>
       </div>
@@ -123,9 +121,7 @@
       <!-- ARCHITECTURAL NOTE: This section explains why actions may or may not be allowed -->
       <!-- It does NOT enforce, hide, disable, or change behavior -->
       <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-          Action Availability
-        </h2>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{{ t('people.peopleSurfaceActionAvailability') }}</h2>
         
         <div class="space-y-3">
           <div
@@ -235,10 +231,8 @@
             <!-- Header -->
             <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
               <div>
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Attach to App</h2>
-                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                  Add this person to another app
-                </p>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('people.peopleSurfaceAttachToApp') }}</h2>
+                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ t('people.peopleSurfaceAddThisPersonToAnotherApp') }}</p>
               </div>
               <button
                 @click="closeAttachModal"
@@ -270,9 +264,7 @@
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                   </svg>
                   <div class="flex-1">
-                    <h3 class="text-sm font-semibold text-danger-800 dark:text-danger-200 mb-2">
-                      Validation Errors
-                    </h3>
+                    <h3 class="text-sm font-semibold text-danger-800 dark:text-danger-200 mb-2">{{ t('people.peopleSurfaceValidationErrors') }}</h3>
                     <ul class="list-disc list-inside space-y-2">
                       <li v-for="(message, field) in attachValidationErrors" :key="field" class="text-sm text-danger-700 dark:text-danger-300">
                         <span class="font-medium">{{ field }}:</span> {{ message }}
@@ -286,12 +278,8 @@
               <div v-if="!selectedAttachIntent">
                 <div v-if="hasAvailableAttachIntents">
                   <div class="mb-4">
-                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-2">
-                      Select Intent
-                    </h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">
-                      Choose how you want to add this person to an app
-                    </p>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-2">{{ t('people.peopleSurfaceSelectIntent') }}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('people.peopleSurfaceChooseHowYouWantToAdd') }}</p>
                   </div>
 
                   <div class="grid grid-cols-1 gap-2">
@@ -320,12 +308,8 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <p class="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                    All Apps Attached
-                  </p>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">
-                    This person is already part of all available apps.
-                  </p>
+                  <p class="text-sm font-medium text-gray-900 dark:text-white mb-2">{{ t('people.peopleSurfaceAllAppsAttached') }}</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('people.peopleSurfaceThisPersonIsAlreadyPartOf') }}</p>
                 </div>
               </div>
 
@@ -337,9 +321,7 @@
                 <button
                   @click="openAttachFormModal"
                   class="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors"
-                >
-                  Continue
-                </button>
+                >{{ t('performance.next') }}</button>
               </div>
             </div>
           </div>
@@ -422,6 +404,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';

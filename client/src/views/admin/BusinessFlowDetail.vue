@@ -25,20 +25,20 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
           </svg>
-          Back
+          {{ t('actions.back') }}
         </button>
         <div class="flex items-center gap-3">
           <button
             @click="viewHealth"
             class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
-            View Health
+            {{ t('process.flowViewHealth') }}
           </button>
           <button
             @click="editFlow"
             class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
-            Edit
+            {{ t('actions.edit') }}
           </button>
         </div>
       </div>
@@ -65,7 +65,7 @@
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                 ]"
               >
-                {{ hasActiveProcesses ? 'Active' : 'Draft' }}
+                {{ hasActiveProcesses ? t('process.statusActive') : t('process.statusDraft') }}
               </span>
             </div>
           </div>
@@ -74,7 +74,7 @@
 
       <!-- Flow Timeline (PRIMARY VISUAL) -->
       <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Flow Timeline</h2>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">{{ t('process.flowTimelineHeading') }}</h2>
 
         <div class="relative">
           <!-- Timeline Line -->
@@ -149,7 +149,7 @@
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                     ]"
                   >
-                    {{ item.process.status === 'active' ? 'Active' : 'Draft' }}
+                    {{ item.process.status === 'active' ? t('process.statusActive') : t('process.statusDraft') }}
                   </span>
                 </div>
                 <p class="text-sm text-blue-700 dark:text-blue-300 mb-2">
@@ -189,7 +189,7 @@
       <div class="bg-white dark:bg-gray-800 rounded-t-lg sm:rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div class="p-6">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Domain Event</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('process.flowDomainEventTitle') }}</h3>
             <button
               @click="selectedEvent = null"
               class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
@@ -201,15 +201,15 @@
           </div>
           <div class="space-y-3">
             <div>
-              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Event Name:</span>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('process.flowEventName') }}</span>
               <p class="text-sm text-gray-900 dark:text-white">{{ selectedEvent.label }}</p>
             </div>
             <div>
-              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Description:</span>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('process.flowDescription') }}</span>
               <p class="text-sm text-gray-900 dark:text-white">{{ selectedEvent.description }}</p>
             </div>
             <div v-if="selectedEvent.entityType">
-              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Entity Type:</span>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('process.flowEntityType') }}</span>
               <p class="text-sm text-gray-900 dark:text-white">{{ selectedEvent.entityType }}</p>
             </div>
           </div>
@@ -222,8 +222,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 
+const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
 
@@ -244,7 +246,6 @@ const timelineItems = computed(() => {
   const processes = flow.value.processes || [];
 
   processes.forEach((process, index) => {
-    // Add domain event (trigger)
     const trigger = process.trigger || {};
     if (trigger.type === 'domain_event') {
       items.push({
@@ -255,18 +256,16 @@ const timelineItems = computed(() => {
       });
     }
 
-    // Add process
     items.push({
       type: 'process',
       process: process
     });
 
-    // Add outcome after last process
     if (index === processes.length - 1) {
       items.push({
         type: 'outcome',
-        label: 'Flow Complete',
-        description: 'All processes in this flow have executed'
+        label: t('process.flowCompleteLabel'),
+        description: t('process.flowCompleteDesc')
       });
     }
   });
@@ -276,22 +275,22 @@ const timelineItems = computed(() => {
 
 const getEventLabel = (eventType) => {
   const labels = {
-    'record.created': 'Record Created',
-    'record.updated': 'Record Updated',
-    'status.changed': 'Status Changed',
-    'stage.changed': 'Stage Changed'
+    'record.created': t('process.eventRecordCreated'),
+    'record.updated': t('process.eventRecordUpdated'),
+    'status.changed': t('process.eventStatusChanged'),
+    'stage.changed': t('process.eventStageChanged')
   };
   return labels[eventType] || eventType;
 };
 
 const getEventDescription = (eventType) => {
   const descriptions = {
-    'record.created': 'A new record was created',
-    'record.updated': 'A record was updated',
-    'status.changed': 'The status of a record changed',
-    'stage.changed': 'The stage of a record changed'
+    'record.created': t('process.eventDescRecordCreated'),
+    'record.updated': t('process.eventDescRecordUpdated'),
+    'status.changed': t('process.eventDescStatusChanged'),
+    'stage.changed': t('process.eventDescStageChanged')
   };
-  return descriptions[eventType] || `Event: ${eventType}`;
+  return descriptions[eventType] || t('process.eventDescGeneric', { eventType });
 };
 
 const inferEntityType = (process) => {
@@ -308,13 +307,13 @@ const getTriggerSummary = (process) => {
   const trigger = process.trigger || {};
   if (trigger.type === 'domain_event') {
     const eventType = trigger.eventType || '';
-    if (eventType === 'record.created') return 'Runs when a record is created';
-    if (eventType === 'record.updated') return 'Runs when a record is updated';
-    if (eventType === 'status.changed') return 'Runs when status changes';
-    if (eventType === 'stage.changed') return 'Runs when stage changes';
-    return `Runs on ${eventType}`;
+    if (eventType === 'record.created') return t('process.triggerOnRecordCreated');
+    if (eventType === 'record.updated') return t('process.triggerOnRecordUpdated');
+    if (eventType === 'status.changed') return t('process.triggerOnStatusChanged');
+    if (eventType === 'stage.changed') return t('process.triggerOnStageChanged');
+    return t('process.triggerOnEvent', { eventType });
   }
-  return 'Manual trigger';
+  return t('process.triggerManualSummary');
 };
 
 const getProcessActions = (process) => {
@@ -324,29 +323,31 @@ const getProcessActions = (process) => {
     if (node.type === 'action') {
       const actionType = node.config?.actionType;
       if (actionType === 'create_task') {
-        actions.push(`Create task: "${node.config.params?.title || 'Untitled'}"`);
+        actions.push(t('process.flowActionCreateTask', {
+          title: node.config.params?.title || t('process.flowUntitledTask')
+        }));
       } else if (actionType === 'notify_user') {
-        actions.push('Send notification');
+        actions.push(t('process.flowActionNotifyUser'));
       } else if (actionType === 'start_process') {
-        actions.push('Start another process');
+        actions.push(t('process.flowActionStartProcess'));
       }
     } else if (node.type === 'field_rule') {
       const rule = node.config?.rule;
       const fieldKey = node.config?.fieldKey;
       if (rule === 'mandatory') {
-        actions.push(`Make "${fieldKey}" mandatory`);
+        actions.push(t('process.flowActionMandatoryField', { field: fieldKey }));
       } else if (rule === 'default') {
-        actions.push(`Set "${fieldKey}" default value`);
+        actions.push(t('process.flowActionDefaultField', { field: fieldKey }));
       }
     } else if (node.type === 'ownership_rule') {
-      actions.push('Assign ownership');
+      actions.push(t('process.flowActionAssignOwnership'));
     } else if (node.type === 'status_guard') {
-      actions.push('Control status transitions');
+      actions.push(t('process.flowActionStatusGuard'));
     } else if (node.type === 'approval_gate') {
-      actions.push('Request approval');
+      actions.push(t('process.flowActionApproval'));
     }
   });
-  return actions.slice(0, 3); // Limit to 3 actions for display
+  return actions.slice(0, 3);
 };
 
 const loadFlow = async () => {
@@ -356,7 +357,7 @@ const loadFlow = async () => {
     const response = await apiClient.get(`/admin/business-flows/${route.params.id}`);
     flow.value = response.data;
   } catch (err) {
-    error.value = err.message || 'Failed to load business flow';
+    error.value = err.message || t('process.flowDetailLoadFailed');
     console.error('Error loading business flow:', err);
   } finally {
     loading.value = false;
@@ -364,15 +365,15 @@ const loadFlow = async () => {
 };
 
 const editFlow = () => {
-  router.push(`/control/flows/${route.params.id}/edit`);
+  router.push(`/settings/automation/flows/${route.params.id}/edit`);
 };
 
 const viewHealth = () => {
-  router.push(`/control/flows/${route.params.id}/health`);
+  router.push(`/settings/automation/flows/${route.params.id}/health`);
 };
 
 const viewProcess = (process) => {
-  router.push(`/control/processes?processId=${process._id}`);
+  router.push(`/settings/automation/processes?processId=${process._id}`);
 };
 
 const showEventDrawer = (event) => {
@@ -380,7 +381,7 @@ const showEventDrawer = (event) => {
 };
 
 onMounted(() => {
-  document.title = 'Business Flow | Arivu';
+  document.title = t('process.flowDetailPageTitle');
   loadFlow();
 });
 </script>

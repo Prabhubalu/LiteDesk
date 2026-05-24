@@ -1,0 +1,46 @@
+{
+  "auth_required": {
+    "message": "Melden Sie sich an, um fortzufahren",
+    "description": "API error AUTH_REQUIRED"
+  },
+  "auth_token_invalid": {
+    "message": "Ihre Sitzung ist abgelaufen. Melden Sie sich erneut an.",
+    "description": "API error AUTH_TOKEN_INVALID"
+  },
+  "auth_token_missing": {
+    "message": "Melden Sie sich an, um fortzufahren",
+    "description": "API error AUTH_TOKEN_MISSING"
+  },
+  "permission_denied": {
+    "message": "Sie haben keine Berechtigung, diese Aktion auszuführen",
+    "description": "API error PERMISSION_DENIED"
+  },
+  "org_not_found": {
+    "message": "Organisation nicht gefunden",
+    "description": "API error ORG_NOT_FOUND"
+  },
+  "user_not_found": {
+    "message": "Benutzer nicht gefunden",
+    "description": "API error USER_NOT_FOUND"
+  },
+  "validation_failed": {
+    "message": "Überprüfen Sie die hervorgehobenen Felder und versuchen Sie es erneut",
+    "description": "API error VALIDATION_FAILED"
+  },
+  "resource_not_found": {
+    "message": "Dieser Datensatz konnte nicht gefunden werden",
+    "description": "API error RESOURCE_NOT_FOUND"
+  },
+  "conflict": {
+    "message": "Diese Aktion steht im Konflikt mit einer anderen Änderung. Aktualisieren Sie und versuchen Sie es erneut.",
+    "description": "API error CONFLICT"
+  },
+  "rate_limited": {
+    "message": "Zu viele Anfragen. Warten Sie einen Moment und versuchen Sie es erneut.",
+    "description": "API error RATE_LIMITED"
+  },
+  "server_error": {
+    "message": "Auf unserer Seite ist etwas schief gelaufen. Versuchen Sie es später noch einmal.",
+    "description": "Generic server error fallback"
+  }
+}

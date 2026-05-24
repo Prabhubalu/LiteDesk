@@ -7,15 +7,11 @@
           <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
         </svg>
         <div class="flex-1">
-          <h3 class="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-1">
-            Ambiguous App Context
-          </h3>
+          <h3 class="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-1">{{ t('people.peopleCreateAmbiguousAppContext') }}</h3>
           <p class="text-sm text-yellow-700 dark:text-yellow-300 mb-2">
             {{ appContextResult?.reason }}
           </p>
-          <p class="text-sm text-yellow-700 dark:text-yellow-300 mb-3">
-            Please select an app context to create a Person:
-          </p>
+          <p class="text-sm text-yellow-700 dark:text-yellow-300 mb-3">{{ t('people.peopleCreatePleaseSelectAnAppContextTo') }}</p>
           <div class="flex flex-wrap gap-2">
             <button
               v-for="candidate in appContextResult?.candidates || []"
@@ -37,15 +33,11 @@
           <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
         </svg>
         <div class="flex-1">
-          <h3 class="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-1">
-            Type Ownership Ambiguity
-          </h3>
+          <h3 class="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-1">{{ t('people.peopleCreateTypeOwnershipAmbiguity') }}</h3>
           <p class="text-sm text-yellow-700 dark:text-yellow-300 mb-2">
             {{ quickCreateResult?.reason }}
           </p>
-          <p class="text-sm text-yellow-700 dark:text-yellow-300 mb-3">
-            Please select which app to use:
-          </p>
+          <p class="text-sm text-yellow-700 dark:text-yellow-300 mb-3">{{ t('people.peopleCreatePleaseSelectWhichAppToUse') }}</p>
           <div class="flex flex-wrap gap-2">
             <button
               v-for="candidate in quickCreateResult?.candidates || []"
@@ -64,7 +56,7 @@
     <div v-if="loading" class="flex items-center justify-center py-12">
       <div class="text-center">
         <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
-        <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">Resolving app context...</p>
+        <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">{{ t('people.peopleCreateResolvingAppContext') }}</p>
       </div>
     </div>
 
@@ -75,9 +67,7 @@
           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
         </svg>
         <div class="flex-1">
-          <h3 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-1">
-            Error
-          </h3>
+          <h3 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-1">{{ t('people.peopleCreateError') }}</h3>
           <p class="text-sm text-red-700 dark:text-red-300">{{ error }}</p>
         </div>
       </div>
@@ -88,12 +78,8 @@
     <!-- This intent selection can pre-select intent for Full Form, but is not required -->
     <div v-if="!showCreateDrawer" class="py-12">
       <div class="mb-6">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-          Select Intent
-        </h3>
-        <p class="text-sm text-gray-600 dark:text-gray-400">
-          Choose how you want to add this person. This intent will be locked for the entire creation session.
-        </p>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('people.peopleCreateSelectIntent') }}</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('people.peopleCreateChooseHowYouWantToAdd') }}</p>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         <button
@@ -124,6 +110,9 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, computed, onMounted, onActivated, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import apiClient from '@/utils/apiClient';

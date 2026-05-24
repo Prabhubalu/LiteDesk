@@ -1,0 +1,462 @@
+{
+  "dealFormModalNextFollowUpDate": {
+    "message": "Следующая дата наблюдения",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalAddDetailsAboutThisDealRequirements": {
+    "message": "Добавьте подробную информацию об этой сделке, требованиях, примечаниях и т. д.",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalAdditionalDetails": {
+    "message": "Дополнительные сведения",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalLinkThisDealToAContact": {
+    "message": "Связать эту сделку с контактом",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalSelectContact": {
+    "message": "Выберите контакт",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalEnterprisePriorityDemo": {
+    "message": "предприятие, приоритет, демонстрация",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalTagsCommaSeparated": {
+    "message": "Теги (через запятую)",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalUrgent": {
+    "message": "Срочный",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalCrossSell": {
+    "message": "Перекрестные продажи",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalRenewal": {
+    "message": "Обновление",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalUpsell": {
+    "message": "Допродажа",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalExistingCustomer": {
+    "message": "Существующий клиент",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalNewBusiness": {
+    "message": "Новый бизнес",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalSelectType": {
+    "message": "Выберите тип",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalDealType": {
+    "message": "Тип сделки",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalClassification": {
+    "message": "Классификация",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalChangingStageUpdatesStatusAndProbability": {
+    "message": "Автоматическое изменение статуса и вероятности обновлений этапа",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalSelectPipeline": {
+    "message": "Выберите трубопровод...",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalExpectedCloseDate": {
+    "message": "Ожидаемая дата закрытия",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalEGAcmeCorpCrmImplementation": {
+    "message": "например, Acme Corp – внедрение CRM",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalDealName": {
+    "message": "Название сделки",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealFormModalDealInformation": {
+    "message": "Информация о сделке",
+    "description": "Auto-migrated from dealFormModal"
+  },
+  "dealRelationshipEditorSelectOrganization": {
+    "message": "Выберите организацию...",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorNoOrganizationsLinkedYet": {
+    "message": "Ни одна организация пока не связана.",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorRemoveFromDeal": {
+    "message": "Удалить из сделки",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorSetAsPrimaryCustomer": {
+    "message": "Сделать основным клиентом",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorOrganizationsOnThisDeal": {
+    "message": "Организации по этой сделке",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorShowingContactsFor": {
+    "message": "Показаны контакты для",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorSelectPerson": {
+    "message": "Выберите человека...",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorNoPeopleLinkedYet": {
+    "message": "Ни один человек еще не связан.",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorRemoveFromDeal2": {
+    "message": "Удалить из сделки",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorSetAsPrimaryContact": {
+    "message": "Сделать основным контактным лицом",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorPeopleOnThisDeal": {
+    "message": "Люди в этой сделке",
+    "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "relatedDealsWidgetCreateFirstDeal": {
+    "message": "Создать первую сделку",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetNoDealsYet": {
+    "message": "Сделок пока нет",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetAddDeal": {
+    "message": "Добавить сделку",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetLinkDeals": {
+    "message": "Связать предложения",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "relatedDealsWidgetRelatedDeals": {
+    "message": "Похожие предложения",
+    "description": "Auto-migrated from relatedDealsWidget"
+  },
+  "dealsAddDeal": {
+    "message": "Добавить сделку",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsNoDealsInThisStage": {
+    "message": "На этом этапе сделок нет.",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsLoadingPipeline": {
+    "message": "Загрузка трубопровода...",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsNewDeal": {
+    "message": "Новый курс",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsGroupStage": {
+    "message": "Группа: Сцена",
+    "description": "Auto-migrated from deals"
+  },
+  "dealsUpgradePlan": {
+    "message": "План обновления",
+    "description": "Auto-migrated from deals"
+  },
+  "dealDetailAddANote": {
+    "message": "Добавить заметку...",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailAddEvent": {
+    "message": "Добавить событие",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailAge": {
+    "message": "Возраст",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailExpectedClose": {
+    "message": "Ожидаемое закрытие",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailOrganizationsOnThisDeal": {
+    "message": "Организации по этой сделке",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailPeopleOnThisDeal": {
+    "message": "Люди в этой сделке",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailPrimaryCustomer": {
+    "message": "Основной клиент",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailPrimaryContact": {
+    "message": "Основной контакт",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailSystemOwnedComputedFromStage": {
+    "message": "Принадлежит системе (вычисляется на этапе)",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailBackToDeals": {
+    "message": "Вернуться к предложениям",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealDetailLoadingDeal": {
+    "message": "Загрузка сделки...",
+    "description": "Auto-migrated from dealDetail"
+  },
+  "dealFormModalToastFailedToSaveDeal": {
+    "message": "Не удалось сохранить сделку.",
+    "description": "Toast from DealFormModal.vue"
+  },
+  "sysFieldName": {
+    "message": "Название сделки",
+    "description": "System deal field label"
+  },
+  "sysFieldStage": {
+    "message": "Этап сделки",
+    "description": "System deal field label"
+  },
+  "sysFieldAmount": {
+    "message": "Ожидаемая стоимость",
+    "description": "System deal field label"
+  },
+  "sysFieldProbability": {
+    "message": "Вероятность (%)",
+    "description": "System deal field label"
+  },
+  "sysFieldExpectedCloseDate": {
+    "message": "Дата закрытия",
+    "description": "System deal field label"
+  },
+  "sysFieldOwnerId": {
+    "message": "Владелец сделки",
+    "description": "System deal field label"
+  },
+  "sysFieldAccountId": {
+    "message": "Организация",
+    "description": "System deal field label"
+  },
+  "sysFieldContactId": {
+    "message": "Контакт",
+    "description": "System deal field label"
+  },
+  "sysFieldType": {
+    "message": "Тип сделки",
+    "description": "System deal field label"
+  },
+  "sysFieldPipeline": {
+    "message": "Трубопровод",
+    "description": "System deal field label"
+  },
+  "sysFieldNextStep": {
+    "message": "Следующий шаг",
+    "description": "System deal field label"
+  },
+  "sysFieldTags": {
+    "message": "Теги",
+    "description": "System deal field label"
+  },
+  "sysFieldAssignedTo": {
+    "message": "Назначено",
+    "description": "System deal field label"
+  },
+  "sysFieldDescription": {
+    "message": "Описание",
+    "description": "System deal field label"
+  },
+  "sysFieldDealType": {
+    "message": "Тип сделки",
+    "description": "Alias for deal type field"
+  },
+  "activityCreatedDeal": {
+    "message": "создал эту сделку",
+    "description": "Deal record created activity fragment"
+  },
+  "activityUpdatedDeal": {
+    "message": "обновил эту сделку",
+    "description": "Deal record updated activity fragment"
+  },
+  "activityYouCreatedDeal": {
+    "message": "{actor} создал эту сделку",
+    "description": "Deal created system activity line"
+  },
+  "activityYouUpdatedDeal": {
+    "message": "{actor} обновил эту сделку",
+    "description": "Deal updated system activity line"
+  },
+  "picklistNew": {
+    "message": "Новый",
+    "description": "Default pipeline stage"
+  },
+  "picklistNewBusiness": {
+    "message": "Новый бизнес",
+    "description": "Common deal type value"
+  },
+  "picklistUpsell": {
+    "message": "Допродажа",
+    "description": "Deal type picklist value"
+  },
+  "picklistCrossSell": {
+    "message": "Перекрестные продажи",
+    "description": "Deal type picklist value"
+  },
+  "picklistRenewal": {
+    "message": "Обновление",
+    "description": "Deal type picklist value"
+  },
+  "picklistExistingCustomer": {
+    "message": "Существующий клиент",
+    "description": "Deal type picklist value"
+  },
+  "stageNew": {
+    "message": "Новый",
+    "description": "Default pipeline stage name"
+  },
+  "stageQualified": {
+    "message": "Квалифицированный",
+    "description": "Pipeline stage name"
+  },
+  "stageProposal": {
+    "message": "Предложение",
+    "description": "Pipeline stage name"
+  },
+  "stageNegotiation": {
+    "message": "Переговоры",
+    "description": "Pipeline stage name"
+  },
+  "stageWon": {
+    "message": "Выиграл",
+    "description": "Pipeline stage name"
+  },
+  "stageLost": {
+    "message": "Потерянный",
+    "description": "Pipeline stage name"
+  },
+  "stageClosedWon": {
+    "message": "Закрыто Выиграно",
+    "description": "Pipeline stage name"
+  },
+  "stageClosedLost": {
+    "message": "Закрыто Потеряно",
+    "description": "Pipeline stage name"
+  },
+  "stageDiscovery": {
+    "message": "Открытие",
+    "description": "Pipeline stage name"
+  },
+  "stageNeedsAnalysis": {
+    "message": "Анализ потребностей",
+    "description": "Pipeline stage name"
+  },
+  "stageValueProposition": {
+    "message": "Ценностное предложение",
+    "description": "Pipeline stage name"
+  },
+  "stageIdDecisionMakers": {
+    "message": "Идентификатор. Лица, принимающие решения",
+    "description": "Pipeline stage name"
+  },
+  "stagePerceptionAnalysis": {
+    "message": "Анализ восприятия",
+    "description": "Pipeline stage name"
+  },
+  "stageProposalPriceQuote": {
+    "message": "Предложение/Цена",
+    "description": "Pipeline stage name"
+  },
+  "stageNegotiationReview": {
+    "message": "Переговоры/обзор",
+    "description": "Pipeline stage name"
+  },
+  "pipelineSales": {
+    "message": "Воронка продаж",
+    "description": "Tenant pipeline display name"
+  },
+  "pipelineDefault": {
+    "message": "Конвейер по умолчанию",
+    "description": "Tenant pipeline display name"
+  },
+  "pipelineMarketing": {
+    "message": "Маркетинговый трубопровод",
+    "description": "Tenant pipeline display name"
+  },
+  "pipelinePartner": {
+    "message": "Партнерский трубопровод",
+    "description": "Tenant pipeline display name"
+  },
+  "listViewAll": {
+    "message": "All Deals",
+    "description": "Deals list default view title"
+  },
+  "listViewMy": {
+    "message": "My Deals",
+    "description": "Deals list assigned-to-me view title"
+  },
+  "listViewOpen": {
+    "message": "Open",
+    "description": "Deals list open view title"
+  },
+  "listViewWon": {
+    "message": "Won",
+    "description": "Deals list won view title"
+  },
+  "listViewLost": {
+    "message": "Lost",
+    "description": "Deals list lost view title"
+  },
+  "listCreate": {
+    "message": "New Deal",
+    "description": "Deals list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "Search deals...",
+    "description": "Deals list search placeholder"
+  },
+  "listStatPipelineValue": {
+    "message": "Pipeline Value",
+    "description": "Deals list statistics card"
+  },
+  "listStatOpenDeals": {
+    "message": "Open Deals",
+    "description": "Deals list statistics card"
+  },
+  "listStatWonThisMonth": {
+    "message": "Won This Month",
+    "description": "Deals list statistics card"
+  },
+  "listStatWinRate": {
+    "message": "Win Rate",
+    "description": "Deals list statistics card"
+  },
+  "dealsFeatureNotAvailable": {
+    "message": "Feature Not Available",
+    "description": "Deals plan limitation error title"
+  },
+  "dealsErrorLoading": {
+    "message": "Error Loading Deals",
+    "description": "Deals load error title"
+  },
+  "dealsDealDetail": {
+    "message": "Deal Detail",
+    "description": "Deal record tab title fallback"
+  },
+  "dealsStageUpdateFailed": {
+    "message": "Failed to update deal stage",
+    "description": "Kanban stage change error"
+  }
+}

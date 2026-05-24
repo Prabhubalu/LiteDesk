@@ -1,0 +1,46 @@
+{
+  "auth_required": {
+    "message": "Accedi per continuare",
+    "description": "API error AUTH_REQUIRED"
+  },
+  "auth_token_invalid": {
+    "message": "La tua sessione è scaduta. Accedi di nuovo.",
+    "description": "API error AUTH_TOKEN_INVALID"
+  },
+  "auth_token_missing": {
+    "message": "Accedi per continuare",
+    "description": "API error AUTH_TOKEN_MISSING"
+  },
+  "permission_denied": {
+    "message": "Non hai l'autorizzazione per eseguire questa azione",
+    "description": "API error PERMISSION_DENIED"
+  },
+  "org_not_found": {
+    "message": "Organizzazione non trovata",
+    "description": "API error ORG_NOT_FOUND"
+  },
+  "user_not_found": {
+    "message": "Utente non trovato",
+    "description": "API error USER_NOT_FOUND"
+  },
+  "validation_failed": {
+    "message": "Controlla i campi evidenziati e riprova",
+    "description": "API error VALIDATION_FAILED"
+  },
+  "resource_not_found": {
+    "message": "Impossibile trovare il record",
+    "description": "API error RESOURCE_NOT_FOUND"
+  },
+  "conflict": {
+    "message": "Questa azione è in conflitto con un'altra modifica. Aggiorna e riprova.",
+    "description": "API error CONFLICT"
+  },
+  "rate_limited": {
+    "message": "Troppe richieste. Aspetta un attimo e riprova.",
+    "description": "API error RATE_LIMITED"
+  },
+  "server_error": {
+    "message": "Qualcosa è andato storto da parte nostra. Riprova più tardi.",
+    "description": "Generic server error fallback"
+  }
+}

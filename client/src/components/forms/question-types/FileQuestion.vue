@@ -33,19 +33,19 @@
         </div>
         
         <p class="text-sm text-gray-900 dark:text-gray-100 mb-2">
-          Drag and Drop file here or 
+          {{ t('forms.fileDragDropOr') }}
           <label
             :for="question.questionId"
             class="font-semibold text-indigo-600 dark:text-indigo-400 underline cursor-pointer hover:text-indigo-700 dark:hover:text-indigo-300"
           >
-            Choose file
+            {{ t('forms.fileChooseFile') }}
           </label>
         </p>
         
         <!-- File Format and Size Info -->
         <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <span>Supported formats: {{ question.attachmentAllowance ? 'Multiple files' : 'All file types' }}</span>
-          <span>Maximum size: 25MB</span>
+          <span>{{ supportedFormatsLabel }}</span>
+          <span>{{ t('forms.fileMaxSize') }}</span>
         </div>
       </div>
     </div>
@@ -90,8 +90,8 @@
           type="button"
           @click.stop="removeFile(index)"
           class="flex-shrink-0 p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors cursor-pointer"
-          title="Remove file"
-          aria-label="Remove file"
+          :title="t('forms.fileRemoveAria')"
+          :aria-label="t('forms.fileRemoveAria')"
         >
           <XMarkIcon class="w-5 h-5" />
         </button>
@@ -101,7 +101,8 @@
 </template>
 
 <script setup>
-import { ref, watch, onBeforeUnmount } from 'vue';
+import { ref, watch, onBeforeUnmount, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ArrowUpTrayIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
@@ -120,6 +121,16 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update']);
+
+const { t } = useI18n();
+
+const supportedFormatsLabel = computed(() =>
+  t('forms.fileSupportedFormats', {
+    formats: props.question.attachmentAllowance
+      ? t('forms.fileSupportedMultiple')
+      : t('forms.fileSupportedAllTypes')
+  })
+);
 
 const fileInput = ref(null);
 const isDragging = ref(false);
@@ -255,4 +266,3 @@ onBeforeUnmount(() => {
   });
 });
 </script>
-

@@ -50,7 +50,7 @@
                 type="button"
                 class="p-1.5 rounded-lg shrink-0  hover:bg-white dark:hover:bg-gray-500/80 text-gray-600 dark:text-gray-300 transition-colors"
                 :class="getStageColor(stage) ? 'text-white/90 bg-white/30 dark:bg-gray-600/30 hover:bg-white/50 dark:hover:bg-gray-500/50' : ''"
-                aria-label="Expand column"
+                :aria-label="t('common.kanbanExpandColumn')"
                 @click="expandColumn(stage)"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -135,7 +135,7 @@
                 <template #footer>
                   <div v-if="(columnLists[stage] || []).length === 0 && !$slots['add-item']" class="flex-1 flex items-center justify-center py-12 text-gray-400 dark:text-gray-500 pointer-events-none">
                     <slot name="empty" :stage="stage">
-                      <p class="text-sm">No items</p>
+                      <p class="text-sm">{{ t('common.kanbanNoItems') }}</p>
                     </slot>
                   </div>
                   <div v-if="$slots['add-item']" class="shrink-0">
@@ -153,6 +153,9 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import draggable from 'vuedraggable';
 
 const props = defineProps({

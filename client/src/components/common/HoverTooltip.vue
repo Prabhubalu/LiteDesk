@@ -31,6 +31,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, computed, watch, onUnmounted } from 'vue';
 import { Teleport } from 'vue';
 
@@ -63,6 +64,8 @@ const props = defineProps({
     default: 4
   }
 });
+
+const { t } = useI18n();
 
 const triggerRef = ref(null);
 const tooltipRef = ref(null);

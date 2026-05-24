@@ -1,0 +1,46 @@
+{
+  "auth_required": {
+    "message": "जारी रखने के लिए साइन इन करें",
+    "description": "API error AUTH_REQUIRED"
+  },
+  "auth_token_invalid": {
+    "message": "आपका सत्र समाप्त हो गया. पुनः साइन इन करें.",
+    "description": "API error AUTH_TOKEN_INVALID"
+  },
+  "auth_token_missing": {
+    "message": "जारी रखने के लिए साइन इन करें",
+    "description": "API error AUTH_TOKEN_MISSING"
+  },
+  "permission_denied": {
+    "message": "आपके पास यह कार्रवाई करने की अनुमति नहीं है",
+    "description": "API error PERMISSION_DENIED"
+  },
+  "org_not_found": {
+    "message": "संगठन नहीं मिला",
+    "description": "API error ORG_NOT_FOUND"
+  },
+  "user_not_found": {
+    "message": "उपयोगकर्ता नहीं मिला",
+    "description": "API error USER_NOT_FOUND"
+  },
+  "validation_failed": {
+    "message": "हाइलाइट किए गए फ़ील्ड की जाँच करें और पुनः प्रयास करें",
+    "description": "API error VALIDATION_FAILED"
+  },
+  "resource_not_found": {
+    "message": "वह रिकार्ड नहीं मिल सका",
+    "description": "API error RESOURCE_NOT_FOUND"
+  },
+  "conflict": {
+    "message": "यह क्रिया किसी अन्य परिवर्तन से टकराती है. ताज़ा करें और पुनः प्रयास करें.",
+    "description": "API error CONFLICT"
+  },
+  "rate_limited": {
+    "message": "बहुत सारे अनुरोध. एक क्षण रुकें और पुनः प्रयास करें।",
+    "description": "API error RATE_LIMITED"
+  },
+  "server_error": {
+    "message": "हमारी तरफ से कुछ गलत हो गया. बाद में पुन: प्रयास।",
+    "description": "Generic server error fallback"
+  }
+}

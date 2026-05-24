@@ -1,0 +1,458 @@
+{
+  "appPulseCardOpenApp": {
+    "message": "Открыть приложение",
+    "description": "Auto-migrated from appPulseCard"
+  },
+  "appRegistryThisAppIsAvailableForDiscovery": {
+    "message": "Это приложение доступно для обнаружения. Функции установки и настройки будут доступны в будущем обновлении.",
+    "description": "Auto-migrated from appRegistry"
+  },
+  "appRegistryInstallationComingSoon": {
+    "message": "Скоро будет установка.",
+    "description": "Auto-migrated from appRegistry"
+  },
+  "appRegistryNoApplicationsAvailable": {
+    "message": "Нет доступных приложений.",
+    "description": "Auto-migrated from appRegistry"
+  },
+  "appRegistryDiscoverAndManageYourApplications": {
+    "message": "Находите и управляйте своими приложениями",
+    "description": "Auto-migrated from appRegistry"
+  },
+  "appRegistryAppRegistry": {
+    "message": "Реестр приложений",
+    "description": "Auto-migrated from appRegistry"
+  },
+  "attentionSurfaceAttentionShowsTasksAndEventsOnly": {
+    "message": "Внимание показывает задачи и события только тогда, когда необходимо действие.",
+    "description": "Auto-migrated from attentionSurface"
+  },
+  "attentionSurfaceThingsThatNeedYourAttentionRight": {
+    "message": "Вещи, которые требуют вашего внимания прямо сейчас",
+    "description": "Auto-migrated from attentionSurface"
+  },
+  "attentionSurfaceAttention": {
+    "message": "Внимание",
+    "description": "Auto-migrated from attentionSurface"
+  },
+  "platformHomeAlerts": {
+    "message": "Оповещения",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeQuickAccess": {
+    "message": "Быстрый доступ",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeYourApps": {
+    "message": "Ваши приложения",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeContinueWhereYouLeftOff": {
+    "message": "Продолжить с того места, где вы остановились",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeNeedsYourAttention": {
+    "message": "Требует вашего внимания",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeTasksEventsAndAlertsFromYour": {
+    "message": "По мере начала работы здесь будут появляться задачи, события и оповещения из ваших приложений.",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeWelcomeToYourHome": {
+    "message": "Добро пожаловать в ваш дом",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeWhatNeedsYourAttentionRightNow": {
+    "message": "Что требует вашего внимания прямо сейчас",
+    "description": "Auto-migrated from platformHome"
+  },
+  "instanceManagementManageInstance": {
+    "message": "Управление экземпляром",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementUsername": {
+    "message": "Имя пользователя:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementDatabase": {
+    "message": "База данных:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementPort": {
+    "message": "Порт:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementHost": {
+    "message": "Хозяин:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementDatabaseConnection": {
+    "message": "Подключение к базе данных",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementStorageUsed": {
+    "message": "Используемое хранилище:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTotalDeals": {
+    "message": "Всего сделок:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTotalContacts": {
+    "message": "Всего контактов:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTotalUsers": {
+    "message": "Всего пользователей:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTrialEnd": {
+    "message": "Конец пробного периода:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementStatus": {
+    "message": "Статус:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTier": {
+    "message": "Уровень:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementSubscription": {
+    "message": "Подписка",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementApi": {
+    "message": "API:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementFrontend": {
+    "message": "Внешний интерфейс:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementUrls": {
+    "message": "URL-адреса",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementStatus2": {
+    "message": "Статус:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementKubernetesNamespace": {
+    "message": "Пространство имен Kubernetes:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementSubdomain": {
+    "message": "Субдомен:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementInstanceName": {
+    "message": "Имя экземпляра:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementInstanceInformation": {
+    "message": "Информация об экземпляре",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementNoCustomerInstancesMatchYourCurrent": {
+    "message": "Ни один экземпляр клиента не соответствует текущим фильтрам.",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementNoInstancesFound": {
+    "message": "Экземпляры не найдены",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementManage": {
+    "message": "Управлять",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementSubscription2": {
+    "message": "Подписка",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementHealth": {
+    "message": "Здоровье",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementSubdomain2": {
+    "message": "Субдомен",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementInstance": {
+    "message": "Пример",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementLoadingInstances": {
+    "message": "Загрузка экземпляров...",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementUnhealthy": {
+    "message": "Нездоровый",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementDegraded": {
+    "message": "Деградированный",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementHealthy": {
+    "message": "Здоровый",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementAllHealth": {
+    "message": "Всем здоровья",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementCanceled": {
+    "message": "Отменено",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementPastDue": {
+    "message": "Просроченный платеж",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementAllSubscriptions": {
+    "message": "Все подписки",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTerminated": {
+    "message": "Прекращено",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementProvisioning": {
+    "message": "обеспечение",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementSearchInstances": {
+    "message": "Поиск экземпляров...",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementMonthlyRevenue": {
+    "message": "Ежемесячный доход",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementProvisioning2": {
+    "message": "обеспечение",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementActiveInstances": {
+    "message": "Активные экземпляры",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTotalInstances": {
+    "message": "Всего экземпляров",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementMonitorAndManageAllCustomerInstances": {
+    "message": "Мониторинг и управление всеми экземплярами клиентов",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementInstanceManagement": {
+    "message": "Управление экземплярами",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "landingPageAdminLogin": {
+    "message": "Вход администратора",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageRequestDemo": {
+    "message": "Запросить демо",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageStopWrestlingWithBloatedCrmPlug": {
+    "message": "Хватит бороться с раздутой CRM. Подключитесь, определите свой процесс и автоматизируйте взаимодействие с клиентами менее чем за день.",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageDesignYourPerfectSalesFlow": {
+    "message": "Создайте свой идеальный поток продаж.",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageReadMore": {
+    "message": "Читать далее",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPagePlugAndPlayToolForAny": {
+    "message": "Готовый к использованию инструмент для любой вертикали.",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageLogIn": {
+    "message": "Авторизоваться",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageCloseMenu": {
+    "message": "Закрыть меню",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageNurtura": {
+    "message": "Нуртура",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageLogIn2": {
+    "message": "Авторизоваться",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageOpenMainMenu": {
+    "message": "Открыть главное меню",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageNurtura2": {
+    "message": "Нуртура",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageGlobal": {
+    "message": "Глобальный",
+    "description": "Auto-migrated from landingPage"
+  },
+  "genericModuleUnknownModuleOrRoute": {
+    "message": "Неизвестный модуль или маршрут.",
+    "description": "Auto-migrated from genericModule"
+  },
+  "listViewAllItems": {
+    "message": "Все предметы",
+    "description": "Items list default view title"
+  },
+  "listViewActiveItems": {
+    "message": "Активные предметы",
+    "description": "Items list active view title"
+  },
+  "listViewProducts": {
+    "message": "Продукты",
+    "description": "Items list products view title"
+  },
+  "listViewServices": {
+    "message": "Услуги",
+    "description": "Items list services view title"
+  },
+  "listViewLowStock": {
+    "message": "Низкий запас",
+    "description": "Items list low stock view title"
+  },
+  "listViewOutOfStock": {
+    "message": "Распродано",
+    "description": "Items list out of stock view title"
+  },
+  "listCreateItem": {
+    "message": "Новый товар",
+    "description": "Items list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "Поиск предметов...",
+    "description": "Items list search placeholder"
+  },
+  "listStatTotalItems": {
+    "message": "Всего предметов",
+    "description": "Items list statistics card"
+  },
+  "listStatActiveItems": {
+    "message": "Активный",
+    "description": "Items list statistics card"
+  },
+  "listStatProducts": {
+    "message": "Продукты",
+    "description": "Items list statistics card"
+  },
+  "listStatServices": {
+    "message": "Услуги",
+    "description": "Items list statistics card"
+  },
+  "listStatLowStock": {
+    "message": "Низкий запас",
+    "description": "Items list statistics card"
+  },
+  "listStatOutOfStock": {
+    "message": "Распродано",
+    "description": "Items list statistics card"
+  },
+  "platformHomeNeedAttentionCount": {
+    "message": "{count} требует внимания",
+    "description": "Today strip chip count"
+  },
+  "platformHomeApprovalCountOne": {
+    "message": "{count} одобрение",
+    "description": "Today strip chip count singular"
+  },
+  "platformHomeApprovalCountMany": {
+    "message": "{count} одобрений",
+    "description": "Today strip chip count plural"
+  },
+  "platformHomeUnreadCountOne": {
+    "message": "{count} непрочитано",
+    "description": "Today strip chip count singular"
+  },
+  "platformHomeUnreadCountMany": {
+    "message": "{count} непрочитано",
+    "description": "Today strip chip count plural"
+  },
+  "platformHomeOverdueCount": {
+    "message": "{count} просрочено",
+    "description": "Attention summary overdue count"
+  },
+  "platformHomeDueTodayCount": {
+    "message": "{count} срок должен быть сегодня",
+    "description": "Attention summary due today count"
+  },
+  "platformHomeItemCountOne": {
+    "message": "{count} предмет",
+    "description": "Attention summary fallback singular"
+  },
+  "platformHomeItemCountMany": {
+    "message": "{count} предметов",
+    "description": "Attention summary fallback plural"
+  },
+  "platformHomeAlertInstanceSuspendedTitle": {
+    "message": "Экземпляр приостановлен",
+    "description": "Platform home alert title"
+  },
+  "platformHomeAlertInstanceSuspendedMessage": {
+    "message": "Этот экземпляр в настоящее время заблокирован. Обратитесь в службу поддержки для восстановления доступа.",
+    "description": "Platform home alert message"
+  },
+  "platformHomeAlertTrialEndedTitle": {
+    "message": "Пробная версия завершена",
+    "description": "Platform home alert title"
+  },
+  "platformHomeAlertTrialEndedMessage": {
+    "message": "Ваш пробный период закончился. Пожалуйста, подпишитесь, чтобы продолжить.",
+    "description": "Platform home alert message"
+  },
+  "platformHomeAlertTrialEndingSoonTitle": {
+    "message": "Пробная версия скоро закончится",
+    "description": "Platform home alert title"
+  },
+  "platformHomeAlertTrialEndingSoonMessageOne": {
+    "message": "Пробный период закончится через {count} день.",
+    "description": "Platform home alert message singular"
+  },
+  "platformHomeAlertTrialEndingSoonMessageMany": {
+    "message": "Пробная версия закончится через {count} дней.",
+    "description": "Platform home alert message plural"
+  },
+  "platformHomeAuditDashboard": {
+    "message": "Панель аудита",
+    "description": "Tab title fallback for audit app"
+  },
+  "platformHomeGreetingMorning": {
+    "message": "Доброе утро",
+    "description": "Platform home greeting"
+  },
+  "platformHomeGreetingMorningWithName": {
+    "message": "Доброе утро, {name}.",
+    "description": "Platform home greeting"
+  },
+  "platformHomeGreetingAfternoon": {
+    "message": "Добрый день",
+    "description": "Platform home greeting"
+  },
+  "platformHomeGreetingAfternoonWithName": {
+    "message": "Добрый день, {name}",
+    "description": "Platform home greeting"
+  },
+  "platformHomeGreetingEvening": {
+    "message": "Добрый вечер",
+    "description": "Platform home greeting"
+  },
+  "platformHomeGreetingEveningWithName": {
+    "message": "Добрый вечер, {name}",
+    "description": "Platform home greeting"
+  }
+}

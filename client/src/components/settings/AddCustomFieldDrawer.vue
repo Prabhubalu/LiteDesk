@@ -33,47 +33,47 @@
                     <!-- Header: matches CreateRecordDrawer / TaskEditDrawer -->
                     <div class="bg-indigo-700 dark:bg-indigo-800 px-4 py-6 sm:px-6 flex-shrink-0">
                       <div class="flex items-center justify-between">
-                        <DialogTitle class="text-base font-semibold text-white">Add Custom Field</DialogTitle>
+                        <DialogTitle class="text-base font-semibold text-white">{{ t('settings.modFieldsAddCustomField') }}</DialogTitle>
                         <button
                           type="button"
                           class="relative rounded-md text-indigo-200 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white cursor-pointer"
                           @click="handleClose"
                         >
                           <span class="absolute -inset-2.5" />
-                          <span class="sr-only">Close panel</span>
+                          <span class="sr-only">{{ t('common.closePanel') }}</span>
                           <XMarkIcon class="size-6" aria-hidden="true" />
                         </button>
                       </div>
-                      <p class="mt-1 text-sm text-indigo-300">Define a new custom field for this module.</p>
+                      <p class="mt-1 text-sm text-indigo-300">{{ t('settings.settingsAddFieldSubtitle') }}</p>
                     </div>
 
                     <!-- Body: scrollable, matches record drawer -->
                     <div class="h-0 flex-1 overflow-y-auto">
                       <div class="px-4 sm:px-6 py-6 space-y-6">
                         <div class="space-y-1">
-                          <label for="add-field-label" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Label</label>
+                          <label for="add-field-label" class="block text-sm/6 font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsLabel') }}</label>
                           <input
                             id="add-field-label"
                             v-model="draft.label"
                             type="text"
-                            placeholder="e.g., Custom Status"
+                            :placeholder="t('settings.settingsAddFieldLabelPh')"
                             required
                             class="block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
                           />
                         </div>
                         <div class="space-y-1">
-                          <label for="add-field-key" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Key</label>
+                          <label for="add-field-key" class="block text-sm/6 font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsKey') }}</label>
                           <input
                             id="add-field-key"
                             v-model="draft.key"
                             type="text"
-                            placeholder="Auto-generated from label"
+                            :placeholder="t('settings.settingsAddFieldKeyPh')"
                             class="block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
                           />
-                          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Auto-generated from label. Edit to customize.</p>
+                          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.settingsAddFieldKeyHint') }}</p>
                         </div>
                         <div class="space-y-1">
-                          <label for="add-field-type" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Type</label>
+                          <label for="add-field-type" class="block text-sm/6 font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsType') }}</label>
                           <HeadlessSelect
                             id="add-field-type"
                             v-model="draft.dataType"
@@ -81,14 +81,14 @@
                           />
                         </div>
                         <div v-if="draft.dataType === 'Currency'" class="space-y-1">
-                          <label for="add-field-currency" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Currency Format</label>
+                          <label for="add-field-currency" class="block text-sm/6 font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsCurrencyFormat') }}</label>
                           <HeadlessSelect
                             id="add-field-currency"
                             v-model="draft.currencyCode"
                             :options="currencySelectOptions"
                           />
                           <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            Values will be displayed using {{ draft.currencyCode || 'USD' }} formatting.
+                            {{ t('settings.settingsAddFieldCurrencyHint', { code: draft.currencyCode || 'USD' }) }}
                           </p>
                         </div>
                         <div class="flex items-center gap-6 pt-2">
@@ -97,7 +97,7 @@
                               v-model="draft.required"
                               checkbox-class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
                             />
-                            <span class="text-sm text-gray-900 dark:text-white">Required in Form</span>
+                            <span class="text-sm text-gray-900 dark:text-white">{{ t('settings.modFieldsRequiredInForm') }}</span>
                           </label>
                         </div>
                         <div
@@ -105,9 +105,9 @@
                           class="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3"
                         >
                           <div>
-                            <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">Field scope</label>
+                            <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsFieldScope') }}</label>
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                              Core fields apply everywhere for this record. App-specific fields appear when you work in that application (for example, opening the record from that app’s list).
+                              {{ t('settings.modFieldsFieldScopeHelp') }}
                             </p>
                           </div>
                           <div class="flex flex-col gap-2">
@@ -118,7 +118,7 @@
                                 value="core"
                                 class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700"
                               />
-                              <span class="text-sm text-gray-900 dark:text-white">Core (shared across apps)</span>
+                              <span class="text-sm text-gray-900 dark:text-white">{{ t('settings.modFieldsScopeCoreShared') }}</span>
                             </label>
                             <label class="inline-flex items-center gap-2 cursor-pointer">
                               <input
@@ -127,11 +127,11 @@
                                 value="app"
                                 class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700"
                               />
-                              <span class="text-sm text-gray-900 dark:text-white">App-specific</span>
+                              <span class="text-sm text-gray-900 dark:text-white">{{ t('settings.modFieldsScopeAppSpecific') }}</span>
                             </label>
                           </div>
                           <div v-if="draft.participationScope === 'app'" class="space-y-1">
-                            <label for="add-field-app-scope" class="block text-xs font-medium text-gray-700 dark:text-gray-300">Application</label>
+                            <label for="add-field-app-scope" class="block text-xs font-medium text-gray-700 dark:text-gray-300">{{ t('settings.modFieldsApplication') }}</label>
                             <HeadlessSelect
                               id="add-field-app-scope"
                               v-model="draft.appContextToken"
@@ -140,21 +140,21 @@
                           </div>
                         </div>
                         <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
-                          <label class="block text-sm/6 font-medium text-gray-900 dark:text-white mb-3">Visibility</label>
+                          <label class="block text-sm/6 font-medium text-gray-900 dark:text-white mb-3">{{ t('settings.modFieldsDepVisibility') }}</label>
                           <div class="flex flex-col gap-2">
                             <label class="inline-flex items-center gap-2 cursor-pointer">
                               <HeadlessCheckbox
                                 v-model="draft.visibility.list"
                                 checkbox-class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
                               />
-                              <span class="text-sm text-gray-900 dark:text-white">Show in List</span>
+                              <span class="text-sm text-gray-900 dark:text-white">{{ t('settings.settingsAddFieldShowInList') }}</span>
                             </label>
                             <label class="inline-flex items-center gap-2 cursor-pointer">
                               <HeadlessCheckbox
                                 v-model="draft.visibility.detail"
                                 checkbox-class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
                               />
-                              <span class="text-sm text-gray-900 dark:text-white">Show in Detail</span>
+                              <span class="text-sm text-gray-900 dark:text-white">{{ t('settings.modFieldsShowInDetail') }}</span>
                             </label>
                           </div>
                         </div>
@@ -170,13 +170,13 @@
                           class="rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                           @click="handleClose"
                         >
-                          Cancel
+                          {{ t('actions.cancel') }}
                         </button>
                         <button
                           type="submit"
                           class="rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 dark:hover:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 cursor-pointer"
                         >
-                          Add Field
+                          {{ t('settings.settingsAddFieldAddField') }}
                         </button>
                       </div>
                     </div>
@@ -193,6 +193,7 @@
 
 <script setup>
 import { ref, watch, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
@@ -202,6 +203,8 @@ import {
   DEFAULT_CURRENCY_CODE,
   getCurrencySymbolFromCode,
 } from '@/utils/currencyOptions';
+
+const { t } = useI18n();
 
 const FIELD_TYPES = [
   'Text',
@@ -223,8 +226,31 @@ const FIELD_TYPES = [
   'Auto-Number',
   'Lookup (Relationship)',
   'Formula',
-  'Rollup Summary'
+  'Rollup Summary',
 ];
+
+const FIELD_TYPE_I18N = {
+  Text: 'settingsAddFieldTypeText',
+  'Text-Area': 'settingsAddFieldTypeTextArea',
+  'Rich Text': 'settingsAddFieldTypeRichText',
+  Integer: 'settingsAddFieldTypeInteger',
+  Decimal: 'settingsAddFieldTypeDecimal',
+  Currency: 'settingsAddFieldTypeCurrency',
+  Date: 'settingsAddFieldTypeDate',
+  'Date-Time': 'settingsAddFieldTypeDateTime',
+  Picklist: 'settingsAddFieldTypePicklist',
+  'Multi-Picklist': 'settingsAddFieldTypeMultiPicklist',
+  Checkbox: 'settingsAddFieldTypeCheckbox',
+  'Radio Button': 'settingsAddFieldTypeRadioButton',
+  Email: 'settingsAddFieldTypeEmail',
+  Phone: 'settingsAddFieldTypePhone',
+  URL: 'settingsAddFieldTypeUrl',
+  Image: 'settingsAddFieldTypeImage',
+  'Auto-Number': 'settingsAddFieldTypeAutoNumber',
+  'Lookup (Relationship)': 'settingsAddFieldTypeLookup',
+  Formula: 'settingsAddFieldTypeFormula',
+  'Rollup Summary': 'settingsAddFieldTypeRollupSummary',
+};
 
 const props = defineProps({
   isOpen: { type: Boolean, default: false },
@@ -233,13 +259,17 @@ const props = defineProps({
   /** When true and appScopeOptions non-empty, show Core vs App-specific scope (shared core modules). */
   showAppParticipationScope: { type: Boolean, default: false },
   /** { value: lowercase app token e.g. 'sales', label: 'Sales' } */
-  appScopeOptions: { type: Array, default: () => [] }
+  appScopeOptions: { type: Array, default: () => [] },
 });
 
 const emit = defineEmits(['close', 'save']);
 
-const fieldTypes = FIELD_TYPES;
-const fieldTypeOptions = computed(() => fieldTypes.map((t) => ({ value: t, label: t })));
+const fieldTypeOptions = computed(() =>
+  FIELD_TYPES.map((value) => ({
+    value,
+    label: t(`settings.${FIELD_TYPE_I18N[value]}`),
+  }))
+);
 const currencySelectOptions = computed(() =>
   CURRENCY_OPTIONS.map((currency) => ({
     value: currency.code,
@@ -330,7 +360,7 @@ const handleSave = () => {
     context:
       showScope && participationScope === 'app' && appToken
         ? appToken
-        : 'global'
+        : 'global',
   };
   if (draft.value.dataType === 'Currency') {
     const nextCurrencyCode = String(currencyCode || DEFAULT_CURRENCY_CODE).toUpperCase();
@@ -342,7 +372,7 @@ const handleSave = () => {
     };
   }
   emit('save', {
-    ...nextField
+    ...nextField,
   });
 };
 </script>

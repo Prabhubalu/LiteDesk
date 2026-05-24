@@ -53,7 +53,7 @@ function validateProcess(process) {
   }
 
   // Validate node types
-  const validNodeTypes = ['trigger', 'condition', 'action', 'data_mapping', 'end', 'field_rule', 'ownership_rule', 'status_guard', 'approval_gate'];
+  const validNodeTypes = ['trigger', 'condition', 'action', 'data_mapping', 'end', 'field_rule', 'ownership_rule', 'status_guard', 'approval_gate', 'wait'];
   for (const node of process.nodes) {
     if (!validNodeTypes.includes(node.type)) {
       return { valid: false, error: `Unsupported node type: ${node.type}` };
@@ -82,6 +82,19 @@ function validateProcess(process) {
     }
   }
 
+  if (process.trigger.type === 'webhook') {
+    if (!process.trigger.webhookKey) {
+      return { valid: false, error: 'Webhook trigger requires webhookKey' };
+    }
+    if (!process.trigger.secretHash) {
+      return { valid: false, error: 'Webhook trigger requires a configured secret' };
+    }
+    const triggerNode = process.nodes.find(n => n.type === 'trigger');
+    if (!triggerNode) {
+      return { valid: false, error: 'Process with webhook trigger must have a trigger node' };
+    }
+  }
+
   return { valid: true };
 }
 
@@ -107,12 +120,20 @@ async function executionExists(executionId) {
  * @returns {Object|null} - Starting ProcessNode
  */
 function findStartNode(process) {
-  // For domain_event triggers, find trigger node
+  const edges = process.edges || [];
+
   if (process.trigger.type === 'domain_event') {
     return process.nodes.find(n => n.type === 'trigger') || null;
   }
 
-  // For manual triggers, find first node (or node with order=0)
+  if (process.trigger.type === 'webhook') {
+    const triggerNode = process.nodes.find(n => n.type === 'trigger');
+    if (triggerNode) {
+      const nextId = findNextNode(triggerNode.id, edges);
+      if (nextId) return process.nodes.find(n => n.id === nextId) || null;
+    }
+  }
+
   const sortedNodes = [...process.nodes].sort((a, b) => {
     if (a.order != null && b.order != null) return a.order - b.order;
     if (a.order != null) return -1;
@@ -120,7 +141,8 @@ function findStartNode(process) {
     return 0;
   });
 
-  return sortedNodes[0] || null;
+  const nonTrigger = sortedNodes.find(n => n.type !== 'trigger');
+  return nonTrigger || sortedNodes[0] || null;
 }
 
 /**
@@ -187,6 +209,8 @@ async function executeProcess(params) {
       }
     } else if (process.trigger.type === 'manual') {
       // Manual trigger - no event validation needed
+    } else if (process.trigger.type === 'webhook') {
+      return { ok: false, error: 'Webhook processes must be started via the webhook endpoint' };
     } else {
       return { ok: false, error: `Unsupported trigger type: ${process.trigger.type}` };
     }
@@ -389,8 +413,13 @@ async function executeByEvent(event) {
     appKey: event.appKey || { $exists: true }
   }).lean();
 
+  const { matchesUpdateWatch } = require('../utils/processTriggerUtils');
+
   const results = [];
   for (const process of matchingProcesses) {
+    if (!matchesUpdateWatch(process.trigger, event)) {
+      continue;
+    }
     const result = await startProcess({
       processId: process._id.toString(),
       event

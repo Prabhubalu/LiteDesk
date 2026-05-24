@@ -12,7 +12,7 @@
   >
     <div
       ref="editorRef"
-      :data-placeholder="placeholder"
+      :data-placeholder="resolvedPlaceholder"
       :class="[
         'comment-editor w-full text-sm text-gray-900 dark:text-white overflow-y-auto whitespace-pre-wrap break-words empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400 dark:empty:before:text-gray-500 empty:before:pointer-events-none',
         isActivityVariant
@@ -44,7 +44,7 @@
         <button
           type="button"
           class="ml-0.5 p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none"
-          :aria-label="`Remove ${getAttachmentName(attachment)}`"
+          :aria-label="t('records.commentRemoveAttachment', { name: getAttachmentName(attachment) })"
           @click="removeExistingAttachment(idx)"
         >
           <XMarkIcon class="w-3.5 h-3.5" />
@@ -61,7 +61,7 @@
         <button
           type="button"
           class="ml-0.5 p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none"
-          :aria-label="`Remove ${file.name}`"
+          :aria-label="t('records.commentRemoveAttachment', { name: file.name })"
           @click="removeFile(idx)"
         >
           <XMarkIcon class="w-3.5 h-3.5" />
@@ -89,7 +89,7 @@
           v-if="allowAttachments"
           type="button"
           :class="toolbarButtonClass"
-          title="Add a file"
+          :title="t('records.commentAddFile')"
           @mousedown.prevent="triggerFileSelect"
         >
           <PaperClipIcon class="w-[18px] h-[18px]" />
@@ -98,7 +98,7 @@
           ref="mentionButtonRef"
           type="button"
           :class="toolbarButtonClass"
-          title="Mention someone (@)"
+          :title="t('records.commentMentionTitle', { atSymbol: '@' })"
           @mousedown.prevent="insertAtSign"
         >
           <AtSymbolIcon class="w-[18px] h-[18px]" />
@@ -108,7 +108,7 @@
             ref="emojiButtonRef"
             type="button"
             :class="toolbarButtonClass"
-            title="Add emoji"
+            :title="t('records.commentAddEmoji')"
             @mousedown.prevent="toggleEmojiPicker"
           >
             <FaceSmileIcon class="w-[18px] h-[18px]" />
@@ -143,7 +143,7 @@
             ]"
           >
             <PaperAirplaneIcon v-if="isActivityVariant" class="w-5 h-5" />
-            <span v-else>Comment</span>
+            <span v-else>{{ t('records.commentSubmitLabel') }}</span>
           </button>
         </slot>
       </div>
@@ -157,7 +157,7 @@
         :style="dropdownStyle"
       >
         <div v-if="mentionLoading" class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
-          Loading...
+          {{ t('records.commentMentionLoading') }}
         </div>
         <template v-else-if="filteredMentions.length > 0">
           <button
@@ -184,12 +184,12 @@
             </span>
             <span class="truncate">{{ item.name }}</span>
             <span v-if="item.type === 'group'" class="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
-              Group
+              {{ t('records.commentMentionGroup') }}
             </span>
           </button>
         </template>
         <div v-else class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
-          No users or groups found
+          {{ t('records.commentMentionEmpty') }}
         </div>
       </div>
     </Teleport>
@@ -198,6 +198,7 @@
 
 <script setup>
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
   UserGroupIcon,
   PaperClipIcon,
@@ -209,6 +210,8 @@ import {
 import apiClient from '@/utils/apiClient';
 import 'emoji-picker-element';
 
+const { t } = useI18n();
+
 const props = defineProps({
   modelValue: {
     type: String,
@@ -216,7 +219,7 @@ const props = defineProps({
   },
   placeholder: {
     type: String,
-    default: 'Write a comment... @mention users or groups'
+    default: undefined
   },
   rows: {
     type: Number,
@@ -253,6 +256,10 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:modelValue', 'update:existingAttachments', 'files-change', 'submit']);
+
+const resolvedPlaceholder = computed(
+  () => props.placeholder ?? t('records.commentComposerDefaultPh')
+);
 
 const editorRef = ref(null);
 const dropdownRef = ref(null);

@@ -1,0 +1,1114 @@
+{
+  "eventExecutionAccuracy": {
+    "message": "Accuracy:",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionCurrentLocation": {
+    "message": "Current Location:",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionStatus": {
+    "message": "Status:",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionGpsStatus": {
+    "message": "GPS Status",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionYouAreOfflineActionsWillBe": {
+    "message": "You are offline. Actions will be synced when connection is restored.",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionCompleteEvent": {
+    "message": "Complete Event",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionCollectPayment": {
+    "message": "Collect Payment",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionCreateOrder": {
+    "message": "Create Order",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionSalesActions": {
+    "message": "Sales Actions",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionNoFormLinkedToThisEvent": {
+    "message": "No form linked to this event",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionOpenForm": {
+    "message": "Open Form",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionOpenTheFormToFillAnd": {
+    "message": "Open the form to fill and submit.",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionOpenResponse": {
+    "message": "Open Response",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionTheFormHasBeenSuccessfullySubmitted": {
+    "message": "The form has been successfully submitted and you have been automatically checked out.",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionFormSubmitted": {
+    "message": "Form Submitted",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionCheckIn": {
+    "message": "Check In",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionRouteProgress": {
+    "message": "Route Progress",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionCheckOut": {
+    "message": "Check Out",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionCheckedIn": {
+    "message": "Checked In",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionCheckIn2": {
+    "message": "Check In",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionGeoCheckInRequired": {
+    "message": "GEO Check-In Required",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionCheckIn3": {
+    "message": "Check In",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionWaitingForGpsLocation": {
+    "message": "Waiting for GPS location...",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionCheckInToBeginTheAudit": {
+    "message": "Check in to begin the audit process.",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionReadyToStartAudit": {
+    "message": "Ready to Start Audit",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionStartEvent": {
+    "message": "Start Event",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventExecutionEventExecution": {
+    "message": "Event Execution",
+    "description": "Auto-migrated from eventExecution"
+  },
+  "eventFormModalFileUploadFunctionalityToBeImplemented": {
+    "message": "File upload functionality to be implemented",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalAttachments": {
+    "message": "Attachments",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalPartnerVisibilityForGuestAuditor": {
+    "message": "Partner Visibility (for guest auditor)",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalPayments": {
+    "message": "Payments",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalOrders": {
+    "message": "Orders",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalAllowedActions": {
+    "message": "Allowed Actions",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalEG30": {
+    "message": "e.g., 30",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalMinimumVisitDurationMinutes": {
+    "message": "Minimum Visit Duration (minutes)",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalEnableBackgroundTracking": {
+    "message": "Enable Background Tracking",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalSelectOrg": {
+    "message": "Select Org...",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalSequence": {
+    "message": "Sequence",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalOrganizationList": {
+    "message": "Organization List",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalEnableOnlyIfTheAuditorIs": {
+    "message": "Enable only if the auditor is responsible for both execution and approval.",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalAllowSelfReview": {
+    "message": "Allow Self Review",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalCreateAFormFirstInThe": {
+    "message": "Create a form first in the Forms module",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalNoFormsAvailableCreateAForm": {
+    "message": "No forms available (create a form first)",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalSelectForm": {
+    "message": "Select Form...",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalTheFormThatWillBeExecuted": {
+    "message": "The form that will be executed as part of this event.",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalSelectOrganization": {
+    "message": "Select Organization...",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalTheOrganizationThisEventIsAssociated": {
+    "message": "The organization this event is associated with.",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalGeoRequired": {
+    "message": "GEO Required:",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalGeoRequired2": {
+    "message": "GEO Required",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalEventConfiguration": {
+    "message": "Event Configuration",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalMonthly": {
+    "message": "Monthly",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalRecurrencePattern": {
+    "message": "Recurrence Pattern",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalRecurrence": {
+    "message": "Recurrence",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalPhysicalAddressOrMeetingUrl": {
+    "message": "Physical address or meeting URL",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalLocationAddressOrUrl": {
+    "message": "Location (Address or URL)",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalLocation": {
+    "message": "Location",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalSelectUser": {
+    "message": "Select user...",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalEventOwner": {
+    "message": "Event Owner",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalAuditEventsAreScheduledFromThe": {
+    "message": "Audit events are scheduled from the Audit module.",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalAddNotesOrDescription": {
+    "message": "Add notes or description...",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalEnterEventName": {
+    "message": "Enter event name",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventFormModalEventName": {
+    "message": "Event Name",
+    "description": "Auto-migrated from eventFormModal"
+  },
+  "eventMapViewNoGpsTrackingDataAvailable": {
+    "message": "No GPS tracking data available",
+    "description": "Auto-migrated from eventMapView"
+  },
+  "eventMapViewCenterMap": {
+    "message": "Center Map",
+    "description": "Auto-migrated from eventMapView"
+  },
+  "eventMapViewCheckOut": {
+    "message": "Check-Out",
+    "description": "Auto-migrated from eventMapView"
+  },
+  "eventMapViewCheckIn": {
+    "message": "Check-In",
+    "description": "Auto-migrated from eventMapView"
+  },
+  "eventMapViewLoadingMap": {
+    "message": "Loading map...",
+    "description": "Auto-migrated from eventMapView"
+  },
+  "eventMapViewGpsTrackingMap": {
+    "message": "GPS Tracking Map",
+    "description": "Auto-migrated from eventMapView"
+  },
+  "genericEventCreateSurfaceAddressOrLocationNameOptional": {
+    "message": "Address or location name (optional)",
+    "description": "Auto-migrated from genericEventCreateSurface"
+  },
+  "genericEventCreateSurfaceLocation": {
+    "message": "Location",
+    "description": "Auto-migrated from genericEventCreateSurface"
+  },
+  "genericEventCreateSurfaceEventIntentIsAUiGuidance": {
+    "message": "Event intent is a UI guidance layer, not enforcement.",
+    "description": "Auto-migrated from genericEventCreateSurface"
+  },
+  "genericEventCreateSurfaceSelectStatus": {
+    "message": "Select status...",
+    "description": "Auto-migrated from genericEventCreateSurface"
+  },
+  "genericEventCreateSurfaceAuditEventsAreScheduledFromThe": {
+    "message": "Audit events are scheduled from the Audit module.",
+    "description": "Auto-migrated from genericEventCreateSurface"
+  },
+  "genericEventCreateSurfaceNoEventTypesAvailable": {
+    "message": "No event types available",
+    "description": "Auto-migrated from genericEventCreateSurface"
+  },
+  "genericEventCreateSurfaceEnterEventName": {
+    "message": "Enter event name",
+    "description": "Auto-migrated from genericEventCreateSurface"
+  },
+  "genericEventCreateSurfaceEventName": {
+    "message": "Event Name",
+    "description": "Auto-migrated from genericEventCreateSurface"
+  },
+  "genericEventCreateSurfaceThisInterfaceSupportsBasicEventCreation": {
+    "message": "This interface supports basic event creation only. \n                  For audit events, advanced configuration, or complex workflows, please use the appropriate module interfaces.",
+    "description": "Auto-migrated from genericEventCreateSurface"
+  },
+  "genericEventCreateSurfaceLimitedScope": {
+    "message": "Limited scope:",
+    "description": "Auto-migrated from genericEventCreateSurface"
+  },
+  "orderCreationModalAdditionalNotes": {
+    "message": "Additional notes...",
+    "description": "Auto-migrated from orderCreationModal"
+  },
+  "orderCreationModalTotal": {
+    "message": "Total:",
+    "description": "Auto-migrated from orderCreationModal"
+  },
+  "orderCreationModalSubtotal": {
+    "message": "Subtotal:",
+    "description": "Auto-migrated from orderCreationModal"
+  },
+  "orderCreationModalUnitPrice": {
+    "message": "Unit price",
+    "description": "Auto-migrated from orderCreationModal"
+  },
+  "orderCreationModalItemName": {
+    "message": "Item name",
+    "description": "Auto-migrated from orderCreationModal"
+  },
+  "orderCreationModalOrderItems": {
+    "message": "Order Items",
+    "description": "Auto-migrated from orderCreationModal"
+  },
+  "orderCreationModalSelectOrganization": {
+    "message": "Select Organization...",
+    "description": "Auto-migrated from orderCreationModal"
+  },
+  "orderCreationModalCreateOrder": {
+    "message": "Create Order",
+    "description": "Auto-migrated from orderCreationModal"
+  },
+  "paymentCollectionModalPaymentNotes": {
+    "message": "Payment notes...",
+    "description": "Auto-migrated from paymentCollectionModal"
+  },
+  "paymentCollectionModalTransactionCheckNumber": {
+    "message": "Transaction/Check number",
+    "description": "Auto-migrated from paymentCollectionModal"
+  },
+  "paymentCollectionModalReferenceNumber": {
+    "message": "Reference Number",
+    "description": "Auto-migrated from paymentCollectionModal"
+  },
+  "paymentCollectionModalBankTransfer": {
+    "message": "Bank Transfer",
+    "description": "Auto-migrated from paymentCollectionModal"
+  },
+  "paymentCollectionModalCheck": {
+    "message": "Check",
+    "description": "Auto-migrated from paymentCollectionModal"
+  },
+  "paymentCollectionModalCard": {
+    "message": "Card",
+    "description": "Auto-migrated from paymentCollectionModal"
+  },
+  "paymentCollectionModalCash": {
+    "message": "Cash",
+    "description": "Auto-migrated from paymentCollectionModal"
+  },
+  "paymentCollectionModalSelectMethod": {
+    "message": "Select method...",
+    "description": "Auto-migrated from paymentCollectionModal"
+  },
+  "paymentCollectionModalPaymentMethod": {
+    "message": "Payment Method",
+    "description": "Auto-migrated from paymentCollectionModal"
+  },
+  "paymentCollectionModalSelectOrganization": {
+    "message": "Select Organization...",
+    "description": "Auto-migrated from paymentCollectionModal"
+  },
+  "paymentCollectionModalCollectPayment": {
+    "message": "Collect Payment",
+    "description": "Auto-migrated from paymentCollectionModal"
+  },
+  "relatedEventsWidgetCreateFirstEvent": {
+    "message": "Create first event",
+    "description": "Auto-migrated from relatedEventsWidget"
+  },
+  "relatedEventsWidgetNoEventsYet": {
+    "message": "No events yet",
+    "description": "Auto-migrated from relatedEventsWidget"
+  },
+  "relatedEventsWidgetAddEvent": {
+    "message": "Add Event",
+    "description": "Auto-migrated from relatedEventsWidget"
+  },
+  "relatedEventsWidgetLinkEvents": {
+    "message": "Link Events",
+    "description": "Auto-migrated from relatedEventsWidget"
+  },
+  "relatedEventsWidgetRelatedEvents": {
+    "message": "Related Events",
+    "description": "Auto-migrated from relatedEventsWidget"
+  },
+  "eventsLoadingCalendar": {
+    "message": "Loading calendar...",
+    "description": "Auto-migrated from events"
+  },
+  "eventsNewEvent": {
+    "message": "New Event",
+    "description": "Auto-migrated from events"
+  },
+  "eventsCalendar": {
+    "message": "Calendar",
+    "description": "Auto-migrated from events"
+  },
+  "eventsCalendarToday": {
+    "message": "Today",
+    "description": "FullCalendar today button"
+  },
+  "eventsCalendarMonth": {
+    "message": "Month",
+    "description": "FullCalendar month view button"
+  },
+  "eventsCalendarWeek": {
+    "message": "Week",
+    "description": "FullCalendar week view button"
+  },
+  "eventsCalendarDay": {
+    "message": "Day",
+    "description": "FullCalendar day view button"
+  },
+  "eventsCalendarList": {
+    "message": "List",
+    "description": "FullCalendar list view button"
+  },
+  "eventsTabEventDetail": {
+    "message": "Event Detail",
+    "description": "Event record tab title fallback"
+  },
+  "eventsAppts": {
+    "message": "Appts",
+    "description": "Auto-migrated from events"
+  },
+  "eventsAppointmentsOnly": {
+    "message": "Appointments only",
+    "description": "Auto-migrated from events"
+  },
+  "eventDetailNoNotesYet": {
+    "message": "No notes yet",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailSaveNote": {
+    "message": "Save Note",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailAddANote": {
+    "message": "Add a note...",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailAuditHistory": {
+    "message": "Audit History",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailConversionRate": {
+    "message": "Conversion Rate",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailVisitsCompleted": {
+    "message": "Visits Completed",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailOrderValue": {
+    "message": "Order Value",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailOrdersCreated": {
+    "message": "Orders Created",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailSalesKpis": {
+    "message": "Sales KPIs",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailPending": {
+    "message": "Pending:",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailInProgress": {
+    "message": "In Progress:",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailCompleted": {
+    "message": "Completed:",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailTotalOrganizations": {
+    "message": "Total Organizations:",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailRouteSummary": {
+    "message": "Route Summary",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailCurrentState": {
+    "message": "Current State:",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailAuditWorkflowState": {
+    "message": "Audit Workflow State",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailCheckOut": {
+    "message": "Check-Out",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailCheckIn": {
+    "message": "Check-In",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailGeoTrackingHistory": {
+    "message": "GEO Tracking History",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailViewCorrectiveActions": {
+    "message": "View Corrective Actions",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailThisAuditRequiresCorrectiveActionsReview": {
+    "message": "This audit requires corrective actions. Review and manage corrective actions for failed audit questions.",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailViewFormResponse": {
+    "message": "View Form Response",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailEventIsReadOnly": {
+    "message": "Event is Read-Only",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailAuditEventsCannotBeManuallyCompleted": {
+    "message": "Audit events cannot be manually completed. They are completed automatically when the audit workflow reaches a closed state.",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailCompletionControl": {
+    "message": "Completion Control",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailLocationTrackingIsMandatoryForAudits": {
+    "message": "Location tracking is mandatory for audits and is automatically enabled. This requirement cannot be changed.",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailLocationTracking": {
+    "message": "Location Tracking",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailAuditEventsFollowAControlledExecution": {
+    "message": "Audit events follow a controlled execution workflow. They cannot be manually completed. Completion occurs only when the audit workflow reaches a closed state.",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailAuditEventWorkflow": {
+    "message": "Audit Event Workflow",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailLocationTrackingNotRequiredForThis": {
+    "message": "Location tracking not required for this event.",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailLocationDataNotYetRecorded": {
+    "message": "Location data not yet recorded.",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailCheckOutLocation": {
+    "message": "Check-Out Location",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailCheckInLocation": {
+    "message": "Check-In Location",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailLocationTrackingSummary": {
+    "message": "Location Tracking Summary",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailNoExecutionActivityRecordedYet": {
+    "message": "No execution activity recorded yet.",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailExecutionHistory": {
+    "message": "Execution History",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailActionAvailability": {
+    "message": "Action Availability",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailUnableToDetermineReadinessStatus": {
+    "message": "Unable to determine readiness status.",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailThisEventIsNotReadyFor": {
+    "message": "This event is not ready for execution.",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailThisEventIsReadyForExecution": {
+    "message": "This event is ready for execution.",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailExecutionReadiness": {
+    "message": "Execution Readiness",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailMeetingLink": {
+    "message": "Meeting Link",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailLocation": {
+    "message": "Location",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailTime": {
+    "message": "Time",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailAlwaysEnabledLockedForAuditEvents": {
+    "message": "Always enabled (locked for audit events)",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailGeoRequired": {
+    "message": "Geo Required",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailAuditWorkflowState2": {
+    "message": "Audit Workflow State",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailExecutionMayBeBlockedUntilReadiness": {
+    "message": "Execution may be blocked until readiness conditions are met.",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailOpenExecution": {
+    "message": "Open Execution",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailBackToEvents": {
+    "message": "Back to Events",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailBackToEvents2": {
+    "message": "Back to Events",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailErrorLoadingEvent": {
+    "message": "Error Loading Event",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventDetailLoadingEvent": {
+    "message": "Loading event...",
+    "description": "Auto-migrated from eventDetail"
+  },
+  "eventExecutionSurfaceYesForCheckInCheckOut": {
+    "message": "Yes (for check-in/check-out)",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceLocationRequired": {
+    "message": "Location Required",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceAuditState": {
+    "message": "Audit State",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceLinkedForm": {
+    "message": "Linked Form",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceYourRole": {
+    "message": "Your Role",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceScheduledTime": {
+    "message": "Scheduled Time",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceEventDetails": {
+    "message": "Event Details",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceAuditEventsCannotBeManuallyCompleted": {
+    "message": "Audit events cannot be manually completed. They are completed automatically when the audit workflow reaches a closed state.",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceNoManualCompletion": {
+    "message": "No Manual Completion",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceLocationTrackingIsMandatoryForAudit": {
+    "message": "Location tracking is mandatory for audit events and is automatically enabled. This requirement cannot be changed.",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceLocationTrackingRequired": {
+    "message": "Location Tracking Required",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceAuditEventsFollowAControlledExecution": {
+    "message": "Audit events follow a controlled execution workflow. Completion occurs only when the audit workflow reaches a closed state.",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceExecutionControlledByAuditWorkflow": {
+    "message": "Execution Controlled by Audit Workflow",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceAuditWorkflowControl": {
+    "message": "Audit Workflow Control",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceThisEventHasBeenCancelledAnd": {
+    "message": "This event has been cancelled and cannot be executed.",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceEventCancelled": {
+    "message": "Event Cancelled",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceAllRequiredWorkHasBeenCompleted": {
+    "message": "All required work has been completed. The event is now in a completed state.",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceCompletionSummary": {
+    "message": "Completion Summary",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceThisEventHasBeenSuccessfullyCompleted": {
+    "message": "This event has been successfully completed.",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceEventCompleted": {
+    "message": "Event Completed",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceExecutionMayBeBlockedUntilThe": {
+    "message": "Execution may be blocked until the above conditions are resolved.",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceCancelExecution": {
+    "message": "Cancel Execution",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceYouDoNotHavePermissionTo": {
+    "message": "You do not have permission to complete this event.",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceExecutionIsCurrentlyActive": {
+    "message": "Execution is currently active",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceEventInProgress": {
+    "message": "Event In Progress",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceCheckOutWhenAuditIsComplete": {
+    "message": "Check out when audit is complete",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceCompleteTheLinkedAuditForm": {
+    "message": "Complete the linked audit form",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceWhatToDoNext": {
+    "message": "What to do next:",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceCompleteTheAuditFormToProceed": {
+    "message": "Complete the audit form to proceed with the audit execution.",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceLinkedFormStatus": {
+    "message": "Linked Form Status",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceCheckedInSuccessfully": {
+    "message": "Checked in successfully",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceAuditInProgress": {
+    "message": "Audit In Progress",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceExecutionMayBeBlockedUntilThe2": {
+    "message": "Execution may be blocked until the above conditions are resolved.",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceOnlyTheAssignedAuditorCanCheck": {
+    "message": "Only the assigned Auditor can check in to this audit.",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceWaitingForGpsLocation": {
+    "message": "Waiting for GPS location...",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceThisAuditRequiresLocationVerificationPlease": {
+    "message": "This audit requires location verification. Please allow location access when prompted.",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceLocationRequired2": {
+    "message": "Location Required",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceCheckInToBeginTheAudit": {
+    "message": "Check in to begin the audit execution process.",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceReadyToStartAudit": {
+    "message": "Ready to Start Audit",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceWhoCanDoWhat": {
+    "message": "Who Can Do What",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceWhoCanDoWhat2": {
+    "message": "Who Can Do What",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceExecutionError": {
+    "message": "Execution Error",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceExecutionMayBeBlockedByThe": {
+    "message": "Execution may be blocked by the following conditions:",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceThisAuditIsReadyForExecution": {
+    "message": "This audit is ready for execution.",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceExecutionReadiness": {
+    "message": "Execution Readiness",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceExecutionMayBeBlockedUntilThe3": {
+    "message": "Execution may be blocked until the above conditions are resolved.",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceYouDoNotHavePermissionTo2": {
+    "message": "You do not have permission to start this event.",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceThisEventIsScheduledAndReady": {
+    "message": "This event is scheduled and ready to begin execution.",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceReadyToStart": {
+    "message": "Ready to Start",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceExecutionError2": {
+    "message": "Execution Error",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceExecutionMayBeBlockedByThe2": {
+    "message": "Execution may be blocked by the following conditions:",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceThisEventIsReadyForExecution": {
+    "message": "This event is ready for execution.",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceExecutionReadiness2": {
+    "message": "Execution Readiness",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceYourRole2": {
+    "message": "Your role:",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceBackToEvents": {
+    "message": "Back to Events",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceErrorLoadingEvent": {
+    "message": "Error Loading Event",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionSurfaceLoadingEventExecutionContext": {
+    "message": "Loading event execution context...",
+    "description": "Auto-migrated from eventExecutionSurface"
+  },
+  "eventExecutionToastFailedToStartEvent": {
+    "message": "Failed to start event",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToStartEvent2": {
+    "message": "Failed to start event: ",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastNoFormIsAssignedTo": {
+    "message": "No form is assigned to this event. Please contact your administrator to assign a form.",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastYouAreOfflineCheckIn": {
+    "message": "You are offline. Check-in will be synced when connection is restored.",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToCheckIn": {
+    "message": "Failed to check in",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToCheckIn2": {
+    "message": "Failed to check in: ",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastNoFormIsAssignedTo2": {
+    "message": "No form is assigned to this event. Please contact your administrator to assign a form.",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToCheckIn3": {
+    "message": "Failed to check in",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToCheckIn4": {
+    "message": "Failed to check in: ",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastCouldNotGetLocationFor": {
+    "message": "Could not get location for check-out. Please try again.",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastYouAreOfflineCheckOut": {
+    "message": "You are offline. Check-out will be synced when connection is restored.",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToCheckOut": {
+    "message": "Failed to check out",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToCheckOut2": {
+    "message": "Failed to check out: ",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastPleaseFillAndSubmitThe": {
+    "message": "Please fill and submit the audit form first",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastAuditSubmittedAndCheckedOut": {
+    "message": "Audit submitted and checked out. Some items require corrective action.",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastAuditSubmittedSuccessfullyAndYou": {
+    "message": "Audit submitted successfully and you have been automatically checked out.",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastYouAreOfflineAuditSubmission": {
+    "message": "You are offline. Audit submission will be synced when connection is restored.",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToSubmitAudit": {
+    "message": "Failed to submit audit",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToSubmitAudit2": {
+    "message": "Failed to submit audit: ",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToMoveToNext": {
+    "message": "Failed to move to next organization",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToMoveToNext2": {
+    "message": "Failed to move to next organization: ",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastThisEventHasBeenChecked": {
+    "message": "This event has been checked out. Form cannot be reopened.",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastEventCompletedSuccessfully": {
+    "message": "Event completed successfully",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastYouAreOfflineEventCompletion": {
+    "message": "You are offline. Event completion will be synced when connection is restored.",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToCompleteEvent": {
+    "message": "Failed to complete event",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventExecutionToastFailedToCompleteEvent2": {
+    "message": "Failed to complete event: ",
+    "description": "Toast from EventExecution.vue"
+  },
+  "eventFormModalToastEventNameIsRequired": {
+    "message": "Event Name is required",
+    "description": "Toast from EventFormModal.vue"
+  },
+  "eventFormModalToastStartDateTimeIsRequired": {
+    "message": "Start Date/Time is required",
+    "description": "Toast from EventFormModal.vue"
+  },
+  "eventFormModalToastEndDateTimeIsRequired": {
+    "message": "End Date/Time is required",
+    "description": "Toast from EventFormModal.vue"
+  },
+  "eventFormModalToastEventOwnerIsRequired": {
+    "message": "Event Owner is required",
+    "description": "Toast from EventFormModal.vue"
+  },
+  "eventFormModalToastInvalidStartDateTimePlease": {
+    "message": "Invalid start date/time. Please select a valid date and time.",
+    "description": "Toast from EventFormModal.vue"
+  },
+  "eventFormModalToastInvalidEndDateTimePlease": {
+    "message": "Invalid end date/time. Please select a valid date and time.",
+    "description": "Toast from EventFormModal.vue"
+  },
+  "eventFormModalToastEndDateTimeMustBe": {
+    "message": "End date/time must be after start date/time.",
+    "description": "Toast from EventFormModal.vue"
+  },
+  "orderCreationModalToastFailedToCreateOrder": {
+    "message": "Failed to create order",
+    "description": "Toast from OrderCreationModal.vue"
+  },
+  "orderCreationModalToastFailedToCreateOrder2": {
+    "message": "Failed to create order: ",
+    "description": "Toast from OrderCreationModal.vue"
+  },
+  "paymentCollectionModalToastFailedToCollectPayment": {
+    "message": "Failed to collect payment",
+    "description": "Toast from PaymentCollectionModal.vue"
+  },
+  "paymentCollectionModalToastFailedToCollectPayment2": {
+    "message": "Failed to collect payment: ",
+    "description": "Toast from PaymentCollectionModal.vue"
+  },
+  "listViewAll": {
+    "message": "All Events",
+    "description": "Events list default view title"
+  },
+  "listViewUpcoming": {
+    "message": "Upcoming Events",
+    "description": "Events list upcoming view title"
+  },
+  "listViewPast": {
+    "message": "Past Events",
+    "description": "Events list past view title"
+  },
+  "listViewMy": {
+    "message": "My Events",
+    "description": "Events list my events view title"
+  },
+  "listViewAppointments": {
+    "message": "Appointments",
+    "description": "Events list appointments view title"
+  },
+  "listViewUpcomingAppointments": {
+    "message": "Upcoming Appointments",
+    "description": "Events list upcoming appointments view title"
+  },
+  "listCreate": {
+    "message": "New Event",
+    "description": "Events list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "Search events...",
+    "description": "Events list search placeholder"
+  },
+  "listStatTotal": {
+    "message": "Total Events",
+    "description": "Events list statistics card"
+  },
+  "listStatUpcoming": {
+    "message": "Upcoming",
+    "description": "Events list statistics card"
+  },
+  "listStatPast": {
+    "message": "Past",
+    "description": "Events list statistics card"
+  },
+  "listStatMy": {
+    "message": "My Events",
+    "description": "Events list statistics card"
+  },
+  "listStatToday": {
+    "message": "Today",
+    "description": "Events list statistics card"
+  },
+  "listStatThisWeek": {
+    "message": "This Week",
+    "description": "Events list statistics card"
+  },
+  "sysFieldAppointmentBookedBy": {
+    "message": "Booked by",
+    "description": "Events list appointment field label"
+  },
+  "sysFieldAppointmentBookingSource": {
+    "message": "Source",
+    "description": "Events list appointment field label"
+  },
+  "sysFieldAppointmentType": {
+    "message": "Type",
+    "description": "Events list appointment field label"
+  },
+  "sysFieldAppointmentMeetingLink": {
+    "message": "Meeting link",
+    "description": "Events list appointment field label"
+  }
+}

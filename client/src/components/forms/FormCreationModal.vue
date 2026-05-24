@@ -11,15 +11,17 @@
           <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <div>
               <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-                {{ isEditing ? 'Edit Form' : 'Create New Form' }}
+                {{ isEditing ? t('forms.editFormTitle') : t('forms.createNewFormTitle') }}
               </h2>
               <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                {{ isEditing ? 'Update your form details' : 'Follow the steps to create your form' }}
+                {{ isEditing ? t('forms.editFormSubtitle') : t('forms.createNewFormSubtitle') }}
               </p>
             </div>
             <button
-              @click="handleClose"
+              type="button"
+              :aria-label="t('actions.close')"
               class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              @click="handleClose"
             >
               <XMarkIcon class="w-5 h-5 text-gray-500 dark:text-gray-400" />
             </button>
@@ -27,7 +29,7 @@
 
           <!-- Progress Stepper -->
           <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-            <nav aria-label="Progress">
+            <nav :aria-label="t('forms.wizardProgressAria')">
               <ol role="list" class="divide-y divide-gray-300 dark:divide-gray-700 rounded-md border border-gray-300 dark:border-gray-700 md:flex md:divide-y-0">
                 <li
                   v-for="(step, stepIdx) in steps"
@@ -90,9 +92,9 @@
             <!-- Step 1: Form Details -->
             <div v-if="currentStepIndex === 0" class="space-y-6">
               <div>
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Form Details</h3>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('forms.wizardStepFormDetails') }}</h3>
                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                  Start by providing basic information about your form.
+                  {{ t('forms.wizardFormDetailsIntro') }}
                 </p>
               </div>
 
@@ -100,14 +102,14 @@
                 <!-- Form Name -->
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Form Name <span class="text-red-500">*</span>
+                    {{ t('forms.fieldFormName') }} <span class="text-red-500">*</span>
                   </label>
                   <input
                     v-model="formData.name"
                     type="text"
                     required
                     maxlength="255"
-                    placeholder="Enter form name"
+                    :placeholder="t('forms.fieldFormNamePh')"
                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   />
                 </div>
@@ -115,31 +117,31 @@
                 <!-- Form Type -->
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Form Type <span class="text-red-500">*</span>
+                    {{ t('forms.fieldFormType') }} <span class="text-red-500">*</span>
                   </label>
                   <select
                     v-model="formData.formType"
                     required
                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   >
-                    <option value="Audit">Audit</option>
-                    <option value="Survey">Survey</option>
-                    <option value="Feedback">Feedback</option>
-                    <option value="Inspection">Inspection</option>
-                    <option value="Custom">Custom</option>
+                    <option value="Audit">{{ t('forms.typeAudit') }}</option>
+                    <option value="Survey">{{ t('forms.typeSurvey') }}</option>
+                    <option value="Feedback">{{ t('forms.typeFeedback') }}</option>
+                    <option value="Inspection">{{ t('forms.typeInspection') }}</option>
+                    <option value="Custom">{{ t('forms.typeCustom') }}</option>
                   </select>
                 </div>
 
                 <!-- Description -->
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Description
+                    {{ t('forms.fieldDescription') }}
                   </label>
                   <textarea
                     v-model="formData.description"
                     rows="3"
                     maxlength="1000"
-                    placeholder="Describe the purpose of this form..."
+                    :placeholder="t('forms.fieldDescriptionPh')"
                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   ></textarea>
                 </div>
@@ -147,15 +149,15 @@
                 <!-- Visibility -->
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Visibility
+                    {{ t('forms.fieldVisibility') }}
                   </label>
                   <select
                     v-model="formData.visibility"
                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   >
-                    <option value="Internal">Internal</option>
-                    <option value="Partner">Partner</option>
-                    <option value="Public">Public</option>
+                    <option value="Internal">{{ t('forms.visibilityInternal') }}</option>
+                    <option value="Partner">{{ t('forms.visibilityPartner') }}</option>
+                    <option value="Public">{{ t('forms.visibilityPublic') }}</option>
                   </select>
                 </div>
               </div>
@@ -164,9 +166,9 @@
             <!-- Step 2: Sections & Questions -->
             <div v-else-if="currentStepIndex === 1" class="space-y-6">
               <div>
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Sections & Questions</h3>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('forms.wizardStepSectionsQuestions') }}</h3>
                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                  Build your form structure by adding sections and questions.
+                  {{ t('forms.wizardSectionsIntro') }}
                 </p>
               </div>
 
@@ -181,9 +183,9 @@
             <!-- Step 3: Settings & Logic -->
             <div v-else-if="currentStepIndex === 2" class="space-y-6">
               <div>
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Settings & Logic</h3>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('forms.wizardStepSettingsLogic') }}</h3>
                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                  Configure scoring, thresholds, and workflow settings.
+                  {{ t('forms.wizardSettingsIntro') }}
                 </p>
               </div>
 
@@ -198,9 +200,9 @@
             <!-- Step 4: Preview -->
             <div v-else-if="currentStepIndex === 3" class="space-y-6">
               <div>
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Preview</h3>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('forms.wizardStepPreview') }}</h3>
                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                  Review your form before creating it.
+                  {{ t('forms.wizardPreviewIntro') }}
                 </p>
               </div>
 
@@ -219,36 +221,40 @@
           <!-- Footer Actions -->
           <div class="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
             <button
-              @click="handleClose"
+              type="button"
               class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+              @click="handleClose"
             >
-              Cancel
+              {{ t('actions.cancel') }}
             </button>
             <div class="flex items-center gap-3">
               <button
                 v-if="currentStepIndex > 0"
-                @click="previousStep"
+                type="button"
                 class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                @click="previousStep"
               >
-                Previous
+                {{ t('actions.previous') }}
               </button>
               <button
                 v-if="currentStepIndex < steps.length - 1"
-                @click="nextStep"
+                type="button"
                 :disabled="!canProceed"
                 class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                :title="!canProceed ? 'Please fill all mandatory fields in the current step' : ''"
+                :title="!canProceed ? t('forms.nextStepBlockedTitle') : undefined"
+                @click="nextStep"
               >
-                Next
+                {{ t('actions.next') }}
               </button>
               <button
                 v-else
-                @click="handleSubmit"
+                type="button"
                 :disabled="saving || !canSubmit"
                 class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                @click="handleSubmit"
               >
-                <span v-if="saving">Creating...</span>
-                <span v-else>{{ isEditing ? 'Update Form' : 'Create Form' }}</span>
+                <span v-if="saving">{{ t('states.saving') }}</span>
+                <span v-else>{{ isEditing ? t('forms.updateFormSubmit') : t('forms.createFormSubmit') }}</span>
               </button>
             </div>
           </div>
@@ -259,6 +265,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { TabGroup, TabPanels, TabPanel } from '@headlessui/vue';
 import { CheckIcon, XMarkIcon } from '@heroicons/vue/24/solid';
 import apiClient from '@/utils/apiClient';
@@ -268,6 +275,8 @@ import { useAuthStore } from '@/stores/authRegistry';
 import SectionsBuilder from '@/components/forms/SectionsBuilder.vue';
 import FormSettingsTab from '@/components/forms/FormSettingsTab.vue';
 import FormPreview from '@/components/forms/FormPreview.vue';
+
+const { t } = useI18n();
 
 const props = defineProps({
   isOpen: {
@@ -355,22 +364,22 @@ const formData = ref({
 const steps = computed(() => [
   {
     id: '01',
-    name: 'Form Details',
+    name: t('forms.wizardStepFormDetails'),
     status: currentStepIndex.value > 0 ? 'complete' : currentStepIndex.value === 0 ? 'current' : 'upcoming'
   },
   {
     id: '02',
-    name: 'Sections & Questions',
+    name: t('forms.wizardStepSectionsQuestions'),
     status: currentStepIndex.value > 1 ? 'complete' : currentStepIndex.value === 1 ? 'current' : 'upcoming'
   },
   {
     id: '03',
-    name: 'Settings & Logic',
+    name: t('forms.wizardStepSettingsLogic'),
     status: currentStepIndex.value > 2 ? 'complete' : currentStepIndex.value === 2 ? 'current' : 'upcoming'
   },
   {
     id: '04',
-    name: 'Preview',
+    name: t('forms.wizardStepPreview'),
     status: currentStepIndex.value === 3 ? 'current' : currentStepIndex.value > 3 ? 'complete' : 'upcoming'
   }
 ]);
@@ -552,13 +561,13 @@ const goToStep = (index) => {
   // Before allowing navigation to next step, validate current step
   if (index > currentStepIndex.value && !canProceed.value) {
     if (currentStepIndex.value === 0) {
-      alert('Please fill in all mandatory fields (Form Name and Form Type) before proceeding.');
+      alert(t('forms.wizardStep0RequiredAlert'));
     } else if (currentStepIndex.value === 1) {
-      alert('Please complete all sections, subsections, and questions. Each section must have at least one subsection with at least one question, and all questions must have text.');
+      alert(t('forms.wizardStep1RequiredAlert'));
     }
     return;
   }
-  
+
   // Allow going to any previous step or next step (if validation passes)
   if (index <= currentStepIndex.value || (index === currentStepIndex.value + 1 && canProceed.value)) {
     currentStepIndex.value = index;
@@ -570,13 +579,13 @@ const nextStep = () => {
   if (!canProceed.value) {
     // Show a message to the user about what's missing
     if (currentStepIndex.value === 0) {
-      alert('Please fill in all mandatory fields (Form Name and Form Type) before proceeding.');
+      alert(t('forms.wizardStep0RequiredAlert'));
     } else if (currentStepIndex.value === 1) {
-      alert('Please complete all sections, subsections, and questions. Each section must have at least one subsection with at least one question, and all questions must have text.');
+      alert(t('forms.wizardStep1RequiredAlert'));
     }
     return;
   }
-  
+
   if (currentStepIndex.value < steps.value.length - 1) {
     currentStepIndex.value++;
   }
@@ -621,7 +630,7 @@ const handleSubmit = async () => {
       const formId = response.data._id;
       openTab(`/forms/builder/${formId}`, {
         name: `form-builder-${formId}`,
-        title: response.data.name || 'Form Builder',
+        title: response.data.name || t('forms.formBuilderTabTitle'),
         component: 'FormBuilder',
         params: { formId },
         insertAdjacent: true
@@ -630,11 +639,11 @@ const handleSubmit = async () => {
       
       handleClose();
     } else {
-      alert(response.message || 'Failed to save form');
+      alert(response.message || t('forms.saveFormFailed'));
     }
   } catch (error) {
     console.error('Error saving form:', error);
-    alert(error.message || 'Failed to save form');
+    alert(error.message || t('forms.saveFormFailed'));
   } finally {
     saving.value = false;
   }

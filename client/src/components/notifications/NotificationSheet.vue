@@ -16,7 +16,7 @@
           class="relative z-[2] flex max-h-[90vh] min-h-[80vh] flex-col overflow-hidden rounded-t-2xl bg-white pb-[env(safe-area-inset-bottom)] shadow-2xl shadow-neutral-900/10 lg:rounded-t-none dark:bg-neutral-900 dark:shadow-black/20"
           role="dialog"
           aria-modal="true"
-          aria-label="Notifications"
+          :aria-label="t('notifications.panelAria')"
         >
           <!-- Handle bar -->
           <div class="flex shrink-0 justify-center bg-white py-3 dark:bg-neutral-900">
@@ -26,23 +26,23 @@
           <!-- Header -->
           <header class="flex shrink-0 items-center justify-between border-b border-neutral-200/60 bg-white px-4 pb-2 dark:border-neutral-700/60 dark:bg-neutral-900">
             <h2 class="text-base font-semibold text-neutral-900 dark:text-white">
-              Notifications
+              {{ t('notifications.drawerHeading') }}
             </h2>
             <button
               type="button"
               class="text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline disabled:opacity-50 min-h-[32px] px-2 transition-colors duration-150"
               :disabled="!hasUnread || markAllDisabled || showOfflineBanner"
               @click="handleMarkAllRead"
-              aria-label="Mark all notifications as read"
+              :aria-label="t('notifications.markAllReadAria')"
             >
-              Mark all as read
+              {{ t('notifications.markAllRead') }}
             </button>
           </header>
 
           <!-- Offline banner -->
           <div v-if="showOfflineBanner" class="px-4 py-2 bg-warning-50 dark:bg-warning-900/30 border-b border-warning-200 dark:border-warning-700">
             <p class="text-xs text-warning-800 dark:text-warning-200">
-              Offline — notifications may be outdated.
+              {{ t('notifications.offlineBanner') }}
             </p>
           </div>
 
@@ -66,9 +66,9 @@
               </div>
             </template>
             <template v-else-if="items.length">
-              <div v-for="group in groupedItems" :key="group.label">
+              <div v-for="group in groupedItems" :key="group.id">
                 <p class="px-2 mb-1 text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                  {{ group.label }}
+                  {{ t(group.labelKey) }}
                 </p>
                 <TransitionGroup name="notification-list" tag="div" class="space-y-1.5">
                   <template v-for="entry in group.entries">
@@ -78,14 +78,14 @@
                       :key="`no-updates-${entry.key}`"
                       class="px-3 py-2 text-sm text-neutral-500 dark:text-neutral-400"
                     >
-                      No updates — you have no new notifications.
+                      {{ t('notifications.noUpdatesDigest') }}
                     </div>
                     <div v-else-if="entry.kind === 'item'" :key="`item-${entry.key}`" class="w-full">
                       <NotificationItem
                         :item="entry.item"
                         :app-key="appKey"
                         :show-actions="true"
-                        :is-new="group.label === 'New'"
+                        :is-new="group.id === 'new'"
                         @navigated="$emit('close')"
                         @snooze="handleSnooze"
                       />
@@ -95,7 +95,7 @@
                         type="button"
                         class="w-full relative flex items-start gap-3 px-3 py-3 rounded-xl text-left min-h-[56px] transition-all duration-200 border border-transparent hover:border-neutral-200/80 dark:hover:border-neutral-600/50 hover:rounded-2xl bg-neutral-50/50 dark:bg-neutral-800/30 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/60 hover:shadow-sm"
                         :aria-expanded="isGroupOpen(entry.key) ? 'true' : 'false'"
-                        :aria-label="`${entry.groupLabel} (${entry.count} items)`"
+                        :aria-label="t('notifications.groupEntryAria', { label: entry.groupLabel, count: entry.count })"
                         @click="toggleGroup(entry.key)"
                       >
                         <div class="flex-shrink-0 mt-0.5">
@@ -117,7 +117,7 @@
                             </span>
                           </div>
                           <p class="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400 truncate">
-                            Latest: {{ entry.latestTitle }} – {{ formatRelative(entry.latest.createdAt) }}
+                            {{ t('notifications.groupLatest', { title: entry.latestTitle, time: formatRelative(entry.latest.createdAt) }) }}
                           </p>
                         </div>
                         <div class="flex items-center gap-2 flex-shrink-0">
@@ -125,8 +125,8 @@
                             v-if="entry.unreadCount > 0"
                             type="button"
                             class="inline-flex items-center justify-center rounded-lg text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 hover:bg-white dark:hover:bg-neutral-600 min-h-[32px] min-w-[32px] transition-all duration-150 shadow-sm"
-                            aria-label="Mark all as read"
-                            title="Mark all as read"
+                            :aria-label="t('notifications.markAllReadAria')"
+                            :title="t('notifications.markAllRead')"
                             @click.stop.prevent="markGroupAllRead(entry)"
                           >
                             <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
@@ -156,7 +156,7 @@
                             :app-key="appKey"
                             in-group
                             :show-actions="true"
-                            :is-new="group.label === 'New'"
+                            :is-new="group.id === 'new'"
                             @navigated="$emit('close')"
                             @snooze="handleSnooze"
                           />
@@ -173,7 +173,7 @@
                   @click="loadMore"
                   :disabled="loading"
                 >
-                  {{ loading ? 'Loading…' : 'Load more' }}
+                  {{ loading ? t('states.loading') : t('notifications.loadMore') }}
                 </button>
               </div>
             </template>
@@ -184,14 +184,14 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                   </svg>
                 </div>
-                <p class="text-sm font-medium text-neutral-900 dark:text-white">You're all caught up</p>
-                <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">No notifications yet.</p>
+                <p class="text-sm font-medium text-neutral-900 dark:text-white">{{ t('notifications.caughtUp') }}</p>
+                <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">{{ t('notifications.emptyList') }}</p>
                 <router-link
                   to="/settings?tab=notifications&notificationPage=overview"
                   class="mt-3 inline-block text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline"
                   @click="$emit('close')"
                 >
-                  Notification settings
+                  {{ t('notifications.settingsLink') }}
                 </router-link>
               </div>
             </template>
@@ -209,6 +209,9 @@ import { useNotificationStore } from '@/stores/notifications';
 import { useOffline } from '@/composables/useOffline';
 import { connectNotificationStream } from '@/composables/useNotificationStream';
 import { useAuthStore } from '@/stores/authRegistry';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const NotificationItem = defineAsyncComponent(() => import('./NotificationItem.vue'));
 
@@ -384,10 +387,10 @@ const groupedItems = computed(() => {
   }
 
   return [
-    { label: 'New', entries: buildSectionEntries(groups.New) },
-    { label: 'Today', entries: buildSectionEntries(groups.Today) },
-    { label: 'Yesterday', entries: buildSectionEntries(groups.Yesterday) },
-    { label: 'Earlier', entries: buildSectionEntries(groups.Earlier) }
+    { id: 'new', labelKey: 'notifications.sectionNew', entries: buildSectionEntries(groups.New) },
+    { id: 'today', labelKey: 'notifications.sectionToday', entries: buildSectionEntries(groups.Today) },
+    { id: 'yesterday', labelKey: 'notifications.sectionYesterday', entries: buildSectionEntries(groups.Yesterday) },
+    { id: 'earlier', labelKey: 'notifications.sectionEarlier', entries: buildSectionEntries(groups.Earlier) }
   ].filter(g => g.entries.length);
 });
 

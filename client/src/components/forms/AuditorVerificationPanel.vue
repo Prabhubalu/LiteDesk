@@ -1,9 +1,9 @@
 <template>
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
     <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Auditor Verification</h2>
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('forms.auditorVerificationHeading') }}</h2>
       <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-        Review and verify corrective actions
+        {{ t('forms.auditorVerificationSubtitle') }}
       </p>
     </div>
     <div class="p-6 space-y-4">
@@ -19,10 +19,10 @@
               {{ action.questionText }}
             </h3>
             <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">
-              Manager's Action: {{ action.managerAction?.comment || 'No comments' }}
+              {{ t('forms.auditorManagersAction') }} {{ action.managerAction?.comment || t('forms.auditorNoComments') }}
             </p>
             <div v-if="action.managerAction?.proof?.length" class="mb-2">
-              <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Proof:</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('forms.auditorProofLabel') }}</p>
               <div class="flex flex-wrap gap-2">
                 <a
                   v-for="(proof, pIndex) in action.managerAction.proof"
@@ -36,12 +36,8 @@
               </div>
             </div>
             <BadgeCell
-              :value="action.managerAction?.status || 'Pending'"
-              :variant-map="{
-                'Resolved': 'success',
-                'In Progress': 'warning',
-                'Pending': 'default'
-              }"
+              :value="mapManagerStatus(action.managerAction?.status)"
+              :variant-map="auditorManagerStatusVariantMap"
             />
           </div>
 
@@ -49,12 +45,12 @@
           <div v-if="!action.auditorVerification || editingQuestionId === action.questionId" class="mt-3 space-y-3">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Verification Comments
+                {{ t('forms.auditorVerificationComments') }}
               </label>
               <textarea
                 v-model="verifications[action.questionId].comment"
                 rows="3"
-                placeholder="Add your verification comments..."
+                :placeholder="t('forms.auditorVerificationCommentsPh')"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               ></textarea>
             </div>
@@ -64,21 +60,21 @@
                 :disabled="verifying"
                 class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors disabled:opacity-50"
               >
-                {{ verifying ? 'Verifying...' : 'Approve' }}
+                {{ verifying ? t('forms.auditorVerifying') : t('forms.auditorApprove') }}
               </button>
               <button
                 @click="verifyAction(action.questionId, false)"
                 :disabled="verifying"
                 class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors disabled:opacity-50"
               >
-                {{ verifying ? 'Verifying...' : 'Reject' }}
+                {{ verifying ? t('forms.auditorVerifying') : t('forms.auditorReject') }}
               </button>
               <button
                 v-if="editingQuestionId === action.questionId"
                 @click="cancelEdit"
                 class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 font-medium transition-colors"
               >
-                Cancel
+                {{ t('actions.cancel') }}
               </button>
             </div>
           </div>
@@ -88,28 +84,29 @@
             <div class="flex items-start justify-between">
               <div class="flex-1">
                 <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">
-                  Verification Status: 
+                  {{ t('forms.auditorVerificationStatus') }}
                   <BadgeCell
-                    :value="action.auditorVerification.approved ? 'Approved' : 'Rejected'"
-                    :variant-map="{
-                      'Approved': 'success',
-                      'Rejected': 'danger'
-                    }"
+                    :value="action.auditorVerification.approved ? t('forms.auditorApproved') : t('forms.auditorRejected')"
+                    :variant-map="auditorVerificationVariantMap"
                   />
                 </p>
                 <p v-if="action.auditorVerification.comment" class="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   {{ action.auditorVerification.comment }}
                 </p>
                 <p v-if="action.auditorVerification.verifiedBy" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Verified by: {{ action.auditorVerification.verifiedBy.firstName }} {{ action.auditorVerification.verifiedBy.lastName }}
-                  on {{ formatDate(action.auditorVerification.verifiedAt) }}
+                  {{
+                    t('forms.auditorVerifiedBy', {
+                      name: `${action.auditorVerification.verifiedBy.firstName} ${action.auditorVerification.verifiedBy.lastName}`.trim(),
+                      date: formatDate(action.auditorVerification.verifiedAt),
+                    })
+                  }}
                 </p>
               </div>
               <button
                 @click="startEdit(action.questionId)"
                 class="px-3 py-1.5 text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded transition-colors"
               >
-                Edit
+                {{ t('actions.edit') }}
               </button>
             </div>
           </div>
@@ -121,7 +118,7 @@
         <svg class="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <p>No corrective actions need verification.</p>
+        <p>{{ t('forms.auditorNoActionsNeedVerification') }}</p>
       </div>
     </div>
   </div>
@@ -129,8 +126,34 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
+
+const { t } = useI18n();
+
+const auditorManagerStatusVariantMap = computed(() => ({
+  [t('forms.auditorStatusResolved')]: 'success',
+  [t('forms.correctiveStatusInProgress')]: 'warning',
+  [t('forms.auditorStatusPending')]: 'default',
+}));
+
+const auditorVerificationVariantMap = computed(() => ({
+  [t('forms.auditorApproved')]: 'success',
+  [t('forms.auditorRejected')]: 'danger',
+}));
+
+const mapManagerStatus = (status) => {
+  const statusMap = {
+    Resolved: t('forms.auditorStatusResolved'),
+    'In Progress': t('forms.correctiveStatusInProgress'),
+    Pending: t('forms.auditorStatusPending'),
+    open: t('forms.correctiveStatusOpen'),
+    in_progress: t('forms.correctiveStatusInProgress'),
+    completed: t('forms.correctiveStatusCompleted'),
+  };
+  return statusMap[status] || t('forms.auditorStatusPending');
+};
 
 const props = defineProps({
   response: {
@@ -215,7 +238,7 @@ const verifyAction = async (questionId, approved) => {
     }
   } catch (error) {
     console.error('Error verifying action:', error);
-    alert('Failed to verify action. Please try again.');
+    alert(t('forms.auditorVerifyFailed'));
   } finally {
     verifying.value = false;
   }

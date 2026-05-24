@@ -3,8 +3,8 @@
     <RecordPageShell
       :loading="loading"
       :error="error"
-      :loading-message="`Loading ${moduleLabel}...`"
-      :error-title="`Error Loading ${moduleLabel}`"
+      :loading-message="recordLoadingMessage"
+      :error-title="recordErrorTitle"
       :layout-props="layoutProps"
       @retry="fetchRecord"
     >
@@ -14,8 +14,8 @@
           :show-navigation="true"
           :can-previous="!!neighbors.previousId"
           :can-next="!!neighbors.nextId"
-          :previous-label="`Previous ${moduleLabelSingular}`"
-          :next-label="`Next ${moduleLabelSingular}`"
+          :previous-label="recordNavPreviousLabel"
+          :next-label="recordNavNextLabel"
           @previous="goToPrevious"
           @next="goToNext"
         >
@@ -28,8 +28,8 @@
             <button
               type="button"
               class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              aria-label="Edit"
-              title="Edit"
+              :aria-label="t('actions.edit')"
+              :title="t('actions.edit')"
               @click="showEditModal = true"
             >
               <PencilSquareIcon class="w-5 h-5" />
@@ -44,8 +44,8 @@
                   ? 'text-indigo-600 dark:text-indigo-400'
                   : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
               ]"
-              aria-label="Tags"
-              title="Tags"
+              :aria-label="t('records.genericTagsAria')"
+              :title="t('records.genericTagsAria')"
               @click="handleTagIconClick($event)"
             >
               <TagIcon class="block w-5 h-5" />
@@ -57,8 +57,8 @@
             <button
               type="button"
               class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              aria-label="Copy URL"
-              title="Copy URL"
+              :aria-label="t('records.genericCopyUrl')"
+              :title="t('records.genericCopyUrl')"
               @click="copyUrl"
             >
               <ClipboardDocumentIcon class="w-5 h-5" />
@@ -66,8 +66,8 @@
             <Menu as="div" class="relative">
               <MenuButton
                 class="p-1 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                aria-label="More actions"
-                title="More actions"
+                :aria-label="t('records.genericMoreActions')"
+                :title="t('records.genericMoreActions')"
               >
                 <EllipsisVerticalIcon class="w-5 h-5" />
               </MenuButton>
@@ -92,7 +92,7 @@
                       @click="handleDuplicate"
                     >
                       <DocumentDuplicateIcon class="w-4 h-4" />
-                      <span>Duplicate</span>
+                      <span>{{ t('actions.duplicate') }}</span>
                     </button>
                   </MenuItem>
                   <MenuItem v-slot="{ active }">
@@ -105,7 +105,7 @@
                       @click="handleExport"
                     >
                       <ArrowDownTrayIcon class="w-4 h-4" />
-                      <span>Export</span>
+                      <span>{{ t('actions.export') }}</span>
                     </button>
                   </MenuItem>
                   <MenuItem v-if="supportsEmail" v-slot="{ active }">
@@ -118,7 +118,7 @@
                       @click="openEmailComposeModal()"
                     >
                       <EnvelopeIcon class="w-4 h-4" />
-                      <span>Send email</span>
+                      <span>{{ t('records.genericSendEmail') }}</span>
                     </button>
                   </MenuItem>
                   <hr class="my-1 border-gray-200 dark:border-gray-700" />
@@ -132,7 +132,7 @@
                       @click="showDeleteModal = true"
                     >
                       <TrashIcon class="w-4 h-4" />
-                      <span>Delete</span>
+                      <span>{{ t('actions.delete') }}</span>
                     </button>
                   </MenuItem>
                 </MenuItems>
@@ -157,13 +157,13 @@
               @click="closeExpandedLeftSection"
             >
               <ArrowLeftIcon class="h-4 w-4" />
-              <span>Back to {{ moduleLabelSingular }}</span>
+              <span>{{ t('records.genericBackTo', { singular: moduleLabelSingular }) }}</span>
             </button>
             <button
               type="button"
               class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 dark:border-gray-700 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-              aria-label="Collapse section"
-              title="Collapse"
+              :aria-label="t('records.genericCollapseSection')"
+              :title="t('records.genericCollapse')"
               @click="closeExpandedLeftSection"
             >
               <ArrowsPointingInIcon class="h-4 w-4" />
@@ -191,13 +191,13 @@
                   v-html="descriptionHistorySelectedContent"
                 />
                 <p v-else class="px-6 py-4 text-sm text-gray-400 dark:text-gray-500 italic m-0">
-                  No description in this version.
+                  {{ t('records.genericNoDescInVersion') }}
                 </p>
               </div>
             </div>
             <div class="flex flex-col min-h-0 min-w-0 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden h-full">
               <h3 class="font-semibold text-gray-900 dark:text-white px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-                Version history
+                {{ t('records.genericVersionHistory') }}
               </h3>
               <div v-if="descriptionVersionsLoading" class="flex items-center justify-center py-8 flex-1 min-h-0 overflow-hidden">
                 <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
@@ -225,7 +225,7 @@
                       {{ formatDescriptionVersionDate(ver.createdAt) }}
                     </span>
                     <span class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mt-0.5">
-                      <span v-if="ver.isCurrent" class="font-medium text-gray-600 dark:text-gray-300">Current Version</span>
+                      <span v-if="ver.isCurrent" class="font-medium text-gray-600 dark:text-gray-300">{{ t('records.genericCurrentVersion') }}</span>
                       <template v-else>
                         <Avatar
                           v-if="ver.createdBy"
@@ -233,14 +233,14 @@
                           size="sm"
                           class="shrink-0"
                         />
-                        {{ ver.createdBy || 'Someone' }}
+                        {{ ver.createdBy || t('records.genericSomeone') }}
                       </template>
                     </span>
                   </div>
                 </label>
               </div>
               <p class="text-xs text-gray-400 dark:text-gray-500 px-4 py-2 border-t border-gray-100 dark:border-gray-700 flex-shrink-0">
-                Version history is stored for up to 365 days.
+                {{ t('records.genericVersionRetention') }}
               </p>
               <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
                 <button
@@ -249,8 +249,8 @@
                   class="w-full inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:pointer-events-none"
                   @click="restoreDescriptionVersion"
                 >
-                  <span v-if="descriptionRestoreLoading">Restoring…</span>
-                  <span v-else>Restore this version</span>
+                  <span v-if="descriptionRestoreLoading">{{ t('records.genericRestoring') }}</span>
+                  <span v-else>{{ t('records.genericRestoreVersion') }}</span>
                 </button>
               </div>
             </div>
@@ -309,7 +309,8 @@
           :class="['group/left-section', expandedLeftSection ? 'mt-8' : 'mt-4']"
         >
           <RecordStateSection
-            heading="Key fields"
+            :heading="t('records.genericKeyFields')"
+            :module-key="moduleKey"
             :fields="genericStateFields"
             :field-values="genericStateValues"
           />
@@ -332,7 +333,7 @@
                   expandedLeftSection ? 'text-2xl' : 'text-base'
                 ]"
               >
-                App participation
+                {{ t('records.genericAppParticipation') }}
               </h3>
               <div
                 v-if="attachableAppsForRecordContext.length"
@@ -348,12 +349,12 @@
                   :key="`attach-header-${app}`"
                   type="button"
                   class="inline-flex items-center justify-center gap-1.5 min-h-8 px-2.5 rounded-md border border-gray-200 bg-white text-gray-600 hover:text-gray-800 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-800 transition-colors"
-                  :title="`Add to ${getAppLabel(app)}`"
-                  :aria-label="`Add to ${getAppLabel(app)}`"
+                  :title="t('records.genericAddToApp', { app: getAppLabel(app) })"
+                  :aria-label="t('records.genericAddToApp', { app: getAppLabel(app) })"
                   @click="openAttachToAppModal(app)"
                 >
                   <PlusIcon class="h-4 w-4 shrink-0" />
-                  <span class="text-xs font-semibold">Add to {{ getAppLabel(app) }}</span>
+                  <span class="text-xs font-semibold">{{ t('records.genericAddToApp', { app: getAppLabel(app) }) }}</span>
                 </button>
               </div>
             </div>
@@ -390,18 +391,18 @@
                       @click="showConvertLeadModal = true"
                     >
                       <ArrowRightCircleIcon class="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                      Convert to Contact
+                      {{ t('records.genericConvertToContact') }}
                     </button>
                     <button
                       v-if="canEditParticipationFor(entry.appKey)"
                       type="button"
                       class="inline-flex items-center justify-center gap-1.5 min-h-8 px-2.5 rounded-md border border-gray-200 bg-white text-gray-600 hover:text-gray-800 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-800 transition-colors"
-                      title="Edit participation"
-                      aria-label="Edit participation"
+                      :title="t('records.genericEditParticipation')"
+                      :aria-label="t('records.genericEditParticipation')"
                       @click="openParticipationEdit(entry.appKey)"
                     >
                       <PencilSquareIcon class="h-4 w-4 shrink-0" aria-hidden="true" />
-                      <span class="text-xs font-semibold">Edit</span>
+                      <span class="text-xs font-semibold">{{ t('actions.edit') }}</span>
                     </button>
                   </div>
                 </div>
@@ -409,10 +410,10 @@
               <template v-else>
                 <span class="text-sm text-gray-500 dark:text-gray-400 italic">
                   <template v-if="peopleContextIsAppView">
-                    Not participating in {{ getAppLabel(routeParticipationContext) }} yet
+                    {{ t('records.genericNotParticipatingIn', { app: getAppLabel(routeParticipationContext) }) }}
                   </template>
                   <template v-else>
-                    This person is not part of any app yet
+                    {{ t('records.genericNotInAnyApp') }}
                   </template>
                 </span>
               </template>
@@ -465,8 +466,8 @@
                 class="inline-flex h-7 w-7 items-center justify-center rounded border border-gray-200 text-gray-500 transition-colors dark:border-gray-700 dark:text-gray-400 shrink-0"
                 :class="quickPreviewNav.canPrevious ? 'hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200' : 'opacity-40 cursor-not-allowed'"
                 :disabled="!quickPreviewNav.canPrevious"
-                :aria-label="`Previous ${moduleLabelSingular}`"
-                :title="`Previous ${moduleLabelSingular}`"
+                :aria-label="recordNavPreviousLabel"
+                :title="recordNavPreviousLabel"
                 @click="quickPreviewNav.onPrev()"
               >
                 <ArrowLeftIcon class="h-4 w-4" />
@@ -476,8 +477,8 @@
                 class="inline-flex h-7 w-7 items-center justify-center rounded border border-gray-200 text-gray-500 transition-colors dark:border-gray-700 dark:text-gray-400 shrink-0"
                 :class="quickPreviewNav.canNext ? 'hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200' : 'opacity-40 cursor-not-allowed'"
                 :disabled="!quickPreviewNav.canNext"
-                :aria-label="`Next ${moduleLabelSingular}`"
-                :title="`Next ${moduleLabelSingular}`"
+                :aria-label="recordNavNextLabel"
+                :title="recordNavNextLabel"
                 @click="quickPreviewNav.onNext()"
               >
                 <ArrowRightIcon class="h-4 w-4" />
@@ -488,8 +489,8 @@
             <button
               type="button"
               class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              aria-label="Open in new tab"
-              title="Open in new tab"
+              :aria-label="t('records.genericOpenInNewTab')"
+              :title="t('records.genericOpenInNewTab')"
               @click="openRecordInNewTab"
             >
               <ArrowTopRightOnSquareIcon class="w-5 h-5" />
@@ -497,8 +498,8 @@
             <button
               type="button"
               class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              aria-label="Edit"
-              title="Edit"
+              :aria-label="t('actions.edit')"
+              :title="t('actions.edit')"
               @click="showEditModal = true"
             >
               <PencilSquareIcon class="w-5 h-5" />
@@ -513,8 +514,8 @@
                   ? 'text-indigo-600 dark:text-indigo-400'
                   : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
               ]"
-              aria-label="Tags"
-              title="Tags"
+              :aria-label="t('records.genericTagsAria')"
+              :title="t('records.genericTagsAria')"
               @click="handleTagIconClick($event)"
             >
               <TagIcon class="block w-5 h-5" />
@@ -526,8 +527,8 @@
             <button
               type="button"
               class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              aria-label="Copy URL"
-              title="Copy URL"
+              :aria-label="t('records.genericCopyUrl')"
+              :title="t('records.genericCopyUrl')"
               @click="copyRecordUrl"
             >
               <ClipboardDocumentIcon class="w-5 h-5" />
@@ -535,8 +536,8 @@
             <Menu as="div" class="relative">
               <MenuButton
                 class="p-1 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                aria-label="More actions"
-                title="More actions"
+                :aria-label="t('records.genericMoreActions')"
+                :title="t('records.genericMoreActions')"
               >
                 <EllipsisVerticalIcon class="w-5 h-5" />
               </MenuButton>
@@ -561,7 +562,7 @@
                       @click="handleDuplicate"
                     >
                       <DocumentDuplicateIcon class="w-4 h-4" />
-                      <span>Duplicate</span>
+                      <span>{{ t('actions.duplicate') }}</span>
                     </button>
                   </MenuItem>
                   <MenuItem v-slot="{ active }">
@@ -574,7 +575,7 @@
                       @click="handleExport"
                     >
                       <ArrowDownTrayIcon class="w-4 h-4" />
-                      <span>Export</span>
+                      <span>{{ t('actions.export') }}</span>
                     </button>
                   </MenuItem>
                   <MenuItem v-if="supportsEmail" v-slot="{ active }">
@@ -587,7 +588,7 @@
                       @click="openEmailComposeModal()"
                     >
                       <EnvelopeIcon class="w-4 h-4" />
-                      <span>Send email</span>
+                      <span>{{ t('records.genericSendEmail') }}</span>
                     </button>
                   </MenuItem>
                   <hr class="my-1 border-gray-200 dark:border-gray-700" />
@@ -601,7 +602,7 @@
                       @click="showDeleteModal = true"
                     >
                       <TrashIcon class="w-4 h-4" />
-                      <span>Delete</span>
+                      <span>{{ t('actions.delete') }}</span>
                     </button>
                   </MenuItem>
                 </MenuItems>
@@ -645,7 +646,7 @@
           <template #tab-related>
             <div class="flex flex-col h-full">
               <div class="record-context-panel__header flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-900">
-                <h2 class="text-base font-semibold text-gray-900 dark:text-white">Related</h2>
+                <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('records.relatedTitle') }}</h2>
                 <div v-if="canLinkRecords" class="flex items-center gap-2">
                   <button
                     type="button"
@@ -653,7 +654,7 @@
                     class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
                   >
                     <PlusIcon class="w-4 h-4" />
-                    Add record
+                    {{ t('records.genericAddRecord') }}
                   </button>
                   <button
                     type="button"
@@ -661,7 +662,7 @@
                     class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
                   >
                     <LinkIcon class="w-4 h-4" />
-                    Link record
+                    {{ t('records.genericLinkRecord') }}
                   </button>
                 </div>
               </div>
@@ -678,7 +679,7 @@
             <div class="flex flex-col h-full min-h-0">
               <div class="record-context-panel__header flex flex-shrink-0 flex-col gap-2 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
                 <div class="flex items-baseline justify-between gap-2">
-                  <h2 class="text-sm font-normal text-gray-900 dark:text-white">Details</h2>
+                  <h2 class="text-sm font-normal text-gray-900 dark:text-white">{{ t('records.detailsTitle') }}</h2>
                   <span
                     v-if="detailsTabFieldCountLabel"
                     class="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium tabular-nums text-gray-600 dark:bg-gray-800 dark:text-gray-300"
@@ -692,7 +693,7 @@
                     <input
                       v-model="detailsTabSearchQuery"
                       type="search"
-                      placeholder="Filter fields…"
+                      :placeholder="t('records.genericFilterFieldsPh')"
                       autocomplete="off"
                       class="w-full rounded-lg border border-gray-200 bg-gray-50 py-1.5 pl-9 pr-3 text-sm text-gray-900 placeholder-gray-500 focus:border-indigo-500/50 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 dark:border-gray-600 dark:bg-gray-800/80 dark:text-white dark:placeholder-gray-400"
                     />
@@ -703,7 +704,7 @@
                       type="checkbox"
                       class="h-3.5 w-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800"
                     />
-                    Show empty fields
+                    {{ t('records.genericShowEmptyFields') }}
                   </label>
                 </div>
               </div>
@@ -713,13 +714,13 @@
                     v-if="rightPaneAllModuleFields.length && !rightPaneDetailsFilteredFields.length && (detailsTabSearchQuery || '').trim()"
                     class="px-1 py-10 text-center text-sm text-gray-500 dark:text-gray-400"
                   >
-                    No fields match your filter.
+                    {{ t('records.genericNoFieldsMatch') }}
                   </p>
                   <p
                     v-else-if="rightPaneAllModuleFields.length && !rightPaneDetailsFilteredFields.length"
                     class="px-1 py-10 text-center text-sm text-gray-500 dark:text-gray-400"
                   >
-                    No fields with values. Turn on “Show empty fields” to see the rest.
+                    {{ t('records.genericDetailsEmptyValuesHint') }}
                   </p>
                   <DetailsSection
                     v-else-if="rightPaneDetailsFilteredFields.length"
@@ -730,16 +731,16 @@
                     :show-all-fields="true"
                     variant="compact"
                   />
-                  <p v-else class="px-1 py-10 text-center text-sm text-gray-500 dark:text-gray-400">No fields to show.</p>
+                  <p v-else class="px-1 py-10 text-center text-sm text-gray-500 dark:text-gray-400">{{ t('records.genericNoFieldsToShow') }}</p>
                 </template>
-                <p v-else class="text-sm text-gray-500 dark:text-gray-400">No record loaded.</p>
+                <p v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('records.genericNoRecordLoaded') }}</p>
               </div>
             </div>
           </template>
           <template #tab-integrations>
             <div class="flex flex-col h-full">
               <div class="record-context-panel__header flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-900">
-                <h2 class="text-base font-semibold text-gray-900 dark:text-white">Integrations</h2>
+                <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('records.genericIntegrations') }}</h2>
               </div>
               <div class="p-4 overflow-y-auto flex-1 min-h-0">
                 <AutomationContext
@@ -747,7 +748,7 @@
                   :entity-type="moduleKey"
                   :entity-id="record._id"
                 />
-                <div v-else class="text-sm text-gray-600 dark:text-gray-400 italic">No integrations configured.</div>
+                <div v-else class="text-sm text-gray-600 dark:text-gray-400 italic">{{ t('records.genericNoIntegrations') }}</div>
               </div>
             </div>
           </template>
@@ -828,7 +829,7 @@
       :multiple="true"
       :allow-create="allowCreateFromLinkDrawer"
       :create-and-link="allowCreateFromLinkDrawer"
-      :title="allowCreateFromLinkDrawer ? 'Add and Link Records' : 'Link Record'"
+      :title="linkRecordDrawerTitle"
       :context="linkRecordDrawerContext"
       @close="closeLinkRecordDrawer"
       @linked="handleLinkRecordDrawerLinked"
@@ -895,7 +896,7 @@
         <template v-else>
           <p class="text-xs font-semibold leading-4">
             {{ commentReactionTooltipData.emoji }} {{ commentReactionTooltipData.count }}
-            {{ commentReactionTooltipData.count === 1 ? 'person reacted' : 'people reacted' }}
+            {{ commentReactionTooltipData.count === 1 ? t('records.genericPersonReacted') : t('records.genericPeopleReacted') }}
           </p>
           <ul
             v-if="commentReactionTooltipData.reactors.length > 0"
@@ -912,7 +913,7 @@
               <span class="truncate">{{ getReactionUserDisplayName(reactor) }}</span>
             </li>
           </ul>
-          <p v-else class="mt-1.5 text-xs leading-4 text-slate-300">Reactor details unavailable</p>
+          <p v-else class="mt-1.5 text-xs leading-4 text-slate-300">{{ t('records.genericReactorUnavailable') }}</p>
         </template>
         <span
           :class="[
@@ -927,11 +928,14 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount, inject, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
+import { getProcessActivityMessage } from '@/utils/processActivityMessages';
+import { resolveModuleDisplayName } from '@/utils/configurableLabelResolver';
 import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
 import {
   getOrgContactCoordinatedPatches,
@@ -967,6 +971,7 @@ import EmailComposeDrawer from '@/components/communications/EmailComposeDrawer.v
 import AutomationContext from '@/components/automation/AutomationContext.vue';
 import LinkRecordsDrawer from '@/components/common/LinkRecordsDrawer.vue';
 import { createGenericRecordAdapter } from '@/components/record-page/adapters/genericRecordAdapter';
+import { createRecordSectionLabels } from '@/utils/recordSectionLabels';
 import { useRecordTags, getDefaultTagChipClass } from '@/components/record-page/composables/useRecordTags';
 import {
   normalizeSystemActivityEvent,
@@ -978,6 +983,7 @@ import { normalizeActivityUiContract } from '@/components/activity/activityUiCon
 import { useNotifications } from '@/composables/useNotifications';
 import { useOpenEmailCompose } from '@/composables/useOpenEmailCompose';
 import dateUtils from '@/utils/dateUtils';
+import { formatRelativeTime } from '@/utils/relativeTime';
 import {
   PencilSquareIcon,
   ClipboardDocumentIcon,
@@ -1024,6 +1030,8 @@ import { getParticipationFields } from '@/platform/fields/peopleFieldModel';
 import { hasPeoplePermission } from '@/platform/permissions/peoplePermissionHelper';
 import { PEOPLE_PERMISSIONS } from '@/platform/permissions/peoplePermissions';
 import 'emoji-picker-element';
+
+const { t, te } = useI18n();
 
 const formatAppLabel = (appKey) => getAppLabel(appKey) || appKey || 'App';
 
@@ -1525,15 +1533,18 @@ const persistRecordTags = async (cleaned) => {
   }
 };
 
-const moduleLabel = computed(() => {
-  const key = (props.moduleKey || '').toLowerCase();
-  const labels = { people: 'People', organizations: 'Organizations', events: 'Events', items: 'Items', forms: 'Forms' };
-  return labels[key] || (key.charAt(0).toUpperCase() + key.slice(1));
-});
+const moduleLabel = computed(() =>
+  resolveModuleDisplayName(props.moduleKey, t, te)
+);
 const moduleLabelSingular = computed(() => {
   const s = moduleLabel.value;
   return s.endsWith('s') ? s.slice(0, -1) : s;
 });
+
+const recordLoadingMessage = computed(() => t('records.genericLoading', { module: moduleLabel.value }));
+const recordErrorTitle = computed(() => t('records.genericErrorTitle', { module: moduleLabel.value }));
+const recordNavPreviousLabel = computed(() => t('records.genericNavPrevious', { singular: moduleLabelSingular.value }));
+const recordNavNextLabel = computed(() => t('records.genericNavNext', { singular: moduleLabelSingular.value }));
 
 const recordTitle = computed(() => {
   const r = record.value;
@@ -1626,16 +1637,20 @@ async function handleUnlinkGenericRelated(item, group, rec) {
     await loadGenericRecordContext(true);
   } catch (err) {
     console.error('Error unlinking related record:', err);
-    alert(err?.response?.data?.message || 'Error unlinking record. Please try again.');
+    alert(err?.response?.data?.message || t('records.genericUnlinkFailed'));
   }
 }
 
 const rightPaneTabs = computed(() => [
-  { id: 'activity', name: 'Activity' },
-  { id: 'related', name: 'Related' },
-  { id: 'details', name: 'Details' },
-  { id: 'integrations', name: 'Integrations' }
+  { id: 'activity', name: t('records.genericTabActivity') },
+  { id: 'related', name: t('records.relatedTitle') },
+  { id: 'details', name: t('records.detailsTitle') },
+  { id: 'integrations', name: t('records.genericIntegrations') }
 ]);
+
+const linkRecordDrawerTitle = computed(() =>
+  allowCreateFromLinkDrawer.value ? t('records.genericLinkDrawerAddAndLink') : t('records.genericLinkDrawerLink')
+);
 
 const descriptionHistoryList = computed(() => {
   const rec = record.value;
@@ -1844,6 +1859,7 @@ function appendRawActivityEvent(event) {
 const genericAdapter = computed(() => {
   if (!record.value || !moduleDefinition.value) return null;
   return createGenericRecordAdapter({
+    sectionLabels: createRecordSectionLabels(t),
     formatDate: (d) => (d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'),
     moduleDefinition: moduleDefinition.value,
     canEditDetails: () => canEditRecord.value,
@@ -2110,7 +2126,7 @@ function formatFullTimestamp(date) {
 
 function formatRelativeActivityTime(date) {
   if (!date) return '';
-  return dateUtils.fromNow(date);
+  return formatRelativeTime(date, t);
 }
 
 function escapeRegExp(value) {
@@ -2255,6 +2271,8 @@ const activityUi = computed(() => {
       const msg = String(event?.message ?? event?.payload?.message ?? '').trim();
       if (msg) return msg;
       const action = String(event?.action || event?.payload?.action || 'updated').trim();
+      const processMsg = getProcessActivityMessage(event);
+      if (processMsg) return processMsg;
       const mod = (props.moduleKey || '').toLowerCase();
       if (action === 'record_created') {
         return mod === 'people' ? 'Created this person' : 'Created this record';
@@ -2292,9 +2310,9 @@ const activityUi = computed(() => {
           const isMe = nextAssignee && meId && String(nextAssignee) === String(meId);
           return { ...thread, assignedToUserId: nextAssignee, assignedToDisplay: isMe ? meLabel : (thread.assignedToDisplay || null) };
         });
-        notifications.success(nextAssignee ? 'Thread assigned' : 'Thread unassigned');
+        notifications.success(nextAssignee ? t('records.genericThreadAssigned') : t('records.genericThreadUnassigned'));
       } catch (err) {
-        notifications.error(err?.response?.data?.message || err?.message || 'Failed to assign thread');
+        notifications.error(err?.response?.data?.message || err?.message || t('records.genericThreadAssignFailed'));
       }
     },
     unassignEmailThread: async ({ threadId }) => {
@@ -2308,9 +2326,9 @@ const activityUi = computed(() => {
         emailThreads.value = (emailThreads.value || []).map((thread) =>
           thread.threadId === threadId ? { ...thread, assignedToUserId: nextAssignee, assignedToDisplay: null } : thread
         );
-        notifications.success('Thread unassigned');
+        notifications.success(t('records.genericThreadUnassigned'));
       } catch (err) {
-        notifications.error(err?.response?.data?.message || err?.message || 'Failed to unassign thread');
+        notifications.error(err?.response?.data?.message || err?.message || t('records.genericThreadUnassignFailed'));
       }
     },
     addTagToEmailThread: async ({ threadId, tag }) => {
@@ -2328,9 +2346,9 @@ const activityUi = computed(() => {
         emailThreads.value = (emailThreads.value || []).map((thread) =>
           thread.threadId === threadId ? { ...thread, tags: nextTags } : thread
         );
-        notifications.success('Tag added');
+        notifications.success(t('records.genericTagAdded'));
       } catch (err) {
-        notifications.error(err?.response?.data?.message || err?.message || 'Failed to add tag');
+        notifications.error(err?.response?.data?.message || err?.message || t('records.genericTagAddFailed'));
       }
     },
     removeTagFromEmailThread: async ({ threadId, tag }) => {
@@ -2348,9 +2366,9 @@ const activityUi = computed(() => {
         emailThreads.value = (emailThreads.value || []).map((thread) =>
           thread.threadId === threadId ? { ...thread, tags: nextTags } : thread
         );
-        notifications.success('Tag removed');
+        notifications.success(t('records.genericTagRemoved'));
       } catch (err) {
-        notifications.error(err?.response?.data?.message || err?.message || 'Failed to remove tag');
+        notifications.error(err?.response?.data?.message || err?.message || t('records.genericTagRemoveFailed'));
       }
     },
     handleReplyToEmailMessage: (payload) => {
@@ -2367,9 +2385,9 @@ const activityUi = computed(() => {
             ? { ...thread, done: doneValue, doneAt: doneValue ? (res?.data?.doneAt || new Date().toISOString()) : null, unread: doneValue ? false : thread.unread }
             : thread
         );
-        notifications.success(doneValue ? 'Thread marked done' : 'Thread reopened');
+        notifications.success(doneValue ? t('records.genericThreadMarkedDone') : t('records.genericThreadReopened'));
       } catch (err) {
-        notifications.error(err?.response?.data?.message || err?.message || 'Failed to update thread status');
+        notifications.error(err?.response?.data?.message || err?.message || t('records.genericThreadStatusFailed'));
       }
     }
   };
@@ -2559,58 +2577,58 @@ const activityEventsForDisplay = computed(() => {
 
 async function cancelAppointment() {
   if (!record.value?._id) return;
-  if (!window.confirm('Cancel this appointment? The guest can book again using your public link.')) return;
+  if (!window.confirm(t('records.genericConfirmCancelAppt'))) return;
   try {
     const res = await apiClient.post(`/appointments/events/${record.value._id}/cancel`, {
       reason: 'Cancelled from event record'
     });
     if (res.success) {
-      notifications.success('Appointment cancelled');
+      notifications.success(t('records.genericApptCancelled'));
       await fetchRecord();
     } else {
-      notifications.error(res.message || 'Could not cancel appointment');
+      notifications.error(res.message || t('records.genericApptCancelFailed'));
     }
   } catch (e) {
-    notifications.error(e?.message || 'Could not cancel appointment');
+    notifications.error(e?.message || t('records.genericApptCancelFailed'));
   }
 }
 
 async function completeAppointment() {
   if (!record.value?._id) return;
-  if (!window.confirm('Mark this appointment as completed?')) return;
+  if (!window.confirm(t('records.genericConfirmCompleteAppt'))) return;
   try {
     const res = await apiClient.post(`/appointments/events/${record.value._id}/complete`);
     if (res.success) {
-      notifications.success('Appointment completed');
+      notifications.success(t('records.genericApptCompleted'));
       await fetchRecord();
     } else {
-      notifications.error(res.message || 'Could not complete appointment');
+      notifications.error(res.message || t('records.genericApptCompleteFailed'));
     }
   } catch (e) {
-    notifications.error(e?.message || 'Could not complete appointment');
+    notifications.error(e?.message || t('records.genericApptCompleteFailed'));
   }
 }
 
 async function markAppointmentNoShow() {
   if (!record.value?._id) return;
-  if (!window.confirm('Mark this appointment as a no-show? The event will stay on your calendar as planned.')) return;
+  if (!window.confirm(t('records.genericConfirmNoShowAppt'))) return;
   try {
     const res = await apiClient.post(`/appointments/events/${record.value._id}/no-show`, {
       reason: 'Marked from event record'
     });
     if (res.success) {
-      notifications.success('Marked as no-show');
+      notifications.success(t('records.genericApptNoShow'));
       await fetchRecord();
     } else {
-      notifications.error(res.message || 'Could not mark no-show');
+      notifications.error(res.message || t('records.genericApptNoShowFailed'));
     }
   } catch (e) {
-    notifications.error(e?.message || 'Could not mark no-show');
+    notifications.error(e?.message || t('records.genericApptNoShowFailed'));
   }
 }
 
 async function onAppointmentRescheduled() {
-  notifications.success('Appointment rescheduled');
+  notifications.success(t('records.genericApptRescheduled'));
   await fetchRecord();
 }
 
@@ -3289,14 +3307,14 @@ async function handleEmailSubmit(payload) {
   try {
     const res = await apiClient.post('/communications/email', payload);
     if (res?.success) {
-      notifications.success('Email sent');
+      notifications.success(t('records.genericEmailSent'));
       await fetchRecord();
     } else {
-      notifications.error(res?.message || 'Failed to send email');
+      notifications.error(res?.message || t('records.genericEmailSendFailed'));
     }
   } catch (err) {
     const msg = err?.response?.data?.error || err?.response?.data?.message || err?.message;
-    notifications.error(msg || 'Failed to send email');
+    notifications.error(msg || t('records.genericEmailSendFailed'));
   }
 }
 

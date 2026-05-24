@@ -1,0 +1,106 @@
+{
+  "peopleTypesTitle": { "message": "Types", "description": "People types settings section title" },
+  "peopleTypesIntro": {
+    "message": "Roles shown when someone participates in an app (for example Lead and Contact in Sales, or Customer and Agent in Helpdesk). Changes apply everywhere those dropdowns are used—no page reload needed.",
+    "description": "People types intro"
+  },
+  "peopleTypesHintMinOne": {
+    "message": "At least one role is required per app. Names cannot duplicate (ignoring case).",
+    "description": "People types validation hint"
+  },
+  "peopleTypesHintDefaultRole": {
+    "message": "The default role is used in quick create and attach when no type is pre-selected.",
+    "description": "People types default role hint"
+  },
+  "peopleTypesHintColors": {
+    "message": "Colors work like picklist options: use the swatch or hex field, and the preview pill matches what people see in lists.",
+    "description": "People types color hint"
+  },
+  "peopleTypesHintParticipation": {
+    "message": "Optionally choose which participation fields appear in quick create and attach when a type is selected. Leaving a type on platform defaults does not store anything—if defaults change later, this type picks them up. Unchecking every field stores no fields for that type (explicit).",
+    "description": "People types participation fields hint"
+  },
+  "peopleTypesAppLabel": { "message": "Application", "description": "Application select label" },
+  "peopleTypesAppSales": { "message": "Sales", "description": "Sales app option label" },
+  "peopleTypesAppHelpdesk": { "message": "Helpdesk", "description": "Helpdesk app option label" },
+  "peopleTypesDefaultRoleLabel": { "message": "Default role", "description": "Default role select label" },
+  "peopleTypesRoleTypesLabel": { "message": "Role types", "description": "Role types list label" },
+  "peopleTypesEmptyRoles": {
+    "message": "No roles defined. Click \"Add Option\" to add values.",
+    "description": "Empty role types list"
+  },
+  "peopleTypesInUse": {
+    "message": "In use by {count, plural, one {# person} other {# people}}",
+    "description": "Role usage count on row"
+  },
+  "peopleTypesFieldsWhenSelected": {
+    "message": "Fields when this type is selected",
+    "description": "Per-type participation fields section"
+  },
+  "peopleTypesResetPlatformDefaults": {
+    "message": "Reset to platform defaults",
+    "description": "Reset type fields to platform defaults"
+  },
+  "peopleTypesNoParticipationFields": {
+    "message": "No participation fields are defined for {appKey} in the platform model, and no extra fields are tagged with this app on the People module. For Helpdesk, add app-scoped custom fields in Modules & fields if needed.",
+    "description": "No participation fields for app"
+  },
+  "peopleTypesUsingPlatformDefaults": {
+    "message": "Using platform defaults for this type.",
+    "description": "Inherited platform default fields"
+  },
+  "peopleTypesInheritedNotSaved": {
+    "message": "(Inherited — not saved)",
+    "description": "Inherited fields not persisted"
+  },
+  "peopleTypesPlatformDefaultNoFields": {
+    "message": "Platform default is no fields for this type.",
+    "description": "Platform default empty fields"
+  },
+  "peopleTypesCustomFields": { "message": "Custom fields", "description": "Custom fields for type" },
+  "peopleTypesNoFieldsExplicit": {
+    "message": "No fields for this type (explicit)",
+    "description": "Explicitly empty field set"
+  },
+  "peopleTypesReset": { "message": "Reset", "description": "Reset unsaved changes" },
+  "peopleTypesAddRole": { "message": "Add role", "description": "Add role modal title" },
+  "peopleTypesRoleNameLabel": { "message": "Role name", "description": "Role name field label" },
+  "peopleTypesRoleNamePh": { "message": "e.g. Partner", "description": "Role name placeholder" },
+  "peopleTypesDeleteTitle": { "message": "Remove role?", "description": "Delete role confirm title" },
+  "peopleTypesDeleteInUse": {
+    "message": "This role is used by {count, plural, one {# person} other {# people}}. Removing it from the list does not change existing records; they will keep their current role value until updated.",
+    "description": "Delete role confirm when in use"
+  },
+  "peopleTypesDeleteEmpty": {
+    "message": "Remove this role from the list?",
+    "description": "Delete role confirm when unused"
+  },
+  "peopleTypesErrEnterName": { "message": "Enter a role name.", "description": "Add role validation" },
+  "peopleTypesErrDuplicateExists": {
+    "message": "A role with that name already exists.",
+    "description": "Duplicate role on add"
+  },
+  "peopleTypesErrDuplicateNames": {
+    "message": "Duplicate role names are not allowed.",
+    "description": "Duplicate role names validation"
+  },
+  "peopleTypesErrEmptyName": {
+    "message": "Each role must have a non-empty name.",
+    "description": "Empty role name validation"
+  },
+  "peopleTypesErrAtLeastOne": {
+    "message": "At least one role is required.",
+    "description": "Minimum one role validation"
+  },
+  "peopleTypesFieldsLoadConnection": {
+    "message": "Could not load People fields for this screen. Check your connection and permissions.",
+    "description": "People module fields load error"
+  },
+  "peopleTypesFieldsLoadFailed": {
+    "message": "Could not load People module fields.",
+    "description": "People module fields API error"
+  },
+  "peopleTypesSaveFailed": { "message": "Save failed", "description": "Generic save failure" },
+  "peopleTypesFailedSave": { "message": "Failed to save", "description": "Save request error" },
+  "peopleTypesFailedLoad": { "message": "Failed to load roles", "description": "Load roles error" }
+}

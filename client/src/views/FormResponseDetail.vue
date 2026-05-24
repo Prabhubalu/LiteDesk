@@ -14,7 +14,7 @@
               :disabled="!canEditForms"
               class="w-full sm:w-auto px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
-              Add Corrective Action
+              {{ t('forms.hubActionAddCorrective') }}
             </button>
           </template>
 
@@ -26,7 +26,7 @@
               :disabled="!canEditForms"
               class="w-full sm:w-auto px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
-              Approve Response
+              {{ t('forms.hubResponseDetailApprove') }}
             </button>
             <button
               @click="sendBackForCorrection"
@@ -34,13 +34,13 @@
               :disabled="!canEditForms"
               class="w-full sm:w-auto px-4 py-2.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
-              Send Back for Correction
+              {{ t('forms.hubResponseDetailSendBack') }}
             </button>
             <span
               v-else
               class="text-sm text-gray-500 dark:text-gray-400 italic"
             >
-              Only the assigned reviewer can approve or send back this audit response.
+              {{ t('forms.hubResponseDetailReviewerOnly') }}
             </span>
           </template>
 
@@ -51,14 +51,14 @@
               :disabled="!canEditForms || !canCloseResponse"
               class="w-full sm:w-auto px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
-              Close Response
+              {{ t('forms.hubResponseDetailClose') }}
             </button>
           </template>
 
           <!-- Closed Status - No actions (read-only) -->
           <template v-if="(response.reviewStatus || response.status) === 'Closed'">
             <span class="text-sm text-gray-500 dark:text-gray-400 italic">
-              Response is closed
+              {{ t('forms.hubResponseDetailClosedHint') }}
             </span>
           </template>
         </div>
@@ -77,17 +77,17 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            <span class="font-medium">Back to Responses</span>
+            <span class="font-medium">{{ t('forms.hubBackToResponses') }}</span>
           </button>
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-            Response Details
+            {{ t('forms.hubResponseDetailTitle') }}
           </h1>
           <p v-if="response" class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            Submitted {{ formatDate(response.submittedAt) }}
+            {{ t('forms.hubResponseDetailSubmittedAt', { date: formatDate(response.submittedAt) }) }}
           </p>
           <div v-if="linkedEvent" class="mt-2 space-y-1 text-sm text-gray-700 dark:text-gray-300">
             <div v-if="linkedEvent.auditorId" class="flex items-center gap-2">
-              <span class="font-medium">Auditor:</span>
+              <span class="font-medium">{{ t('forms.hubResponseDetailAuditor') }}</span>
               <a
                 v-if="linkedEvent.auditorId?.email"
                 :href="`mailto:${linkedEvent.auditorId.email}`"
@@ -100,7 +100,7 @@
             </div>
 
             <div v-if="linkedEvent.reviewerId" class="flex items-center gap-2">
-              <span class="font-medium">Reviewer:</span>
+              <span class="font-medium">{{ t('forms.hubResponseDetailReviewer') }}</span>
               <a
                 v-if="linkedEvent.reviewerId?.email"
                 :href="`mailto:${linkedEvent.reviewerId.email}`"
@@ -113,7 +113,7 @@
             </div>
 
             <div v-if="linkedEvent.correctiveOwnerId" class="flex items-center gap-2">
-              <span class="font-medium">Corrective Owner:</span>
+              <span class="font-medium">{{ t('forms.hubResponseDetailCorrectiveOwner') }}</span>
               <a
                 v-if="linkedEvent.correctiveOwnerId?.email"
                 :href="`mailto:${linkedEvent.correctiveOwnerId.email}`"
@@ -129,29 +129,22 @@
         <div class="flex items-center gap-2">
           <BadgeCell 
             v-if="response"
-            :value="response.reviewStatus || response.status" 
-            :variant-map="{
-              'New': 'default',
-              'Pending Corrective Action': 'warning',
-              'Needs Auditor Review': 'info',
-              'Approved': 'success',
-              'Rejected': 'danger',
-              'Closed': 'default'
-            }"
+            :value="reviewStatusLabel(response.reviewStatus || response.status)" 
+            :variant="reviewStatusVariant(response.reviewStatus || response.status)"
           />
           <span
             v-if="response?.selfReviewed === true"
             class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600"
-            title="This audit was reviewed by the same user who conducted it."
+            :title="t('forms.hubResponseDetailSelfReviewTitle')"
           >
-            Self-Reviewed Audit
+            {{ t('forms.hubResponseDetailSelfReviewBadge') }}
           </span>
         </div>
       </div>
 
       <div v-if="loading" class="text-center py-12">
         <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-        <p class="mt-4 text-gray-600 dark:text-gray-400">Loading response...</p>
+        <p class="mt-4 text-gray-600 dark:text-gray-400">{{ t('forms.hubResponseDetailLoading') }}</p>
       </div>
 
       <div v-else-if="error" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
@@ -164,7 +157,7 @@
           <!-- Overall Score Card -->
           <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
             <div class="flex items-start justify-between mb-1">
-              <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Overall Score</h3>
+              <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('forms.reportOverallScore') }}</h3>
               <div class="relative group ml-2">
                 <svg 
                   class="w-4 h-4 text-gray-400 dark:text-gray-500 cursor-help hover:text-gray-600 dark:hover:text-gray-300 transition-colors" 
@@ -180,7 +173,7 @@
                   v-if="showTooltip === 'overallScore'"
                   class="absolute right-0 bottom-full mb-2 w-64 p-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg shadow-lg z-50 pointer-events-none"
                 >
-                  Weighted score based on scorable questions
+                  {{ t('forms.hubResponseDetailOverallScoreHint') }}
                   <div class="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
                 </div>
               </div>
@@ -188,13 +181,13 @@
             <p class="text-2xl font-bold text-gray-900 dark:text-white">
               {{ calculateOverallScore(response.sectionScores) }}%
             </p>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Weighted score based on scorable questions</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ t('forms.hubResponseDetailOverallScoreHint') }}</p>
           </div>
 
           <!-- Compliance Card -->
           <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
             <div class="flex items-start justify-between mb-1">
-              <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Compliance</h3>
+              <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('forms.reportCompliance') }}</h3>
               <div class="relative group ml-2">
                 <svg 
                   class="w-4 h-4 text-gray-400 dark:text-gray-500 cursor-help hover:text-gray-600 dark:hover:text-gray-300 transition-colors" 
@@ -210,7 +203,7 @@
                   v-if="showTooltip === 'compliance'"
                   class="absolute right-0 bottom-full mb-2 w-64 p-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg shadow-lg z-50 pointer-events-none"
                 >
-                  % of mandatory checks passed
+                  {{ t('forms.hubResponseDetailComplianceHint') }}
                   <div class="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
                 </div>
               </div>
@@ -218,7 +211,7 @@
             <p class="text-2xl font-bold text-gray-900 dark:text-white">
               {{ response.kpis?.compliancePercentage || 0 }}%
             </p>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">% of mandatory checks passed</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ t('forms.hubResponseDetailComplianceHint') }}</p>
             <div 
               v-if="hasContradictoryValues"
               class="mt-1.5 relative group/info"
@@ -227,10 +220,10 @@
                 <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
                 </svg>
-                <span>Why different?</span>
+                <span>{{ t('forms.hubResponseDetailWhyDifferent') }}</span>
               </div>
               <div class="absolute left-0 bottom-full mb-2 w-72 p-3 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg shadow-lg z-50 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all pointer-events-none">
-                Valid: Compliance measures mandatory checks, while Overall Score is based on weighted scorable questions. A form can have 100% compliance if all mandatory checks pass, but 0% overall score if scorable questions are not weighted or answered.
+                {{ t('forms.hubResponseDetailContradictionHint') }}
                 <div class="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
               </div>
             </div>
@@ -239,7 +232,7 @@
           <!-- Pass Rate Card -->
           <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
             <div class="flex items-start justify-between mb-1">
-              <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Pass Rate</h3>
+              <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('forms.reportPassRate') }}</h3>
               <div class="relative group ml-2">
                 <svg 
                   class="w-4 h-4 text-gray-400 dark:text-gray-500 cursor-help hover:text-gray-600 dark:hover:text-gray-300 transition-colors" 
@@ -255,7 +248,7 @@
                   v-if="showTooltip === 'passRate'"
                   class="absolute right-0 bottom-full mb-2 w-64 p-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg shadow-lg z-50 pointer-events-none"
                 >
-                  Passed scorable questions / total scorable questions
+                  {{ t('forms.hubResponseDetailPassRateHint') }}
                   <div class="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
                 </div>
               </div>
@@ -263,14 +256,14 @@
             <p class="text-2xl font-bold text-gray-900 dark:text-white">
               {{ response.kpis?.passRate !== undefined ? response.kpis.passRate : calculatePassRate(response) }}%
             </p>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Passed scorable questions / total scorable questions</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ t('forms.hubResponseDetailPassRateHint') }}</p>
           </div>
         </div>
 
         <!-- Response Details -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Response Details</h2>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('forms.hubResponseDetailTitle') }}</h2>
           </div>
           
           <!-- Mobile Navigation Dropdown -->
@@ -283,7 +276,7 @@
               @change="scrollToSection(selectedSectionId)"
               class="w-full px-4 py-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
             >
-              <option value="" disabled>Jump to section...</option>
+              <option value="" disabled>{{ t('forms.hubResponseDetailJumpToSection') }}</option>
               <template v-for="item in formSectionsNavigation" :key="item.id">
                 <option :value="item.id">{{ item.label }}</option>
                 <option 
@@ -291,7 +284,7 @@
                   :key="subItem.id"
                   :value="subItem.id"
                 >
-                  └ {{ subItem.label }}
+                  {{ t('forms.hubResponseDetailSubsectionPrefix', { label: subItem.label }) }}
                 </option>
               </template>
             </select>
@@ -305,7 +298,7 @@
             >
               <div class="sticky top-0 p-6">
                 <nav>
-                  <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Sections</h3>
+                  <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('forms.hubResponseDetailSectionsNav') }}</h3>
                   <ul class="space-y-1">
                     <li v-for="item in formSectionsNavigation" :key="item.id">
                       <a
@@ -356,7 +349,7 @@
               <div class="border-b border-gray-200 dark:border-gray-700 pb-2">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ section.name }}</h3>
                 <div v-if="response.sectionScores && response.sectionScores[section.sectionId]" class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                  Score: {{ response.sectionScores[section.sectionId] }}%
+                  {{ t('forms.hubResponseDetailSectionScore', { score: response.sectionScores[section.sectionId] }) }}
                 </div>
               </div>
 
@@ -379,15 +372,11 @@
                       <div class="flex items-center gap-2 mt-2">
                         <BadgeCell 
                           v-if="getQuestionResponse(question.questionId)"
-                          :value="getQuestionResponse(question.questionId).passFail || 'N/A'" 
-                          :variant-map="{
-                            'Pass': 'success',
-                            'Fail': 'danger',
-                            'N/A': 'default'
-                          }"
+                          :value="passFailLabel(getQuestionResponse(question.questionId).passFail || 'N/A')" 
+                          :variant="passFailVariant(getQuestionResponse(question.questionId).passFail || 'N/A')"
                         />
                         <span v-if="getQuestionResponse(question.questionId)?.score !== undefined" class="text-xs text-gray-600 dark:text-gray-400">
-                          Score: {{ getQuestionResponse(question.questionId).score }}
+                          {{ t('forms.hubResponseDetailQuestionScore', { score: getQuestionResponse(question.questionId).score }) }}
                         </span>
                       </div>
                     </div>
@@ -395,7 +384,7 @@
 
                   <!-- Answer Display -->
                   <div class="mt-3">
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Answer:</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">{{ t('forms.correctiveAnswerLabel') }}</p>
                     <div class="text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800 rounded p-2 border border-gray-200 dark:border-gray-600">
                       {{ formatAnswer(getQuestionResponse(question.questionId)?.answer) }}
                     </div>
@@ -403,7 +392,7 @@
 
                   <!-- Attachments -->
                   <div v-if="getQuestionResponse(question.questionId)?.attachments?.length" class="mt-3">
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Attachments:</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">{{ t('forms.hubResponseDetailAttachments') }}</p>
                     <div class="flex flex-wrap gap-2">
                       <a
                         v-for="(attachment, aIndex) in getQuestionResponse(question.questionId).attachments"
@@ -481,6 +470,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -491,6 +481,54 @@ import CorrectiveActionPanel from '@/components/forms/CorrectiveActionPanel.vue'
 import AuditorVerificationPanel from '@/components/forms/AuditorVerificationPanel.vue';
 import FormReportView from '@/components/forms/FormReportView.vue';
 import FormComparisonView from '@/components/forms/FormComparisonView.vue';
+
+const { t } = useI18n();
+
+const REVIEW_STATUS_VARIANTS = {
+  'New': 'default',
+  'Pending Corrective Action': 'warning',
+  'Needs Auditor Review': 'info',
+  Approved: 'success',
+  Rejected: 'danger',
+  Closed: 'default',
+};
+
+const PASS_FAIL_VARIANTS = {
+  Pass: 'success',
+  Fail: 'danger',
+  'N/A': 'default',
+};
+
+function reviewStatusLabel(value) {
+  const keyByValue = {
+    'New': 'forms.hubStatNew',
+    'Pending Corrective Action': 'forms.hubReviewPendingCorrective',
+    'Needs Auditor Review': 'forms.hubReviewNeedsAuditor',
+    Approved: 'forms.auditorApproved',
+    Rejected: 'forms.auditorRejected',
+    Closed: 'forms.hubReviewClosed',
+  };
+  const key = keyByValue[value];
+  return key ? t(key) : value;
+}
+
+function passFailLabel(value) {
+  const keyByValue = {
+    Pass: 'forms.hubResponseDetailPass',
+    Fail: 'forms.correctivePassFailFail',
+    'N/A': 'forms.hubResponseDetailNotApplicable',
+  };
+  const key = keyByValue[value];
+  return key ? t(key) : value;
+}
+
+function reviewStatusVariant(value) {
+  return REVIEW_STATUS_VARIANTS[value] || 'default';
+}
+
+function passFailVariant(value) {
+  return PASS_FAIL_VARIANTS[value] || 'default';
+}
 
 const route = useRoute();
 const router = useRouter();
@@ -606,7 +644,7 @@ const fetchForm = async () => {
     }
   } catch (err) {
     console.error('Error fetching form:', err);
-    error.value = 'Failed to load form details';
+    error.value = t('forms.hubResponseDetailLoadFormFailed');
   }
 };
 
@@ -635,7 +673,7 @@ const fetchResponse = async () => {
 
         // Fallback while linked event is still loading
         if (displayResponseId) {
-          updateTabTitle(tabId, `${displayResponseId} · Response`);
+          updateTabTitle(tabId, `${displayResponseId} · ${t('forms.hubResponseDetailTabResponse')}`);
         }
       };
 
@@ -682,11 +720,11 @@ const fetchResponse = async () => {
         }
       }
     } else {
-      error.value = result.message || 'Failed to load response';
+      error.value = result.message || t('forms.hubResponseDetailLoadFailed');
     }
   } catch (err) {
     console.error('Error fetching response:', err);
-    error.value = err.message || 'Failed to load response';
+    error.value = err.message || t('forms.hubResponseDetailLoadFailed');
   } finally {
     loading.value = false;
   }
@@ -710,7 +748,7 @@ const getQuestionResponse = (questionId) => {
 };
 
 const formatAnswer = (answer) => {
-  if (answer === null || answer === undefined) return 'No answer provided';
+  if (answer === null || answer === undefined) return t('forms.hubResponseDetailNoAnswerProvided');
   if (Array.isArray(answer)) return answer.join(', ');
   if (typeof answer === 'object') return JSON.stringify(answer);
   return String(answer);
@@ -755,7 +793,7 @@ const formatDate = (date) => {
 };
 
 const approveResponse = async () => {
-  if (!confirm('Are you sure you want to approve this response?')) {
+  if (!confirm(t('forms.hubConfirmApprove'))) {
     return;
   }
 
@@ -767,18 +805,18 @@ const approveResponse = async () => {
     if (result.success) {
       await fetchResponse();
       // Stay on the same response detail record; just refresh state in-place.
-      alert(result.message || 'Response approved.');
+      alert(result.message || t('forms.hubResponseDetailApproved'));
     } else {
-      alert(result.message || 'Failed to approve response.');
+      alert(result.message || t('forms.hubApproveFailed'));
     }
   } catch (err) {
     console.error('Error approving response:', err);
-    alert(err?.message || 'Failed to approve response. Please try again.');
+    alert(err?.message || t('forms.hubApproveFailed'));
   }
 };
 
 const rejectResponse = async () => {
-  if (!confirm('Are you sure you want to reject this response?')) {
+  if (!confirm(t('forms.hubConfirmReject'))) {
     return;
   }
 
@@ -790,16 +828,16 @@ const rejectResponse = async () => {
     if (result.success) {
       await fetchResponse();
       // Stay on the same response detail record; just refresh state in-place.
-      alert(result.message || 'Response rejected.');
+      alert(result.message || t('forms.hubResponseDetailRejected'));
     }
   } catch (err) {
     console.error('Error rejecting response:', err);
-    alert('Failed to reject response. Please try again.');
+    alert(t('forms.hubRejectFailed'));
   }
 };
 
 const sendBackForCorrection = async () => {
-  if (!confirm('Are you sure you want to send this response back for correction? This will reject the current response.')) {
+  if (!confirm(t('forms.hubResponseDetailSendBackConfirm'))) {
     return;
   }
 
@@ -821,11 +859,11 @@ const scrollToCorrectiveActions = () => {
 
 const closeResponse = async () => {
   if (!canCloseResponse.value) {
-    alert('Cannot close response. All corrective actions must be completed and approved.');
+    alert(t('forms.hubResponseDetailCannotClose'));
     return;
   }
 
-  if (!confirm('Are you sure you want to close this response? This action cannot be undone.')) {
+  if (!confirm(t('forms.hubResponseDetailCloseConfirm'))) {
     return;
   }
 
@@ -838,14 +876,14 @@ const closeResponse = async () => {
     // Check if status is now Closed
     const currentStatus = response.value?.reviewStatus || response.value?.status;
     if (currentStatus === 'Closed') {
-      alert('Response closed successfully.');
+      alert(t('forms.hubResponseDetailClosedSuccess'));
     } else {
       // If status is not Closed yet, all corrective actions might not be verified
-      alert('Response cannot be closed yet. Please ensure all corrective actions are verified and approved.');
+      alert(t('forms.hubResponseDetailNotClosedYet'));
     }
   } catch (err) {
     console.error('Error closing response:', err);
-    alert('Failed to close response. Please try again.');
+    alert(t('forms.hubResponseDetailCloseFailed'));
   }
 };
 

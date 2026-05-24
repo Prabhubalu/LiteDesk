@@ -4,9 +4,9 @@
       <!-- Header -->
       <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
         <div>
-          <h2 class="text-xl font-bold text-gray-900 dark:text-white">Create Process</h2>
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ t('process.wizardCreateHeading') }}</h2>
           <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            Follow the steps to create a process that controls system behavior
+            {{ t('process.wizardCreateSubheading') }}
           </p>
         </div>
         <button
@@ -21,7 +21,7 @@
 
       <!-- Progress Stepper -->
       <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-        <nav aria-label="Progress">
+        <nav :aria-label="t('process.wizardProgressAria')">
           <ol role="list" class="flex items-center">
             <li v-for="(step, stepIdx) in steps" :key="step.id" class="relative flex-1">
               <div class="flex items-center">
@@ -79,121 +79,76 @@
 
       <!-- Step Content -->
       <div class="flex-1 overflow-y-auto p-6">
-        <!-- Step 1: When should this run? -->
+        <!-- Step 1: Scope (app, module, starts when) -->
         <div v-if="currentStep === 0" class="max-w-2xl mx-auto">
           <div class="mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">When should this run?</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('process.wizardScopeHeading') }}</h3>
             <p class="text-sm text-gray-600 dark:text-gray-400">
-              Choose when this process should automatically execute
-            </p>
-          </div>
-
-          <div class="space-y-3">
-            <label
-              v-for="option in triggerOptions"
-              :key="option.value"
-              :class="[
-                'relative flex cursor-pointer rounded-lg border p-4 focus:outline-none transition-all',
-                wizardData.triggerType === option.value
-                  ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20'
-                  : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-500'
-              ]"
-            >
-              <input
-                type="radio"
-                :value="option.value"
-                v-model="wizardData.triggerType"
-                class="sr-only"
-              />
-              <div class="flex flex-1">
-                <div class="flex flex-col">
-                  <span class="block text-sm font-medium text-gray-900 dark:text-white">
-                    {{ option.label }}
-                  </span>
-                  <span class="mt-1 block text-sm text-gray-500 dark:text-gray-400">
-                    {{ option.description }}
-                  </span>
-                </div>
-              </div>
-              <svg
-                v-if="wizardData.triggerType === option.value"
-                class="h-5 w-5 text-indigo-600"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-              </svg>
-            </label>
-          </div>
-
-          <!-- Event Type Selection (if domain_event) -->
-          <div v-if="wizardData.triggerType !== 'manual' && wizardData.triggerType !== 'form_submission'" class="mt-6">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Event Type <span class="text-red-500">*</span>
-            </label>
-            <select
-              v-model="wizardData.eventType"
-              class="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-indigo-500"
-            >
-              <option value="">Select an event type...</option>
-              <optgroup v-if="wizardData.entityType === 'people' || !wizardData.entityType" label="People Events">
-                <option value="people.lifecycle.changed">Lifecycle Changed</option>
-                <option value="people.sales_type.changed">Sales role changed</option>
-              </optgroup>
-              <optgroup v-if="wizardData.entityType === 'organization' || !wizardData.entityType" label="Organization Events">
-                <option value="organization.lifecycle.changed">Lifecycle Changed</option>
-                <option value="organization.type.changed">Type Changed</option>
-              </optgroup>
-              <optgroup v-if="wizardData.entityType === 'deal' || !wizardData.entityType" label="Deal Events">
-                <option value="deal.stage.changed">Stage Changed</option>
-                <option value="deal.pipeline.changed">Pipeline Changed</option>
-                <option value="deal.deal.won">Deal Won</option>
-                <option value="deal.deal.lost">Deal Lost</option>
-              </optgroup>
-            </select>
-          </div>
-        </div>
-
-        <!-- Step 2: Where does this apply? -->
-        <div v-if="currentStep === 1" class="max-w-2xl mx-auto">
-          <div class="mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Where does this apply?</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400">
-              Choose which app and module this process applies to
+              {{ t('process.wizardScopeIntro') }}
             </p>
           </div>
 
           <div class="space-y-4">
-            <!-- App Selection -->
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                App <span class="text-red-500">*</span>
+                {{ t('process.fieldApp') }} <span class="text-red-500">*</span>
               </label>
-              <select
+              <HeadlessSelect
                 v-model="wizardData.appKey"
-                class="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-indigo-500"
-              >
-                <option value="">Select an app...</option>
-                <option value="SALES">Sales</option>
-                <option value="AUDIT">Audit</option>
-                <option value="PORTAL">Portal</option>
-              </select>
+                :options="appOptions"
+                allow-empty
+                :empty-label="t('process.phSelectApp')"
+                :button-class="WIZARD_SELECT_BUTTON_CLASS"
+              />
             </div>
 
-            <!-- Module Selection -->
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Module <span class="text-red-500">*</span>
+                {{ t('process.fieldModule') }} <span class="text-red-500">*</span>
               </label>
-              <select
+              <HeadlessSelect
                 v-model="wizardData.entityType"
-                class="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-indigo-500"
-              >
-                <option value="">Select a module...</option>
-                <option value="people">People</option>
-                <option value="organization">Organization</option>
-                <option value="deal">Deal</option>
-              </select>
+                :options="moduleOptions"
+                allow-empty
+                :empty-label="t('process.phSelectModule')"
+                :button-class="WIZARD_SELECT_BUTTON_CLASS"
+                @update:model-value="onModuleChange"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {{ t('process.fieldStartsWhen') }} <span class="text-red-500">*</span>
+              </label>
+              <HeadlessSelect
+                v-model="wizardData.coreTrigger"
+                :options="coreTriggerOptionsList"
+                allow-empty
+                :empty-label="startsWhenPlaceholder"
+                :placeholder="startsWhenPlaceholder"
+                :disabled="!wizardData.entityType"
+                :button-class="WIZARD_SELECT_BUTTON_CLASS"
+              />
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ startsWhenHint }}</p>
+              <div v-if="wizardData.coreTrigger === 'record_updated' && wizardData.entityType" class="mt-3">
+                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('process.fieldWatchChanges') }}</label>
+                <HeadlessSelect
+                  v-model="wizardData.updateWatchField"
+                  :options="wizardWatchFieldOptions"
+                  :button-class="WIZARD_SELECT_BUTTON_CLASS"
+                />
+              </div>
+              <div v-if="wizardData.coreTrigger === 'schedule'" class="mt-3 space-y-2">
+                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">{{ t('process.fieldFrequency') }}</label>
+                <HeadlessSelect
+                  v-model="wizardData.schedule.preset"
+                  :options="schedulePresetOptions"
+                  :button-class="WIZARD_SELECT_BUTTON_CLASS"
+                />
+              </div>
+              <p v-if="wizardData.coreTrigger === 'webhook'" class="text-xs text-amber-700 dark:text-amber-300 mt-2">
+                {{ t('process.wizardWebhookHint') }}
+              </p>
             </div>
 
             <!-- Optional Conditions -->
@@ -204,7 +159,7 @@
                   checkbox-class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                 />
                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                  Apply only in some cases
+                  {{ t('process.wizardApplySomeCases') }}
                 </span>
               </label>
 
@@ -212,38 +167,33 @@
                 <div class="grid grid-cols-3 gap-3">
                   <div>
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Field
+                      {{ t('process.fieldField') }}
                     </label>
                     <input
                       v-model="wizardData.conditionField"
                       type="text"
-                      placeholder="e.g. amount"
+                      :placeholder="t('process.phAmount')"
                       class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                     />
                   </div>
                   <div>
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Operator
+                      {{ t('process.fieldOperator') }}
                     </label>
-                    <select
+                    <HeadlessSelect
                       v-model="wizardData.conditionOperator"
-                      class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
-                    >
-                      <option value="equals">Equals (=)</option>
-                      <option value="not_equals">Not Equals (≠)</option>
-                      <option value="greater_than">Greater Than (>)</option>
-                      <option value="less_than">Less Than (<)</option>
-                      <option value="contains">Contains</option>
-                    </select>
+                      :options="wizardConditionOperatorOptions"
+                      :button-class="WIZARD_SELECT_BUTTON_CLASS"
+                    />
                   </div>
                   <div>
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Value
+                      {{ t('process.fieldValue') }}
                     </label>
                     <input
                       v-model="wizardData.conditionValue"
                       type="text"
-                      placeholder="e.g. 100000"
+                      :placeholder="t('process.phAmountValue')"
                       class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                     />
                   </div>
@@ -253,12 +203,12 @@
           </div>
         </div>
 
-        <!-- Step 3: What should the system control? -->
-        <div v-if="currentStep === 2" class="max-w-2xl mx-auto">
+        <!-- Step 2: What should the system control? -->
+        <div v-if="currentStep === 1" class="max-w-2xl mx-auto">
           <div class="mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">What should the system control?</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('process.wizardWhatHeading') }}</h3>
             <p class="text-sm text-gray-600 dark:text-gray-400">
-              Select what behaviors this process should control
+              {{ t('process.wizardWhatIntro') }}
             </p>
           </div>
 
@@ -271,9 +221,9 @@
                   checkbox-class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                 />
                 <div class="ml-3 flex-1">
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">Control field behavior</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('process.wizardControlFieldBehavior') }}</span>
                   <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Make fields mandatory, set defaults, or control visibility
+                    {{ t('process.wizardControlFieldBehaviorDesc') }}
                   </p>
                 </div>
               </label>
@@ -281,36 +231,33 @@
               <div v-if="wizardData.controls.fieldBehavior" class="px-4 pb-4 space-y-3 border-t border-gray-200 dark:border-gray-700 pt-4">
                 <div>
                   <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Field
+                    {{ t('process.fieldField') }}
                   </label>
                   <input
                     v-model="wizardData.fieldRule.fieldKey"
                     type="text"
-                    placeholder="e.g. approval"
+                    :placeholder="t('process.phApproval')"
                     class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                   />
                 </div>
                 <div>
                   <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Rule Type
+                    {{ t('process.fieldRuleType') }}
                   </label>
-                  <select
+                  <HeadlessSelect
                     v-model="wizardData.fieldRule.rule"
-                    class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
-                  >
-                    <option value="mandatory">Make mandatory</option>
-                    <option value="default">Set default value</option>
-                    <option value="visibility">Show / hide field</option>
-                  </select>
+                    :options="wizardFieldRuleOptions"
+                    :button-class="WIZARD_SELECT_BUTTON_CLASS"
+                  />
                 </div>
                 <div v-if="wizardData.fieldRule.rule === 'default'">
                   <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Default Value
+                    {{ t('process.fieldDefaultValue') }}
                   </label>
                   <input
                     v-model="wizardData.fieldRule.value"
                     type="text"
-                    placeholder="Enter default value"
+                    :placeholder="t('process.phDefaultValue')"
                     class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                   />
                 </div>
@@ -320,11 +267,11 @@
                       v-model="wizardData.fieldRule.value"
                       checkbox-class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                     />
-                    <span class="ml-2 text-xs text-gray-700 dark:text-gray-300">Show field</span>
+                    <span class="ml-2 text-xs text-gray-700 dark:text-gray-300">{{ t('process.fieldShowField') }}</span>
                   </label>
                 </div>
                 <div v-if="wizardData.fieldRule.rule === 'mandatory'" class="text-xs text-gray-500 dark:text-gray-400 italic">
-                  This field will be mandatory when the process runs
+                  {{ t('process.wizardFieldMandatoryHint') }}
                 </div>
               </div>
             </div>
@@ -337,9 +284,9 @@
                   checkbox-class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                 />
                 <div class="ml-3 flex-1">
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">Control ownership & assignment</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('process.wizardControlOwnership') }}</span>
                   <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Assign or reassign record ownership
+                    {{ t('process.wizardControlOwnershipDesc') }}
                   </p>
                 </div>
               </label>
@@ -347,30 +294,27 @@
               <div v-if="wizardData.controls.ownership" class="px-4 pb-4 space-y-3 border-t border-gray-200 dark:border-gray-700 pt-4">
                 <div>
                   <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Assignment Type
+                    {{ t('process.fieldAssignmentType') }}
                   </label>
-                  <select
+                  <HeadlessSelect
                     v-model="wizardData.ownershipRule.assignment"
-                    class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
-                  >
-                    <option value="owner">Specific user</option>
-                    <option value="role">Role</option>
-                    <option value="rule">Rule-based</option>
-                  </select>
+                    :options="wizardOwnershipAssignmentOptions"
+                    :button-class="WIZARD_SELECT_BUTTON_CLASS"
+                  />
                 </div>
                 <div>
                   <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Target
+                    {{ t('process.fieldTarget') }}
                   </label>
                   <input
                     v-model="wizardData.ownershipRule.target"
                     type="text"
-                    placeholder="User ID, role name, or rule reference"
+                    :placeholder="t('process.phOwnershipTarget')"
                     class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                   />
                 </div>
                 <div class="text-xs text-gray-500 dark:text-gray-400 italic">
-                  Assignment will follow existing permission rules.
+                  {{ t('process.wizardOwnershipHint') }}
                 </div>
               </div>
             </div>
@@ -383,9 +327,9 @@
                   checkbox-class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                 />
                 <div class="ml-3 flex-1">
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">Control status / stage transitions</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('process.wizardControlStatus') }}</span>
                   <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Allow or block status changes
+                    {{ t('process.wizardControlStatusDesc') }}
                   </p>
                 </div>
               </label>
@@ -393,49 +337,46 @@
               <div v-if="wizardData.controls.statusGuard" class="px-4 pb-4 space-y-3 border-t border-gray-200 dark:border-gray-700 pt-4">
                 <div>
                   <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Field
+                    {{ t('process.fieldField') }}
                   </label>
-                  <select
+                  <HeadlessSelect
                     v-model="wizardData.statusGuard.field"
-                    class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
-                  >
-                    <option value="status">Status</option>
-                    <option value="lifecycle">Lifecycle</option>
-                    <option value="stage">Stage</option>
-                  </select>
+                    :options="wizardStatusGuardFieldOptions"
+                    :button-class="WIZARD_SELECT_BUTTON_CLASS"
+                  />
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                   <div>
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      From
+                      {{ t('process.fieldFrom') }}
                     </label>
                     <input
                       v-model="wizardData.statusGuard.from"
                       type="text"
-                      placeholder="e.g. Open"
+                      :placeholder="t('process.phStatusFrom')"
                       class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                     />
                   </div>
                   <div>
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      To
+                      {{ t('process.fieldTo') }}
                     </label>
                     <input
                       v-model="wizardData.statusGuard.to"
                       type="text"
-                      placeholder="e.g. Closed Won"
+                      :placeholder="t('process.phStatusTo')"
                       class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                     />
                   </div>
                 </div>
                 <div>
                   <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Block Reason (shown to users)
+                    {{ t('process.fieldBlockReason') }}
                   </label>
                   <input
                     v-model="wizardData.statusGuard.blockReason"
                     type="text"
-                    placeholder="e.g. Approval required"
+                    :placeholder="t('process.phBlockReason')"
                     class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                   />
                 </div>
@@ -450,9 +391,9 @@
                   checkbox-class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                 />
                 <div class="ml-3 flex-1">
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">Run actions</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('process.wizardControlActions') }}</span>
                   <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Create tasks, send notifications, or other automated actions
+                    {{ t('process.wizardControlActionsDesc') }}
                   </p>
                 </div>
               </label>
@@ -460,54 +401,51 @@
               <div v-if="wizardData.controls.actions" class="px-4 pb-4 space-y-3 border-t border-gray-200 dark:border-gray-700 pt-4">
                 <div>
                   <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Action Type
+                    {{ t('process.fieldActionType') }}
                   </label>
-                  <select
+                  <HeadlessSelect
                     v-model="wizardData.action.actionType"
-                    class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
-                  >
-                    <option value="">Select action...</option>
-                    <option value="create_task">Create Task</option>
-                    <option value="notify_user">Send Notification</option>
-                    <option value="start_process">Start Process</option>
-                  </select>
+                    :options="wizardActionTypeOptions"
+                    allow-empty
+                    :empty-label="t('process.phSelectAction')"
+                    :placeholder="t('process.phSelectAction')"
+                    :button-class="WIZARD_SELECT_BUTTON_CLASS"
+                  />
                 </div>
 
                 <!-- Create Task Params -->
                 <div v-if="wizardData.action.actionType === 'create_task'" class="space-y-3">
                   <div>
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Task Title <span class="text-red-500">*</span>
+                      {{ t('process.fieldTaskTitle') }} <span class="text-red-500">*</span>
                     </label>
                     <input
                       v-model="wizardData.action.params.title"
                       type="text"
-                      placeholder="e.g. Follow up on deal"
+                      :placeholder="t('process.phTaskTitle')"
                       class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                     />
                   </div>
                   <div>
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Description
+                      {{ t('process.fieldDescription') }}
                     </label>
                     <textarea
                       v-model="wizardData.action.params.description"
                       rows="2"
-                      placeholder="Task description..."
+                      :placeholder="t('process.phTaskDescription')"
                       class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                     ></textarea>
                   </div>
                   <div>
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Assign To
+                      {{ t('process.fieldAssignTo') }}
                     </label>
-                    <select
+                    <HeadlessSelect
                       v-model="wizardData.action.params.assignee"
-                      class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
-                    >
-                      <option value="owner">Record Owner</option>
-                      <option value="triggeredBy">User Who Triggered</option>
-                    </select>
+                      :options="wizardActionRecipientOptions"
+                      :button-class="WIZARD_SELECT_BUTTON_CLASS"
+                    />
                   </div>
                 </div>
 
@@ -515,26 +453,24 @@
                 <div v-if="wizardData.action.actionType === 'notify_user'" class="space-y-3">
                   <div>
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Message <span class="text-red-500">*</span>
+                      {{ t('process.fieldMessage') }} <span class="text-red-500">*</span>
                     </label>
                     <textarea
                       v-model="wizardData.action.params.message"
                       rows="3"
-                      placeholder="Notification message..."
+                      :placeholder="t('process.phNotifyMessage')"
                       class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                     ></textarea>
                   </div>
                   <div>
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Recipient
+                      {{ t('process.fieldRecipient') }}
                     </label>
-                    <select
+                    <HeadlessSelect
                       v-model="wizardData.action.params.recipient"
-                      class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
-                    >
-                      <option value="owner">Record Owner</option>
-                      <option value="triggeredBy">User Who Triggered</option>
-                    </select>
+                      :options="wizardActionRecipientOptions"
+                      :button-class="WIZARD_SELECT_BUTTON_CLASS"
+                    />
                   </div>
                 </div>
               </div>
@@ -542,45 +478,55 @@
           </div>
         </div>
 
-        <!-- Step 4: Review & Create -->
-        <div v-if="currentStep === 3" class="max-w-2xl mx-auto">
+        <!-- Step 3: Review & Create -->
+        <div v-if="currentStep === 2" class="max-w-2xl mx-auto">
           <div class="mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Review & Create</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('process.wizardReviewHeading') }}</h3>
             <p class="text-sm text-gray-600 dark:text-gray-400">
-              Review your process configuration before creating it
+              {{ t('process.wizardReviewIntro') }}
             </p>
           </div>
 
           <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-6 space-y-4">
             <div>
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">When</h4>
+              <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">{{ t('process.wizardReviewScope') }}</h4>
               <p class="text-sm text-gray-700 dark:text-gray-300">
-                {{ getTriggerDescription() }}
-              </p>
-            </div>
-
-            <div>
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Where</h4>
-              <p class="text-sm text-gray-700 dark:text-gray-300">
-                {{ wizardData.appKey }} → {{ wizardData.entityType }}
+                {{ scopeSummary }}
                 <span v-if="wizardData.hasCondition">
-                  <br />If {{ wizardData.conditionField }} {{ getOperatorLabel(wizardData.conditionOperator) }} {{ wizardData.conditionValue }}
+                  <br />{{ t('process.wizardReviewCondition', {
+                    field: wizardData.conditionField,
+                    operator: getOperatorLabel(wizardData.conditionOperator),
+                    value: wizardData.conditionValue
+                  }) }}
                 </span>
               </p>
             </div>
 
             <div v-if="hasControls()">
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Then</h4>
+              <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">{{ t('process.wizardReviewThen') }}</h4>
               <ul class="list-disc list-inside space-y-1 text-sm text-gray-700 dark:text-gray-300">
                 <li v-if="wizardData.controls.fieldBehavior">
-                  Make "{{ wizardData.fieldRule.fieldKey }}" {{ getFieldRuleDescription() }}
+                  {{ t('process.wizardReviewFieldRule', { field: wizardData.fieldRule.fieldKey, rule: getFieldRuleDescription() }) }}
                 </li>
                 <li v-if="wizardData.controls.ownership">
-                  Assign ownership to {{ wizardData.ownershipRule.target }} ({{ wizardData.ownershipRule.assignment }})
+                  {{ t('process.wizardReviewOwnership', { target: wizardData.ownershipRule.target, assignment: wizardData.ownershipRule.assignment }) }}
                 </li>
                 <li v-if="wizardData.controls.statusGuard">
-                  {{ wizardData.statusGuard.blockReason ? 'Block' : 'Allow' }} {{ wizardData.statusGuard.field }} change from "{{ wizardData.statusGuard.from }}" to "{{ wizardData.statusGuard.to }}"
-                  <span v-if="wizardData.statusGuard.blockReason">: {{ wizardData.statusGuard.blockReason }}</span>
+                  <template v-if="wizardData.statusGuard.blockReason">
+                    {{ t('process.wizardReviewStatusBlock', {
+                      field: wizardData.statusGuard.field,
+                      from: wizardData.statusGuard.from,
+                      to: wizardData.statusGuard.to,
+                      reason: wizardData.statusGuard.blockReason
+                    }) }}
+                  </template>
+                  <template v-else>
+                    {{ t('process.wizardReviewStatusAllow', {
+                      field: wizardData.statusGuard.field,
+                      from: wizardData.statusGuard.from,
+                      to: wizardData.statusGuard.to
+                    }) }}
+                  </template>
                 </li>
                 <li v-if="wizardData.controls.actions">
                   {{ getActionDescription() }}
@@ -592,24 +538,24 @@
           <!-- Process Name -->
           <div class="mt-6">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Process Name <span class="text-red-500">*</span>
+              {{ t('process.fieldProcessName') }} <span class="text-red-500">*</span>
             </label>
             <input
               v-model="wizardData.name"
               type="text"
-              placeholder="e.g. Deal Approval Process"
+              :placeholder="t('process.phProcessName')"
               class="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-indigo-500"
             />
           </div>
 
           <div class="mt-4">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Description (optional)
+              {{ t('process.fieldDescriptionOptional') }}
             </label>
             <textarea
               v-model="wizardData.description"
               rows="3"
-              placeholder="Describe what this process does..."
+              :placeholder="t('process.phProcessDescription')"
               class="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-indigo-500"
             ></textarea>
           </div>
@@ -627,32 +573,35 @@
           @click="$emit('close')"
           class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         >
-          Cancel
+          {{ t('actions.cancel') }}
         </button>
         <div class="flex items-center gap-3">
           <button
             v-if="currentStep > 0"
-            @click="previousStep"
+            type="button"
             class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            @click="previousStep"
           >
-            Previous
+            {{ t('actions.previous') }}
           </button>
           <button
             v-if="currentStep < steps.length - 1"
-            @click="nextStep"
+            type="button"
             :disabled="!canProceed"
             class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            @click="nextStep"
           >
-            Next
+            {{ t('actions.next') }}
           </button>
           <button
             v-else
-            @click="createProcess"
+            type="button"
             :disabled="saving || !canCreate"
             class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            @click="createProcess"
           >
-            <span v-if="saving">Creating...</span>
-            <span v-else>Create Process</span>
+            <span v-if="saving">{{ t('process.wizardCreating') }}</span>
+            <span v-else>{{ t('process.wizardCreateProcess') }}</span>
           </button>
         </div>
       </div>
@@ -661,9 +610,63 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
+import {
+  getAppOptions,
+  getModuleOptions,
+  WIZARD_SELECT_BUTTON_CLASS,
+  coreTriggerOptions,
+  getSchedulePresetOptions,
+  getCoreTriggerDescription,
+  updateWatchFieldOptions,
+  coerceCoreTriggerForModule,
+  applyCoreTrigger,
+  buildTriggerFromCore,
+  buildProcessScopeSentence
+} from '@/utils/processDesignerConstants';
+
+const { t } = useI18n();
+
+const wizardConditionOperatorOptions = computed(() => [
+  { value: 'equals', label: t('process.opEquals') },
+  { value: 'not_equals', label: t('process.opNotEquals') },
+  { value: 'greater_than', label: t('process.opGreaterThan') },
+  { value: 'less_than', label: t('process.opLessThan') },
+  { value: 'contains', label: t('process.opContains') }
+]);
+
+const wizardFieldRuleOptions = computed(() => [
+  { value: 'mandatory', label: t('process.fieldRuleMandatory') },
+  { value: 'default', label: t('process.fieldRuleDefault') },
+  { value: 'visibility', label: t('process.fieldRuleVisibility') }
+]);
+
+const wizardOwnershipAssignmentOptions = computed(() => [
+  { value: 'owner', label: t('process.ownershipSpecificUser') },
+  { value: 'role', label: t('process.ownershipRole') },
+  { value: 'rule', label: t('process.ownershipRuleBased') }
+]);
+
+const wizardStatusGuardFieldOptions = computed(() => [
+  { value: 'status', label: t('process.statusFieldStatus') },
+  { value: 'lifecycle', label: t('process.statusFieldLifecycle') },
+  { value: 'stage', label: t('process.statusFieldStage') }
+]);
+
+const wizardActionTypeOptions = computed(() => [
+  { value: 'create_task', label: t('process.actionCreateTaskLower') },
+  { value: 'notify_user', label: t('process.actionNotifyUserLower') },
+  { value: 'start_process', label: t('process.actionStartProcessLower') }
+]);
+
+const wizardActionRecipientOptions = computed(() => [
+  { value: 'owner', label: t('process.assigneeOwner') },
+  { value: 'triggeredBy', label: t('process.assigneeTriggeredBy') }
+]);
 
 const emit = defineEmits(['close', 'saved']);
 
@@ -672,48 +675,17 @@ const saving = ref(false);
 const error = ref(null);
 
 const steps = computed(() => [
-  { id: '1', name: 'When', status: currentStep.value > 0 ? 'complete' : currentStep.value === 0 ? 'current' : 'upcoming' },
-  { id: '2', name: 'Where', status: currentStep.value > 1 ? 'complete' : currentStep.value === 1 ? 'current' : 'upcoming' },
-  { id: '3', name: 'What', status: currentStep.value > 2 ? 'complete' : currentStep.value === 2 ? 'current' : 'upcoming' },
-  { id: '4', name: 'Review', status: currentStep.value === 3 ? 'current' : currentStep.value > 3 ? 'complete' : 'upcoming' }
+  { id: '1', name: t('process.wizardStepScope'), status: currentStep.value > 0 ? 'complete' : currentStep.value === 0 ? 'current' : 'upcoming' },
+  { id: '2', name: t('process.wizardStepWhat'), status: currentStep.value > 1 ? 'complete' : currentStep.value === 1 ? 'current' : 'upcoming' },
+  { id: '3', name: t('process.wizardStepReview'), status: currentStep.value === 2 ? 'current' : currentStep.value > 2 ? 'complete' : 'upcoming' }
 ]);
-
-const triggerOptions = [
-  {
-    value: 'record_creation',
-    label: 'On record creation',
-    description: 'Runs automatically when a new record is created',
-    eventType: null // Will be determined by entity type
-  },
-  {
-    value: 'record_update',
-    label: 'On record update',
-    description: 'Runs automatically when a record is updated',
-    eventType: null // Will be determined by entity type
-  },
-  {
-    value: 'status_change',
-    label: 'On status / stage change',
-    description: 'Runs automatically when a Deal stage or status changes'
-  },
-  {
-    value: 'form_submission',
-    label: 'On form submission',
-    description: 'Runs automatically when a form is submitted',
-    eventType: null // Future: form submission events
-  },
-  {
-    value: 'manual',
-    label: 'Manual trigger',
-    description: 'Run this process manually when needed'
-  }
-];
 
 const wizardData = ref({
   name: '',
   description: '',
-  triggerType: 'domain_event',
-  eventType: '',
+  coreTrigger: '',
+  updateWatchField: '__any__',
+  schedule: { preset: 'daily', hour: 9, minute: 0 },
   appKey: '',
   entityType: '',
   hasCondition: false,
@@ -753,44 +725,61 @@ const wizardData = ref({
   }
 });
 
-// Set default event type based on app and entity selection
-watch(() => [wizardData.value.appKey, wizardData.value.entityType], ([app, entity]) => {
-  if (app === 'SALES' && entity === 'deal' && wizardData.value.triggerType === 'status_change' && !wizardData.value.eventType) {
-    wizardData.value.eventType = 'deal.stage.changed';
-  }
+const appOptions = computed(() => getAppOptions(t));
+const moduleOptions = computed(() => getModuleOptions(t));
+const coreTriggerOptionsList = computed(() => coreTriggerOptions(t));
+const schedulePresetOptions = computed(() => getSchedulePresetOptions(t));
+const wizardWatchFieldOptions = computed(() => updateWatchFieldOptions(wizardData.value.entityType, t));
+
+const startsWhenPlaceholder = computed(() => {
+  if (!wizardData.value.entityType) return t('process.settingsSelectModuleFirst');
+  return t('process.settingsChooseStart');
 });
 
-// Auto-select event type based on trigger type and entity
-watch(() => [wizardData.value.triggerType, wizardData.value.entityType], ([trigger, entity]) => {
-  if (trigger === 'status_change' && entity === 'deal' && !wizardData.value.eventType) {
-    wizardData.value.eventType = 'deal.stage.changed';
-  } else if (trigger === 'record_update' && entity && !wizardData.value.eventType) {
-    // Default to lifecycle.changed for record updates
-    wizardData.value.eventType = `${entity}.lifecycle.changed`;
-  }
+const startsWhenHint = computed(() => {
+  if (!wizardData.value.entityType) return t('process.settingsPickModuleFirst');
+  return getCoreTriggerDescription(t, wizardData.value.coreTrigger);
 });
+
+const scopeSummary = computed(() => {
+  const app = appOptions.value.find((a) => a.value === wizardData.value.appKey)?.label || wizardData.value.appKey;
+  const mod = moduleOptions.value.find((m) => m.value === wizardData.value.entityType)?.label || wizardData.value.entityType;
+  const when = buildProcessScopeSentence(
+    {
+      appKey: wizardData.value.appKey,
+      entityType: wizardData.value.entityType,
+      coreTrigger: wizardData.value.coreTrigger,
+      trigger: buildTriggerFromCore(wizardData.value.coreTrigger, wizardData.value.entityType, {
+        updateWatchField: wizardData.value.updateWatchField,
+        schedule: wizardData.value.schedule
+      })
+    },
+    t
+  );
+  return `${app} · ${mod} — ${when}`;
+});
+
+function onModuleChange() {
+  if (!wizardData.value.entityType) {
+    wizardData.value.coreTrigger = '';
+    return;
+  }
+  wizardData.value.coreTrigger = coerceCoreTriggerForModule(wizardData.value.coreTrigger);
+}
 
 const canProceed = computed(() => {
   if (currentStep.value === 0) {
-    if (!wizardData.value.triggerType) return false;
-    // Manual and form_submission don't need eventType
-    if (wizardData.value.triggerType === 'manual' || wizardData.value.triggerType === 'form_submission') {
-      return true;
-    }
-    return !!wizardData.value.eventType;
+    return !!(wizardData.value.appKey && wizardData.value.entityType && wizardData.value.coreTrigger);
   }
   if (currentStep.value === 1) {
-    return wizardData.value.appKey && wizardData.value.entityType;
-  }
-  if (currentStep.value === 2) {
-    // At least one control must be selected
-    return Object.values(wizardData.value.controls).some(v => v);
+    return Object.values(wizardData.value.controls).some((v) => v);
   }
   return true;
 });
 
 const canCreate = computed(() => {
   if (!wizardData.value.name.trim()) return false;
+  if (!wizardData.value.coreTrigger) return false;
   if (!hasControls()) return false;
   
   // Validate field rule if enabled
@@ -826,55 +815,41 @@ const hasControls = () => {
   return Object.values(wizardData.value.controls).some(v => v);
 };
 
-const getTriggerDescription = () => {
-  if (wizardData.value.triggerType === 'manual') {
-    return 'Manual trigger';
-  }
-  if (wizardData.value.triggerType === 'form_submission') {
-    return 'When a form is submitted';
-  }
-  const eventLabels = {
-    'people.lifecycle.changed': 'When a Person\'s lifecycle changes',
-    'people.sales_type.changed': 'When a Person\'s SALES role changes (Lead/Contact)',
-    'organization.lifecycle.changed': 'When an Organization\'s lifecycle changes',
-    'organization.type.changed': 'When an Organization\'s type changes',
-    'deal.stage.changed': 'When a Deal\'s stage changes',
-    'deal.pipeline.changed': 'When a Deal\'s pipeline changes',
-    'deal.deal.won': 'When a Deal is won',
-    'deal.deal.lost': 'When a Deal is lost'
-  };
-  return eventLabels[wizardData.value.eventType] || wizardData.value.eventType || 'On record update';
-};
-
 const getOperatorLabel = (op) => {
   const labels = {
     equals: '=',
     not_equals: '≠',
     greater_than: '>',
     less_than: '<',
-    contains: 'contains'
+    contains: t('process.opSymbolContains')
   };
   return labels[op] || op;
 };
 
 const getFieldRuleDescription = () => {
   if (wizardData.value.fieldRule.rule === 'mandatory') {
-    return 'mandatory';
+    return t('process.wizardFieldRuleMandatory');
   }
   if (wizardData.value.fieldRule.rule === 'default') {
-    return `default to "${wizardData.value.fieldRule.value}"`;
+    return t('process.wizardFieldRuleDefault', { value: wizardData.value.fieldRule.value });
   }
-  return wizardData.value.fieldRule.value ? 'visible' : 'hidden';
+  return wizardData.value.fieldRule.value
+    ? t('process.wizardFieldRuleVisible')
+    : t('process.wizardFieldRuleHidden');
 };
 
 const getActionDescription = () => {
   if (wizardData.value.action.actionType === 'create_task') {
-    return `Create task: "${wizardData.value.action.params.title}"`;
+    return t('process.wizardActionCreateTask', { title: wizardData.value.action.params.title });
   }
   if (wizardData.value.action.actionType === 'notify_user') {
-    return `Notify ${wizardData.value.action.params.recipient === 'owner' ? 'owner' : 'user'}`;
+    return t('process.wizardActionNotify', {
+      recipient: wizardData.value.action.params.recipient === 'owner'
+        ? t('process.wizardActionNotifyOwner')
+        : t('process.wizardActionNotifyUser')
+    });
   }
-  return 'Run action';
+  return t('process.wizardActionRun');
 };
 
 const nextStep = () => {
@@ -897,30 +872,25 @@ const generateProcessDefinition = () => {
   // Generate node ID helper
   const getNodeId = (prefix) => `${prefix}_${nodeIdCounter++}`;
 
-  // Determine trigger type and event type
-  let triggerType = 'manual';
-  let eventType = null;
+  const applied = applyCoreTrigger(wizardData.value.coreTrigger, wizardData.value.entityType, {
+    updateWatchField: wizardData.value.updateWatchField,
+    schedule: wizardData.value.schedule
+  });
+  const trigger = buildTriggerFromCore(wizardData.value.coreTrigger, wizardData.value.entityType, {
+    updateWatchField: wizardData.value.updateWatchField,
+    schedule: wizardData.value.schedule
+  });
 
-  if (wizardData.value.triggerType === 'manual') {
-    triggerType = 'manual';
-  } else if (wizardData.value.triggerType === 'form_submission') {
-    // Future: form submission events
-    triggerType = 'domain_event';
-    eventType = 'form.submitted'; // Placeholder
-  } else {
-    triggerType = 'domain_event';
-    eventType = wizardData.value.eventType;
-  }
-
-  // Start with trigger node (if domain_event)
-  if (triggerType === 'domain_event' && eventType) {
+  if (applied.needsTriggerNode) {
     const triggerNodeId = getNodeId('trigger');
+    const triggerConfig =
+      applied.type === 'domain_event'
+        ? { eventType: applied.eventType, triggerKind: 'domain_event' }
+        : { triggerKind: 'webhook' };
     nodes.push({
       id: triggerNodeId,
       type: 'trigger',
-      config: {
-        eventType: eventType
-      }
+      config: triggerConfig
     });
   }
 
@@ -1061,10 +1031,9 @@ const generateProcessDefinition = () => {
     name: wizardData.value.name,
     description: wizardData.value.description || '',
     appKey: wizardData.value.appKey,
-    trigger: {
-      type: triggerType,
-      eventType: eventType
-    },
+    entityType: wizardData.value.entityType,
+    trigger,
+    triggerConfigured: true,
     status: 'draft',
     version: 1,
     nodes,
@@ -1086,10 +1055,10 @@ const createProcess = async () => {
       emit('saved', response.data);
       emit('close');
     } else {
-      error.value = response.message || 'Failed to create process';
+      error.value = response.message || t('process.wizardCreateFailed');
     }
   } catch (err) {
-    error.value = err.message || 'Failed to create process';
+    error.value = err.message || t('process.wizardCreateFailed');
     console.error('Error creating process:', err);
   } finally {
     saving.value = false;

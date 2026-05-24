@@ -636,6 +636,29 @@ exports.submitForm = async (req, res) => {
             }
         }
         
+        if (processedResponse?.executionStatus === 'Submitted') {
+            try {
+                const { emit: emitDomainEvent } = require('../services/domainEvents');
+                emitDomainEvent({
+                    entityType: 'form',
+                    entityId: processedResponse._id,
+                    eventType: 'form.submitted',
+                    previousState: null,
+                    currentState: {
+                        formId: processedResponse.formId,
+                        executionStatus: processedResponse.executionStatus,
+                        reviewStatus: processedResponse.reviewStatus,
+                        linkedTo: processedResponse.linkedTo || null
+                    },
+                    appKey: String(req.appKey || 'AUDIT').toUpperCase(),
+                    triggeredBy: req.user ? req.user._id : null,
+                    organizationId
+                });
+            } catch (emitErr) {
+                console.error('[submitForm] form.submitted domain event failed (non-blocking):', emitErr.message);
+            }
+        }
+
         res.status(201).json({
             success: true,
             data: processedResponse,

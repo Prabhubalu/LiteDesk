@@ -36,6 +36,9 @@
 import SeverityIndicator from './SeverityIndicator.vue';
 import SuggestedActionLink from './SuggestedActionLink.vue';
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
   severity: {
@@ -59,9 +62,9 @@ const props = defineProps({
 
 const severityLabel = computed(() => {
   const labels = {
-    critical: 'Critical',
-    warning: 'Warning',
-    info: 'Info'
+    critical: t('states.severityCritical'),
+    warning: t('states.severityWarning'),
+    info: t('states.severityInfo'),
   };
   return labels[props.severity] || '';
 });

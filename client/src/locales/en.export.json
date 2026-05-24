@@ -1,0 +1,122 @@
+{
+  "actions.back": {
+    "message": "Back"
+  },
+  "actions.cancel": {
+    "message": "Cancel"
+  },
+  "actions.close": {
+    "message": "Close"
+  },
+  "actions.confirm": {
+    "message": "Confirm"
+  },
+  "actions.create": {
+    "message": "Create"
+  },
+  "actions.delete": {
+    "message": "Delete"
+  },
+  "actions.edit": {
+    "message": "Edit"
+  },
+  "actions.retry": {
+    "message": "Retry"
+  },
+  "actions.save": {
+    "message": "Save"
+  },
+  "actions.search": {
+    "message": "Search"
+  },
+  "common.assignedToUser": {
+    "message": "Assigned to {gender, select, female {her} male {him} other {them}}"
+  },
+  "common.itemsSelected": {
+    "message": "{count, plural, one {# item selected} other {# items selected}}"
+  },
+  "common.localeDevTitle": {
+    "message": "Localization QA"
+  },
+  "common.pseudoLocaleHint": {
+    "message": "Pseudo-locales expand text and expose layout issues before translation."
+  },
+  "common.recordsCount": {
+    "message": "{count, plural, one {# record} other {# records}}"
+  },
+  "common.welcomeUser": {
+    "message": "Welcome, {name}"
+  },
+  "errors.auth_required": {
+    "message": "Sign in to continue"
+  },
+  "errors.auth_token_invalid": {
+    "message": "Your session expired. Sign in again."
+  },
+  "errors.auth_token_missing": {
+    "message": "Sign in to continue"
+  },
+  "errors.conflict": {
+    "message": "This action conflicts with another change. Refresh and try again."
+  },
+  "errors.org_not_found": {
+    "message": "Organization not found"
+  },
+  "errors.permission_denied": {
+    "message": "You do not have permission to perform this action"
+  },
+  "errors.rate_limited": {
+    "message": "Too many requests. Wait a moment and try again."
+  },
+  "errors.resource_not_found": {
+    "message": "That record could not be found"
+  },
+  "errors.server_error": {
+    "message": "Something went wrong on our side. Try again later."
+  },
+  "errors.user_not_found": {
+    "message": "User not found"
+  },
+  "errors.validation_failed": {
+    "message": "Check the highlighted fields and try again"
+  },
+  "navigation.home": {
+    "message": "Home"
+  },
+  "navigation.inbox": {
+    "message": "Inbox"
+  },
+  "navigation.profile": {
+    "message": "Profile"
+  },
+  "navigation.settings": {
+    "message": "Settings"
+  },
+  "states.empty": {
+    "message": "Nothing here yet"
+  },
+  "states.genericFailure": {
+    "message": "Something went wrong"
+  },
+  "states.loading": {
+    "message": "Loading…"
+  },
+  "states.offline": {
+    "message": "You are offline"
+  },
+  "states.saved": {
+    "message": "Saved"
+  },
+  "validation.emailInvalid": {
+    "message": "Enter a valid email address"
+  },
+  "validation.maxLength": {
+    "message": "Must be at most {max, number} characters"
+  },
+  "validation.minLength": {
+    "message": "Must be at least {min, number} characters"
+  },
+  "validation.required": {
+    "message": "This field is required"
+  }
+}

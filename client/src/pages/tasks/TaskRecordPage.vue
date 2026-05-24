@@ -4,8 +4,8 @@
       :loading="loading"
       :show-loading="embed"
       :error="error"
-      loading-message="Loading task..."
-      error-title="Error Loading Task"
+      :loading-message="taskLoadingMessage"
+      :error-title="taskErrorTitle"
       :layout-props="{
         leftExpanded: !!expandedLeftSection,
         forceMobile: embed,
@@ -25,8 +25,8 @@
         :show-navigation="true"
         :can-previous="canNavigatePreviousTask"
         :can-next="canNavigateNextTask"
-        previous-label="Previous task"
-        next-label="Next task"
+        :previous-label="taskNavPreviousLabel"
+        :next-label="taskNavNextLabel"
         :shortcut-prev="navShortcutPrev"
         :shortcut-next="navShortcutNext"
         @previous="goToPreviousTask"
@@ -34,7 +34,7 @@
       >
         <template #breadcrumbs>
           <span class="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
-            Task <span class="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500"></span> {{ task?._id?.slice(-8) || 'N/A' }}
+            {{ taskModuleLabel }} <span class="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500"></span> {{ task?._id?.slice(-8) || 'N/A' }}
           </span>
         </template>
         
@@ -44,8 +44,8 @@
             type="button"
             @click="showEditDrawer = true"
             class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-            aria-label="Edit task"
-            title="Edit task"
+            :aria-label="t('records.taskEditAria')"
+            :title="t('records.taskEditAria')"
           >
             <PencilSquareIcon class="w-5 h-5" />
           </button>
@@ -59,8 +59,8 @@
                 ? 'text-indigo-600 dark:text-indigo-400'
                 : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
             ]"
-            aria-label="Tag"
-            title="Tag"
+            :aria-label="t('records.genericTagsAria')"
+            :title="t('records.genericTagsAria')"
           >
             <TagIcon class="block w-5 h-5" />
             <span
@@ -72,8 +72,8 @@
             type="button"
             @click="handleCopyUrl"
             class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-            aria-label="Copy URL"
-            title="Copy URL"
+            :aria-label="t('records.genericCopyUrl')"
+            :title="t('records.genericCopyUrl')"
           >
             <ClipboardDocumentIcon class="w-5 h-5" />
           </button>
@@ -84,8 +84,8 @@
               'p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors',
               isFollowing ? 'text-yellow-500 dark:text-yellow-400' : ''
             ]"
-            :aria-label="isFollowing ? 'Unstar' : 'Star'"
-            :title="isFollowing ? 'Unstar' : 'Star'"
+            :aria-label="taskStarAriaLabel"
+            :title="taskStarAriaLabel"
           >
             <StarIcon v-if="!isFollowing" class="w-5 h-5" />
             <StarIconSolid v-else class="w-5 h-5" />
@@ -94,15 +94,15 @@
             type="button"
             @click="handleClose"
             class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 lg:hidden"
-            aria-label="Close"
-            title="Close"
+            :aria-label="t('actions.close')"
+            :title="t('actions.close')"
           >
             <XMarkIcon class="w-5 h-5" />
           </button>
           <Menu as="div" class="relative">
             <MenuButton
               class="p-1 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              aria-label="More actions"
+              :aria-label="t('records.genericMoreActions')"
             >
               <EllipsisVerticalIcon class="w-5 h-5" />
             </MenuButton>
@@ -128,7 +128,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
-                    <span>Duplicate</span>
+                    <span>{{ t('actions.duplicate') }}</span>
                   </button>
                 </MenuItem>
                 <MenuItem v-slot="{ active }">
@@ -142,7 +142,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    <span>Export</span>
+                    <span>{{ t('actions.export') }}</span>
                   </button>
                 </MenuItem>
                 <MenuItem v-slot="{ active }">
@@ -154,7 +154,7 @@
                     ]"
                   >
                     <EnvelopeIcon class="w-4 h-4" />
-                    <span>Email assignee</span>
+                    <span>{{ t('records.taskEmailAssignee') }}</span>
                   </button>
                 </MenuItem>
                 <hr class="my-1 border-gray-200 dark:border-gray-700" />
@@ -169,7 +169,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
-                    <span>Delete</span>
+                    <span>{{ t('actions.delete') }}</span>
                   </button>
                 </MenuItem>
               </MenuItems>
@@ -194,13 +194,13 @@
             @click="closeExpandedLeftSection"
           >
             <ArrowLeftIcon class="h-4 w-4" />
-            <span>Back to task</span>
+            <span>{{ t('records.taskBackTo') }}</span>
           </button>
           <button
             type="button"
             class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 dark:border-gray-700 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-            aria-label="Collapse section"
-            title="Collapse"
+            :aria-label="t('records.genericCollapseSection')"
+            :title="t('records.genericCollapse')"
             @click="closeExpandedLeftSection"
           >
             <ArrowsPointingInIcon class="h-4 w-4" />
@@ -213,7 +213,7 @@
         v-if="task && expandedLeftSection === 'description-history'"
         class="description-history-page flex-1 min-h-0 mt-4 flex flex-col gap-6"
       >
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex-shrink-0">{{ task.title || 'Task' }}</h2>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex-shrink-0">{{ task.title || taskModuleLabel }}</h2>
         <div class="grid grid-cols-1 lg:grid-cols-[1fr_320px] grid-rows-[1fr] gap-6 min-h-0 flex-1">
           <!-- Left: content column – fixed height, internal scroll -->
           <div class="flex flex-col min-h-0 min-w-0 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden h-full">
@@ -231,14 +231,14 @@
                 v-html="descriptionHistorySelectedContent"
               />
               <p v-else class="px-6 py-4 text-sm text-gray-400 dark:text-gray-500 italic m-0">
-                No description in this version.
+                {{ t('records.genericNoDescInVersion') }}
               </p>
             </div>
           </div>
           <!-- Right: version list column – fixed height, internal scroll -->
           <div class="flex flex-col min-h-0 min-w-0 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden h-full">
             <h3 class="font-semibold text-gray-900 dark:text-white px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-              Version history
+              {{ t('records.genericVersionHistory') }}
             </h3>
             <div v-if="descriptionVersionsLoading" class="flex items-center justify-center py-8 flex-1 min-h-0 overflow-hidden">
               <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
@@ -266,7 +266,7 @@
                     {{ formatDescriptionVersionDate(ver.createdAt) }}
                   </span>
                   <span class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mt-0.5">
-                    <span v-if="ver.isCurrent" class="font-medium text-gray-600 dark:text-gray-300">Current Version</span>
+                    <span v-if="ver.isCurrent" class="font-medium text-gray-600 dark:text-gray-300">{{ t('records.genericCurrentVersion') }}</span>
                     <template v-else>
                       <Avatar
                         v-if="ver.createdBy"
@@ -274,14 +274,14 @@
                         size="sm"
                         class="shrink-0"
                       />
-                      {{ ver.createdBy }}
+                      {{ ver.createdBy || t('records.genericSomeone') }}
                     </template>
                   </span>
                 </div>
               </label>
             </div>
             <p class="text-xs text-gray-400 dark:text-gray-500 px-4 py-2 border-t border-gray-100 dark:border-gray-700 flex-shrink-0">
-              Version history will be stored for up to 365 days in task descriptions.
+              {{ t('records.taskVersionRetentionNote') }}
             </p>
             <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
               <button
@@ -290,8 +290,8 @@
                 class="w-full inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:pointer-events-none"
                 @click="restoreDescriptionVersion"
               >
-                <span v-if="descriptionRestoreLoading">Restoring…</span>
-                <span v-else>Restore this version</span>
+                <span v-if="descriptionRestoreLoading">{{ t('records.genericRestoring') }}</span>
+                <span v-else>{{ t('records.genericRestoreVersion') }}</span>
               </button>
             </div>
           </div>
@@ -305,7 +305,7 @@
         :sticky="isLeftTitleSticky"
         :embed="embed"
       >
-        <Avatar :record="{ name: TASK_MODULE_NAME }" :icon="CheckCircleIcon" size="lg" class="shrink-0" />
+        <Avatar :record="{ name: taskModuleLabel }" :icon="CheckCircleIcon" size="lg" class="shrink-0" />
         <div class="min-w-0 flex-1">
           <EditableTitle
             :title="task.title || ''"
@@ -321,7 +321,7 @@
         :class="['group/left-section', expandedLeftSection ? 'mt-8' : 'mt-4']"
       >
         <RecordStateSection
-          heading="Key fields"
+          :heading="t('records.genericKeyFields')"
           :fields="keySectionFields"
           :field-values="keyFieldDisplayValues"
           :signals="computeSignals(task)"
@@ -406,7 +406,7 @@
               @keydown.enter="handleStartDateBlur"
               @keydown.esc="handleStartDateCancel"
               class="text-xs h-8 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full cursor-pointer"
-              placeholder="Start date"
+              :placeholder="keySectionFields.find((f) => f.key === 'startDate')?.label"
             />
             <span
               v-show="!isEditingStartDate"
@@ -415,7 +415,7 @@
                 task.startDate ? 'text-gray-900 dark:text-white' : 'text-record-empty'
               ]"
             >
-              {{ formatStateDate(task.startDate) || 'Empty' }}
+              {{ formatStateDate(task.startDate) || keyFieldsEmptyLabel }}
             </span>
           </div>
           <span
@@ -424,7 +424,7 @@
               'block w-full min-h-8 text-sm rounded px-2 py-1 cursor-default select-none bg-gray-50 dark:bg-gray-800/60 flex items-center',
               task.startDate ? 'text-gray-900 dark:text-white' : 'text-record-empty'
             ]"
-          >{{ formatStateDate(task.startDate) || 'Empty' }}</span>
+          >{{ formatStateDate(task.startDate) || keyFieldsEmptyLabel }}</span>
         </template>
 
         <!-- Editable Due Date slot -->
@@ -440,7 +440,7 @@
               @keydown.enter="handleDueDateBlur"
               @keydown.esc="handleDueDateCancel"
               class="text-xs h-8 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full cursor-pointer"
-              placeholder="Due date"
+              :placeholder="keySectionFields.find((f) => f.key === 'dueDate')?.label"
             />
             <span
               v-show="!isEditingDueDate"
@@ -449,7 +449,7 @@
                 task.dueDate ? 'text-gray-900 dark:text-white' : 'text-record-empty'
               ]"
             >
-              {{ formatStateDate(task.dueDate) || 'Empty' }}
+              {{ formatStateDate(task.dueDate) || keyFieldsEmptyLabel }}
             </span>
           </div>
           <span
@@ -458,7 +458,7 @@
               'block w-full min-h-8 text-sm rounded px-2 py-1 cursor-default select-none bg-gray-50 dark:bg-gray-800/60 flex items-center',
               task.dueDate ? 'text-gray-900 dark:text-white' : 'text-record-empty'
             ]"
-          >{{ formatStateDate(task.dueDate) || 'Empty' }}</span>
+          >{{ formatStateDate(task.dueDate) || keyFieldsEmptyLabel }}</span>
         </template>
         
         <!-- Editable Time Estimate slot -->
@@ -484,7 +484,7 @@
                 task.estimatedHours ? 'text-gray-900 dark:text-white' : 'text-record-empty'
               ]"
             >
-              {{ task.estimatedHours ? `${task.estimatedHours}h` : 'Empty' }}
+              {{ task.estimatedHours ? `${task.estimatedHours}h` : keyFieldsEmptyLabel }}
             </span>
           </div>
           <span
@@ -493,7 +493,7 @@
               'block w-full min-h-8 text-sm rounded px-2 py-1 cursor-default select-none bg-gray-50 dark:bg-gray-800/60 flex items-center',
               task.estimatedHours ? 'text-gray-900 dark:text-white' : 'text-record-empty'
             ]"
-          >{{ task.estimatedHours ? `${task.estimatedHours}h` : 'Empty' }}</span>
+          >{{ task.estimatedHours ? `${task.estimatedHours}h` : keyFieldsEmptyLabel }}</span>
         </template>
         
         <!-- Editable owner slot - dropdown opens on click, value stays visible -->
@@ -523,7 +523,7 @@
                     task.assignedTo ? 'text-gray-900 dark:text-white' : 'text-record-empty'
                   ]"
                 >
-                  {{ task.assignedTo ? getUserDisplayName(task.assignedTo) : 'Empty' }}
+                  {{ task.assignedTo ? getUserDisplayName(task.assignedTo) : keyFieldsEmptyLabel }}
                 </span>
               </ListboxButton>
               <Transition
@@ -536,7 +536,7 @@
                 >
                   <ListboxOption :value="null" v-slot="{ active }">
                     <li :class="['relative cursor-default select-none py-2 pl-4 pr-10 flex items-center gap-2', active ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100']">
-                      <span class="block truncate">Unassigned</span>
+                      <span class="block truncate">{{ t('records.editableUnassigned') }}</span>
                     </li>
                   </ListboxOption>
                   <ListboxOption
@@ -574,7 +574,7 @@
                 task.assignedTo ? 'text-gray-900 dark:text-white' : 'text-record-empty'
               ]"
             >
-              {{ task.assignedTo ? getUserDisplayName(task.assignedTo) : 'Empty' }}
+              {{ task.assignedTo ? getUserDisplayName(task.assignedTo) : keyFieldsEmptyLabel }}
             </span>
           </div>
         </template>
@@ -598,7 +598,7 @@
                   class="h-4 w-4 shrink-0"
                   :style="getPriorityFlagStyle(task.priority)"
                 />
-                <span class="block truncate">{{ formatPriority(task.priority) || 'Empty' }}</span>
+                <span class="block truncate">{{ formatPriority(task.priority) || keyFieldsEmptyLabel }}</span>
               </ListboxButton>
               <Transition
                 leave-active-class="transition duration-100 ease-in"
@@ -610,7 +610,7 @@
                 >
                   <ListboxOption :value="null" v-slot="{ active }">
                     <li :class="['relative cursor-default select-none py-2 pl-4 pr-10', active ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100']">
-                      <span class="block truncate">Empty</span>
+                      <span class="block truncate">{{ keyFieldsEmptyLabel }}</span>
                     </li>
                   </ListboxOption>
                   <ListboxOption
@@ -674,7 +674,7 @@
               </span>
             </span>
             <span v-else-if="getRelatedToDisplay(task)" class="min-w-0 flex-1 truncate">{{ getRelatedToDisplay(task) }}</span>
-            <span v-else class="min-w-0 flex-1 text-record-empty">Click to link record</span>
+            <span v-else class="min-w-0 flex-1 text-record-empty">{{ t('records.detailsLinkRecord') }}</span>
           </button>
 
           <div v-else class="w-full min-w-0 min-h-8 text-sm text-gray-900 dark:text-white rounded px-2 py-1 cursor-default select-none bg-gray-50 dark:bg-gray-800/60 flex items-center">
@@ -692,7 +692,7 @@
               </span>
             </span>
             <span v-else-if="getRelatedToDisplay(task)" class="truncate">{{ getRelatedToDisplay(task) }}</span>
-            <span v-else class="text-record-empty">Empty</span>
+            <span v-else class="text-record-empty">{{ keyFieldsEmptyLabel }}</span>
           </div>
         </template>
 
@@ -713,7 +713,7 @@
                 {{ tag }}
               </span>
             </div>
-            <span v-else class="text-record-empty">Click to add tags</span>
+            <span v-else class="text-record-empty">{{ t('records.tagsSearchPh') }}</span>
           </button>
 
           <div v-else class="w-full min-w-0 min-h-8 text-sm text-gray-900 dark:text-white rounded px-2 py-1 cursor-default select-none bg-gray-50 dark:bg-gray-800/60 flex items-center">
@@ -726,7 +726,7 @@
                 {{ tag }}
               </span>
             </div>
-            <span v-else class="text-record-empty">Empty</span>
+            <span v-else class="text-record-empty">{{ keyFieldsEmptyLabel }}</span>
           </div>
         </template>
         </RecordStateSection>
@@ -753,7 +753,7 @@
         :default-tab="recordLayoutIsMobile ? undefined : 'activity'"
         :show-header="embed"
         :show-close-button="embed"
-        :title="embed ? 'Task' : ''"
+        :title="embed ? taskModuleLabel : ''"
         :persistence-key="`task-${task._id}`"
         :record-id="task._id"
         @close="handleEmbedClose"
@@ -766,8 +766,8 @@
               class="inline-flex h-7 w-7 items-center justify-center rounded border border-gray-200 text-gray-500 transition-colors dark:border-gray-700 dark:text-gray-400 shrink-0"
               :class="quickPreviewNav.canPrevious ? 'hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200' : 'opacity-40 cursor-not-allowed'"
               :disabled="!quickPreviewNav.canPrevious"
-              aria-label="Previous task"
-              title="Previous task"
+              :aria-label="taskNavPreviousLabel"
+              :title="taskNavPreviousLabel"
               @click="quickPreviewNav.onPrev()"
             >
               <ArrowLeftIcon class="h-4 w-4" />
@@ -777,8 +777,8 @@
               class="inline-flex h-7 w-7 items-center justify-center rounded border border-gray-200 text-gray-500 transition-colors dark:border-gray-700 dark:text-gray-400 shrink-0"
               :class="quickPreviewNav.canNext ? 'hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200' : 'opacity-40 cursor-not-allowed'"
               :disabled="!quickPreviewNav.canNext"
-              aria-label="Next task"
-              title="Next task"
+              :aria-label="taskNavNextLabel"
+              :title="taskNavNextLabel"
               @click="quickPreviewNav.onNext()"
             >
               <ArrowRightIcon class="h-4 w-4" />
@@ -789,8 +789,8 @@
           <button
             type="button"
             class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-            aria-label="Open in new tab"
-            title="Open in new tab"
+            :aria-label="t('records.genericOpenInNewTab')"
+            :title="t('records.genericOpenInNewTab')"
             @click="openTaskInNewTab"
           >
             <ArrowTopRightOnSquareIcon class="w-5 h-5" />
@@ -799,8 +799,8 @@
             type="button"
             @click="showEditDrawer = true"
             class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-            aria-label="Edit task"
-            title="Edit task"
+            :aria-label="t('records.taskEditAria')"
+            :title="t('records.taskEditAria')"
           >
             <PencilSquareIcon class="w-5 h-5" />
           </button>
@@ -814,8 +814,8 @@
                 ? 'text-indigo-600 dark:text-indigo-400'
                 : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
             ]"
-            aria-label="Tag"
-            title="Tag"
+            :aria-label="t('records.genericTagsAria')"
+            :title="t('records.genericTagsAria')"
           >
             <TagIcon class="block w-5 h-5" />
             <span
@@ -827,8 +827,8 @@
             type="button"
             @click="copyTaskUrl"
             class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-            aria-label="Copy URL"
-            title="Copy URL"
+            :aria-label="t('records.genericCopyUrl')"
+            :title="t('records.genericCopyUrl')"
           >
             <ClipboardDocumentIcon class="w-5 h-5" />
           </button>
@@ -839,8 +839,8 @@
               'p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors',
               isFollowing ? 'text-yellow-500 dark:text-yellow-400' : ''
             ]"
-            :aria-label="isFollowing ? 'Unstar' : 'Star'"
-            :title="isFollowing ? 'Unstar' : 'Star'"
+            :aria-label="taskStarAriaLabel"
+            :title="taskStarAriaLabel"
           >
             <StarIcon v-if="!isFollowing" class="w-5 h-5" />
             <StarIconSolid v-else class="w-5 h-5" />
@@ -848,7 +848,7 @@
           <Menu as="div" class="relative">
             <MenuButton
               class="p-1 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              aria-label="More actions"
+              :aria-label="t('records.genericMoreActions')"
             >
               <EllipsisVerticalIcon class="w-5 h-5" />
             </MenuButton>
@@ -871,7 +871,7 @@
                       active ? 'bg-gray-100 dark:bg-gray-700' : 'text-gray-700 dark:text-gray-200'
                     ]"
                   >
-                    <span>Duplicate</span>
+                    <span>{{ t('actions.duplicate') }}</span>
                   </button>
                 </MenuItem>
                 <MenuItem v-slot="{ active }">
@@ -882,7 +882,7 @@
                       active ? 'bg-gray-100 dark:bg-gray-700' : 'text-gray-700 dark:text-gray-200'
                     ]"
                   >
-                    <span>Export</span>
+                    <span>{{ t('actions.export') }}</span>
                   </button>
                 </MenuItem>
                 <MenuItem v-slot="{ active }">
@@ -894,7 +894,7 @@
                     ]"
                   >
                     <EnvelopeIcon class="w-4 h-4" />
-                    <span>Email assignee</span>
+                    <span>{{ t('records.taskEmailAssignee') }}</span>
                   </button>
                 </MenuItem>
                 <hr class="my-1 border-gray-200 dark:border-gray-700" />
@@ -906,7 +906,7 @@
                       active ? 'bg-gray-100 dark:bg-gray-700' : 'text-red-600 dark:text-red-400'
                     ]"
                   >
-                    <span>Delete</span>
+                    <span>{{ t('actions.delete') }}</span>
                   </button>
                 </MenuItem>
               </MenuItems>
@@ -954,7 +954,7 @@
           <div class="flex flex-col h-full">
             <!-- Related Records header with Link action -->
             <div class="record-context-panel__header flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-900">
-              <h2 class="text-base font-semibold text-gray-900 dark:text-white">Related</h2>
+              <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('records.relatedTitle') }}</h2>
               <div v-if="canLinkRecords" class="flex items-center gap-2">
                 <button
                   type="button"
@@ -962,7 +962,7 @@
                   class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
                 >
                   <PlusIcon class="w-4 h-4" />
-                  Add record
+                  {{ t('records.genericAddRecord') }}
                 </button>
                 <button
                   type="button"
@@ -970,7 +970,7 @@
                   class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
                 >
                   <LinkIcon class="w-4 h-4" />
-                  Link record
+                  {{ t('records.genericLinkRecord') }}
                 </button>
               </div>
             </div>
@@ -984,9 +984,9 @@
                 <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
                   <LinkIcon class="w-6 h-6 text-gray-400 dark:text-gray-500" />
                 </div>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">No related records yet.</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">{{ t('records.relatedEmpty') }}</p>
                 <p class="text-xs text-gray-400 dark:text-gray-500">
-                  Link this task to people, projects, deals, events, or forms.
+                  {{ t('records.relatedEmptyHint') }}
                 </p>
               </div>
               <!-- Related records list (flat groups, no nested accordion) -->
@@ -1000,7 +1000,7 @@
                   <summary class="flex cursor-pointer list-none items-center rounded-lg px-1 py-1 hover:bg-gray-50 dark:hover:bg-gray-800/60 [&::-webkit-details-marker]:hidden [&::marker]:content-['']">
                     <div class="flex items-center gap-2">
                       <ChevronRightIcon :class="['h-4 w-4 shrink-0 text-gray-400 transition-transform duration-150', rightRelatedModuleOpen.project ? 'rotate-90' : '']" />
-                      <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Project</h3>
+                      <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ t('records.taskRelatedGroupProject') }}</h3>
                       <span class="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">1</span>
                     </div>
                   </summary>
@@ -1027,7 +1027,7 @@
                         <Menu v-if="canLinkRecords" as="div" class="relative">
                           <MenuButton
                             class="inline-flex items-center justify-center rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-200 opacity-0 transition-opacity duration-150 group-hover/right-related-card:opacity-100 focus:opacity-100"
-                            aria-label="Related record actions"
+                            :aria-label="t('records.relatedActionsAria')"
                             @click.stop
                           >
                             <EllipsisVerticalIcon class="h-4 w-4" />
@@ -1052,7 +1052,7 @@
                                     active ? 'bg-gray-100 dark:bg-gray-700 text-red-600 dark:text-red-400' : 'text-red-600 dark:text-red-400'
                                   ]"
                                 >
-                                  Unlink
+                                  {{ t('records.relatedUnlink') }}
                                 </button>
                               </MenuItem>
                             </MenuItems>
@@ -1072,7 +1072,7 @@
                   <summary class="flex cursor-pointer list-none items-center rounded-lg px-1 py-1 hover:bg-gray-50 dark:hover:bg-gray-800/60 [&::-webkit-details-marker]:hidden [&::marker]:content-['']">
                     <div class="flex items-center gap-2">
                       <ChevronRightIcon :class="['h-4 w-4 shrink-0 text-gray-400 transition-transform duration-150', rightRelatedModuleOpen.people ? 'rotate-90' : '']" />
-                      <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">People</h3>
+                      <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ t('records.taskRelatedGroupPeople') }}</h3>
                       <span class="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">{{ taskPeople.length }}</span>
                     </div>
                   </summary>
@@ -1098,7 +1098,7 @@
                         <Menu v-if="canLinkRecords" as="div" class="relative">
                           <MenuButton
                             class="inline-flex items-center justify-center rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-200 opacity-0 transition-opacity duration-150 group-hover/right-related-card:opacity-100 focus:opacity-100"
-                            aria-label="Related record actions"
+                            :aria-label="t('records.relatedActionsAria')"
                             @click.stop
                           >
                             <EllipsisVerticalIcon class="h-4 w-4" />
@@ -1123,7 +1123,7 @@
                                     active ? 'bg-gray-100 dark:bg-gray-700 text-red-600 dark:text-red-400' : 'text-red-600 dark:text-red-400'
                                   ]"
                                 >
-                                  Unlink
+                                  {{ t('records.relatedUnlink') }}
                                 </button>
                               </MenuItem>
                             </MenuItems>
@@ -1143,7 +1143,7 @@
                   <summary class="flex cursor-pointer list-none items-center rounded-lg px-1 py-1 hover:bg-gray-50 dark:hover:bg-gray-800/60 [&::-webkit-details-marker]:hidden [&::marker]:content-['']">
                     <div class="flex items-center gap-2">
                       <ChevronRightIcon :class="['h-4 w-4 shrink-0 text-gray-400 transition-transform duration-150', rightRelatedModuleOpen.events ? 'rotate-90' : '']" />
-                      <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Events</h3>
+                      <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ t('records.taskRelatedGroupEvents') }}</h3>
                       <span class="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">{{ taskEvents.length }}</span>
                     </div>
                   </summary>
@@ -1169,7 +1169,7 @@
                         <Menu v-if="canLinkRecords" as="div" class="relative">
                           <MenuButton
                             class="inline-flex items-center justify-center rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-200 opacity-0 transition-opacity duration-150 group-hover/right-related-card:opacity-100 focus:opacity-100"
-                            aria-label="Related record actions"
+                            :aria-label="t('records.relatedActionsAria')"
                             @click.stop
                           >
                             <EllipsisVerticalIcon class="h-4 w-4" />
@@ -1194,7 +1194,7 @@
                                     active ? 'bg-gray-100 dark:bg-gray-700 text-red-600 dark:text-red-400' : 'text-red-600 dark:text-red-400'
                                   ]"
                                 >
-                                  Unlink
+                                  {{ t('records.relatedUnlink') }}
                                 </button>
                               </MenuItem>
                             </MenuItems>
@@ -1214,7 +1214,7 @@
                   <summary class="flex cursor-pointer list-none items-center rounded-lg px-1 py-1 hover:bg-gray-50 dark:hover:bg-gray-800/60 [&::-webkit-details-marker]:hidden [&::marker]:content-['']">
                     <div class="flex items-center gap-2">
                       <ChevronRightIcon :class="['h-4 w-4 shrink-0 text-gray-400 transition-transform duration-150', rightRelatedModuleOpen.deals ? 'rotate-90' : '']" />
-                      <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Deals</h3>
+                      <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ t('records.taskRelatedGroupDeals') }}</h3>
                       <span class="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">{{ taskDeals.length }}</span>
                     </div>
                   </summary>
@@ -1240,7 +1240,7 @@
                         <Menu v-if="canLinkRecords" as="div" class="relative">
                           <MenuButton
                             class="inline-flex items-center justify-center rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-200 opacity-0 transition-opacity duration-150 group-hover/right-related-card:opacity-100 focus:opacity-100"
-                            aria-label="Related record actions"
+                            :aria-label="t('records.relatedActionsAria')"
                             @click.stop
                           >
                             <EllipsisVerticalIcon class="h-4 w-4" />
@@ -1265,7 +1265,7 @@
                                     active ? 'bg-gray-100 dark:bg-gray-700 text-red-600 dark:text-red-400' : 'text-red-600 dark:text-red-400'
                                   ]"
                                 >
-                                  Unlink
+                                  {{ t('records.relatedUnlink') }}
                                 </button>
                               </MenuItem>
                             </MenuItems>
@@ -1285,7 +1285,7 @@
                   <summary class="flex cursor-pointer list-none items-center rounded-lg px-1 py-1 hover:bg-gray-50 dark:hover:bg-gray-800/60 [&::-webkit-details-marker]:hidden [&::marker]:content-['']">
                     <div class="flex items-center gap-2">
                       <ChevronRightIcon :class="['h-4 w-4 shrink-0 text-gray-400 transition-transform duration-150', rightRelatedModuleOpen.forms ? 'rotate-90' : '']" />
-                      <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Forms</h3>
+                      <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ t('records.taskRelatedGroupForms') }}</h3>
                       <span class="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">{{ taskForms.length }}</span>
                     </div>
                   </summary>
@@ -1311,7 +1311,7 @@
                         <Menu v-if="canLinkRecords" as="div" class="relative">
                           <MenuButton
                             class="inline-flex items-center justify-center rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-200 opacity-0 transition-opacity duration-150 group-hover/right-related-card:opacity-100 focus:opacity-100"
-                            aria-label="Related record actions"
+                            :aria-label="t('records.relatedActionsAria')"
                             @click.stop
                           >
                             <EllipsisVerticalIcon class="h-4 w-4" />
@@ -1336,7 +1336,7 @@
                                     active ? 'bg-gray-100 dark:bg-gray-700 text-red-600 dark:text-red-400' : 'text-red-600 dark:text-red-400'
                                   ]"
                                 >
-                                  Unlink
+                                  {{ t('records.relatedUnlink') }}
                                 </button>
                               </MenuItem>
                             </MenuItems>
@@ -1354,11 +1354,11 @@
           <div class="flex flex-col h-full">
             <!-- Integrations header -->
             <div class="record-context-panel__header flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-900">
-              <h2 class="text-base font-semibold text-gray-900 dark:text-white">Integrations</h2>
+              <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('records.genericIntegrations') }}</h2>
             </div>
             <!-- Integrations content -->
             <div class="flex-1 min-h-0 overflow-y-auto p-4">
-              <div class="text-sm text-gray-600 dark:text-gray-400 italic">No integrations configured.</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400 italic">{{ t('records.genericNoIntegrations') }}</div>
             </div>
           </div>
         </template>
@@ -1407,7 +1407,7 @@
       <template v-else>
         <p class="text-xs font-semibold leading-4">
           {{ commentReactionTooltipData.emoji }} {{ commentReactionTooltipData.count }}
-          {{ commentReactionTooltipData.count === 1 ? 'person reacted' : 'people reacted' }}
+          {{ commentReactionTooltipData.count === 1 ? t('records.genericPersonReacted') : t('records.genericPeopleReacted') }}
         </p>
         <ul
           v-if="commentReactionTooltipData.reactors.length > 0"
@@ -1424,7 +1424,7 @@
             <span class="truncate">{{ getReactionUserDisplayName(reactor) }}</span>
           </li>
         </ul>
-        <p v-else class="mt-1.5 text-xs leading-4 text-slate-300">Reactor details unavailable</p>
+        <p v-else class="mt-1.5 text-xs leading-4 text-slate-300">{{ t('records.genericReactorUnavailable') }}</p>
       </template>
       <span
         :class="[
@@ -1444,7 +1444,7 @@
     :multiple="true"
     :allow-create="allowCreateFromLinkDrawer"
     :create-and-link="allowCreateFromLinkDrawer"
-    :title="allowCreateFromLinkDrawer ? 'Add and Link Records' : 'Link Record'"
+    :title="linkRecordDrawerTitle"
     :context="linkRecordDrawerContext"
     :preselected-ids="linkedRecordIds"
     @close="closeLinkRecordDrawer"
@@ -1487,11 +1487,11 @@
       class="fixed z-[120] w-[min(440px,calc(100vw-24px))] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl"
     >
       <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-        <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Related To</h3>
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('common.taskRelatedToFallback') }}</h3>
         <button
           type="button"
           class="p-1 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-          aria-label="Close"
+          :aria-label="t('actions.close')"
           @click="closeRelatedToPopover"
         >
           <XMarkIcon class="w-5 h-5" />
@@ -1511,7 +1511,7 @@
             class="rounded-md px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer"
             @click="closeRelatedToPopover"
           >
-            Cancel
+            {{ t('actions.cancel') }}
           </button>
           <button
             type="button"
@@ -1519,7 +1519,7 @@
             :disabled="relatedToSaving || !hasRelatedToPopoverChanges"
             @click="saveRelatedToFromPopover"
           >
-            {{ relatedToSaving ? 'Saving...' : 'Save' }}
+            {{ relatedToSaving ? t('states.saving') : t('actions.save') }}
           </button>
         </div>
       </div>
@@ -1561,19 +1561,18 @@
       <button
         type="button"
         class="absolute inset-0 bg-black/40"
-        aria-label="Close timestamp details"
+        :aria-label="t('records.taskCloseTimestampDetails')"
         @click="closeTimestampSheet"
       ></button>
       <section class="absolute inset-x-0 bottom-0 rounded-t-2xl bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-4 pt-3 pb-5 shadow-2xl">
         <div class="mx-auto mb-3 h-1.5 w-12 rounded-full bg-gray-300 dark:bg-gray-600" aria-hidden="true"></div>
-        <p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Timestamp</p>
         <p class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">{{ timestampSheetValue }}</p>
         <button
           type="button"
           class="mt-4 w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
           @click="closeTimestampSheet"
         >
-          Close
+          {{ t('actions.close') }}
         </button>
       </section>
     </div>
@@ -1583,6 +1582,8 @@
 
 <script setup>
 import { ref, computed, watch, nextTick, inject } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { resolveFieldLabel } from '@/utils/fieldLabelResolver';
 import { useRoute, useRouter } from 'vue-router';
 import { Menu, MenuButton, MenuItem, MenuItems, Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue';
 import {
@@ -1611,6 +1612,7 @@ import {
   normalizeReactionEmoji
 } from '@/components/activity/utils/commentReactionModel';
 import { useTaskSections } from '@/components/record-page/composables/useTaskSections';
+import { createRecordSectionLabels } from '@/utils/recordSectionLabels';
 import { useTaskSectionDataProviders } from '@/components/record-page/composables/useTaskSectionDataProviders';
 import { useRecordLoading } from '@/components/record-page/composables/useRecordLoading';
 import { useRecordHeaderActions } from '@/components/record-page/composables/useRecordHeaderActions';
@@ -1690,6 +1692,8 @@ import {
   getTaskFieldMetadata
 } from '@/platform/fields/taskFieldModel';
 
+const { t, te } = useI18n();
+
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
@@ -1706,6 +1710,13 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close']);
+
+const taskModuleLabel = computed(() => t('records.taskModuleLabel'));
+const taskLoadingMessage = computed(() => t('records.taskLoading'));
+const taskErrorTitle = computed(() => t('records.taskErrorTitle'));
+const taskNavPreviousLabel = computed(() => t('records.taskNavPrevious'));
+const taskNavNextLabel = computed(() => t('records.taskNavNext'));
+const keyFieldsEmptyLabel = computed(() => t('common.keyFieldsEmptyValue'));
 
 const effectiveTaskId = computed(() => props.embed && props.taskId ? props.taskId : route.params.id);
 
@@ -1778,7 +1789,6 @@ const activitySectionRef = ref(null);
 const activityTimelineRef = ref(null);
 const rightPaneRef = ref(null);
 const activityPaneReady = ref(false); // hide activity content until scrolled to bottom (avoids top flash)
-const TASK_MODULE_NAME = 'Task';
 const {
   isLeftTitleSticky,
   attach: attachStickyTitle,
@@ -1851,6 +1861,11 @@ const showAddRelatedRecordDrawer = ref(false);
 const addRelatedRecordModuleKey = ref('');
 const pendingAddRelatedLinkPayload = ref(null);
 const linkRecordDrawerContext = computed(() => (task.value?._id ? { taskId: task.value._id } : {}));
+const linkRecordDrawerTitle = computed(() => (
+  allowCreateFromLinkDrawer.value
+    ? t('records.genericLinkDrawerAddAndLink')
+    : t('records.genericLinkDrawerLink')
+));
 const openLinkRecordDrawer = () => {
   allowCreateFromLinkDrawer.value = false;
   showLinkRecordDrawer.value = true;
@@ -2090,25 +2105,11 @@ const persistRecordTagsForTask = async (cleaned) => {
   }
 };
 
-const toReadableFieldLabel = (label, key = '') => {
-  const fallback = String(key || '').trim();
-  const source = String(label || fallback || '').trim();
-  if (!source) return source;
-
-  return source
-    .replace(/_/g, ' ')
-    .replace(/([a-z\d])([A-Z])/g, '$1 $2')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .replace(/\b\w/g, c => c.toUpperCase());
-};
-
-// Get field label from module field configuration (so labels match create/edit and settings)
 const getFieldLabel = (fieldKey) => {
   const moduleField = taskModuleDefinition.value?.fields?.find(
     (f) => (f.key || '').toLowerCase() === (fieldKey || '').toLowerCase()
   );
-  return toReadableFieldLabel(moduleField?.label, fieldKey);
+  return resolveFieldLabel('tasks', { key: fieldKey, label: moduleField?.label }, t, te);
 };
 
 // Get custom field object by key (for Details section display)
@@ -2462,7 +2463,7 @@ const keySectionFields = computed(() => {
     const canOpenEditor = canOpenKeyFieldEditor(fieldKey);
     return {
       key: fieldKey,
-      label: toReadableFieldLabel(moduleField?.label, fieldKey),
+      label: getFieldLabel(fieldKey),
       icon: resolveFieldPrefixIcon(fieldKey, fieldType),
       slotKey: keyFieldSlotMap[fieldKey] || fieldKey,
       type: fieldType,
@@ -2494,21 +2495,21 @@ const keySectionFields = computed(() => {
 const getKeyFieldDisplayValue = (fieldKey) => {
   if (!task.value) return null;
 
-  if (fieldKey === 'status') return formatStatus(task.value.status) || 'Empty';
-  if (fieldKey === 'assignedTo') return getAssignedToDisplay(task.value.assignedTo) || 'Empty';
-  if (fieldKey === 'startDate') return formatStateDate(task.value.startDate) || 'Empty';
-  if (fieldKey === 'dueDate') return formatStateDate(task.value.dueDate) || 'Empty';
-  if (fieldKey === 'priority') return formatPriority(task.value.priority) || 'Empty';
-  if (fieldKey === 'estimatedHours') return task.value.estimatedHours ? `${task.value.estimatedHours}h` : 'Empty';
+  if (fieldKey === 'status') return formatStatus(task.value.status) || keyFieldsEmptyLabel.value;
+  if (fieldKey === 'assignedTo') return getAssignedToDisplay(task.value.assignedTo) || keyFieldsEmptyLabel.value;
+  if (fieldKey === 'startDate') return formatStateDate(task.value.startDate) || keyFieldsEmptyLabel.value;
+  if (fieldKey === 'dueDate') return formatStateDate(task.value.dueDate) || keyFieldsEmptyLabel.value;
+  if (fieldKey === 'priority') return formatPriority(task.value.priority) || keyFieldsEmptyLabel.value;
+  if (fieldKey === 'estimatedHours') return task.value.estimatedHours ? `${task.value.estimatedHours}h` : keyFieldsEmptyLabel.value;
   if (fieldKey === 'tags') {
-    return Array.isArray(task.value.tags) && task.value.tags.length > 0 ? task.value.tags.join(', ') : 'Empty';
+    return Array.isArray(task.value.tags) && task.value.tags.length > 0 ? task.value.tags.join(', ') : keyFieldsEmptyLabel.value;
   }
-  if (fieldKey === 'relatedTo') return getRelatedToDisplay(task.value) || 'Empty';
+  if (fieldKey === 'relatedTo') return getRelatedToDisplay(task.value) || keyFieldsEmptyLabel.value;
 
   const rawValue = task.value[fieldKey];
-  if (rawValue == null || rawValue === '') return 'Empty';
+  if (rawValue == null || rawValue === '') return keyFieldsEmptyLabel.value;
   if (typeof rawValue === 'object') {
-    return rawValue.name || rawValue.label || rawValue.title || rawValue._id || 'Empty';
+    return rawValue.name || rawValue.label || rawValue.title || rawValue._id || keyFieldsEmptyLabel.value;
   }
   return String(rawValue);
 };
@@ -2637,6 +2638,7 @@ const {
 });
 
 const taskSectionSources = {
+  sectionLabels: createRecordSectionLabels(t),
   task,
   expandedLeftSection,
   shouldShowDetailsViewAll,
@@ -3144,49 +3146,28 @@ watch(activeThreadRootComment, (threadRoot) => {
   activeThreadRootCommentId.value = null;
 });
 
-const contextTabs = [
-  {
-    key: 'activity',
-    label: 'Activity',
-    icon: ClockIcon
-  },
-  {
-    key: 'related',
-    label: 'Related Records',
-    icon: LinkIcon
-  },
-  {
-    key: 'integrations',
-    label: 'Integrations',
-    icon: PuzzlePieceIcon
-  }
-];
-
-// Map contextTabs to RecordRightPane format
-const rightPaneTabs = computed(() => {
-  return contextTabs.map(tab => ({
-    id: tab.key,
-    name: tab.label,
-    icon: tab.icon
-  }));
-});
+const rightPaneTabs = computed(() => ([
+  { id: 'activity', name: t('records.genericTabActivity'), icon: ClockIcon },
+  { id: 'related', name: t('records.taskRelatedRecordsTab'), icon: LinkIcon },
+  { id: 'integrations', name: t('records.genericIntegrations'), icon: PuzzlePieceIcon }
+]));
 
 const contextRelatedGroups = computed(() => {
   const groups = [];
   if (task.value?.projectId) {
-    groups.push({ key: 'project', label: 'Project', count: 1 });
+    groups.push({ key: 'project', label: t('records.taskRelatedGroupProject'), count: 1 });
   }
   if (taskPeople.value && taskPeople.value.length > 0) {
-    groups.push({ key: 'people', label: 'People', count: taskPeople.value.length });
+    groups.push({ key: 'people', label: t('records.taskRelatedGroupPeople'), count: taskPeople.value.length });
   }
   if (taskEvents.value && taskEvents.value.length > 0) {
-    groups.push({ key: 'events', label: 'Events', count: taskEvents.value.length });
+    groups.push({ key: 'events', label: t('records.taskRelatedGroupEvents'), count: taskEvents.value.length });
   }
   if (taskDeals.value && taskDeals.value.length > 0) {
-    groups.push({ key: 'deals', label: 'Deals', count: taskDeals.value.length });
+    groups.push({ key: 'deals', label: t('records.taskRelatedGroupDeals'), count: taskDeals.value.length });
   }
   if (taskForms.value && taskForms.value.length > 0) {
-    groups.push({ key: 'forms', label: 'Forms', count: taskForms.value.length });
+    groups.push({ key: 'forms', label: t('records.taskRelatedGroupForms'), count: taskForms.value.length });
   }
   return groups;
 });
@@ -3281,7 +3262,7 @@ const navigateToTaskById = (taskId) => {
   const path = navToken
     ? `/tasks/${targetId}?navCtx=${encodeURIComponent(navToken)}`
     : `/tasks/${targetId}`;
-  replaceActiveTab(path, { title: 'Task' });
+  replaceActiveTab(path, { title: taskModuleLabel.value });
 };
 
 const goToPreviousTask = () => {
@@ -3705,7 +3686,7 @@ const getSystemEventFieldLabel = (event) => {
 };
 
 const formatSystemEventValue = (value) => {
-  if (value === undefined || value === null || value === '') return 'Empty';
+  if (value === undefined || value === null || value === '') return keyFieldsEmptyLabel.value;
   return String(value);
 };
 
@@ -3719,7 +3700,7 @@ const formatActivityLog = (log) => {
   const details = log.details || {};
 
   const normalizeDisplayValue = (value) => {
-    if (value === undefined || value === null || value === '') return 'Empty';
+    if (value === undefined || value === null || value === '') return keyFieldsEmptyLabel.value;
     return String(value);
   };
 
@@ -5262,7 +5243,7 @@ const handleUnlinkRelated = async (type, record) => {
     await fetchRelatedRecords();
   } catch (err) {
     console.error('Error unlinking related record:', err);
-    alert('Error unlinking record. Please try again.');
+    alert(t('records.genericUnlinkFailed'));
   }
 };
 
@@ -5363,7 +5344,7 @@ const handleLinkRecordDrawerLinked = async ({ moduleKey, ids, context, relations
     closeLinkRecordDrawer();
   } catch (err) {
     console.error('Error linking record:', err);
-    alert(`Error linking ${moduleKey}. Please try again.`);
+    alert(t('records.taskLinkModuleFailed', { moduleKey }));
   }
 };
 
@@ -5408,6 +5389,7 @@ const {
   recordRef: task,
   closeRoute: '/tasks',
   router,
+  onCopySuccess: () => alert(t('records.taskCopyUrlSuccess')),
   toggleFollow: async (_record, current) => !current,
   duplicate: async (record) => {
     console.log('Duplicate task:', record._id);
@@ -5459,6 +5441,10 @@ const {
   }
 });
 
+const taskStarAriaLabel = computed(() => (
+  isFollowing.value ? t('records.taskUnstarAria') : t('records.taskStarAria')
+));
+
 function getTaskPageUrl() {
   if (!task.value?._id) return '';
   const path = `/tasks/${task.value._id}`;
@@ -5469,7 +5455,7 @@ function getTaskPageUrl() {
 function openTaskInNewTab() {
   if (!task.value?._id) return;
   const path = `/tasks/${task.value._id}`;
-  openTab(path, { title: 'Task', background: false, insertAdjacent: true });
+  openTab(path, { title: taskModuleLabel.value, background: false, insertAdjacent: true });
   handleEmbedClose();
 }
 
@@ -5478,7 +5464,7 @@ async function copyTaskUrl() {
   if (!url) return;
   try {
     await navigator.clipboard.writeText(url);
-    alert('URL copied to clipboard!');
+    alert(t('records.taskCopyUrlSuccess'));
   } catch (err) {
     console.error('Error copying URL:', err);
   }
@@ -5495,14 +5481,14 @@ const handleEmailSubmit = async (payload) => {
   try {
     const res = await apiClient.post('/communications/email', payload);
     if (res.success) {
-      notifications.success('Email sent');
+      notifications.success(t('records.genericEmailSent'));
       await fetchTask();
     } else {
-      notifications.error(res.message || 'Failed to send email');
+      notifications.error(res.message || t('records.genericEmailSendFailed'));
     }
   } catch (err) {
     const msg = err.response?.data?.error || err.response?.data?.message || err.message;
-    notifications.error(msg || 'Failed to send email');
+    notifications.error(msg || t('records.genericEmailSendFailed'));
   }
 };
 
@@ -5521,9 +5507,9 @@ const handleToggleThreadDone = async ({ threadId, done }) => {
         ? { ...thread, done: doneValue, doneAt: doneValue ? (res?.data?.doneAt || new Date().toISOString()) : null, unread: doneValue ? false : thread.unread }
         : thread
     );
-    notifications.success(doneValue ? 'Thread marked done' : 'Thread reopened');
+    notifications.success(doneValue ? t('records.genericThreadMarkedDone') : t('records.genericThreadReopened'));
   } catch (err) {
-    notifications.error(err?.response?.data?.message || err?.message || 'Failed to update thread status');
+    notifications.error(err?.response?.data?.message || err?.message || t('records.genericThreadStatusFailed'));
   }
 };
 
@@ -5561,7 +5547,7 @@ const createTaskFromEmailMessage = async (msg) => {
       window.open(`/tasks/${res.data.taskId}`, '_blank');
     }
   } catch (err) {
-    notifications.error(err.response?.data?.message || err.message || 'Failed to create task');
+    notifications.error(err.response?.data?.message || err.message || t('records.dealCreateTaskFailed'));
   }
 };
 
@@ -5573,7 +5559,7 @@ const createCaseFromEmailMessage = async (msg) => {
       window.open(`/helpdesk/cases/${res.data.caseRecordId}`, '_blank');
     }
   } catch (err) {
-    notifications.error(err.response?.data?.message || err.message || 'Failed to create case');
+    notifications.error(err.response?.data?.message || err.message || t('records.dealCreateCaseFailed'));
   }
 };
 
@@ -5591,9 +5577,9 @@ const assignEmailThread = async ({ threadId, assignedToUserId }) => {
       const isMe = nextAssignee && meId && String(nextAssignee) === String(meId);
       return { ...thread, assignedToUserId: nextAssignee, assignedToDisplay: isMe ? meLabel : (thread.assignedToDisplay || null) };
     });
-    notifications.success(nextAssignee ? 'Thread assigned' : 'Thread unassigned');
+    notifications.success(nextAssignee ? t('records.genericThreadAssigned') : t('records.genericThreadUnassigned'));
   } catch (err) {
-    notifications.error(err.response?.data?.message || err.message || 'Failed to assign thread');
+    notifications.error(err.response?.data?.message || err.message || t('records.genericThreadAssignFailed'));
   }
 };
 
@@ -5607,9 +5593,9 @@ const unassignEmailThread = async ({ threadId }) => {
     emailThreads.value = (emailThreads.value || []).map((thread) => (
       thread.threadId === threadId ? { ...thread, assignedToUserId: nextAssignee, assignedToDisplay: null } : thread
     ));
-    notifications.success('Thread unassigned');
+    notifications.success(t('records.genericThreadUnassigned'));
   } catch (err) {
-    notifications.error(err.response?.data?.message || err.message || 'Failed to unassign thread');
+    notifications.error(err.response?.data?.message || err.message || t('records.genericThreadUnassignFailed'));
   }
 };
 
@@ -5625,9 +5611,9 @@ const addTagToEmailThread = async ({ threadId, tag }) => {
     emailThreads.value = (emailThreads.value || []).map((thread) => (
       thread.threadId === threadId ? { ...thread, tags: nextTags } : thread
     ));
-    notifications.success('Tag added');
+    notifications.success(t('records.genericTagAdded'));
   } catch (err) {
-    notifications.error(err.response?.data?.message || err.message || 'Failed to add tag');
+    notifications.error(err.response?.data?.message || err.message || t('records.genericTagAddFailed'));
   }
 };
 
@@ -5642,9 +5628,9 @@ const removeTagFromEmailThread = async ({ threadId, tag }) => {
     emailThreads.value = (emailThreads.value || []).map((thread) => (
       thread.threadId === threadId ? { ...thread, tags: nextTags } : thread
     ));
-    notifications.success('Tag removed');
+    notifications.success(t('records.genericTagRemoved'));
   } catch (err) {
-    notifications.error(err.response?.data?.message || err.message || 'Failed to remove tag');
+    notifications.error(err.response?.data?.message || err.message || t('records.genericTagRemoveFailed'));
   }
 };
 
@@ -5741,7 +5727,7 @@ watch(
     const pathBase = tab.path.split('?')[0].replace(/\/$/, '');
     if (pathBase === '/tasks') return; // list tab – never overwrite with record name
     if (!tab.path.includes(String(taskId))) return; // only update the tab that shows this record
-    const displayTitle = String(title ?? 'Task').trim() || 'Task';
+    const displayTitle = String(title ?? taskModuleLabel.value).trim() || taskModuleLabel.value;
     updateTabTitle(tabId, displayTitle);
   },
   { immediate: true }

@@ -1,0 +1,330 @@
+{
+  "organizationAuditWidgetNoAuditHistoryAvailable": {
+    "message": "No hay historial de auditoría disponible",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetDownloadReport": {
+    "message": "Descargar Informe",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetCompliance": {
+    "message": "Cumplimiento:",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetScore": {
+    "message": "Puntaje:",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetTrend": {
+    "message": "Tendencia",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetTotalAudits": {
+    "message": "Auditorías totales",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetLoadingAuditHistory": {
+    "message": "Cargando historial de auditoría...",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetViewAll": {
+    "message": "Ver todo",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetAuditHistory": {
+    "message": "Historial de auditoría",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationQuickCreateDrawerBackToQuick": {
+    "message": "Volver a rápido",
+    "description": "Auto-migrated from organizationQuickCreateDrawer"
+  },
+  "organizationQuickCreateDrawerFullForm": {
+    "message": "forma completa",
+    "description": "Auto-migrated from organizationQuickCreateDrawer"
+  },
+  "organizationQuickCreateDrawerOtherFields": {
+    "message": "Otros campos",
+    "description": "Auto-migrated from organizationQuickCreateDrawer"
+  },
+  "organizationQuickCreateDrawerQuickCreateFields": {
+    "message": "Campos de creación rápida",
+    "description": "Auto-migrated from organizationQuickCreateDrawer"
+  },
+  "relatedContactsWidgetAddContact": {
+    "message": "Añadir contacto",
+    "description": "Auto-migrated from relatedContactsWidget"
+  },
+  "relatedContactsWidgetNoContactsLinkedYetLinkContacts": {
+    "message": "Aún no hay contactos vinculados. Vincula contactos a esta organización para verlos aquí.",
+    "description": "Auto-migrated from relatedContactsWidget"
+  },
+  "relatedContactsWidgetAddContact2": {
+    "message": "Agregar contacto",
+    "description": "Auto-migrated from relatedContactsWidget"
+  },
+  "relatedContactsWidgetLinkContacts": {
+    "message": "Vincular contactos",
+    "description": "Auto-migrated from relatedContactsWidget"
+  },
+  "relatedContactsWidgetRelatedContacts": {
+    "message": "Contactos Relacionados",
+    "description": "Auto-migrated from relatedContactsWidget"
+  },
+  "relatedOrganizationWidgetNoOrganizationLinked": {
+    "message": "Ninguna organización vinculada",
+    "description": "Auto-migrated from relatedOrganizationWidget"
+  },
+  "relatedOrganizationWidgetLinkOrganization": {
+    "message": "Organización de enlaces",
+    "description": "Auto-migrated from relatedOrganizationWidget"
+  },
+  "relatedOrganizationWidgetRelatedOrganizations": {
+    "message": "Organizaciones relacionadas",
+    "description": "Auto-migrated from relatedOrganizationWidget"
+  },
+  "relatedUsersWidgetAddUser": {
+    "message": "Agregar usuario",
+    "description": "Auto-migrated from relatedUsersWidget"
+  },
+  "relatedUsersWidgetNoUsersLinkedYetLinkUsers": {
+    "message": "Aún no hay usuarios vinculados. Vincula a los usuarios a esta organización para verlos aquí.",
+    "description": "Auto-migrated from relatedUsersWidget"
+  },
+  "relatedUsersWidgetAddUser2": {
+    "message": "Agregar usuario",
+    "description": "Auto-migrated from relatedUsersWidget"
+  },
+  "relatedUsersWidgetRelatedUsers": {
+    "message": "Usuarios relacionados",
+    "description": "Auto-migrated from relatedUsersWidget"
+  },
+  "organizationSurfaceRecentActivity": {
+    "message": "Actividad reciente",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceActionAvailability": {
+    "message": "Disponibilidad de acción",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceEmployees": {
+    "message": "Empleados:",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceRevenue": {
+    "message": "Ganancia:",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceAddress": {
+    "message": "DIRECCIÓN:",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfacePhone": {
+    "message": "Teléfono:",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceWebsite": {
+    "message": "Sitio web:",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceTheseDetailsAreManagedByThe": {
+    "message": "Estos detalles son administrados por la aplicación que los utiliza (por ejemplo, Ventas, Servicio de asistencia técnica).",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceEditBusinessDetails": {
+    "message": "Editar detalles comerciales",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceBusinessDetails": {
+    "message": "Detalles comerciales",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceWorkExistsForThisApp": {
+    "message": "Existe trabajo para esta aplicación.",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfacePeopleAssociatedWithThisOrganization": {
+    "message": "Personas asociadas a esta organización.",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfacePrimaryContact": {
+    "message": "Contacto principal:",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceTryAgain": {
+    "message": "Intentar otra vez",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceErrorLoadingOrganization": {
+    "message": "Error al cargar la organización",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "createOrganizationSurfaceStreetAddressCityStateZip": {
+    "message": "Dirección postal, ciudad, estado, código postal",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceAddress": {
+    "message": "DIRECCIÓN",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceHttpsExampleCom": {
+    "message": "https://ejemplo.com",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceWebsite": {
+    "message": "Sitio web",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceEGTechnologyHealthcareManufacturing": {
+    "message": "por ejemplo, tecnología, atención sanitaria, fabricación",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceOptionalBusinessContext": {
+    "message": "Contexto empresarial opcional",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceSelectStatus": {
+    "message": "Seleccionar estado...",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceSelectStatus2": {
+    "message": "Seleccionar estado...",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceSelectStatus3": {
+    "message": "Seleccionar estado...",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceTypesCannotBeChangedOnceThe": {
+    "message": "Los tipos no se pueden cambiar una vez que la organización está en uso",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceOrganizationName": {
+    "message": "Nombre de la organización",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceCoreBusinessIdentity": {
+    "message": "Identidad empresarial central",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceError": {
+    "message": "Error",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceLoadingOrganizationData": {
+    "message": "Cargando datos de la organización...",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceValidationErrors": {
+    "message": "Errores de validación",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "groupsNoGroupsFound": {
+    "message": "No se encontraron grupos",
+    "description": "Auto-migrated from groups"
+  },
+  "groupsOrganizeUsersIntoTeamsAndDepartments": {
+    "message": "Organizar a los usuarios en equipos y departamentos.",
+    "description": "Auto-migrated from groups"
+  },
+  "groupsGroups": {
+    "message": "Grupos",
+    "description": "Auto-migrated from groups"
+  },
+  "groupDetailSelectAUser": {
+    "message": "Seleccione un usuario...",
+    "description": "Auto-migrated from groupDetail"
+  },
+  "groupDetailAddMember": {
+    "message": "Agregar miembro",
+    "description": "Auto-migrated from groupDetail"
+  },
+  "groupDetailNoMembersYetAddMembersTo": {
+    "message": "Aún no hay miembros. Agregue miembros para comenzar.",
+    "description": "Auto-migrated from groupDetail"
+  },
+  "groupDetailRemoveMember": {
+    "message": "Eliminar miembro",
+    "description": "Auto-migrated from groupDetail"
+  },
+  "groupDetailAddMember2": {
+    "message": "Agregar miembro",
+    "description": "Auto-migrated from groupDetail"
+  },
+  "groupDetailLoadingGroup": {
+    "message": "Cargando grupo...",
+    "description": "Auto-migrated from groupDetail"
+  },
+  "organizationFormModalToastFailedToSaveOrganization": {
+    "message": "No se pudo guardar la organización",
+    "description": "Toast from OrganizationFormModal.vue"
+  },
+  "sysFieldName": {
+    "message": "Nombre",
+    "description": "System organization field label"
+  },
+  "sysFieldEmail": {
+    "message": "Correo electrónico",
+    "description": "System organization field label"
+  },
+  "sysFieldPhone": {
+    "message": "Teléfono",
+    "description": "System organization field label"
+  },
+  "sysFieldWebsite": {
+    "message": "Sitio web",
+    "description": "System organization field label"
+  },
+  "sysFieldIndustry": {
+    "message": "Industria",
+    "description": "System organization field label"
+  },
+  "sysFieldAssignedTo": {
+    "message": "Asignado a",
+    "description": "System organization field label"
+  },
+  "sysFieldDescription": {
+    "message": "Descripción",
+    "description": "System organization field label"
+  },
+  "sysFieldTags": {
+    "message": "Etiquetas",
+    "description": "System organization field label"
+  },
+  "listViewAll": {
+    "message": "Todas las organizaciones",
+    "description": "Organizations list default view title"
+  },
+  "listViewMy": {
+    "message": "Mis Organizaciones",
+    "description": "Organizations list assigned-to-me view title"
+  },
+  "listViewActive": {
+    "message": "Activo",
+    "description": "Organizations list active view title"
+  },
+  "listViewTrial": {
+    "message": "Ensayo",
+    "description": "Organizations list trial view title"
+  },
+  "listCreate": {
+    "message": "Nueva organización",
+    "description": "Organizations list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "Buscar organizaciones...",
+    "description": "Organizations list search placeholder"
+  },
+  "listStatTotal": {
+    "message": "Total de organizaciones",
+    "description": "Organizations list statistics card"
+  },
+  "listStatActive": {
+    "message": "Activo",
+    "description": "Organizations list statistics card"
+  },
+  "listStatTrial": {
+    "message": "Ensayo",
+    "description": "Organizations list statistics card"
+  }
+}

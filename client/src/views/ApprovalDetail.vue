@@ -24,9 +24,7 @@
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
-          Back to Approvals
-        </button>
+          </svg>{{ t('common.approvalDetailBackToApprovals') }}</button>
         <span
           :class="[
             'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium',
@@ -45,12 +43,12 @@
 
       <!-- Context Summary -->
       <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Context</h2>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('common.approvalDetailContext') }}</h2>
         
         <div class="space-y-4">
           <!-- Entity Snapshot -->
           <div v-if="approval.entitySnapshot">
-            <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Entity</h3>
+            <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('common.approvalDetailEntity') }}</h3>
             <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4">
               <div class="text-sm text-gray-900 dark:text-white">
                 <div class="font-medium mb-1">{{ getEntityDisplay(approval) }}</div>
@@ -63,7 +61,7 @@
 
           <!-- Why Approval Required -->
           <div>
-            <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Why approval is required</h3>
+            <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('common.approvalDetailWhyApprovalIsRequired') }}</h3>
             <p class="text-sm text-gray-600 dark:text-gray-400">
               {{ getApprovalReason(approval) }}
             </p>
@@ -78,7 +76,7 @@
 
       <!-- Impact Preview -->
       <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">What will happen</h2>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('common.approvalDetailWhatWillHappen') }}</h2>
         
         <div class="grid md:grid-cols-2 gap-4">
           <!-- If Approved -->
@@ -87,7 +85,7 @@
               <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
               </svg>
-              <h3 class="text-sm font-semibold text-green-900 dark:text-green-200">If approved</h3>
+              <h3 class="text-sm font-semibold text-green-900 dark:text-green-200">{{ t('common.approvalDetailIfApproved') }}</h3>
             </div>
             <ul class="space-y-1 text-sm text-green-800 dark:text-green-300">
               <li v-for="(action, idx) in (approval.impactPreview?.ifApproved || ['Process will continue'])" :key="idx">
@@ -102,7 +100,7 @@
               <svg class="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
-              <h3 class="text-sm font-semibold text-red-900 dark:text-red-200">If rejected</h3>
+              <h3 class="text-sm font-semibold text-red-900 dark:text-red-200">{{ t('common.approvalDetailIfRejected') }}</h3>
             </div>
             <ul class="space-y-1 text-sm text-red-800 dark:text-red-300">
               <li v-for="(action, idx) in (approval.impactPreview?.ifRejected || ['Action will be blocked'])" :key="idx">
@@ -123,17 +121,15 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
           <div>
-            <h3 class="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-1">Escalated</h3>
-            <p class="text-sm text-blue-800 dark:text-blue-300">
-              This approval was escalated due to no response within the time limit. New approvers have been notified.
-            </p>
+            <h3 class="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-1">{{ t('common.approvalDetailEscalated') }}</h3>
+            <p class="text-sm text-blue-800 dark:text-blue-300">{{ t('common.approvalDetailThisApprovalWasEscalatedDueTo') }}</p>
           </div>
         </div>
       </div>
 
       <!-- Decision Panel (Pending only) -->
       <div v-if="approval.status === 'pending' && canDecide" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Your Decision</h2>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('common.approvalDetailYourDecision') }}</h2>
         
         <div class="flex items-center gap-3">
           <button
@@ -147,9 +143,7 @@
             @click="showRejectModal = true"
             :disabled="processing"
             class="px-6 py-3 text-base font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            Reject
-          </button>
+          >{{ t('forms.hubActionReject') }}</button>
         </div>
       </div>
 
@@ -159,19 +153,19 @@
           <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
           </svg>
-          <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Decision already made</h3>
+          <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{ t('common.approvalDetailDecisionAlreadyMade') }}</h3>
         </div>
         <div class="text-sm text-gray-600 dark:text-gray-400">
           <div v-if="approval.decidedBy">
-            <span class="font-medium">Decided by:</span>
+            <span class="font-medium">{{ t('common.approvalDetailDecidedBy') }}</span>
             {{ getDeciderName(approval) }}
           </div>
           <div v-if="approval.decidedAt">
-            <span class="font-medium">Decided at:</span>
+            <span class="font-medium">{{ t('common.approvalDetailDecidedAt') }}</span>
             {{ formatDate(approval.decidedAt) }}
           </div>
           <div v-if="approval.reason">
-            <span class="font-medium">Reason:</span>
+            <span class="font-medium">{{ t('common.approvalDetailReason2') }}</span>
             {{ approval.reason }}
           </div>
         </div>
@@ -179,9 +173,7 @@
 
       <!-- Not Authorized -->
       <div v-else-if="!canDecide" class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-        <p class="text-sm text-yellow-800 dark:text-yellow-200">
-          You are not authorized to approve or reject this request.
-        </p>
+        <p class="text-sm text-yellow-800 dark:text-yellow-200">{{ t('common.approvalDetailYouAreNotAuthorizedToApprove') }}</p>
       </div>
     </div>
 
@@ -192,18 +184,15 @@
       @click.self="showRejectModal = false"
     >
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Reject Approval</h3>
-        <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
-          Rejecting will block this action.
-        </p>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('common.approvalDetailRejectApproval') }}</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">{{ t('common.approvalDetailRejectingWillBlockThisAction') }}</p>
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Reason <span class="text-red-500">*</span>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('common.approvalDetailReason') }}<span class="text-red-500">*</span>
           </label>
           <textarea
             v-model="rejectReason"
             rows="3"
-            placeholder="Enter rejection reason..."
+            :placeholder="t('common.approvalDetailEnterRejectionReason')"
             class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-indigo-500"
           ></textarea>
         </div>
@@ -211,9 +200,7 @@
           <button
             @click="showRejectModal = false; rejectReason = ''"
             class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-          >
-            Cancel
-          </button>
+          >{{ t('performance.cancelWizard') }}</button>
           <button
             @click="confirmReject"
             :disabled="!rejectReason.trim() || processing"
@@ -228,6 +215,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';

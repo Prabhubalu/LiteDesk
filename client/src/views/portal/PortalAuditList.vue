@@ -12,8 +12,8 @@
 
     <!-- Page Header -->
     <div class="mb-6">
-      <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">Audits</h1>
-      <p class="text-gray-600 dark:text-gray-400">View audits conducted on your organization</p>
+      <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ t('navigation.portalAudits') }}</h1>
+      <p class="text-gray-600 dark:text-gray-400">{{ t('audit.portalAuditListViewAuditsConductedOnYourOrganization') }}</p>
     </div>
 
     <!-- Filters (Desktop) -->
@@ -23,10 +23,10 @@
         @change="applyFilters"
         class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
       >
-        <option value="">All Statuses</option>
-        <option value="in_progress">In Progress</option>
-        <option value="waiting_for_actions">Waiting for Corrective Actions</option>
-        <option value="completed">Completed</option>
+        <option value="">{{ t('audit.portalAuditListAllStatuses2') }}</option>
+        <option value="in_progress">{{ t('forms.hubExecutionInProgress') }}</option>
+        <option value="waiting_for_actions">{{ t('audit.portalAuditListWaitingForCorrectiveActions2') }}</option>
+        <option value="completed">{{ t('process.execCompleted') }}</option>
       </select>
 
       <select
@@ -34,18 +34,16 @@
         @change="applyFilters"
         class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
       >
-        <option value="">All Types</option>
-        <option value="Internal Audit">Internal Audit</option>
-        <option value="External Audit">External Audit</option>
-        <option value="Compliance Audit">Compliance Audit</option>
+        <option value="">{{ t('settings.groupsFilterAllTypes') }}</option>
+        <option value="Internal Audit">{{ t('settings.modFieldsEventTypeInternalAudit') }}</option>
+        <option value="External Audit">{{ t('audit.portalAuditListExternalAudit2') }}</option>
+        <option value="Compliance Audit">{{ t('audit.portalAuditListComplianceAudit2') }}</option>
       </select>
 
       <button
         @click="resetFilters"
         class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-      >
-        Clear Filters
-      </button>
+      >{{ t('audit.portalAuditListClearFilters3') }}</button>
     </div>
 
     <!-- Mobile Filter Button -->
@@ -55,9 +53,7 @@
     >
       <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-      </svg>
-      Filters
-    </button>
+      </svg>{{ t('common.listFilters') }}</button>
 
     <!-- Mobile Filter Panel -->
     <div
@@ -65,39 +61,37 @@
       class="lg:hidden mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 space-y-4"
     >
       <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('settings.settingsBhFieldStatus') }}</label>
         <select
           v-model="filters.status"
           @change="applyFilters"
           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
         >
-          <option value="">All Statuses</option>
-          <option value="in_progress">In Progress</option>
-          <option value="waiting_for_actions">Waiting for Corrective Actions</option>
-          <option value="completed">Completed</option>
+          <option value="">{{ t('audit.portalAuditListAllStatuses') }}</option>
+          <option value="in_progress">{{ t('forms.hubExecutionInProgress') }}</option>
+          <option value="waiting_for_actions">{{ t('audit.portalAuditListWaitingForCorrectiveActions') }}</option>
+          <option value="completed">{{ t('process.execCompleted') }}</option>
         </select>
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type</label>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('settings.modFieldsValidationType') }}</label>
         <select
           v-model="filters.auditType"
           @change="applyFilters"
           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
         >
-          <option value="">All Types</option>
-          <option value="Internal Audit">Internal Audit</option>
-          <option value="External Audit">External Audit</option>
-          <option value="Compliance Audit">Compliance Audit</option>
+          <option value="">{{ t('settings.groupsFilterAllTypes') }}</option>
+          <option value="Internal Audit">{{ t('settings.modFieldsEventTypeInternalAudit') }}</option>
+          <option value="External Audit">{{ t('audit.portalAuditListExternalAudit') }}</option>
+          <option value="Compliance Audit">{{ t('audit.portalAuditListComplianceAudit') }}</option>
         </select>
       </div>
 
       <button
         @click="resetFilters"
         class="w-full px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-      >
-        Clear Filters
-      </button>
+      >{{ t('audit.portalAuditListClearFilters2') }}</button>
     </div>
 
     <!-- Loading State -->
@@ -110,7 +104,7 @@
       <svg class="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
-      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No audits yet</h3>
+      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">{{ t('audit.portalAuditListNoAuditsYet') }}</h3>
       <p class="text-gray-600 dark:text-gray-400 mb-4">
         {{ hasFilters ? 'No audits match your filters. Try adjusting them to see more results.' : 'Audits will appear here once they\'re assigned to you or your organization.' }}
       </p>
@@ -118,9 +112,7 @@
         v-if="hasFilters"
         @click="resetFilters"
         class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700"
-      >
-        Clear Filters
-      </button>
+      >{{ t('audit.portalAuditListClearFilters') }}</button>
     </div>
 
     <!-- Audit List -->
@@ -187,6 +179,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';

@@ -1,0 +1,102 @@
+{
+  "save": {
+    "message": "बचाना",
+    "description": "Primary save action button"
+  },
+  "cancel": {
+    "message": "रद्द करना",
+    "description": "Dismiss without saving"
+  },
+  "delete": {
+    "message": "मिटाना",
+    "description": "Permanently remove the selected item"
+  },
+  "confirm": {
+    "message": "पुष्टि करना",
+    "description": "Confirm a destructive or important action"
+  },
+  "retry": {
+    "message": "पुन: प्रयास करें",
+    "description": "Retry a failed network or load operation"
+  },
+  "close": {
+    "message": "बंद करना",
+    "description": "Close a modal or panel"
+  },
+  "edit": {
+    "message": "संपादन करना",
+    "description": "Enter edit mode for the current record"
+  },
+  "create": {
+    "message": "बनाएं",
+    "description": "Create a new record"
+  },
+  "search": {
+    "message": "खोज",
+    "description": "Submit or focus global search"
+  },
+  "back": {
+    "message": "पीछे",
+    "description": "Navigate to the previous screen"
+  },
+  "update": {
+    "message": "अद्यतन",
+    "description": "Update an existing saved entity"
+  },
+  "apply": {
+    "message": "आवेदन करना",
+    "description": "Apply pending settings or filters"
+  },
+  "previous": {
+    "message": "पहले का",
+    "description": "Previous page or step"
+  },
+  "next": {
+    "message": "अगला",
+    "description": "Next page or step"
+  },
+  "remove": {
+    "message": "निकालना",
+    "description": "Remove a selected item or tag"
+  },
+  "select": {
+    "message": "चुनना",
+    "description": "Select a record or option"
+  },
+  "refresh": {
+    "message": "ताज़ा करना",
+    "description": "Reload data from the server"
+  },
+  "add": {
+    "message": "जोड़ना",
+    "description": "Add an item or relation"
+  },
+  "link": {
+    "message": "जोड़ना",
+    "description": "Link an existing record"
+  },
+  "duplicate": {
+    "message": "डुप्लिकेट",
+    "description": "Duplicate the current record"
+  },
+  "archive": {
+    "message": "पुरालेख",
+    "description": "Archive the current record"
+  },
+  "follow": {
+    "message": "अनुसरण करना",
+    "description": "Follow record updates"
+  },
+  "unfollow": {
+    "message": "करें",
+    "description": "Stop following record updates"
+  },
+  "copy": {
+    "message": "प्रतिलिपि",
+    "description": "Copy text or link to clipboard"
+  },
+  "export": {
+    "message": "Export",
+    "description": "Export record or list data"
+  }
+}

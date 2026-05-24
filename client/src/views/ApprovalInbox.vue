@@ -3,12 +3,8 @@
     <!-- Header -->
     <header class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div>
-        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-          Approvals
-        </h1>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-          Review and approve pending requests
-        </p>
+        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{{ t('common.approvalInboxApprovals') }}</h1>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('common.approvalInboxReviewAndApprovePendingRequests') }}</p>
       </div>
     </header>
 
@@ -30,10 +26,8 @@
       <svg class="w-12 h-12 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No approvals pending</h3>
-      <p class="text-sm text-gray-600 dark:text-gray-400">
-        All caught up! You have no pending approval requests.
-      </p>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('common.approvalInboxNoApprovalsPending') }}</h3>
+      <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('common.approvalInboxAllCaughtUpYouHaveNo') }}</p>
     </div>
 
     <!-- Approvals List -->
@@ -64,19 +58,19 @@
 
             <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1 mb-3">
               <div>
-                <span class="font-medium">Entity:</span>
+                <span class="font-medium">{{ t('process.execLogsEntity') }}</span>
                 {{ getEntityDisplay(approval) }}
               </div>
               <div v-if="approval.processId?.name">
-                <span class="font-medium">Requested by:</span>
+                <span class="font-medium">{{ t('common.approvalInboxRequestedBy') }}</span>
                 {{ approval.processId.name }}
               </div>
               <div v-if="approval.createdAt">
-                <span class="font-medium">Requested at:</span>
+                <span class="font-medium">{{ t('common.approvalInboxRequestedAt') }}</span>
                 {{ formatDate(approval.createdAt) }}
               </div>
               <div v-if="approval.dueIn !== null && approval.dueIn >= 0">
-                <span class="font-medium">Due in:</span>
+                <span class="font-medium">{{ t('common.approvalInboxDueIn') }}</span>
                 <span :class="approval.dueIn < 24 ? 'text-red-600 dark:text-red-400 font-medium' : ''">
                   {{ formatDueTime(approval.dueIn) }}
                 </span>
@@ -87,21 +81,15 @@
               <button
                 @click.stop="handleApprove(approval)"
                 class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
-              >
-                Approve
-              </button>
+              >{{ t('settings.roleDrawerPermApprove') }}</button>
               <button
                 @click.stop="handleReject(approval)"
                 class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
-              >
-                Reject
-              </button>
+              >{{ t('forms.hubActionReject') }}</button>
               <button
                 @click.stop="viewApproval(approval)"
                 class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                View Details
-              </button>
+              >{{ t('process.execLogsViewDetails') }}</button>
             </div>
           </div>
         </div>
@@ -115,18 +103,15 @@
       @click.self="rejectingApproval = null"
     >
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Reject Approval</h3>
-        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          Rejecting will block this action. Please provide a reason.
-        </p>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('common.approvalInboxRejectApproval') }}</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ t('common.approvalInboxRejectingWillBlockThisActionPlease') }}</p>
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Reason <span class="text-red-500">*</span>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('common.approvalInboxReason') }}<span class="text-red-500">*</span>
           </label>
           <textarea
             v-model="rejectReason"
             rows="3"
-            placeholder="Enter rejection reason..."
+            :placeholder="t('common.approvalInboxEnterRejectionReason')"
             class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-indigo-500"
           ></textarea>
         </div>
@@ -134,9 +119,7 @@
           <button
             @click="rejectingApproval = null; rejectReason = ''"
             class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-          >
-            Cancel
-          </button>
+          >{{ t('performance.cancelWizard') }}</button>
           <button
             @click="confirmReject"
             :disabled="!rejectReason.trim() || processing"
@@ -151,6 +134,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import apiClient from '@/utils/apiClient';

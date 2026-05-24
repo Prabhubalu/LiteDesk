@@ -4,7 +4,7 @@
     <div v-if="loading" class="flex items-center justify-center min-h-screen">
       <div class="text-center">
         <div class="w-16 h-16 border-4 border-gray-200 dark:border-gray-700 border-t-indigo-600 dark:border-t-indigo-500 rounded-full animate-spin mx-auto mb-4"></div>
-        <p class="text-gray-600 dark:text-gray-400 font-medium">Loading import...</p>
+        <p class="text-gray-600 dark:text-gray-400 font-medium">{{ t('import.importDetailLoadingImport') }}</p>
       </div>
     </div>
 
@@ -14,11 +14,9 @@
         <svg class="mx-auto h-12 w-12 text-red-500 dark:text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Error Loading Import</h2>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ t('import.importDetailErrorLoadingImport') }}</h2>
         <p class="text-gray-600 dark:text-gray-400 mb-6">{{ error }}</p>
-        <button @click="$router.push('/imports')" class="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium">
-          Back to Imports
-        </button>
+        <button @click="$router.push('/imports')" class="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium">{{ t('import.importDetailBackToImports') }}</button>
       </div>
     </div>
 
@@ -30,7 +28,7 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          <span class="font-medium">Back</span>
+          <span class="font-medium">{{ t('performance.back') }}</span>
         </button>
 
         <div class="flex items-center gap-2">
@@ -69,7 +67,7 @@
           </div>
           <div class="text-right">
             <div class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{{ successRate }}%</div>
-            <div class="text-xs text-gray-600 dark:text-gray-400">Success</div>
+            <div class="text-xs text-gray-600 dark:text-gray-400">{{ t('process.execLogsSuccess') }}</div>
           </div>
         </div>
       </div>
@@ -78,7 +76,7 @@
       <div class="grid grid-cols-5 gap-3 mb-4">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3 text-center">
           <div class="text-xl font-bold text-gray-900 dark:text-white">{{ importRecord.stats?.total || 0 }}</div>
-          <div class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">Total</div>
+          <div class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">{{ t('appointments.statsTotal') }}</div>
         </div>
         <div 
           class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3 text-center cursor-pointer hover:shadow-md transition-shadow"
@@ -86,7 +84,7 @@
           @click="viewRecords('created')"
         >
           <div class="text-xl font-bold text-green-600 dark:text-green-400">{{ importRecord.stats?.created || 0 }}</div>
-          <div class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">Created</div>
+          <div class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">{{ t('forms.hubColCreated') }}</div>
         </div>
         <div 
           class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3 text-center cursor-pointer hover:shadow-md transition-shadow"
@@ -94,7 +92,7 @@
           @click="viewRecords('updated')"
         >
           <div class="text-xl font-bold text-blue-600 dark:text-blue-400">{{ importRecord.stats?.updated || 0 }}</div>
-          <div class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">Updated</div>
+          <div class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">{{ t('import.importDetailUpdated') }}</div>
         </div>
         <div 
           class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3 text-center cursor-pointer hover:shadow-md transition-shadow"
@@ -102,7 +100,7 @@
           @click="viewRecords('skipped')"
         >
           <div class="text-xl font-bold text-yellow-600 dark:text-yellow-400">{{ importRecord.stats?.skipped || 0 }}</div>
-          <div class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">Skipped</div>
+          <div class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">{{ t('process.execSkipped') }}</div>
         </div>
         <div 
           class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3 text-center cursor-pointer hover:shadow-md transition-shadow"
@@ -110,7 +108,7 @@
           @click="viewRecords('failed')"
         >
           <div class="text-xl font-bold text-red-600 dark:text-red-400">{{ importRecord.stats?.failed || 0 }}</div>
-          <div class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">Failed</div>
+          <div class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">{{ t('process.execFailed') }}</div>
         </div>
       </div>
 
@@ -157,9 +155,7 @@
           </div>
           
           <!-- Empty State -->
-          <div v-else class="text-center py-6 text-sm text-gray-500 dark:text-gray-400">
-            Unable to fetch records. They may have been deleted or modified.
-          </div>
+          <div v-else class="text-center py-6 text-sm text-gray-500 dark:text-gray-400">{{ t('import.importDetailUnableToFetchRecordsTheyMay') }}</div>
         </div>
 
         <!-- Skipped Records -->
@@ -173,11 +169,8 @@
                 <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
               </svg>
               <div class="flex-1">
-                <p class="text-sm font-medium text-yellow-800 dark:text-yellow-200">Records Skipped</p>
-                <p class="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
-                  These records were skipped because they were identified as duplicates.
-                  <span v-if="importRecord.duplicateCheckEnabled">
-                    Checked on: <strong>{{ importRecord.duplicateCheckFields?.join(', ') || 'default fields' }}</strong>.
+                <p class="text-sm font-medium text-yellow-800 dark:text-yellow-200">{{ t('import.importDetailRecordsSkipped') }}</p>
+                <p class="text-xs text-yellow-700 dark:text-yellow-300 mt-1">{{ t('import.importDetailTheseRecordsWereSkippedBecauseThey') }}<span v-if="importRecord.duplicateCheckEnabled">{{ t('import.importDetailCheckedOn') }}<strong>{{ importRecord.duplicateCheckFields?.join(', ') || 'default fields' }}</strong>.
                   </span>
                 </p>
               </div>
@@ -207,7 +200,7 @@
               </div>
             </div>
           </div>
-          <div v-else class="text-center py-6 text-sm text-gray-500 dark:text-gray-400">No error details available.</div>
+          <div v-else class="text-center py-6 text-sm text-gray-500 dark:text-gray-400">{{ t('import.importDetailNoErrorDetailsAvailable') }}</div>
         </div>
       </div>
 
@@ -240,7 +233,7 @@
           <!-- Overview Tab -->
           <div v-if="activeTab === 'overview'" class="space-y-3">
             <div class="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-              <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Imported By</span>
+              <span class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('import.importDetailImportedBy') }}</span>
               <div class="flex items-center gap-2">
                 <div class="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center text-white text-xs font-medium">
                   {{ (importRecord.importedBy?.firstName?.[0] || '') + (importRecord.importedBy?.lastName?.[0] || '') }}
@@ -252,17 +245,17 @@
             </div>
 
             <div class="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-              <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Processing Time</span>
+              <span class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('import.importDetailProcessingTime') }}</span>
               <span class="text-sm font-medium text-gray-900 dark:text-white">{{ formatProcessingTime(importRecord.processingTime) }}</span>
             </div>
 
             <div class="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-              <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Rows</span>
+              <span class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('import.importDetailTotalRows') }}</span>
               <span class="text-sm font-medium text-gray-900 dark:text-white">{{ importRecord.metadata?.totalRows || importRecord.stats?.total || 0 }}</span>
             </div>
 
             <div class="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-              <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Duplicate Check</span>
+              <span class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('import.importDetailDuplicateCheck') }}</span>
               <span class="text-sm font-medium text-gray-900 dark:text-white">
                 {{ importRecord.duplicateCheckEnabled ? 'Enabled' : 'Disabled' }}
                 <span v-if="importRecord.duplicateCheckEnabled" class="text-xs text-gray-500 dark:text-gray-400 ml-1">
@@ -272,7 +265,7 @@
             </div>
 
             <div v-if="importRecord.duplicateCheckFields?.length" class="flex items-start justify-between py-2">
-              <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Checked Fields</span>
+              <span class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('import.importDetailCheckedFields') }}</span>
               <div class="flex flex-wrap gap-1.5 max-w-md justify-end">
                 <span 
                   v-for="field in importRecord.duplicateCheckFields" 
@@ -287,9 +280,7 @@
 
           <!-- Field Mapping Tab -->
           <div v-if="activeTab === 'mapping'" class="space-y-3">
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-              CSV columns were mapped to the following CRM fields:
-            </p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ t('import.importDetailCsvColumnsWereMappedToThe') }}</p>
             <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 space-y-2">
               <div 
                 v-for="(crmField, csvField) in importRecord.metadata?.fieldMapping || {}"
@@ -313,7 +304,7 @@
               <svg class="mx-auto h-12 w-12 text-green-500 dark:text-green-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <p class="text-sm text-gray-600 dark:text-gray-400">No errors during import</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('import.importDetailNoErrorsDuringImport') }}</p>
             </div>
             <div v-else class="space-y-2">
               <div 
@@ -340,6 +331,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import apiClient from '@/utils/apiClient';

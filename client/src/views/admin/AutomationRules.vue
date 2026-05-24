@@ -4,10 +4,10 @@
     <header class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div>
         <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-          Automation Rules
+          {{ t('process.rulesTitle') }}
         </h1>
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-          Configure automated actions triggered by domain events.
+          {{ t('process.rulesDescription') }}
         </p>
       </div>
       <button
@@ -17,7 +17,7 @@
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        New Rule
+        {{ t('process.rulesNew') }}
       </button>
     </header>
 
@@ -28,30 +28,30 @@
         @change="loadRules"
         class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
       >
-        <option value="">All Apps</option>
-        <option value="SALES">SALES</option>
-        <option value="AUDIT">AUDIT</option>
-        <option value="PORTAL">PORTAL</option>
+        <option value="">{{ t('process.filterApps') }}</option>
+        <option value="SALES">{{ t('process.appKeySales') }}</option>
+        <option value="AUDIT">{{ t('process.appKeyAudit') }}</option>
+        <option value="PORTAL">{{ t('process.appKeyPortal') }}</option>
       </select>
       <select
         v-model="filters.entityType"
         @change="loadRules"
         class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
       >
-        <option value="">All Entities</option>
-        <option value="people">People</option>
-        <option value="organization">Organization</option>
-        <option value="deal">Deal</option>
-        <option value="events">Events / Appointments</option>
+        <option value="">{{ t('process.filterEntities') }}</option>
+        <option value="people">{{ t('process.filterEntityPeople') }}</option>
+        <option value="organization">{{ t('process.filterEntityOrganization') }}</option>
+        <option value="deal">{{ t('process.filterEntityDeal') }}</option>
+        <option value="events">{{ t('process.filterEntityEvents') }}</option>
       </select>
       <select
         v-model="filters.enabled"
         @change="loadRules"
         class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
       >
-        <option value="">All Status</option>
-        <option value="true">Enabled</option>
-        <option value="false">Disabled</option>
+        <option value="">{{ t('process.filterStatus') }}</option>
+        <option value="true">{{ t('process.filterEnabled') }}</option>
+        <option value="false">{{ t('process.filterDisabled') }}</option>
       </select>
     </div>
 
@@ -89,7 +89,7 @@
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                 ]"
               >
-                {{ rule.enabled ? 'Enabled' : 'Disabled' }}
+                {{ rule.enabled ? t('process.statusEnabled') : t('process.statusDisabled') }}
               </span>
             </div>
             <p v-if="rule.description" class="text-sm text-gray-600 dark:text-gray-400 mb-3">
@@ -97,16 +97,16 @@
             </p>
             <div class="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
               <span>
-                <span class="font-medium">App:</span> {{ rule.appKey }}
+                <span class="font-medium">{{ t('process.labelApp') }}</span> {{ rule.appKey }}
               </span>
               <span v-if="rule.entityType">
-                <span class="font-medium">Entity:</span> {{ rule.entityType }}
+                <span class="font-medium">{{ t('process.labelEntity') }}</span> {{ rule.entityType }}
               </span>
               <span>
-                <span class="font-medium">Trigger:</span> {{ rule.trigger.eventType }}
+                <span class="font-medium">{{ t('process.labelTrigger') }}</span> {{ rule.trigger.eventType }}
               </span>
               <span>
-                <span class="font-medium">Action:</span> {{ rule.action.type }}
+                <span class="font-medium">{{ t('process.labelAction') }}</span> {{ rule.action.type }}
               </span>
             </div>
           </div>
@@ -114,7 +114,7 @@
             <button
               @click="previewRule(rule)"
               class="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
-              title="Preview"
+              :title="t('process.rulesTooltipPreview')"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -124,7 +124,7 @@
             <button
               @click="toggleRule(rule)"
               class="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
-              :title="rule.enabled ? 'Disable' : 'Enable'"
+              :title="rule.enabled ? t('process.rulesTooltipDisable') : t('process.rulesTooltipEnable')"
             >
               <svg v-if="rule.enabled" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
@@ -136,7 +136,7 @@
             <button
               @click="editRule(rule)"
               class="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
-              title="Edit"
+              :title="t('actions.edit')"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -145,7 +145,7 @@
             <button
               @click="deleteRule(rule)"
               class="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-              title="Delete"
+              :title="t('actions.delete')"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -161,9 +161,9 @@
       <svg class="w-12 h-12 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No automation rules</h3>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('process.rulesEmptyTitle') }}</h3>
       <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-        Create your first automation rule to automate actions based on domain events.
+        {{ t('process.rulesEmptyMessage') }}
       </p>
       <button
         @click="openCreateModal"
@@ -172,7 +172,7 @@
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        New Rule
+        {{ t('process.rulesNew') }}
       </button>
     </div>
 
@@ -195,9 +195,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import AutomationRuleForm from '@/components/admin/AutomationRuleForm.vue';
 import AutomationRulePreview from '@/components/admin/AutomationRulePreview.vue';
+
+const { t } = useI18n();
 
 const rules = ref([]);
 const loading = ref(false);
@@ -220,11 +223,11 @@ async function loadRules() {
     if (filters.value.appKey) params.append('appKey', filters.value.appKey);
     if (filters.value.entityType) params.append('entityType', filters.value.entityType);
     if (filters.value.enabled) params.append('enabled', filters.value.enabled);
-    
+
     const res = await apiClient.get(`/admin/automation-rules?${params.toString()}`);
     rules.value = res.data.data || [];
   } catch (err) {
-    error.value = err.response?.data?.message || 'Failed to load automation rules';
+    error.value = err.response?.data?.message || t('process.rulesLoadFailed');
     console.error('Error loading rules:', err);
   } finally {
     loading.value = false;
@@ -256,17 +259,17 @@ async function toggleRule(rule) {
     await apiClient.post(`/admin/automation-rules/${rule._id}/toggle`);
     await loadRules();
   } catch (err) {
-    alert(err.response?.data?.message || 'Failed to toggle rule');
+    alert(err.response?.data?.message || t('process.rulesToggleFailed'));
   }
 }
 
 async function deleteRule(rule) {
-  if (!confirm(`Delete rule "${rule.name}"? This will disable it (soft delete).`)) return;
+  if (!confirm(t('process.rulesDeleteConfirm', { name: rule.name }))) return;
   try {
     await apiClient.delete(`/admin/automation-rules/${rule._id}`);
     await loadRules();
   } catch (err) {
-    alert(err.response?.data?.message || 'Failed to delete rule');
+    alert(err.response?.data?.message || t('process.rulesDeleteFailed'));
   }
 }
 
@@ -275,7 +278,7 @@ function previewRule(rule) {
 }
 
 onMounted(() => {
-  document.title = 'Automation Rules | Arivu';
+  document.title = t('process.rulesPageTitle');
   loadRules();
 });
 </script>

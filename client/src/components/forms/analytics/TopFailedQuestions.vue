@@ -2,15 +2,15 @@
   <div>
     <div v-if="loading" class="text-center py-8">
       <div class="w-8 h-8 border-2 border-gray-200 dark:border-gray-700 border-t-indigo-600 dark:border-t-indigo-500 rounded-full animate-spin mx-auto mb-2"></div>
-      <p class="text-sm text-gray-500 dark:text-gray-400">Loading failed questions...</p>
+      <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('forms.analyticsFailedQuestionsLoading') }}</p>
     </div>
 
     <div v-else-if="failedQuestions.length === 0" class="text-center py-8 text-gray-500 dark:text-gray-400">
       <svg class="w-12 h-12 mx-auto mb-3 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
-      <p class="text-sm font-medium">No failed questions found</p>
-      <p class="text-xs mt-1">All questions are passing!</p>
+      <p class="text-sm font-medium">{{ t('forms.analyticsNoFailedQuestions') }}</p>
+      <p class="text-xs mt-1">{{ t('forms.analyticsAllQuestionsPassing') }}</p>
     </div>
 
     <div v-else class="space-y-3">
@@ -28,13 +28,15 @@
           </p>
           <div class="flex items-center gap-4 mt-2">
             <span class="text-xs text-gray-600 dark:text-gray-400">
-              Failed: <span class="font-semibold text-red-600 dark:text-red-400">{{ question.failCount }}</span> times
+              {{ t('forms.analyticsFailedTimes', { count: question.failCount }) }}
             </span>
             <span class="text-xs text-gray-600 dark:text-gray-400">
-              Section: <span class="font-semibold">{{ question.sectionName }}</span>
+              {{ t('forms.analyticsSectionLabel') }}
+              <span class="font-semibold">{{ question.sectionName }}</span>
             </span>
             <span class="text-xs text-gray-600 dark:text-gray-400">
-              Fail Rate: <span class="font-semibold text-red-600 dark:text-red-400">{{ question.failRate }}%</span>
+              {{ t('forms.analyticsFailRateLabel') }}
+              <span class="font-semibold text-red-600 dark:text-red-400">{{ question.failRate }}%</span>
             </span>
           </div>
         </div>
@@ -45,7 +47,10 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
+
+const { t } = useI18n();
 
 const props = defineProps({
   formId: {
@@ -100,7 +105,7 @@ const fetchData = async () => {
               if (!questionFailures[detail.questionId]) {
                 questionFailures[detail.questionId] = {
                   questionId: detail.questionId,
-                  questionText: detail.questionText || 'Unknown Question',
+                  questionText: detail.questionText || t('forms.analyticsUnknownQuestion'),
                   failCount: 0,
                   sectionId: detail.sectionId
                 };
@@ -114,7 +119,7 @@ const fetchData = async () => {
       // Convert to array and calculate fail rates
       const questions = Object.values(questionFailures).map(q => ({
         ...q,
-        sectionName: sectionNames.value[q.sectionId] || 'Unknown Section',
+        sectionName: sectionNames.value[q.sectionId] || t('forms.analyticsUnknownSection'),
         failRate: totalResponses > 0 ? Math.round((q.failCount / totalResponses) * 100) : 0
       }));
       

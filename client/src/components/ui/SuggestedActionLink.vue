@@ -26,6 +26,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 
 const props = defineProps({
@@ -45,6 +46,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['click']);
+
+const { t } = useI18n();
 
 const variantClasses = computed(() => {
   const classes = {

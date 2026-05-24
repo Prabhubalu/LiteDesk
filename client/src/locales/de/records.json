@@ -1,0 +1,1214 @@
+{
+  "shellErrorTitle": {
+    "message": "Fehler beim Laden des Datensatzes",
+    "description": "Record page load error heading"
+  },
+  "shellLoadFailed": {
+    "message": "Datensatz konnte nicht geladen werden",
+    "description": "Record page load error fallback"
+  },
+  "contextTabsAria": {
+    "message": "Registerkarten des Kontextfensters",
+    "description": "Vertical context tab rail aria label"
+  },
+  "fieldsHeadingSr": {
+    "message": "Felder aufzeichnen",
+    "description": "Screen reader heading for record fields section"
+  },
+  "customFieldsHeadingSr": {
+    "message": "Benutzerdefinierte Felder",
+    "description": "Screen reader heading for custom fields section"
+  },
+  "relatedRecordsHeadingSr": {
+    "message": "Verwandte Datensätze",
+    "description": "Screen reader heading for related records section"
+  },
+  "activityHeadingSr": {
+    "message": "Aktivität (neueste unten)",
+    "description": "Activity timeline screen reader heading"
+  },
+  "activityReply": {
+    "message": "Antwort",
+    "description": "Reply to comment action"
+  },
+  "activityEmpty": {
+    "message": "Noch keine Aktivität.",
+    "description": "Empty activity feed"
+  },
+  "activityCommentPh": {
+    "message": "Schreibe einen Kommentar...",
+    "description": "Comment composer placeholder"
+  },
+  "activityAddAttachment": {
+    "message": "Anhang hinzufügen",
+    "description": "Add attachment button title"
+  },
+  "activityMention": {
+    "message": "Erwähnen",
+    "description": "Mention button title"
+  },
+  "activityEmoji": {
+    "message": "Emoji",
+    "description": "Emoji picker button title"
+  },
+  "activityCommentBtn": {
+    "message": "Kommentar",
+    "description": "Submit comment button"
+  },
+  "activityUpdated": {
+    "message": "aktualisiert",
+    "description": "Default system activity verb"
+  },
+  "activitySystemWithAction": {
+    "message": "{action} dieser Datensatz",
+    "description": "System activity fallback with action verb"
+  },
+  "tagsTitle": {
+    "message": "Schlagworte",
+    "description": "Tags popover title"
+  },
+  "tagsNewTag": {
+    "message": "Neuer Tag",
+    "description": "New tag button"
+  },
+  "tagsNoPermission": {
+    "message": "Sie sind nicht berechtigt, Tags zu bearbeiten.",
+    "description": "Tags read-only message"
+  },
+  "tagsRemoveFromRecord": {
+    "message": "Aus diesem Datensatz entfernen",
+    "description": "Remove tag from record action"
+  },
+  "tagsEditTag": {
+    "message": "Tag bearbeiten",
+    "description": "Edit tag action"
+  },
+  "tagsDeleteFromModule": {
+    "message": "Tag aus Modul löschen",
+    "description": "Delete tag from module action"
+  },
+  "tagsSearchHint": {
+    "message": "Klicken Sie auf das Suchfeld, um die verfügbaren Tags anzuzeigen.",
+    "description": "Tags search hint"
+  },
+  "tagsNoneYet": {
+    "message": "In diesem Fall wurden noch keine Tags erstellt.",
+    "description": "Empty tags list"
+  },
+  "tagsCreateFirst": {
+    "message": "Erstellen Sie das erste Tag",
+    "description": "Create first tag CTA"
+  },
+  "tagsPublic": {
+    "message": "Öffentlich",
+    "description": "Public tag badge"
+  },
+  "tagsTagName": {
+    "message": "Tag-Name",
+    "description": "Tag name field label"
+  },
+  "tagsColor": {
+    "message": "Farbe",
+    "description": "Tag color field label"
+  },
+  "tagsMakePublic": {
+    "message": "Tag öffentlich machen",
+    "description": "Make tag public checkbox"
+  },
+  "tagsSearchPh": {
+    "message": "Suchen oder erstellen Sie ein Tag",
+    "description": "Tag search placeholder"
+  },
+  "tagsTagActions": {
+    "message": "Markieren Sie Aktionen",
+    "description": "Tag actions menu aria label"
+  },
+  "tagsNamePh": {
+    "message": "Geben Sie den Tag-Namen ein",
+    "description": "Tag name input placeholder"
+  },
+  "detailsTitle": {
+    "message": "Einzelheiten",
+    "description": "Details section title"
+  },
+  "detailsSelectOption": {
+    "message": "Wählen Sie eine Option",
+    "description": "Empty picklist placeholder"
+  },
+  "detailsLinkRecord": {
+    "message": "Klicken Sie, um den Datensatz zu verknüpfen",
+    "description": "Empty lookup field placeholder"
+  },
+  "relatedTitle": {
+    "message": "Verwandt",
+    "description": "Related section title"
+  },
+  "relatedEmpty": {
+    "message": "Noch keine zugehörigen Datensätze.",
+    "description": "Empty related list"
+  },
+  "relatedEmptyHint": {
+    "message": "Verknüpfen Sie diesen Datensatz mit zugehörigen Elementen.",
+    "description": "Empty related hint"
+  },
+  "relatedUnlink": {
+    "message": "Verknüpfung aufheben",
+    "description": "Unlink related record"
+  },
+  "relatedActionsAria": {
+    "message": "Zugehörige Datensatzaktionen",
+    "description": "Related record actions menu aria"
+  },
+  "stageHistoryTitle": {
+    "message": "Bühnengeschichte",
+    "description": "Stage history section title"
+  },
+  "subtasksEditAria": {
+    "message": "Unteraufgabe bearbeiten",
+    "description": "Edit subtask button title"
+  },
+  "subtasksDeleteAria": {
+    "message": "Unteraufgabe löschen",
+    "description": "Delete subtask button title"
+  },
+  "subtasksNamePh": {
+    "message": "Aufgabenname",
+    "description": "New subtask name placeholder"
+  },
+  "subtasksEmpty": {
+    "message": "Noch keine Unteraufgaben.",
+    "description": "Empty subtasks list"
+  },
+  "stateHeadingSr": {
+    "message": "Aufnahmestatus",
+    "description": "Record state section screen reader heading"
+  },
+  "descriptionTitle": {
+    "message": "Beschreibung",
+    "description": "Description section default title"
+  },
+  "descriptionEmpty": {
+    "message": "Keine Beschreibung",
+    "description": "Empty description placeholder"
+  },
+  "tabSummary": {
+    "message": "Zusammenfassung",
+    "description": "Right pane summary tab"
+  },
+  "tabDetails": {
+    "message": "Einzelheiten",
+    "description": "Right pane details tab"
+  },
+  "tabUpdates": {
+    "message": "Aktualisierungen",
+    "description": "Right pane updates tab"
+  },
+  "tabContentFallback": {
+    "message": "{name} Inhalt",
+    "description": "Right pane tab placeholder content"
+  },
+  "sectionActionFallback": {
+    "message": "Aktion",
+    "description": "Section stack action button fallback label"
+  },
+  "descriptionAdd": {
+    "message": "Beschreibung hinzufügen",
+    "description": "Editable empty description CTA"
+  },
+  "descriptionEmptyReadonly": {
+    "message": "Noch keine Beschreibung.",
+    "description": "Read-only empty description"
+  },
+  "subtasksHeader": {
+    "message": "Unteraufgaben ({completed}/{total})",
+    "description": "Subtasks section header with counts"
+  },
+  "subtasksUntitled": {
+    "message": "Unteraufgabe ohne Titel",
+    "description": "Subtask without title"
+  },
+  "subtasksViewAll": {
+    "message": "Alle anzeigen ({count})",
+    "description": "View all subtasks link"
+  },
+  "relatedUntitled": {
+    "message": "Ohne Titel",
+    "description": "Related record without title"
+  },
+  "genericLoading": {
+    "message": "Lade {module}…",
+    "description": "Record page loading message"
+  },
+  "genericErrorTitle": {
+    "message": "Fehler beim Laden von {module}",
+    "description": "Record page error title"
+  },
+  "genericNavPrevious": {
+    "message": "Vorheriger {singular}",
+    "description": "Previous record navigation"
+  },
+  "genericNavNext": {
+    "message": "Weiter {singular}",
+    "description": "Next record navigation"
+  },
+  "genericTagsAria": {
+    "message": "Schlagworte",
+    "description": "Tags button aria"
+  },
+  "genericCopyUrl": {
+    "message": "URL kopieren",
+    "description": "Copy URL button"
+  },
+  "genericMoreActions": {
+    "message": "Weitere Aktionen",
+    "description": "More actions menu"
+  },
+  "genericSendEmail": {
+    "message": "E-Mail senden",
+    "description": "Send email menu action"
+  },
+  "genericBackTo": {
+    "message": "Zurück zu {singular}",
+    "description": "Back from expanded section"
+  },
+  "genericCollapseSection": {
+    "message": "Abschnitt ausblenden",
+    "description": "Collapse section aria"
+  },
+  "genericCollapse": {
+    "message": "Zusammenbruch",
+    "description": "Collapse button title"
+  },
+  "genericNoDescInVersion": {
+    "message": "Keine Beschreibung in dieser Version.",
+    "description": "Empty description version"
+  },
+  "genericVersionHistory": {
+    "message": "Versionsgeschichte",
+    "description": "Description version history title"
+  },
+  "genericCurrentVersion": {
+    "message": "Aktuelle Version",
+    "description": "Current version label"
+  },
+  "genericVersionRetention": {
+    "message": "Der Versionsverlauf wird bis zu 365 Tage gespeichert.",
+    "description": "Version retention note"
+  },
+  "genericRestoreVersion": {
+    "message": "Stellen Sie diese Version wieder her",
+    "description": "Restore description version"
+  },
+  "genericRestoring": {
+    "message": "Wiederherstellung…",
+    "description": "Restore in progress"
+  },
+  "genericSomeone": {
+    "message": "Jemand",
+    "description": "Unknown version author"
+  },
+  "genericKeyFields": {
+    "message": "Schlüsselfelder",
+    "description": "Key fields section heading"
+  },
+  "genericAppParticipation": {
+    "message": "App-Teilnahme",
+    "description": "People app participation section"
+  },
+  "genericConvertToContact": {
+    "message": "In Kontakt konvertieren",
+    "description": "Convert lead to contact"
+  },
+  "genericNotInAnyApp": {
+    "message": "Diese Person ist noch keiner App beigetreten",
+    "description": "Empty people participation"
+  },
+  "genericAddRecord": {
+    "message": "Datensatz hinzufügen",
+    "description": "Add related record button"
+  },
+  "genericLinkRecord": {
+    "message": "Datensatz verknüpfen",
+    "description": "Link record button"
+  },
+  "genericShowEmptyFields": {
+    "message": "Leere Felder anzeigen",
+    "description": "Show empty fields toggle"
+  },
+  "genericNoFieldsMatch": {
+    "message": "Keine Felder entsprechen Ihrem Filter.",
+    "description": "Details filter no match"
+  },
+  "genericNoFieldsToShow": {
+    "message": "Keine Felder zum Anzeigen.",
+    "description": "Empty details fields"
+  },
+  "genericNoRecordLoaded": {
+    "message": "Kein Datensatz geladen.",
+    "description": "No record state"
+  },
+  "genericIntegrations": {
+    "message": "Integrationen",
+    "description": "Integrations section title"
+  },
+  "genericNoIntegrations": {
+    "message": "Keine Integrationen konfiguriert.",
+    "description": "Empty integrations"
+  },
+  "genericFilterFieldsPh": {
+    "message": "Felder filtern…",
+    "description": "Details field filter placeholder"
+  },
+  "genericOpenInNewTab": {
+    "message": "In neuem Tab öffnen",
+    "description": "Open record in new tab"
+  },
+  "genericEditParticipation": {
+    "message": "Teilnahme bearbeiten",
+    "description": "Edit app participation"
+  },
+  "genericAddToApp": {
+    "message": "Zu {app} hinzufügen",
+    "description": "Add person to app"
+  },
+  "genericLinkDrawerAddAndLink": {
+    "message": "Datensätze hinzufügen und verknüpfen",
+    "description": "Link drawer title multi"
+  },
+  "genericLinkDrawerLink": {
+    "message": "Link-Datensatz",
+    "description": "Link drawer title single"
+  },
+  "genericReactorUnavailable": {
+    "message": "Reaktordetails nicht verfügbar",
+    "description": "Reactor panel unavailable"
+  },
+  "genericUnlinkFailed": {
+    "message": "Fehler beim Aufheben der Datensatzverknüpfung. Bitte versuchen Sie es erneut.",
+    "description": "Unlink related record error"
+  },
+  "genericThreadAssigned": {
+    "message": "Thread zugewiesen",
+    "description": "Thread assign success"
+  },
+  "genericThreadUnassigned": {
+    "message": "Thread nicht zugewiesen",
+    "description": "Thread unassign success"
+  },
+  "genericThreadAssignFailed": {
+    "message": "Thread konnte nicht zugewiesen werden",
+    "description": "Thread assign error"
+  },
+  "genericThreadUnassignFailed": {
+    "message": "Die Zuordnung des Threads konnte nicht aufgehoben werden",
+    "description": "Thread unassign error"
+  },
+  "genericTagAdded": {
+    "message": "Tag hinzugefügt",
+    "description": "Tag add success"
+  },
+  "genericTagAddFailed": {
+    "message": "Tag konnte nicht hinzugefügt werden",
+    "description": "Tag add error"
+  },
+  "genericTagRemoved": {
+    "message": "Tag entfernt",
+    "description": "Tag remove success"
+  },
+  "genericTagRemoveFailed": {
+    "message": "Tag konnte nicht entfernt werden",
+    "description": "Tag remove error"
+  },
+  "genericThreadMarkedDone": {
+    "message": "Thread als erledigt markiert",
+    "description": "Thread done success"
+  },
+  "genericThreadReopened": {
+    "message": "Thread neu eröffnet",
+    "description": "Thread reopen success"
+  },
+  "genericThreadStatusFailed": {
+    "message": "Thread-Status konnte nicht aktualisiert werden",
+    "description": "Thread status error"
+  },
+  "genericConfirmCancelAppt": {
+    "message": "Diesen Termin absagen? Der Gast kann über Ihren öffentlichen Link erneut buchen.",
+    "description": "Cancel appointment confirm"
+  },
+  "genericApptCancelled": {
+    "message": "Termin abgesagt",
+    "description": "Appointment cancel success"
+  },
+  "genericApptCancelFailed": {
+    "message": "Termin konnte nicht abgesagt werden",
+    "description": "Appointment cancel error"
+  },
+  "genericConfirmCompleteAppt": {
+    "message": "Diesen Termin als erledigt markieren?",
+    "description": "Complete appointment confirm"
+  },
+  "genericApptCompleted": {
+    "message": "Termin abgeschlossen",
+    "description": "Appointment complete success"
+  },
+  "genericApptCompleteFailed": {
+    "message": "Der Termin konnte nicht abgeschlossen werden",
+    "description": "Appointment complete error"
+  },
+  "genericConfirmNoShowAppt": {
+    "message": "Diesen Termin als Nichterscheinen markieren? Die Veranstaltung bleibt wie geplant in Ihrem Kalender.",
+    "description": "No-show appointment confirm"
+  },
+  "genericApptNoShow": {
+    "message": "Als Nichterscheinen markiert",
+    "description": "No-show success"
+  },
+  "genericApptNoShowFailed": {
+    "message": "Konnte nicht als Nichterscheinen markiert werden",
+    "description": "No-show error"
+  },
+  "genericApptRescheduled": {
+    "message": "Termin verschoben",
+    "description": "Appointment reschedule success"
+  },
+  "genericEmailSent": {
+    "message": "E-Mail gesendet",
+    "description": "Email send success"
+  },
+  "genericEmailSendFailed": {
+    "message": "E-Mail konnte nicht gesendet werden",
+    "description": "Email send error"
+  },
+  "genericNotParticipatingIn": {
+    "message": "Nimmt noch nicht an {app} teil",
+    "description": "People not in app context"
+  },
+  "genericDetailsEmptyValuesHint": {
+    "message": "Keine Felder mit Werten. Aktivieren Sie „Leere Felder anzeigen“, um den Rest zu sehen.",
+    "description": "Details tab empty values hint"
+  },
+  "genericPersonReacted": {
+    "message": "Person reagierte",
+    "description": "Single reaction tooltip suffix"
+  },
+  "genericPeopleReacted": {
+    "message": "Die Leute reagierten",
+    "description": "Multiple reactions tooltip suffix"
+  },
+  "genericTabActivity": {
+    "message": "Aktivität",
+    "description": "Right pane activity tab"
+  },
+  "commentComposerDefaultPh": {
+    "message": "Schreiben Sie einen Kommentar ... @erwähnen Sie Benutzer oder Gruppen",
+    "description": "Default comment composer placeholder"
+  },
+  "commentAddFile": {
+    "message": "Fügen Sie eine Datei hinzu",
+    "description": "Attach file toolbar button"
+  },
+  "commentMentionTitle": {
+    "message": "Jemanden erwähnen ({atSymbol})",
+    "description": "Mention toolbar button"
+  },
+  "commentAddEmoji": {
+    "message": "Emoji hinzufügen",
+    "description": "Emoji picker toolbar button"
+  },
+  "commentSubmitLabel": {
+    "message": "Kommentar",
+    "description": "Submit comment button label"
+  },
+  "commentMentionLoading": {
+    "message": "Laden…",
+    "description": "Mention dropdown loading"
+  },
+  "commentMentionGroup": {
+    "message": "Gruppe",
+    "description": "Mention item group badge"
+  },
+  "commentMentionEmpty": {
+    "message": "Keine Benutzer oder Gruppen gefunden",
+    "description": "Empty mention search"
+  },
+  "commentRemoveAttachment": {
+    "message": "{name} entfernen",
+    "description": "Remove attachment aria-label"
+  },
+  "editableListboxSearchPh": {
+    "message": "Suchen…",
+    "description": "Inline field listbox search"
+  },
+  "editablePhonePh": {
+    "message": "Telefonnummer",
+    "description": "Phone field edit placeholder"
+  },
+  "editableUnassigned": {
+    "message": "Nicht zugewiesen",
+    "description": "Empty user field value"
+  },
+  "editableSelectOption": {
+    "message": "Wählen Sie eine Option",
+    "description": "Empty select/entity option"
+  },
+  "editableNoMatches": {
+    "message": "Keine Übereinstimmungen.",
+    "description": "Listbox filter empty state"
+  },
+  "editableUnknownUser": {
+    "message": "Unbekannter Benutzer",
+    "description": "User option fallback label"
+  },
+  "dealLoading": {
+    "message": "Angebot wird geladen…",
+    "description": "Deal record page loading"
+  },
+  "dealErrorTitle": {
+    "message": "Fehler beim Laden des Angebots",
+    "description": "Deal record page error title"
+  },
+  "dealNavPrevious": {
+    "message": "Vorheriger Deal",
+    "description": "Previous deal navigation"
+  },
+  "dealNavNext": {
+    "message": "Nächster Deal",
+    "description": "Next deal navigation"
+  },
+  "dealModuleLabel": {
+    "message": "Handeln",
+    "description": "Deal module singular label"
+  },
+  "dealBackTo": {
+    "message": "Zurück zum Deal",
+    "description": "Collapse expanded deal section"
+  },
+  "dealEmailContact": {
+    "message": "E-Mail-Kontakt",
+    "description": "Email contact action"
+  },
+  "dealEditAria": {
+    "message": "Deal bearbeiten",
+    "description": "Edit deal action"
+  },
+  "dealVersionRetentionNote": {
+    "message": "Der Versionsverlauf wird in Dealbeschreibungen bis zu 365 Tage lang gespeichert.",
+    "description": "Deal description version retention"
+  },
+  "dealWeightedAmount": {
+    "message": "Gewichtet {amount}",
+    "description": "Deal weighted amount label"
+  },
+  "dealExpectedValuePh": {
+    "message": "Erwarteter Wert",
+    "description": "Deal amount field placeholder"
+  },
+  "dealProbabilityPh": {
+    "message": "Wahrscheinlichkeit",
+    "description": "Deal probability placeholder"
+  },
+  "dealCloseDatePh": {
+    "message": "Schlusstermin",
+    "description": "Deal expected close date placeholder"
+  },
+  "dealStarAria": {
+    "message": "Stern",
+    "description": "Star/follow deal"
+  },
+  "dealUnstarAria": {
+    "message": "Markierung entfernen",
+    "description": "Unfollow deal"
+  },
+  "dealRelatedRecordsTab": {
+    "message": "Verwandte Datensätze",
+    "description": "Deal right pane related tab"
+  },
+  "dealDuplicateNotImplemented": {
+    "message": "Für Deals ist noch keine doppelte Aktion implementiert.",
+    "description": "Deal duplicate stub alert"
+  },
+  "dealExportNotImplemented": {
+    "message": "Die Exportaktion ist für Deals noch nicht implementiert.",
+    "description": "Deal export stub alert"
+  },
+  "dealDeleteFailed": {
+    "message": "Der Deal konnte nicht gelöscht werden",
+    "description": "Deal delete error"
+  },
+  "dealCopyUrlFailed": {
+    "message": "URL konnte nicht kopiert werden",
+    "description": "Deal copy URL error"
+  },
+  "dealCommentAddFailed": {
+    "message": "Kommentar konnte nicht hinzugefügt werden",
+    "description": "Deal add comment error"
+  },
+  "dealCommentUpdateFailed": {
+    "message": "Kommentar konnte nicht aktualisiert werden",
+    "description": "Deal edit comment error"
+  },
+  "dealCreateTaskFailed": {
+    "message": "Aufgabe konnte nicht erstellt werden",
+    "description": "Deal create related task error"
+  },
+  "dealCreateCaseFailed": {
+    "message": "Fall konnte nicht erstellt werden",
+    "description": "Deal create related case error"
+  },
+  "dealAttachedFilesFallback": {
+    "message": "Angehängte Datei(en)",
+    "description": "Comment with attachments only"
+  },
+  "dealUnnamedOrganization": {
+    "message": "Unbenannte Organisation",
+    "description": "Organization picker fallback"
+  },
+  "dealUnnamedPerson": {
+    "message": "Unbenannt",
+    "description": "Person picker fallback"
+  },
+  "taskLoading": {
+    "message": "Aufgabe wird geladen…",
+    "description": "Task record page loading"
+  },
+  "taskErrorTitle": {
+    "message": "Fehler beim Laden der Aufgabe",
+    "description": "Task record page error title"
+  },
+  "taskNavPrevious": {
+    "message": "Vorherige Aufgabe",
+    "description": "Previous task navigation"
+  },
+  "taskNavNext": {
+    "message": "Nächste Aufgabe",
+    "description": "Next task navigation"
+  },
+  "taskModuleLabel": {
+    "message": "Aufgabe",
+    "description": "Task module singular label"
+  },
+  "taskBackTo": {
+    "message": "Zurück zur Aufgabe",
+    "description": "Collapse expanded task section"
+  },
+  "taskEditAria": {
+    "message": "Aufgabe bearbeiten",
+    "description": "Edit task action"
+  },
+  "taskEmailAssignee": {
+    "message": "E-Mail-Empfänger",
+    "description": "Email task assignee action"
+  },
+  "taskVersionRetentionNote": {
+    "message": "Der Versionsverlauf wird in Aufgabenbeschreibungen bis zu 365 Tage lang gespeichert.",
+    "description": "Task description version retention"
+  },
+  "taskStarAria": {
+    "message": "Stern",
+    "description": "Star/follow task"
+  },
+  "taskUnstarAria": {
+    "message": "Markierung entfernen",
+    "description": "Unfollow task"
+  },
+  "taskRelatedRecordsTab": {
+    "message": "Verwandte Datensätze",
+    "description": "Task right pane related tab"
+  },
+  "taskCopyUrlSuccess": {
+    "message": "URL in die Zwischenablage kopiert!",
+    "description": "Task copy URL success"
+  },
+  "taskLinkModuleFailed": {
+    "message": "Fehler beim Verknüpfen von {moduleKey}. Bitte versuchen Sie es erneut.",
+    "description": "Task link related record error"
+  },
+  "taskRelatedGroupProject": {
+    "message": "Projekt",
+    "description": "Related project group heading"
+  },
+  "taskRelatedGroupPeople": {
+    "message": "Menschen",
+    "description": "Related people group heading"
+  },
+  "taskRelatedGroupEvents": {
+    "message": "Veranstaltungen",
+    "description": "Related events group heading"
+  },
+  "taskRelatedGroupDeals": {
+    "message": "Angebote",
+    "description": "Related deals group heading"
+  },
+  "taskRelatedGroupForms": {
+    "message": "Formulare",
+    "description": "Related forms group heading"
+  },
+  "taskCloseTimestampDetails": {
+    "message": "Zeitstempeldetails schließen",
+    "description": "Close timestamp popover aria"
+  },
+  "activityCloseSearchAria": {
+    "message": "Suche schließen",
+    "description": "Close activity search bar"
+  },
+  "activityNotificationsAria": {
+    "message": "Benachrichtigungen",
+    "description": "Activity notifications button"
+  },
+  "activityFilterAria": {
+    "message": "Aktivitäten filtern",
+    "description": "Activity filter menu button"
+  },
+  "activityFilterHeading": {
+    "message": "Aktivitäten",
+    "description": "Activity filter menu title"
+  },
+  "activityUnselectAll": {
+    "message": "Alle abwählen",
+    "description": "Clear all activity filters"
+  },
+  "activitySelectAll": {
+    "message": "Alles auswählen",
+    "description": "Enable all activity filters"
+  },
+  "activityFilterComments": {
+    "message": "Kommentare",
+    "description": "Activity filter: comments"
+  },
+  "activityFilterEmail": {
+    "message": "E-Mail",
+    "description": "Activity filter: email"
+  },
+  "activityFilterUpdates": {
+    "message": "Aktualisierungen",
+    "description": "Activity filter: updates"
+  },
+  "activityFilterDoneThreads": {
+    "message": "Fertige Threads",
+    "description": "Activity filter: done threads"
+  },
+  "activityFilterAssignedToMe": {
+    "message": "Mir zugewiesen",
+    "description": "Activity filter: assigned to me"
+  },
+  "activityFilterTaggedThreads": {
+    "message": "Getaggte Threads",
+    "description": "Activity filter: tagged threads"
+  },
+  "activityFilterUntaggedThreads": {
+    "message": "Threads ohne Tags",
+    "description": "Activity filter: untagged threads"
+  },
+  "activitySearchPh": {
+    "message": "Suchen…",
+    "description": "Activity search input placeholder"
+  },
+  "activityClearSearchAria": {
+    "message": "Suche löschen",
+    "description": "Clear activity search"
+  },
+  "activityClearSearchTitle": {
+    "message": "Klar",
+    "description": "Clear search button title"
+  },
+  "activityThreadBy": {
+    "message": "Thread von",
+    "description": "Thread view author prefix"
+  },
+  "activityNothingFound": {
+    "message": "Nichts gefunden",
+    "description": "No activities match filters"
+  },
+  "activitySelectOneFilter": {
+    "message": "Bitte wählen Sie mindestens einen Filter aus.",
+    "description": "Empty filter state hint"
+  },
+  "activityResetFilters": {
+    "message": "Filter zurücksetzen",
+    "description": "Reset activity filters button"
+  },
+  "activityReplyPh": {
+    "message": "Auf Kommentar antworten…",
+    "description": "Thread reply composer placeholder"
+  },
+  "activityCommentEdited": {
+    "message": "(bearbeitet)",
+    "description": "Comment edited indicator"
+  },
+  "activityEditCommentAria": {
+    "message": "Kommentar bearbeiten",
+    "description": "Edit comment button aria"
+  },
+  "activityReplyToCommentAria": {
+    "message": "Auf Kommentar antworten",
+    "description": "Reply to comment button aria"
+  },
+  "activityEditCommentPh": {
+    "message": "Kommentar bearbeiten…",
+    "description": "Edit comment composer placeholder"
+  },
+  "notesBlockedContext": {
+    "message": "Der App-Kontext ist nicht eindeutig. Es kann nicht bestimmt werden, welche Notizen angezeigt werden sollen.",
+    "description": "Notes blocked when app context unclear"
+  },
+  "notesAdding": {
+    "message": "Hinzufügen…",
+    "description": "Submit note in progress"
+  },
+  "notesAddNoteBtn": {
+    "message": "Notiz hinzufügen",
+    "description": "Submit new note button"
+  },
+  "notesUserFallback": {
+    "message": "Benutzer",
+    "description": "Author name fallback in notes list"
+  },
+  "notesAddANoteAboveToGet": {
+    "message": "Fügen Sie oben eine Notiz hinzu, um zu beginnen.",
+    "description": "Auto-migrated from notes"
+  },
+  "notesNoNotesYet": {
+    "message": "Noch keine Notizen.",
+    "description": "Auto-migrated from notes"
+  },
+  "notesWriteANote": {
+    "message": "Schreibe eine Notiz...",
+    "description": "Auto-migrated from notes"
+  },
+  "notesAddNote": {
+    "message": "Notiz hinzufügen",
+    "description": "Auto-migrated from notes"
+  },
+  "notesCannotLoadNotes": {
+    "message": "Notizen können nicht geladen werden",
+    "description": "Auto-migrated from notes"
+  },
+  "notesErrorLoadingNotes": {
+    "message": "Fehler beim Laden der Notizen",
+    "description": "Auto-migrated from notes"
+  },
+  "notesLoadingNotes": {
+    "message": "Notizen werden geladen...",
+    "description": "Auto-migrated from notes"
+  },
+  "filesUploadAFileAboveToGet": {
+    "message": "Laden Sie oben eine Datei hoch, um zu beginnen.",
+    "description": "Auto-migrated from files"
+  },
+  "filesNoFilesUploadedYet": {
+    "message": "Es wurden noch keine Dateien hochgeladen.",
+    "description": "Auto-migrated from files"
+  },
+  "filesDownload": {
+    "message": "Herunterladen",
+    "description": "Auto-migrated from files"
+  },
+  "filesAllowedImagesPdfWordExcelCsv": {
+    "message": "Zulässig: Bilder, PDF, Word, Excel, CSV (max. 10 MB)",
+    "description": "Auto-migrated from files"
+  },
+  "filesUploadFile": {
+    "message": "Datei hochladen",
+    "description": "Auto-migrated from files"
+  },
+  "filesCannotLoadFiles": {
+    "message": "Dateien können nicht geladen werden",
+    "description": "Auto-migrated from files"
+  },
+  "filesErrorLoadingFiles": {
+    "message": "Fehler beim Laden der Dateien",
+    "description": "Auto-migrated from files"
+  },
+  "filesLoadingFiles": {
+    "message": "Dateien werden geladen...",
+    "description": "Auto-migrated from files"
+  },
+  "activityTimelineCannotLoadActivities": {
+    "message": "Aktivitäten können nicht geladen werden",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "activityTimelineErrorLoadingActivities": {
+    "message": "Fehler beim Laden der Aktivitäten",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "activityTimelineLoadingActivities": {
+    "message": "Aktivitäten werden geladen...",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "taskDescriptionEditorInsertLink": {
+    "message": "Link einfügen",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorRemoveLink": {
+    "message": "Link entfernen",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorNumberedList": {
+    "message": "Nummerierte Liste",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorBulletList": {
+    "message": "Bullet-Liste",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorStrikethrough": {
+    "message": "Durchgestrichen",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorItalic": {
+    "message": "Kursiv",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorBold": {
+    "message": "Deutlich",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading3": {
+    "message": "Überschrift 3",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading2": {
+    "message": "Überschrift 2",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading1": {
+    "message": "Überschrift 1",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "recordDetailThisRecordTypeIsNotConfigured": {
+    "message": "Dieser Datensatztyp ist nicht konfiguriert.",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "recordDetailRecordNotFound": {
+    "message": "Datensatz nicht gefunden",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "recordDetailLoading": {
+    "message": "Laden...",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "relatedRecordsPanelThisRecordRequiresTheFollowingRelationships": {
+    "message": "Für diesen Datensatz müssen die folgenden Beziehungen verknüpft werden:",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelRequiredRelationships": {
+    "message": "Erforderliche Beziehungen",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelLinkThisRecordToPeopleOrganizations": {
+    "message": "Verknüpfen Sie diesen Datensatz mit Personen, Organisationen, Aufgaben, Ereignissen oder Formularen.",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelNoRelationshipsConfiguredForThisRecord": {
+    "message": "Für diesen Datensatztyp sind keine Beziehungen konfiguriert.",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelErrorLoadingRelatedRecords": {
+    "message": "Fehler beim Laden der zugehörigen Datensätze",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelLoadingRelatedRecords": {
+    "message": "Zugehörige Datensätze werden geladen...",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsRendererNoRelationshipsConfiguredForThisRecord": {
+    "message": "Für diesen Datensatztyp sind keine Beziehungen konfiguriert.",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsRendererTheFollowingRequiredRelationshipsMustBe": {
+    "message": "Vor dem Speichern müssen die folgenden erforderlichen Beziehungen verknüpft werden:",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsRendererRequiredRelationshipsMissing": {
+    "message": "Erforderliche Beziehungen fehlen",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsTabLinkExisting": {
+    "message": "Link vorhanden",
+    "description": "Auto-migrated from relatedRecordsTab"
+  },
+  "relationshipUnlinkConfirmAreYouSureYouWantTo": {
+    "message": "Sind Sie sicher, dass Sie die Verknüpfung aufheben möchten?",
+    "description": "Auto-migrated from relationshipUnlinkConfirm"
+  },
+  "reactionBarReactToComment": {
+    "message": "Auf Kommentar reagieren",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarLikeComment": {
+    "message": "Kommentar liken",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarReactToComment2": {
+    "message": "Auf Kommentar reagieren",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarLikeComment2": {
+    "message": "Kommentar liken",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "activitySystemRowShowMore": {
+    "message": "Mehr anzeigen",
+    "description": "Auto-migrated from activitySystemRow"
+  },
+  "approvalHistoryEscalatedToNewApprovers": {
+    "message": "An neue Genehmiger eskaliert",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryProcess": {
+    "message": "Verfahren:",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryReason": {
+    "message": "Grund:",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryDecidedBy": {
+    "message": "Beschlossen von:",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryNoApprovalHistoryFound": {
+    "message": "Keine Genehmigungshistorie gefunden",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryApprovalHistory": {
+    "message": "Genehmigungshistorie",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "linkRecordModalLinking": {
+    "message": "Verlinkung...",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "linkRecordModalSelectARecordType": {
+    "message": "Wählen Sie einen Datensatztyp aus...",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "linkRecordModalRecordType": {
+    "message": "Datensatztyp",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "recordDetailToastFailedToDeleteRecordPlease": {
+    "message": "Datensatz konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.",
+    "description": "Toast from RecordDetail.vue"
+  },
+  "instanceManagementToastInstanceManagementUiComingSoon": {
+    "message": "Die Benutzeroberfläche für die Instanzverwaltung ist bald verfügbar!",
+    "description": "Toast from InstanceManagement.vue"
+  },
+  "useRecordHeaderActionsToastUrlCopiedToClipboard": {
+    "message": "URL in die Zwischenablage kopiert!",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "useRecordHeaderActionsToastErrorExportingRecordPleaseTry": {
+    "message": "Fehler beim Exportieren des Datensatzes. Bitte versuchen Sie es erneut.",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "useRecordHeaderActionsToastErrorDeletingRecordPleaseTry": {
+    "message": "Fehler beim Löschen des Datensatzes. Bitte versuchen Sie es erneut.",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "tabPreview": {
+    "message": "Vorschau",
+    "description": "Form summary preview tab"
+  },
+  "tabUsage": {
+    "message": "Nutzung",
+    "description": "Form summary usage tab"
+  },
+  "tabResponses": {
+    "message": "Antworten",
+    "description": "Form summary responses tab"
+  },
+  "tabTenantDetails": {
+    "message": "Mandantendetails",
+    "description": "Organization tenant details tab"
+  },
+  "relatedRecordsTitle": {
+    "message": "Verwandte Datensätze",
+    "description": "Left column related records section title"
+  },
+  "subtasksTitle": {
+    "message": "Unteraufgaben",
+    "description": "Task record subtasks section title"
+  },
+  "subtasksTitleWithCount": {
+    "message": "Unteraufgaben ({completed}/{total})",
+    "description": "Task subtasks section title with completion counts"
+  },
+  "sectionAddSubtask": {
+    "message": "Unteraufgabe hinzufügen",
+    "description": "Add subtask action label"
+  },
+  "sectionExpand": {
+    "message": "Erweitern",
+    "description": "Expand record section action"
+  },
+  "sectionHistory": {
+    "message": "Verlauf",
+    "description": "Description history action"
+  },
+  "sectionLinkRecord": {
+    "message": "Datensatz verknüpfen",
+    "description": "Link related record action"
+  },
+  "sectionAddRecord": {
+    "message": "Datensatz hinzufügen",
+    "description": "Add related record action"
+  },
+  "sectionViewMore": {
+    "message": "Mehr anzeigen",
+    "description": "Load more subtasks action"
+  },
+  "sectionViewLess": {
+    "message": "Weniger anzeigen",
+    "description": "Collapse field list action"
+  },
+  "sectionViewAll": {
+    "message": "Alle anzeigen ({count})",
+    "description": "Expand details field list"
+  },
+  "sectionGroupCore": {
+    "message": "Kern",
+    "description": "Field group label"
+  },
+  "sectionGroupSystem": {
+    "message": "System",
+    "description": "Field group label"
+  },
+  "sectionGroupOther": {
+    "message": "Sonstige",
+    "description": "Field group label"
+  },
+  "sectionCreatedVia": {
+    "message": "Erstellt über",
+    "description": "Record source field label"
+  },
+  "sectionGroupRecord": {
+    "message": "Datensatz",
+    "description": "Record metadata group label"
+  },
+  "activitySystemActorSystem": {
+    "message": "System",
+    "description": "System actor label in activity feed"
+  },
+  "activitySystemFieldFallback": {
+    "message": "Feld",
+    "description": "Fallback when system event field label is unknown"
+  },
+  "activitySystemChanged": {
+    "message": "geändert",
+    "description": "System field change activity between actor and field"
+  },
+  "activitySystemChangedTo": {
+    "message": "{field} geändert in",
+    "description": "Tags/system field change lead-in"
+  },
+  "activitySystemChangedFromTo": {
+    "message": "{field} von „{from}“ in „{to}“ geändert",
+    "description": "Generic field change summary"
+  },
+  "activityUpdatedRecord": {
+    "message": "Dieser Datensatz wurde aktualisiert",
+    "description": "Generic system activity fallback"
+  }
+}

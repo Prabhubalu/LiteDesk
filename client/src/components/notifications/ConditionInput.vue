@@ -7,8 +7,8 @@
       @change="$emit('update', { ...condition, value: $event.target.value })"
       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500"
     >
-      <option value="ME">Assigned to me</option>
-      <option value="ANY">Assigned to anyone</option>
+      <option value="ME">{{ t('notifications.assignToMe') }}</option>
+      <option value="ANY">{{ t('notifications.assignAnyone') }}</option>
     </select>
 
     <!-- Priority Condition -->
@@ -50,7 +50,7 @@
         </label>
       </div>
       <div v-else class="text-sm text-gray-500 dark:text-gray-400">
-        No status options available for this module
+        {{ t('notifications.noStatusOptions') }}
       </div>
     </div>
   </div>
@@ -58,6 +58,9 @@
 
 <script setup>
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
   condition: {

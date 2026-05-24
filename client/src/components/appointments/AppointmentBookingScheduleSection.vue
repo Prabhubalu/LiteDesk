@@ -1,8 +1,8 @@
 <template>
   <section class="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm dark:border-gray-700/80 dark:bg-gray-900/80">
-    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Availability</h2>
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('appointments.availHeading') }}</h2>
     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-      Controls when visitors can book. Slot length and buffers apply on top of your schedule.
+      {{ t('appointments.availHint') }}
     </p>
 
     <div class="mt-5 space-y-3">
@@ -29,32 +29,32 @@
     </div>
 
     <div v-if="scheduleSource === 'inherit'" class="mt-4">
-      <AvailabilitySourceCard :user-id="inheritUserId" label="Inherited schedule" />
+      <AvailabilitySourceCard :user-id="inheritUserId" :label="t('appointments.inheritedSchedule')" />
     </div>
 
     <div v-else-if="scheduleSource === 'custom'" class="mt-4 space-y-3">
       <div>
-        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Saved schedule</label>
+        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('appointments.savedSchedule') }}</label>
         <BusinessHoursSelect
           v-model="businessHourSetId"
           :options="setOptions"
-          placeholder="Select a schedule…"
+          :placeholder="t('appointments.selectSchedulePh')"
           class="mt-1.5"
         />
       </div>
-      <p v-if="setsLoading" class="text-xs text-gray-500">Loading schedules…</p>
+      <p v-if="setsLoading" class="text-xs text-gray-500">{{ t('appointments.loadingSchedules') }}</p>
       <p v-else-if="!setOptions.length" class="text-xs text-amber-600 dark:text-amber-400">
-        No schedules yet.
-        <button type="button" class="font-medium underline" @click="goToBusinessHours">Create one in Settings</button>
+        {{ t('appointments.noSchedules') }}
+        <button type="button" class="font-medium underline" @click="goToBusinessHours">{{ t('appointments.createScheduleInSettings') }}</button>
       </p>
     </div>
 
     <div v-else class="mt-4 space-y-5">
       <div>
-        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Available days</p>
+        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('appointments.availableDays') }}</p>
         <div class="mt-2 flex flex-wrap gap-2">
           <button
-            v-for="(label, idx) in DAY_LABELS"
+            v-for="(label, idx) in dayLabels"
             :key="idx"
             type="button"
             class="rounded-full px-3.5 py-1.5 text-sm font-medium transition-all duration-200 active:scale-95"
@@ -69,7 +69,7 @@
       </div>
       <div class="grid gap-4 sm:grid-cols-2">
         <div>
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">From</label>
+          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('appointments.timeFrom') }}</label>
           <input
             v-model="workingHours.start"
             type="time"
@@ -77,7 +77,7 @@
           />
         </div>
         <div>
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">To</label>
+          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('appointments.timeTo') }}</label>
           <input
             v-model="workingHours.end"
             type="time"
@@ -86,14 +86,14 @@
         </div>
       </div>
       <div>
-        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Timezone</label>
+        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('appointments.timezone') }}</label>
         <TimezoneSelect v-model="workingHours.timezone" class="mt-1.5" />
       </div>
     </div>
 
     <div class="mt-5 grid gap-4 sm:grid-cols-2">
       <div>
-        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Slot length</label>
+        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('appointments.slotLength') }}</label>
         <BusinessHoursSelect
           v-model="slotDurationMinutes"
           :options="slotDurationOptions"
@@ -101,7 +101,7 @@
         />
       </div>
       <div>
-        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Buffer between meetings</label>
+        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('appointments.bufferBetween') }}</label>
         <BusinessHoursSelect
           v-model="bufferMinutes"
           :options="bufferOptions"
@@ -114,12 +114,15 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import AvailabilitySourceCard from '@/components/business-hours/AvailabilitySourceCard.vue';
 import BusinessHoursSelect from '@/components/business-hours/BusinessHoursSelect.vue';
 import TimezoneSelect from '@/components/business-hours/TimezoneSelect.vue';
 import { useBusinessHours } from '@/composables/useBusinessHours';
-import { DAY_LABELS, SLOT_DURATION_OPTIONS, BUFFER_OPTIONS } from '@/utils/appointmentFormatters';
+import { SLOT_DURATION_OPTIONS, BUFFER_OPTIONS } from '@/utils/appointmentFormatters';
+
+const { t } = useI18n();
 
 const scheduleSource = defineModel('scheduleSource', { type: String, default: 'inherit' });
 const businessHourSetId = defineModel('businessHourSetId', { type: String, default: null });
@@ -141,14 +144,37 @@ const { fetchSets } = useBusinessHours();
 const setsLoading = ref(false);
 const scheduleSets = ref([]);
 
-const sourceOptions = [
-  { value: 'inherit', label: 'Use my business hours', hint: 'From Settings → Business Hours (personal, team, or company default).' },
-  { value: 'custom', label: 'Use a saved schedule', hint: 'Pick a schedule you created in Business Hours.' },
-  { value: 'legacy', label: 'Hours only for this booking page', hint: 'Custom days and times that do not change your main schedule.' }
-];
+const dayLabels = computed(() => [
+  t('appointments.daySun'),
+  t('appointments.dayMon'),
+  t('appointments.dayTue'),
+  t('appointments.dayWed'),
+  t('appointments.dayThu'),
+  t('appointments.dayFri'),
+  t('appointments.daySat')
+]);
 
-const slotDurationOptions = SLOT_DURATION_OPTIONS.map((o) => ({ value: o.value, label: o.label }));
-const bufferOptions = BUFFER_OPTIONS.map((o) => ({ value: o.value, label: o.label }));
+const sourceOptions = computed(() => [
+  { value: 'inherit', label: t('appointments.scheduleInherit'), hint: t('appointments.scheduleInheritHint') },
+  { value: 'custom', label: t('appointments.scheduleCustom'), hint: t('appointments.scheduleCustomHint') },
+  { value: 'legacy', label: t('appointments.scheduleLegacy'), hint: t('appointments.scheduleLegacyHint') }
+]);
+
+const SLOT_DURATION_KEYS = { 15: 'slot15', 30: 'slot30', 45: 'slot45', 60: 'slot60' };
+const BUFFER_KEYS = { 0: 'buffer0', 5: 'buffer5', 10: 'buffer10', 15: 'buffer15', 30: 'buffer30' };
+
+const slotDurationOptions = computed(() =>
+  SLOT_DURATION_OPTIONS.map((o) => ({
+    value: o.value,
+    label: t(`appointments.${SLOT_DURATION_KEYS[o.value]}`)
+  }))
+);
+const bufferOptions = computed(() =>
+  BUFFER_OPTIONS.map((o) => ({
+    value: o.value,
+    label: t(`appointments.${BUFFER_KEYS[o.value]}`)
+  }))
+);
 
 const setOptions = computed(() =>
   scheduleSets.value

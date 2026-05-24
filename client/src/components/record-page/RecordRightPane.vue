@@ -61,7 +61,7 @@
               <template v-else>
                 <slot :name="`tab-${tab.id}`">
                   <div class="text-center py-12 text-gray-500 dark:text-gray-400">
-                    <p>{{ tab.name }} content</p>
+                    <p>{{ t('records.tabContentFallback', { name: tab.name }) }}</p>
                   </div>
                 </slot>
               </template>
@@ -115,6 +115,7 @@
 
 <script setup>
 import { ref, watch, onMounted, onUpdated, onBeforeUnmount, computed, inject, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { 
   XMarkIcon, 
   RectangleStackIcon, 
@@ -125,6 +126,8 @@ import {
   PuzzlePieceIcon,
   Squares2X2Icon
 } from '@heroicons/vue/24/outline';
+
+const { t } = useI18n();
 
 // Inject mobile state from RecordPageLayout
 const layoutIsMobile = inject('recordLayoutIsMobile', ref(false));
@@ -153,11 +156,7 @@ const props = defineProps({
   },
   tabs: {
     type: Array,
-    default: () => [
-      { id: 'summary', name: 'Summary' },
-      { id: 'details', name: 'Details' },
-      { id: 'updates', name: 'Updates' }
-    ]
+    default: undefined
   },
   persistenceKey: {
     type: String,
@@ -165,19 +164,29 @@ const props = defineProps({
   }
 });
 
+const resolvedTabs = computed(() => {
+  if (props.tabs?.length) return props.tabs;
+  return [
+    { id: 'summary', name: t('records.tabSummary') },
+    { id: 'details', name: t('records.tabDetails') },
+    { id: 'updates', name: t('records.tabUpdates') }
+  ];
+});
+
 // Computed tabs that includes Summary tab on mobile
 const effectiveTabs = computed(() => {
+  const base = resolvedTabs.value;
   if (layoutIsMobile.value) {
     // Check if Summary tab already exists
-    const hasSummaryTab = props.tabs.some(tab => tab.id === 'summary');
+    const hasSummaryTab = base.some(tab => tab.id === 'summary');
     if (!hasSummaryTab) {
       return [
-        { id: 'summary', name: 'Summary', icon: Squares2X2Icon },
-        ...props.tabs
+        { id: 'summary', name: t('records.tabSummary'), icon: Squares2X2Icon },
+        ...base
       ];
     }
   }
-  return props.tabs;
+  return base;
 });
 
 const emit = defineEmits(['close', 'tab-change', 'active-tab-change']);
@@ -202,7 +211,7 @@ const loadPersistedTab = () => {
     const persisted = localStorage.getItem(storageKey);
     if (persisted) {
       // Verify the tab still exists in tabs array
-      const tabExists = props.tabs.some(tab => tab.id === persisted);
+      const tabExists = resolvedTabs.value.some(tab => tab.id === persisted);
       if (tabExists) {
         return persisted;
       }
@@ -327,7 +336,7 @@ const getTabIcon = (tabId) => {
   }
   
   // Then check props.tabs
-  const propTab = props.tabs.find(t => t.id === tabId);
+  const propTab = resolvedTabs.value.find(t => t.id === tabId);
   if (propTab && propTab.icon) {
     return propTab.icon;
   }

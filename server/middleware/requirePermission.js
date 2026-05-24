@@ -2,37 +2,34 @@
  * ============================================================================
  * REQUIRE PERMISSION MIDDLEWARE
  * ============================================================================
- * 
- * Pure permission check middleware for explicit permission strings.
- * 
- * This middleware checks if the user has a specific permission string.
- * It supports both:
- * - String-based permissions (array of permission strings)
- * - Legacy nested permissions (permissions.module.action)
- * 
- * ⚠️ IMPORTANT:
- * - No UI logic
- * - No role inference
- * - Pure permission check
- * - Errors bubble to console
- * 
+ *
+ * Checks canonical permission strings (e.g. people.attach.sales) through the
+ * same runtime resolver as checkPermission — including org-level app/module guards.
+ *
+ * Backward compatibility:
+ * - user.permissions as string[] (exact match fallback)
+ * - people → contacts mapping via runtime resolver
+ * - App-scoped strings require role grant + user app seat access
  * ============================================================================
  */
 
+const {
+  buildOrgPermissionContext,
+  getOrgPermissionContextForUser,
+  resolveStringPermission,
+  passesOrgGuardsForStringPermission,
+  parsePermissionString
+} = require('../services/runtimePermissionResolver');
+
+const SECURITY_DISABLED = process.env.DISABLE_SECURITY === 'true';
+
 /**
- * Check if user has a specific permission
- * 
- * Supports multiple permission formats:
- * 1. String-based: user.permissions array contains the permission string
- * 2. Legacy nested: user.permissions.module.action === true
- * 
  * @param {string} permission - Permission string (e.g., 'people.attach.sales')
  * @returns {Function} Express middleware
  */
 module.exports = function requirePermission(permission) {
-  return function (req, res, next) {
-    // Security bypass (for development)
-    if (process.env.DISABLE_SECURITY === 'true') {
+  return async function requirePermissionMiddleware(req, res, next) {
+    if (SECURITY_DISABLED) {
       console.warn(`⚠️  [DEV] Permission check bypassed: ${permission}`);
       return next();
     }
@@ -46,82 +43,38 @@ module.exports = function requirePermission(permission) {
       });
     }
 
-    // Owners always have all permissions
+    const orgContext = req.organization
+      ? buildOrgPermissionContext(req.organization)
+      : await getOrgPermissionContextForUser(user);
+
+    if (!user._orgPermissionContext) {
+      user._orgPermissionContext = orgContext;
+    }
+
+    const parsed = parsePermissionString(permission);
+    if (parsed && !passesOrgGuardsForStringPermission(orgContext, parsed)) {
+      return res.status(403).json({
+        error: 'FORBIDDEN',
+        message: 'This application or module is not enabled for your organization',
+        code: 'ORG_MODULE_NOT_ENABLED',
+        permission
+      });
+    }
+
     if (user.isOwner) {
       return next();
     }
 
-    // Check if user has the permission
-    let hasPermission = false;
+    const allowed = resolveStringPermission(user, permission, {
+      appKey: req.appKey,
+      orgContext
+    });
 
-    // Method 1: Check string-based permissions array
-    if (Array.isArray(user.permissions)) {
-      hasPermission = user.permissions.includes(permission);
-    }
-
-    // Method 2: Check legacy nested permissions structure
-    // Parse permission string (e.g., 'people.attach.sales' -> ['people', 'attach', 'sales'])
-    if (!hasPermission && user.permissions && typeof user.permissions === 'object' && !Array.isArray(user.permissions)) {
-      const parts = permission.split('.');
-      
-      if (parts.length >= 2) {
-        const module = parts[0]; // 'people'
-        const action = parts[1]; // 'attach'
-        
-        // Map 'people' module to 'contacts' for backward compatibility
-        // The legacy system uses 'contacts' but new system uses 'people'
-        const permissionModule = module === 'people' ? 'contacts' : module;
-        
-        // Check base permission (e.g., 'contacts.attach' or 'contacts.edit')
-        // For People permissions, map actions:
-        // - 'attach' -> 'create' (attaching is similar to creating participation)
-        // - 'participation.edit' -> 'edit' (editing participation is editing)
-        // - 'lifecycle.manage' -> 'edit' (lifecycle changes are edits)
-        let permissionAction = action;
-        if (module === 'people') {
-          if (action === 'attach') {
-            permissionAction = 'create';
-          } else if (action === 'participation') {
-            // 'people.participation.edit' -> check 'contacts.edit'
-            permissionAction = 'edit';
-          } else if (action === 'lifecycle') {
-            // 'people.lifecycle.manage' -> check 'contacts.edit'
-            permissionAction = 'edit';
-          }
-        }
-        
-        // Check base permission (e.g., 'contacts.create' or 'contacts.edit')
-        if (user.permissions?.[permissionModule]?.[permissionAction] === true) {
-          hasPermission = true;
-        }
-        
-        // For app-specific permissions (e.g., 'people.attach.sales'),
-        // also verify user has access to the app
-        if (parts.length === 3 && hasPermission) {
-          const appKey = parts[2].toUpperCase(); // 'SALES'
-          
-          // Check if user has app access
-          const userAppAccess = user.allowedApps || 
-                               user.appAccess?.map(entry => entry.appKey) || 
-                               [];
-          
-          // If user doesn't have access to the app, deny permission
-          if (!userAppAccess.includes(appKey)) {
-            hasPermission = false;
-          }
-        }
-      }
-      
-      // Method 3: Check if permission string exists as a flat key
-      if (!hasPermission && user.permissions[permission] === true) {
-        hasPermission = true;
-      }
-    }
-
-    if (!hasPermission) {
+    if (!allowed) {
       return res.status(403).json({
         error: 'FORBIDDEN',
-        message: 'You do not have permission to perform this action.'
+        message: 'You do not have permission to perform this action.',
+        permission
       });
     }
 

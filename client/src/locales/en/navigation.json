@@ -1,0 +1,422 @@
+{
+  "settings": {
+    "message": "Settings",
+    "description": "Settings area navigation label"
+  },
+  "home": {
+    "message": "Home",
+    "description": "Home dashboard navigation label"
+  },
+  "profile": {
+    "message": "Profile",
+    "description": "User profile settings navigation label"
+  },
+  "inbox": {
+    "message": "Inbox",
+    "description": "Communications inbox navigation label"
+  },
+  "signOut": {
+    "message": "Sign out",
+    "description": "Sign out of the application"
+  },
+  "noNav": {
+    "message": "No navigation available",
+    "description": "Empty sidebar when no modules are configured"
+  },
+  "userMenu": {
+    "message": "User menu",
+    "description": "User avatar menu aria-label"
+  },
+  "toggleMenu": {
+    "message": "Toggle menu",
+    "description": "Mobile navigation menu toggle"
+  },
+  "closeSidebar": {
+    "message": "Close sidebar",
+    "description": "Screen reader label for mobile drawer close"
+  },
+  "openSidebar": {
+    "message": "Open sidebar",
+    "description": "Screen reader label for mobile drawer open"
+  },
+  "syncStatus": {
+    "message": "Sync status",
+    "description": "Audit offline sync status button"
+  },
+  "portalAudits": {
+    "message": "Audits",
+    "description": "Portal bottom nav audits tab"
+  },
+  "portalActions": {
+    "message": "Actions",
+    "description": "Portal bottom nav actions tab"
+  },
+  "collapseSidebar": {
+    "message": "Collapse sidebar",
+    "description": "Collapse app sidebar tooltip"
+  },
+  "coreModules": {
+    "message": "Core Modules",
+    "description": "Core modules section tooltip"
+  },
+  "coreSection": {
+    "message": "Core",
+    "description": "Core modules section heading"
+  },
+  "help": {
+    "message": "Help",
+    "description": "Sidebar help link"
+  },
+  "loadingNavigation": {
+    "message": "Loading navigation",
+    "description": "Sidebar skeleton aria-label"
+  },
+  "salesAppFallback": {
+    "message": "Sales",
+    "description": "Default app name when active app is unset"
+  },
+  "tabClose": {
+    "message": "Close",
+    "description": "Close single tab context menu item"
+  },
+  "tabCloseOthers": {
+    "message": "Close Others",
+    "description": "Close other tabs context menu item"
+  },
+  "tabCloseToRight": {
+    "message": "Close Tabs to the Right",
+    "description": "Close tabs to the right context menu item"
+  },
+  "tabCloseAll": {
+    "message": "Close All Tabs",
+    "description": "Close all tabs context menu item"
+  },
+  "tabAccount": {
+    "message": "Account",
+    "description": "Tab bar account menu tooltip"
+  },
+  "tabCloseTab": {
+    "message": "Close tab",
+    "description": "Close tab button aria-label"
+  },
+  "globalSearchPlaceholder": {
+    "message": "Search or run a command…",
+    "description": "Global search modal input placeholder"
+  },
+  "globalSearchSearching": {
+    "message": "Searching…",
+    "description": "Global search loading state"
+  },
+  "globalSearchNoCommands": {
+    "message": "No matching commands",
+    "description": "Command palette no matches"
+  },
+  "globalSearchNoCommandsHint": {
+    "message": "Try a different command or press ESC to exit.",
+    "description": "Command palette no matches hint"
+  },
+  "globalSearchNoResults": {
+    "message": "No results found",
+    "description": "Global search no entity results"
+  },
+  "globalSearchNoResultsHint": {
+    "message": "Try searching by name, email, or keyword.",
+    "description": "Global search no results hint"
+  },
+  "globalSearchConfirmTitle": {
+    "message": "Are you sure?",
+    "description": "Destructive command confirmation title"
+  },
+  "globalSearchToCancel": {
+    "message": "to cancel",
+    "description": "Keyboard hint fragment after ESC"
+  },
+  "globalSearchToConfirm": {
+    "message": "to confirm",
+    "description": "Keyboard hint fragment after Enter"
+  },
+  "globalSearchCommandsHeader": {
+    "message": "Commands",
+    "description": "Command palette section header"
+  },
+  "globalSearchTypeToFind": {
+    "message": "Type to find a command",
+    "description": "Command palette empty query hint"
+  },
+  "globalSearchStartTyping": {
+    "message": "Start typing to search",
+    "description": "Search mode empty state"
+  },
+  "globalSearchSlashHint": {
+    "message": "Use / to create, link, or navigate",
+    "description": "Discoverability hint for command mode trigger"
+  },
+  "globalSearchGroupPeople": {
+    "message": "People",
+    "description": "Search results group label"
+  },
+  "globalSearchGroupOrganizations": {
+    "message": "Organizations",
+    "description": "Search results group label"
+  },
+  "globalSearchGroupWork": {
+    "message": "Work",
+    "description": "Search results group label"
+  },
+  "globalSearchGroupConfiguration": {
+    "message": "Configuration",
+    "description": "Search results group label"
+  },
+  "globalSearchUnknownUser": {
+    "message": "Unknown User",
+    "description": "Fallback display name in search"
+  },
+  "globalSearchLinkModule": {
+    "message": "Link {module}",
+    "description": "Link drawer title when module name capitalized"
+  },
+  "userAccountFallback": {
+    "message": "Your account",
+    "description": "User menu display name fallback"
+  },
+  "userStatusLabel": {
+    "message": "Status: {label}",
+    "description": "User menu status dot aria-label"
+  },
+  "userClearStatus": {
+    "message": "Clear status",
+    "description": "Clear custom status button title"
+  },
+  "userSetAvailability": {
+    "message": "Set availability",
+    "description": "Availability picker listbox aria-label"
+  },
+  "userSetCustomStatus": {
+    "message": "Set custom status…",
+    "description": "Open custom status editor"
+  },
+  "userEditCustomStatus": {
+    "message": "Edit custom status…",
+    "description": "Edit existing custom status"
+  },
+  "userStatusPlaceholder": {
+    "message": "What's your status?",
+    "description": "Custom status input placeholder"
+  },
+  "userPickEmoji": {
+    "message": "Pick emoji",
+    "description": "Emoji picker button title"
+  },
+  "userYourProfile": {
+    "message": "Your profile",
+    "description": "User menu profile link"
+  },
+  "userControlPanel": {
+    "message": "Control panel",
+    "description": "Admin control panel link"
+  },
+  "userBookingPages": {
+    "message": "Booking Pages",
+    "description": "User menu appointments link"
+  },
+  "userTrash": {
+    "message": "Trash",
+    "description": "User menu trash link"
+  },
+  "userSwitchToLight": {
+    "message": "Switch to light mode",
+    "description": "Theme toggle label when dark"
+  },
+  "userSwitchToDark": {
+    "message": "Switch to dark mode",
+    "description": "Theme toggle label when light"
+  },
+  "tabBookingPages": {
+    "message": "Booking Pages",
+    "description": "Tab title for appointments pages"
+  },
+  "approvals": {
+    "message": "Approvals",
+    "description": "Approvals shell navigation label"
+  },
+  "attention": {
+    "message": "Attention",
+    "description": "Attention shell navigation label"
+  },
+  "search": {
+    "message": "Search",
+    "description": "Search shell navigation label"
+  },
+  "dashboard": {
+    "message": "Dashboard",
+    "description": "App dashboard navigation label"
+  },
+  "modulePeople": {
+    "message": "People",
+    "description": "People module navigation label"
+  },
+  "moduleContacts": {
+    "message": "Contacts",
+    "description": "Contacts module navigation label"
+  },
+  "moduleOrganizations": {
+    "message": "Organizations",
+    "description": "Organizations module navigation label"
+  },
+  "moduleTasks": {
+    "message": "Tasks",
+    "description": "Tasks module navigation label"
+  },
+  "moduleEvents": {
+    "message": "Events",
+    "description": "Events module navigation label"
+  },
+  "moduleForms": {
+    "message": "Forms",
+    "description": "Forms module navigation label"
+  },
+  "moduleItems": {
+    "message": "Items",
+    "description": "Items module navigation label"
+  },
+  "moduleDeals": {
+    "message": "Deals",
+    "description": "Deals module navigation label"
+  },
+  "moduleResponses": {
+    "message": "Responses",
+    "description": "Form responses module navigation label"
+  },
+  "moduleImports": {
+    "message": "Import",
+    "description": "Imports module navigation label"
+  },
+  "moduleCases": {
+    "message": "Cases",
+    "description": "Helpdesk cases module navigation label"
+  },
+  "moduleFindings": {
+    "message": "Findings",
+    "description": "Audit findings module navigation label"
+  },
+  "moduleAudits": {
+    "message": "Audits",
+    "description": "Audits module navigation label"
+  },
+  "appSales": {
+    "message": "Sales",
+    "description": "Sales app name in app switcher"
+  },
+  "appAudit": {
+    "message": "Audit",
+    "description": "Audit app name in app switcher"
+  },
+  "appHelpdesk": {
+    "message": "Helpdesk",
+    "description": "Helpdesk app name in app switcher"
+  },
+  "appProjects": {
+    "message": "Projects",
+    "description": "Projects app name in app switcher"
+  },
+  "appPortal": {
+    "message": "Portal",
+    "description": "Portal app name in app switcher"
+  },
+  "salesDashboard": {
+    "message": "Sales Dashboard",
+    "description": "Sales dashboard tab title"
+  },
+  "auditDashboard": {
+    "message": "Audit Dashboard",
+    "description": "Audit dashboard tab title"
+  },
+  "appDashboard": {
+    "message": "{app} Dashboard",
+    "description": "App-scoped dashboard tab title"
+  },
+  "tabDemoRequests": {
+    "message": "Demo Requests",
+    "description": "Demo requests tab title"
+  },
+  "tabInstances": {
+    "message": "Instances",
+    "description": "Instances tab title"
+  },
+  "tabAutomationRules": {
+    "message": "Automation Rules",
+    "description": "Automation rules tab title"
+  },
+  "tabProcesses": {
+    "message": "Processes",
+    "description": "Processes tab title"
+  },
+  "tabBusinessFlows": {
+    "message": "Business Flows",
+    "description": "Business flows tab title"
+  },
+  "tabAutomation": {
+    "message": "Automation",
+    "description": "Automation settings tab title"
+  },
+  "tabFlowHealth": {
+    "message": "Flow Health",
+    "description": "Business flow health tab title"
+  },
+  "tabEditBusinessFlow": {
+    "message": "Edit Business Flow",
+    "description": "Edit business flow tab title"
+  },
+  "tabCreateBusinessFlow": {
+    "message": "Create Business Flow",
+    "description": "Create business flow tab title"
+  },
+  "tabBusinessFlow": {
+    "message": "Business Flow",
+    "description": "Business flow detail tab title"
+  },
+  "tabMyAudits": {
+    "message": "My Audits",
+    "description": "My audits tab title"
+  },
+  "tabAuditDetail": {
+    "message": "Audit Detail",
+    "description": "Audit detail tab title"
+  },
+  "tabPersonalBooking": {
+    "message": "Personal booking page",
+    "description": "Personal booking page tab title"
+  },
+  "tabTeamBooking": {
+    "message": "Team booking page",
+    "description": "Team booking page tab title"
+  },
+  "tabNewTeamPage": {
+    "message": "New team page",
+    "description": "New team booking page tab title"
+  },
+  "tabBookingPage": {
+    "message": "Booking page",
+    "description": "User booking page tab title"
+  },
+  "tabCaseDetail": {
+    "message": "Case Detail",
+    "description": "Helpdesk case detail tab title"
+  },
+  "tabFormResponseDetail": {
+    "message": "({id}) Details",
+    "description": "Form response detail tab title"
+  },
+  "tabRecordNamed": {
+    "message": "{module}: {name}",
+    "description": "Record tab with entity name"
+  },
+  "tabRecordDetail": {
+    "message": "{module} Detail",
+    "description": "Record detail tab title without name"
+  },
+  "tabPage": {
+    "message": "Page",
+    "description": "Generic fallback tab title"
+  }
+}

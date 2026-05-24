@@ -6,7 +6,7 @@
         class="cursor-pointer relative w-full text-left leading-none"
       >
         <span class="block truncate pr-6">
-          {{ displayLabel || (filterLabel ? `All ${filterLabel}` : 'All') }}
+          {{ displayLabel || (filterLabel ? t('common.filterAllNamed', { label: filterLabel }) : t('common.filterAll')) }}
         </span>
         <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
           <ChevronUpDownIcon class="h-4 w-4 text-gray-400" aria-hidden="true" />
@@ -36,7 +36,7 @@
             @click="onSelectOption(null)"
           >
             <span :class="[!selectedOption ? 'font-medium' : 'font-normal', 'block truncate']">
-              {{ filterLabel ? `All ${filterLabel}` : 'All' }}
+              {{ filterLabel ? t('common.filterAllNamed', { label: filterLabel }) : t('common.filterAll') }}
             </span>
             <span
               v-if="!selectedOption"
@@ -79,19 +79,19 @@
             class="px-3 py-3 mt-1 border-t border-gray-200 dark:border-gray-600 space-y-3"
           >
             <div v-if="showDaysInput">
-              <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Days</label>
+              <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{{ t('common.filterDays') }}</label>
               <input
                 v-model.number="daysInput"
                 type="number"
                 min="1"
                 max="365"
                 class="block w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white"
-                placeholder="e.g. 7"
+                :placeholder="t('common.filterDaysPlaceholder')"
                 @change="applyDaysInput"
               />
             </div>
             <div v-if="showSingleDateInput">
-              <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Date</label>
+              <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{{ t('common.filterDate') }}</label>
               <input
                 v-model="singleDateInput"
                 type="date"
@@ -102,7 +102,7 @@
             </div>
             <div v-if="showBetweenInputs" class="space-y-2">
               <div>
-                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">From</label>
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{{ t('common.filterFrom') }}</label>
                 <input
                   v-model="fromDateInput"
                   type="date"
@@ -112,7 +112,7 @@
                 />
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">To</label>
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{{ t('common.filterTo') }}</label>
                 <input
                   v-model="toDateInput"
                   type="date"
@@ -131,6 +131,9 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue';
 import { ChevronUpDownIcon, CheckIcon } from '@heroicons/vue/24/outline';
 import {

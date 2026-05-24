@@ -1,0 +1,786 @@
+{
+  "moduleListTheListForThisModuleIs": {
+    "message": "The list for this module is not available.",
+    "description": "Auto-migrated from moduleList"
+  },
+  "moduleListListNotFound": {
+    "message": "List Not Found",
+    "description": "Auto-migrated from moduleList"
+  },
+  "targetWizardStepperTargetCreationProgress": {
+    "message": "Target creation progress",
+    "description": "Auto-migrated from targetWizardStepper"
+  },
+  "trashRestore": {
+    "message": "Restore",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAutoDeleteIn": {
+    "message": "Auto delete in",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedBy": {
+    "message": "Deleted by",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedItemsWillAppearHereYou": {
+    "message": "Deleted items will appear here. You can restore them or permanently delete them before they expire.",
+    "description": "Auto-migrated from trash"
+  },
+  "trashTrashIsEmpty": {
+    "message": "Trash is empty",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletePermanently": {
+    "message": "Delete permanently",
+    "description": "Auto-migrated from trash"
+  },
+  "trashRestoreSelected": {
+    "message": "Restore selected",
+    "description": "Auto-migrated from trash"
+  },
+  "trashEmptyTrash": {
+    "message": "Empty Trash",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedTo": {
+    "message": "Deleted to",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedFrom": {
+    "message": "Deleted from",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAllUsers": {
+    "message": "All users",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAllModules": {
+    "message": "All modules",
+    "description": "Auto-migrated from trash"
+  },
+  "trashSearchNameModuleDeletedBy": {
+    "message": "Search name, module, deleted by...",
+    "description": "Auto-migrated from trash"
+  },
+  "trashRetention": {
+    "message": "Retention",
+    "description": "Auto-migrated from trash"
+  },
+  "trashOldestItem": {
+    "message": "Oldest Item",
+    "description": "Auto-migrated from trash"
+  },
+  "trashExpiringIn7Days": {
+    "message": "Expiring in 7 Days",
+    "description": "Auto-migrated from trash"
+  },
+  "trashTotalInTrash": {
+    "message": "Total in Trash",
+    "description": "Auto-migrated from trash"
+  },
+  "approvalDetailEnterRejectionReason": {
+    "message": "Enter rejection reason...",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailReason": {
+    "message": "Reason",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailRejectingWillBlockThisAction": {
+    "message": "Rejecting will block this action.",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailRejectApproval": {
+    "message": "Reject Approval",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailYouAreNotAuthorizedToApprove": {
+    "message": "You are not authorized to approve or reject this request.",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailReason2": {
+    "message": "Reason:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecidedAt": {
+    "message": "Decided at:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecidedBy": {
+    "message": "Decided by:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecisionAlreadyMade": {
+    "message": "Decision already made",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailYourDecision": {
+    "message": "Your Decision",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailThisApprovalWasEscalatedDueTo": {
+    "message": "This approval was escalated due to no response within the time limit. New approvers have been notified.",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailEscalated": {
+    "message": "Escalated",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailIfRejected": {
+    "message": "If rejected",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailIfApproved": {
+    "message": "If approved",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailWhatWillHappen": {
+    "message": "What will happen",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailWhyApprovalIsRequired": {
+    "message": "Why approval is required",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailEntity": {
+    "message": "Entity",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailContext": {
+    "message": "Context",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailBackToApprovals": {
+    "message": "Back to Approvals",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalInboxEnterRejectionReason": {
+    "message": "Enter rejection reason...",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxReason": {
+    "message": "Reason",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRejectingWillBlockThisActionPlease": {
+    "message": "Rejecting will block this action. Please provide a reason.",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRejectApproval": {
+    "message": "Reject Approval",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxDueIn": {
+    "message": "Due in:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRequestedAt": {
+    "message": "Requested at:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRequestedBy": {
+    "message": "Requested by:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxAllCaughtUpYouHaveNo": {
+    "message": "All caught up! You have no pending approval requests.",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxNoApprovalsPending": {
+    "message": "No approvals pending",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxReviewAndApprovePendingRequests": {
+    "message": "Review and approve pending requests",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxApprovals": {
+    "message": "Approvals",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "demoRequestsEnterprise": {
+    "message": "Enterprise",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsProfessional": {
+    "message": "Professional",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsStarter": {
+    "message": "Starter",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsTrial15Days": {
+    "message": "Trial (15 days)",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSubscriptionTier": {
+    "message": "Subscription Tier",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsEnterTemporaryPasswordForOwner": {
+    "message": "Enter temporary password for owner",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvert": {
+    "message": "Convert",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvertToOrganization": {
+    "message": "Convert to Organization",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted": {
+    "message": "Converted",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoCompleted": {
+    "message": "Demo Completed",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoScheduled": {
+    "message": "Demo Scheduled",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContacted": {
+    "message": "Contacted",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsUpdateStatus": {
+    "message": "Update Status",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisContactExistsInASeparate": {
+    "message": "This contact exists in a separate organization. They will see their own CRM data when they log in.",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactPhone": {
+    "message": "Contact Phone:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactEmail": {
+    "message": "Contact Email:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContact": {
+    "message": "Contact:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsOrganization": {
+    "message": "Organization:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisProspectIsAlreadyInYour": {
+    "message": "This prospect is already in your CRM!",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsJobTitle": {
+    "message": "Job Title:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsPhone": {
+    "message": "Phone:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsEmail": {
+    "message": "Email:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactName": {
+    "message": "Contact Name:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactInformation": {
+    "message": "Contact Information",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanySize": {
+    "message": "Company Size:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsIndustry": {
+    "message": "Industry:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanyName": {
+    "message": "Company Name:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanyInformation": {
+    "message": "Company Information",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoRequestDetails": {
+    "message": "Demo Request Details",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsNoDemoRequestsFound": {
+    "message": "No demo requests found",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvert2": {
+    "message": "Convert",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvertToOrganization2": {
+    "message": "Convert to Organization",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSize": {
+    "message": "Size",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsLoadingDemoRequests": {
+    "message": "Loading demo requests...",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted2": {
+    "message": "Converted",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoCompleted2": {
+    "message": "Demo Completed",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoScheduled2": {
+    "message": "Demo Scheduled",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContacted2": {
+    "message": "Contacted",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSearchDemoRequests": {
+    "message": "Search demo requests...",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted3": {
+    "message": "Converted",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisMonth": {
+    "message": "This Month",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsTotalRequests": {
+    "message": "Total Requests",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "publicBookingViewPoweredByYourCrm": {
+    "message": "Powered by your CRM",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYourDetails": {
+    "message": "Your details",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYourTime": {
+    "message": "Your time",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewAvailableTimes": {
+    "message": "Available times",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewPickADate": {
+    "message": "Pick a date",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewBookWithOurTeam": {
+    "message": "Book with our team",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewRescheduleOrCancel": {
+    "message": "Reschedule or cancel",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewAConfirmationHasBeenSentTo": {
+    "message": "A confirmation has been sent to your email. You'll get a reminder before your appointment.",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYoureBooked": {
+    "message": "You're booked!",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewPageUnavailable": {
+    "message": "Page unavailable",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewLoadingCalendar": {
+    "message": "Loading calendar…",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "notificationOverviewOpenHealthDashboard": {
+    "message": "Open health dashboard",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewViewDeliveryStatisticsChannelHealthEvent": {
+    "message": "View delivery statistics, channel health, event volume, and user notification patterns. Identify potential issues before they impact your team.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewHealthDashboard": {
+    "message": "Health dashboard",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewMonitorNotificationDeliveryHealthAndAnalytics": {
+    "message": "Monitor notification delivery health and analytics across your organization.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAdminTools": {
+    "message": "Admin tools",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageDigests": {
+    "message": "Manage digests",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewReceiveDailyOrWeeklySummariesOf": {
+    "message": "Receive daily or weekly summaries of your notifications instead of real-time alerts. Reduce notification noise while staying informed.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewDigests": {
+    "message": "Digests",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageRules": {
+    "message": "Manage rules",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewCreateCustomNotificationConditionsSetUp": {
+    "message": "Create custom notification conditions. Set up rules based on assignments, priorities, statuses, and more.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManagePreferences": {
+    "message": "Manage preferences",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewToggleWhatTypesOfNotificationsYou": {
+    "message": "Toggle what types of notifications you receive per event. Control which channels are used for each notification type.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewPreferences": {
+    "message": "Preferences",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewCustomizeYourNotificationExperienceToMatch": {
+    "message": "Customize your notification experience to match your workflow.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewYourNotificationControl": {
+    "message": "Your notification control",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageDeliveryChannels": {
+    "message": "Manage delivery channels",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable": {
+    "message": "Configurable",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable2": {
+    "message": "Configurable",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhatsapp": {
+    "message": "WhatsApp",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable3": {
+    "message": "Configurable",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewPush": {
+    "message": "Push",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable4": {
+    "message": "Configurable",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAlwaysOn": {
+    "message": "Always on",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewChooseWhereAndHowYouReceive": {
+    "message": "Choose where and how you receive notifications across different delivery channels.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewHowYoureNotified": {
+    "message": "How you're notified",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined": {
+    "message": "System-defined",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAccountActivitySystemUpdatesAndCompliance": {
+    "message": "Account activity, system updates, and compliance-related notifications.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined2": {
+    "message": "System-defined",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewActivityThatInvolvesCollaborationAndReview": {
+    "message": "Activity that involves collaboration and review.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConversations": {
+    "message": "Conversations",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewRemindersForUpcomingOrOverdueItems": {
+    "message": "Reminders for upcoming or overdue items.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewDeadlines": {
+    "message": "Deadlines",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewStatusChangesSubmissionsApprovalsAndOther": {
+    "message": "Status changes, submissions, approvals, and other important updates.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined3": {
+    "message": "System-defined",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhenTasksAuditsOrCorrectiveActions": {
+    "message": "When tasks, audits, or corrective actions are assigned to you.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAssignments": {
+    "message": "Assignments",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewNotificationsAreOrganizedByIntentTo": {
+    "message": "Notifications are organized by intent to help you stay informed without being overwhelmed.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhatYoureNotifiedAbout": {
+    "message": "What you're notified about",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewLearnHowNotificationsWorkAndWhat": {
+    "message": "Learn how notifications work and what you can control.",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewNotificationOverview": {
+    "message": "Notification Overview",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationHealthHighVolume": {
+    "message": "High volume",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoUserDataAvailable": {
+    "message": "No user data available",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthFlag": {
+    "message": "Flag",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthReceived": {
+    "message": "Received",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthHighVolumeUsers": {
+    "message": "High-Volume Users",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoEventDataAvailable": {
+    "message": "No event data available",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthTopEventTypes": {
+    "message": "Top Event Types",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoChannelDataAvailable": {
+    "message": "No channel data available",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthLastFailure": {
+    "message": "Last Failure",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthSent": {
+    "message": "Sent",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthChannelHealth": {
+    "message": "Channel Health",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthDegradedChannels": {
+    "message": "Degraded Channels",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthActiveChannels": {
+    "message": "Active Channels",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthReadRate": {
+    "message": "Read Rate",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthTotalNotifications": {
+    "message": "Total Notifications",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthMonitorNotificationDeliveryAndChannelHealth": {
+    "message": "Monitor notification delivery and channel health",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNotificationHealth": {
+    "message": "Notification Health",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthHealth": {
+    "message": "Health",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationPreferencesReceiveAWeeklySummaryViaEmail": {
+    "message": "Receive a weekly summary via email. Perfect for staying informed without daily interruptions.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWeeklyDigest": {
+    "message": "Weekly Digest",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesReceiveADailySummaryOfYour": {
+    "message": "Receive a daily summary of your notifications. Reduces notification noise while keeping you informed.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesDailyDigest": {
+    "message": "Daily Digest",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesReceiveSummariesInsteadOfRealTime": {
+    "message": "Receive summaries instead of real-time notifications",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationDigests": {
+    "message": "Notification Digests",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSmsIsOnlyUsedAsA": {
+    "message": "SMS is only used as a last resort when other channels are unavailable. Messages are kept short and include deep links when possible.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSmsNotifications": {
+    "message": "SMS Notifications",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWhatsappNotificationsAreOnlySentFor": {
+    "message": "WhatsApp notifications are only sent for high-priority events in Audit and Portal apps.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWhatsappNotifications": {
+    "message": "WhatsApp Notifications",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPushNotificationsAreBlockedEnableThem": {
+    "message": "Push notifications are blocked. Enable them in your browser settings.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesTestNotification": {
+    "message": "Test Notification",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesEnablePushNotifications": {
+    "message": "Enable Push Notifications",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPushNotifications": {
+    "message": "Push Notifications",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesThereAreNoConfigurableNotificationEvents": {
+    "message": "There are no configurable notification events for this app yet.\n          Notifications will continue using their safe defaults.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesInApp": {
+    "message": "In app",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSystemEventManagedByArivu": {
+    "message": "System event (managed by Arivu)",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesClickAChannelToJumpTo": {
+    "message": "Click a channel to jump to its settings. Disabled channels are not available for this app.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationDelivery": {
+    "message": "Notification delivery",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWeCouldntLoadYourNotificationPreferences": {
+    "message": "We couldn’t load your notification preferences right now. Notifications will\n        continue using their defaults. You can keep using the app safely.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesCouldntSaveChangesPleaseTryAgain": {
+    "message": "Couldn’t save changes. Please try again.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesHealthDashboard": {
+    "message": "Health Dashboard",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationRules": {
+    "message": "Notification Rules",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesControlInAppAndEmailNotifications": {
+    "message": "Control in-app and email notifications for this workspace.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationPreferences": {
+    "message": "Notification Preferences",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPreferences": {
+    "message": "Preferences",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationRulesDeleteRule": {
+    "message": "Delete rule",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesEditRule": {
+    "message": "Edit rule",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesCreateYourFirstRule": {
+    "message": "Create your first rule",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesGetStartedByCreatingYourFirst": {
+    "message": "Get started by creating your first notification rule.",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesNoNotificationRulesYet": {
+    "message": "No notification rules yet",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesFailedToLoadNotificationRules": {
+    "message": "Failed to load notification rules",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesDeleteAnExistingRuleToCreate": {
+    "message": "Delete an existing rule to create a new one.",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesCreateCustomNotificationTriggersForModules": {
+    "message": "Create custom notification triggers for modules you care about.",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesNotificationRules": {
+    "message": "Notification Rules",
+    "description": "Auto-migrated from notificationRules"
+  }
+}

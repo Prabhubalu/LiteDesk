@@ -1,0 +1,458 @@
+{
+  "appPulseCardOpenApp": {
+    "message": "ऐप खोलें",
+    "description": "Auto-migrated from appPulseCard"
+  },
+  "appRegistryThisAppIsAvailableForDiscovery": {
+    "message": "यह ऐप खोज के लिए उपलब्ध है। इंस्टालेशन और कॉन्फ़िगरेशन सुविधाएँ भविष्य के अपडेट में उपलब्ध होंगी।",
+    "description": "Auto-migrated from appRegistry"
+  },
+  "appRegistryInstallationComingSoon": {
+    "message": "इंस्टालेशन जल्द ही आ रहा है.",
+    "description": "Auto-migrated from appRegistry"
+  },
+  "appRegistryNoApplicationsAvailable": {
+    "message": "कोई एप्लिकेशन उपलब्ध नहीं है.",
+    "description": "Auto-migrated from appRegistry"
+  },
+  "appRegistryDiscoverAndManageYourApplications": {
+    "message": "अपने एप्लिकेशन खोजें और प्रबंधित करें",
+    "description": "Auto-migrated from appRegistry"
+  },
+  "appRegistryAppRegistry": {
+    "message": "ऐप रजिस्ट्री",
+    "description": "Auto-migrated from appRegistry"
+  },
+  "attentionSurfaceAttentionShowsTasksAndEventsOnly": {
+    "message": "ध्यान कार्यों और घटनाओं को तभी दिखाता है जब कार्रवाई की आवश्यकता होती है।",
+    "description": "Auto-migrated from attentionSurface"
+  },
+  "attentionSurfaceThingsThatNeedYourAttentionRight": {
+    "message": "वे चीज़ें जिन पर अभी आपको ध्यान देने की आवश्यकता है",
+    "description": "Auto-migrated from attentionSurface"
+  },
+  "attentionSurfaceAttention": {
+    "message": "ध्यान",
+    "description": "Auto-migrated from attentionSurface"
+  },
+  "platformHomeAlerts": {
+    "message": "अलर्ट",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeQuickAccess": {
+    "message": "त्वरित पहुँच",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeYourApps": {
+    "message": "आपके ऐप्स",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeContinueWhereYouLeftOff": {
+    "message": "वहीं जारी रखें जहां आपने छोड़ा था",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeNeedsYourAttention": {
+    "message": "आपका ध्यान चाहिए",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeTasksEventsAndAlertsFromYour": {
+    "message": "जैसे ही आप आरंभ करेंगे आपके ऐप्स के कार्य, ईवेंट और अलर्ट यहां दिखाई देंगे।",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeWelcomeToYourHome": {
+    "message": "आपके घर में आपका स्वागत है",
+    "description": "Auto-migrated from platformHome"
+  },
+  "platformHomeWhatNeedsYourAttentionRightNow": {
+    "message": "अभी आपको किस चीज़ पर ध्यान देने की ज़रूरत है",
+    "description": "Auto-migrated from platformHome"
+  },
+  "instanceManagementManageInstance": {
+    "message": "उदाहरण प्रबंधित करें",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementUsername": {
+    "message": "उपयोगकर्ता नाम:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementDatabase": {
+    "message": "डेटाबेस:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementPort": {
+    "message": "पत्तन:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementHost": {
+    "message": "मेज़बान:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementDatabaseConnection": {
+    "message": "डेटाबेस कनेक्शन",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementStorageUsed": {
+    "message": "प्रयुक्त भंडारण:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTotalDeals": {
+    "message": "कुल सौदे:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTotalContacts": {
+    "message": "कुल संपर्क:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTotalUsers": {
+    "message": "कुल उपयोगकर्ता:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTrialEnd": {
+    "message": "परीक्षण समाप्ति:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementStatus": {
+    "message": "स्थिति:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTier": {
+    "message": "स्तर:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementSubscription": {
+    "message": "सदस्यता",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementApi": {
+    "message": "एपीआई:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementFrontend": {
+    "message": "फ़्रंट एंड:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementUrls": {
+    "message": "यूआरएल",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementStatus2": {
+    "message": "स्थिति:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementKubernetesNamespace": {
+    "message": "कुबेरनेट्स नेमस्पेस:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementSubdomain": {
+    "message": "उपडोमेन:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementInstanceName": {
+    "message": "उदाहरण का नाम:",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementInstanceInformation": {
+    "message": "उदाहरण सूचना",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementNoCustomerInstancesMatchYourCurrent": {
+    "message": "कोई भी ग्राहक उदाहरण आपके वर्तमान फ़िल्टर से मेल नहीं खाता।",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementNoInstancesFound": {
+    "message": "कोई उदाहरण नहीं मिला",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementManage": {
+    "message": "प्रबंधित करना",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementSubscription2": {
+    "message": "सदस्यता",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementHealth": {
+    "message": "स्वास्थ्य",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementSubdomain2": {
+    "message": "उप डोमेन",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementInstance": {
+    "message": "उदाहरण",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementLoadingInstances": {
+    "message": "उदाहरण लोड हो रहे हैं...",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementUnhealthy": {
+    "message": "बीमार",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementDegraded": {
+    "message": "अपमानित",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementHealthy": {
+    "message": "स्वस्थ",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementAllHealth": {
+    "message": "सर्व स्वास्थ्य",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementCanceled": {
+    "message": "रद्द कर दिया गया",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementPastDue": {
+    "message": "पिछला बकाया",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementAllSubscriptions": {
+    "message": "सभी सदस्यताएँ",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTerminated": {
+    "message": "समाप्त",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementProvisioning": {
+    "message": "प्रोविजनिंग",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementSearchInstances": {
+    "message": "उदाहरण खोजें...",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementMonthlyRevenue": {
+    "message": "मासिक राजस्व",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementProvisioning2": {
+    "message": "प्रोविजनिंग",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementActiveInstances": {
+    "message": "सक्रिय उदाहरण",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementTotalInstances": {
+    "message": "कुल उदाहरण",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementMonitorAndManageAllCustomerInstances": {
+    "message": "सभी ग्राहक उदाहरणों की निगरानी और प्रबंधन करें",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "instanceManagementInstanceManagement": {
+    "message": "उदाहरण प्रबंधन",
+    "description": "Auto-migrated from instanceManagement"
+  },
+  "landingPageAdminLogin": {
+    "message": "व्यवस्थापक लॉगिन",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageRequestDemo": {
+    "message": "डेमो का अनुरोध करें",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageStopWrestlingWithBloatedCrmPlug": {
+    "message": "फूले हुए सीआरएम के साथ संघर्ष करना बंद करें। प्लग इन करें, अपनी प्रक्रिया परिभाषित करें और एक दिन से भी कम समय में ग्राहक सहभागिता को स्वचालित करें।",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageDesignYourPerfectSalesFlow": {
+    "message": "अपना संपूर्ण बिक्री प्रवाह डिज़ाइन करें।",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageReadMore": {
+    "message": "और पढ़ें",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPagePlugAndPlayToolForAny": {
+    "message": "किसी भी वर्टिकल के लिए प्लग-एंड-प्ले टूल।",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageLogIn": {
+    "message": "लॉग इन करें",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageCloseMenu": {
+    "message": "मेनू बंद करें",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageNurtura": {
+    "message": "नूरतुरा",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageLogIn2": {
+    "message": "लॉग इन करें",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageOpenMainMenu": {
+    "message": "मुख्य मेनू खोलें",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageNurtura2": {
+    "message": "नूरतुरा",
+    "description": "Auto-migrated from landingPage"
+  },
+  "landingPageGlobal": {
+    "message": "वैश्विक",
+    "description": "Auto-migrated from landingPage"
+  },
+  "genericModuleUnknownModuleOrRoute": {
+    "message": "अज्ञात मॉड्यूल या मार्ग.",
+    "description": "Auto-migrated from genericModule"
+  },
+  "listViewAllItems": {
+    "message": "सभी वस्तुएं",
+    "description": "Items list default view title"
+  },
+  "listViewActiveItems": {
+    "message": "सक्रिय आइटम",
+    "description": "Items list active view title"
+  },
+  "listViewProducts": {
+    "message": "उत्पादों",
+    "description": "Items list products view title"
+  },
+  "listViewServices": {
+    "message": "सेवाएं",
+    "description": "Items list services view title"
+  },
+  "listViewLowStock": {
+    "message": "कम स्टॉक",
+    "description": "Items list low stock view title"
+  },
+  "listViewOutOfStock": {
+    "message": "स्टॉक ख़त्म",
+    "description": "Items list out of stock view title"
+  },
+  "listCreateItem": {
+    "message": "नए वस्तु",
+    "description": "Items list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "आइटम खोजें...",
+    "description": "Items list search placeholder"
+  },
+  "listStatTotalItems": {
+    "message": "कुल आइटम",
+    "description": "Items list statistics card"
+  },
+  "listStatActiveItems": {
+    "message": "सक्रिय",
+    "description": "Items list statistics card"
+  },
+  "listStatProducts": {
+    "message": "उत्पादों",
+    "description": "Items list statistics card"
+  },
+  "listStatServices": {
+    "message": "सेवाएं",
+    "description": "Items list statistics card"
+  },
+  "listStatLowStock": {
+    "message": "कम स्टॉक",
+    "description": "Items list statistics card"
+  },
+  "listStatOutOfStock": {
+    "message": "स्टॉक ख़त्म",
+    "description": "Items list statistics card"
+  },
+  "platformHomeNeedAttentionCount": {
+    "message": "{count} ध्यान देने योग्य",
+    "description": "Today strip chip count"
+  },
+  "platformHomeApprovalCountOne": {
+    "message": "{count} स्वीकृति",
+    "description": "Today strip chip count singular"
+  },
+  "platformHomeApprovalCountMany": {
+    "message": "{count} स्वीकृतियाँ",
+    "description": "Today strip chip count plural"
+  },
+  "platformHomeUnreadCountOne": {
+    "message": "{count} अपठित",
+    "description": "Today strip chip count singular"
+  },
+  "platformHomeUnreadCountMany": {
+    "message": "{count} अपठित",
+    "description": "Today strip chip count plural"
+  },
+  "platformHomeOverdueCount": {
+    "message": "{count} विलंबित",
+    "description": "Attention summary overdue count"
+  },
+  "platformHomeDueTodayCount": {
+    "message": "{count} आज देय",
+    "description": "Attention summary due today count"
+  },
+  "platformHomeItemCountOne": {
+    "message": "{count} आइटम",
+    "description": "Attention summary fallback singular"
+  },
+  "platformHomeItemCountMany": {
+    "message": "{count} आइटम",
+    "description": "Attention summary fallback plural"
+  },
+  "platformHomeAlertInstanceSuspendedTitle": {
+    "message": "इंस्टेंस निलंबित",
+    "description": "Platform home alert title"
+  },
+  "platformHomeAlertInstanceSuspendedMessage": {
+    "message": "यह इंस्टेंस वर्तमान में निलंबित है। पहुंच बहाल करने के लिए कृपया सहायता से संपर्क करें।",
+    "description": "Platform home alert message"
+  },
+  "platformHomeAlertTrialEndedTitle": {
+    "message": "ट्रायल समाप्त",
+    "description": "Platform home alert title"
+  },
+  "platformHomeAlertTrialEndedMessage": {
+    "message": "आपका ट्रायल समाप्त हो गया है। जारी रखने के लिए कृपया सदस्यता लें।",
+    "description": "Platform home alert message"
+  },
+  "platformHomeAlertTrialEndingSoonTitle": {
+    "message": "ट्रायल जल्द समाप्त होगा",
+    "description": "Platform home alert title"
+  },
+  "platformHomeAlertTrialEndingSoonMessageOne": {
+    "message": "आपका ट्रायल {count} दिन में समाप्त होगा।",
+    "description": "Platform home alert message singular"
+  },
+  "platformHomeAlertTrialEndingSoonMessageMany": {
+    "message": "आपका ट्रायल {count} दिनों में समाप्त होगा।",
+    "description": "Platform home alert message plural"
+  },
+  "platformHomeAuditDashboard": {
+    "message": "ऑडिट डैशबोर्ड",
+    "description": "Tab title fallback for audit app"
+  },
+  "platformHomeGreetingMorning": {
+    "message": "शुभ प्रभात",
+    "description": "Platform home greeting"
+  },
+  "platformHomeGreetingMorningWithName": {
+    "message": "शुभ प्रभात, {name}",
+    "description": "Platform home greeting"
+  },
+  "platformHomeGreetingAfternoon": {
+    "message": "शुभ दोपहर",
+    "description": "Platform home greeting"
+  },
+  "platformHomeGreetingAfternoonWithName": {
+    "message": "शुभ दोपहर, {name}",
+    "description": "Platform home greeting"
+  },
+  "platformHomeGreetingEvening": {
+    "message": "शुभ संध्या",
+    "description": "Platform home greeting"
+  },
+  "platformHomeGreetingEveningWithName": {
+    "message": "शुभ संध्या, {name}",
+    "description": "Platform home greeting"
+  }
+}

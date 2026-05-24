@@ -28,22 +28,18 @@
               class="relative z-10 flex-1 flex items-center justify-center gap-2 pl-3 pr-3 py-0 rounded-lg text-sm font-semibold transition-colors duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:ring-offset-gray-800 overflow-visible"
               :class="currentView === 'kanban' ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-600/50'"
             >
-              <ViewColumnsIcon class="w-5 h-5 shrink-0" />
-              Board
-            </button>
+              <ViewColumnsIcon class="w-5 h-5 shrink-0" />{{ t('tasks.tasksBoard') }}</button>
             <button
               type="button"
               @click="switchView('list')"
               class="relative z-10 flex-1 flex items-center justify-center gap-2 pl-3 pr-3 py-0 rounded-lg text-sm font-semibold transition-colors duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:ring-offset-gray-800 overflow-visible"
               :class="currentView === 'list' ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-600/50'"
             >
-              <ListBulletIcon class="w-5 h-5 shrink-0" />
-              List
-            </button>
+              <ListBulletIcon class="w-5 h-5 shrink-0" />{{ t('forms.rbLayoutList') }}</button>
           </div>
           <ModuleActions
             module="tasks"
-            create-label="New Task"
+            create-:label="t('tasks.tasksNewTask')"
             @create="openCreateModal"
             @import="showImportModal = true"
             @export="exportTasks"
@@ -111,7 +107,7 @@
             {{ getUserDisplayName(row.assignedTo) }}
           </span>
         </div>
-        <span v-else class="text-sm text-gray-500 dark:text-gray-400">Unassigned</span>
+        <span v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('records.editableUnassigned') }}</span>
       </template>
 
       <!-- Custom Due Date Cell with highlighting -->
@@ -124,7 +120,7 @@
         ]">
           <DateCell :value="row.dueDate" format="short" />
         </span>
-        <span v-else class="text-sm text-gray-500 dark:text-gray-400">No due date</span>
+        <span v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('tasks.tasksNoDueDate') }}</span>
       </template>
 
       <!-- Custom Created Date Cell -->
@@ -156,7 +152,7 @@
         stage-key="status"
         item-id-key="_id"
         :loading="kanbanLoading"
-        loading-label="Loading board..."
+        loading-:label="t('tasks.tasksLoadingBoard')"
         :get-stage-color="getStatusColor"
         :card-size="kanbanCardSize"
         :collapse-empty-columns="kanbanCollapseEmptyColumns"
@@ -240,7 +236,7 @@
           </div>
         </template>
         <template #empty>
-          <p class="text-sm text-gray-500 dark:text-gray-400">No tasks in this status</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('tasks.tasksNoTasksInThisStatus') }}</p>
         </template>
         <template #add-item="{ stage, isEmpty, stageColor }">
           <button
@@ -255,9 +251,7 @@
             :style="stageColor ? { color: stageColor, '--add-btn-hover-bg': hexToRgba(stageColor, 0.12) } : {}"
             @click.stop="openCreateTaskInStatus(stage)"
           >
-            <PlusIcon class="w-4 h-4 flex-shrink-0" />
-            Add Task
-          </button>
+            <PlusIcon class="w-4 h-4 flex-shrink-0" />{{ t('tasks.tasksAddTask') }}</button>
         </template>
       </KanbanBoard>
     </div>
@@ -292,6 +286,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { ref, computed, watch, nextTick, onMounted, onActivated } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
@@ -629,7 +626,7 @@ const handleKanbanUpdate = async ({ item, newStage }) => {
     refreshList();
   } catch (err) {
     console.error('Error updating task status:', err);
-    alert(err?.response?.data?.message || err?.message || 'Failed to update task status');
+    alert(err?.response?.data?.message || err?.message || t('common.tasksToastFailedToUpdateTaskStatus'));
   }
 };
 
@@ -761,7 +758,7 @@ const handleDeleteTask = async (row) => {
     refreshList();
   } catch (error) {
     console.error('Error deleting task:', error);
-    alert(error?.response?.data?.message || error?.message || 'Failed to delete task.');
+    alert(error?.response?.data?.message || error?.message || t('common.tasksToastFailedToDeleteTask'));
   }
 };
 
@@ -778,7 +775,7 @@ const handleBulkAction = async (action, rows) => {
     }
   } catch (error) {
     console.error('Error performing bulk action:', error);
-    alert('Error performing bulk action. Please try again.');
+    alert(t('common.tasksToastErrorPerformingBulkActionPlease'));
   }
 };
 
@@ -804,7 +801,7 @@ const exportTasks = async () => {
     window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Error exporting tasks:', error);
-    alert('Error exporting tasks. Please try again.');
+    alert(t('common.tasksToastErrorExportingTasksPleaseTry'));
   }
 };
 

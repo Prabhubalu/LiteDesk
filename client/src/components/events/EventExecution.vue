@@ -3,7 +3,7 @@
     <!-- Execution Status Card -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Event Execution</h3>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('events.eventExecutionEventExecution') }}</h3>
         <span :class="getStatusBadgeClass(event.status)">{{ event.status }}</span>
       </div>
 
@@ -17,23 +17,15 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          Start Event
-        </button>
+          </svg>{{ t('events.eventExecutionStartEvent') }}</button>
       </div>
 
       <!-- Check-In for Audit Events (when auditState = Ready to start) -->
       <div v-if="isAuditEvent && event.auditState === 'Ready to start' && !isReadOnly" class="space-y-3">
         <div class="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-          <p class="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
-            Ready to Start Audit
-          </p>
-          <p class="text-xs text-blue-700 dark:text-blue-400">
-            Check in to begin the audit process.
-          </p>
-          <p v-if="event.geoRequired && !currentLocation" class="text-xs text-yellow-700 dark:text-yellow-400 mt-2">
-            Waiting for GPS location...
-          </p>
+          <p class="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">{{ t('events.eventExecutionReadyToStartAudit') }}</p>
+          <p class="text-xs text-blue-700 dark:text-blue-400">{{ t('events.eventExecutionCheckInToBeginTheAudit') }}</p>
+          <p v-if="event.geoRequired && !currentLocation" class="text-xs text-yellow-700 dark:text-yellow-400 mt-2">{{ t('events.eventExecutionWaitingForGpsLocation') }}</p>
         </div>
         <button
           @click="checkIn"
@@ -43,9 +35,7 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          Check In
-        </button>
+          </svg>{{ t('events.eventExecutionCheckIn3') }}</button>
       </div>
 
       <!-- Check-In/Check-Out (GEO Mode) -->
@@ -53,7 +43,7 @@
         <div v-if="!isCheckedIn" class="space-y-3">
           <div class="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
             <p class="text-sm text-yellow-800 dark:text-yellow-300 mb-2">
-              <strong>GEO Check-In Required</strong>
+              <strong>{{ t('events.eventExecutionGeoCheckInRequired') }}</strong>
             </p>
             <p class="text-xs text-yellow-700 dark:text-yellow-400">
               You must check in at the event location to proceed. GPS accuracy: {{ gpsAccuracy ? `${Math.round(gpsAccuracy)}m` : 'Checking...' }}
@@ -67,15 +57,13 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            Check In
-          </button>
+            </svg>{{ t('events.eventExecutionCheckIn2') }}</button>
         </div>
 
         <div v-else-if="event.status !== 'CHECKED_OUT'" class="space-y-3">
           <div class="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
             <p class="text-sm text-green-800 dark:text-green-300">
-              <strong>Checked In</strong> at {{ formatTime(event.checkIn?.timestamp) }}
+              <strong>{{ t('events.eventExecutionCheckedIn') }}</strong> at {{ formatTime(event.checkIn?.timestamp) }}
             </p>
             <p v-if="event.checkIn?.location" class="text-xs text-green-700 dark:text-green-400 mt-1">
               Location: {{ event.checkIn.location.latitude.toFixed(6) }}, {{ event.checkIn.location.longitude.toFixed(6) }}
@@ -90,15 +78,13 @@
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-            Check Out
-          </button>
+            </svg>{{ t('events.eventExecutionCheckOut') }}</button>
         </div>
       </div>
 
       <!-- Multi-Org Route Progress -->
       <div v-if="event.isMultiOrg && event.orgList && event.orgList.length > 0" class="mt-6 space-y-4">
-        <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Route Progress</h4>
+        <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('events.eventExecutionRouteProgress') }}</h4>
         <div class="space-y-2">
           <div
             v-for="(org, index) in event.orgList"
@@ -126,24 +112,20 @@
               @click="checkInOrg(org.sequence)"
               :disabled="checkingIn"
               class="px-3 py-1.5 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
-            >
-              Check In
-            </button>
+            >{{ t('events.eventExecutionCheckIn') }}</button>
             <button
               v-if="org.status === 'IN_PROGRESS'"
               @click="moveToNextOrg"
               :disabled="moving"
               class="px-3 py-1.5 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-            >
-              Next
-            </button>
+            >{{ t('actions.next') }}</button>
           </div>
         </div>
       </div>
 
       <!-- Form Submission -->
       <div v-if="requiresAuditForm && !isReadOnly && isCheckedIn && (event.auditState === 'checked_in' || event.auditState === 'submitted' || event.status === 'SUBMITTED' || event.status === 'CHECKED_OUT' || isFormSubmitted)" class="mt-6 space-y-3">
-        <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Form</h4>
+        <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.modFieldsPbResourceForm') }}</h4>
         <div v-if="linkedFormIdValue" class="space-y-2">
           <!-- Show "Open Response" button when form is submitted -->
           <div v-if="isFormSubmitted || event.auditState === 'submitted' || event.status === 'SUBMITTED' || event.status === 'CHECKED_OUT'" class="space-y-3">
@@ -152,13 +134,9 @@
                 <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
-                <p class="text-sm font-medium text-green-800 dark:text-green-300">
-                  Form Submitted
-                </p>
+                <p class="text-sm font-medium text-green-800 dark:text-green-300">{{ t('events.eventExecutionFormSubmitted') }}</p>
               </div>
-              <p class="text-xs text-green-700 dark:text-green-400">
-                The form has been successfully submitted and you have been automatically checked out.
-              </p>
+              <p class="text-xs text-green-700 dark:text-green-400">{{ t('events.eventExecutionTheFormHasBeenSuccessfullySubmitted') }}</p>
             </div>
             <button
               v-if="hasFormResponse"
@@ -168,20 +146,14 @@
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
-              Open Response
-            </button>
+              </svg>{{ t('events.eventExecutionOpenResponse') }}</button>
           </div>
           
           <!-- Show "Open Form" when checked in but not submitted -->
           <template v-else-if="event.auditState === 'checked_in' && !isFormSubmitted">
             <div class="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg mb-3">
-              <p class="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
-                Form
-              </p>
-              <p class="text-xs text-blue-700 dark:text-blue-400">
-                Open the form to fill and submit.
-              </p>
+              <p class="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">{{ t('settings.modFieldsPbResourceForm') }}</p>
+              <p class="text-xs text-blue-700 dark:text-blue-400">{{ t('events.eventExecutionOpenTheFormToFillAnd') }}</p>
             </div>
             <button
               @click="openAuditForm"
@@ -189,32 +161,26 @@
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              Open Form
-            </button>
+              </svg>{{ t('events.eventExecutionOpenForm') }}</button>
           </template>
         </div>
-        <p v-else class="text-sm text-gray-500 dark:text-gray-400">No form linked to this event</p>
+        <p v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('events.eventExecutionNoFormLinkedToThisEvent') }}</p>
       </div>
 
       <!-- Field Sales Actions -->
       <div v-if="!isReadOnly && event.eventType === 'Field Sales Beat' && isCheckedIn" class="mt-6 space-y-3">
-        <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Sales Actions</h4>
+        <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('events.eventExecutionSalesActions') }}</h4>
         <div class="grid grid-cols-2 gap-2">
           <button
             v-if="event.allowedActions?.orders"
             @click="createOrder"
             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
-          >
-            Create Order
-          </button>
+          >{{ t('events.eventExecutionCreateOrder') }}</button>
           <button
             v-if="event.allowedActions?.payments"
             @click="collectPayment"
             class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors"
-          >
-            Collect Payment
-          </button>
+          >{{ t('events.eventExecutionCollectPayment') }}</button>
         </div>
       </div>
 
@@ -224,9 +190,7 @@
           @click="completeEvent"
           :disabled="completing"
           class="w-full px-4 py-3 bg-gray-800 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-900 dark:hover:bg-gray-600 font-medium transition-colors disabled:opacity-50"
-        >
-          Complete Event
-        </button>
+        >{{ t('events.eventExecutionCompleteEvent') }}</button>
       </div>
     </div>
 
@@ -236,29 +200,29 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
-          <span>You are offline. Actions will be synced when connection is restored.</span>
+          <span>{{ t('events.eventExecutionYouAreOfflineActionsWillBe') }}</span>
         </div>
       </div>
 
       <!-- GPS Status & Map -->
       <div v-if="event.geoRequired" class="space-y-4">
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">GPS Status</h4>
+        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('events.eventExecutionGpsStatus') }}</h4>
         <div class="space-y-2 text-sm">
           <div class="flex justify-between">
-            <span class="text-gray-600 dark:text-gray-400">Status:</span>
+            <span class="text-gray-600 dark:text-gray-400">{{ t('events.eventExecutionStatus') }}</span>
             <span :class="gpsStatus === 'active' ? 'text-green-600' : 'text-red-600'">
               {{ gpsStatus === 'active' ? 'Active' : 'Inactive' }}
             </span>
           </div>
           <div v-if="currentLocation" class="flex justify-between">
-            <span class="text-gray-600 dark:text-gray-400">Current Location:</span>
+            <span class="text-gray-600 dark:text-gray-400">{{ t('events.eventExecutionCurrentLocation') }}</span>
             <span class="text-gray-900 dark:text-white">
               {{ currentLocation.latitude.toFixed(6) }}, {{ currentLocation.longitude.toFixed(6) }}
             </span>
           </div>
           <div v-if="gpsAccuracy" class="flex justify-between">
-            <span class="text-gray-600 dark:text-gray-400">Accuracy:</span>
+            <span class="text-gray-600 dark:text-gray-400">{{ t('events.eventExecutionAccuracy') }}</span>
             <span class="text-gray-900 dark:text-white">{{ Math.round(gpsAccuracy) }}m</span>
           </div>
         </div>
@@ -289,6 +253,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import apiClient from '@/utils/apiClient';
 import { useRouter } from 'vue-router';
@@ -304,6 +269,8 @@ const props = defineProps({
     required: true
   }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['updated']);
 
@@ -471,11 +438,11 @@ const startEvent = async () => {
         startWatchingLocation();
       }
     } else {
-      alert(response.message || 'Failed to start event');
+      alert(response.message || t('events.eventExecutionToastFailedToStartEvent'));
     }
   } catch (error) {
     console.error('Error starting event:', error);
-    alert('Failed to start event: ' + (error.message || 'Unknown error'));
+    alert(t('events.eventExecutionToastFailedToStartEvent2') + (error.message || 'Unknown error'));
   } finally {
     starting.value = false;
   }
@@ -527,7 +494,7 @@ const checkIn = async () => {
         window.location.href = formUrl;
       } else if (!response.hasForm) {
         // Show message if no form is assigned
-        alert('No form is assigned to this event. Please contact your administrator to assign a form.');
+        alert(t('events.eventExecutionToastNoFormIsAssignedTo'));
       }
       
       if (response.warning) {
@@ -541,14 +508,14 @@ const checkIn = async () => {
           eventId: props.event.eventId || props.event._id,
           data: { location: currentLocation.value }
         });
-        alert('You are offline. Check-in will be synced when connection is restored.');
+        alert(t('events.eventExecutionToastYouAreOfflineCheckIn'));
       } else {
-        alert(response.message || 'Failed to check in');
+        alert(response.message || t('events.eventExecutionToastFailedToCheckIn'));
       }
     }
   } catch (error) {
     console.error('Error checking in:', error);
-    alert('Failed to check in: ' + (error.message || 'Unknown error'));
+    alert(t('events.eventExecutionToastFailedToCheckIn2') + (error.message || 'Unknown error'));
   } finally {
     checkingIn.value = false;
   }
@@ -599,14 +566,14 @@ const checkInOrg = async (orgSequence) => {
         window.location.href = formUrl;
       } else if (!response.hasForm) {
         // Show message if no form is assigned
-        alert('No form is assigned to this event. Please contact your administrator to assign a form.');
+        alert(t('events.eventExecutionToastNoFormIsAssignedTo2'));
       }
     } else {
-      alert(response.message || 'Failed to check in');
+      alert(response.message || t('events.eventExecutionToastFailedToCheckIn3'));
     }
   } catch (error) {
     console.error('Error checking in:', error);
-    alert('Failed to check in: ' + (error.message || 'Unknown error'));
+    alert(t('events.eventExecutionToastFailedToCheckIn4') + (error.message || 'Unknown error'));
   } finally {
     checkingIn.value = false;
   }
@@ -628,7 +595,7 @@ const checkOut = async () => {
           // Allow checkout without location if form is submitted
           console.log('[EventExecution] Proceeding with checkout without location (form submitted)');
         } else {
-          alert('Could not get location for check-out. Please try again.');
+          alert(t('events.eventExecutionToastCouldNotGetLocationFor'));
           checkingOut.value = false;
           return;
         }
@@ -652,14 +619,14 @@ const checkOut = async () => {
           eventId: props.event.eventId || props.event._id,
           data: { location: location }
         });
-        alert('You are offline. Check-out will be synced when connection is restored.');
+        alert(t('events.eventExecutionToastYouAreOfflineCheckOut'));
       } else {
-        alert(response.message || 'Failed to check out');
+        alert(response.message || t('events.eventExecutionToastFailedToCheckOut'));
       }
     }
   } catch (error) {
     console.error('Error checking out:', error);
-    alert('Failed to check out: ' + (error.message || 'Unknown error'));
+    alert(t('events.eventExecutionToastFailedToCheckOut2') + (error.message || 'Unknown error'));
   } finally {
     checkingOut.value = false;
   }
@@ -670,7 +637,7 @@ const submitAudit = async () => {
     submitting.value = true;
     
     if (!formResponseId.value) {
-      alert('Please fill and submit the audit form first');
+      alert(t('events.eventExecutionToastPleaseFillAndSubmitThe'));
       return;
     }
     
@@ -687,9 +654,9 @@ const submitAudit = async () => {
       formResponseStatus.value = 'Submitted';
       // Note: Event is automatically checked out on form submission
       if (response.requiresCorrective) {
-        alert('Audit submitted and checked out. Some items require corrective action.');
+        alert(t('events.eventExecutionToastAuditSubmittedAndCheckedOut'));
       } else {
-        alert('Audit submitted successfully and you have been automatically checked out.');
+        alert(t('events.eventExecutionToastAuditSubmittedSuccessfullyAndYou'));
       }
     } else {
       // Queue for offline retry
@@ -699,14 +666,14 @@ const submitAudit = async () => {
           eventId: props.event.eventId || props.event._id,
           data: { formResponseId: formResponseId.value }
         });
-        alert('You are offline. Audit submission will be synced when connection is restored.');
+        alert(t('events.eventExecutionToastYouAreOfflineAuditSubmission'));
       } else {
-        alert(response.message || 'Failed to submit audit');
+        alert(response.message || t('events.eventExecutionToastFailedToSubmitAudit'));
       }
     }
   } catch (error) {
     console.error('Error submitting audit:', error);
-    alert('Failed to submit audit: ' + (error.message || 'Unknown error'));
+    alert(t('events.eventExecutionToastFailedToSubmitAudit2') + (error.message || 'Unknown error'));
   } finally {
     submitting.value = false;
   }
@@ -735,11 +702,11 @@ const moveToNextOrg = async () => {
     if (response.success) {
       emit('updated', response.data);
     } else {
-      alert(response.message || 'Failed to move to next organization');
+      alert(response.message || t('events.eventExecutionToastFailedToMoveToNext'));
     }
   } catch (error) {
     console.error('Error moving to next org:', error);
-    alert('Failed to move to next organization: ' + (error.message || 'Unknown error'));
+    alert(t('events.eventExecutionToastFailedToMoveToNext2') + (error.message || 'Unknown error'));
   } finally {
     moving.value = false;
   }
@@ -769,7 +736,7 @@ const handlePaymentCollected = (payment) => {
 const openAuditForm = () => {
   // Disable form reopening after checkout
   if (props.event.status === 'CHECKED_OUT') {
-    alert('This event has been checked out. Form cannot be reopened.');
+    alert(t('events.eventExecutionToastThisEventHasBeenChecked'));
     return;
   }
   
@@ -879,7 +846,7 @@ const completeEvent = async () => {
       emit('updated', response.data);
       cacheEvent(response.data);
       notifyEvent(response.data, NotifTypes.EVENT_COMPLETED, `Event "${response.data.eventName}" has been completed`);
-      alert('Event completed successfully');
+      alert(t('events.eventExecutionToastEventCompletedSuccessfully'));
     } else {
       // Queue for offline retry
       if (!isOnline.value) {
@@ -888,14 +855,14 @@ const completeEvent = async () => {
           eventId: props.event.eventId || props.event._id,
           data: {}
         });
-        alert('You are offline. Event completion will be synced when connection is restored.');
+        alert(t('events.eventExecutionToastYouAreOfflineEventCompletion'));
       } else {
-        alert(response.message || 'Failed to complete event');
+        alert(response.message || t('events.eventExecutionToastFailedToCompleteEvent'));
       }
     }
   } catch (error) {
     console.error('Error completing event:', error);
-    alert('Failed to complete event: ' + (error.message || 'Unknown error'));
+    alert(t('events.eventExecutionToastFailedToCompleteEvent2') + (error.message || 'Unknown error'));
   } finally {
     completing.value = false;
   }

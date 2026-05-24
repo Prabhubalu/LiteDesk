@@ -1,0 +1,1214 @@
+{
+  "shellErrorTitle": {
+    "message": "Fout bij het laden van record",
+    "description": "Record page load error heading"
+  },
+  "shellLoadFailed": {
+    "message": "Kan record niet laden",
+    "description": "Record page load error fallback"
+  },
+  "contextTabsAria": {
+    "message": "Tabbladen in het contextpaneel",
+    "description": "Vertical context tab rail aria label"
+  },
+  "fieldsHeadingSr": {
+    "message": "Velden registreren",
+    "description": "Screen reader heading for record fields section"
+  },
+  "customFieldsHeadingSr": {
+    "message": "Aangepaste velden",
+    "description": "Screen reader heading for custom fields section"
+  },
+  "relatedRecordsHeadingSr": {
+    "message": "Gerelateerde records",
+    "description": "Screen reader heading for related records section"
+  },
+  "activityHeadingSr": {
+    "message": "Activiteit (nieuwste onderaan)",
+    "description": "Activity timeline screen reader heading"
+  },
+  "activityReply": {
+    "message": "Antwoord",
+    "description": "Reply to comment action"
+  },
+  "activityEmpty": {
+    "message": "Nog geen activiteit.",
+    "description": "Empty activity feed"
+  },
+  "activityCommentPh": {
+    "message": "Schrijf een reactie...",
+    "description": "Comment composer placeholder"
+  },
+  "activityAddAttachment": {
+    "message": "Bijlage toevoegen",
+    "description": "Add attachment button title"
+  },
+  "activityMention": {
+    "message": "Noemen",
+    "description": "Mention button title"
+  },
+  "activityEmoji": {
+    "message": "Emoji",
+    "description": "Emoji picker button title"
+  },
+  "activityCommentBtn": {
+    "message": "Opmerking",
+    "description": "Submit comment button"
+  },
+  "activityUpdated": {
+    "message": "bijgewerkt",
+    "description": "Default system activity verb"
+  },
+  "activitySystemWithAction": {
+    "message": "{action} dit record",
+    "description": "System activity fallback with action verb"
+  },
+  "tagsTitle": {
+    "message": "Labels",
+    "description": "Tags popover title"
+  },
+  "tagsNewTag": {
+    "message": "Nieuwe tag",
+    "description": "New tag button"
+  },
+  "tagsNoPermission": {
+    "message": "U heeft geen toestemming om tags te bewerken.",
+    "description": "Tags read-only message"
+  },
+  "tagsRemoveFromRecord": {
+    "message": "Verwijder uit dit record",
+    "description": "Remove tag from record action"
+  },
+  "tagsEditTag": {
+    "message": "Bewerk tag",
+    "description": "Edit tag action"
+  },
+  "tagsDeleteFromModule": {
+    "message": "Verwijder tag uit module",
+    "description": "Delete tag from module action"
+  },
+  "tagsSearchHint": {
+    "message": "Klik op het zoekvak om de beschikbare tags te bekijken.",
+    "description": "Tags search hint"
+  },
+  "tagsNoneYet": {
+    "message": "In dit geval zijn er nog geen tags gemaakt.",
+    "description": "Empty tags list"
+  },
+  "tagsCreateFirst": {
+    "message": "Maak de eerste tag",
+    "description": "Create first tag CTA"
+  },
+  "tagsPublic": {
+    "message": "Openbaar",
+    "description": "Public tag badge"
+  },
+  "tagsTagName": {
+    "message": "Tagnaam",
+    "description": "Tag name field label"
+  },
+  "tagsColor": {
+    "message": "Kleur",
+    "description": "Tag color field label"
+  },
+  "tagsMakePublic": {
+    "message": "Maak tag openbaar",
+    "description": "Make tag public checkbox"
+  },
+  "tagsSearchPh": {
+    "message": "Zoek of maak een tag",
+    "description": "Tag search placeholder"
+  },
+  "tagsTagActions": {
+    "message": "Tag acties",
+    "description": "Tag actions menu aria label"
+  },
+  "tagsNamePh": {
+    "message": "Voer de tagnaam in",
+    "description": "Tag name input placeholder"
+  },
+  "detailsTitle": {
+    "message": "Details",
+    "description": "Details section title"
+  },
+  "detailsSelectOption": {
+    "message": "Selecteer een optie",
+    "description": "Empty picklist placeholder"
+  },
+  "detailsLinkRecord": {
+    "message": "Klik om record te koppelen",
+    "description": "Empty lookup field placeholder"
+  },
+  "relatedTitle": {
+    "message": "Verwant",
+    "description": "Related section title"
+  },
+  "relatedEmpty": {
+    "message": "Nog geen gerelateerde records.",
+    "description": "Empty related list"
+  },
+  "relatedEmptyHint": {
+    "message": "Koppel dit record aan gekoppelde items.",
+    "description": "Empty related hint"
+  },
+  "relatedUnlink": {
+    "message": "Ontkoppelen",
+    "description": "Unlink related record"
+  },
+  "relatedActionsAria": {
+    "message": "Gerelateerde recordacties",
+    "description": "Related record actions menu aria"
+  },
+  "stageHistoryTitle": {
+    "message": "Fasegeschiedenis",
+    "description": "Stage history section title"
+  },
+  "subtasksEditAria": {
+    "message": "Subtaak bewerken",
+    "description": "Edit subtask button title"
+  },
+  "subtasksDeleteAria": {
+    "message": "Subtaak verwijderen",
+    "description": "Delete subtask button title"
+  },
+  "subtasksNamePh": {
+    "message": "Taaknaam",
+    "description": "New subtask name placeholder"
+  },
+  "subtasksEmpty": {
+    "message": "Nog geen subtaken.",
+    "description": "Empty subtasks list"
+  },
+  "stateHeadingSr": {
+    "message": "Staat opnemen",
+    "description": "Record state section screen reader heading"
+  },
+  "descriptionTitle": {
+    "message": "Beschrijving",
+    "description": "Description section default title"
+  },
+  "descriptionEmpty": {
+    "message": "Geen beschrijving",
+    "description": "Empty description placeholder"
+  },
+  "tabSummary": {
+    "message": "Samenvatting",
+    "description": "Right pane summary tab"
+  },
+  "tabDetails": {
+    "message": "Details",
+    "description": "Right pane details tab"
+  },
+  "tabUpdates": {
+    "message": "Updates",
+    "description": "Right pane updates tab"
+  },
+  "tabContentFallback": {
+    "message": "{name} inhoud",
+    "description": "Right pane tab placeholder content"
+  },
+  "sectionActionFallback": {
+    "message": "Actie",
+    "description": "Section stack action button fallback label"
+  },
+  "descriptionAdd": {
+    "message": "Beschrijving toevoegen",
+    "description": "Editable empty description CTA"
+  },
+  "descriptionEmptyReadonly": {
+    "message": "Nog geen beschrijving.",
+    "description": "Read-only empty description"
+  },
+  "subtasksHeader": {
+    "message": "Subtaken ({completed}/{total})",
+    "description": "Subtasks section header with counts"
+  },
+  "subtasksUntitled": {
+    "message": "Naamloze subtaak",
+    "description": "Subtask without title"
+  },
+  "subtasksViewAll": {
+    "message": "Alles bekijken ({count})",
+    "description": "View all subtasks link"
+  },
+  "relatedUntitled": {
+    "message": "Zonder titel",
+    "description": "Related record without title"
+  },
+  "genericLoading": {
+    "message": "{module} laden…",
+    "description": "Record page loading message"
+  },
+  "genericErrorTitle": {
+    "message": "Fout bij laden van {module}",
+    "description": "Record page error title"
+  },
+  "genericNavPrevious": {
+    "message": "Vorige {singular}",
+    "description": "Previous record navigation"
+  },
+  "genericNavNext": {
+    "message": "Volgende {singular}",
+    "description": "Next record navigation"
+  },
+  "genericTagsAria": {
+    "message": "Labels",
+    "description": "Tags button aria"
+  },
+  "genericCopyUrl": {
+    "message": "Kopieer URL",
+    "description": "Copy URL button"
+  },
+  "genericMoreActions": {
+    "message": "Meer acties",
+    "description": "More actions menu"
+  },
+  "genericSendEmail": {
+    "message": "E-mail verzenden",
+    "description": "Send email menu action"
+  },
+  "genericBackTo": {
+    "message": "Terug naar {singular}",
+    "description": "Back from expanded section"
+  },
+  "genericCollapseSection": {
+    "message": "Sectie samenvouwen",
+    "description": "Collapse section aria"
+  },
+  "genericCollapse": {
+    "message": "Instorten",
+    "description": "Collapse button title"
+  },
+  "genericNoDescInVersion": {
+    "message": "Geen beschrijving in deze versie.",
+    "description": "Empty description version"
+  },
+  "genericVersionHistory": {
+    "message": "Versiegeschiedenis",
+    "description": "Description version history title"
+  },
+  "genericCurrentVersion": {
+    "message": "Huidige versie",
+    "description": "Current version label"
+  },
+  "genericVersionRetention": {
+    "message": "Versiegeschiedenis wordt maximaal 365 dagen bewaard.",
+    "description": "Version retention note"
+  },
+  "genericRestoreVersion": {
+    "message": "Herstel deze versie",
+    "description": "Restore description version"
+  },
+  "genericRestoring": {
+    "message": "Herstellen…",
+    "description": "Restore in progress"
+  },
+  "genericSomeone": {
+    "message": "Iemand",
+    "description": "Unknown version author"
+  },
+  "genericKeyFields": {
+    "message": "Sleutelvelden",
+    "description": "Key fields section heading"
+  },
+  "genericAppParticipation": {
+    "message": "App-deelname",
+    "description": "People app participation section"
+  },
+  "genericConvertToContact": {
+    "message": "Converteren naar contactpersoon",
+    "description": "Convert lead to contact"
+  },
+  "genericNotInAnyApp": {
+    "message": "Deze persoon maakt nog geen deel uit van een app",
+    "description": "Empty people participation"
+  },
+  "genericAddRecord": {
+    "message": "Record toevoegen",
+    "description": "Add related record button"
+  },
+  "genericLinkRecord": {
+    "message": "Koppel record",
+    "description": "Link record button"
+  },
+  "genericShowEmptyFields": {
+    "message": "Lege velden weergeven",
+    "description": "Show empty fields toggle"
+  },
+  "genericNoFieldsMatch": {
+    "message": "Er zijn geen velden die overeenkomen met uw filter.",
+    "description": "Details filter no match"
+  },
+  "genericNoFieldsToShow": {
+    "message": "Geen velden om te tonen.",
+    "description": "Empty details fields"
+  },
+  "genericNoRecordLoaded": {
+    "message": "Geen record geladen.",
+    "description": "No record state"
+  },
+  "genericIntegrations": {
+    "message": "Integraties",
+    "description": "Integrations section title"
+  },
+  "genericNoIntegrations": {
+    "message": "Geen integraties geconfigureerd.",
+    "description": "Empty integrations"
+  },
+  "genericFilterFieldsPh": {
+    "message": "Velden filteren…",
+    "description": "Details field filter placeholder"
+  },
+  "genericOpenInNewTab": {
+    "message": "Openen in nieuw tabblad",
+    "description": "Open record in new tab"
+  },
+  "genericEditParticipation": {
+    "message": "Deelname bewerken",
+    "description": "Edit app participation"
+  },
+  "genericAddToApp": {
+    "message": "Toevoegen aan {app}",
+    "description": "Add person to app"
+  },
+  "genericLinkDrawerAddAndLink": {
+    "message": "Records toevoegen en koppelen",
+    "description": "Link drawer title multi"
+  },
+  "genericLinkDrawerLink": {
+    "message": "Linkrecord",
+    "description": "Link drawer title single"
+  },
+  "genericReactorUnavailable": {
+    "message": "Reactorgegevens niet beschikbaar",
+    "description": "Reactor panel unavailable"
+  },
+  "genericUnlinkFailed": {
+    "message": "Fout bij het ontkoppelen van record. Probeer het opnieuw.",
+    "description": "Unlink related record error"
+  },
+  "genericThreadAssigned": {
+    "message": "Onderwerp toegewezen",
+    "description": "Thread assign success"
+  },
+  "genericThreadUnassigned": {
+    "message": "Onderwerp niet toegewezen",
+    "description": "Thread unassign success"
+  },
+  "genericThreadAssignFailed": {
+    "message": "Kan thread niet toewijzen",
+    "description": "Thread assign error"
+  },
+  "genericThreadUnassignFailed": {
+    "message": "Kan de toewijzing van een thread niet ongedaan maken",
+    "description": "Thread unassign error"
+  },
+  "genericTagAdded": {
+    "message": "Label toegevoegd",
+    "description": "Tag add success"
+  },
+  "genericTagAddFailed": {
+    "message": "Kan tag niet toevoegen",
+    "description": "Tag add error"
+  },
+  "genericTagRemoved": {
+    "message": "Label verwijderd",
+    "description": "Tag remove success"
+  },
+  "genericTagRemoveFailed": {
+    "message": "Kan tag niet verwijderen",
+    "description": "Tag remove error"
+  },
+  "genericThreadMarkedDone": {
+    "message": "Draad gemarkeerd als voltooid",
+    "description": "Thread done success"
+  },
+  "genericThreadReopened": {
+    "message": "Onderwerp heropend",
+    "description": "Thread reopen success"
+  },
+  "genericThreadStatusFailed": {
+    "message": "Updaten van de threadstatus is mislukt",
+    "description": "Thread status error"
+  },
+  "genericConfirmCancelAppt": {
+    "message": "Deze afspraak annuleren? Via uw openbare link kan de gast opnieuw boeken.",
+    "description": "Cancel appointment confirm"
+  },
+  "genericApptCancelled": {
+    "message": "Afspraak geannuleerd",
+    "description": "Appointment cancel success"
+  },
+  "genericApptCancelFailed": {
+    "message": "Kon afspraak niet annuleren",
+    "description": "Appointment cancel error"
+  },
+  "genericConfirmCompleteAppt": {
+    "message": "Deze afspraak als voltooid markeren?",
+    "description": "Complete appointment confirm"
+  },
+  "genericApptCompleted": {
+    "message": "Afspraak voltooid",
+    "description": "Appointment complete success"
+  },
+  "genericApptCompleteFailed": {
+    "message": "Kan afspraak niet voltooien",
+    "description": "Appointment complete error"
+  },
+  "genericConfirmNoShowAppt": {
+    "message": "Deze afspraak als no-show markeren? Het evenement blijft zoals gepland in uw agenda staan.",
+    "description": "No-show appointment confirm"
+  },
+  "genericApptNoShow": {
+    "message": "Gemarkeerd als no-show",
+    "description": "No-show success"
+  },
+  "genericApptNoShowFailed": {
+    "message": "Kan no-show niet markeren",
+    "description": "No-show error"
+  },
+  "genericApptRescheduled": {
+    "message": "Afspraak opnieuw gepland",
+    "description": "Appointment reschedule success"
+  },
+  "genericEmailSent": {
+    "message": "E-mail verzonden",
+    "description": "Email send success"
+  },
+  "genericEmailSendFailed": {
+    "message": "Kan geen e-mail verzenden",
+    "description": "Email send error"
+  },
+  "genericNotParticipatingIn": {
+    "message": "Neemt nog niet deel aan {app}",
+    "description": "People not in app context"
+  },
+  "genericDetailsEmptyValuesHint": {
+    "message": "Geen velden met waarden. Schakel ‘Lege velden weergeven’ in om de rest te zien.",
+    "description": "Details tab empty values hint"
+  },
+  "genericPersonReacted": {
+    "message": "persoon reageerde",
+    "description": "Single reaction tooltip suffix"
+  },
+  "genericPeopleReacted": {
+    "message": "mensen reageerden",
+    "description": "Multiple reactions tooltip suffix"
+  },
+  "genericTabActivity": {
+    "message": "Activiteit",
+    "description": "Right pane activity tab"
+  },
+  "commentComposerDefaultPh": {
+    "message": "Schrijf een opmerking... @mention gebruikers of groepen",
+    "description": "Default comment composer placeholder"
+  },
+  "commentAddFile": {
+    "message": "Voeg een bestand toe",
+    "description": "Attach file toolbar button"
+  },
+  "commentMentionTitle": {
+    "message": "Noem iemand ({atSymbol})",
+    "description": "Mention toolbar button"
+  },
+  "commentAddEmoji": {
+    "message": "Voeg emoji toe",
+    "description": "Emoji picker toolbar button"
+  },
+  "commentSubmitLabel": {
+    "message": "Opmerking",
+    "description": "Submit comment button label"
+  },
+  "commentMentionLoading": {
+    "message": "Laden…",
+    "description": "Mention dropdown loading"
+  },
+  "commentMentionGroup": {
+    "message": "Groep",
+    "description": "Mention item group badge"
+  },
+  "commentMentionEmpty": {
+    "message": "Geen gebruikers of groepen gevonden",
+    "description": "Empty mention search"
+  },
+  "commentRemoveAttachment": {
+    "message": "Verwijder {name}",
+    "description": "Remove attachment aria-label"
+  },
+  "editableListboxSearchPh": {
+    "message": "Zoekopdracht…",
+    "description": "Inline field listbox search"
+  },
+  "editablePhonePh": {
+    "message": "Telefoonnummer",
+    "description": "Phone field edit placeholder"
+  },
+  "editableUnassigned": {
+    "message": "Niet toegewezen",
+    "description": "Empty user field value"
+  },
+  "editableSelectOption": {
+    "message": "Selecteer een optie",
+    "description": "Empty select/entity option"
+  },
+  "editableNoMatches": {
+    "message": "Geen overeenkomsten.",
+    "description": "Listbox filter empty state"
+  },
+  "editableUnknownUser": {
+    "message": "Onbekende gebruiker",
+    "description": "User option fallback label"
+  },
+  "dealLoading": {
+    "message": "Aanbieding laden…",
+    "description": "Deal record page loading"
+  },
+  "dealErrorTitle": {
+    "message": "Fout bij laden van deal",
+    "description": "Deal record page error title"
+  },
+  "dealNavPrevious": {
+    "message": "Vorige deal",
+    "description": "Previous deal navigation"
+  },
+  "dealNavNext": {
+    "message": "Volgende deal",
+    "description": "Next deal navigation"
+  },
+  "dealModuleLabel": {
+    "message": "Overeenkomst",
+    "description": "Deal module singular label"
+  },
+  "dealBackTo": {
+    "message": "Terug naar de deal",
+    "description": "Collapse expanded deal section"
+  },
+  "dealEmailContact": {
+    "message": "E-mailcontact",
+    "description": "Email contact action"
+  },
+  "dealEditAria": {
+    "message": "Aanbieding bewerken",
+    "description": "Edit deal action"
+  },
+  "dealVersionRetentionNote": {
+    "message": "Versiegeschiedenis wordt maximaal 365 dagen bewaard in dealbeschrijvingen.",
+    "description": "Deal description version retention"
+  },
+  "dealWeightedAmount": {
+    "message": "Gewogen {amount}",
+    "description": "Deal weighted amount label"
+  },
+  "dealExpectedValuePh": {
+    "message": "Verwachte waarde",
+    "description": "Deal amount field placeholder"
+  },
+  "dealProbabilityPh": {
+    "message": "Waarschijnlijkheid",
+    "description": "Deal probability placeholder"
+  },
+  "dealCloseDatePh": {
+    "message": "Sluitingsdatum",
+    "description": "Deal expected close date placeholder"
+  },
+  "dealStarAria": {
+    "message": "Ster",
+    "description": "Star/follow deal"
+  },
+  "dealUnstarAria": {
+    "message": "Ster verwijderen",
+    "description": "Unfollow deal"
+  },
+  "dealRelatedRecordsTab": {
+    "message": "Gerelateerde gegevens",
+    "description": "Deal right pane related tab"
+  },
+  "dealDuplicateNotImplemented": {
+    "message": "Dubbele actie is nog niet geïmplementeerd voor deals.",
+    "description": "Deal duplicate stub alert"
+  },
+  "dealExportNotImplemented": {
+    "message": "Exportactie is nog niet geïmplementeerd voor deals.",
+    "description": "Deal export stub alert"
+  },
+  "dealDeleteFailed": {
+    "message": "Kan deal niet verwijderen",
+    "description": "Deal delete error"
+  },
+  "dealCopyUrlFailed": {
+    "message": "Kan URL niet kopiëren",
+    "description": "Deal copy URL error"
+  },
+  "dealCommentAddFailed": {
+    "message": "Kan reactie niet toevoegen",
+    "description": "Deal add comment error"
+  },
+  "dealCommentUpdateFailed": {
+    "message": "Kan reactie niet updaten",
+    "description": "Deal edit comment error"
+  },
+  "dealCreateTaskFailed": {
+    "message": "Kan taak niet maken",
+    "description": "Deal create related task error"
+  },
+  "dealCreateCaseFailed": {
+    "message": "Kan casus niet maken",
+    "description": "Deal create related case error"
+  },
+  "dealAttachedFilesFallback": {
+    "message": "Bijgevoegde bestand(en)",
+    "description": "Comment with attachments only"
+  },
+  "dealUnnamedOrganization": {
+    "message": "Naamloze organisatie",
+    "description": "Organization picker fallback"
+  },
+  "dealUnnamedPerson": {
+    "message": "Naamloos",
+    "description": "Person picker fallback"
+  },
+  "taskLoading": {
+    "message": "Taak laden…",
+    "description": "Task record page loading"
+  },
+  "taskErrorTitle": {
+    "message": "Fout bij het laden van taak",
+    "description": "Task record page error title"
+  },
+  "taskNavPrevious": {
+    "message": "Vorige taak",
+    "description": "Previous task navigation"
+  },
+  "taskNavNext": {
+    "message": "Volgende taak",
+    "description": "Next task navigation"
+  },
+  "taskModuleLabel": {
+    "message": "Taak",
+    "description": "Task module singular label"
+  },
+  "taskBackTo": {
+    "message": "Terug naar de taak",
+    "description": "Collapse expanded task section"
+  },
+  "taskEditAria": {
+    "message": "Taak bewerken",
+    "description": "Edit task action"
+  },
+  "taskEmailAssignee": {
+    "message": "E-mail toegewezen persoon",
+    "description": "Email task assignee action"
+  },
+  "taskVersionRetentionNote": {
+    "message": "Versiegeschiedenis wordt maximaal 365 dagen bewaard in taakbeschrijvingen.",
+    "description": "Task description version retention"
+  },
+  "taskStarAria": {
+    "message": "Ster",
+    "description": "Star/follow task"
+  },
+  "taskUnstarAria": {
+    "message": "Ster verwijderen",
+    "description": "Unfollow task"
+  },
+  "taskRelatedRecordsTab": {
+    "message": "Gerelateerde gegevens",
+    "description": "Task right pane related tab"
+  },
+  "taskCopyUrlSuccess": {
+    "message": "URL gekopieerd naar klembord!",
+    "description": "Task copy URL success"
+  },
+  "taskLinkModuleFailed": {
+    "message": "Fout bij koppelen van {moduleKey}. Probeer het opnieuw.",
+    "description": "Task link related record error"
+  },
+  "taskRelatedGroupProject": {
+    "message": "Project",
+    "description": "Related project group heading"
+  },
+  "taskRelatedGroupPeople": {
+    "message": "Mensen",
+    "description": "Related people group heading"
+  },
+  "taskRelatedGroupEvents": {
+    "message": "Evenementen",
+    "description": "Related events group heading"
+  },
+  "taskRelatedGroupDeals": {
+    "message": "Aanbiedingen",
+    "description": "Related deals group heading"
+  },
+  "taskRelatedGroupForms": {
+    "message": "Formulieren",
+    "description": "Related forms group heading"
+  },
+  "taskCloseTimestampDetails": {
+    "message": "Sluit tijdstempeldetails",
+    "description": "Close timestamp popover aria"
+  },
+  "activityCloseSearchAria": {
+    "message": "Zoekopdracht sluiten",
+    "description": "Close activity search bar"
+  },
+  "activityNotificationsAria": {
+    "message": "Meldingen",
+    "description": "Activity notifications button"
+  },
+  "activityFilterAria": {
+    "message": "Activiteiten filteren",
+    "description": "Activity filter menu button"
+  },
+  "activityFilterHeading": {
+    "message": "Activiteiten",
+    "description": "Activity filter menu title"
+  },
+  "activityUnselectAll": {
+    "message": "Deselecteer alles",
+    "description": "Clear all activity filters"
+  },
+  "activitySelectAll": {
+    "message": "Selecteer alles",
+    "description": "Enable all activity filters"
+  },
+  "activityFilterComments": {
+    "message": "Opmerkingen",
+    "description": "Activity filter: comments"
+  },
+  "activityFilterEmail": {
+    "message": "E-mail",
+    "description": "Activity filter: email"
+  },
+  "activityFilterUpdates": {
+    "message": "Updates",
+    "description": "Activity filter: updates"
+  },
+  "activityFilterDoneThreads": {
+    "message": "Draadjes klaar",
+    "description": "Activity filter: done threads"
+  },
+  "activityFilterAssignedToMe": {
+    "message": "Aan mij toegewezen",
+    "description": "Activity filter: assigned to me"
+  },
+  "activityFilterTaggedThreads": {
+    "message": "Getagde discussies",
+    "description": "Activity filter: tagged threads"
+  },
+  "activityFilterUntaggedThreads": {
+    "message": "Niet-gelabelde discussies",
+    "description": "Activity filter: untagged threads"
+  },
+  "activitySearchPh": {
+    "message": "Zoekopdracht…",
+    "description": "Activity search input placeholder"
+  },
+  "activityClearSearchAria": {
+    "message": "Duidelijke zoekopdracht",
+    "description": "Clear activity search"
+  },
+  "activityClearSearchTitle": {
+    "message": "Duidelijk",
+    "description": "Clear search button title"
+  },
+  "activityThreadBy": {
+    "message": "Onderwerp door",
+    "description": "Thread view author prefix"
+  },
+  "activityNothingFound": {
+    "message": "Niets gevonden",
+    "description": "No activities match filters"
+  },
+  "activitySelectOneFilter": {
+    "message": "Selecteer minimaal één filter.",
+    "description": "Empty filter state hint"
+  },
+  "activityResetFilters": {
+    "message": "Filters opnieuw instellen",
+    "description": "Reset activity filters button"
+  },
+  "activityReplyPh": {
+    "message": "Reageer op reactie…",
+    "description": "Thread reply composer placeholder"
+  },
+  "activityCommentEdited": {
+    "message": "(bewerkt)",
+    "description": "Comment edited indicator"
+  },
+  "activityEditCommentAria": {
+    "message": "Opmerking bewerken",
+    "description": "Edit comment button aria"
+  },
+  "activityReplyToCommentAria": {
+    "message": "Reageer op commentaar",
+    "description": "Reply to comment button aria"
+  },
+  "activityEditCommentPh": {
+    "message": "Reactie bewerken…",
+    "description": "Edit comment composer placeholder"
+  },
+  "notesBlockedContext": {
+    "message": "App-context is dubbelzinnig. Kan niet bepalen welke notities moeten worden weergegeven.",
+    "description": "Notes blocked when app context unclear"
+  },
+  "notesAdding": {
+    "message": "Toevoegen…",
+    "description": "Submit note in progress"
+  },
+  "notesAddNoteBtn": {
+    "message": "Notitie toevoegen",
+    "description": "Submit new note button"
+  },
+  "notesUserFallback": {
+    "message": "Gebruiker",
+    "description": "Author name fallback in notes list"
+  },
+  "notesAddANoteAboveToGet": {
+    "message": "Voeg hierboven een opmerking toe om aan de slag te gaan.",
+    "description": "Auto-migrated from notes"
+  },
+  "notesNoNotesYet": {
+    "message": "Nog geen opmerkingen.",
+    "description": "Auto-migrated from notes"
+  },
+  "notesWriteANote": {
+    "message": "Schrijf een notitie...",
+    "description": "Auto-migrated from notes"
+  },
+  "notesAddNote": {
+    "message": "Notitie toevoegen",
+    "description": "Auto-migrated from notes"
+  },
+  "notesCannotLoadNotes": {
+    "message": "Kan notities niet laden",
+    "description": "Auto-migrated from notes"
+  },
+  "notesErrorLoadingNotes": {
+    "message": "Fout bij het laden van notities",
+    "description": "Auto-migrated from notes"
+  },
+  "notesLoadingNotes": {
+    "message": "Notities laden...",
+    "description": "Auto-migrated from notes"
+  },
+  "filesUploadAFileAboveToGet": {
+    "message": "Upload hierboven een bestand om aan de slag te gaan.",
+    "description": "Auto-migrated from files"
+  },
+  "filesNoFilesUploadedYet": {
+    "message": "Er zijn nog geen bestanden geüpload.",
+    "description": "Auto-migrated from files"
+  },
+  "filesDownload": {
+    "message": "Downloaden",
+    "description": "Auto-migrated from files"
+  },
+  "filesAllowedImagesPdfWordExcelCsv": {
+    "message": "Toegestaan: afbeeldingen, PDF, Word, Excel, CSV (max 10MB)",
+    "description": "Auto-migrated from files"
+  },
+  "filesUploadFile": {
+    "message": "Bestand uploaden",
+    "description": "Auto-migrated from files"
+  },
+  "filesCannotLoadFiles": {
+    "message": "Kan bestanden niet laden",
+    "description": "Auto-migrated from files"
+  },
+  "filesErrorLoadingFiles": {
+    "message": "Fout bij het laden van bestanden",
+    "description": "Auto-migrated from files"
+  },
+  "filesLoadingFiles": {
+    "message": "Bestanden laden...",
+    "description": "Auto-migrated from files"
+  },
+  "activityTimelineCannotLoadActivities": {
+    "message": "Kan activiteiten niet laden",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "activityTimelineErrorLoadingActivities": {
+    "message": "Fout bij het laden van activiteiten",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "activityTimelineLoadingActivities": {
+    "message": "Activiteiten laden...",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "taskDescriptionEditorInsertLink": {
+    "message": "Link invoegen",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorRemoveLink": {
+    "message": "Koppeling verwijderen",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorNumberedList": {
+    "message": "Genummerde lijst",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorBulletList": {
+    "message": "Lijst met opsommingstekens",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorStrikethrough": {
+    "message": "Doorhalen",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorItalic": {
+    "message": "Cursief",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorBold": {
+    "message": "Vetgedrukt",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading3": {
+    "message": "Rubriek 3",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading2": {
+    "message": "Rubriek 2",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading1": {
+    "message": "Kop 1",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "recordDetailThisRecordTypeIsNotConfigured": {
+    "message": "Dit recordtype is niet geconfigureerd.",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "recordDetailRecordNotFound": {
+    "message": "Record niet gevonden",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "recordDetailLoading": {
+    "message": "Laden...",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "relatedRecordsPanelThisRecordRequiresTheFollowingRelationships": {
+    "message": "Voor dit record moeten de volgende relaties worden gekoppeld:",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelRequiredRelationships": {
+    "message": "Vereiste relaties",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelLinkThisRecordToPeopleOrganizations": {
+    "message": "Koppel dit record aan mensen, organisaties, taken, gebeurtenissen of formulieren.",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelNoRelationshipsConfiguredForThisRecord": {
+    "message": "Er zijn geen relaties geconfigureerd voor dit recordtype.",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelErrorLoadingRelatedRecords": {
+    "message": "Fout bij het laden van gerelateerde records",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelLoadingRelatedRecords": {
+    "message": "Gerelateerde records laden...",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsRendererNoRelationshipsConfiguredForThisRecord": {
+    "message": "Er zijn geen relaties geconfigureerd voor dit recordtype.",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsRendererTheFollowingRequiredRelationshipsMustBe": {
+    "message": "De volgende vereiste relaties moeten worden gekoppeld voordat u opslaat:",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsRendererRequiredRelationshipsMissing": {
+    "message": "Vereiste relaties ontbreken",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsTabLinkExisting": {
+    "message": "Link bestaat",
+    "description": "Auto-migrated from relatedRecordsTab"
+  },
+  "relationshipUnlinkConfirmAreYouSureYouWantTo": {
+    "message": "Weet u zeker dat u wilt ontkoppelen",
+    "description": "Auto-migrated from relationshipUnlinkConfirm"
+  },
+  "reactionBarReactToComment": {
+    "message": "Reageer op commentaar",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarLikeComment": {
+    "message": "Vind ik leuk commentaar",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarReactToComment2": {
+    "message": "Reageer op commentaar",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarLikeComment2": {
+    "message": "Vind ik leuk commentaar",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "activitySystemRowShowMore": {
+    "message": "Laat meer zien",
+    "description": "Auto-migrated from activitySystemRow"
+  },
+  "approvalHistoryEscalatedToNewApprovers": {
+    "message": "Geëscaleerd naar nieuwe goedkeurders",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryProcess": {
+    "message": "Proces:",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryReason": {
+    "message": "Reden:",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryDecidedBy": {
+    "message": "Besloten door:",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryNoApprovalHistoryFound": {
+    "message": "Geen goedkeuringsgeschiedenis gevonden",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryApprovalHistory": {
+    "message": "Goedkeuringsgeschiedenis",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "linkRecordModalLinking": {
+    "message": "Koppelen...",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "linkRecordModalSelectARecordType": {
+    "message": "Selecteer een recordtype...",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "linkRecordModalRecordType": {
+    "message": "Recordtype",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "recordDetailToastFailedToDeleteRecordPlease": {
+    "message": "Kan record niet verwijderen. Probeer het opnieuw.",
+    "description": "Toast from RecordDetail.vue"
+  },
+  "instanceManagementToastInstanceManagementUiComingSoon": {
+    "message": "De gebruikersinterface voor instantiebeheer komt binnenkort!",
+    "description": "Toast from InstanceManagement.vue"
+  },
+  "useRecordHeaderActionsToastUrlCopiedToClipboard": {
+    "message": "URL gekopieerd naar klembord!",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "useRecordHeaderActionsToastErrorExportingRecordPleaseTry": {
+    "message": "Fout bij exporteren van record. Probeer het opnieuw.",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "useRecordHeaderActionsToastErrorDeletingRecordPleaseTry": {
+    "message": "Fout bij verwijderen van record. Probeer het opnieuw.",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "tabPreview": {
+    "message": "Voorbeeld",
+    "description": "Form summary preview tab"
+  },
+  "tabUsage": {
+    "message": "Gebruik",
+    "description": "Form summary usage tab"
+  },
+  "tabResponses": {
+    "message": "Reacties",
+    "description": "Form summary responses tab"
+  },
+  "tabTenantDetails": {
+    "message": "Huurdergegevens",
+    "description": "Organization tenant details tab"
+  },
+  "relatedRecordsTitle": {
+    "message": "Gerelateerde gegevens",
+    "description": "Left column related records section title"
+  },
+  "subtasksTitle": {
+    "message": "Subtaken",
+    "description": "Task record subtasks section title"
+  },
+  "subtasksTitleWithCount": {
+    "message": "Subtaken ({completed}/{total})",
+    "description": "Task subtasks section title with completion counts"
+  },
+  "sectionAddSubtask": {
+    "message": "Voeg subtaak toe",
+    "description": "Add subtask action label"
+  },
+  "sectionExpand": {
+    "message": "Uitbreiden",
+    "description": "Expand record section action"
+  },
+  "sectionHistory": {
+    "message": "Geschiedenis",
+    "description": "Description history action"
+  },
+  "sectionLinkRecord": {
+    "message": "Koppel record",
+    "description": "Link related record action"
+  },
+  "sectionAddRecord": {
+    "message": "Record toevoegen",
+    "description": "Add related record action"
+  },
+  "sectionViewMore": {
+    "message": "Bekijk meer",
+    "description": "Load more subtasks action"
+  },
+  "sectionViewLess": {
+    "message": "Bekijk minder",
+    "description": "Collapse field list action"
+  },
+  "sectionViewAll": {
+    "message": "Alles bekijken ({count})",
+    "description": "Expand details field list"
+  },
+  "sectionGroupCore": {
+    "message": "Kern",
+    "description": "Field group label"
+  },
+  "sectionGroupSystem": {
+    "message": "Systeem",
+    "description": "Field group label"
+  },
+  "sectionGroupOther": {
+    "message": "Ander",
+    "description": "Field group label"
+  },
+  "sectionCreatedVia": {
+    "message": "Gemaakt via",
+    "description": "Record source field label"
+  },
+  "sectionGroupRecord": {
+    "message": "Dossier",
+    "description": "Record metadata group label"
+  },
+  "activitySystemActorSystem": {
+    "message": "Systeem",
+    "description": "System actor label in activity feed"
+  },
+  "activitySystemFieldFallback": {
+    "message": "veld",
+    "description": "Fallback when system event field label is unknown"
+  },
+  "activitySystemChanged": {
+    "message": "veranderd",
+    "description": "System field change activity between actor and field"
+  },
+  "activitySystemChangedTo": {
+    "message": "{field} gewijzigd in",
+    "description": "Tags/system field change lead-in"
+  },
+  "activitySystemChangedFromTo": {
+    "message": "{field} gewijzigd van \"{from}\" in \"{to}\"",
+    "description": "Generic field change summary"
+  },
+  "activityUpdatedRecord": {
+    "message": "Dit record bijgewerkt",
+    "description": "Generic system activity fallback"
+  }
+}

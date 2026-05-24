@@ -88,6 +88,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 import { ArrowTopRightOnSquareIcon, LockClosedIcon } from '@heroicons/vue/24/outline';
 import { useTabs } from '@/composables/useTabs';
@@ -123,6 +124,8 @@ const props = defineProps({
     default: 'Access denied'
   }
 });
+
+const { t } = useI18n();
 
 const route = useRoute();
 const { openTab } = useTabs();

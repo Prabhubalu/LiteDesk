@@ -1,0 +1,102 @@
+{
+  "save": {
+    "message": "Salva",
+    "description": "Primary save action button"
+  },
+  "cancel": {
+    "message": "Cancellare",
+    "description": "Dismiss without saving"
+  },
+  "delete": {
+    "message": "Eliminare",
+    "description": "Permanently remove the selected item"
+  },
+  "confirm": {
+    "message": "Confermare",
+    "description": "Confirm a destructive or important action"
+  },
+  "retry": {
+    "message": "Riprova",
+    "description": "Retry a failed network or load operation"
+  },
+  "close": {
+    "message": "Vicino",
+    "description": "Close a modal or panel"
+  },
+  "edit": {
+    "message": "Modificare",
+    "description": "Enter edit mode for the current record"
+  },
+  "create": {
+    "message": "Creare",
+    "description": "Create a new record"
+  },
+  "search": {
+    "message": "Ricerca",
+    "description": "Submit or focus global search"
+  },
+  "back": {
+    "message": "Indietro",
+    "description": "Navigate to the previous screen"
+  },
+  "update": {
+    "message": "Aggiornamento",
+    "description": "Update an existing saved entity"
+  },
+  "apply": {
+    "message": "Fare domanda a",
+    "description": "Apply pending settings or filters"
+  },
+  "previous": {
+    "message": "Precedente",
+    "description": "Previous page or step"
+  },
+  "next": {
+    "message": "Prossimo",
+    "description": "Next page or step"
+  },
+  "remove": {
+    "message": "Rimuovere",
+    "description": "Remove a selected item or tag"
+  },
+  "select": {
+    "message": "Selezionare",
+    "description": "Select a record or option"
+  },
+  "refresh": {
+    "message": "Aggiorna",
+    "description": "Reload data from the server"
+  },
+  "add": {
+    "message": "Aggiungere",
+    "description": "Add an item or relation"
+  },
+  "link": {
+    "message": "Collegamento",
+    "description": "Link an existing record"
+  },
+  "duplicate": {
+    "message": "Duplicato",
+    "description": "Duplicate the current record"
+  },
+  "archive": {
+    "message": "Archivio",
+    "description": "Archive the current record"
+  },
+  "follow": {
+    "message": "Seguire",
+    "description": "Follow record updates"
+  },
+  "unfollow": {
+    "message": "Smetti di seguire",
+    "description": "Stop following record updates"
+  },
+  "copy": {
+    "message": "Copia",
+    "description": "Copy text or link to clipboard"
+  },
+  "export": {
+    "message": "Esportare",
+    "description": "Export record or list data"
+  }
+}

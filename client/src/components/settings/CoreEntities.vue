@@ -1,9 +1,12 @@
 <template>
-  <ModulesAndFields :module-filter="coreEntitiesFilter" title="Core Entities" />
+  <ModulesAndFields :module-filter="coreEntitiesFilter" :title="t('settings.settingsCoreEntitiesTitle')" />
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import ModulesAndFields from './ModulesAndFields.vue';
+
+const { t } = useI18n();
 
 // Core entities: People, Organizations, Events, Forms, Tasks, Items, and Reports
 const coreEntitiesFilter = (module) => {
@@ -11,4 +14,3 @@ const coreEntitiesFilter = (module) => {
   return coreKeys.includes(module.key?.toLowerCase());
 };
 </script>
-

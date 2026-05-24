@@ -54,33 +54,23 @@
           <span
             v-if="shouldShowPriorityChip(thread) && thread.triage.priorityHint === 'high'"
             class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
-          >
-            High priority
-          </span>
+          >{{ t('inbox.emailThreadCardHighPriority2') }}</span>
           <span
             v-else-if="shouldShowPriorityChip(thread) && thread.triage.priorityHint === 'medium'"
             class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"
-          >
-            Follow up
-          </span>
+          >{{ t('inbox.emailThreadCardFollowUp2') }}</span>
           <span
             v-if="thread.triage?.slaHint === 'overdue'"
             class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300"
-          >
-            Reply overdue
-          </span>
+          >{{ t('inbox.emailThreadCardReplyOverdue2') }}</span>
           <span
             v-else-if="thread.triage?.slaHint === 'reply_due_soon'"
             class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
-          >
-            Reply due soon
-          </span>
+          >{{ t('inbox.emailThreadCardReplyDueSoon2') }}</span>
           <span
             v-if="hasStrongDeliveryRisk(thread)"
             class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300"
-          >
-            Delivery risk
-          </span>
+          >{{ t('inbox.emailThreadCardDeliveryRisk2') }}</span>
           <span
             v-if="thread.assignedToDisplay"
             class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300"
@@ -109,7 +99,7 @@
             <button
               type="button"
               @click="triggerSingleReply()"
-              title="Reply"
+              :title="t('records.activityReply')"
               class="inline-flex items-center justify-center rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               <ArrowUturnLeftIcon class="w-4 h-4" />
@@ -118,7 +108,7 @@
               v-if="shouldShowReplyAll(singleMessage)"
               type="button"
               @click="triggerSingleReplyAll()"
-              title="Reply all"
+              :title="t('inbox.emailThreadCardReplyAll2')"
               class="inline-flex items-center justify-center rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               <span class="relative block w-4 h-4">
@@ -128,7 +118,7 @@
             </button>
             <Menu as="div" class="relative inline-block text-left">
               <MenuButton
-                title="More actions"
+                :title="t('records.genericMoreActions')"
                 class="inline-flex items-center justify-center rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
                 <PlusIcon class="w-4 h-4" />
@@ -151,9 +141,7 @@
                           'w-full text-left px-3 py-1.5 text-xs',
                           active ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-200'
                         ]"
-                      >
-                        Create task
-                      </button>
+                      >{{ t('process.actionCreateTaskLower') }}</button>
                     </MenuItem>
                     <MenuItem v-slot="{ active }">
                       <button
@@ -163,9 +151,7 @@
                           'w-full text-left px-3 py-1.5 text-xs',
                           active ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-200'
                         ]"
-                      >
-                        Assign to me
-                      </button>
+                      >{{ t('common.formAssignToMe') }}</button>
                     </MenuItem>
                     <MenuItem v-slot="{ active }">
                       <button
@@ -175,9 +161,7 @@
                           'w-full text-left px-3 py-1.5 text-xs',
                           active ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-200'
                         ]"
-                      >
-                        Unassign
-                      </button>
+                      >{{ t('inbox.emailThreadCardUnassign2') }}</button>
                     </MenuItem>
                     <MenuItem v-slot="{ active }">
                       <button
@@ -187,9 +171,7 @@
                           'w-full text-left px-3 py-1.5 text-xs',
                           active ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-200'
                         ]"
-                      >
-                        Add tag
-                      </button>
+                      >{{ t('inbox.emailThreadCardAddTag2') }}</button>
                     </MenuItem>
                     <MenuItem v-slot="{ active }">
                       <button
@@ -199,9 +181,7 @@
                           'w-full text-left px-3 py-1.5 text-xs',
                           active ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-200'
                         ]"
-                      >
-                        Create case
-                      </button>
+                      >{{ t('inbox.emailThreadCardCreateCase2') }}</button>
                     </MenuItem>
                   </div>
                 </MenuItems>
@@ -248,7 +228,7 @@
               <span
                 v-if="thread.unread"
                 class="w-2 h-2 rounded-full bg-indigo-500 shrink-0"
-                title="Unread"
+                :title="t('inbox.emailThreadCardUnread')"
               />
             </div>
             <p
@@ -295,33 +275,23 @@
           <span
             v-if="shouldShowPriorityChip(thread) && thread.triage.priorityHint === 'high'"
             class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
-          >
-            High priority
-          </span>
+          >{{ t('inbox.emailThreadCardHighPriority') }}</span>
           <span
             v-else-if="shouldShowPriorityChip(thread) && thread.triage.priorityHint === 'medium'"
             class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"
-          >
-            Follow up
-          </span>
+          >{{ t('inbox.emailThreadCardFollowUp') }}</span>
           <span
             v-if="thread.triage?.slaHint === 'overdue'"
             class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300"
-          >
-            Reply overdue
-          </span>
+          >{{ t('inbox.emailThreadCardReplyOverdue') }}</span>
           <span
             v-else-if="thread.triage?.slaHint === 'reply_due_soon'"
             class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
-          >
-            Reply due soon
-          </span>
+          >{{ t('inbox.emailThreadCardReplyDueSoon') }}</span>
           <span
             v-if="hasStrongDeliveryRisk(thread)"
             class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300"
-          >
-            Delivery risk
-          </span>
+          >{{ t('inbox.emailThreadCardDeliveryRisk') }}</span>
           <span
             v-if="thread.assignedToDisplay"
             class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300"
@@ -411,7 +381,7 @@
                   <button
                     type="button"
                     @click="$emit('reply', buildReplyPayload(msg))"
-                    title="Reply"
+                    :title="t('records.activityReply')"
                     class="inline-flex items-center justify-center rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
                     <ArrowUturnLeftIcon class="w-4 h-4" />
@@ -420,7 +390,7 @@
                     v-if="shouldShowReplyAll(msg)"
                     type="button"
                     @click="$emit('reply', buildReplyPayload(msg, { replyAll: true }))"
-                    title="Reply all"
+                    :title="t('inbox.emailThreadCardReplyAll')"
                     class="inline-flex items-center justify-center rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
                     <span class="relative block w-4 h-4">
@@ -430,7 +400,7 @@
                   </button>
                   <Menu as="div" class="relative inline-block text-left">
                     <MenuButton
-                      title="More actions"
+                      :title="t('records.genericMoreActions')"
                       class="inline-flex items-center justify-center rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-1.5 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                     >
                       <PlusIcon class="w-4 h-4" />
@@ -453,9 +423,7 @@
                                 'w-full text-left px-3 py-1.5 text-xs',
                                 active ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-200'
                               ]"
-                            >
-                              Create task
-                            </button>
+                            >{{ t('process.actionCreateTaskLower') }}</button>
                           </MenuItem>
                           <MenuItem v-slot="{ active }">
                             <button
@@ -465,9 +433,7 @@
                                 'w-full text-left px-3 py-1.5 text-xs',
                                 active ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-200'
                               ]"
-                            >
-                              Assign to me
-                            </button>
+                            >{{ t('common.formAssignToMe') }}</button>
                           </MenuItem>
                           <MenuItem v-slot="{ active }">
                             <button
@@ -477,9 +443,7 @@
                                 'w-full text-left px-3 py-1.5 text-xs',
                                 active ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-200'
                               ]"
-                            >
-                              Unassign
-                            </button>
+                            >{{ t('inbox.emailThreadCardUnassign') }}</button>
                           </MenuItem>
                           <MenuItem v-slot="{ active }">
                             <button
@@ -489,9 +453,7 @@
                                 'w-full text-left px-3 py-1.5 text-xs',
                                 active ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-200'
                               ]"
-                            >
-                              Add tag
-                            </button>
+                            >{{ t('inbox.emailThreadCardAddTag') }}</button>
                           </MenuItem>
                           <MenuItem v-slot="{ active }">
                             <button
@@ -501,9 +463,7 @@
                                 'w-full text-left px-3 py-1.5 text-xs',
                                 active ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-200'
                               ]"
-                            >
-                              Create case
-                            </button>
+                            >{{ t('inbox.emailThreadCardCreateCase') }}</button>
                           </MenuItem>
                         </div>
                       </MenuItems>
@@ -555,7 +515,7 @@
                     </div>
                     <div class="min-w-0 flex flex-col gap-0.5">
                       <span class="truncate text-sm font-medium text-gray-800 dark:text-gray-200">{{ getEmailAttachmentName(att) }}</span>
-                      <span class="text-xs text-gray-500 dark:text-gray-400">Attachment</span>
+                      <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('inbox.emailThreadCardAttachment') }}</span>
                     </div>
                   </div>
                 </a>
@@ -569,6 +529,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
 import { EnvelopeIcon, ChevronRightIcon, PaperClipIcon, ArrowUturnLeftIcon, PlusIcon } from '@heroicons/vue/24/outline';
@@ -606,6 +567,8 @@ const props = defineProps({
     default: null
   }
 });
+
+const { t } = useI18n();
 
 const handleTimestampPointerUp = (event, date) => {
   if (typeof props.onTimestampPointerUp === 'function') {

@@ -29,7 +29,7 @@
         type="button"
         @click.stop.prevent="onToggleCollapse?.()"
         class="flex-shrink-0 w-[1.167rem] h-[1.167rem] rounded-[0.5rem] flex items-center justify-center hover:bg-[#F8F9FB] dark:hover:bg-gray-800 transition-colors"
-        title="Collapse sidebar"
+        :title="t('navigation.collapseSidebar')"
       >
         <span class="w-full h-full flex items-center justify-center">
           <FigmaSidebarIcon class="w-full h-full" :fill="iconColors.secondary" />
@@ -46,12 +46,12 @@
         @click="handleNavClick(searchSurface.route, searchSurface.label, $event, { icon: searchSurface.icon })"
         class="w-full h-[2.333rem] border border-[#EAEEF4] dark:border-gray-700 rounded-[0.5rem] flex items-center justify-start transition-colors hover:bg-[#F8F9FB] dark:hover:bg-gray-800 bg-white dark:bg-gray-900 px-[0.583rem] py-[0.5rem]"
         :class="collapsed ? '' : 'gap-[0.583rem]'"
-        :title="collapsed ? 'Search' : ''"
+        :title="collapsed ? t('actions.search') : ''"
       >
         <span class="w-[1.333rem] h-[1.333rem] flex-shrink-0 flex items-center justify-center">
           <FigmaSearchIcon class="w-full h-full" :fill="iconColors.secondary" />
         </span>
-        <span v-if="!collapsed" class="text-[1rem] text-[#898F9A] dark:text-gray-400">Search...</span>
+        <span v-if="!collapsed" class="text-[1rem] text-[#898F9A] dark:text-gray-400">{{ t('common.searchPlaceholder') }}</span>
       </button>
     </div>
 
@@ -62,15 +62,15 @@
           v-for="item in shellNavItems"
           :key="item.id"
           :href="item.route"
-          @click.prevent="handleNavClick(item.route, item.label, $event, { icon: item.icon })"
-          @auxclick.prevent="handleNavClick(item.route, item.label, $event, { icon: item.icon })"
+          @click.prevent="handleNavClick(item.route, item, $event, { icon: item.icon })"
+          @auxclick.prevent="handleNavClick(item.route, item, $event, { icon: item.icon })"
           class="w-full h-[2.333rem] rounded-[0.5rem] px-[0.583rem] gap-[0.667rem] py-[0.333rem] flex items-center justify-start transition-colors"
           :class="[
             isActiveRoute(item.route) 
               ? 'bg-[rgba(84,71,255,0.1)] dark:bg-[rgba(84,71,255,0.2)]' 
               : 'hover:bg-[#F8F9FB] dark:hover:bg-gray-800'
           ]"
-          :title="collapsed ? item.label : ''"
+          :title="collapsed ? navLabel(item) : ''"
         >
           <span class="w-[1.333rem] h-[1.333rem] flex-shrink-0 flex items-center justify-center">
             <component
@@ -88,7 +88,7 @@
                 : 'text-[#070922] dark:text-gray-100'
             ]"
           >
-            {{ item.label }}
+            {{ navLabel(item) }}
           </span>
         </a>
 
@@ -108,7 +108,7 @@
             type="button"
             @click="toggleCoreModules"
             class="w-full h-[2.333rem] rounded-[0.5rem] py-[0.333rem] px-[0.5rem] gap-[0.667rem] flex items-center justify-start flex-shrink-0 transition-colors hover:bg-[#F8F9FB] dark:hover:bg-gray-800"
-            title="Core Modules"
+            :title="t('navigation.coreModules')"
           >
             <span class="w-[1.333rem] h-[1.333rem] flex-shrink-0 flex items-center justify-center">
               <FigmaChevronDown
@@ -121,7 +121,7 @@
               v-if="!collapsed"
               class="text-[1rem] font-semibold text-[#070922] dark:text-gray-100 flex-1 min-w-0 text-left"
             >
-              Core
+              {{ t('navigation.coreSection') }}
             </span>
           </button>
 
@@ -143,8 +143,8 @@
                 v-for="item in sidebarStructure.coreModules"
                 :key="item.id"
                 :href="item.route"
-                @click.prevent="handleNavClick(item.route, item.label, $event, { icon: item.icon })"
-                @auxclick.prevent="handleNavClick(item.route, item.label, $event, { icon: item.icon })"
+                @click.prevent="handleNavClick(item.route, item, $event, { icon: item.icon })"
+                @auxclick.prevent="handleNavClick(item.route, item, $event, { icon: item.icon })"
                 class="w-full h-[2.333rem] rounded-[0.5rem] py-[0.333rem] flex items-center transition-colors"
                 :class="[
                   'px-[0.5rem] gap-[0.667rem]',
@@ -152,7 +152,7 @@
                     ? 'bg-[rgba(84,71,255,0.1)] dark:bg-[rgba(84,71,255,0.2)]' 
                     : 'hover:bg-[#F8F9FB] dark:hover:bg-gray-800'
                 ]"
-                :title="item.label"
+                :title="navLabel(item)"
               >
                 <span class="w-[1.333rem] h-[1.333rem] flex-shrink-0 flex items-center justify-center">
                   <component
@@ -169,7 +169,7 @@
                       : 'text-[#070922] dark:text-gray-100'
                   ]"
                 >
-                  {{ item.label }}
+                  {{ navLabel(item) }}
                 </span>
               </a>
             </div>
@@ -184,15 +184,15 @@
               v-for="item in sidebarStructure.coreModules"
               :key="item.id"
               :href="item.route"
-              @click.prevent="handleNavClick(item.route, item.label, $event, { icon: item.icon })"
-              @auxclick.prevent="handleNavClick(item.route, item.label, $event, { icon: item.icon })"
+              @click.prevent="handleNavClick(item.route, item, $event, { icon: item.icon })"
+              @auxclick.prevent="handleNavClick(item.route, item, $event, { icon: item.icon })"
               class="w-full h-[2.333rem] rounded-[0.5rem] px-[0.5rem] py-[0.333rem] flex items-center justify-start transition-colors"
               :class="[
                 isActiveRoute(item.route) 
                   ? 'bg-[rgba(84,71,255,0.1)] dark:bg-[rgba(84,71,255,0.2)]' 
                   : 'hover:bg-[#F8F9FB] dark:hover:bg-gray-800'
               ]"
-              :title="item.label"
+              :title="navLabel(item)"
             >
               <span class="w-[1.333rem] h-[1.333rem] flex-shrink-0 flex items-center justify-center">
                 <component
@@ -233,7 +233,7 @@
           </span>
           <div v-if="!collapsed" class="flex items-center gap-[0.333rem] flex-1 min-w-0">
             <span class="text-[1rem] font-semibold text-[#070922] dark:text-gray-100 truncate">
-              {{ activeApp?.name || 'Sales' }}
+              {{ activeApp ? appDisplayName(activeApp) : t('navigation.salesAppFallback') }}
             </span>
             <span class="w-[0.833rem] h-[0.833rem] flex-shrink-0 flex items-center justify-center transition-transform" :class="{ 'rotate-180': showAppSwitcherDropdown }">
               <FigmaChevronDown class="w-full h-full" :fill="iconColors.chevron" />
@@ -272,7 +272,7 @@
                   :fill="sidebarStructure.appSwitcher.activeAppId === app.id ? iconColors.active : iconColors.primary"
                 />
               </span>
-              <span class="truncate flex-1">{{ app.name }}</span>
+              <span class="truncate flex-1">{{ appDisplayName(app) }}</span>
             </button>
           </div>
         </Transition>
@@ -286,15 +286,15 @@
         <a
           v-if="sidebarStructure.appNav.dashboard"
           :href="sidebarStructure.appNav.dashboard.route"
-          @click.prevent="handleNavClick(sidebarStructure.appNav.dashboard.route, sidebarStructure.appNav.dashboard.label, $event, { isAppContext: true, icon: sidebarStructure.appNav.dashboard.icon })"
-          @auxclick.prevent="handleNavClick(sidebarStructure.appNav.dashboard.route, sidebarStructure.appNav.dashboard.label, $event, { isAppContext: true, icon: sidebarStructure.appNav.dashboard.icon })"
+          @click.prevent="handleNavClick(sidebarStructure.appNav.dashboard.route, sidebarStructure.appNav.dashboard, $event, { isAppContext: true, icon: sidebarStructure.appNav.dashboard.icon })"
+          @auxclick.prevent="handleNavClick(sidebarStructure.appNav.dashboard.route, sidebarStructure.appNav.dashboard, $event, { isAppContext: true, icon: sidebarStructure.appNav.dashboard.icon })"
           class="w-full h-[2.333rem] rounded-[0.5rem] px-[0.5rem] gap-[0.667rem] py-[0.333rem] flex items-center justify-start transition-colors"
           :class="[
             isActiveRoute(sidebarStructure.appNav.dashboard.route) 
               ? 'bg-[rgba(84,71,255,0.1)] dark:bg-[rgba(84,71,255,0.2)]' 
               : 'hover:bg-[#F8F9FB] dark:hover:bg-gray-800'
           ]"
-          :title="collapsed ? sidebarStructure.appNav.dashboard.label : ''"
+          :title="collapsed ? navLabel(sidebarStructure.appNav.dashboard) : ''"
         >
           <span class="w-[1.333rem] h-[1.333rem] flex-shrink-0 flex items-center justify-center">
             <component
@@ -312,7 +312,7 @@
                 : 'text-[#070922] dark:text-gray-100'
             ]"
           >
-            {{ sidebarStructure.appNav.dashboard.label }}
+            {{ navLabel(sidebarStructure.appNav.dashboard) }}
           </span>
         </a>
 
@@ -320,15 +320,15 @@
           v-for="module in sidebarStructure.appNav.modules"
           :key="module.id"
           :href="module.route"
-          @click.prevent="handleNavClick(module.route, module.label, $event, { isAppContext: true, icon: module.icon })"
-          @auxclick.prevent="handleNavClick(module.route, module.label, $event, { isAppContext: true, icon: module.icon })"
+          @click.prevent="handleNavClick(module.route, module, $event, { isAppContext: true, icon: module.icon })"
+          @auxclick.prevent="handleNavClick(module.route, module, $event, { isAppContext: true, icon: module.icon })"
           class="w-full h-[2.333rem] rounded-[0.5rem] px-[0.5rem] gap-[0.667rem] py-[0.333rem] flex items-center justify-start transition-colors"
           :class="[
             isActiveRoute(module.route) 
               ? 'bg-[rgba(84,71,255,0.1)] dark:bg-[rgba(84,71,255,0.2)]' 
               : 'hover:bg-[#F8F9FB] dark:hover:bg-gray-800'
           ]"
-          :title="collapsed ? module.label : ''"
+          :title="collapsed ? navLabel(module) : ''"
         >
           <span class="w-[1.333rem] h-[1.333rem] flex-shrink-0 flex items-center justify-center">
             <component :is="getFigmaNavIcon(module)" class="w-full h-full" :fill="isActiveRoute(module.route) ? iconColors.active : iconColors.primary" />
@@ -342,7 +342,7 @@
                 : 'text-[#070922] dark:text-gray-100'
             ]"
           >
-            {{ module.label }}
+            {{ navLabel(module) }}
           </span>
         </a>
       </div>
@@ -359,7 +359,7 @@
           <span class="w-[1.333rem] h-[1.333rem] flex-shrink-0 flex items-center justify-center">
             <FigmaInfoIcon class="w-full h-full" :fill="iconColors.primary" />
           </span>
-          <span class="text-[1rem] text-[#070922] dark:text-gray-100">Help</span>
+          <span class="text-[1rem] text-[#070922] dark:text-gray-100">{{ t('navigation.help') }}</span>
         </button>
       </div>
     </div>
@@ -386,6 +386,18 @@
  */
 
 import { computed, h, ref, onMounted, onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t, te } = useI18n(); // te used by appDisplayName
+
+function navLabel(item: { labelKey?: string; label?: string }) {
+  return resolveSidebarItemLabel(item, t);
+}
+
+function appDisplayName(app: AppSummary) {
+  if (app.nameKey && te(app.nameKey)) return t(app.nameKey);
+  return app.name;
+}
 import { useRoute, useRouter } from 'vue-router';
 import { useSidebarState } from '@/composables/useSidebarState';
 import type { SidebarStructure, AppSummary } from '@/types/sidebar.types';
@@ -403,6 +415,7 @@ import {
   ShieldCheckIcon,
 } from '@heroicons/vue/24/outline';
 import { getIconComponent, getNavigationIconComponent } from '@/utils/navigationIcons';
+import { resolveSidebarItemLabel } from '@/utils/navigationLabels';
 
 // Props
 const props = defineProps<{
@@ -657,12 +670,16 @@ function switchAppLens(nextAppId: string): void {
   lastActiveAppId.value = app.id;
 
   // Switching the lens is explicit. We express it by routing to the app dashboard.
-  openTab(app.dashboardRoute, { title: app.name, icon: getCanonicalAppIconId(app) });
+  openTab(app.dashboardRoute, {
+    titleKey: app.nameKey,
+    title: app.name,
+    icon: getCanonicalAppIconId(app),
+  });
 }
 
 function handleNavClick(
   routePath: string,
-  label: string,
+  navItem: { labelKey?: string; label?: string },
   event?: MouseEvent,
   opts: { isAppContext?: boolean; icon?: string } = {}
 ): void {
@@ -688,7 +705,8 @@ function handleNavClick(
       (event as any).ctrlKey === true);
 
   openTab(routePath, {
-    title: label,
+    titleKey: navItem.labelKey,
+    title: navLabel(navItem),
     icon: opts.icon,
     background: openInBackground,
   });

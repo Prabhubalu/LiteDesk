@@ -1,0 +1,274 @@
+{
+  "appDashboardTheDashboardForThisAppIs": {
+    "message": "इस ऐप का डैशबोर्ड उपलब्ध नहीं है.",
+    "description": "Auto-migrated from appDashboard"
+  },
+  "appDashboardDashboardNotFound": {
+    "message": "डैशबोर्ड नहीं मिला",
+    "description": "Auto-migrated from appDashboard"
+  },
+  "appDashboardNoDashboardWidgetsConfiguredForThis": {
+    "message": "इस ऐप के लिए अभी तक कोई डैशबोर्ड विजेट कॉन्फ़िगर नहीं किया गया है।",
+    "description": "Auto-migrated from appDashboard"
+  },
+  "appDashboardQuickAccess": {
+    "message": "त्वरित पहुँच",
+    "description": "Auto-migrated from appDashboard"
+  },
+  "activityAlertsNoCriticalAlertsRightNow": {
+    "message": "अभी कोई महत्वपूर्ण अलर्ट नहीं.",
+    "description": "Auto-migrated from activityAlerts"
+  },
+  "activityAlertsNoEfficiencyConcernsDetected": {
+    "message": "कोई दक्षता संबंधी चिंता नहीं पाई गई.",
+    "description": "Auto-migrated from activityAlerts"
+  },
+  "activityAlertsEfficiencyWatch": {
+    "message": "दक्षता निगरानी",
+    "description": "Auto-migrated from activityAlerts"
+  },
+  "activityAlertsNoPipelineCreatedYet": {
+    "message": "अभी तक कोई पाइपलाइन नहीं बनाई गई.",
+    "description": "Auto-migrated from activityAlerts"
+  },
+  "activityAlertsPipelineCreatedRecentWeeks": {
+    "message": "पाइपलाइन बनाई गई (हाल के सप्ताह)",
+    "description": "Auto-migrated from activityAlerts"
+  },
+  "activityAlertsNoActivityTrendDataForSelected": {
+    "message": "चयनित फ़िल्टर के लिए कोई गतिविधि रुझान डेटा नहीं",
+    "description": "Auto-migrated from activityAlerts"
+  },
+  "activityAlertsMeetings": {
+    "message": "बैठक",
+    "description": "Auto-migrated from activityAlerts"
+  },
+  "activityAlertsCalls": {
+    "message": "कॉल",
+    "description": "Auto-migrated from activityAlerts"
+  },
+  "activityAlertsConversionRate": {
+    "message": "रूपांतरण दर",
+    "description": "Auto-migrated from activityAlerts"
+  },
+  "activityAlertsPipelineCreated": {
+    "message": "पाइपलाइन बनाई गई",
+    "description": "Auto-migrated from activityAlerts"
+  },
+  "activityAlertsThisMonth": {
+    "message": "इस महीने",
+    "description": "Auto-migrated from activityAlerts"
+  },
+  "aiInsightsStripGeneratedJustNow": {
+    "message": "अभी-अभी जेनरेट किया गया",
+    "description": "Auto-migrated from aiInsightsStrip"
+  },
+  "aiInsightsStripAiInsights": {
+    "message": "एआई अंतर्दृष्टि",
+    "description": "Auto-migrated from aiInsightsStrip"
+  },
+  "dashboardFiltersAllTypes": {
+    "message": "सभी प्रकार के",
+    "description": "Auto-migrated from dashboardFilters"
+  },
+  "dashboardFiltersDealType": {
+    "message": "डील का प्रकार",
+    "description": "Auto-migrated from dashboardFilters"
+  },
+  "dashboardFiltersAllPipelines": {
+    "message": "सभी पाइपलाइन",
+    "description": "Auto-migrated from dashboardFilters"
+  },
+  "dashboardFiltersAllReps": {
+    "message": "सभी प्रतिनिधि",
+    "description": "Auto-migrated from dashboardFilters"
+  },
+  "dashboardFiltersTeamRep": {
+    "message": "टीम/प्रतिनिधि",
+    "description": "Auto-migrated from dashboardFilters"
+  },
+  "dashboardHeaderDateRange": {
+    "message": "दिनांक सीमा",
+    "description": "Auto-migrated from dashboardHeader"
+  },
+  "executiveSnapshotVsPreviousPeriod": {
+    "message": "बनाम पिछली अवधि",
+    "description": "Auto-migrated from executiveSnapshot"
+  },
+  "pipelineForecastNoHistoricalForecastAccuracyYet": {
+    "message": "अभी तक कोई ऐतिहासिक पूर्वानुमान सटीकता नहीं है",
+    "description": "Auto-migrated from pipelineForecast"
+  },
+  "pipelineForecastLast3Months": {
+    "message": "पिछले 3 महीने",
+    "description": "Auto-migrated from pipelineForecast"
+  },
+  "pipelineForecastForecastAccuracy": {
+    "message": "पूर्वानुमान सटीकता",
+    "description": "Auto-migrated from pipelineForecast"
+  },
+  "pipelineForecastForecastVsTarget": {
+    "message": "पूर्वानुमान बनाम लक्ष्य",
+    "description": "Auto-migrated from pipelineForecast"
+  },
+  "pipelineForecastNoForecastByMonthDataFor": {
+    "message": "चयनित फ़िल्टर के लिए कोई पूर्वानुमान-दर-माह डेटा नहीं",
+    "description": "Auto-migrated from pipelineForecast"
+  },
+  "pipelineForecastCommitBestCasePipelineAndAccuracy": {
+    "message": "प्रतिबद्धता, सर्वोत्तम मामला, पाइपलाइन और सटीकता",
+    "description": "Auto-migrated from pipelineForecast"
+  },
+  "pipelineForecastForecastOverview": {
+    "message": "पूर्वानुमान अवलोकन",
+    "description": "Auto-migrated from pipelineForecast"
+  },
+  "pipelineForecastConversion": {
+    "message": "परिवर्तन",
+    "description": "Auto-migrated from pipelineForecast"
+  },
+  "pipelineForecastPipelineHealth": {
+    "message": "पाइपलाइन स्वास्थ्य",
+    "description": "Auto-migrated from pipelineForecast"
+  },
+  "repPerformanceLeaderboardWinRate": {
+    "message": "जीत दर",
+    "description": "Auto-migrated from repPerformanceLeaderboard"
+  },
+  "repPerformanceLeaderboardPipelineOwned": {
+    "message": "पाइपलाइन का स्वामित्व",
+    "description": "Auto-migrated from repPerformanceLeaderboard"
+  },
+  "repPerformanceLeaderboardRevenueClosed": {
+    "message": "राजस्व बंद",
+    "description": "Auto-migrated from repPerformanceLeaderboard"
+  },
+  "repPerformanceLeaderboardQuotaAttainment": {
+    "message": "कोटा प्राप्ति",
+    "description": "Auto-migrated from repPerformanceLeaderboard"
+  },
+  "repPerformanceLeaderboardRep": {
+    "message": "निरसित",
+    "description": "Auto-migrated from repPerformanceLeaderboard"
+  },
+  "repPerformanceLeaderboardRank": {
+    "message": "पद",
+    "description": "Auto-migrated from repPerformanceLeaderboard"
+  },
+  "repPerformanceLeaderboardViewAllReps": {
+    "message": "सभी प्रतिनिधि देखें",
+    "description": "Auto-migrated from repPerformanceLeaderboard"
+  },
+  "repPerformanceLeaderboardRepPerformance": {
+    "message": "प्रतिनिधि प्रदर्शन",
+    "description": "Auto-migrated from repPerformanceLeaderboard"
+  },
+  "dashboardNoRecentActivity": {
+    "message": "कोई हालिया गतिविधि नहीं",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardRecentActivity": {
+    "message": "हाल की गतिविधि",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardExportData": {
+    "message": "डेटा निर्यात करें",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardSearchPeople": {
+    "message": "लोग खोजें",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardImportPeople": {
+    "message": "लोगों को आयात करें",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardAddPerson": {
+    "message": "व्यक्ति जोड़ें",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardQuickActions": {
+    "message": "त्वरित कार्रवाई",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardTotalContacts": {
+    "message": "कुल संपर्क",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardLast90Days": {
+    "message": "पिछले 90 दिन",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardLast30Days": {
+    "message": "पिछले 30 दिन",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardLast7Days": {
+    "message": "पिछले 7 दिन",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardContactGrowth": {
+    "message": "विकास से संपर्क करें",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardAddYourFirstPerson": {
+    "message": "अपना पहला व्यक्ति जोड़ें",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardNoContactsYet": {
+    "message": "अभी तक कोई संपर्क नहीं",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardLoadingContacts": {
+    "message": "संपर्क लोड हो रहे हैं...",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardViewAll": {
+    "message": "सभी को देखें",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardRecentContacts": {
+    "message": "हाल के संपर्क",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardActivitiesToday": {
+    "message": "आज की गतिविधियाँ",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardCustomers": {
+    "message": "ग्राहकों",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardActiveLeads": {
+    "message": "सक्रिय नेतृत्व",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardTotalContacts2": {
+    "message": "कुल संपर्क",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardAddContact": {
+    "message": "संपर्क जोड़ें",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardHeresWhatsHappeningWithYourBusiness": {
+    "message": "आज आपके व्यवसाय के साथ क्या हो रहा है, यह यहां बताया गया है।",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardUpgradeNow": {
+    "message": "अभी अपग्रेड करें",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardUpgradeNowToContinueUsingAll": {
+    "message": "सभी सुविधाओं का उपयोग जारी रखने के लिए अभी अपग्रेड करें",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardYourTrialExpiresIn1Day": {
+    "message": "आपका परीक्षण 1 दिन में समाप्त हो रहा है",
+    "description": "Auto-migrated from dashboard"
+  },
+  "dashboardYourTrialExpiresToday": {
+    "message": "आपका परीक्षण आज समाप्त हो रहा है!",
+    "description": "Auto-migrated from dashboard"
+  }
+}

@@ -46,7 +46,7 @@
                       </button>
                       <!-- Set as default (all views) -->
                       <HoverTooltip
-                        :content="defaultViewId === view.id ? 'Default list (loads when opening)' : 'Set as default list'"
+                        :content="defaultViewId === view.id ? t('common.listDefaultViewTooltip') : t('common.listSetDefaultViewTooltip')"
                         anchor-selector="button"
                         :show-delay="50"
                         :hide-delay="80"
@@ -69,7 +69,7 @@
                         <button
                           @click.stop="handleEditView(view)"
                           class="p-1 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                          title="Edit view"
+                          :title="t('common.listEditView')"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
@@ -78,7 +78,7 @@
                         <button
                           @click.stop="handleDeleteView(view)"
                           class="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                          title="Delete view"
+                          :title="t('common.listDeleteViewAction')"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
@@ -99,10 +99,10 @@
             v-if="savedViews && savedViews.length > 0 && shouldShowSaveCTA"
             @click="handleSaveCurrentView"
             class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-            title="Save current view as a new saved view"
+            :title="t('common.listSaveViewHint')"
           >
             <StarIcon class="w-4 h-4" />
-            <span>Save view</span>
+            <span>{{ t('common.listSaveView') }}</span>
           </button>
           
           <!-- Mobile Action Buttons with Stats Icon -->
@@ -112,7 +112,7 @@
               v-if="statsConfig && statsConfig.length > 0"
               @click="showStats = !showStats"
               class="inline-flex items-center justify-center px-2.5 py-1.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-              :title="showStats ? 'Hide Statistics' : 'Show Statistics'"
+              :title="statsToggleTitle"
             >
               <ChartBarIcon v-if="!showStats" class="w-5 h-5" />
               <XMarkIcon v-else class="w-5 h-5" />
@@ -137,7 +137,7 @@
             v-if="statsConfig && statsConfig.length > 0"
             @click="showStats = !showStats"
             class="hidden sm:inline-flex md:hidden items-center justify-center px-2.5 py-1.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-            :title="showStats ? 'Hide Statistics' : 'Show Statistics'"
+            :title="statsToggleTitle"
           >
             <ChartBarIcon v-if="!showStats" class="w-5 h-5" />
             <XMarkIcon v-else class="w-5 h-5" />
@@ -151,11 +151,11 @@
           v-if="statsConfig && statsConfig.length > 0"
           @click="showStats = !showStats"
           class="hidden md:inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base font-medium transition-colors bg-white border border-gray-200 dark:border-0 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 cursor-pointer"
-          :title="showStats ? 'Hide Statistics' : 'Show Statistics'"
+          :title="statsToggleTitle"
         >
           <ChartBarIcon v-if="!showStats" class="w-5 h-5" />
           <XMarkIcon v-else class="w-5 h-5" />
-          <span>{{ showStats ? 'Hide' : 'Stats' }}</span>
+          <span>{{ showStats ? t('common.listHideShort') : t('common.listStatsShort') }}</span>
         </button>
         
         <slot name="header-actions">
@@ -238,7 +238,7 @@
               type="button"
               @click="clearSearch"
               class="absolute inset-y-0 right-2 flex items-center justify-center rounded-sm p-1 text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-pointer"
-              :aria-label="`Clear search for ${title}`"
+              :aria-label="t('common.listClearSearch', { title })"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
                 <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 0 1 1.414 0L10 8.586l4.293-4.293a1 1 0 1 1 1.414 1.414L11.414 10l4.293 4.293a1 1 0 0 1-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 0 1-1.414-1.414L8.586 10 4.293 5.707a1 1 0 0 1 0-1.414Z" clip-rule="evenodd" />
@@ -255,7 +255,7 @@
             class="inline-flex h-10 items-center gap-2 px-3 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors text-sm cursor-pointer"
           >
             <FunnelIcon class="w-4 h-4" />
-            <span class="hidden sm:inline">Filters</span>
+            <span class="hidden sm:inline">{{ t('common.listFilters') }}</span>
             <span v-if="hasActiveFilters" class="flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-indigo-600 rounded-full">
               {{ getActiveFiltersCount() }}
             </span>
@@ -304,7 +304,7 @@
                         class="relative z-[26] inline-flex h-10 w-full items-center rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 px-3 text-gray-900 dark:text-white text-sm outline-1 -outline-offset-1 outline-gray-300/20 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 cursor-pointer text-left"
                       >
                         <span class="block truncate pr-6">
-                          {{ getFilterLabel(filter, filters[filter.key]) || `All ${filter.key}` }}
+                          {{ getFilterLabel(filter, filters[filter.key]) || getFilterAllLabel(filter) }}
                         </span>
                         <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                           <ChevronUpDownIcon class="h-4 w-4 text-gray-400" aria-hidden="true" />
@@ -330,7 +330,7 @@
                               ]"
                             >
                               <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">
-                                All
+                                {{ t('common.listAllRecords') }}
                               </span>
                               <span
                                 v-if="selected"
@@ -353,7 +353,7 @@
                               ]"
                             >
                         <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">
-                          {{ option?.label || option?.value || option || 'Unknown' }}
+                          {{ option?.label || option?.value || option || t('common.listUnknown') }}
                         </span>
                               <span
                                 v-if="selected"
@@ -377,7 +377,7 @@
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                  Clear Filters
+                  {{ t('common.listClearFilters') }}
                 </button>
               </div>
             </PopoverPanel>
@@ -414,7 +414,7 @@
               type="button"
               @click="clearSearch"
               class="absolute inset-y-0 right-2 flex items-center justify-center rounded-full p-1 text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-pointer"
-              :aria-label="`Clear search for ${title}`"
+              :aria-label="t('common.listClearSearch', { title })"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
                 <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 0 1 1.414 0L10 8.586l4.293-4.293a1 1 0 1 1 1.414 1.414L11.414 10l4.293 4.293a1 1 0 0 1-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 0 1-1.414-1.414L8.586 10 4.293 5.707a1 1 0 0 1 0-1.414Z" clip-rule="evenodd" />
@@ -455,7 +455,7 @@
                   class="inline-flex h-10 items-center rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 text-gray-900 dark:text-white text-sm outline-1 -outline-offset-1 outline-gray-300/20 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:bg-gray-800 dark:outline-white/10 dark:focus:outline-indigo-500 cursor-pointer relative w-auto min-w-[140px] text-left leading-none"
                 >
                   <span class="block truncate pr-6">
-                    {{ getFilterLabel(filter, filters[filter.key]) || filter.label || `All ${filter.key}` }}
+                    {{ getFilterLabel(filter, filters[filter.key]) || filter.label || getFilterAllLabel(filter) }}
                   </span>
                   <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                     <ChevronUpDownIcon class="h-4 w-4 text-gray-400" aria-hidden="true" />
@@ -482,7 +482,7 @@
                         ]"
                       >
                         <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">
-                          {{ filter.label || `All ${filter.key}` }}
+                          {{ filter.label || getFilterAllLabel(filter) }}
                         </span>
                         <span
                           v-if="selected"
@@ -516,7 +516,7 @@
                       </li>
                     </ListboxOption>
                     <div v-if="!filter.options || filter.options.length === 0" class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
-                      Loading options...
+                      {{ t('common.listLoadingOptions') }}
                     </div>
                   </ListboxOptions>
                 </Transition>
@@ -532,7 +532,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
-            Clear
+            {{ t('common.listClear') }}
           </button>
           
           <!-- Suggested Filters Section (Feature-flagged, opt-in only) -->
@@ -548,8 +548,8 @@
             v-if="suggestedFiltersEnabled && hasSuggestedFilters && !hasActiveFilters"
             class="flex items-center gap-2 ml-2 pl-2 border-l border-gray-200 dark:border-gray-700"
           >
-            <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap" title="Suggestions based on common usage. Nothing is applied automatically.">
-              Suggested:
+            <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap" :title="t('common.listSuggestedHint')">
+              {{ t('common.listSuggestedLabel') }}
             </span>
             <div class="flex flex-wrap items-center gap-1.5">
               <button
@@ -557,7 +557,7 @@
                 :key="filterKey"
                 @click="handleSuggestedFilterClick(filterKey)"
                 class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border border-dashed border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700/50 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500 transition-colors cursor-pointer"
-                :title="`Click to configure ${getSuggestedFilterLabel(filterKey)} filter`"
+                :title="t('common.listSuggestedConfigure', { filter: getSuggestedFilterLabel(filterKey) })"
               >
                 <span>{{ getSuggestedFilterLabel(filterKey) }}</span>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3 h-3 opacity-50">
@@ -637,7 +637,7 @@
             <div class="flex flex-col items-center justify-center py-12">
               <img
                 src="/assets/illustrations/empty_state.svg"
-                alt="No records illustration"
+                :alt="t('common.listEmptyIllustrationAlt')"
                 class="mx-auto h-40 w-auto"
               />
               <h3 class="mt-6 text-lg font-semibold text-gray-900 dark:text-white">{{ emptyStateTitle }}</h3>
@@ -650,7 +650,7 @@
                   class="inline-flex items-center gap-2 rounded-lg bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-300 dark:hover:bg-indigo-900/50 cursor-pointer"
                 >
                   <XMarkIcon class="h-4 w-4" />
-                  <span>Clear search & filters</span>
+                  <span>{{ t('common.listClearSearchAndFilters') }}</span>
                 </button>
               </div>
             </div>
@@ -688,30 +688,30 @@
           <div class="bg-white dark:bg-gray-900 rounded-xl w-full max-w-md shadow-2xl" @click.stop>
             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
               <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-                {{ editingView ? 'Edit View' : 'Save Current View' }}
+                {{ editingView ? t('common.listEditViewTitle') : t('common.listSaveCurrentView') }}
               </h2>
             </div>
             <form @submit.prevent="handleSaveView" class="p-6 space-y-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  View Name <span class="text-red-500">*</span>
+                  {{ t('common.listViewName') }} <span class="text-red-500">*</span>
                 </label>
                 <input
                   v-model="viewFormData.name"
                   type="text"
                   required
-                  placeholder="e.g., Sales Leads"
+                  :placeholder="t('common.listViewNameExample')"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Description (optional)
+                  {{ t('common.listViewDescOptional') }}
                 </label>
                 <textarea
                   v-model="viewFormData.description"
                   rows="3"
-                  placeholder="Optional description for this view"
+                  :placeholder="t('common.listViewDescPlaceholder')"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
@@ -721,14 +721,14 @@
                   @click="handleCloseSaveViewModal"
                   class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors cursor-pointer"
                 >
-                  Cancel
+                  {{ t('actions.cancel') }}
                 </button>
                 <button
                   type="submit"
                   :disabled="!viewFormData.name.trim()"
                   class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors cursor-pointer"
                 >
-                  {{ editingView ? 'Update' : 'Save' }}
+                  {{ editingView ? t('actions.update') : t('actions.save') }}
                 </button>
               </div>
             </form>
@@ -754,11 +754,11 @@
         >
           <div class="bg-white dark:bg-gray-900 rounded-xl w-full max-w-md shadow-2xl" @click.stop>
             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Delete View</h2>
+              <h2 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('common.listDeleteView') }}</h2>
             </div>
             <div class="p-6">
               <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                Are you sure you want to delete "{{ viewToDelete?.label }}"? This action cannot be undone.
+                {{ t('common.listDeleteViewConfirm', { viewName: viewToDelete?.label }) }}
               </p>
               <div class="flex items-center justify-end gap-3">
                 <button
@@ -766,14 +766,14 @@
                   @click="handleCloseDeleteViewModal"
                   class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors cursor-pointer"
                 >
-                  Cancel
+                  {{ t('actions.cancel') }}
                 </button>
                 <button
                   type="button"
                   @click="confirmDeleteView"
                   class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors cursor-pointer"
                 >
-                  Delete
+                  {{ t('actions.delete') }}
                 </button>
               </div>
             </div>
@@ -804,11 +804,15 @@
             <button
               @click="clearSelection"
               class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-white/20 dark:border-gray-600 text-white dark:text-white font-medium text-sm flex-shrink-0 cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-700 transition-colors"
-              title="Clear selection"
+              :title="t('common.listClearSelection')"
             >
               <span class="font-semibold">{{ selectedRows.length }}</span>
               <span class="font-medium">
-                {{ selectedRows.length === 1 ? title.slice(0, -1) : title }} selected
+                {{ t('common.listRowsSelected', {
+                  count: selectedRows.length,
+                  singular: title.endsWith('s') ? title.slice(0, -1) : title,
+                  plural: title,
+                }) }}
               </span>
               <XMarkIcon class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
             </button>
@@ -882,7 +886,7 @@
         >
               <!-- Drawer Header -->
               <div class="flex items-center justify-between px-6 pr-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Customize View</h3>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('common.listCustomizeView') }}</h3>
                 <button
                   @click="showColumnSettings = false"
                   class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors cursor-pointer"
@@ -901,7 +905,7 @@
                   >
                     <div class="flex items-center gap-3">
                       <WrenchScrewdriverIcon class="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                      <span class="text-sm font-medium text-gray-900 dark:text-white">Layout options</span>
+                      <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('common.listLayoutOptions') }}</span>
                     </div>
                     <ChevronDownIcon 
                       :class="['w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform', layoutOptionsExpanded ? 'rotate-180' : '']" 
@@ -912,7 +916,7 @@
                     <!-- Row Height -->
                     <Menu as="div" class="relative px-3">
                       <MenuButton class="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer">
-                        <span>Row Height</span>
+                        <span>{{ t('common.listRowHeight') }}</span>
                         <div class="flex items-center gap-2">
                           <span class="text-gray-500 dark:text-gray-400">{{ rowHeightLabels[rowHeight] }}</span>
                           <ChevronRightIcon class="w-4 h-4" />
@@ -952,7 +956,7 @@
                     <!-- Reset -->
                     <Menu as="div" class="relative px-3">
                       <MenuButton class="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer">
-                        <span>Reset</span>
+                        <span>{{ t('common.listReset') }}</span>
                         <ChevronRightIcon class="w-4 h-4" />
                       </MenuButton>
                       <Transition
@@ -973,7 +977,7 @@
                                   'block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer'
                                 ]"
                               >
-                                Columns widths
+                                {{ t('common.listColumnWidths') }}
                               </button>
                             </MenuItem>
                             <MenuItem v-slot="{ active }">
@@ -984,7 +988,7 @@
                                   'block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer'
                                 ]"
                               >
-                                Default view
+                                {{ t('common.listDefaultView') }}
                               </button>
                             </MenuItem>
                           </div>
@@ -1003,7 +1007,7 @@
                   >
                     <div class="flex items-center gap-3">
                       <PencilSquareIcon class="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                      <span class="text-sm font-medium text-gray-900 dark:text-white">Manage fields</span>
+                      <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('common.listManageFields') }}</span>
                     </div>
                     <ChevronDownIcon 
                       :class="['w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform', manageFieldsExpanded ? 'rotate-180' : '']" 
@@ -1017,7 +1021,7 @@
                       <input
                         v-model="fieldSearchQuery"
                         type="text"
-                        placeholder="Search fields"
+                        :placeholder="t('common.listSearchFields')"
                         class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
                       />
                     </div>
@@ -1025,7 +1029,7 @@
                     <!-- Shown Fields -->
                     <div>
                       <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3 px-6">
-                        Shown ({{ shownFields.length }})
+                        {{ t('common.listShownCount', { count: shownFields.length }) }}
                       </h4>
                       <div class="space-y-1 px-3">
                         <template v-for="(field, index) in shownFields" :key="field.key">
@@ -1057,8 +1061,8 @@
                             class="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0"
                           />
                           <span class="flex-1 text-sm text-gray-900 dark:text-white">{{ field.label }}</span>
-                          <span v-if="props.moduleKey === 'forms' && field.key?.toLowerCase() === 'name'" class="text-xs text-gray-500 dark:text-gray-400 mr-2">Required</span>
-                          <span v-if="field.locked" class="text-xs text-gray-500 dark:text-gray-400 mr-2">Locked</span>
+                          <span v-if="props.moduleKey === 'forms' && field.key?.toLowerCase() === 'name'" class="text-xs text-gray-500 dark:text-gray-400 mr-2">{{ t('common.listFieldRequired') }}</span>
+                          <span v-if="field.locked" class="text-xs text-gray-500 dark:text-gray-400 mr-2">{{ t('common.listFieldLocked') }}</span>
                           <HeadlessSwitch
                             :checked="field.visible"
                             @change="toggleFieldVisibility(field.key)"
@@ -1073,7 +1077,7 @@
                     <!-- Hidden Fields -->
                     <div>
                       <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3 px-6">
-                        Hidden
+                        {{ t('common.listFieldHidden') }}
                       </h4>
                       <div class="space-y-1 px-3">
                         <template v-for="field in hiddenFields" :key="field.key">
@@ -1085,7 +1089,7 @@
                             class="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0"
                           />
                           <span class="flex-1 text-sm text-gray-900 dark:text-white">{{ field.label }}</span>
-                          <span v-if="field.locked" class="text-xs text-gray-500 dark:text-gray-400 mr-2">Locked</span>
+                          <span v-if="field.locked" class="text-xs text-gray-500 dark:text-gray-400 mr-2">{{ t('common.listFieldLocked') }}</span>
                           <HeadlessSwitch
                             :checked="field.visible"
                             @change="toggleFieldVisibility(field.key)"
@@ -1095,7 +1099,7 @@
                             </div>
                         </template>
                         <div v-if="hiddenFields.length === 0" class="text-sm text-gray-500 dark:text-gray-400 py-2 text-center">
-                          No hidden fields
+                          {{ t('common.listNoHiddenFields') }}
                         </div>
                       </div>
                     </div>
@@ -1110,7 +1114,7 @@
                   class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-800 text-white rounded-lg transition-colors text-sm font-medium cursor-pointer"
                 >
                   <PlusIcon class="w-5 h-5" />
-                  <span>New Custom Field</span>
+                  <span>{{ t('common.listNewCustomField') }}</span>
                 </button>
               </div>
         </div>
@@ -1147,7 +1151,7 @@
           class="fixed right-0 top-0 h-full w-full max-w-xs bg-white dark:bg-gray-900 shadow-2xl flex flex-col z-[9999]"
         >
           <div class="flex items-center justify-between px-6 pr-4 py-3 border-b border-gray-200 dark:border-gray-700">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Customize Kanban</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('common.listCustomizeKanban') }}</h3>
             <button
               @click="showKanbanSettings = false"
               class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors cursor-pointer"
@@ -1164,7 +1168,7 @@
               >
                 <div class="flex items-center gap-3">
                   <ViewColumnsIcon class="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">Kanban options</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('common.listKanbanOptions') }}</span>
                 </div>
                 <ChevronDownIcon
                   :class="['w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform', kanbanOptionsExpanded ? 'rotate-180' : '']"
@@ -1173,7 +1177,7 @@
               <div v-if="kanbanOptionsExpanded" class="pb-4 space-y-0 px-3">
                 <Menu as="div" class="relative">
                   <MenuButton class="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer">
-                    <span>Card size</span>
+                    <span>{{ t('common.listCardSize') }}</span>
                     <div class="flex items-center gap-2">
                       <span class="text-gray-500 dark:text-gray-400">{{ kanbanCardSizeLabels[kanbanCardSize] || kanbanCardSize }}</span>
                       <ChevronRightIcon class="w-4 h-4" />
@@ -1210,7 +1214,7 @@
                   </Transition>
                 </Menu>
                 <div class="flex items-center justify-between px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
-                  <span>Stack fields</span>
+                  <span>{{ t('common.listStackFields') }}</span>
                   <HeadlessSwitch
                     v-model="kanbanStackFields"
                     @change="saveKanbanOptions()"
@@ -1218,7 +1222,7 @@
                   />
                 </div>
                 <div class="flex items-center justify-between px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
-                  <span>Collapse empty columns</span>
+                  <span>{{ t('common.listCollapseEmpty') }}</span>
                   <HeadlessSwitch
                     v-model="kanbanCollapseEmptyColumns"
                     @change="saveKanbanOptions()"
@@ -1226,7 +1230,7 @@
                   />
                 </div>
                 <div class="flex items-center justify-between px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
-                  <span>Show empty fields</span>
+                  <span>{{ t('common.listShowEmptyFields') }}</span>
                   <HeadlessSwitch
                     v-model="kanbanShowEmptyFields"
                     @change="saveKanbanOptions()"
@@ -1234,7 +1238,7 @@
                   />
                 </div>
                 <div class="flex items-center justify-between px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
-                  <span>Show closed records</span>
+                  <span>{{ t('common.listShowClosedRecords') }}</span>
                   <HeadlessSwitch
                     v-model="kanbanClosedTasks"
                     @change="saveKanbanOptions()"
@@ -1244,7 +1248,7 @@
                 <!-- Reset -->
                 <Menu as="div" class="relative">
                   <MenuButton class="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer">
-                    <span>Reset</span>
+                    <span>{{ t('common.listReset') }}</span>
                     <ChevronRightIcon class="w-4 h-4" />
                   </MenuButton>
                   <Transition
@@ -1265,7 +1269,7 @@
                               'block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer'
                             ]"
                           >
-                            Default view
+                            {{ t('common.listDefaultView') }}
                           </button>
                         </MenuItem>
                       </div>
@@ -1282,7 +1286,7 @@
               >
                 <div class="flex items-center gap-3">
                   <PencilSquareIcon class="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">Manage fields</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('common.listManageFields') }}</span>
                 </div>
                 <ChevronDownIcon
                   :class="['w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform', kanbanManageFieldsExpanded ? 'rotate-180' : '']"
@@ -1294,13 +1298,13 @@
                   <input
                     v-model="kanbanFieldSearchQuery"
                     type="text"
-                    placeholder="Search fields"
+                    :placeholder="t('common.listSearchFields')"
                     class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
                   />
                 </div>
                 <div>
                   <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3 px-6">
-                    Shown ({{ kanbanShownFields.length }})
+                    {{ t('common.listShownCount', { count: kanbanShownFields.length }) }}
                   </h4>
                   <div class="space-y-1 px-3">
                     <div
@@ -1330,7 +1334,7 @@
                       </svg>
                       <component :is="getFieldIcon(field.dataType)" class="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
                       <span class="flex-1 text-sm text-gray-900 dark:text-white">{{ field.label || field.key }}</span>
-                      <span v-if="field.locked" class="text-xs text-gray-500 dark:text-gray-400 mr-2">Locked</span>
+                      <span v-if="field.locked" class="text-xs text-gray-500 dark:text-gray-400 mr-2">{{ t('common.listFieldLocked') }}</span>
                       <HeadlessSwitch
                         :checked="field.visible"
                         @change="toggleKanbanFieldVisibility(field.key)"
@@ -1342,7 +1346,7 @@
                 </div>
                 <div>
                   <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3 px-6">
-                    Hidden
+                    {{ t('common.listFieldHidden') }}
                   </h4>
                   <div class="space-y-1 px-3">
                     <div
@@ -1358,7 +1362,7 @@
                         switch-class="w-9 h-5"
                       />
                     </div>
-                    <div v-if="kanbanHiddenFields.length === 0" class="text-sm text-gray-500 dark:text-gray-400 py-2 text-center">No hidden fields</div>
+                    <div v-if="kanbanHiddenFields.length === 0" class="text-sm text-gray-500 dark:text-gray-400 py-2 text-center">{{ t('common.listNoHiddenFields') }}</div>
                   </div>
                 </div>
               </div>
@@ -1390,6 +1394,15 @@
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
+import {
+  resolveListViewLabel,
+  resolveListColumnLabel,
+  resolveListFilterLabel,
+} from '@/utils/moduleListLabels';
+import { APP_NAME_KEYS } from '@/utils/navigationLabels';
+
+const { t, te } = useI18n();
 import { useRouter } from 'vue-router';
 import { ArrowUpIcon, ArrowDownIcon } from '@heroicons/vue/20/solid';
 import { StarIcon as StarIconSolid } from '@heroicons/vue/24/solid';
@@ -1744,7 +1757,7 @@ const deleteRecordName = computed(() => {
 
 // Customize button label and click (List vs Kanban)
 const customizeButtonLabel = computed(() =>
-  props.viewMode === 'kanban' ? 'Customize Kanban' : 'Customize List'
+  props.viewMode === 'kanban' ? t('common.listCustomizeKanban') : t('common.listCustomizeView')
 );
 const handleCustomizeClick = () => {
   if (props.viewMode === 'kanban') {
@@ -1776,12 +1789,12 @@ watch(rowHeight, (value) => {
 });
 
 // Row height options
-const rowHeightLabels = {
-  small: 'Small',
-  medium: 'Medium',
-  large: 'Large',
-  huge: 'Huge'
-};
+const rowHeightLabels = computed(() => ({
+  small: t('common.listRowHeightSmall'),
+  medium: t('common.listRowHeightMedium'),
+  large: t('common.listRowHeightLarge'),
+  huge: t('common.listRowHeightHuge'),
+}));
 
 // Check if we're on desktop (md breakpoint and above)
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024);
@@ -1799,6 +1812,10 @@ const getDefaultShowStats = () => {
 };
 
 const showStats = ref(getDefaultShowStats());
+
+const statsToggleTitle = computed(() =>
+  showStats.value ? t('common.listHideStatistics') : t('common.listShowStatistics')
+);
 
 // Save stats visibility preference to localStorage
 const saveStatsPreference = () => {
@@ -1974,36 +1991,28 @@ const normalizeKanbanColumnsForTitle = (cols) => {
   return [{ ...titleCol, visible: true, showInTable: true }, ...rest];
 };
 
+const getSyntheticColumnLabel = (moduleKey, key) =>
+  resolveListColumnLabel(moduleKey, key, key, t, te);
+
 // Default Kanban card field order for deals: Title, Amount, Expected Close Date, Probability, Priority, Organization, Deal Owner
 const DEALS_KANBAN_DEFAULT_VISIBLE_KEYS = ['name', 'amount', 'expectedCloseDate', 'probability', 'priority', 'accountId', 'ownerId'];
-const DEALS_KANBAN_DEFAULT_LABELS = { accountId: 'Organization', ownerId: 'Deal Owner' };
 
 // Default Kanban card field order for tasks: Title, Assigned to, Due Date, Priority
 const TASKS_KANBAN_DEFAULT_VISIBLE_KEYS = ['title', 'assignedTo', 'dueDate', 'priority'];
-const TASKS_KANBAN_DEFAULT_LABELS = { assignedTo: 'Assigned to', dueDate: 'Due Date' };
-// Labels for synthetic list columns (when backend/props don't include the key, e.g. accountId)
-const DEALS_LIST_DEFAULT_LABELS = { accountId: 'Organization', ownerId: 'Deal Owner' };
-const EVENTS_LIST_DEFAULT_LABELS = {
-  appointmentBookedBy: 'Booked by',
-  appointmentBookingSource: 'Source',
-  appointmentType: 'Type',
-  appointmentMeetingLink: 'Meeting link'
-};
-const EVENTS_APPOINTMENT_BOOST_KEYS = Object.keys(EVENTS_LIST_DEFAULT_LABELS);
+const EVENTS_APPOINTMENT_BOOST_KEYS = [
+  'appointmentBookedBy',
+  'appointmentBookingSource',
+  'appointmentType',
+  'appointmentMeetingLink',
+];
 /** Ensure every key in defaultVisibleColumns exists in the column map (add synthetic columns if missing). */
 function ensureDefaultColumnsInMap(moduleKey, defaultVisibleColumns, columnMap) {
   if (!defaultVisibleColumns || !columnMap) return;
-  const labelMap =
-    moduleKey === 'deals'
-      ? DEALS_LIST_DEFAULT_LABELS
-      : moduleKey === 'events'
-        ? EVENTS_LIST_DEFAULT_LABELS
-        : {};
   defaultVisibleColumns.forEach((key) => {
     if (!columnMap.has(key)) {
       columnMap.set(key, {
         key,
-        label: labelMap[key] || key,
+        label: getSyntheticColumnLabel(moduleKey, key),
         dataType: 'Lookup',
         sortable: false,
         showInTable: true
@@ -2018,13 +2027,13 @@ function buildDealsDefaultKanbanColumns(sourceColumns) {
   DEALS_KANBAN_DEFAULT_VISIBLE_KEYS.forEach(key => {
     const col = byKey.get(key);
     if (col) {
-      ordered.push({ ...col, key: col.key, label: col.label || DEALS_KANBAN_DEFAULT_LABELS[key] || col.key, visible: true, dataType: col.dataType, sortable: col.sortable !== false, showInTable: true });
+      ordered.push({ ...col, key: col.key, label: col.label || getSyntheticColumnLabel('deals', key), visible: true, dataType: col.dataType, sortable: col.sortable !== false, showInTable: true });
       added.add(key);
     } else {
       // Column not in list definition (e.g. accountId) - add synthetic column so it shows on card
       ordered.push({
         key,
-        label: DEALS_KANBAN_DEFAULT_LABELS[key] || key,
+        label: getSyntheticColumnLabel('deals', key),
         visible: true,
         dataType: 'Lookup',
         sortable: false,
@@ -2051,7 +2060,7 @@ function buildTasksDefaultKanbanColumns(sourceColumns) {
       ordered.push({
         ...col,
         key: col.key,
-        label: col.label || TASKS_KANBAN_DEFAULT_LABELS[key] || col.key,
+        label: col.label || getSyntheticColumnLabel('tasks', key),
         visible: true,
         dataType: col.dataType,
         sortable: col.sortable !== false,
@@ -2061,7 +2070,7 @@ function buildTasksDefaultKanbanColumns(sourceColumns) {
     } else {
       ordered.push({
         key,
-        label: TASKS_KANBAN_DEFAULT_LABELS[key] || key,
+        label: getSyntheticColumnLabel('tasks', key),
         visible: true,
         dataType: key === 'assignedTo' ? 'user' : key === 'dueDate' ? 'date' : 'text',
         sortable: false,
@@ -2104,7 +2113,11 @@ const toggleKanbanFieldVisibility = (fieldKey) => {
   col.showInTable = col.visible;
   saveKanbanFields();
 };
-const kanbanCardSizeLabels = { small: 'Small', medium: 'Medium', large: 'Large' };
+const kanbanCardSizeLabels = computed(() => ({
+  small: t('common.listRowHeightSmall'),
+  medium: t('common.listRowHeightMedium'),
+  large: t('common.listRowHeightLarge'),
+}));
 const setKanbanCardSize = (value) => {
   kanbanCardSize.value = value;
   saveKanbanOptions();
@@ -2525,7 +2538,7 @@ function findOrCreateBoostColumn(key) {
   let col = visibleColumns.value.find((c) => c.key === key);
   if (col) return col;
   const fromProps = props.columns.find((c) => c.key === key);
-  const label = EVENTS_LIST_DEFAULT_LABELS[key] || key;
+  const label = getSyntheticColumnLabel('events', key);
   const base = fromProps
     ? { ...fromProps }
     : { key, label, dataType: 'Text', sortable: false };
@@ -2826,14 +2839,17 @@ const activePeopleViewTitle = computed(() => {
   const hasActiveSearch = searchTerm.value !== '';
   
   if (hasActiveFilters || hasActiveSearch) {
-    // Manual filters/search applied - show "Custom"
-    return 'Custom';
+    return t('common.listViewCustom');
   }
 
-  // Default: "All [Module]" (no filters, no saved view)
-  // Generate generic title from module key
   const moduleLabel = props.title || props.moduleKey.charAt(0).toUpperCase() + props.moduleKey.slice(1);
-  return `All ${moduleLabel}`;
+  return resolveListViewLabel(
+    props.moduleKey,
+    'all',
+    `All ${moduleLabel}`,
+    t,
+    te
+  );
 });
 
 // STEP 3: Determine if Save CTA should be shown - DERIVED ONLY
@@ -2866,22 +2882,31 @@ const shouldShowSaveCTA = computed(() => {
   return !matchesAnyView;
 });
 
-const emptyStateTitle = computed(() =>
-  hasActiveFilters.value ? `No ${props.title.toLowerCase()} match your filters` : props.emptyTitle
-);
+const emptyStateTitle = computed(() => {
+  if (hasActiveFilters.value) {
+    return t('common.listEmptyNoMatchFilters', { module: resourceName.value });
+  }
+  return props.emptyTitle || t('common.listEmptyTitle');
+});
 
 const emptyStateMessage = computed(() => {
   if (searchTerm.value && hasFiltersApplied.value) {
-    return `No ${resourceName.value} match your search or filters. Try adjusting them or clear everything to start over.`;
+    return t('common.listEmptyNoMatchSearchAndFilters', { module: resourceName.value });
   }
   if (searchTerm.value) {
-    return `We couldn't find any ${resourceName.value} matching “${searchTerm.value}”. Try a different keyword or clear the search.`;
+    return t('common.listEmptyNoMatchSearch', {
+      module: resourceName.value,
+      query: searchTerm.value,
+    });
   }
   if (hasFiltersApplied.value) {
-    return `No ${resourceName.value} match your filters. Try adjusting or clearing them to see more results.`;
+    return t('common.listEmptyNoMatchFiltersOnly', { module: resourceName.value });
   }
-  return props.emptyMessage;
+  return props.emptyMessage || t('common.listEmptyMessage');
 });
+
+const getFilterAllLabel = (filter) =>
+  t('common.listFilterAll', { filter: filter.label || filter.key });
 
 const canClearFilters = computed(() => hasActiveFilters.value);
 
@@ -2925,19 +2950,14 @@ const getFilterLabel = (filter, value) => {
  * @returns Human-readable label for the filter
  */
 const getSuggestedFilterLabel = (fieldKey) => {
-  // Try to find the filter in filterConfig
   const filter = props.filterConfig?.find(f => f.key === fieldKey);
-  if (filter?.label) {
-    return filter.label;
-  }
-  
-  // Fallback: format the field key as a readable label
-  // e.g., 'assignedTo' -> 'Assigned To', 'do_not_contact' -> 'Do Not Contact'
-  return fieldKey
-    .replace(/_/g, ' ')
-    .replace(/([A-Z])/g, ' $1')
-    .replace(/^\w/, c => c.toUpperCase())
-    .trim();
+  return resolveListFilterLabel(
+    props.moduleKey,
+    fieldKey,
+    filter?.label || fieldKey,
+    t,
+    te
+  );
 };
 
 /**
@@ -3250,23 +3270,18 @@ const getGroupLabel = (groupId) => {
   if (!groupId) return null;
   
   if (groupId === 'core') {
-    return 'Core Fields';
+    return t('common.listCoreFields');
   } else if (groupId === 'participation-summary') {
-    return 'Participation';
+    return t('common.listParticipationFields');
   } else if (groupId.startsWith('participation:')) {
     const appKey = groupId.replace('participation:', '');
-    // Convert app key to display name
-    const appNames = {
-      'SALES': 'Sales',
-      'HELPDESK': 'Helpdesk',
-      'MARKETING': 'Marketing',
-      'AUDIT': 'Audit',
-      'PORTAL': 'Portal',
-      'PROJECTS': 'Projects'
-    };
-    return `Participation: ${appNames[appKey] || appKey}`;
+    const appKeyUpper = appKey.toUpperCase();
+    const appLabel = APP_NAME_KEYS[appKeyUpper] && te(APP_NAME_KEYS[appKeyUpper])
+      ? t(APP_NAME_KEYS[appKeyUpper])
+      : appKey;
+    return t('common.listParticipationApp', { app: appLabel });
   } else if (groupId === 'system') {
-    return 'System Fields';
+    return t('common.listSystemFields');
   }
   
   return null;

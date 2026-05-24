@@ -73,7 +73,7 @@
                 type="button"
                 @click.stop="openCreateDrawer"
                 class="absolute inset-y-0 right-8 flex items-center pr-1 text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                title="Create and select"
+                :title="t('common.formCreateAndSelect')"
               >
                 <PlusIcon class="h-5 w-5" />
               </button>
@@ -148,6 +148,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, watch, computed, nextTick } from 'vue';
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption, Combobox, ComboboxButton, ComboboxOptions, ComboboxOption } from '@headlessui/vue';
 import { CheckIcon, ChevronUpDownIcon, MagnifyingGlassIcon, PlusIcon } from '@heroicons/vue/24/outline';
@@ -164,6 +165,8 @@ const props = defineProps({
   disabled: { type: Boolean, default: false },
   error: { type: String, default: '' }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['update:modelValue']);
 

@@ -1,0 +1,2382 @@
+{
+  "recordsCount": {
+    "message": "{count, plural, one {# record} other {# records}}",
+    "description": "Record list count with ICU pluralization"
+  },
+  "itemsSelected": {
+    "message": "{count, plural, one {# item selected} other {# items selected}}",
+    "description": "Bulk selection count in list views"
+  },
+  "welcomeUser": {
+    "message": "欢迎，{name}",
+    "description": "Personalized greeting with interpolation"
+  },
+  "assignedToUser": {
+    "message": "Assigned to {gender, select, female {her} male {him} other {them}}",
+    "description": "ICU select example for gendered copy (platform chrome only)"
+  },
+  "localeDevTitle": {
+    "message": "本地化质量检查",
+    "description": "Developer settings section for i18n tools"
+  },
+  "pseudoLocaleHint": {
+    "message": "伪语言环境会在翻译之前扩展文本并暴露布局问题。",
+    "description": "Help text for pseudo-locale developer toggle"
+  },
+  "moreActions": {
+    "message": "更多行动",
+    "description": "Overflow menu trigger aria-label"
+  },
+  "loadingList": {
+    "message": "加载列表",
+    "description": "List skeleton aria-label"
+  },
+  "viewRecord": {
+    "message": "看法",
+    "description": "Row action: open record"
+  },
+  "importData": {
+    "message": "进口",
+    "description": "Module header import action"
+  },
+  "exportData": {
+    "message": "出口",
+    "description": "Module header export action"
+  },
+  "listSaveView": {
+    "message": "保存视图",
+    "description": "List view: save current filters/columns"
+  },
+  "listFilters": {
+    "message": "过滤器",
+    "description": "List view filters panel title"
+  },
+  "listAllRecords": {
+    "message": "全部",
+    "description": "List filter tab: all records"
+  },
+  "listClearFilters": {
+    "message": "清除过滤器",
+    "description": "Reset active list filters"
+  },
+  "listLoadingOptions": {
+    "message": "正在加载选项...",
+    "description": "Filter dropdown loading state"
+  },
+  "listClear": {
+    "message": "清除",
+    "description": "Clear single filter or selection"
+  },
+  "listViewName": {
+    "message": "查看名称",
+    "description": "Saved view name field label"
+  },
+  "listDeleteView": {
+    "message": "删除视图",
+    "description": "Delete saved list view action"
+  },
+  "listCustomizeView": {
+    "message": "自定义视图",
+    "description": "Open list view customization drawer"
+  },
+  "listLayoutOptions": {
+    "message": "布局选项",
+    "description": "List layout section title"
+  },
+  "listRowHeight": {
+    "message": "行高",
+    "description": "Table row height setting"
+  },
+  "listReset": {
+    "message": "重置",
+    "description": "Reset view settings to defaults"
+  },
+  "listColumnWidths": {
+    "message": "列宽",
+    "description": "Column width customization section"
+  },
+  "listDefaultView": {
+    "message": "默认视图",
+    "description": "Mark view as org default"
+  },
+  "listManageFields": {
+    "message": "管理字段",
+    "description": "Open field visibility manager"
+  },
+  "listFieldRequired": {
+    "message": "必需的",
+    "description": "Field cannot be hidden"
+  },
+  "listFieldLocked": {
+    "message": "锁定",
+    "description": "Field locked from reorder"
+  },
+  "listFieldHidden": {
+    "message": "隐",
+    "description": "Hidden fields section"
+  },
+  "listNoHiddenFields": {
+    "message": "无隐藏字段",
+    "description": "Empty hidden fields state"
+  },
+  "listNewCustomField": {
+    "message": "新的自定义字段",
+    "description": "Create custom field from list manager"
+  },
+  "listCustomizeKanban": {
+    "message": "定制看板",
+    "description": "Kanban board customization"
+  },
+  "deleteTitleBulk": {
+    "message": "删除 {count} {recordTypePlural}",
+    "description": "Bulk delete dialog title"
+  },
+  "deleteTitleSingle": {
+    "message": "删除 {recordType}",
+    "description": "Single delete dialog title"
+  },
+  "deleteConfirmBulk": {
+    "message": "您确定要删除 {count} {recordTypeLabel} 吗？此操作无法撤消。",
+    "description": "Bulk delete confirmation"
+  },
+  "deleteConfirmSingle": {
+    "message": "您确定要删除 {target} 吗？此操作无法撤消。",
+    "description": "Single delete confirmation; target is quoted name or type"
+  },
+  "deleteInProgress": {
+    "message": "正在删除...",
+    "description": "Delete button in progress"
+  },
+  "listEditView": {
+    "message": "编辑视图",
+    "description": "Edit saved list view action title"
+  },
+  "listDeleteViewAction": {
+    "message": "删除视图",
+    "description": "Delete saved list view action title"
+  },
+  "listSaveViewHint": {
+    "message": "将当前视图另存为新的已保存视图",
+    "description": "Save view button tooltip"
+  },
+  "listHideStatistics": {
+    "message": "隐藏统计数据",
+    "description": "Stats panel toggle tooltip when visible"
+  },
+  "listShowStatistics": {
+    "message": "显示统计数据",
+    "description": "Stats panel toggle tooltip when hidden"
+  },
+  "listStatsShort": {
+    "message": "统计数据",
+    "description": "Short stats toggle label"
+  },
+  "listHideShort": {
+    "message": "隐藏",
+    "description": "Short hide label for stats toggle"
+  },
+  "listSuggestedLabel": {
+    "message": "建议：",
+    "description": "Suggested filters section prefix"
+  },
+  "listSuggestedHint": {
+    "message": "基于常见用法的建议。没有什么是自动应用的。",
+    "description": "Suggested filters tooltip"
+  },
+  "listSuggestedConfigure": {
+    "message": "单击以配置 {filter} 过滤器",
+    "description": "Suggested filter chip tooltip"
+  },
+  "listClearSearch": {
+    "message": "清除对 {title} 的搜索",
+    "description": "Clear search input aria-label"
+  },
+  "listViewNameExample": {
+    "message": "例如，销售线索",
+    "description": "Saved view name placeholder"
+  },
+  "listViewDescOptional": {
+    "message": "说明（可选）",
+    "description": "Saved view description field label"
+  },
+  "listViewDescPlaceholder": {
+    "message": "该视图的可选描述",
+    "description": "Saved view description placeholder"
+  },
+  "listSaveCurrentView": {
+    "message": "保存当前视图",
+    "description": "Save view modal title"
+  },
+  "listEditViewTitle": {
+    "message": "编辑视图",
+    "description": "Edit view modal title"
+  },
+  "listDeleteViewConfirm": {
+    "message": "您确定要删除“{viewName}”吗？此操作无法撤消。",
+    "description": "Delete saved view confirmation"
+  },
+  "listClearSelection": {
+    "message": "清除选择",
+    "description": "Bulk selection clear button tooltip"
+  },
+  "listRowsSelected": {
+    "message": "{count, plural, one {# {singular} selected} other {# {plural} selected}}",
+    "description": "Bulk row selection count in list"
+  },
+  "listSearchFields": {
+    "message": "搜索字段",
+    "description": "Field manager search placeholder"
+  },
+  "listShownCount": {
+    "message": "显示 ({count})",
+    "description": "Visible fields section header"
+  },
+  "listKanbanOptions": {
+    "message": "看板选项",
+    "description": "Kanban settings section title"
+  },
+  "listCardSize": {
+    "message": "卡片尺寸",
+    "description": "Kanban card size setting"
+  },
+  "listStackFields": {
+    "message": "堆栈字段",
+    "description": "Kanban stack fields toggle"
+  },
+  "listCollapseEmpty": {
+    "message": "折叠空列",
+    "description": "Kanban collapse empty columns toggle"
+  },
+  "listShowEmptyFields": {
+    "message": "显示空字段",
+    "description": "Kanban show empty fields toggle"
+  },
+  "listShowClosedRecords": {
+    "message": "显示关闭记录",
+    "description": "Kanban show closed records toggle"
+  },
+  "darkMode": {
+    "message": "深色模式",
+    "description": "Dark color mode menu option"
+  },
+  "lightMode": {
+    "message": "灯光模式",
+    "description": "Light color mode menu option"
+  },
+  "tableClearSelection": {
+    "message": "清除选择",
+    "description": "Clear bulk row selection"
+  },
+  "tableAllPageSelected": {
+    "message": "此页面上的所有 {count} 项目均已选择。",
+    "description": "Select-all banner when current page is fully selected"
+  },
+  "tableSelectAllItems": {
+    "message": "选择所有 {count} 项目",
+    "description": "Expand selection to all pages"
+  },
+  "tableAllSelected": {
+    "message": "已选择所有 {count}",
+    "description": "All records across pages selected"
+  },
+  "tableSelectedCount": {
+    "message": "{count, plural, one {# selected} other {# selected}}",
+    "description": "Bulk selection count in data table"
+  },
+  "tableDeleteSelected": {
+    "message": "删除所选内容",
+    "description": "Bulk delete action label"
+  },
+  "tableColumns": {
+    "message": "专栏",
+    "description": "Column settings button label"
+  },
+  "tableColumnSettings": {
+    "message": "栏目设置",
+    "description": "Column settings modal title"
+  },
+  "tableManageColumns": {
+    "message": "管理栏目",
+    "description": "Column manager section title"
+  },
+  "tableManageColumnsHint": {
+    "message": "切换可见性并拖动以重新排序",
+    "description": "Column manager help text"
+  },
+  "tableVisibleCount": {
+    "message": "{total} 的 {visible} 可见",
+    "description": "Visible column count in settings"
+  },
+  "tableUnfreezeColumn": {
+    "message": "解冻列",
+    "description": "Unfreeze sticky column tooltip"
+  },
+  "tableFreezeColumn": {
+    "message": "冷冻柱",
+    "description": "Freeze sticky column tooltip"
+  },
+  "tableFreezeMax": {
+    "message": "最多可冻结 2 列",
+    "description": "Freeze limit tooltip"
+  },
+  "tableFrozen": {
+    "message": "冷冻",
+    "description": "Frozen column badge"
+  },
+  "tableResetDefault": {
+    "message": "重置为默认值",
+    "description": "Reset column settings"
+  },
+  "tableShowingResults": {
+    "message": "显示 {start} 至 {end}（共 {total} 个结果）",
+    "description": "Pagination summary"
+  },
+  "tableSortAscending": {
+    "message": "升序排序",
+    "description": "Table column sort ascending"
+  },
+  "tableSortDescending": {
+    "message": "降序排序",
+    "description": "Table column sort descending"
+  },
+  "tableClearSort": {
+    "message": "清晰排序",
+    "description": "Remove column sort"
+  },
+  "tableToggleSort": {
+    "message": "{column} 的切换排序",
+    "description": "Sort toggle aria-label"
+  },
+  "tableRowSelectSr": {
+    "message": "行号和选择行",
+    "description": "Screen reader label for selection column"
+  },
+  "tableLoadingSr": {
+    "message": "装载台",
+    "description": "Screen reader label for table loading skeleton"
+  },
+  "metricsTitle": {
+    "message": "指标",
+    "description": "Metrics widget card title"
+  },
+  "metricsConfigure": {
+    "message": "配置指标",
+    "description": "Open metrics configuration"
+  },
+  "metricsEmptyYet": {
+    "message": "尚未配置指标。",
+    "description": "Empty metrics widget state"
+  },
+  "metricsEmptyPanel": {
+    "message": "未配置指标。",
+    "description": "Empty metrics config panel"
+  },
+  "metricsAdd": {
+    "message": "添加指标",
+    "description": "Add a new metric row"
+  },
+  "metricsLabel": {
+    "message": "标签",
+    "description": "Metric label column"
+  },
+  "metricsSource": {
+    "message": "来源",
+    "description": "Metric data source column"
+  },
+  "metricsField": {
+    "message": "场地",
+    "description": "Metric field column"
+  },
+  "metricsAggregation": {
+    "message": "聚合",
+    "description": "Metric aggregation column"
+  },
+  "metricsDragReorder": {
+    "message": "拖动以重新排序",
+    "description": "Metric row drag handle tooltip"
+  },
+  "metricsDelete": {
+    "message": "删除指标",
+    "description": "Remove metric row"
+  },
+  "metricsClosePanel": {
+    "message": "关闭面板",
+    "description": "Close metrics config drawer"
+  },
+  "keyFieldsTitle": {
+    "message": "关键领域",
+    "description": "Key fields widget title"
+  },
+  "keyFieldsEmptyValue": {
+    "message": "空的",
+    "description": "Empty key field value placeholder"
+  },
+  "keyFieldsNone": {
+    "message": "未配置关键字段",
+    "description": "No key fields empty state"
+  },
+  "keyFieldsHint": {
+    "message": "在模块设置中将字段标记为“关键字段”",
+    "description": "Key fields configuration hint"
+  },
+  "closePanel": {
+    "message": "关闭面板",
+    "description": "Screen reader label for closing a side panel"
+  },
+  "formAssignToMe": {
+    "message": "分配给我",
+    "description": "Assign current user to a reviewer field"
+  },
+  "formNoOptions": {
+    "message": "没有可用的选项。",
+    "description": "Empty picklist dropdown"
+  },
+  "formNoMatchingRecords": {
+    "message": "没有找到匹配的记录。",
+    "description": "Empty lookup combobox search results"
+  },
+  "formNoRecordsFound": {
+    "message": "没有找到记录",
+    "description": "Empty lookup modal list"
+  },
+  "formSelected": {
+    "message": "已选择",
+    "description": "Lookup row already selected badge"
+  },
+  "formCreateNew": {
+    "message": "创造新的",
+    "description": "Create related record from lookup footer"
+  },
+  "formSearchOptions": {
+    "message": "搜索选项...",
+    "description": "Picklist search placeholder"
+  },
+  "formSearchRecords": {
+    "message": "搜索记录...",
+    "description": "Lookup combobox search placeholder"
+  },
+  "formBrowseRecords": {
+    "message": "浏览记录",
+    "description": "Open lookup record picker modal"
+  },
+  "formCreateAndSelect": {
+    "message": "创建并选择",
+    "description": "Create new lookup record shortcut"
+  },
+  "formUploading": {
+    "message": "正在上传...",
+    "description": "Image upload in progress"
+  },
+  "formUploadImage": {
+    "message": "上传图片",
+    "description": "Image upload trigger button"
+  },
+  "formRefreshing": {
+    "message": "清爽...",
+    "description": "Lookup modal refresh in progress"
+  },
+  "formLookupSelectTitle": {
+    "message": "选择{label}",
+    "description": "Lookup modal title"
+  },
+  "formLookupChooseOne": {
+    "message": "选择一个 {module} 来填充 {field}",
+    "description": "Lookup modal subtitle"
+  },
+  "formLookupSearchModule": {
+    "message": "搜索 {module}...",
+    "description": "Lookup modal search placeholder"
+  },
+  "formLookupNoMatch": {
+    "message": "没有 {module} 匹配“{query}”。",
+    "description": "Lookup modal empty state with search query"
+  },
+  "formLookupNoRecordsYet": {
+    "message": "尚无 {module} 可供选择。",
+    "description": "Lookup modal empty state without query"
+  },
+  "formLookupCreateModule": {
+    "message": "创建新的 {module}",
+    "description": "Lookup modal create CTA with module name"
+  },
+  "lifecycleStageTitle": {
+    "message": "生命周期阶段",
+    "description": "Lifecycle stage widget title"
+  },
+  "lifecycleType": {
+    "message": "类型：",
+    "description": "Lifecycle widget type label"
+  },
+  "lifecycleAge": {
+    "message": "年龄：",
+    "description": "Lifecycle widget age label"
+  },
+  "lifecycleJustCreated": {
+    "message": "刚刚创建",
+    "description": "Record age when created today"
+  },
+  "lifecycleAgeDays": {
+    "message": "{days, plural, one {# day} other {# days}}",
+    "description": "Record age in days"
+  },
+  "lifecycleAgeZero": {
+    "message": "0 天",
+    "description": "Record age fallback when no createdAt"
+  },
+  "searchPlaceholder": {
+    "message": "搜索...",
+    "description": "Generic search input placeholder"
+  },
+  "filterAll": {
+    "message": "全部",
+    "description": "Filter option: no restriction"
+  },
+  "filterAllNamed": {
+    "message": "所有{label}",
+    "description": "Filter option: all values for a named field"
+  },
+  "filterDays": {
+    "message": "天",
+    "description": "Relative date filter days input label"
+  },
+  "filterDate": {
+    "message": "日期",
+    "description": "Single date filter input label"
+  },
+  "filterFrom": {
+    "message": "从",
+    "description": "Date range filter start label"
+  },
+  "filterTo": {
+    "message": "到",
+    "description": "Date range filter end label"
+  },
+  "filterDaysPlaceholder": {
+    "message": "例如7",
+    "description": "Relative date filter days input placeholder"
+  },
+  "dependencyNoFields": {
+    "message": "没有可显示的字段",
+    "description": "Dependency popup empty state"
+  },
+  "drawerBackQuickCreate": {
+    "message": "返回快速创建",
+    "description": "Toggle from full create form to quick create"
+  },
+  "drawerShowAllFields": {
+    "message": "显示所有字段",
+    "description": "Expand quick create drawer to full form"
+  },
+  "formQuickCreateFields": {
+    "message": "快速创建字段",
+    "description": "Section heading for quick-create field group"
+  },
+  "taskDescriptionPlaceholder": {
+    "message": "写入或键入“/”作为命令",
+    "description": "Task description editor placeholder"
+  },
+  "taskDescriptionFallback": {
+    "message": "描述",
+    "description": "Task description field fallback label"
+  },
+  "taskRelatedToFallback": {
+    "message": "相关于",
+    "description": "Task related-to field fallback label"
+  },
+  "taskSubtasksLabel": {
+    "message": "子任务",
+    "description": "Task subtasks field label"
+  },
+  "tagsTitle": {
+    "message": "标签",
+    "description": "Tags picker panel title"
+  },
+  "tagsNewTag": {
+    "message": "新标签",
+    "description": "Create a new tag definition"
+  },
+  "tagsSearchPlaceholder": {
+    "message": "搜索或创建标签",
+    "description": "Tags picker search input"
+  },
+  "tagsClickSearchHint": {
+    "message": "单击搜索框可查看可用标签。",
+    "description": "Tags picker collapsed hint"
+  },
+  "tagsNoTagsYet": {
+    "message": "此工作区中还没有标签。",
+    "description": "Empty workspace tags list"
+  },
+  "tagsCreateFirst": {
+    "message": "创建第一个标签",
+    "description": "CTA when no tags exist"
+  },
+  "tagsCreateNamed": {
+    "message": "创建“{name}”",
+    "description": "Create tag from search query"
+  },
+  "tagsPublic": {
+    "message": "民众",
+    "description": "Public tag badge"
+  },
+  "tagsRemoveTag": {
+    "message": "删除标签",
+    "description": "Remove tag from selection aria-label"
+  },
+  "tagsEditTag": {
+    "message": "编辑标签",
+    "description": "Edit tag definition action"
+  },
+  "tagsTagActions": {
+    "message": "标记操作",
+    "description": "Tag row overflow menu aria-label"
+  },
+  "tagsTagName": {
+    "message": "标签名称",
+    "description": "Tag editor name field label"
+  },
+  "tagsEnterTagName": {
+    "message": "输入标签名称",
+    "description": "Tag editor name placeholder"
+  },
+  "tagsColor": {
+    "message": "颜色",
+    "description": "Tag editor color field label"
+  },
+  "tagsMakePublic": {
+    "message": "公开标签",
+    "description": "Tag editor public toggle label"
+  },
+  "tagsRemoveFromSelection": {
+    "message": "从选择中删除",
+    "description": "Unassign tag from current record"
+  },
+  "tagsAddToSelection": {
+    "message": "添加到选择",
+    "description": "Assign tag to current record"
+  },
+  "tagsDeleteFromModule": {
+    "message": "从模块中删除标签",
+    "description": "Delete tag definition from module"
+  },
+  "tagsRemovedNamed": {
+    "message": "删除了“{name}”。",
+    "description": "Tag removal pending undo banner"
+  },
+  "tagsUndoSeconds": {
+    "message": "撤消 ({seconds})",
+    "description": "Undo tag removal countdown"
+  },
+  "linkRecordsBackToType": {
+    "message": "返回记录类型",
+    "description": "Return to link records type selector"
+  },
+  "linkRecordsLinked": {
+    "message": "链接",
+    "description": "Already-linked record type badge"
+  },
+  "linkRecordsNoTypes": {
+    "message": "没有为此模块配置可链接记录类型。在“设置”→“模块”中配置关系。",
+    "description": "Empty linkable types state"
+  },
+  "linkRecordsNoMatch": {
+    "message": "没有找到匹配的记录。尝试调整您的搜索或过滤器。",
+    "description": "Empty link records search results"
+  },
+  "linkRecordsCreateNew": {
+    "message": "新建",
+    "description": "Create record from link drawer"
+  },
+  "linkRecordsSelectedCount": {
+    "message": "{count, plural, one {# selected} other {# selected}}",
+    "description": "Link drawer multi-select count"
+  },
+  "linkRecordsLink": {
+    "message": "关联",
+    "description": "Confirm link records action"
+  },
+  "kanbanExpandColumn": {
+    "message": "展开栏目",
+    "description": "Expand collapsed kanban column"
+  },
+  "kanbanNoItems": {
+    "message": "没有商品",
+    "description": "Empty kanban column placeholder"
+  },
+  "summaryLoadingRecord": {
+    "message": "正在加载 {type}...",
+    "description": "Record summary page loading state"
+  },
+  "summaryErrorLoadingTitle": {
+    "message": "加载 {type} 时出错",
+    "description": "Record summary page error headline"
+  },
+  "summaryNoTagsYet": {
+    "message": "还没有标签",
+    "description": "Empty tags on record header"
+  },
+  "summaryManageTags": {
+    "message": "管理标签",
+    "description": "Open tag manager when tags exist"
+  },
+  "summaryAddTag": {
+    "message": "添加标签",
+    "description": "Add a tag to the record"
+  },
+  "summaryAddAnotherTag": {
+    "message": "添加另一个标签",
+    "description": "Add another tag when some exist"
+  },
+  "summaryCopyLink": {
+    "message": "复制链接",
+    "description": "Copy record URL to clipboard"
+  },
+  "summarySelectPlaceholder": {
+    "message": "选择...",
+    "description": "Unset lifecycle/status dropdown value"
+  },
+  "summaryAddRelation": {
+    "message": "添加关系",
+    "description": "Add related record menu"
+  },
+  "summaryViewResponses": {
+    "message": "查看回复",
+    "description": "Open form responses list"
+  },
+  "summaryDeleteRecord": {
+    "message": "删除记录",
+    "description": "Delete current record action"
+  },
+  "summaryFormNotActive": {
+    "message": "表格尚未激活",
+    "description": "Inactive form empty state title"
+  },
+  "summaryFormNotActiveHint": {
+    "message": "该表格尚未使用。通过事件分配它以开始收集响应。",
+    "description": "Inactive form empty state body"
+  },
+  "summaryAddWidget": {
+    "message": "添加小部件",
+    "description": "Add dashboard widget CTA"
+  },
+  "summaryAddCustomWidget": {
+    "message": "添加自定义小部件",
+    "description": "Add widget floating button tooltip"
+  },
+  "summaryShowEmptyFields": {
+    "message": "显示空字段",
+    "description": "Toggle empty fields in details tab"
+  },
+  "summaryTenantFields": {
+    "message": "租户字段",
+    "description": "Tenant details tab section title"
+  },
+  "summaryTenantFieldsHint": {
+    "message": "订阅、限制和组织设置",
+    "description": "Tenant details tab subtitle"
+  },
+  "summaryTenantFieldsNoMatch": {
+    "message": "没有符合您搜索条件的租户字段。",
+    "description": "Tenant fields search empty"
+  },
+  "summaryTenantFieldsNoValues": {
+    "message": "没有可显示值的租户字段。",
+    "description": "Tenant fields all empty hidden"
+  },
+  "summaryTenantFieldsNone": {
+    "message": "没有可用的租户字段。",
+    "description": "No tenant fields configured"
+  },
+  "summaryManageFields": {
+    "message": "管理字段",
+    "description": "Open field management settings"
+  },
+  "summaryNotAvailable": {
+    "message": "无法使用",
+    "description": "Field value unavailable placeholder"
+  },
+  "summaryFieldsNoMatch": {
+    "message": "没有字段与您的搜索匹配。",
+    "description": "Details tab search empty"
+  },
+  "summaryFieldsNoValues": {
+    "message": "没有可显示值的字段。",
+    "description": "Details tab all empty hidden"
+  },
+  "summaryFieldsNone": {
+    "message": "没有可用字段。",
+    "description": "No fields configured on module"
+  },
+  "summaryFormUsage": {
+    "message": "表格使用",
+    "description": "Form submissions section title"
+  },
+  "summaryFormUsageHint": {
+    "message": "表单提交列表，包含状态、分数和提交日期。",
+    "description": "Form submissions section subtitle"
+  },
+  "summaryLoadingSubmissions": {
+    "message": "正在加载提交内容...",
+    "description": "Form submissions table loading"
+  },
+  "summaryColSubmitted": {
+    "message": "已提交",
+    "description": "Submission date column"
+  },
+  "summaryColSubmittedBy": {
+    "message": "提交者",
+    "description": "Submitter column"
+  },
+  "summaryColStatus": {
+    "message": "地位",
+    "description": "Status column header"
+  },
+  "summaryColScore": {
+    "message": "分数",
+    "description": "Score column header"
+  },
+  "summaryColActions": {
+    "message": "行动",
+    "description": "Actions column header"
+  },
+  "summaryColKpis": {
+    "message": "关键绩效指标",
+    "description": "KPI column header"
+  },
+  "summaryAnonymous": {
+    "message": "匿名的",
+    "description": "Anonymous submitter label"
+  },
+  "summaryNoSubmissions": {
+    "message": "尚未提交",
+    "description": "Empty form submissions state"
+  },
+  "summaryNoSubmissionsHint": {
+    "message": "此表格尚未收到任何提交。",
+    "description": "Empty form submissions body"
+  },
+  "summaryFormPreview": {
+    "message": "表格预览",
+    "description": "Form preview section title"
+  },
+  "summaryFormPreviewHint": {
+    "message": "预览用户填写此表单时的外观。",
+    "description": "Form preview section subtitle"
+  },
+  "summaryFormResponses": {
+    "message": "表格回复",
+    "description": "Form responses section title"
+  },
+  "summaryFormResponsesHint": {
+    "message": "查看和管理为此表单提交的所有回复。",
+    "description": "Form responses section subtitle"
+  },
+  "summaryLoadingResponses": {
+    "message": "正在加载回复...",
+    "description": "Form responses table loading"
+  },
+  "summaryNoResponses": {
+    "message": "尚未回复",
+    "description": "Empty form responses state"
+  },
+  "summaryNoResponsesHint": {
+    "message": "此表格尚未收到任何回复。",
+    "description": "Empty form responses body"
+  },
+  "summaryViewAllResponses": {
+    "message": "查看所有回复",
+    "description": "Navigate to full responses list"
+  },
+  "summaryUser": {
+    "message": "用户",
+    "description": "Activity filter user label"
+  },
+  "summaryAllUsers": {
+    "message": "所有用户",
+    "description": "Activity filter all users option"
+  },
+  "summaryType": {
+    "message": "类型",
+    "description": "Activity filter type label"
+  },
+  "summaryAllTypes": {
+    "message": "所有类型",
+    "description": "Activity filter all types option"
+  },
+  "summaryComments": {
+    "message": "评论",
+    "description": "Activity type filter comments"
+  },
+  "summaryFieldChanges": {
+    "message": "字段变化",
+    "description": "Activity type filter field changes"
+  },
+  "summaryNoActivity": {
+    "message": "还没有活动",
+    "description": "Empty activity feed"
+  },
+  "summarySelectWidget": {
+    "message": "选择要添加到仪表板的小部件",
+    "description": "Add widget drawer subtitle"
+  },
+  "summaryResetToDefault": {
+    "message": "重置为默认值",
+    "description": "Reset widget layout action"
+  },
+  "summaryResetWidgetLayout": {
+    "message": "重置小部件布局",
+    "description": "Reset layout confirmation title"
+  },
+  "summaryResetLayoutConfirmBody": {
+    "message": "您确定要将小部件布局重置为默认值吗？这将删除所有自定义设置，包括小部件位置、大小以及您添加或删除的任何小部件。",
+    "description": "Reset layout confirmation body"
+  },
+  "summaryResetLayoutTooltip": {
+    "message": "将小部件布局重置为默认顺序",
+    "description": "Reset layout button tooltip"
+  },
+  "summaryNoMetrics": {
+    "message": "没有可用的指标。",
+    "description": "Empty metrics widget fallback"
+  },
+  "summaryKeyFieldsPlaceholder": {
+    "message": "关键字段将显示在此处。",
+    "description": "Empty key fields widget fallback"
+  },
+  "summaryWidgetContent": {
+    "message": "小部件内容",
+    "description": "Generic widget placeholder"
+  },
+  "summaryTabsAria": {
+    "message": "选项卡",
+    "description": "Record summary tab list aria-label"
+  },
+  "summarySearchTenantFields": {
+    "message": "搜索租户字段...",
+    "description": "Tenant fields search placeholder"
+  },
+  "summarySearchFields": {
+    "message": "搜索字段...",
+    "description": "Details fields search placeholder"
+  },
+  "summarySearchActivities": {
+    "message": "搜索活动...",
+    "description": "Activity feed search placeholder"
+  },
+  "summaryUrlCopied": {
+    "message": "网址已复制到剪贴板！",
+    "description": "Copy link success toast"
+  },
+  "summaryResetLayoutFailed": {
+    "message": "重置布局失败。请再试一次。",
+    "description": "Reset layout error toast"
+  },
+  "summarySaveFieldsFailed": {
+    "message": "无法保存字段更新。请再试一次。",
+    "description": "Inline field save error toast"
+  },
+  "moduleListTheListForThisModuleIs": {
+    "message": "该模块的列表不可用。",
+    "description": "Auto-migrated from moduleList"
+  },
+  "moduleListListNotFound": {
+    "message": "未找到列表",
+    "description": "Auto-migrated from moduleList"
+  },
+  "targetWizardStepperTargetCreationProgress": {
+    "message": "目标创建进度",
+    "description": "Auto-migrated from targetWizardStepper"
+  },
+  "trashRestore": {
+    "message": "恢复",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAutoDeleteIn": {
+    "message": "自动删除于",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedBy": {
+    "message": "删除者",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedItemsWillAppearHereYou": {
+    "message": "Deleted items will appear here.您可以在它们过期之前恢复它们或永久删除它们。",
+    "description": "Auto-migrated from trash"
+  },
+  "trashTrashIsEmpty": {
+    "message": "垃圾箱已空",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletePermanently": {
+    "message": "永久删除",
+    "description": "Auto-migrated from trash"
+  },
+  "trashRestoreSelected": {
+    "message": "恢复选择",
+    "description": "Auto-migrated from trash"
+  },
+  "trashEmptyTrash": {
+    "message": "清空垃圾箱",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedTo": {
+    "message": "删除至",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedFrom": {
+    "message": "删除自",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAllUsers": {
+    "message": "所有用户",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAllModules": {
+    "message": "所有模块",
+    "description": "Auto-migrated from trash"
+  },
+  "trashSearchNameModuleDeletedBy": {
+    "message": "搜索名称、模块、删除者...",
+    "description": "Auto-migrated from trash"
+  },
+  "trashRetention": {
+    "message": "保留",
+    "description": "Auto-migrated from trash"
+  },
+  "trashOldestItem": {
+    "message": "最旧的项目",
+    "description": "Auto-migrated from trash"
+  },
+  "trashExpiringIn7Days": {
+    "message": "7 天后到期",
+    "description": "Auto-migrated from trash"
+  },
+  "trashTotalInTrash": {
+    "message": "垃圾总数",
+    "description": "Auto-migrated from trash"
+  },
+  "approvalDetailEnterRejectionReason": {
+    "message": "输入拒绝原因...",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailReason": {
+    "message": "原因",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailRejectingWillBlockThisAction": {
+    "message": "拒绝将阻止此操作。",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailRejectApproval": {
+    "message": "拒绝批准",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailYouAreNotAuthorizedToApprove": {
+    "message": "您无权批准或拒绝此请求。",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailReason2": {
+    "message": "原因：",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecidedAt": {
+    "message": "决定于：",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecidedBy": {
+    "message": "决定者：",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecisionAlreadyMade": {
+    "message": "已经做出决定",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailYourDecision": {
+    "message": "您的决定",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailThisApprovalWasEscalatedDueTo": {
+    "message": "由于在时限内没有回复，该批准被升级。新的批准者已收到通知。",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailEscalated": {
+    "message": "升级",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailIfRejected": {
+    "message": "如果被拒绝",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailIfApproved": {
+    "message": "如果获得批准",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailWhatWillHappen": {
+    "message": "会发生什么",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailWhyApprovalIsRequired": {
+    "message": "为什么需要批准",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailEntity": {
+    "message": "实体",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailContext": {
+    "message": "语境",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailBackToApprovals": {
+    "message": "返回批准",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalInboxEnterRejectionReason": {
+    "message": "输入拒绝原因...",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxReason": {
+    "message": "原因",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRejectingWillBlockThisActionPlease": {
+    "message": "拒绝将阻止此操作。请给出理由。",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRejectApproval": {
+    "message": "拒绝批准",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxDueIn": {
+    "message": "到期时间：",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRequestedAt": {
+    "message": "请求于：",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRequestedBy": {
+    "message": "请求者：",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxAllCaughtUpYouHaveNo": {
+    "message": "都追上了！您没有待处理的批准请求。",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxNoApprovalsPending": {
+    "message": "没有等待批准的情况",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxReviewAndApprovePendingRequests": {
+    "message": "审查并批准待处理的请求",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxApprovals": {
+    "message": "批准",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "demoRequestsEnterprise": {
+    "message": "企业",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsProfessional": {
+    "message": "专业的",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsStarter": {
+    "message": "起动机",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsTrial15Days": {
+    "message": "试用（15天）",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSubscriptionTier": {
+    "message": "订阅等级",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsEnterTemporaryPasswordForOwner": {
+    "message": "输入所有者的临时密码",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvert": {
+    "message": "转变",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvertToOrganization": {
+    "message": "转换为组织",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted": {
+    "message": "已转换",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoCompleted": {
+    "message": "演示完成",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoScheduled": {
+    "message": "预定演示",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContacted": {
+    "message": "已联系",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsUpdateStatus": {
+    "message": "更新状态",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisContactExistsInASeparate": {
+    "message": "此联系人存在于单独的组织中。他们登录后将看到自己的 CRM 数据。",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactPhone": {
+    "message": "联系电话：",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactEmail": {
+    "message": "联系邮箱：",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContact": {
+    "message": "接触：",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsOrganization": {
+    "message": "组织：",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisProspectIsAlreadyInYour": {
+    "message": "该潜在客户已存在于您的 CRM 中！",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsJobTitle": {
+    "message": "职称：",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsPhone": {
+    "message": "电话：",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsEmail": {
+    "message": "电子邮件：",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactName": {
+    "message": "联系人姓名：",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactInformation": {
+    "message": "联系信息",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanySize": {
+    "message": "公司规模：",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsIndustry": {
+    "message": "行业：",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanyName": {
+    "message": "公司名称：",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanyInformation": {
+    "message": "公司资料",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoRequestDetails": {
+    "message": "演示请求详细信息",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsNoDemoRequestsFound": {
+    "message": "未找到演示请求",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvert2": {
+    "message": "转变",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvertToOrganization2": {
+    "message": "转换为组织",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSize": {
+    "message": "尺寸",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsLoadingDemoRequests": {
+    "message": "正在加载演示请求...",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted2": {
+    "message": "已转换",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoCompleted2": {
+    "message": "演示完成",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoScheduled2": {
+    "message": "预定演示",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContacted2": {
+    "message": "已联系",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSearchDemoRequests": {
+    "message": "搜索演示请求...",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted3": {
+    "message": "已转换",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisMonth": {
+    "message": "本月",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsTotalRequests": {
+    "message": "请求总数",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "publicBookingViewPoweredByYourCrm": {
+    "message": "由您的 CRM 提供支持",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYourDetails": {
+    "message": "您的详细信息",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYourTime": {
+    "message": "你的时间",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewAvailableTimes": {
+    "message": "可用时间",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewPickADate": {
+    "message": "选择日期",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewBookWithOurTeam": {
+    "message": "与我们的团队预订",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewRescheduleOrCancel": {
+    "message": "重新安排或取消",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewAConfirmationHasBeenSentTo": {
+    "message": "确认信息已发送至您的电子邮件。您会在预约前收到提醒。",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYoureBooked": {
+    "message": "您已被预订！",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewPageUnavailable": {
+    "message": "页面不可用",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewLoadingCalendar": {
+    "message": "加载日历...",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "notificationOverviewOpenHealthDashboard": {
+    "message": "打开健康仪表板",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewViewDeliveryStatisticsChannelHealthEvent": {
+    "message": "查看传送统计数据、通道运行状况、事件量和用户通知模式。在潜在问题影响您的团队之前识别它们。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewHealthDashboard": {
+    "message": "健康仪表板",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewMonitorNotificationDeliveryHealthAndAnalytics": {
+    "message": "监控整个组织的通知传递运行状况和分析。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAdminTools": {
+    "message": "管理工具",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageDigests": {
+    "message": "管理摘要",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewReceiveDailyOrWeeklySummariesOf": {
+    "message": "接收每日或每周的通知摘要，而不是实时警报。在保持消息灵通的同时减少通知噪音。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewDigests": {
+    "message": "摘要",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageRules": {
+    "message": "管理规则",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewCreateCustomNotificationConditionsSetUp": {
+    "message": "创建自定义通知条件。根据任务、优先级、状态等设置规则。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManagePreferences": {
+    "message": "管理偏好设置",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewToggleWhatTypesOfNotificationsYou": {
+    "message": "切换您收到每个事件的通知类型。控制每种通知类型使用哪些通道。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewPreferences": {
+    "message": "偏好设置",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewCustomizeYourNotificationExperienceToMatch": {
+    "message": "自定义您的通知体验以匹配您的工作流程。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewYourNotificationControl": {
+    "message": "您的通知控件",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageDeliveryChannels": {
+    "message": "管理交付渠道",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable": {
+    "message": "可配置",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable2": {
+    "message": "可配置",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhatsapp": {
+    "message": "WhatsApp",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable3": {
+    "message": "可配置",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewPush": {
+    "message": "推",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable4": {
+    "message": "可配置",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAlwaysOn": {
+    "message": "始终开启",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewChooseWhereAndHowYouReceive": {
+    "message": "选择在不同的传递渠道中接收通知的位置和方式。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewHowYoureNotified": {
+    "message": "如何通知您",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined": {
+    "message": "系统定义",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAccountActivitySystemUpdatesAndCompliance": {
+    "message": "帐户活动、系统更新和合规性相关通知。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined2": {
+    "message": "系统定义",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewActivityThatInvolvesCollaborationAndReview": {
+    "message": "涉及协作和审查的活动。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConversations": {
+    "message": "对话",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewRemindersForUpcomingOrOverdueItems": {
+    "message": "即将到来或过期的项目的提醒。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewDeadlines": {
+    "message": "截止日期",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewStatusChangesSubmissionsApprovalsAndOther": {
+    "message": "状态更改、提交、批准和其他重要更新。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined3": {
+    "message": "系统定义",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhenTasksAuditsOrCorrectiveActions": {
+    "message": "当任务、审核或纠正措施分配给您时。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAssignments": {
+    "message": "作业",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewNotificationsAreOrganizedByIntentTo": {
+    "message": "通知按目的进行组织，以帮助您随时了解情况而不会不知所措。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhatYoureNotifiedAbout": {
+    "message": "您收到的通知内容",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewLearnHowNotificationsWorkAndWhat": {
+    "message": "了解通知的工作原理以及您可以控制的内容。",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewNotificationOverview": {
+    "message": "通知概述",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationHealthHighVolume": {
+    "message": "高产量",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoUserDataAvailable": {
+    "message": "没有可用的用户数据",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthFlag": {
+    "message": "旗帜",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthReceived": {
+    "message": "已收到",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthHighVolumeUsers": {
+    "message": "大容量用户",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoEventDataAvailable": {
+    "message": "无可用事件数据",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthTopEventTypes": {
+    "message": "热门事件类型",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoChannelDataAvailable": {
+    "message": "无可用频道数据",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthLastFailure": {
+    "message": "最后的失败",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthSent": {
+    "message": "发送",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthChannelHealth": {
+    "message": "频道健康",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthDegradedChannels": {
+    "message": "降级频道",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthActiveChannels": {
+    "message": "活跃频道",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthReadRate": {
+    "message": "读取率",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthTotalNotifications": {
+    "message": "通知总数",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthMonitorNotificationDeliveryAndChannelHealth": {
+    "message": "监控通知传递和通道健康状况",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNotificationHealth": {
+    "message": "通知健康状况",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthHealth": {
+    "message": "健康",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationPreferencesReceiveAWeeklySummaryViaEmail": {
+    "message": "通过电子邮件接收每周摘要。非常适合随时了解情况而不受日常打扰。",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWeeklyDigest": {
+    "message": "每周文摘",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesReceiveADailySummaryOfYour": {
+    "message": "接收每日通知摘要。减少通知噪音，同时让您随时了解情况。",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesDailyDigest": {
+    "message": "每日文摘",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesReceiveSummariesInsteadOfRealTime": {
+    "message": "接收摘要而不是实时通知",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationDigests": {
+    "message": "通知摘要",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSmsIsOnlyUsedAsA": {
+    "message": "仅当其他渠道不可用时，短信才会被用作最后的手段。消息保持简短，并尽可能包含深层链接。",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSmsNotifications": {
+    "message": "短信通知",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWhatsappNotificationsAreOnlySentFor": {
+    "message": "WhatsApp 通知仅针对审核和门户应用程序中的高优先级事件发送。",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWhatsappNotifications": {
+    "message": "WhatsApp 通知",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPushNotificationsAreBlockedEnableThem": {
+    "message": "推送通知被阻止。在浏览器设置中启用它们。",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesTestNotification": {
+    "message": "测试通知",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesEnablePushNotifications": {
+    "message": "启用推送通知",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPushNotifications": {
+    "message": "推送通知",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesThereAreNoConfigurableNotificationEvents": {
+    "message": "此应用程序还没有可配置的通知事件。\n          通知将继续使用其安全默认值。",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesInApp": {
+    "message": "在应用程序中",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSystemEventManagedByArivu": {
+    "message": "系统事件（由 Arivu 管理）",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesClickAChannelToJumpTo": {
+    "message": "单击频道可跳转至其设置。禁用的频道不适用于此应用程序。",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationDelivery": {
+    "message": "通知发送",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWeCouldntLoadYourNotificationPreferences": {
+    "message": "我们现在无法加载您的通知首选项。通知将\n        继续使用它们的默认值。您可以继续安全地使用该应用程序。",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesCouldntSaveChangesPleaseTryAgain": {
+    "message": "无法保存更改。请再试一次。",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesHealthDashboard": {
+    "message": "健康仪表板",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationRules": {
+    "message": "通知规则",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesControlInAppAndEmailNotifications": {
+    "message": "控制此工作区的应用内通知和电子邮件通知。",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationPreferences": {
+    "message": "通知首选项",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPreferences": {
+    "message": "偏好设置",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationRulesDeleteRule": {
+    "message": "删除规则",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesEditRule": {
+    "message": "编辑规则",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesCreateYourFirstRule": {
+    "message": "创建您的第一条规则",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesGetStartedByCreatingYourFirst": {
+    "message": "首先创建您的第一个通知规则。",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesNoNotificationRulesYet": {
+    "message": "尚无通知规则",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesFailedToLoadNotificationRules": {
+    "message": "加载通知规则失败",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesDeleteAnExistingRuleToCreate": {
+    "message": "删除现有规则以创建新规则。",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesCreateCustomNotificationTriggersForModules": {
+    "message": "为您关心的模块创建自定义通知触发器。",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesNotificationRules": {
+    "message": "通知规则",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "contactDetailToastFailedToDeleteContact": {
+    "message": "删除联系人失败",
+    "description": "Toast from ContactDetail.vue"
+  },
+  "contactDetailToastFailedToUnlinkOrganization": {
+    "message": "无法取消组织链接",
+    "description": "Toast from ContactDetail.vue"
+  },
+  "dealDetailToastFailedToDeleteDeal": {
+    "message": "删除交易失败",
+    "description": "Toast from DealDetail.vue"
+  },
+  "dealDetailToastFailedToAddNote": {
+    "message": "添加备注失败",
+    "description": "Toast from DealDetail.vue"
+  },
+  "dealsToastErrorDeletingDealPleaseTry": {
+    "message": "删除交易时出错。请再试一次。",
+    "description": "Toast from Deals.vue"
+  },
+  "dealsToastErrorPerformingBulkActionPlease": {
+    "message": "执行批量操作时出错。请再试一次。",
+    "description": "Toast from Deals.vue"
+  },
+  "dealsToastFailedToExportDeals": {
+    "message": "导出交易失败。",
+    "description": "Toast from Deals.vue"
+  },
+  "demoRequestsToastFailedToUpdateStatus": {
+    "message": "更新状态失败",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "demoRequestsToastSuccessfullyConvertedToOrganization": {
+    "message": "成功转为组织！",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "demoRequestsToastFailedToConvertRequest": {
+    "message": "转换请求失败",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "eventDetailToastFailedToDeleteEvent": {
+    "message": "删除事件失败",
+    "description": "Toast from EventDetail.vue"
+  },
+  "eventDetailToastFailedToAddNote": {
+    "message": "添加备注失败",
+    "description": "Toast from EventDetail.vue"
+  },
+  "eventExecutionSurfaceToastLocationIsRequiredForCheck": {
+    "message": "办理入住手续时需要提供位置信息。请允许位置访问并重试。",
+    "description": "Toast from EventExecutionSurface.vue"
+  },
+  "eventsToastErrorPerformingBulkActionPlease": {
+    "message": "执行批量操作时出错。请再试一次。",
+    "description": "Toast from Events.vue"
+  },
+  "eventsToastErrorExportingEventsPleaseTry": {
+    "message": "导出事件时出错。请再试一次。",
+    "description": "Toast from Events.vue"
+  },
+  "groupDetailToastFailedToLoadGroup": {
+    "message": "加载组失败",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToAddMember": {
+    "message": "添加会员失败",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToRemoveMember": {
+    "message": "删除会员失败",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToDeleteGroup": {
+    "message": "删除群组失败",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupsToastErrorPerformingBulkActionPlease": {
+    "message": "执行批量操作时出错。请再试一次。",
+    "description": "Toast from Groups.vue"
+  },
+  "groupsToastErrorDeletingGroupPleaseTry": {
+    "message": "删除组时出错。请再试一次。",
+    "description": "Toast from Groups.vue"
+  },
+  "organizationDetailToastFailedToDeleteOrganizationPlease": {
+    "message": "删除组织失败。请再试一次。",
+    "description": "Toast from OrganizationDetail.vue"
+  },
+  "organizationsToastUnknownError": {
+    "message": "未知错误",
+    "description": "Toast from Organizations.vue"
+  },
+  "organizationsToastErrorExportingOrganizationsPleaseTry": {
+    "message": "导出组织时出错。请再试一次。",
+    "description": "Toast from Organizations.vue"
+  },
+  "organizationsToastErrorExportingOrganizationsPleaseTry2": {
+    "message": "导出组织时出错。请再试一次。",
+    "description": "Toast from Organizations.vue"
+  },
+  "peopleToastUnknownError": {
+    "message": "未知错误",
+    "description": "Toast from People.vue"
+  },
+  "peopleToastErrorExportingPeoplePleaseTry": {
+    "message": "导出人员时出错。请再试一次。",
+    "description": "Toast from People.vue"
+  },
+  "peopleToastErrorExportingContactsPleaseTry": {
+    "message": "导出联系人时出错。请再试一次。",
+    "description": "Toast from People.vue"
+  },
+  "responsesToastFormIdNotFoundPlease": {
+    "message": "未找到表单 ID。请刷新页面并重试。",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToApproveResponsePlease": {
+    "message": "无法批准回复。请再试一次。",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease2": {
+    "message": "未找到表单 ID。请刷新页面并重试。",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToRejectResponsePlease": {
+    "message": "无法拒绝响应。请再试一次。",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease3": {
+    "message": "未找到表单 ID。请刷新页面并重试。",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease4": {
+    "message": "未找到表单 ID。请刷新页面并重试。",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToRestoreResponsePlease": {
+    "message": "无法恢复响应。请再试一次。",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastSubmittedResponsesCannotBeDeleted": {
+    "message": "已提交的回复无法删除。请改用存档或无效。",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease5": {
+    "message": "未找到表单 ID。请刷新页面并重试。",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToDeleteResponsePlease": {
+    "message": "删除回复失败。请再试一次。",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastExportFunctionalityForAllResponses": {
+    "message": "所有回复的导出功能即将推出！",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastAnErrorOccurredDuringExport": {
+    "message": "导出期间发生错误。",
+    "description": "Toast from Responses.vue"
+  },
+  "tasksToastFailedToUpdateTaskStatus": {
+    "message": "更新任务状态失败",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastFailedToDeleteTask": {
+    "message": "删除任务失败。",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastErrorPerformingBulkActionPlease": {
+    "message": "执行批量操作时出错。请再试一次。",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastErrorExportingTasksPleaseTry": {
+    "message": "导出任务时出错。请再试一次。",
+    "description": "Toast from Tasks.vue"
+  },
+  "trashToastRestoredSomeParentRecordsWere": {
+    "message": "已恢复。一些家长记录被永久删除。",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToRestore": {
+    "message": "恢复失败",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToRestore2": {
+    "message": "恢复失败",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToDelete": {
+    "message": "删除失败",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToDelete2": {
+    "message": "删除失败",
+    "description": "Toast from Trash.vue"
+  },
+  "notificationPreferencesToastPushNotificationsAreNotSupported": {
+    "message": "此浏览器不支持推送通知。",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastEnablePushNotifications": {
+    "message": "启用推送通知",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastNotificationsAreNotSupportedIn": {
+    "message": "此浏览器不支持通知。",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationTriggeredCheckYour": {
+    "message": "测试通知已触发。检查您的系统通知。",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationTriggeredIfYou": {
+    "message": "测试通知已触发。如果您没有看到它，请检查通知中心/浏览器操作系统设置。",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastUnknownError": {
+    "message": "未知错误",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationFailedSeeConsole": {
+    "message": "测试通知失败。有关详细信息，请参阅控制台。",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationRulesToastFailedToDeleteRulePlease": {
+    "message": "删除规则失败。请再试一次。",
+    "description": "Toast from NotificationRules.vue"
+  },
+  "pronounYou": {
+    "message": "你",
+    "description": "First-person actor label in activity feed"
+  },
+  "relativeJustNow": {
+    "message": "刚刚",
+    "description": "Relative time under one minute"
+  },
+  "relativeOneMinuteAgo": {
+    "message": "1 分钟前",
+    "description": "Relative time one minute"
+  },
+  "relativeManyMinutesAgo": {
+    "message": "{count} 分钟前",
+    "description": "Relative time multiple minutes"
+  },
+  "relativeOneHourAgo": {
+    "message": "1 小时前",
+    "description": "Relative time one hour"
+  },
+  "relativeManyHoursAgo": {
+    "message": "{count} 小时前",
+    "description": "Relative time multiple hours"
+  },
+  "relativeOneDayAgo": {
+    "message": "1 天前",
+    "description": "Relative time one day"
+  },
+  "relativeManyDaysAgo": {
+    "message": "{count} 天前",
+    "description": "Relative time multiple days"
+  },
+  "relativeOneMonthAgo": {
+    "message": "1 个月前",
+    "description": "Relative time one month"
+  },
+  "relativeManyMonthsAgo": {
+    "message": "{count} 个月前",
+    "description": "Relative time multiple months"
+  },
+  "relativeOneYearAgo": {
+    "message": "1 年前",
+    "description": "Relative time one year"
+  },
+  "relativeManyYearsAgo": {
+    "message": "{count} 年前",
+    "description": "Relative time multiple years"
+  },
+  "phraseAnnualRevenue": {
+    "message": "年收入",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLeadSource": {
+    "message": "潜在客户来源",
+    "description": "Common tenant custom field label"
+  },
+  "phraseIndustry": {
+    "message": "行业",
+    "description": "Common tenant custom field label"
+  },
+  "phraseWebsite": {
+    "message": "网站",
+    "description": "Common tenant custom field label"
+  },
+  "phraseFax": {
+    "message": "传真",
+    "description": "Common tenant custom field label"
+  },
+  "phraseAddress": {
+    "message": "地址",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCity": {
+    "message": "城市",
+    "description": "Common tenant custom field label"
+  },
+  "phraseState": {
+    "message": "状态",
+    "description": "Common tenant custom field label"
+  },
+  "phraseZipCode": {
+    "message": "邮政编码",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCountry": {
+    "message": "国家",
+    "description": "Common tenant custom field label"
+  },
+  "phraseDepartment": {
+    "message": "部门",
+    "description": "Common tenant custom field label"
+  },
+  "phraseJobTitle": {
+    "message": "职称",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLinkedin": {
+    "message": "领英",
+    "description": "Common tenant custom field label"
+  },
+  "phrasePriority": {
+    "message": "优先事项",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRating": {
+    "message": "等级",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCategory": {
+    "message": "类别",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSubcategory": {
+    "message": "子类别",
+    "description": "Common tenant custom field label"
+  },
+  "phraseProduct": {
+    "message": "产品",
+    "description": "Common tenant custom field label"
+  },
+  "phraseQuantity": {
+    "message": "数量",
+    "description": "Common tenant custom field label"
+  },
+  "phraseUnitPrice": {
+    "message": "单价",
+    "description": "Common tenant custom field label"
+  },
+  "phraseDiscount": {
+    "message": "折扣",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTax": {
+    "message": "税",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTotal": {
+    "message": "全部的",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSubtotal": {
+    "message": "小计",
+    "description": "Common tenant custom field label"
+  },
+  "phraseContractStart": {
+    "message": "合约开始",
+    "description": "Common tenant custom field label"
+  },
+  "phraseContractEnd": {
+    "message": "合约结束",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRenewalDate": {
+    "message": "续订日期",
+    "description": "Common tenant custom field label"
+  },
+  "phraseMrr": {
+    "message": "MRR",
+    "description": "Common tenant custom field label"
+  },
+  "phraseArr": {
+    "message": "ARR",
+    "description": "Common tenant custom field label"
+  },
+  "phraseEmployees": {
+    "message": "雇员",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRevenue": {
+    "message": "收入",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTerritory": {
+    "message": "领土",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRegion": {
+    "message": "地区",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTimezone": {
+    "message": "时区",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCurrency": {
+    "message": "货币",
+    "description": "Common tenant custom field label"
+  },
+  "phrasePoNumber": {
+    "message": "采购订单号",
+    "description": "Common tenant custom field label"
+  },
+  "phraseInvoiceNumber": {
+    "message": "发票号码",
+    "description": "Common tenant custom field label"
+  },
+  "phraseOrderNumber": {
+    "message": "订单号",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSerialNumber": {
+    "message": "序列号",
+    "description": "Common tenant custom field label"
+  },
+  "phraseExternalId": {
+    "message": "外部ID",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLastActivity": {
+    "message": "上次活动",
+    "description": "Common tenant custom field label"
+  },
+  "phraseNextFollowUp": {
+    "message": "下一步跟进",
+    "description": "Common tenant custom field label"
+  },
+  "phraseInfluencer": {
+    "message": "影响者",
+    "description": "Common tenant custom field label"
+  },
+  "phraseMobile": {
+    "message": "移动的",
+    "description": "Common tenant custom field label"
+  },
+  "phraseColor": {
+    "message": "颜色",
+    "description": "Common tenant custom field label"
+  },
+  "phraseEmoji": {
+    "message": "表情符号",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTrend": {
+    "message": "趋势",
+    "description": "Common tenant custom field label"
+  },
+  "phraseAccount": {
+    "message": "帐户",
+    "description": "Common tenant custom field label"
+  },
+  "phraseHelpdesk": {
+    "message": "服务台",
+    "description": "App/product name"
+  },
+  "phrasePortal": {
+    "message": "门户网站",
+    "description": "App/product name"
+  },
+  "fieldRequiredBadge": {
+    "message": "Required",
+    "description": "Badge on required fields in settings and forms"
+  },
+  "required": {
+    "message": "Required",
+    "description": "Required field indicator (alias for settings badges)"
+  },
+  "listSearchModule": {
+    "message": "Search {module}...",
+    "description": "Module list search placeholder"
+  },
+  "listCreateModule": {
+    "message": "New {module}",
+    "description": "Generic module list create button"
+  },
+  "listViewAllModule": {
+    "message": "All {module}",
+    "description": "Generic all-records list view title"
+  },
+  "listViewMyModule": {
+    "message": "My {module}",
+    "description": "Generic assigned-to-me list view title"
+  },
+  "listViewCustom": {
+    "message": "Custom",
+    "description": "List view title when filters or search are applied"
+  },
+  "listStatAssignedToMe": {
+    "message": "Assigned to Me",
+    "description": "List statistics card label"
+  },
+  "listStatUnassigned": {
+    "message": "Unassigned",
+    "description": "List statistics card label"
+  },
+  "listStatCompleted": {
+    "message": "Completed",
+    "description": "List statistics card label"
+  },
+  "listStatOverdue": {
+    "message": "Overdue",
+    "description": "List statistics card label"
+  },
+  "listDefaultViewTooltip": {
+    "message": "Default list (loads when opening)",
+    "description": "Tooltip on active default saved list view"
+  },
+  "listSetDefaultViewTooltip": {
+    "message": "Set as default list",
+    "description": "Tooltip to mark a saved list view as default"
+  },
+  "listCoreFields": {
+    "message": "Core Fields",
+    "description": "Customize list field group label"
+  },
+  "listParticipationFields": {
+    "message": "Participation",
+    "description": "Customize list field group label"
+  },
+  "listSystemFields": {
+    "message": "System Fields",
+    "description": "Customize list field group label"
+  },
+  "listParticipationApp": {
+    "message": "Participation: {app}",
+    "description": "Customize list participation field group label"
+  },
+  "listRowHeightSmall": {
+    "message": "Small",
+    "description": "List row height option"
+  },
+  "listRowHeightMedium": {
+    "message": "Medium",
+    "description": "List row height option"
+  },
+  "listRowHeightLarge": {
+    "message": "Large",
+    "description": "List row height option"
+  },
+  "listRowHeightHuge": {
+    "message": "Huge",
+    "description": "List row height option"
+  },
+  "listEmptyTitle": {
+    "message": "No records yet",
+    "description": "Default list empty state title"
+  },
+  "listEmptyMessage": {
+    "message": "Start by adding your first record",
+    "description": "Default list empty state description"
+  },
+  "listEmptyNoModuleYet": {
+    "message": "No {module} yet",
+    "description": "Module list empty state title"
+  },
+  "listEmptyModuleWillAppear": {
+    "message": "{module} will appear here as you add them.",
+    "description": "Module list empty state description"
+  },
+  "listEmptyNoMatchFilters": {
+    "message": "No {module} match your filters",
+    "description": "List empty title when filters are active"
+  },
+  "listEmptyNoMatchSearchAndFilters": {
+    "message": "No {module} match your search or filters. Try adjusting them or clear everything to start over.",
+    "description": "List empty message when search and filters are active"
+  },
+  "listEmptyNoMatchSearch": {
+    "message": "We couldn't find any {module} matching \"{query}\". Try a different keyword or clear the search.",
+    "description": "List empty message when search is active"
+  },
+  "listEmptyNoMatchFiltersOnly": {
+    "message": "No {module} match your filters. Try adjusting or clearing them to see more results.",
+    "description": "List empty message when only filters are active"
+  },
+  "listClearSearchAndFilters": {
+    "message": "Clear search & filters",
+    "description": "Button to reset list search and filters"
+  },
+  "listFilterAll": {
+    "message": "All {filter}",
+    "description": "Filter dropdown placeholder when no value selected"
+  },
+  "listUnknown": {
+    "message": "Unknown",
+    "description": "Fallback label for unknown filter option"
+  },
+  "listNoDataAvailable": {
+    "message": "No data available",
+    "description": "Table empty state title fallback"
+  },
+  "listNoRecordsFound": {
+    "message": "No records found.",
+    "description": "Table empty state message fallback"
+  },
+  "listEmptyIllustrationAlt": {
+    "message": "No records illustration",
+    "description": "Alt text for list empty state illustration"
+  },
+  "phraseDefaultInParens": {
+    "message": "(Default)",
+    "description": "Suffix for default pipeline or option"
+  }
+}

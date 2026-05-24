@@ -37,9 +37,7 @@
         <span
           v-if="relationship.required && !relationship.requiredSatisfied"
           class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300"
-        >
-          Required
-        </span>
+        >{{ t('settings.coreModDetailRequired') }}</span>
         
         <!-- Phase 2E: Required Relationship Info Hint (non-blocking) -->
         <span
@@ -80,6 +78,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, computed, watch } from 'vue';
 import { ChevronRightIcon } from '@heroicons/vue/24/outline';
 import RelatedRecordRow from './RelatedRecordRow.vue';
@@ -104,6 +103,8 @@ const props = defineProps({
     default: () => 'Access denied'
   }
 });
+
+const { t } = useI18n();
 
 const route = useRoute();
 const isExpanded = ref(true); // Default expanded

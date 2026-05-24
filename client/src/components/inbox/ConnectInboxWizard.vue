@@ -24,7 +24,7 @@
           <button
             type="button"
             class="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-800 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-            aria-label="Close"
+            :aria-label="t('settings.roleDrawerCloseSr')"
             @click="close"
           >
             <XMarkIcon class="h-5 w-5" />
@@ -32,8 +32,7 @@
         </div>
 
         <div class="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-          <label class="block text-sm font-medium text-gray-800 dark:text-gray-200">
-            Work email address <span class="text-red-600 dark:text-red-400">*</span>
+          <label class="block text-sm font-medium text-gray-800 dark:text-gray-200">{{ t('inbox.connectInboxWizardWorkEmailAddress') }}<span class="text-red-600 dark:text-red-400">*</span>
             <input
               v-model="emailHint"
               type="email"
@@ -48,15 +47,9 @@
           <div
             class="mt-4 rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 text-xs leading-relaxed text-gray-700 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-300"
           >
-            <p class="font-medium text-gray-900 dark:text-white">Before you approve access</p>
-            <p class="mt-2">
-              Google may show a warning for apps in testing. Use
-              <span class="font-medium">Advanced</span>
-              to proceed if you trust this workspace.
-            </p>
-            <p class="mt-2 text-gray-600 dark:text-gray-400">
-              LiteDesk uses a read-only Gmail scope to import messages you already have access to.
-            </p>
+            <p class="font-medium text-gray-900 dark:text-white">{{ t('inbox.connectInboxWizardBeforeYouApproveAccess') }}</p>
+            <p class="mt-2">{{ t('inbox.connectInboxWizardGoogleMayShowAWarningFor') }}<span class="font-medium">{{ t('settings.settingsRelDrawerAdvanced') }}</span>{{ t('inbox.connectInboxWizardToProceedIfYouTrustThis') }}</p>
+            <p class="mt-2 text-gray-600 dark:text-gray-400">{{ t('inbox.connectInboxWizardLitedeskUsesAReadOnlyGmail') }}</p>
           </div>
         </div>
 
@@ -65,9 +58,7 @@
             type="button"
             class="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
             @click="close"
-          >
-            Cancel
-          </button>
+          >{{ t('performance.cancelWizard') }}</button>
           <button
             type="button"
             class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50"
@@ -83,6 +74,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, computed, watch } from 'vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import { getInboxProvider } from '@/constants/inboxProviders';
@@ -93,6 +85,8 @@ const props = defineProps({
   initialEmail: { type: String, default: '' },
   providerId: { type: String, default: 'google' }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['update:modelValue', 'connect']);
 

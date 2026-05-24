@@ -2,14 +2,14 @@
   <div class="space-y-6">
     <div class="flex flex-col sm:flex-row sm:items-end gap-4 justify-between">
       <div>
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Operational insights</h3>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.settingsBhInsightsTitle') }}</h3>
         <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-          Daily KPIs based on your company schedule — helpdesk activity, deferrals, and SLA breaches outside hours.
+          {{ t('settings.settingsBhInsightsDesc') }}
         </p>
       </div>
       <div class="flex flex-wrap items-end gap-3">
         <div>
-          <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">From</label>
+          <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('common.filterFrom') }}</label>
           <input
             v-model="filters.from"
             type="date"
@@ -17,7 +17,7 @@
           />
         </div>
         <div>
-          <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">To</label>
+          <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('common.filterTo') }}</label>
           <input
             v-model="filters.to"
             type="date"
@@ -30,7 +30,7 @@
           :disabled="loading"
           @click="loadKpis"
         >
-          {{ loading ? 'Loading…' : 'Refresh' }}
+          {{ loading ? t('states.loading') : t('actions.refresh') }}
         </button>
         <button
           type="button"
@@ -38,7 +38,7 @@
           :disabled="aggregating"
           @click="runAggregate"
         >
-          {{ aggregating ? 'Aggregating…' : 'Recompute yesterday' }}
+          {{ aggregating ? t('settings.settingsBhAggregating') : t('settings.settingsBhRecomputeYesterday') }}
         </button>
       </div>
     </div>
@@ -61,14 +61,19 @@
       v-if="series.length"
       class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5"
     >
-      <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">Daily trend</h4>
+      <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">{{ t('settings.settingsBhDailyTrend') }}</h4>
       <div class="space-y-3 max-h-80 overflow-y-auto">
         <div v-for="row in series" :key="row.date" class="space-y-1">
           <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400">
             <span>{{ row.date }}</span>
             <span>
-              In-hours {{ row.activitiesInsideHours }} · Overtime {{ row.overtimeCount }} · SLA off-hours
-              {{ row.slaBreachesOffHours }}
+              {{
+                t('settings.settingsBhTrendRow', {
+                  inside: row.activitiesInsideHours,
+                  overtime: row.overtimeCount,
+                  sla: row.slaBreachesOffHours
+                })
+              }}
             </span>
           </div>
           <div class="h-2 rounded bg-gray-100 dark:bg-gray-700 overflow-hidden">
@@ -79,16 +84,18 @@
     </div>
 
     <p v-else-if="!loading" class="text-sm text-gray-500 dark:text-gray-400 text-center py-8">
-      No KPI data yet. Click “Recompute yesterday” or wait for the nightly aggregation job.
+      {{ t('settings.settingsBhNoKpiData') }}
     </p>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
 
+const { t } = useI18n();
 const { success: notifySuccess, error: notifyError } = useNotifications();
 
 const loading = ref(false);
@@ -122,27 +129,30 @@ function formatMinutes(mins) {
 
 const summaryCards = computed(() => {
   if (!totals.value) return [];
-  const t = totals.value;
+  const row = totals.value;
   return [
     {
-      label: 'Capacity (period)',
-      value: formatMinutes(t.businessMinutesAvailable),
-      hint: 'Scheduled open minutes'
+      label: t('settings.settingsBhKpiCapacity'),
+      value: formatMinutes(row.businessMinutesAvailable),
+      hint: t('settings.settingsBhKpiCapacityHint')
     },
     {
-      label: 'In-hours activity',
-      value: t.activitiesInsideHours,
-      hint: `${t.utilizationPercent}% of logged activity`
+      label: t('settings.settingsBhKpiInHours'),
+      value: row.activitiesInsideHours,
+      hint: t('settings.settingsBhKpiInHoursHint', { pct: row.utilizationPercent })
     },
     {
-      label: 'Overtime activity',
-      value: t.overtimeCount,
-      hint: 'Case work outside schedule'
+      label: t('settings.settingsBhKpiOvertime'),
+      value: row.overtimeCount,
+      hint: t('settings.settingsBhKpiOvertimeHint')
     },
     {
-      label: 'SLA breaches (off-hours)',
-      value: t.slaBreachesOffHours,
-      hint: `Deferred: ${t.assignmentDeferredCount} assign · ${t.automationDeferredCount} auto`
+      label: t('settings.settingsBhKpiSlaOffHours'),
+      value: row.slaBreachesOffHours,
+      hint: t('settings.settingsBhKpiDeferredHint', {
+        assign: row.assignmentDeferredCount,
+        auto: row.automationDeferredCount
+      })
     }
   ];
 });
@@ -159,7 +169,7 @@ async function loadKpis() {
     series.value = res.data?.series || [];
     totals.value = res.data?.totals || null;
   } catch (e) {
-    error.value = e?.response?.data?.message || e?.message || 'Failed to load KPIs';
+    error.value = e?.response?.data?.message || e?.message || t('settings.settingsBhKpiLoadFailed');
   } finally {
     loading.value = false;
   }
@@ -169,10 +179,10 @@ async function runAggregate() {
   aggregating.value = true;
   try {
     await apiClient.post('/business-hours/kpis/aggregate', {});
-    notifySuccess('Yesterday’s KPIs aggregated');
+    notifySuccess(t('settings.settingsBhKpiAggregated'));
     await loadKpis();
   } catch (e) {
-    notifyError(e?.response?.data?.message || 'Aggregation failed');
+    notifyError(e?.response?.data?.message || t('settings.settingsBhKpiAggregateFailed'));
   } finally {
     aggregating.value = false;
   }

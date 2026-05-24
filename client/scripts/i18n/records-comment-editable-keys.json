@@ -1,0 +1,20 @@
+{
+  "commentComposerDefaultPh": {
+    "message": "Write a comment... @mention users or groups",
+    "description": "Default comment composer placeholder"
+  },
+  "commentAddFile": { "message": "Add a file", "description": "Attach file toolbar button" },
+  "commentMentionTitle": { "message": "Mention someone ({atSymbol})", "description": "Mention toolbar button" },
+  "commentAddEmoji": { "message": "Add emoji", "description": "Emoji picker toolbar button" },
+  "commentSubmitLabel": { "message": "Comment", "description": "Submit comment button label" },
+  "commentMentionLoading": { "message": "Loading…", "description": "Mention dropdown loading" },
+  "commentMentionGroup": { "message": "Group", "description": "Mention item group badge" },
+  "commentMentionEmpty": { "message": "No users or groups found", "description": "Empty mention search" },
+  "commentRemoveAttachment": { "message": "Remove {name}", "description": "Remove attachment aria-label" },
+  "editableListboxSearchPh": { "message": "Search…", "description": "Inline field listbox search" },
+  "editablePhonePh": { "message": "Phone number", "description": "Phone field edit placeholder" },
+  "editableUnassigned": { "message": "Unassigned", "description": "Empty user field value" },
+  "editableSelectOption": { "message": "Select an option", "description": "Empty select/entity option" },
+  "editableNoMatches": { "message": "No matches.", "description": "Listbox filter empty state" },
+  "editableUnknownUser": { "message": "Unknown user", "description": "User option fallback label" }
+}

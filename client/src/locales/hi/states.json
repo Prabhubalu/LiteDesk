@@ -1,0 +1,38 @@
+{
+  "loading": {
+    "message": "लोड हो रहा है...",
+    "description": "Generic loading indicator label"
+  },
+  "empty": {
+    "message": "अभी तक यहां कुछ भी नहीं है",
+    "description": "Empty list or panel placeholder"
+  },
+  "genericFailure": {
+    "message": "कुछ गलत हो गया",
+    "description": "Generic error state headline"
+  },
+  "saved": {
+    "message": "सहेजा गया",
+    "description": "Toast after successful save"
+  },
+  "saving": {
+    "message": "सहेजा जा रहा है...",
+    "description": "Submit button while save is in progress"
+  },
+  "offline": {
+    "message": "आप संपर्क में नहीं हैं",
+    "description": "Network unavailable banner"
+  },
+  "severityCritical": {
+    "message": "गंभीर",
+    "description": "Critical severity label"
+  },
+  "severityWarning": {
+    "message": "चेतावनी",
+    "description": "Warning severity label"
+  },
+  "severityInfo": {
+    "message": "जानकारी",
+    "description": "Info severity label"
+  }
+}

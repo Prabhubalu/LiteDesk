@@ -1,0 +1,1794 @@
+{
+  "unsavedTitle": {
+    "message": "You have unsaved changes",
+    "description": "Sticky save bar title"
+  },
+  "unsavedHintProfile": {
+    "message": "Save to update your profile across the platform.",
+    "description": "Profile save bar hint"
+  },
+  "unsavedHintOrg": {
+    "message": "Save your updates to apply them across the platform.",
+    "description": "Organization save bar hint"
+  },
+  "saveChanges": {
+    "message": "Save changes",
+    "description": "Save changes button"
+  },
+  "discardChanges": {
+    "message": "Discard",
+    "description": "Discard unsaved changes"
+  },
+  "pleaseTryAgain": {
+    "message": "Please try again.",
+    "description": "Generic retry hint"
+  },
+  "secPageSubtitle": {
+    "message": "Configure platform-wide security policies and monitor security activity",
+    "description": "Security settings page subtitle"
+  },
+  "secBannerTitle": {
+    "message": "Platform-Wide Security",
+    "description": "Security info banner title"
+  },
+  "secBannerBody": {
+    "message": "These security policies apply across all applications in your organization. Changes take effect immediately for new sessions. Existing sessions may continue with previous rules until they expire.",
+    "description": "Security info banner body"
+  },
+  "secLoadFailed": {
+    "message": "Failed to load security settings",
+    "description": "Security settings load error"
+  },
+  "secPasswordPolicy": {
+    "message": "Password Policy",
+    "description": "Security section"
+  },
+  "secPasswordPolicyDesc": {
+    "message": "Configure password requirements for all users",
+    "description": "Security section desc"
+  },
+  "secMinLength": {
+    "message": "Minimum Length",
+    "description": "Password policy field"
+  },
+  "secExpirationDays": {
+    "message": "Expiration (Days)",
+    "description": "Password policy field"
+  },
+  "secNoExpiration": {
+    "message": "0 = no expiration",
+    "description": "Password expiration hint"
+  },
+  "secRequireUpper": {
+    "message": "Require Uppercase Letters",
+    "description": "Password policy option"
+  },
+  "secRequireUpperDesc": {
+    "message": "Passwords must contain at least one uppercase letter",
+    "description": "Password policy option desc"
+  },
+  "secRequireLower": {
+    "message": "Require Lowercase Letters",
+    "description": "Password policy option"
+  },
+  "secRequireLowerDesc": {
+    "message": "Passwords must contain at least one lowercase letter",
+    "description": "Password policy option desc"
+  },
+  "secRequireNumbers": {
+    "message": "Require Numbers",
+    "description": "Password policy option"
+  },
+  "secRequireNumbersDesc": {
+    "message": "Passwords must contain at least one number",
+    "description": "Password policy option desc"
+  },
+  "secRequireSpecial": {
+    "message": "Require Special Characters",
+    "description": "Password policy option"
+  },
+  "secRequireSpecialDesc": {
+    "message": "Passwords must contain at least one special character (!@#$%^&*)",
+    "description": "Password policy option desc"
+  },
+  "secPreventReuse": {
+    "message": "Prevent Password Reuse (Last N Passwords)",
+    "description": "Password policy field"
+  },
+  "secNoRestriction": {
+    "message": "0 = no restriction",
+    "description": "Zero means no restriction hint"
+  },
+  "secSessionRules": {
+    "message": "Session Rules",
+    "description": "Security section"
+  },
+  "secSessionRulesDesc": {
+    "message": "Control how long users stay logged in",
+    "description": "Security section desc"
+  },
+  "secSessionDuration": {
+    "message": "Session Duration (Hours)",
+    "description": "Session field"
+  },
+  "secIdleTimeout": {
+    "message": "Idle Timeout (Minutes)",
+    "description": "Session field"
+  },
+  "secMaxSessions": {
+    "message": "Max Concurrent Sessions",
+    "description": "Session field"
+  },
+  "secLoginRestrictions": {
+    "message": "Login Restrictions",
+    "description": "Security section"
+  },
+  "secLoginRestrictionsDesc": {
+    "message": "Control where and how users can log in",
+    "description": "Security section desc"
+  },
+  "secBlockFailed": {
+    "message": "Block Failed Login Attempts",
+    "description": "Login restriction option"
+  },
+  "secBlockFailedDesc": {
+    "message": "Automatically block accounts after multiple failed login attempts",
+    "description": "Login restriction option desc"
+  },
+  "secMaxFailedAttempts": {
+    "message": "Max Failed Attempts",
+    "description": "Login restriction field"
+  },
+  "secLockoutDuration": {
+    "message": "Lockout Duration (Minutes)",
+    "description": "Login restriction field"
+  },
+  "secAllowedIps": {
+    "message": "Allowed IP Addresses (Optional)",
+    "description": "IP whitelist field"
+  },
+  "secAllowedIpsPlaceholder": {
+    "message": "Enter one IP address per line (e.g., 192.168.1.1)",
+    "description": "IP whitelist placeholder"
+  },
+  "secAllowedIpsHint": {
+    "message": "Leave empty to allow all IP addresses. Enter one IP per line.",
+    "description": "IP whitelist hint"
+  },
+  "secBlockedIps": {
+    "message": "Blocked IP Addresses",
+    "description": "IP blacklist field"
+  },
+  "secBlockedIpsPlaceholder": {
+    "message": "Enter one IP address per line",
+    "description": "IP blacklist placeholder"
+  },
+  "secBlockedIpsHint": {
+    "message": "Enter one IP per line to block.",
+    "description": "IP blacklist hint"
+  },
+  "secTwoFactor": {
+    "message": "Two-Factor Authentication",
+    "description": "Security section"
+  },
+  "secTwoFactorDesc": {
+    "message": "Add an extra layer of security to user accounts",
+    "description": "Security section desc"
+  },
+  "secEnable2fa": {
+    "message": "Enable Two-Factor Authentication",
+    "description": "2FA option"
+  },
+  "secEnable2faDesc": {
+    "message": "Allow users to enable 2FA for their accounts",
+    "description": "2FA option desc"
+  },
+  "secRequire2fa": {
+    "message": "Require Two-Factor Authentication",
+    "description": "2FA option"
+  },
+  "secRequire2faDesc": {
+    "message": "All users must enable 2FA to access the platform",
+    "description": "2FA option desc"
+  },
+  "sec2faMethods": {
+    "message": "Allowed Methods",
+    "description": "2FA methods label"
+  },
+  "sec2faTotp": {
+    "message": "TOTP (Authenticator App)",
+    "description": "2FA method"
+  },
+  "sec2faSms": {
+    "message": "SMS",
+    "description": "2FA method"
+  },
+  "sec2faEmail": {
+    "message": "Email",
+    "description": "2FA method"
+  },
+  "secReset": {
+    "message": "Reset",
+    "description": "Reset form button"
+  },
+  "secSave": {
+    "message": "Save Security Settings",
+    "description": "Save security settings button"
+  },
+  "secConfirmRisk": {
+    "message": "You are making changes that affect user access. Are you sure you want to continue?",
+    "description": "Confirm dialog for risky security changes"
+  },
+  "secSaveSuccess": {
+    "message": "Security settings updated successfully",
+    "description": "Save success message"
+  },
+  "secActivity": {
+    "message": "Security Activity",
+    "description": "Security activity section"
+  },
+  "secActivityDesc": {
+    "message": "Recent login activity and security events",
+    "description": "Security activity section desc"
+  },
+  "secRefresh": {
+    "message": "Refresh",
+    "description": "Refresh activity list"
+  },
+  "secNoActivity": {
+    "message": "No security activity to display",
+    "description": "Empty activity state"
+  },
+  "secLoginSuccess": {
+    "message": "Successful Login",
+    "description": "Activity event type"
+  },
+  "secLoginFailed": {
+    "message": "Failed Login Attempt",
+    "description": "Activity event type"
+  },
+  "profileHeading": {
+    "message": "Your profile",
+    "description": "Profile page heading"
+  },
+  "profileSubtitle": {
+    "message": "How you appear across the platform and the personal preferences that follow you everywhere",
+    "description": "Profile page subtitle"
+  },
+  "profileLoading": {
+    "message": "Loading your profile…",
+    "description": "Profile loading state"
+  },
+  "profileLoadFailed": {
+    "message": "Couldn't load your profile",
+    "description": "Profile error title"
+  },
+  "profileChangeAvatar": {
+    "message": "Change avatar",
+    "description": "Avatar button title"
+  },
+  "profileUploadAvatar": {
+    "message": "Upload avatar",
+    "description": "Avatar button title"
+  },
+  "profileAvatarAlt": {
+    "message": "Your avatar",
+    "description": "Avatar image alt"
+  },
+  "profileStatusAria": {
+    "message": "Status: {status}",
+    "description": "Status dot aria-label"
+  },
+  "profileAddName": {
+    "message": "Add your name",
+    "description": "Placeholder when name empty"
+  },
+  "profileOwner": {
+    "message": "Owner",
+    "description": "Owner badge"
+  },
+  "profileJoined": {
+    "message": "Joined {date}",
+    "description": "Member since badge"
+  },
+  "profileChangePhoto": {
+    "message": "Change photo",
+    "description": "Change avatar button"
+  },
+  "profileUploadPhoto": {
+    "message": "Upload photo",
+    "description": "Upload avatar button"
+  },
+  "profileRemovePhoto": {
+    "message": "Remove photo",
+    "description": "Remove avatar button"
+  },
+  "profileAvatarHint": {
+    "message": "PNG, JPG, GIF, WEBP or SVG · up to 10MB · square works best",
+    "description": "Avatar upload hint"
+  },
+  "profilePersonalInfo": {
+    "message": "Personal information",
+    "description": "Profile section"
+  },
+  "profilePersonalInfoDesc": {
+    "message": "Your name and contact details, visible to teammates",
+    "description": "Profile section desc"
+  },
+  "profileFirstName": {
+    "message": "First name",
+    "description": "Form label"
+  },
+  "profileLastName": {
+    "message": "Last name",
+    "description": "Form label"
+  },
+  "profileFirstNamePh": {
+    "message": "e.g. Alex",
+    "description": "Placeholder"
+  },
+  "profileLastNamePh": {
+    "message": "e.g. Morgan",
+    "description": "Placeholder"
+  },
+  "profilePhone": {
+    "message": "Phone number",
+    "description": "Form label"
+  },
+  "profilePhonePh": {
+    "message": "+1 (555) 123-4567",
+    "description": "Placeholder"
+  },
+  "profilePhoneHint": {
+    "message": "Used for sign-in alerts and account recovery.",
+    "description": "Field hint"
+  },
+  "profileUsername": {
+    "message": "Username",
+    "description": "Form label"
+  },
+  "profileReadOnly": {
+    "message": "(read-only)",
+    "description": "Read-only field marker"
+  },
+  "profileCopyUsername": {
+    "message": "Copy {username}",
+    "description": "Copy username button title"
+  },
+  "profileEmail": {
+    "message": "Email address",
+    "description": "Form label"
+  },
+  "profileEmailAdmin": {
+    "message": "(managed by your admin)",
+    "description": "Email field marker"
+  },
+  "profileEmailHint": {
+    "message": "Your sign-in email can only be changed by an organization admin to keep your account secure.",
+    "description": "Email field hint"
+  },
+  "profileAppearance": {
+    "message": "Appearance",
+    "description": "Profile section"
+  },
+  "profileAppearanceDesc": {
+    "message": "Personal preferences applied just to your sessions",
+    "description": "Profile section desc"
+  },
+  "profileTheme": {
+    "message": "Theme",
+    "description": "Theme label"
+  },
+  "profileThemeActive": {
+    "message": "Active",
+    "description": "Active theme badge"
+  },
+  "profileThemeLight": {
+    "message": "Light",
+    "description": "Theme option"
+  },
+  "profileThemeLightDesc": {
+    "message": "Bright surfaces, classic look",
+    "description": "Theme option desc"
+  },
+  "profileThemeDark": {
+    "message": "Dark",
+    "description": "Theme option"
+  },
+  "profileThemeDarkDesc": {
+    "message": "Easy on the eyes at night",
+    "description": "Theme option desc"
+  },
+  "profileThemeSystem": {
+    "message": "System",
+    "description": "Theme option"
+  },
+  "profileThemeSystemDesc": {
+    "message": "Match your device setting",
+    "description": "Theme option desc"
+  },
+  "profileSignInSecurity": {
+    "message": "Sign-in & security",
+    "description": "Profile section"
+  },
+  "profileSignInSecurityDesc": {
+    "message": "Change your password and review recent activity",
+    "description": "Profile section desc"
+  },
+  "profileChangePassword": {
+    "message": "Change password",
+    "description": "Button"
+  },
+  "profilePasswordLabel": {
+    "message": "Password",
+    "description": "Summary card label"
+  },
+  "profilePasswordHint": {
+    "message": "Use a long passphrase you don't reuse anywhere else.",
+    "description": "Password hint"
+  },
+  "profileLastSignIn": {
+    "message": "Last sign-in",
+    "description": "Summary card label"
+  },
+  "profileJustNow": {
+    "message": "Just now",
+    "description": "Relative time fallback"
+  },
+  "profileAccountStatus": {
+    "message": "Account status",
+    "description": "Summary card label"
+  },
+  "profileStandardAccount": {
+    "message": "standard account",
+    "description": "Account type fallback"
+  },
+  "profileUserType": {
+    "message": "{type} user",
+    "description": "User type label"
+  },
+  "profileCurrentPassword": {
+    "message": "Current password",
+    "description": "Password form label"
+  },
+  "profileCurrentPasswordPh": {
+    "message": "Enter your current password",
+    "description": "Placeholder"
+  },
+  "profileNewPassword": {
+    "message": "New password",
+    "description": "Password form label"
+  },
+  "profileNewPasswordPh": {
+    "message": "At least 8 characters",
+    "description": "Placeholder"
+  },
+  "profileConfirmPassword": {
+    "message": "Confirm new password",
+    "description": "Password form label"
+  },
+  "profileConfirmPasswordPh": {
+    "message": "Re-enter your new password",
+    "description": "Placeholder"
+  },
+  "profilePasswordMismatch": {
+    "message": "Passwords don't match yet.",
+    "description": "Validation message"
+  },
+  "profileUpdatePassword": {
+    "message": "Update password",
+    "description": "Submit button"
+  },
+  "profileUpdating": {
+    "message": "Updating…",
+    "description": "Submit loading"
+  },
+  "profilePwdRuleLen": {
+    "message": "At least 8 characters",
+    "description": "Password rule"
+  },
+  "profilePwdRuleUpper": {
+    "message": "An uppercase letter",
+    "description": "Password rule"
+  },
+  "profilePwdRuleLower": {
+    "message": "A lowercase letter",
+    "description": "Password rule"
+  },
+  "profilePwdRuleNum": {
+    "message": "A number",
+    "description": "Password rule"
+  },
+  "profilePwdRuleSym": {
+    "message": "A symbol",
+    "description": "Password rule"
+  },
+  "profilePwdRuleDiff": {
+    "message": "Different from current",
+    "description": "Password rule"
+  },
+  "profilePwdWeak": {
+    "message": "Very weak",
+    "description": "Strength label"
+  },
+  "profilePwdWeak2": {
+    "message": "Weak",
+    "description": "Strength label"
+  },
+  "profilePwdOkay": {
+    "message": "Okay",
+    "description": "Strength label"
+  },
+  "profilePwdStrong": {
+    "message": "Strong",
+    "description": "Strength label"
+  },
+  "profilePwdExcellent": {
+    "message": "Excellent",
+    "description": "Strength label"
+  },
+  "profileWorkspace": {
+    "message": "Workspace & access",
+    "description": "Profile section"
+  },
+  "profileWorkspaceDesc": {
+    "message": "Apps you can use and how your account is provisioned",
+    "description": "Profile section desc"
+  },
+  "profileStandardAccess": {
+    "message": "Standard access",
+    "description": "App access fallback"
+  },
+  "profileNoApps": {
+    "message": "You don't have access to any apps yet. Ask an admin to grant access.",
+    "description": "Empty apps state"
+  },
+  "profileMetaOrg": {
+    "message": "Organization",
+    "description": "Meta label"
+  },
+  "profileMetaMemberSince": {
+    "message": "Member since",
+    "description": "Meta label"
+  },
+  "profileMetaLastLogin": {
+    "message": "Last login",
+    "description": "Meta label"
+  },
+  "profileMetaUserId": {
+    "message": "User ID",
+    "description": "Meta label"
+  },
+  "profileCopyUserId": {
+    "message": "Copy user ID",
+    "description": "Copy button title"
+  },
+  "profileItemUnavailable": {
+    "message": "This item is no longer available.",
+    "description": "Unavailable record warning"
+  },
+  "profileThemeSet": {
+    "message": "Theme set to {mode}",
+    "description": "Toast after theme change"
+  },
+  "profileCopied": {
+    "message": "{label} copied",
+    "description": "Copy success toast"
+  },
+  "profileCopyFailed": {
+    "message": "Couldn't copy {label}",
+    "description": "Copy failure toast"
+  },
+  "profileChange": {
+    "message": "Change",
+    "description": "Avatar hover overlay label"
+  },
+  "profileUnableLoad": {
+    "message": "Unable to load profile.",
+    "description": "Profile fetch fallback error"
+  },
+  "profileUpdateFailed": {
+    "message": "Failed to update profile",
+    "description": "Profile save fallback error"
+  },
+  "profileUpdated": {
+    "message": "Profile updated",
+    "description": "Profile save success toast"
+  },
+  "profileAvatarUnsupported": {
+    "message": "Unsupported file type. Please use PNG, JPG, GIF, WEBP or SVG.",
+    "description": "Avatar validation error"
+  },
+  "profileAvatarTooLarge": {
+    "message": "File too large. Maximum size is 10MB.",
+    "description": "Avatar size validation error"
+  },
+  "profileSessionExpired": {
+    "message": "Session expired. Please log in again.",
+    "description": "Avatar upload session error"
+  },
+  "profileAvatarUploadFailed": {
+    "message": "Failed to upload avatar",
+    "description": "Avatar upload fallback error"
+  },
+  "profileAvatarUpdated": {
+    "message": "Avatar updated",
+    "description": "Avatar upload success toast"
+  },
+  "profileAvatarRemoveFailed": {
+    "message": "Failed to remove avatar",
+    "description": "Avatar remove fallback error"
+  },
+  "profileAvatarRemoved": {
+    "message": "Avatar removed",
+    "description": "Avatar remove success toast"
+  },
+  "profilePasswordChangeFailed": {
+    "message": "Failed to change password",
+    "description": "Password change fallback error"
+  },
+  "profilePasswordUpdated": {
+    "message": "Password updated",
+    "description": "Password change success toast"
+  },
+  "orgPageSubtitle": {
+    "message": "Manage your company identity and global defaults that apply across the platform",
+    "description": "Org settings subtitle"
+  },
+  "orgLoading": {
+    "message": "Loading company details…",
+    "description": "Org loading state"
+  },
+  "orgLoadFailed": {
+    "message": "Couldn't load company details",
+    "description": "Org error title"
+  },
+  "orgIdentity": {
+    "message": "Company Identity",
+    "description": "Org hero label"
+  },
+  "orgDefaultName": {
+    "message": "Your Company",
+    "description": "Fallback company name"
+  },
+  "orgIdentityDesc": {
+    "message": "These settings define how your company appears across every application and shape the defaults for dates, currency, and language.",
+    "description": "Org hero desc"
+  },
+  "orgBranding": {
+    "message": "Branding",
+    "description": "Org section"
+  },
+  "orgBrandingDesc": {
+    "message": "Your company name and logo that appear throughout the app",
+    "description": "Org section desc"
+  },
+  "orgCompanyName": {
+    "message": "Company name",
+    "description": "Form label"
+  },
+  "orgCompanyNamePh": {
+    "message": "e.g. Arivu Systems",
+    "description": "Placeholder"
+  },
+  "orgCompanyNameHint": {
+    "message": "Shown to users, on emails, and in PDF exports.",
+    "description": "Field hint"
+  },
+  "orgLogo": {
+    "message": "Company logo",
+    "description": "Form label"
+  },
+  "orgRemoveLogo": {
+    "message": "Remove logo",
+    "description": "Button"
+  },
+  "orgLogoAlt": {
+    "message": "Company logo",
+    "description": "Image alt"
+  },
+  "orgLogoPreviewAlt": {
+    "message": "Logo preview",
+    "description": "Image alt"
+  },
+  "orgUploadClick": {
+    "message": "Click to upload",
+    "description": "Upload zone"
+  },
+  "orgUploadDrag": {
+    "message": "or drag and drop",
+    "description": "Upload zone"
+  },
+  "orgUploadHint": {
+    "message": "PNG, JPG, SVG, GIF or WEBP · up to 10MB · recommended 512×512",
+    "description": "Upload hint"
+  },
+  "orgUploading": {
+    "message": "Uploading…",
+    "description": "Upload progress"
+  },
+  "orgPasteLogoUrl": {
+    "message": "Or paste a logo URL",
+    "description": "Details summary"
+  },
+  "orgLogoUrlPh": {
+    "message": "https://example.com/logo.png",
+    "description": "Placeholder"
+  },
+  "orgRegional": {
+    "message": "Regional & Localization",
+    "description": "Org section"
+  },
+  "orgRegionalDesc": {
+    "message": "Defaults for time, currency and language used across the platform",
+    "description": "Org section desc"
+  },
+  "orgTimezone": {
+    "message": "Timezone",
+    "description": "Form label"
+  },
+  "orgUseBrowserTz": {
+    "message": "Use my browser timezone",
+    "description": "Button"
+  },
+  "orgTimezoneSearchPh": {
+    "message": "Search a timezone…",
+    "description": "Placeholder"
+  },
+  "orgToggleTimezoneList": {
+    "message": "Toggle timezone list",
+    "description": "Aria label"
+  },
+  "orgNoTimezoneMatch": {
+    "message": "No timezones match \"{query}\"",
+    "description": "Empty search"
+  },
+  "orgDetectedTz": {
+    "message": "Detected from your browser: {label}",
+    "description": "Detected timezone hint"
+  },
+  "orgTzWarning": {
+    "message": "Changing timezone affects how dates and times display across the platform.",
+    "description": "Timezone change warning"
+  },
+  "orgCurrency": {
+    "message": "Default currency",
+    "description": "Form label"
+  },
+  "orgCurrencyHint": {
+    "message": "Used for monetary values in deals, invoices, and reports.",
+    "description": "Field hint"
+  },
+  "orgLanguage": {
+    "message": "Language",
+    "description": "Form label"
+  },
+  "orgLanguageHint": {
+    "message": "Default UI language for new users.",
+    "description": "Field hint"
+  },
+  "orgLocale": {
+    "message": "Locale",
+    "description": "Form label"
+  },
+  "orgLocalePh": {
+    "message": "en-US",
+    "description": "Placeholder"
+  },
+  "orgLocaleHint": {
+    "message": "Controls number, date and currency formatting. Format: language-COUNTRY (e.g. en-US, en-IN, fr-FR).",
+    "description": "Field hint"
+  },
+  "orgDataRegion": {
+    "message": "Data Region",
+    "description": "Org section"
+  },
+  "orgLocked": {
+    "message": "Locked",
+    "description": "Locked badge"
+  },
+  "orgDataRegionDesc": {
+    "message": "Your data is stored in {region}. Set during onboarding and cannot be changed.",
+    "description": "Data region desc"
+  },
+  "orgSaveSuccess": {
+    "message": "Company details updated successfully",
+    "description": "Org settings save success toast"
+  },
+  "orgUpdateFailed": {
+    "message": "Failed to update company details",
+    "description": "Org settings save failure toast"
+  },
+  "orgLogoUploaded": {
+    "message": "Logo uploaded",
+    "description": "Logo upload success toast"
+  },
+  "orgLogoUploadFailed": {
+    "message": "Failed to upload logo",
+    "description": "Logo upload failure toast"
+  },
+  "orgLogoRemoved": {
+    "message": "Logo removed",
+    "description": "Logo remove success toast"
+  },
+  "orgLogoRemoveFailed": {
+    "message": "Failed to remove logo",
+    "description": "Logo remove failure toast"
+  },
+  "orgLogoUnsupportedType": {
+    "message": "Unsupported file type. Please use PNG, JPG, GIF, WEBP or SVG.",
+    "description": "Logo validation error"
+  },
+  "orgLogoTooLarge": {
+    "message": "File too large. Maximum size is 10MB.",
+    "description": "Logo size validation error"
+  },
+  "orgLangEn": {
+    "message": "English",
+    "description": "Language option"
+  },
+  "orgLangEs": {
+    "message": "Spanish",
+    "description": "Language option"
+  },
+  "orgLangFr": {
+    "message": "French",
+    "description": "Language option"
+  },
+  "orgLangDe": {
+    "message": "German",
+    "description": "Language option"
+  },
+  "orgLangIt": {
+    "message": "Italian",
+    "description": "Language option"
+  },
+  "orgLangPt": {
+    "message": "Portuguese",
+    "description": "Language option"
+  },
+  "orgLangNl": {
+    "message": "Dutch",
+    "description": "Language option"
+  },
+  "orgLangRu": {
+    "message": "Russian",
+    "description": "Language option"
+  },
+  "orgLangAr": {
+    "message": "Arabic",
+    "description": "Language option"
+  },
+  "orgLangHi": {
+    "message": "Hindi",
+    "description": "Language option"
+  },
+  "orgLangJa": {
+    "message": "Japanese",
+    "description": "Language option"
+  },
+  "orgLangZh": {
+    "message": "Chinese",
+    "description": "Language option"
+  },
+  "orgLangKo": {
+    "message": "Korean",
+    "description": "Language option"
+  },
+  "usersPageSubtitle": {
+    "message": "Manage users, roles, and permissions for your organization",
+    "description": "User management page subtitle"
+  },
+  "usersInvite": {
+    "message": "Invite User",
+    "description": "Invite user button"
+  },
+  "usersStatTotal": {
+    "message": "Total Users",
+    "description": "Users stat"
+  },
+  "usersStatActive": {
+    "message": "Active",
+    "description": "Active users stat"
+  },
+  "usersStatInactive": {
+    "message": "Inactive",
+    "description": "Inactive users stat"
+  },
+  "usersStatAdmins": {
+    "message": "Admins",
+    "description": "Admin users stat"
+  },
+  "usersColUser": {
+    "message": "User",
+    "description": "Users table column"
+  },
+  "usersColRole": {
+    "message": "Role",
+    "description": "Users table column"
+  },
+  "usersColStatus": {
+    "message": "Status",
+    "description": "Users table column"
+  },
+  "usersColLastLogin": {
+    "message": "Last Login",
+    "description": "Users table column"
+  },
+  "usersColJoined": {
+    "message": "Joined",
+    "description": "Users table column"
+  },
+  "usersLastLoginNever": {
+    "message": "Never",
+    "description": "Never logged in"
+  },
+  "usersBulkActivate": {
+    "message": "Activate",
+    "description": "Bulk activate users"
+  },
+  "usersBulkDeactivate": {
+    "message": "Deactivate",
+    "description": "Bulk deactivate users"
+  },
+  "usersBulkDelete": {
+    "message": "Delete",
+    "description": "Bulk delete users"
+  },
+  "usersDeleteConfirm": {
+    "message": "Delete user {name}? This action cannot be undone.",
+    "description": "Delete user confirm"
+  },
+  "usersDeleteFailed": {
+    "message": "Failed to delete user",
+    "description": "Delete user error"
+  },
+  "usersBulkActivateConfirm": {
+    "message": "Activate {count} user(s)?",
+    "description": "Bulk activate confirm"
+  },
+  "usersBulkDeactivateConfirm": {
+    "message": "Deactivate {count} user(s)?",
+    "description": "Bulk deactivate confirm"
+  },
+  "usersBulkDeleteConfirm": {
+    "message": "Delete {count} user(s)? This action cannot be undone.",
+    "description": "Bulk delete confirm"
+  },
+  "usersBulkActivateFailed": {
+    "message": "Failed to activate users",
+    "description": "Bulk activate error"
+  },
+  "usersBulkDeactivateFailed": {
+    "message": "Failed to deactivate users",
+    "description": "Bulk deactivate error"
+  },
+  "usersBulkDeleteFailed": {
+    "message": "Failed to delete users",
+    "description": "Bulk delete error"
+  },
+  "rolesPageSubtitle": {
+    "message": "Manage custom roles, permissions, and organizational hierarchy",
+    "description": "Roles page subtitle"
+  },
+  "rolesTabManagement": {
+    "message": "Roles Management",
+    "description": "Roles sub-tab"
+  },
+  "rolesTabHierarchy": {
+    "message": "Organization Hierarchy",
+    "description": "Hierarchy sub-tab"
+  },
+  "rolesCount": {
+    "message": "{count} custom roles",
+    "description": "Role count label"
+  },
+  "rolesInitDefaults": {
+    "message": "Initialize Default Roles",
+    "description": "Init default roles button"
+  },
+  "rolesCreate": {
+    "message": "Create Role",
+    "description": "Create role button"
+  },
+  "rolesEmptyTitle": {
+    "message": "No roles yet",
+    "description": "Empty roles state"
+  },
+  "rolesEmptyBody": {
+    "message": "Get started by initializing default roles or creating a custom role",
+    "description": "Empty roles body"
+  },
+  "rolesSystemBadge": {
+    "message": "System",
+    "description": "System role badge"
+  },
+  "rolesLevel": {
+    "message": "Level {level}",
+    "description": "Role level label"
+  },
+  "rolesNoDescription": {
+    "message": "No description",
+    "description": "No role description"
+  },
+  "rolesEdit": {
+    "message": "Edit",
+    "description": "Edit role button"
+  },
+  "rolesUsersCount": {
+    "message": "{count} Users",
+    "description": "Users count on role card"
+  },
+  "rolesPermissionsBtn": {
+    "message": "Permissions",
+    "description": "Permissions button"
+  },
+  "rolesDeleteTitle": {
+    "message": "Delete Role",
+    "description": "Delete role title attr"
+  },
+  "rolesInitConfirm": {
+    "message": "This will create 5 default roles (Owner, Admin, Manager, User, Viewer). Continue?",
+    "description": "Init roles confirm"
+  },
+  "rolesInitSuccess": {
+    "message": "Default roles created successfully!",
+    "description": "Init roles success"
+  },
+  "rolesInitFailed": {
+    "message": "Failed to initialize roles",
+    "description": "Init roles failed"
+  },
+  "rolesDeleteConfirm": {
+    "message": "Delete role \"{name}\"? This action cannot be undone.",
+    "description": "Delete role confirm"
+  },
+  "rolesDeleteFailed": {
+    "message": "Failed to delete role",
+    "description": "Delete role failed"
+  },
+  "roleUsersTitle": {
+    "message": "{name} Users",
+    "description": "Role users modal title"
+  },
+  "roleUsersSubtitle": {
+    "message": "{count} user with this role",
+    "description": "Role users modal subtitle plural one"
+  },
+  "roleUsersSubtitlePlural": {
+    "message": "{count} users with this role",
+    "description": "Role users modal subtitle plural other"
+  },
+  "roleUsersEmptyTitle": {
+    "message": "No users assigned yet",
+    "description": "Role users empty title"
+  },
+  "roleUsersEmptyBody": {
+    "message": "Users will appear here once they're assigned to this role. Assign users in the role settings.",
+    "description": "Role users empty body"
+  },
+  "roleUsersOwner": {
+    "message": "Owner",
+    "description": "Owner badge"
+  },
+  "roleUsersEditTitle": {
+    "message": "Edit user",
+    "description": "Edit user title"
+  },
+  "roleUsersChangeRole": {
+    "message": "Change role",
+    "description": "Change role title"
+  },
+  "roleUsersDeactivateTitle": {
+    "message": "Deactivate user",
+    "description": "Deactivate user title"
+  },
+  "roleUsersDeactivateConfirm": {
+    "message": "Deactivate user {name}? They will lose access to the system.",
+    "description": "Deactivate confirm"
+  },
+  "roleUsersDeactivateFailed": {
+    "message": "Failed to deactivate user",
+    "description": "Deactivate failed"
+  },
+  "inviteTitle": {
+    "message": "Invite New User",
+    "description": "Invite modal title"
+  },
+  "inviteFirstName": {
+    "message": "First Name",
+    "description": "Invite form label"
+  },
+  "inviteFirstNamePh": {
+    "message": "John",
+    "description": "Invite first name placeholder"
+  },
+  "inviteLastName": {
+    "message": "Last Name",
+    "description": "Invite form label"
+  },
+  "inviteLastNamePh": {
+    "message": "Doe",
+    "description": "Invite last name placeholder"
+  },
+  "inviteEmail": {
+    "message": "Email Address",
+    "description": "Invite form label"
+  },
+  "inviteEmailPh": {
+    "message": "john.doe@company.com",
+    "description": "Invite email placeholder"
+  },
+  "inviteUserType": {
+    "message": "User Type",
+    "description": "Invite form label"
+  },
+  "inviteInternal": {
+    "message": "Internal",
+    "description": "Internal user type"
+  },
+  "inviteExternal": {
+    "message": "External",
+    "description": "External user type"
+  },
+  "inviteUserTypeHint": {
+    "message": "Internal users are employees. External users are customers, partners, or auditors.",
+    "description": "User type hint"
+  },
+  "inviteRole": {
+    "message": "Role",
+    "description": "Role label"
+  },
+  "inviteSelectRole": {
+    "message": "Select a role",
+    "description": "Select role placeholder"
+  },
+  "inviteRoleRequired": {
+    "message": "Role is required",
+    "description": "Role validation"
+  },
+  "inviteAppAccess": {
+    "message": "App Access",
+    "description": "App access label"
+  },
+  "inviteLoadingApps": {
+    "message": "Loading available apps...",
+    "description": "Loading apps"
+  },
+  "inviteNoApps": {
+    "message": "No apps available for this user type.",
+    "description": "No apps for user type"
+  },
+  "inviteSeatsUsed": {
+    "message": "{used}/{limit} seats used",
+    "description": "Seats used"
+  },
+  "inviteNoSeats": {
+    "message": "(No seats available)",
+    "description": "No seats"
+  },
+  "inviteSeatsAvailable": {
+    "message": "({count} available)",
+    "description": "Seats available"
+  },
+  "inviteUnlimitedSeats": {
+    "message": "Unlimited seats",
+    "description": "Unlimited seats"
+  },
+  "inviteRoleForApp": {
+    "message": "Role for {app}:",
+    "description": "App role label"
+  },
+  "inviteAppAccessRequired": {
+    "message": "At least one app must be selected",
+    "description": "App access validation"
+  },
+  "invitePassword": {
+    "message": "Password",
+    "description": "Password section"
+  },
+  "invitePasswordAuto": {
+    "message": "Auto-generate",
+    "description": "Auto password"
+  },
+  "invitePasswordManual": {
+    "message": "Set manually",
+    "description": "Manual password"
+  },
+  "invitePasswordMin": {
+    "message": "Minimum 8 characters",
+    "description": "Password min placeholder"
+  },
+  "invitePasswordAutoHint": {
+    "message": "A secure password will be auto-generated. {delivery}",
+    "description": "Auto password hint"
+  },
+  "invitePasswordEmailDelivery": {
+    "message": "It will be sent via email.",
+    "description": "Email delivery"
+  },
+  "invitePasswordManualDelivery": {
+    "message": "You will need to share it with the user manually.",
+    "description": "Manual delivery"
+  },
+  "inviteSendEmail": {
+    "message": "Send invitation email with login credentials",
+    "description": "Send email checkbox"
+  },
+  "inviteSendEmailOn": {
+    "message": "Email will be sent with password",
+    "description": "Send email on"
+  },
+  "inviteSendEmailOff": {
+    "message": "User will be created without email notification",
+    "description": "Send email off"
+  },
+  "inviteSubmit": {
+    "message": "Invite User",
+    "description": "Invite submit"
+  },
+  "inviteSubmitting": {
+    "message": "Inviting...",
+    "description": "Invite submitting"
+  },
+  "inviteFailed": {
+    "message": "Failed to invite user",
+    "description": "Invite failed"
+  },
+  "inviteLoadAppsFailed": {
+    "message": "Failed to load available apps. Please try again.",
+    "description": "Load apps failed"
+  },
+  "inviteCreatedWithPassword": {
+    "message": "User created successfully!\n\nTemporary Password: {password}\n\nPlease share this password with the user securely.",
+    "description": "Created with temp password alert"
+  },
+  "editUserTitle": {
+    "message": "Edit User",
+    "description": "Edit user modal title"
+  },
+  "editUserStatus": {
+    "message": "Status",
+    "description": "Status label"
+  },
+  "editUserStatusActive": {
+    "message": "Active - User can log in and access the system",
+    "description": "Active status option"
+  },
+  "editUserStatusInactive": {
+    "message": "Inactive - User cannot log in",
+    "description": "Inactive status option"
+  },
+  "editUserStatusSuspended": {
+    "message": "Suspended - Temporarily blocked",
+    "description": "Suspended status option"
+  },
+  "editUserNoAppsType": {
+    "message": "No apps available for this user's type.",
+    "description": "No apps for user"
+  },
+  "editUserDeactivating": {
+    "message": "Deactivating User",
+    "description": "Deactivating warning title"
+  },
+  "editUserSuspending": {
+    "message": "Suspending User",
+    "description": "Suspending warning title"
+  },
+  "editUserStatusWarning": {
+    "message": "This user will no longer be able to access the system. Consider transferring their data ownership before proceeding.",
+    "description": "Status change warning"
+  },
+  "editUserResetPassword": {
+    "message": "Reset Password",
+    "description": "Reset password section"
+  },
+  "editUserResetPasswordHint": {
+    "message": "Generate a new temporary password and send it to the user's email",
+    "description": "Reset password hint"
+  },
+  "editUserReset": {
+    "message": "Reset",
+    "description": "Reset button"
+  },
+  "editUserDeleteAccount": {
+    "message": "Delete User",
+    "description": "Delete user button"
+  },
+  "editUserSave": {
+    "message": "Save Changes",
+    "description": "Save changes button"
+  },
+  "editUserSaving": {
+    "message": "Saving...",
+    "description": "Saving"
+  },
+  "editUserDeleteConfirm": {
+    "message": "Are you sure you want to delete {name}? This action cannot be undone.",
+    "description": "Delete user confirm"
+  },
+  "editUserUpdateFailed": {
+    "message": "Failed to update user",
+    "description": "Update failed"
+  },
+  "editUserDeleteFailed": {
+    "message": "Failed to delete user",
+    "description": "Delete failed"
+  },
+  "groupsPageSubtitle": {
+    "message": "Organize users into teams, departments, and project groups",
+    "description": "Groups page subtitle"
+  },
+  "groupsDetailSubtitle": {
+    "message": "Manage group members, settings, and details",
+    "description": "Group detail subtitle"
+  },
+  "groupsCreate": {
+    "message": "Create Group",
+    "description": "Create group button"
+  },
+  "groupsStatTotal": {
+    "message": "Total Groups",
+    "description": "Groups stat"
+  },
+  "groupsStatActive": {
+    "message": "Active Groups",
+    "description": "Active groups stat"
+  },
+  "groupsStatMembers": {
+    "message": "Total Members",
+    "description": "Total members stat"
+  },
+  "groupsStatAvg": {
+    "message": "Avg Members/Group",
+    "description": "Avg members stat"
+  },
+  "groupsBackTitle": {
+    "message": "Back to groups",
+    "description": "Back button title"
+  },
+  "groupsSearchPh": {
+    "message": "Search groups...",
+    "description": "Search placeholder"
+  },
+  "groupsFilterAllTypes": {
+    "message": "All Types",
+    "description": "Filter all types"
+  },
+  "groupsTypeTeam": {
+    "message": "Team",
+    "description": "Group type team"
+  },
+  "groupsTypeDepartment": {
+    "message": "Department",
+    "description": "Group type department"
+  },
+  "groupsTypeProject": {
+    "message": "Project",
+    "description": "Group type project"
+  },
+  "groupsTypeCustom": {
+    "message": "Custom",
+    "description": "Group type custom"
+  },
+  "groupsFilterAllStatus": {
+    "message": "All Status",
+    "description": "Filter all status"
+  },
+  "groupsFilterActive": {
+    "message": "Active",
+    "description": "Filter active"
+  },
+  "groupsFilterInactive": {
+    "message": "Inactive",
+    "description": "Filter inactive"
+  },
+  "groupsClearFilters": {
+    "message": "Clear",
+    "description": "Clear filters"
+  },
+  "groupsEmptyTitle": {
+    "message": "No groups",
+    "description": "Empty groups title"
+  },
+  "groupsEmptyBody": {
+    "message": "Get started by creating your first group.",
+    "description": "Empty groups body"
+  },
+  "groupsNewGroup": {
+    "message": "New Group",
+    "description": "New group button"
+  },
+  "groupFormNamePh": {
+    "message": "e.g., Sales Team, Engineering Department",
+    "description": "Group name input placeholder"
+  },
+  "groupFormDescriptionPh": {
+    "message": "Describe the purpose of this group...",
+    "description": "Group description placeholder"
+  },
+  "groupFormSelectType": {
+    "message": "Select type...",
+    "description": "Group type combobox placeholder"
+  },
+  "groupFormColor": {
+    "message": "Color",
+    "description": "Group color label"
+  },
+  "groupFormColorPh": {
+    "message": "#3B82F6",
+    "description": "Group color hex placeholder"
+  },
+  "groupFormSelectRoles": {
+    "message": "Select roles...",
+    "description": "Roles multi-select placeholder"
+  },
+  "groupFormSearchRolesPh": {
+    "message": "Search roles...",
+    "description": "Role search placeholder"
+  },
+  "groupFormNoRolesFound": {
+    "message": "No roles found",
+    "description": "Empty role search results"
+  },
+  "groupFormRolesHint": {
+    "message": "Assign one or more roles to this group to apply permissions to all members",
+    "description": "Roles field hint"
+  },
+  "groupFormGroupLead": {
+    "message": "Group Lead",
+    "description": "Group lead field label"
+  },
+  "groupFormSearchUsersPh": {
+    "message": "Search users...",
+    "description": "Lead user search placeholder"
+  },
+  "groupFormNoLeadAssigned": {
+    "message": "No lead assigned",
+    "description": "Empty lead selection"
+  },
+  "groupFormNoUsersFound": {
+    "message": "No users found",
+    "description": "Empty user search results"
+  },
+  "groupFormSearchMembersPh": {
+    "message": "Search and add members...",
+    "description": "Member search placeholder"
+  },
+  "groupFormNoUsersToAdd": {
+    "message": "No users available to add",
+    "description": "Empty member add list"
+  },
+  "groupFormInactiveHint": {
+    "message": "Inactive groups will be hidden from most views",
+    "description": "Inactive group checkbox hint"
+  },
+  "groupFormUpdateGroup": {
+    "message": "Update Group",
+    "description": "Update group submit button"
+  },
+  "groupFormNameRequired": {
+    "message": "Group name is required",
+    "description": "Group name validation error"
+  },
+  "groupFormSaveFailed": {
+    "message": "Failed to save group",
+    "description": "Save group error alert"
+  },
+  "groupFormUnknownUser": {
+    "message": "Unknown User",
+    "description": "Fallback display name for user"
+  },
+  "groupFormUnknown": {
+    "message": "Unknown",
+    "description": "Short fallback for missing user"
+  },
+  "roleDrawerCreate": {
+    "message": "Create role",
+    "description": "Create role drawer title"
+  },
+  "roleDrawerEdit": {
+    "message": "Edit role",
+    "description": "Edit role drawer title"
+  },
+  "roleDrawerSubtitleCreate": {
+    "message": "Define identity, appearance, and permissions",
+    "description": "Create role subtitle"
+  },
+  "roleDrawerSubtitleEdit": {
+    "message": "Update role settings and permissions",
+    "description": "Edit role subtitle"
+  },
+  "roleDrawerSystemLocked": {
+    "message": "System role — permissions are locked",
+    "description": "System role badge"
+  },
+  "roleDrawerCloseSr": {
+    "message": "Close",
+    "description": "Close sr-only"
+  },
+  "roleDrawerTabOverview": {
+    "message": "Overview",
+    "description": "Overview tab"
+  },
+  "roleDrawerTabPermissions": {
+    "message": "Permissions",
+    "description": "Permissions tab"
+  },
+  "roleDrawerSystemNoticeTitle": {
+    "message": "This role is managed by the system",
+    "description": "System notice title"
+  },
+  "roleDrawerSystemNoticeBody": {
+    "message": "You can update the description and appearance. The role name and permission matrix are locked.",
+    "description": "System notice body"
+  },
+  "roleDrawerIdentity": {
+    "message": "Identity",
+    "description": "Identity section"
+  },
+  "roleDrawerRoleName": {
+    "message": "Role name",
+    "description": "Role name label"
+  },
+  "roleDrawerRoleNamePh": {
+    "message": "e.g., Sales Manager",
+    "description": "Role name placeholder"
+  },
+  "roleDrawerDescription": {
+    "message": "Description",
+    "description": "Description label"
+  },
+  "roleDrawerDescriptionPh": {
+    "message": "What this role is responsible for",
+    "description": "Description placeholder"
+  },
+  "roleDrawerAppearance": {
+    "message": "Appearance",
+    "description": "Appearance section"
+  },
+  "roleDrawerColor": {
+    "message": "Color",
+    "description": "Color label"
+  },
+  "roleDrawerColorAria": {
+    "message": "Color {color}",
+    "description": "Color preset aria"
+  },
+  "roleDrawerIcon": {
+    "message": "Icon",
+    "description": "Icon label"
+  },
+  "roleDrawerSave": {
+    "message": "Save role",
+    "description": "Save role button"
+  },
+  "roleDrawerSaving": {
+    "message": "Saving…",
+    "description": "Saving role"
+  },
+  "roleDrawerUnsavedTitle": {
+    "message": "Unsaved changes",
+    "description": "Unsaved title"
+  },
+  "roleDrawerUnsavedBody": {
+    "message": "Save before closing this drawer.",
+    "description": "Unsaved body"
+  },
+  "roleDrawerDiscardClose": {
+    "message": "Discard & close",
+    "description": "Discard and close"
+  },
+  "roleDrawerCloseConfirm": {
+    "message": "You have unsaved changes. Discard them and close?",
+    "description": "Close confirm"
+  },
+  "editUserResetConfirm": {
+    "message": "Generate a new password and send it to this user via email?",
+    "description": "Reset password confirm"
+  },
+  "editUserResetSuccess": {
+    "message": "Password reset email sent successfully",
+    "description": "Reset password success"
+  },
+  "editUserResetFailed": {
+    "message": "Failed to reset password",
+    "description": "Reset password failed"
+  },
+  "editUserLoadAppsFailed": {
+    "message": "Failed to load app access capabilities.",
+    "description": "Load apps failed edit"
+  },
+  "editUserAppAccessRemain": {
+    "message": "At least one app must remain assigned.",
+    "description": "App access validation edit"
+  },
+  "roleUsersRoleFallback": {
+    "message": "Role",
+    "description": "Fallback role name in modal title"
+  },
+  "helpdeskExecBannerTitle": {
+    "message": "Case-Centric Execution Settings",
+    "description": "Helpdesk execution info banner title"
+  },
+  "helpdeskExecBannerBody": {
+    "message": "Configure SLA commitments, business hours, channel defaults, assignment, escalations, and notifications for Helpdesk cases.",
+    "description": "Helpdesk execution info banner body"
+  },
+  "helpdeskExecEnabledCaseTypes": {
+    "message": "Enabled Case Types",
+    "description": "Enabled case types section title"
+  },
+  "helpdeskExecPrioritySlaTargets": {
+    "message": "Priority SLA Targets (Minutes)",
+    "description": "Priority SLA targets section title"
+  },
+  "helpdeskExecFirstResponse": {
+    "message": "First response",
+    "description": "First response SLA minutes label"
+  },
+  "helpdeskExecResolution": {
+    "message": "Resolution",
+    "description": "Resolution SLA minutes label"
+  },
+  "helpdeskExecBusinessHours": {
+    "message": "Business Hours (SLA)",
+    "description": "Business hours section title"
+  },
+  "helpdeskExecRecalculating": {
+    "message": "Recalculating…",
+    "description": "SLA recalculate in progress"
+  },
+  "helpdeskExecRecalculateSlas": {
+    "message": "Recalculate open case SLAs",
+    "description": "Recalculate open case SLAs button"
+  },
+  "helpdeskExecNotifications": {
+    "message": "Notifications",
+    "description": "Notifications section title"
+  },
+  "helpdeskExecAdvancedRules": {
+    "message": "Advanced Rules (JSON)",
+    "description": "Advanced rules JSON section title"
+  },
+  "helpdeskExecAdvancedRulesDesc": {
+    "message": "Use JSON for advanced routing, escalation, and channel defaults. This maps directly to the Helpdesk execution engine.",
+    "description": "Advanced rules JSON section description"
+  },
+  "helpdeskExecAssignmentIntro": {
+    "message": "Case assignment (groups, routing, schedules) is configured in",
+    "description": "Assignment rules hub intro before link"
+  },
+  "helpdeskExecAssignmentLink": {
+    "message": "Settings → Automation",
+    "description": "Assignment rules hub link text"
+  },
+  "helpdeskExecAssignmentOutro": {
+    "message": ". When automation assigns a case owner, assignees are notified like manual assignment, subject to your notification preferences and the toggles in the Notifications section above.",
+    "description": "Assignment rules hub text after link"
+  },
+  "helpdeskExecSlaPolicies": {
+    "message": "SLA policies",
+    "description": "SLA policies JSON editor label"
+  },
+  "helpdeskExecEscalationRules": {
+    "message": "Escalation rules",
+    "description": "Escalation rules JSON editor label"
+  },
+  "helpdeskExecChannelRules": {
+    "message": "Channel rules",
+    "description": "Channel rules JSON editor label"
+  },
+  "helpdeskExecDefaultSlaPolicyKey": {
+    "message": "Default SLA policy key",
+    "description": "Default SLA policy key input label"
+  },
+  "helpdeskExecDefaultSlaPolicyPh": {
+    "message": "default-policy",
+    "description": "Default SLA policy key placeholder"
+  },
+  "helpdeskExecSaveSuccess": {
+    "message": "Helpdesk execution settings saved.",
+    "description": "Save success message"
+  },
+  "helpdeskExecReset": {
+    "message": "Reset",
+    "description": "Reset form button"
+  },
+  "helpdeskExecSaving": {
+    "message": "Saving...",
+    "description": "Save in progress button label"
+  },
+  "helpdeskExecSaveChanges": {
+    "message": "Save Changes",
+    "description": "Save changes button"
+  },
+  "helpdeskExecCaseTypeSupportTicket": {
+    "message": "Support Ticket",
+    "description": "Case type display label"
+  },
+  "helpdeskExecCaseTypeComplaint": {
+    "message": "Complaint",
+    "description": "Case type display label"
+  },
+  "helpdeskExecCaseTypeServiceRequest": {
+    "message": "Service Request",
+    "description": "Case type display label"
+  },
+  "helpdeskExecCaseTypeWarrantyClaim": {
+    "message": "Warranty Claim",
+    "description": "Case type display label"
+  },
+  "helpdeskExecCaseTypeInternalCase": {
+    "message": "Internal Case",
+    "description": "Case type display label"
+  },
+  "helpdeskExecPriorityLow": {
+    "message": "Low",
+    "description": "Priority display label"
+  },
+  "helpdeskExecPriorityMedium": {
+    "message": "Medium",
+    "description": "Priority display label"
+  },
+  "helpdeskExecPriorityHigh": {
+    "message": "High",
+    "description": "Priority display label"
+  },
+  "helpdeskExecPriorityCritical": {
+    "message": "Critical",
+    "description": "Priority display label"
+  },
+  "helpdeskExecNotifyOnCreated": {
+    "message": "Notify on case creation",
+    "description": "Notification toggle label"
+  },
+  "helpdeskExecNotifyOnAssigned": {
+    "message": "Notify on assignment",
+    "description": "Notification toggle label"
+  },
+  "helpdeskExecNotifyOnSlaWarning": {
+    "message": "Notify when SLA nears breach",
+    "description": "Notification toggle label"
+  },
+  "helpdeskExecNotifyOnSlaBreach": {
+    "message": "Notify on SLA breach",
+    "description": "Notification toggle label"
+  },
+  "helpdeskExecInvalidLoadResponse": {
+    "message": "Invalid response while loading helpdesk execution settings",
+    "description": "Load settings invalid response error"
+  },
+  "helpdeskExecLoadFailed": {
+    "message": "Failed to load Helpdesk execution settings",
+    "description": "Load settings fallback error"
+  },
+  "helpdeskExecInvalidJson": {
+    "message": "{label} is not valid JSON",
+    "description": "JSON editor parse error"
+  },
+  "helpdeskExecRecalcFailed": {
+    "message": "Recalculation failed",
+    "description": "SLA recalculation API error"
+  },
+  "helpdeskExecRecalcResult": {
+    "message": "Updated SLA targets on {updated} of {scanned} open cases.",
+    "description": "SLA recalculation success message"
+  },
+  "helpdeskExecRecalcSlasFailed": {
+    "message": "Failed to recalculate SLAs",
+    "description": "SLA recalculation fallback error"
+  },
+  "helpdeskExecUnexpectedSaveResponse": {
+    "message": "Unexpected response while saving settings",
+    "description": "Save settings invalid response error"
+  },
+  "helpdeskExecScheduleSavedRecalcHint": {
+    "message": "Schedule saved. Recalculate open case SLAs to apply new targets.",
+    "description": "Hint after business hours save"
+  },
+  "helpdeskExecSaveFailed": {
+    "message": "Failed to save helpdesk execution settings",
+    "description": "Save settings fallback error"
+  }
+}

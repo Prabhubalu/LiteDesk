@@ -1,0 +1,350 @@
+{
+  "settingsTitle": {
+    "message": "प्रदर्शन",
+    "description": "Settings performance section title"
+  },
+  "settingsDescription": {
+    "message": "लक्ष्य निर्धारित करें, सेल्स और हेल्पडेस्क पर प्रगति को ट्रैक करें और देखें कि आपकी टीम कैसा प्रदर्शन कर रही है।",
+    "description": "Settings performance section description"
+  },
+  "targetsQuotasTitle": {
+    "message": "लक्ष्य और कोटा",
+    "description": "Targets hub title"
+  },
+  "targetsQuotasDescription": {
+    "message": "लक्ष्य जो सौदों, मामलों और कार्यों से स्वचालित रूप से अपडेट होते हैं।",
+    "description": "Targets hub description"
+  },
+  "dashboardsTitle": {
+    "message": "डैशबोर्ड",
+    "description": "Dashboards card title"
+  },
+  "dashboardsDescription": {
+    "message": "एक नज़र में प्रगति और टीम रैंकिंग।",
+    "description": "Dashboards description"
+  },
+  "configure": {
+    "message": "खुला",
+    "description": "Card action"
+  },
+  "newTarget": {
+    "message": "लक्ष्य बनाएं",
+    "description": "Primary CTA"
+  },
+  "noTargetsTitle": {
+    "message": "अभी तक कोई लक्ष्य नहीं",
+    "description": "Empty state title"
+  },
+  "noTargets": {
+    "message": "वास्तविक समय में राजस्व, समाधान या पूर्णता को ट्रैक करने के लिए एक लक्ष्य बनाएं।",
+    "description": "Legacy key kept for compat"
+  },
+  "filterAll": {
+    "message": "सभी",
+    "description": "Filter tab"
+  },
+  "filterActive": {
+    "message": "सक्रिय",
+    "description": "Filter tab"
+  },
+  "filterDraft": {
+    "message": "ड्राफ्ट",
+    "description": "Filter tab"
+  },
+  "searchPlaceholder": {
+    "message": "लक्ष्य खोजें…",
+    "description": "Search input"
+  },
+  "lifecycleDraft": {
+    "message": "मसौदा",
+    "description": "Lifecycle"
+  },
+  "lifecycleActive": {
+    "message": "सक्रिय",
+    "description": "Lifecycle"
+  },
+  "lifecycleLocked": {
+    "message": "बंद",
+    "description": "Lifecycle"
+  },
+  "lifecycleCompleted": {
+    "message": "पुरा होना।",
+    "description": "Lifecycle"
+  },
+  "lifecycleClosed": {
+    "message": "बंद किया हुआ",
+    "description": "Lifecycle"
+  },
+  "statusNotStarted": {
+    "message": "शुरू नहीं",
+    "description": "Status"
+  },
+  "statusOnTrack": {
+    "message": "ट्रैक पर",
+    "description": "Status"
+  },
+  "statusAtRisk": {
+    "message": "ख़तरे में",
+    "description": "Status"
+  },
+  "statusAchieved": {
+    "message": "हासिल किया",
+    "description": "Status"
+  },
+  "statusOverachieved": {
+    "message": "पार हो गई",
+    "description": "Status"
+  },
+  "achievedOfTarget": {
+    "message": "{achieved} का {target}",
+    "description": "Progress label"
+  },
+  "periodLabel": {
+    "message": "अवधि",
+    "description": "Period label"
+  },
+  "wizardTitle": {
+    "message": "लक्ष्य बनाएं",
+    "description": "Wizard page title"
+  },
+  "wizardSubtitle": {
+    "message": "एक संक्षिप्त निर्देशित सेटअप - आप सक्रिय करने से पहले किसी भी समय विवरण संपादित कर सकते हैं।",
+    "description": "Wizard subtitle"
+  },
+  "wizardStepOf": {
+    "message": "{total} का चरण {current}",
+    "description": "Step counter"
+  },
+  "wizardStepType": {
+    "message": "आप क्या माप रहे हैं?",
+    "description": "Wizard step"
+  },
+  "wizardStepTypeHint": {
+    "message": "एक लक्ष्य प्रकार चुनें. हम सही डेटा स्रोत सुझाएंगे.",
+    "description": "Step hint"
+  },
+  "wizardStepModules": {
+    "message": "डेटा कहां से आता है?",
+    "description": "Wizard step"
+  },
+  "wizardStepModulesHint": {
+    "message": "चुनें कि कौन से ऐप्स इस लक्ष्य को फ़ीड करते हैं।",
+    "description": "Step hint"
+  },
+  "wizardStepRules": {
+    "message": "रिकॉर्ड कैसे गिने जाते हैं?",
+    "description": "Wizard step"
+  },
+  "wizardStepRulesHint": {
+    "message": "हम स्मार्ट डिफॉल्ट लागू करते हैं (उदाहरण के लिए जीते गए सौदे, सुलझे हुए मामले)।",
+    "description": "Step hint"
+  },
+  "wizardStepValue": {
+    "message": "अपना लक्ष्य निर्धारित करें",
+    "description": "Wizard step"
+  },
+  "wizardStepValueHint": {
+    "message": "अपने लक्ष्य को नाम दें और हिट करने के लिए संख्या दर्ज करें।",
+    "description": "Step hint"
+  },
+  "wizardStepPeriod": {
+    "message": "समय सीमा",
+    "description": "Wizard step"
+  },
+  "wizardStepPeriodHint": {
+    "message": "यह लक्ष्य कब प्रारंभ और समाप्त होना चाहिए?",
+    "description": "Step hint"
+  },
+  "wizardStepDistribution": {
+    "message": "टीम में बंटवारा",
+    "description": "Wizard step"
+  },
+  "wizardStepDistributionHint": {
+    "message": "लक्ष्य को लोगों के बीच कैसे विभाजित किया जाना चाहिए?",
+    "description": "Step hint"
+  },
+  "wizardStepAssign": {
+    "message": "स्वामित्व",
+    "description": "Wizard step"
+  },
+  "wizardStepAssignHint": {
+    "message": "आप डिफ़ॉल्ट रूप से स्वामी हैं. बाद में लक्ष्य पृष्ठ से पुनः असाइन करें।",
+    "description": "Step hint"
+  },
+  "wizardStepThresholds": {
+    "message": "मील के पत्थर",
+    "description": "Wizard step"
+  },
+  "wizardStepThresholdsHint": {
+    "message": "प्रमुख प्रगति बिंदुओं पर सूचना प्राप्त करें।",
+    "description": "Step hint"
+  },
+  "wizardStepForecast": {
+    "message": "पूर्वानुमान",
+    "description": "Wizard step"
+  },
+  "wizardStepForecastHint": {
+    "message": "अवधि के अंत के परिणामों की भविष्यवाणी करने के लिए पाइपलाइन डेटा शामिल करें।",
+    "description": "Step hint"
+  },
+  "wizardStepReview": {
+    "message": "समीक्षा",
+    "description": "Wizard step"
+  },
+  "wizardStepReviewHint": {
+    "message": "पुष्टि करें कि सब कुछ सही लग रहा है, फिर लाइव हो जाएँ।",
+    "description": "Step hint"
+  },
+  "targetNameLabel": {
+    "message": "लक्ष्य का नाम",
+    "description": "Form label"
+  },
+  "targetNamePlaceholder": {
+    "message": "जैसे Q2 उद्यम राजस्व",
+    "description": "Placeholder"
+  },
+  "targetValueLabel": {
+    "message": "लक्ष्य राशि",
+    "description": "Form label"
+  },
+  "periodStartLabel": {
+    "message": "प्रारंभ होगा",
+    "description": "Date label"
+  },
+  "periodEndLabel": {
+    "message": "समाप्त होता है",
+    "description": "Date label"
+  },
+  "periodThisMonth": {
+    "message": "इस महीने",
+    "description": "Period preset"
+  },
+  "periodThisQuarter": {
+    "message": "इस तिमाही",
+    "description": "Period preset"
+  },
+  "periodCustom": {
+    "message": "कस्टम तिथियां",
+    "description": "Period preset"
+  },
+  "distributionEqual": {
+    "message": "बराबर बंटवारा",
+    "description": "Distribution"
+  },
+  "distributionEqualDesc": {
+    "message": "लक्ष्य पर सभी के लिए समान हिस्सेदारी।",
+    "description": "Distribution desc"
+  },
+  "distributionWeighted": {
+    "message": "भारित",
+    "description": "Distribution"
+  },
+  "distributionWeightedDesc": {
+    "message": "निर्धारित वजन के अनुसार विभाजित करें।",
+    "description": "Distribution desc"
+  },
+  "distributionManual": {
+    "message": "नियमावली",
+    "description": "Distribution"
+  },
+  "distributionManualDesc": {
+    "message": "आप प्रत्येक व्यक्ति की राशि निर्धारित करें.",
+    "description": "Distribution desc"
+  },
+  "distributionCapacity": {
+    "message": "क्षमता के अनुसार",
+    "description": "Distribution"
+  },
+  "distributionCapacityDesc": {
+    "message": "प्रत्येक व्यक्ति की क्षमता के आधार पर.",
+    "description": "Distribution desc"
+  },
+  "threshold80": {
+    "message": "80% - सचेत",
+    "description": "Threshold"
+  },
+  "threshold100": {
+    "message": "100% - लक्ष्य पूरा हुआ",
+    "description": "Threshold"
+  },
+  "threshold120": {
+    "message": "120% - पार हो गया",
+    "description": "Threshold"
+  },
+  "forecastEnable": {
+    "message": "खुली पाइपलाइन का उपयोग करके पूर्वानुमान सक्षम करें",
+    "description": "Forecast toggle"
+  },
+  "activateTarget": {
+    "message": "लक्ष्य सक्रिय करें",
+    "description": "Activate CTA"
+  },
+  "saveDraft": {
+    "message": "ड्राफ्ट के रूप में सेव करें",
+    "description": "Save draft CTA"
+  },
+  "back": {
+    "message": "पीछे",
+    "description": "Back button"
+  },
+  "next": {
+    "message": "जारी रखना",
+    "description": "Next button"
+  },
+  "cancelWizard": {
+    "message": "रद्द करना",
+    "description": "Cancel wizard"
+  },
+  "conflictWarning": {
+    "message": "एक अन्य लक्ष्य इस अवधि और डेटा स्रोतों को ओवरलैप करता है। यदि आप जानबूझकर हैं तो आप अभी भी सक्रिय कर सकते हैं।",
+    "description": "Conflict warning"
+  },
+  "detailAchieved": {
+    "message": "हासिल किया",
+    "description": "Metric"
+  },
+  "detailGoal": {
+    "message": "लक्ष्य",
+    "description": "Metric"
+  },
+  "detailForecast": {
+    "message": "पूर्वानुमान",
+    "description": "Metric"
+  },
+  "detailContributions": {
+    "message": "हालिया योगदान",
+    "description": "Section"
+  },
+  "detailRecalculate": {
+    "message": "कुल योग सिंक करें",
+    "description": "Recalc button"
+  },
+  "detailVersions": {
+    "message": "संस्करण इतिहास",
+    "description": "Section"
+  },
+  "detailLock": {
+    "message": "ताला संरचना",
+    "description": "Lock action"
+  },
+  "detailPartialData": {
+    "message": "कुछ ऐप्स बंद हैं - डेटा अधूरा हो सकता है।",
+    "description": "Warning"
+  },
+  "leaderboard": {
+    "message": "शीर्ष प्रदर्शक",
+    "description": "Leaderboard"
+  },
+  "leaderboardEmpty": {
+    "message": "लक्ष्य की प्रगति होने पर रैंकिंग दिखाई देती है।",
+    "description": "Empty leaderboard"
+  },
+  "widgetSalesTitle": {
+    "message": "बिक्री लक्ष्य",
+    "description": "Widget title"
+  },
+  "widgetHelpdeskTitle": {
+    "message": "संकल्प लक्ष्य",
+    "description": "Widget title"
+  }
+}

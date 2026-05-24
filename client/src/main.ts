@@ -11,6 +11,7 @@ import HeadlessSwitch from './components/ui/HeadlessSwitch.vue'
 // @ts-ignore: no declaration file for './composables/useColorMode'
 import { useColorMode } from './composables/useColorMode'
 import { installFetchApiBase } from './config/installFetchApiBase'
+import { i18n, initI18n } from './i18n'
 
 const shouldEnableVerboseConsole = () => {
   if (import.meta.env.PROD) {
@@ -40,6 +41,7 @@ installFetchApiBase()
 const app = createApp(App)
 app.provide('arivuInitializeDynamicRoutes', initializeDynamicRoutes)
 app.use(createPinia())
+app.use(i18n)
 app.use(router)
 app.component('HeadlessCheckbox', HeadlessCheckbox)
 app.component('HeadlessSwitch', HeadlessSwitch)
@@ -53,7 +55,7 @@ if (import.meta.env.DEV) {
   );
 }
 
-void (() => {
+void (async () => {
   // Color mode (must run before first paint: applies <html> class)
   const { colorMode } = useColorMode()
   if (import.meta.env.DEV) {
@@ -75,6 +77,15 @@ void (() => {
           })
       }
     })
+  }
+
+  try {
+    const orgRaw = localStorage.getItem('organization')
+    const org = orgRaw ? JSON.parse(orgRaw) : null
+    await initI18n({ orgLanguage: org?.settings?.language })
+  } catch (e) {
+    console.error('[i18n] init failed', e)
+    await initI18n()
   }
 
   app.mount('#app')

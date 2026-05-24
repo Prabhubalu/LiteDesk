@@ -2,9 +2,9 @@
   <div class="relative pb-28">
     <!-- Header -->
     <div class="mb-6">
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Company Details</h2>
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.tabCompany') }}</h2>
       <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        Manage your company identity and global defaults that apply across the platform
+        {{ t('settings.orgPageSubtitle') }}
       </p>
     </div>
 
@@ -12,7 +12,7 @@
     <div v-if="loading" class="flex items-center justify-center py-24">
       <div class="flex flex-col items-center gap-3">
         <div class="animate-spin rounded-full h-10 w-10 border-2 border-gray-200 border-t-indigo-600 dark:border-gray-700 dark:border-t-indigo-400"></div>
-        <p class="text-sm text-gray-500 dark:text-gray-400">Loading company details…</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.orgLoading') }}</p>
       </div>
     </div>
 
@@ -27,8 +27,8 @@
         </svg>
       </div>
       <div>
-        <h3 class="text-sm font-semibold text-red-900 dark:text-red-200">Couldn't load company details</h3>
-        <p class="text-sm text-red-700 dark:text-red-300 mt-1">{{ error.message || 'Please try again.' }}</p>
+        <h3 class="text-sm font-semibold text-red-900 dark:text-red-200">{{ t('settings.orgLoadFailed') }}</h3>
+        <p class="text-sm text-red-700 dark:text-red-300 mt-1">{{ error.message || t('settings.pleaseTryAgain') }}</p>
         <button
           type="button"
           @click="fetchOrganizationSettings"
@@ -37,7 +37,7 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          Retry
+          {{ t('actions.retry') }}
         </button>
       </div>
     </div>
@@ -72,7 +72,7 @@
                 <img
                   v-if="form.logoUrl && !logoBroken"
                   :src="resolvedLogoUrl"
-                  alt="Company logo"
+                  :alt="t('settings.orgLogoAlt')"
                   class="w-full h-full object-contain p-2"
                   @error="logoBroken = true"
                 />
@@ -97,10 +97,10 @@
             <!-- Identity summary -->
             <div class="flex-1 min-w-0">
               <p class="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-                Company Identity
+                {{ t('settings.orgIdentity') }}
               </p>
               <h3 class="mt-1 text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white truncate">
-                {{ form.name || 'Your Company' }}
+                {{ form.name || t('settings.orgDefaultName') }}
               </h3>
               <div class="mt-3 flex flex-wrap gap-2">
                 <span
@@ -137,7 +137,7 @@
                 </span>
               </div>
               <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 max-w-2xl">
-                These settings define how your company appears across every application and shape the defaults for dates, currency, and language.
+                {{ t('settings.orgIdentityDesc') }}
               </p>
             </div>
           </div>
@@ -153,8 +153,8 @@
             </svg>
           </div>
           <div>
-            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Branding</h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Your company name and logo that appear throughout the app</p>
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.orgBranding') }}</h3>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.orgBrandingDesc') }}</p>
           </div>
         </header>
 
@@ -162,7 +162,7 @@
           <!-- Company Name -->
           <div class="lg:col-span-2 space-y-2">
             <label for="company-name" class="block text-sm font-medium text-gray-900 dark:text-gray-200">
-              Company name
+              {{ t('settings.orgCompanyName') }}
               <span class="text-red-500">*</span>
             </label>
             <input
@@ -172,17 +172,17 @@
               required
               maxlength="120"
               class="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/50 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all outline-none"
-              placeholder="e.g. Arivu Systems"
+              :placeholder="t('settings.orgCompanyNamePh')"
             />
             <p class="text-xs text-gray-500 dark:text-gray-400">
-              Shown to users, on emails, and in PDF exports.
+              {{ t('settings.orgCompanyNameHint') }}
             </p>
           </div>
 
           <!-- Logo Upload -->
           <div class="lg:col-span-3 space-y-2">
             <div class="flex items-center justify-between">
-              <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">Company logo</label>
+              <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.orgLogo') }}</label>
               <button
                 v-if="form.logoUrl"
                 type="button"
@@ -193,7 +193,7 @@
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" />
                 </svg>
-                Remove logo
+                {{ t('settings.orgRemoveLogo') }}
               </button>
             </div>
 
@@ -221,7 +221,7 @@
                 v-if="form.logoUrl && !logoBroken"
                 class="w-16 h-16 rounded-xl bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-gray-700 flex items-center justify-center overflow-hidden"
               >
-                <img :src="resolvedLogoUrl" alt="Logo preview" class="w-full h-full object-contain p-1.5" @error="logoBroken = true" />
+                <img :src="resolvedLogoUrl" :alt="t('settings.orgLogoPreviewAlt')" class="w-full h-full object-contain p-1.5" @error="logoBroken = true" />
               </div>
               <div
                 v-else
@@ -234,10 +234,10 @@
 
               <div class="text-center">
                 <p class="text-sm font-medium text-gray-900 dark:text-white">
-                  <span class="text-indigo-600 dark:text-indigo-400">Click to upload</span> or drag and drop
+                  <span class="text-indigo-600 dark:text-indigo-400">{{ t('settings.orgUploadClick') }}</span> {{ t('settings.orgUploadDrag') }}
                 </p>
                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  PNG, JPG, SVG, GIF or WEBP &middot; up to 10MB &middot; recommended 512×512
+                  {{ t('settings.orgUploadHint') }}
                 </p>
               </div>
 
@@ -250,7 +250,7 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Uploading…
+                  {{ t('settings.orgUploading') }}
                 </span>
               </span>
 
@@ -269,13 +269,13 @@
                 <svg class="w-3.5 h-3.5 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
-                Or paste a logo URL
+                {{ t('settings.orgPasteLogoUrl') }}
               </summary>
               <input
                 v-model="form.logoUrl"
                 type="url"
                 class="mt-2 w-full px-3.5 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/50 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all outline-none"
-                placeholder="https://example.com/logo.png"
+                :placeholder="t('settings.orgLogoUrlPh')"
                 @input="logoBroken = false"
               />
             </details>
@@ -299,8 +299,8 @@
             </svg>
           </div>
           <div>
-            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Regional &amp; Localization</h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Defaults for time, currency and language used across the platform</p>
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.orgRegional') }}</h3>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.orgRegionalDesc') }}</p>
           </div>
         </header>
 
@@ -309,7 +309,7 @@
           <div class="space-y-2">
             <div class="flex items-center justify-between gap-2">
               <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">
-                Timezone
+                {{ t('settings.orgTimezone') }}
               </label>
               <button
                 v-if="detectedTimezone && detectedTimezone !== form.timeZone"
@@ -320,7 +320,7 @@
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 5.876A12.074 12.074 0 0014.81 9M2 12a10 10 0 0118-6m2 4a10 10 0 01-8 9.776" />
                 </svg>
-                Use my browser timezone
+                {{ t('settings.orgUseBrowserTz') }}
               </button>
             </div>
             <div class="relative" data-tz-root>
@@ -331,13 +331,13 @@
                 @keydown.escape="timezoneOpen = false"
                 type="text"
                 class="w-full px-3.5 py-2.5 pr-10 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/50 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all outline-none"
-                :placeholder="selectedTimezoneLabel || 'Search a timezone…'"
+                :placeholder="selectedTimezoneLabel || t('settings.orgTimezoneSearchPh')"
               />
               <button
                 type="button"
                 @click="timezoneOpen = !timezoneOpen"
                 class="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-                aria-label="Toggle timezone list"
+                :aria-label="t('settings.orgToggleTimezoneList')"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -351,7 +351,7 @@
                 @click.stop
               >
                 <div v-if="filteredTimezoneGroups.length === 0" class="px-4 py-6 text-sm text-gray-500 dark:text-gray-400 text-center">
-                  No timezones match "{{ timezoneSearch }}"
+                  {{ t('settings.orgNoTimezoneMatch', { query: timezoneSearch }) }}
                 </div>
                 <div
                   v-for="group in filteredTimezoneGroups"
@@ -374,7 +374,7 @@
                     ]"
                   >
                     <span class="flex flex-col">
-                      <span>{{ tz.label }}</span>
+                      <span>{{ tz.text }}</span>
                       <span v-if="tz.sublabel" class="text-xs text-gray-500 dark:text-gray-400">{{ tz.sublabel }}</span>
                     </span>
                     <span class="text-xs font-mono text-gray-500 dark:text-gray-400 ml-3 flex-shrink-0">{{ tz.offset }}</span>
@@ -386,47 +386,47 @@
               <svg class="w-3.5 h-3.5 flex-shrink-0 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              Detected from your browser: <span class="font-medium text-gray-700 dark:text-gray-300">{{ detectedTimezoneLabel }}</span>
+              {{ t('settings.orgDetectedTz', { label: detectedTimezoneLabel }) }}
             </p>
             <p v-if="showTimezoneWarning" class="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
               <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
-              Changing timezone affects how dates and times display across the platform.
+              {{ t('settings.orgTzWarning') }}
             </p>
           </div>
 
           <!-- Currency -->
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">Default currency</label>
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.orgCurrency') }}</label>
             <HeadlessSelect
               v-model="form.currency"
               :options="currencyOptions"
             />
-            <p class="text-xs text-gray-500 dark:text-gray-400">Used for monetary values in deals, invoices, and reports.</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.orgCurrencyHint') }}</p>
           </div>
 
           <!-- Language -->
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">Language</label>
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.orgLanguage') }}</label>
             <HeadlessSelect
               v-model="form.language"
               :options="languageOptions"
             />
-            <p class="text-xs text-gray-500 dark:text-gray-400">Default UI language for new users.</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.orgLanguageHint') }}</p>
           </div>
 
           <!-- Locale -->
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">Locale</label>
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.orgLocale') }}</label>
             <input
               v-model="form.locale"
               type="text"
               class="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/50 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all outline-none font-mono"
-              placeholder="en-US"
+              :placeholder="t('settings.orgLocalePh')"
             />
             <p class="text-xs text-gray-500 dark:text-gray-400">
-              Controls number, date and currency formatting. Format: <code class="px-1 py-0.5 rounded bg-gray-100 dark:bg-gray-700/60 text-[11px]">language-COUNTRY</code> (e.g. en-US, en-IN, fr-FR).
+              {{ t('settings.orgLocaleHint') }}
             </p>
           </div>
         </div>
@@ -442,16 +442,16 @@
           </div>
           <div class="flex-1 min-w-0">
             <div class="flex items-center justify-between flex-wrap gap-2">
-              <h3 class="text-base font-semibold text-gray-900 dark:text-white">Data Region</h3>
+              <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.orgDataRegion') }}</h3>
               <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-200 dark:bg-gray-700 text-xs font-medium text-gray-700 dark:text-gray-300">
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
-                Locked
+                {{ t('settings.orgLocked') }}
               </span>
             </div>
             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-              Your data is stored in <span class="font-mono font-medium text-gray-900 dark:text-gray-100">{{ form.dataRegion || 'us-east-1' }}</span>. Set during onboarding and cannot be changed.
+              {{ t('settings.orgDataRegionDesc', { region: form.dataRegion || 'us-east-1' }) }}
             </p>
           </div>
         </div>
@@ -479,8 +479,8 @@
               </svg>
             </span>
             <div class="min-w-0">
-              <p class="text-sm font-medium text-gray-900 dark:text-white truncate">You have unsaved changes</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Save your updates to apply them across the platform.</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ t('settings.unsavedTitle') }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ t('settings.unsavedHintOrg') }}</p>
             </div>
           </div>
           <div class="flex items-center gap-2 flex-shrink-0">
@@ -490,7 +490,7 @@
               :disabled="saving"
               class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Discard
+              {{ t('settings.discardChanges') }}
             </button>
             <button
               type="button"
@@ -502,7 +502,7 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              {{ saving ? 'Saving…' : 'Save changes' }}
+              {{ saving ? t('states.saving') : t('settings.saveChanges') }}
             </button>
           </div>
         </div>
@@ -513,12 +513,14 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { getApiUrlForFetch } from '@/config/apiBase';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useNotifications } from '@/composables/useNotifications';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 
+const { t } = useI18n();
 const authStore = useAuthStore();
 const { success: notifySuccess, error: notifyError } = useNotifications();
 
@@ -561,97 +563,97 @@ const timezoneGroups = [
   {
     region: 'Popular',
     items: [
-      { value: 'UTC', label: 'UTC — Coordinated Universal Time', sublabel: 'UTC', offset: 'UTC+00:00' },
-      { value: 'Asia/Kolkata', label: 'India Standard Time', sublabel: 'Kolkata, Mumbai, New Delhi, Chennai', offset: 'UTC+05:30' },
-      { value: 'America/New_York', label: 'Eastern Time', sublabel: 'New York, Toronto', offset: 'UTC−05:00' },
-      { value: 'America/Los_Angeles', label: 'Pacific Time', sublabel: 'Los Angeles, San Francisco', offset: 'UTC−08:00' },
-      { value: 'Europe/London', label: 'British Time', sublabel: 'London, Edinburgh', offset: 'UTC+00:00' },
-      { value: 'Asia/Singapore', label: 'Singapore Time', sublabel: 'Singapore', offset: 'UTC+08:00' }
+      { value: 'UTC', text: 'UTC — Coordinated Universal Time', sublabel: 'UTC', offset: 'UTC+00:00' },
+      { value: 'Asia/Kolkata', text: 'India Standard Time', sublabel: 'Kolkata, Mumbai, New Delhi, Chennai', offset: 'UTC+05:30' },
+      { value: 'America/New_York', text: 'Eastern Time', sublabel: 'New York, Toronto', offset: 'UTC−05:00' },
+      { value: 'America/Los_Angeles', text: 'Pacific Time', sublabel: 'Los Angeles, San Francisco', offset: 'UTC−08:00' },
+      { value: 'Europe/London', text: 'British Time', sublabel: 'London, Edinburgh', offset: 'UTC+00:00' },
+      { value: 'Asia/Singapore', text: 'Singapore Time', sublabel: 'Singapore', offset: 'UTC+08:00' }
     ]
   },
   {
     region: 'Americas',
     items: [
-      { value: 'America/New_York', label: 'America/New_York', sublabel: 'Eastern Time', offset: 'UTC−05:00' },
-      { value: 'America/Chicago', label: 'America/Chicago', sublabel: 'Central Time', offset: 'UTC−06:00' },
-      { value: 'America/Denver', label: 'America/Denver', sublabel: 'Mountain Time', offset: 'UTC−07:00' },
-      { value: 'America/Phoenix', label: 'America/Phoenix', sublabel: 'Arizona (no DST)', offset: 'UTC−07:00' },
-      { value: 'America/Los_Angeles', label: 'America/Los_Angeles', sublabel: 'Pacific Time', offset: 'UTC−08:00' },
-      { value: 'America/Anchorage', label: 'America/Anchorage', sublabel: 'Alaska Time', offset: 'UTC−09:00' },
-      { value: 'Pacific/Honolulu', label: 'Pacific/Honolulu', sublabel: 'Hawaii Time', offset: 'UTC−10:00' },
-      { value: 'America/Toronto', label: 'America/Toronto', sublabel: 'Eastern Time (Canada)', offset: 'UTC−05:00' },
-      { value: 'America/Vancouver', label: 'America/Vancouver', sublabel: 'Pacific Time (Canada)', offset: 'UTC−08:00' },
-      { value: 'America/Mexico_City', label: 'America/Mexico_City', sublabel: 'Mexico City', offset: 'UTC−06:00' },
-      { value: 'America/Bogota', label: 'America/Bogota', sublabel: 'Colombia', offset: 'UTC−05:00' },
-      { value: 'America/Sao_Paulo', label: 'America/Sao_Paulo', sublabel: 'Brazil (São Paulo)', offset: 'UTC−03:00' },
-      { value: 'America/Buenos_Aires', label: 'America/Argentina/Buenos_Aires', sublabel: 'Argentina', offset: 'UTC−03:00' },
-      { value: 'America/Santiago', label: 'America/Santiago', sublabel: 'Chile', offset: 'UTC−04:00' }
+      { value: 'America/New_York', text: 'America/New_York', sublabel: 'Eastern Time', offset: 'UTC−05:00' },
+      { value: 'America/Chicago', text: 'America/Chicago', sublabel: 'Central Time', offset: 'UTC−06:00' },
+      { value: 'America/Denver', text: 'America/Denver', sublabel: 'Mountain Time', offset: 'UTC−07:00' },
+      { value: 'America/Phoenix', text: 'America/Phoenix', sublabel: 'Arizona (no DST)', offset: 'UTC−07:00' },
+      { value: 'America/Los_Angeles', text: 'America/Los_Angeles', sublabel: 'Pacific Time', offset: 'UTC−08:00' },
+      { value: 'America/Anchorage', text: 'America/Anchorage', sublabel: 'Alaska Time', offset: 'UTC−09:00' },
+      { value: 'Pacific/Honolulu', text: 'Pacific/Honolulu', sublabel: 'Hawaii Time', offset: 'UTC−10:00' },
+      { value: 'America/Toronto', text: 'America/Toronto', sublabel: 'Eastern Time (Canada)', offset: 'UTC−05:00' },
+      { value: 'America/Vancouver', text: 'America/Vancouver', sublabel: 'Pacific Time (Canada)', offset: 'UTC−08:00' },
+      { value: 'America/Mexico_City', text: 'America/Mexico_City', sublabel: 'Mexico City', offset: 'UTC−06:00' },
+      { value: 'America/Bogota', text: 'America/Bogota', sublabel: 'Colombia', offset: 'UTC−05:00' },
+      { value: 'America/Sao_Paulo', text: 'America/Sao_Paulo', sublabel: 'Brazil (São Paulo)', offset: 'UTC−03:00' },
+      { value: 'America/Buenos_Aires', text: 'America/Argentina/Buenos_Aires', sublabel: 'Argentina', offset: 'UTC−03:00' },
+      { value: 'America/Santiago', text: 'America/Santiago', sublabel: 'Chile', offset: 'UTC−04:00' }
     ]
   },
   {
     region: 'Europe',
     items: [
-      { value: 'Europe/London', label: 'Europe/London', sublabel: 'GMT / BST', offset: 'UTC+00:00' },
-      { value: 'Europe/Dublin', label: 'Europe/Dublin', sublabel: 'Ireland', offset: 'UTC+00:00' },
-      { value: 'Europe/Lisbon', label: 'Europe/Lisbon', sublabel: 'Portugal', offset: 'UTC+00:00' },
-      { value: 'Europe/Paris', label: 'Europe/Paris', sublabel: 'Central European Time', offset: 'UTC+01:00' },
-      { value: 'Europe/Berlin', label: 'Europe/Berlin', sublabel: 'Germany', offset: 'UTC+01:00' },
-      { value: 'Europe/Madrid', label: 'Europe/Madrid', sublabel: 'Spain', offset: 'UTC+01:00' },
-      { value: 'Europe/Rome', label: 'Europe/Rome', sublabel: 'Italy', offset: 'UTC+01:00' },
-      { value: 'Europe/Amsterdam', label: 'Europe/Amsterdam', sublabel: 'Netherlands', offset: 'UTC+01:00' },
-      { value: 'Europe/Stockholm', label: 'Europe/Stockholm', sublabel: 'Sweden', offset: 'UTC+01:00' },
-      { value: 'Europe/Zurich', label: 'Europe/Zurich', sublabel: 'Switzerland', offset: 'UTC+01:00' },
-      { value: 'Europe/Warsaw', label: 'Europe/Warsaw', sublabel: 'Poland', offset: 'UTC+01:00' },
-      { value: 'Europe/Athens', label: 'Europe/Athens', sublabel: 'Greece', offset: 'UTC+02:00' },
-      { value: 'Europe/Helsinki', label: 'Europe/Helsinki', sublabel: 'Finland', offset: 'UTC+02:00' },
-      { value: 'Europe/Istanbul', label: 'Europe/Istanbul', sublabel: 'Turkey', offset: 'UTC+03:00' },
-      { value: 'Europe/Moscow', label: 'Europe/Moscow', sublabel: 'Russia (Moscow)', offset: 'UTC+03:00' }
+      { value: 'Europe/London', text: 'Europe/London', sublabel: 'GMT / BST', offset: 'UTC+00:00' },
+      { value: 'Europe/Dublin', text: 'Europe/Dublin', sublabel: 'Ireland', offset: 'UTC+00:00' },
+      { value: 'Europe/Lisbon', text: 'Europe/Lisbon', sublabel: 'Portugal', offset: 'UTC+00:00' },
+      { value: 'Europe/Paris', text: 'Europe/Paris', sublabel: 'Central European Time', offset: 'UTC+01:00' },
+      { value: 'Europe/Berlin', text: 'Europe/Berlin', sublabel: 'Germany', offset: 'UTC+01:00' },
+      { value: 'Europe/Madrid', text: 'Europe/Madrid', sublabel: 'Spain', offset: 'UTC+01:00' },
+      { value: 'Europe/Rome', text: 'Europe/Rome', sublabel: 'Italy', offset: 'UTC+01:00' },
+      { value: 'Europe/Amsterdam', text: 'Europe/Amsterdam', sublabel: 'Netherlands', offset: 'UTC+01:00' },
+      { value: 'Europe/Stockholm', text: 'Europe/Stockholm', sublabel: 'Sweden', offset: 'UTC+01:00' },
+      { value: 'Europe/Zurich', text: 'Europe/Zurich', sublabel: 'Switzerland', offset: 'UTC+01:00' },
+      { value: 'Europe/Warsaw', text: 'Europe/Warsaw', sublabel: 'Poland', offset: 'UTC+01:00' },
+      { value: 'Europe/Athens', text: 'Europe/Athens', sublabel: 'Greece', offset: 'UTC+02:00' },
+      { value: 'Europe/Helsinki', text: 'Europe/Helsinki', sublabel: 'Finland', offset: 'UTC+02:00' },
+      { value: 'Europe/Istanbul', text: 'Europe/Istanbul', sublabel: 'Turkey', offset: 'UTC+03:00' },
+      { value: 'Europe/Moscow', text: 'Europe/Moscow', sublabel: 'Russia (Moscow)', offset: 'UTC+03:00' }
     ]
   },
   {
     region: 'Asia',
     items: [
-      { value: 'Asia/Jerusalem', label: 'Asia/Jerusalem', sublabel: 'Israel', offset: 'UTC+02:00' },
-      { value: 'Asia/Dubai', label: 'Asia/Dubai', sublabel: 'UAE', offset: 'UTC+04:00' },
-      { value: 'Asia/Riyadh', label: 'Asia/Riyadh', sublabel: 'Saudi Arabia', offset: 'UTC+03:00' },
-      { value: 'Asia/Tehran', label: 'Asia/Tehran', sublabel: 'Iran', offset: 'UTC+03:30' },
-      { value: 'Asia/Karachi', label: 'Asia/Karachi', sublabel: 'Pakistan', offset: 'UTC+05:00' },
-      { value: 'Asia/Kolkata', label: 'Asia/Kolkata', sublabel: 'India Standard Time (IST)', offset: 'UTC+05:30' },
-      { value: 'Asia/Colombo', label: 'Asia/Colombo', sublabel: 'Sri Lanka', offset: 'UTC+05:30' },
-      { value: 'Asia/Kathmandu', label: 'Asia/Kathmandu', sublabel: 'Nepal', offset: 'UTC+05:45' },
-      { value: 'Asia/Dhaka', label: 'Asia/Dhaka', sublabel: 'Bangladesh', offset: 'UTC+06:00' },
-      { value: 'Asia/Bangkok', label: 'Asia/Bangkok', sublabel: 'Thailand, Vietnam', offset: 'UTC+07:00' },
-      { value: 'Asia/Jakarta', label: 'Asia/Jakarta', sublabel: 'Indonesia (Western)', offset: 'UTC+07:00' },
-      { value: 'Asia/Singapore', label: 'Asia/Singapore', sublabel: 'Singapore', offset: 'UTC+08:00' },
-      { value: 'Asia/Kuala_Lumpur', label: 'Asia/Kuala_Lumpur', sublabel: 'Malaysia', offset: 'UTC+08:00' },
-      { value: 'Asia/Hong_Kong', label: 'Asia/Hong_Kong', sublabel: 'Hong Kong', offset: 'UTC+08:00' },
-      { value: 'Asia/Shanghai', label: 'Asia/Shanghai', sublabel: 'China', offset: 'UTC+08:00' },
-      { value: 'Asia/Taipei', label: 'Asia/Taipei', sublabel: 'Taiwan', offset: 'UTC+08:00' },
-      { value: 'Asia/Manila', label: 'Asia/Manila', sublabel: 'Philippines', offset: 'UTC+08:00' },
-      { value: 'Asia/Seoul', label: 'Asia/Seoul', sublabel: 'South Korea', offset: 'UTC+09:00' },
-      { value: 'Asia/Tokyo', label: 'Asia/Tokyo', sublabel: 'Japan', offset: 'UTC+09:00' }
+      { value: 'Asia/Jerusalem', text: 'Asia/Jerusalem', sublabel: 'Israel', offset: 'UTC+02:00' },
+      { value: 'Asia/Dubai', text: 'Asia/Dubai', sublabel: 'UAE', offset: 'UTC+04:00' },
+      { value: 'Asia/Riyadh', text: 'Asia/Riyadh', sublabel: 'Saudi Arabia', offset: 'UTC+03:00' },
+      { value: 'Asia/Tehran', text: 'Asia/Tehran', sublabel: 'Iran', offset: 'UTC+03:30' },
+      { value: 'Asia/Karachi', text: 'Asia/Karachi', sublabel: 'Pakistan', offset: 'UTC+05:00' },
+      { value: 'Asia/Kolkata', text: 'Asia/Kolkata', sublabel: 'India Standard Time (IST)', offset: 'UTC+05:30' },
+      { value: 'Asia/Colombo', text: 'Asia/Colombo', sublabel: 'Sri Lanka', offset: 'UTC+05:30' },
+      { value: 'Asia/Kathmandu', text: 'Asia/Kathmandu', sublabel: 'Nepal', offset: 'UTC+05:45' },
+      { value: 'Asia/Dhaka', text: 'Asia/Dhaka', sublabel: 'Bangladesh', offset: 'UTC+06:00' },
+      { value: 'Asia/Bangkok', text: 'Asia/Bangkok', sublabel: 'Thailand, Vietnam', offset: 'UTC+07:00' },
+      { value: 'Asia/Jakarta', text: 'Asia/Jakarta', sublabel: 'Indonesia (Western)', offset: 'UTC+07:00' },
+      { value: 'Asia/Singapore', text: 'Asia/Singapore', sublabel: 'Singapore', offset: 'UTC+08:00' },
+      { value: 'Asia/Kuala_Lumpur', text: 'Asia/Kuala_Lumpur', sublabel: 'Malaysia', offset: 'UTC+08:00' },
+      { value: 'Asia/Hong_Kong', text: 'Asia/Hong_Kong', sublabel: 'Hong Kong', offset: 'UTC+08:00' },
+      { value: 'Asia/Shanghai', text: 'Asia/Shanghai', sublabel: 'China', offset: 'UTC+08:00' },
+      { value: 'Asia/Taipei', text: 'Asia/Taipei', sublabel: 'Taiwan', offset: 'UTC+08:00' },
+      { value: 'Asia/Manila', text: 'Asia/Manila', sublabel: 'Philippines', offset: 'UTC+08:00' },
+      { value: 'Asia/Seoul', text: 'Asia/Seoul', sublabel: 'South Korea', offset: 'UTC+09:00' },
+      { value: 'Asia/Tokyo', text: 'Asia/Tokyo', sublabel: 'Japan', offset: 'UTC+09:00' }
     ]
   },
   {
     region: 'Africa',
     items: [
-      { value: 'Africa/Casablanca', label: 'Africa/Casablanca', sublabel: 'Morocco', offset: 'UTC+01:00' },
-      { value: 'Africa/Lagos', label: 'Africa/Lagos', sublabel: 'Nigeria', offset: 'UTC+01:00' },
-      { value: 'Africa/Johannesburg', label: 'Africa/Johannesburg', sublabel: 'South Africa', offset: 'UTC+02:00' },
-      { value: 'Africa/Cairo', label: 'Africa/Cairo', sublabel: 'Egypt', offset: 'UTC+02:00' },
-      { value: 'Africa/Nairobi', label: 'Africa/Nairobi', sublabel: 'Kenya', offset: 'UTC+03:00' }
+      { value: 'Africa/Casablanca', text: 'Africa/Casablanca', sublabel: 'Morocco', offset: 'UTC+01:00' },
+      { value: 'Africa/Lagos', text: 'Africa/Lagos', sublabel: 'Nigeria', offset: 'UTC+01:00' },
+      { value: 'Africa/Johannesburg', text: 'Africa/Johannesburg', sublabel: 'South Africa', offset: 'UTC+02:00' },
+      { value: 'Africa/Cairo', text: 'Africa/Cairo', sublabel: 'Egypt', offset: 'UTC+02:00' },
+      { value: 'Africa/Nairobi', text: 'Africa/Nairobi', sublabel: 'Kenya', offset: 'UTC+03:00' }
     ]
   },
   {
     region: 'Oceania',
     items: [
-      { value: 'Australia/Perth', label: 'Australia/Perth', sublabel: 'Western Australia', offset: 'UTC+08:00' },
-      { value: 'Australia/Adelaide', label: 'Australia/Adelaide', sublabel: 'Central Australia', offset: 'UTC+09:30' },
-      { value: 'Australia/Sydney', label: 'Australia/Sydney', sublabel: 'New South Wales', offset: 'UTC+10:00' },
-      { value: 'Australia/Melbourne', label: 'Australia/Melbourne', sublabel: 'Victoria', offset: 'UTC+10:00' },
-      { value: 'Australia/Brisbane', label: 'Australia/Brisbane', sublabel: 'Queensland', offset: 'UTC+10:00' },
-      { value: 'Pacific/Auckland', label: 'Pacific/Auckland', sublabel: 'New Zealand', offset: 'UTC+12:00' },
-      { value: 'Pacific/Fiji', label: 'Pacific/Fiji', sublabel: 'Fiji', offset: 'UTC+12:00' }
+      { value: 'Australia/Perth', text: 'Australia/Perth', sublabel: 'Western Australia', offset: 'UTC+08:00' },
+      { value: 'Australia/Adelaide', text: 'Australia/Adelaide', sublabel: 'Central Australia', offset: 'UTC+09:30' },
+      { value: 'Australia/Sydney', text: 'Australia/Sydney', sublabel: 'New South Wales', offset: 'UTC+10:00' },
+      { value: 'Australia/Melbourne', text: 'Australia/Melbourne', sublabel: 'Victoria', offset: 'UTC+10:00' },
+      { value: 'Australia/Brisbane', text: 'Australia/Brisbane', sublabel: 'Queensland', offset: 'UTC+10:00' },
+      { value: 'Pacific/Auckland', text: 'Pacific/Auckland', sublabel: 'New Zealand', offset: 'UTC+12:00' },
+      { value: 'Pacific/Fiji', text: 'Pacific/Fiji', sublabel: 'Fiji', offset: 'UTC+12:00' }
     ]
   }
 ];
@@ -676,7 +678,7 @@ const filteredTimezoneGroups = computed(() => {
     .map((g) => ({
       region: g.region,
       items: g.items.filter((tz) => {
-        const haystack = `${tz.value} ${tz.label} ${tz.sublabel || ''} ${tz.offset}`.toLowerCase();
+        const haystack = `${tz.value} ${tz.text} ${tz.sublabel || ''} ${tz.offset}`.toLowerCase();
         return haystack.includes(q);
       })
     }))
@@ -690,13 +692,13 @@ const selectedTimezoneMeta = computed(() => {
 const selectedTimezoneLabel = computed(() => {
   const tz = selectedTimezoneMeta.value;
   if (!tz) return form.value.timeZone || '';
-  return `${tz.sublabel || tz.label} (${tz.offset})`;
+  return `${tz.sublabel || tz.text} (${tz.offset})`;
 });
 
 const timezoneShortLabel = computed(() => {
   const tz = selectedTimezoneMeta.value;
   if (!tz) return form.value.timeZone || 'UTC';
-  return `${tz.sublabel || tz.label.replace(/^.*\//, '')} · ${tz.offset}`;
+  return `${tz.sublabel || tz.text.replace(/^.*\//, '')} · ${tz.offset}`;
 });
 
 const selectTimezone = (value) => {
@@ -709,7 +711,7 @@ const selectTimezone = (value) => {
 const detectedTimezoneLabel = computed(() => {
   if (!detectedTimezone.value) return '';
   const known = allTimezones.value.find((tz) => tz.value === detectedTimezone.value);
-  return known ? `${known.sublabel || known.label} (${known.offset})` : detectedTimezone.value;
+  return known ? `${known.sublabel || known.text} (${known.offset})` : detectedTimezone.value;
 });
 
 const useDetectedTimezone = () => {
@@ -755,28 +757,50 @@ const currencyOptions = computed(() =>
 );
 
 // -------- Languages --------
+const LANGUAGE_I18N_KEYS = {
+  en: 'orgLangEn',
+  es: 'orgLangEs',
+  fr: 'orgLangFr',
+  de: 'orgLangDe',
+  it: 'orgLangIt',
+  pt: 'orgLangPt',
+  nl: 'orgLangNl',
+  ru: 'orgLangRu',
+  ar: 'orgLangAr',
+  hi: 'orgLangHi',
+  ja: 'orgLangJa',
+  zh: 'orgLangZh',
+  ko: 'orgLangKo'
+};
+
 const languages = [
-  { code: 'en', name: 'English' },
-  { code: 'es', name: 'Spanish' },
-  { code: 'fr', name: 'French' },
-  { code: 'de', name: 'German' },
-  { code: 'it', name: 'Italian' },
-  { code: 'pt', name: 'Portuguese' },
-  { code: 'nl', name: 'Dutch' },
-  { code: 'ru', name: 'Russian' },
-  { code: 'ar', name: 'Arabic' },
-  { code: 'hi', name: 'Hindi' },
-  { code: 'ja', name: 'Japanese' },
-  { code: 'zh', name: 'Chinese' },
-  { code: 'ko', name: 'Korean' }
+  { code: 'en' },
+  { code: 'es' },
+  { code: 'fr' },
+  { code: 'de' },
+  { code: 'it' },
+  { code: 'pt' },
+  { code: 'nl' },
+  { code: 'ru' },
+  { code: 'ar' },
+  { code: 'hi' },
+  { code: 'ja' },
+  { code: 'zh' },
+  { code: 'ko' }
 ];
 
 const languageOptions = computed(() =>
-  languages.map((l) => ({ value: l.code, label: l.name }))
+  languages.map((l) => ({
+    value: l.code,
+    label: t(`settings.${LANGUAGE_I18N_KEYS[l.code]}`)
+  }))
 );
 
 const languageLabel = computed(() => {
-  return languages.find((l) => l.code === form.value.language)?.name || form.value.language || 'English';
+  const code = form.value.language;
+  const key = LANGUAGE_I18N_KEYS[code];
+  if (key) return t(`settings.${key}`);
+  return code || t('settings.orgLangEn');
 });
 
 // -------- Derived --------
@@ -877,14 +901,14 @@ const handleSubmit = async () => {
     if (data && data.success) {
       originalForm.value = JSON.parse(JSON.stringify(form.value));
       showTimezoneWarning.value = false;
-      notifySuccess('Company details updated successfully');
+      notifySuccess(t('settings.orgSaveSuccess'));
     } else {
-      const msg = data?.message || 'Failed to update company details';
+      const msg = data?.message || t('settings.orgUpdateFailed');
       notifyError(msg);
     }
   } catch (err) {
     console.error('Failed to update organization settings:', err);
-    notifyError(err?.message || 'Failed to update company details');
+    notifyError(err?.message || t('settings.orgUpdateFailed'));
   } finally {
     saving.value = false;
   }
@@ -917,11 +941,11 @@ const handleDrop = (e) => {
 const uploadLogo = async (file) => {
   logoError.value = '';
   if (!ACCEPTED_LOGO_TYPES.includes(file.type)) {
-    logoError.value = 'Unsupported file type. Please use PNG, JPG, GIF, WEBP or SVG.';
+    logoError.value = t('settings.orgLogoUnsupportedType');
     return;
   }
   if (file.size > MAX_LOGO_SIZE) {
-    logoError.value = 'File too large. Maximum size is 10MB.';
+    logoError.value = t('settings.orgLogoTooLarge');
     return;
   }
 
@@ -942,7 +966,7 @@ const uploadLogo = async (file) => {
 
     if (response.status === 401) {
       authStore.logout();
-      throw new Error('Session expired. Please log in again.');
+      throw new Error(t('errors.auth_token_invalid'));
     }
 
     const result = await response.json().catch(() => ({}));
@@ -957,11 +981,11 @@ const uploadLogo = async (file) => {
       // appearing as a pending change just because of the logo.
       originalForm.value.logoUrl = newUrl;
       logoBroken.value = false;
-      notifySuccess('Logo uploaded');
+      notifySuccess(t('settings.orgLogoUploaded'));
     }
   } catch (err) {
     console.error('Logo upload failed:', err);
-    logoError.value = err?.message || 'Failed to upload logo';
+    logoError.value = err?.message || t('settings.orgLogoUploadFailed');
     notifyError(logoError.value);
   } finally {
     logoUploading.value = false;
@@ -980,12 +1004,12 @@ const removeLogo = async () => {
       if (result?.success) {
         form.value.logoUrl = '';
         originalForm.value.logoUrl = '';
-        notifySuccess('Logo removed');
+        notifySuccess(t('settings.orgLogoRemoved'));
       } else {
-        notifyError(result?.message || 'Failed to remove logo');
+        notifyError(result?.message || t('settings.orgLogoRemoveFailed'));
       }
     } catch (err) {
-      notifyError(err?.message || 'Failed to remove logo');
+      notifyError(err?.message || t('settings.orgLogoRemoveFailed'));
     } finally {
       logoUploading.value = false;
     }

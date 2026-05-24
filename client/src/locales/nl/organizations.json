@@ -1,0 +1,330 @@
+{
+  "organizationAuditWidgetNoAuditHistoryAvailable": {
+    "message": "Geen auditgeschiedenis beschikbaar",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetDownloadReport": {
+    "message": "Rapport downloaden",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetCompliance": {
+    "message": "Naleving:",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetScore": {
+    "message": "Score:",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetTrend": {
+    "message": "Trend",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetTotalAudits": {
+    "message": "Totaal aantal audits",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetLoadingAuditHistory": {
+    "message": "Auditgeschiedenis laden...",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetViewAll": {
+    "message": "Bekijk alles",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetAuditHistory": {
+    "message": "Auditgeschiedenis",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationQuickCreateDrawerBackToQuick": {
+    "message": "Terug naar snel",
+    "description": "Auto-migrated from organizationQuickCreateDrawer"
+  },
+  "organizationQuickCreateDrawerFullForm": {
+    "message": "Volledige vorm",
+    "description": "Auto-migrated from organizationQuickCreateDrawer"
+  },
+  "organizationQuickCreateDrawerOtherFields": {
+    "message": "Andere velden",
+    "description": "Auto-migrated from organizationQuickCreateDrawer"
+  },
+  "organizationQuickCreateDrawerQuickCreateFields": {
+    "message": "Snel velden aanmaken",
+    "description": "Auto-migrated from organizationQuickCreateDrawer"
+  },
+  "relatedContactsWidgetAddContact": {
+    "message": "Contactpersoon toevoegen",
+    "description": "Auto-migrated from relatedContactsWidget"
+  },
+  "relatedContactsWidgetNoContactsLinkedYetLinkContacts": {
+    "message": "Er zijn nog geen contacten gekoppeld. Koppel contacten aan deze organisatie om ze hier te bekijken.",
+    "description": "Auto-migrated from relatedContactsWidget"
+  },
+  "relatedContactsWidgetAddContact2": {
+    "message": "Contactpersoon toevoegen",
+    "description": "Auto-migrated from relatedContactsWidget"
+  },
+  "relatedContactsWidgetLinkContacts": {
+    "message": "Contacten koppelen",
+    "description": "Auto-migrated from relatedContactsWidget"
+  },
+  "relatedContactsWidgetRelatedContacts": {
+    "message": "Gerelateerde contacten",
+    "description": "Auto-migrated from relatedContactsWidget"
+  },
+  "relatedOrganizationWidgetNoOrganizationLinked": {
+    "message": "Geen organisatie gekoppeld",
+    "description": "Auto-migrated from relatedOrganizationWidget"
+  },
+  "relatedOrganizationWidgetLinkOrganization": {
+    "message": "Organisatie koppelen",
+    "description": "Auto-migrated from relatedOrganizationWidget"
+  },
+  "relatedOrganizationWidgetRelatedOrganizations": {
+    "message": "Gerelateerde organisaties",
+    "description": "Auto-migrated from relatedOrganizationWidget"
+  },
+  "relatedUsersWidgetAddUser": {
+    "message": "Gebruiker toevoegen",
+    "description": "Auto-migrated from relatedUsersWidget"
+  },
+  "relatedUsersWidgetNoUsersLinkedYetLinkUsers": {
+    "message": "Er zijn nog geen gebruikers gekoppeld. Koppel gebruikers aan deze organisatie om ze hier te bekijken.",
+    "description": "Auto-migrated from relatedUsersWidget"
+  },
+  "relatedUsersWidgetAddUser2": {
+    "message": "Gebruiker toevoegen",
+    "description": "Auto-migrated from relatedUsersWidget"
+  },
+  "relatedUsersWidgetRelatedUsers": {
+    "message": "Gerelateerde gebruikers",
+    "description": "Auto-migrated from relatedUsersWidget"
+  },
+  "organizationSurfaceRecentActivity": {
+    "message": "Recente activiteit",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceActionAvailability": {
+    "message": "Beschikbaarheid van actie",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceEmployees": {
+    "message": "Medewerkers:",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceRevenue": {
+    "message": "Winst:",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceAddress": {
+    "message": "Adres:",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfacePhone": {
+    "message": "Telefoon:",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceWebsite": {
+    "message": "Website:",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceTheseDetailsAreManagedByThe": {
+    "message": "Deze gegevens worden beheerd door de app die ze gebruikt (bijvoorbeeld Sales, Helpdesk).",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceEditBusinessDetails": {
+    "message": "Bedrijfsgegevens bewerken",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceBusinessDetails": {
+    "message": "Bedrijfsgegevens",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceWorkExistsForThisApp": {
+    "message": "Er bestaat werk voor deze app.",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfacePeopleAssociatedWithThisOrganization": {
+    "message": "Mensen die verbonden zijn aan deze organisatie",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfacePrimaryContact": {
+    "message": "Primaire contactpersoon:",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceTryAgain": {
+    "message": "Probeer het opnieuw",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceErrorLoadingOrganization": {
+    "message": "Fout bij het laden van organisatie",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "createOrganizationSurfaceStreetAddressCityStateZip": {
+    "message": "Adres, stad, staat, postcode",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceAddress": {
+    "message": "Adres",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceHttpsExampleCom": {
+    "message": "https://voorbeeld.com",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceWebsite": {
+    "message": "Website",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceEGTechnologyHealthcareManufacturing": {
+    "message": "bijvoorbeeld technologie, gezondheidszorg, productie",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceOptionalBusinessContext": {
+    "message": "Optionele zakelijke context",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceSelectStatus": {
+    "message": "Status selecteren...",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceSelectStatus2": {
+    "message": "Status selecteren...",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceSelectStatus3": {
+    "message": "Status selecteren...",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceTypesCannotBeChangedOnceThe": {
+    "message": "Typen kunnen niet meer worden gewijzigd zodra de organisatie in gebruik is",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceOrganizationName": {
+    "message": "Naam van de organisatie",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceCoreBusinessIdentity": {
+    "message": "Kernbedrijfsidentiteit",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceError": {
+    "message": "Fout",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceLoadingOrganizationData": {
+    "message": "Organisatiegegevens laden...",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceValidationErrors": {
+    "message": "Validatiefouten",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "groupsNoGroupsFound": {
+    "message": "Geen groepen gevonden",
+    "description": "Auto-migrated from groups"
+  },
+  "groupsOrganizeUsersIntoTeamsAndDepartments": {
+    "message": "Organiseer gebruikers in teams en afdelingen",
+    "description": "Auto-migrated from groups"
+  },
+  "groupsGroups": {
+    "message": "Groepen",
+    "description": "Auto-migrated from groups"
+  },
+  "groupDetailSelectAUser": {
+    "message": "Selecteer een gebruiker...",
+    "description": "Auto-migrated from groupDetail"
+  },
+  "groupDetailAddMember": {
+    "message": "Lid toevoegen",
+    "description": "Auto-migrated from groupDetail"
+  },
+  "groupDetailNoMembersYetAddMembersTo": {
+    "message": "Nog geen leden. Voeg leden toe om aan de slag te gaan.",
+    "description": "Auto-migrated from groupDetail"
+  },
+  "groupDetailRemoveMember": {
+    "message": "Lid verwijderen",
+    "description": "Auto-migrated from groupDetail"
+  },
+  "groupDetailAddMember2": {
+    "message": "Lid toevoegen",
+    "description": "Auto-migrated from groupDetail"
+  },
+  "groupDetailLoadingGroup": {
+    "message": "Groep laden...",
+    "description": "Auto-migrated from groupDetail"
+  },
+  "organizationFormModalToastFailedToSaveOrganization": {
+    "message": "Kan organisatie niet opslaan",
+    "description": "Toast from OrganizationFormModal.vue"
+  },
+  "sysFieldName": {
+    "message": "Naam",
+    "description": "System organization field label"
+  },
+  "sysFieldEmail": {
+    "message": "E-mail",
+    "description": "System organization field label"
+  },
+  "sysFieldPhone": {
+    "message": "Telefoon",
+    "description": "System organization field label"
+  },
+  "sysFieldWebsite": {
+    "message": "Website",
+    "description": "System organization field label"
+  },
+  "sysFieldIndustry": {
+    "message": "Industrie",
+    "description": "System organization field label"
+  },
+  "sysFieldAssignedTo": {
+    "message": "Toegewezen aan",
+    "description": "System organization field label"
+  },
+  "sysFieldDescription": {
+    "message": "Beschrijving",
+    "description": "System organization field label"
+  },
+  "sysFieldTags": {
+    "message": "Labels",
+    "description": "System organization field label"
+  },
+  "listViewAll": {
+    "message": "All Organizations",
+    "description": "Organizations list default view title"
+  },
+  "listViewMy": {
+    "message": "My Organizations",
+    "description": "Organizations list assigned-to-me view title"
+  },
+  "listViewActive": {
+    "message": "Active",
+    "description": "Organizations list active view title"
+  },
+  "listViewTrial": {
+    "message": "Trial",
+    "description": "Organizations list trial view title"
+  },
+  "listCreate": {
+    "message": "New Organization",
+    "description": "Organizations list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "Search organizations...",
+    "description": "Organizations list search placeholder"
+  },
+  "listStatTotal": {
+    "message": "Total Organizations",
+    "description": "Organizations list statistics card"
+  },
+  "listStatActive": {
+    "message": "Active",
+    "description": "Organizations list statistics card"
+  },
+  "listStatTrial": {
+    "message": "Trial",
+    "description": "Organizations list statistics card"
+  }
+}

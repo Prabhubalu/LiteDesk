@@ -1,0 +1,46 @@
+{
+  "auth_required": {
+    "message": "Connectez-vous pour continuer",
+    "description": "API error AUTH_REQUIRED"
+  },
+  "auth_token_invalid": {
+    "message": "Votre session a expiré. Connectez-vous à nouveau.",
+    "description": "API error AUTH_TOKEN_INVALID"
+  },
+  "auth_token_missing": {
+    "message": "Connectez-vous pour continuer",
+    "description": "API error AUTH_TOKEN_MISSING"
+  },
+  "permission_denied": {
+    "message": "Vous n'êtes pas autorisé à effectuer cette action",
+    "description": "API error PERMISSION_DENIED"
+  },
+  "org_not_found": {
+    "message": "Organisation introuvable",
+    "description": "API error ORG_NOT_FOUND"
+  },
+  "user_not_found": {
+    "message": "Utilisateur introuvable",
+    "description": "API error USER_NOT_FOUND"
+  },
+  "validation_failed": {
+    "message": "Vérifiez les champs en surbrillance et réessayez",
+    "description": "API error VALIDATION_FAILED"
+  },
+  "resource_not_found": {
+    "message": "Cet enregistrement est introuvable",
+    "description": "API error RESOURCE_NOT_FOUND"
+  },
+  "conflict": {
+    "message": "Cette action entre en conflit avec un autre changement. Actualisez et réessayez.",
+    "description": "API error CONFLICT"
+  },
+  "rate_limited": {
+    "message": "Trop de demandes. Attendez un moment et réessayez.",
+    "description": "API error RATE_LIMITED"
+  },
+  "server_error": {
+    "message": "Quelque chose s'est mal passé de notre côté. Réessayez plus tard.",
+    "description": "Generic server error fallback"
+  }
+}

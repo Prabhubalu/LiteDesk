@@ -1,0 +1,226 @@
+{
+  "notesAddANoteAboveToGet": {
+    "message": "Add a note above to get started.",
+    "description": "Auto-migrated from notes"
+  },
+  "notesNoNotesYet": {
+    "message": "No notes yet.",
+    "description": "Auto-migrated from notes"
+  },
+  "notesWriteANote": {
+    "message": "Write a note...",
+    "description": "Auto-migrated from notes"
+  },
+  "notesAddNote": {
+    "message": "Add Note",
+    "description": "Auto-migrated from notes"
+  },
+  "notesCannotLoadNotes": {
+    "message": "Cannot Load Notes",
+    "description": "Auto-migrated from notes"
+  },
+  "notesErrorLoadingNotes": {
+    "message": "Error Loading Notes",
+    "description": "Auto-migrated from notes"
+  },
+  "notesLoadingNotes": {
+    "message": "Loading notes...",
+    "description": "Auto-migrated from notes"
+  },
+  "filesUploadAFileAboveToGet": {
+    "message": "Upload a file above to get started.",
+    "description": "Auto-migrated from files"
+  },
+  "filesNoFilesUploadedYet": {
+    "message": "No files uploaded yet.",
+    "description": "Auto-migrated from files"
+  },
+  "filesDownload": {
+    "message": "Download",
+    "description": "Auto-migrated from files"
+  },
+  "filesAllowedImagesPdfWordExcelCsv": {
+    "message": "Allowed: images, PDF, Word, Excel, CSV (max 10MB)",
+    "description": "Auto-migrated from files"
+  },
+  "filesUploadFile": {
+    "message": "Upload File",
+    "description": "Auto-migrated from files"
+  },
+  "filesCannotLoadFiles": {
+    "message": "Cannot Load Files",
+    "description": "Auto-migrated from files"
+  },
+  "filesErrorLoadingFiles": {
+    "message": "Error Loading Files",
+    "description": "Auto-migrated from files"
+  },
+  "filesLoadingFiles": {
+    "message": "Loading files...",
+    "description": "Auto-migrated from files"
+  },
+  "activityTimelineCannotLoadActivities": {
+    "message": "Cannot Load Activities",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "activityTimelineErrorLoadingActivities": {
+    "message": "Error Loading Activities",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "activityTimelineLoadingActivities": {
+    "message": "Loading activities...",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "taskDescriptionEditorInsertLink": {
+    "message": "Insert link",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorRemoveLink": {
+    "message": "Remove link",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorNumberedList": {
+    "message": "Numbered list",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorBulletList": {
+    "message": "Bullet list",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorStrikethrough": {
+    "message": "Strikethrough",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorItalic": {
+    "message": "Italic",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorBold": {
+    "message": "Bold",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading3": {
+    "message": "Heading 3",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading2": {
+    "message": "Heading 2",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading1": {
+    "message": "Heading 1",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "recordDetailThisRecordTypeIsNotConfigured": {
+    "message": "This record type is not configured.",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "recordDetailRecordNotFound": {
+    "message": "Record Not Found",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "recordDetailLoading": {
+    "message": "Loading...",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "relatedRecordsPanelThisRecordRequiresTheFollowingRelationships": {
+    "message": "This record requires the following relationships to be linked:",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelRequiredRelationships": {
+    "message": "Required Relationships",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelLinkThisRecordToPeopleOrganizations": {
+    "message": "Link this record to people, organizations, tasks, events, or forms.",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelNoRelationshipsConfiguredForThisRecord": {
+    "message": "No relationships configured for this record type.",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelErrorLoadingRelatedRecords": {
+    "message": "Error loading related records",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelLoadingRelatedRecords": {
+    "message": "Loading related records...",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsRendererNoRelationshipsConfiguredForThisRecord": {
+    "message": "No relationships configured for this record type.",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsRendererTheFollowingRequiredRelationshipsMustBe": {
+    "message": "The following required relationships must be linked before saving:",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsRendererRequiredRelationshipsMissing": {
+    "message": "Required Relationships Missing",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsTabLinkExisting": {
+    "message": "Link Existing",
+    "description": "Auto-migrated from relatedRecordsTab"
+  },
+  "relationshipUnlinkConfirmAreYouSureYouWantTo": {
+    "message": "Are you sure you want to unlink",
+    "description": "Auto-migrated from relationshipUnlinkConfirm"
+  },
+  "reactionBarReactToComment": {
+    "message": "React to comment",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarLikeComment": {
+    "message": "Like comment",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarReactToComment2": {
+    "message": "React to comment",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarLikeComment2": {
+    "message": "Like comment",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "activitySystemRowShowMore": {
+    "message": "Show more",
+    "description": "Auto-migrated from activitySystemRow"
+  },
+  "approvalHistoryEscalatedToNewApprovers": {
+    "message": "Escalated to new approvers",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryProcess": {
+    "message": "Process:",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryReason": {
+    "message": "Reason:",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryDecidedBy": {
+    "message": "Decided by:",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryNoApprovalHistoryFound": {
+    "message": "No approval history found",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryApprovalHistory": {
+    "message": "Approval History",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "linkRecordModalLinking": {
+    "message": "Linking...",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "linkRecordModalSelectARecordType": {
+    "message": "Select a record type...",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "linkRecordModalRecordType": {
+    "message": "Record Type",
+    "description": "Auto-migrated from linkRecordModal"
+  }
+}

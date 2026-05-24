@@ -1,14 +1,14 @@
 <template>
-  <CardWidget title="Lifecycle Stage">
+  <CardWidget :title="t('common.lifecycleStageTitle')">
     <!-- Type and Age Info -->
     <div class="flex items-center gap-3 mb-4 text-sm">
       <div class="flex items-center gap-2">
-        <span class="text-gray-600 dark:text-gray-400">Type:</span>
+        <span class="text-gray-600 dark:text-gray-400">{{ t('common.lifecycleType') }}</span>
         <span class="font-medium text-gray-900 dark:text-white">{{ recordTypeLabel }}</span>
       </div>
       <div class="w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
       <div class="flex items-center gap-2">
-        <span class="text-gray-600 dark:text-gray-400">Age:</span>
+        <span class="text-gray-600 dark:text-gray-400">{{ t('common.lifecycleAge') }}</span>
         <span class="font-medium text-gray-900 dark:text-white">{{ recordAge }}</span>
       </div>
     </div>
@@ -60,7 +60,10 @@
 
 <script setup>
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import CardWidget from '@/components/common/CardWidget.vue';
+
+const { t } = useI18n();
 
 const props = defineProps({
   record: {
@@ -96,9 +99,10 @@ const recordTypeLabel = computed(() => {
 
 // Calculate record age
 const recordAge = computed(() => {
-  if (!props.record.createdAt) return '0 days';
+  if (!props.record.createdAt) return t('common.lifecycleAgeZero');
   const days = Math.floor((new Date() - new Date(props.record.createdAt)) / (1000 * 60 * 60 * 24));
-  return days === 0 ? 'Just created' : `${days} day${days === 1 ? '' : 's'}`;
+  if (days === 0) return t('common.lifecycleJustCreated');
+  return t('common.lifecycleAgeDays', { days });
 });
 
 // Get field definition helper

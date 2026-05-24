@@ -1,0 +1,722 @@
+{
+  "connectInboxWizardLitedeskUsesAReadOnlyGmail": {
+    "message": "LiteDesk utilise une portée Gmail en lecture seule pour importer les messages auxquels vous avez déjà accès.",
+    "description": "Auto-migrated from connectInboxWizard"
+  },
+  "connectInboxWizardToProceedIfYouTrustThis": {
+    "message": "pour continuer si vous faites confiance à cet espace de travail.",
+    "description": "Auto-migrated from connectInboxWizard"
+  },
+  "connectInboxWizardGoogleMayShowAWarningFor": {
+    "message": "Google peut afficher un avertissement pour les applications en cours de test. Utiliser",
+    "description": "Auto-migrated from connectInboxWizard"
+  },
+  "connectInboxWizardBeforeYouApproveAccess": {
+    "message": "Avant d'approuver l'accès",
+    "description": "Auto-migrated from connectInboxWizard"
+  },
+  "connectInboxWizardWorkEmailAddress": {
+    "message": "Adresse e-mail professionnelle",
+    "description": "Auto-migrated from connectInboxWizard"
+  },
+  "connectMailboxModalDone": {
+    "message": "Fait",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalNotNow": {
+    "message": "Pas maintenant",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalToContinueWhenYouTrustThis": {
+    "message": "pour continuer lorsque vous faites confiance à cet espace de travail.",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalIfGoogleShowsAnUnverifiedApp": {
+    "message": "Si Google affiche un avertissement d'application non vérifiée, choisissez",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalYouCanSendFromTheCrm": {
+    "message": "Vous pouvez envoyer depuis le CRM une fois votre boîte mail liée.",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalLitedeskImportsMailUsingARead": {
+    "message": "LiteDesk importe le courrier en utilisant une étendue Gmail en lecture seule (dossiers que vous choisissez).",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalGoogleOpensInAPopupSo": {
+    "message": "Google s'ouvre dans une fenêtre contextuelle afin que vous puissiez vous connecter et approuver l'accès.",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalWhatHappensNext": {
+    "message": "Que se passe-t-il ensuite",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalWorkEmailAddress": {
+    "message": "Adresse e-mail professionnelle",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalOrCredentialsUnder": {
+    "message": "ou des informations d'identification sous",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalGmailIsntEnabledOnThisServer": {
+    "message": "Gmail n'est pas activé sur ce serveur. Un administrateur peut ajouter",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalYouCompanyCom": {
+    "message": "vous@entreprise.com",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalGmailAddress": {
+    "message": "Adresse Gmail",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalYourOrganizationHasNotEnabledGmail": {
+    "message": "Votre organisation n'a pas encore activé Gmail SMTP. Un administrateur doit choisir",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalYourRoleCannotCreateAPersonal": {
+    "message": "Votre rôle ne peut pas créer de boîte aux lettres personnelle. Demandez à un administrateur.",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalPersonalMailbox": {
+    "message": "boîte aux lettres personnelle",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalLitedeskCreatesAPrivate": {
+    "message": "LiteDesk crée un compte privé",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalOneQuickStepFirst": {
+    "message": "Un premier pas rapide",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalSupportCompanyCom": {
+    "message": "support@entreprise.com",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalSharedEmailAddress": {
+    "message": "Adresse e-mail partagée",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalDisplayName": {
+    "message": "Nom d'affichage",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalSharedTeamMailbox": {
+    "message": "boîte aux lettres d'équipe partagée",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalCreateA": {
+    "message": "Créer un",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalGmailIsntEnabledOnThisServer2": {
+    "message": "Gmail n'est pas encore activé sur ce serveur. Un administrateur peut ajouter",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalKeepConversationsLinkedToPeopleDeals": {
+    "message": "Gardez les conversations liées aux personnes, aux offres et aux tâches",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalSyncThreadsToYourWorkspaceInbox": {
+    "message": "Synchronisez les fils de discussion avec la boîte de réception de votre espace de travail",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalSendAndReceiveEmailInsideThe": {
+    "message": "Envoyer et recevoir des e-mails dans le CRM",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "emailThreadReaderForward": {
+    "message": "Avant",
+    "description": "Auto-migrated from emailThreadReader"
+  },
+  "emailThreadReaderSent": {
+    "message": "Envoyé",
+    "description": "Auto-migrated from emailThreadReader"
+  },
+  "emailThreadReaderReloadThread": {
+    "message": "Recharger le fil de discussion",
+    "description": "Auto-migrated from emailThreadReader"
+  },
+  "emailThreadReaderReloadThread2": {
+    "message": "Recharger le fil de discussion",
+    "description": "Auto-migrated from emailThreadReader"
+  },
+  "emailThreadReaderSnoozeToTomorrow": {
+    "message": "Répéter jusqu'à demain",
+    "description": "Auto-migrated from emailThreadReader"
+  },
+  "emailThreadReaderSnoozeToTomorrow2": {
+    "message": "Répéter jusqu'à demain",
+    "description": "Auto-migrated from emailThreadReader"
+  },
+  "emailThreadReaderBackToInbox": {
+    "message": "Retour à la boîte de réception",
+    "description": "Auto-migrated from emailThreadReader"
+  },
+  "emailThreadReaderBackToInbox2": {
+    "message": "Retour à la boîte de réception",
+    "description": "Auto-migrated from emailThreadReader"
+  },
+  "gmailMailboxFolderModalSystemLabelsInboxSentCategoriesAnd": {
+    "message": "Les étiquettes système (Boîte de réception, Envoyés, catégories) et vos étiquettes personnalisées sont répertoriées. Sélectionnez-en au moins un.",
+    "description": "Auto-migrated from gmailMailboxFolderModal"
+  },
+  "gmailMailboxFolderModalLoadingFoldersFromGmail": {
+    "message": "Chargement de dossiers depuis Gmail…",
+    "description": "Auto-migrated from gmailMailboxFolderModal"
+  },
+  "gmailMailboxFolderModalChooseWhichGmailLabelsLitedeskImports": {
+    "message": "Choisissez les étiquettes Gmail que LiteDesk importe. La synchronisation s'exécute selon un calendrier et lorsque vous utilisez Sync maintenant.",
+    "description": "Auto-migrated from gmailMailboxFolderModal"
+  },
+  "gmailMailboxFolderModalMailboxFolders": {
+    "message": "Dossiers de boîtes aux lettres",
+    "description": "Auto-migrated from gmailMailboxFolderModal"
+  },
+  "inboxGetStartedTipAssign": {
+    "message": "Attribuez chaque e-mail dans une boîte aux lettres de groupe pour le suivi.",
+    "description": "Inbox get started orbit tip"
+  },
+  "inboxGetStartedTipMentions": {
+    "message": "Collaborez en utilisant <strong>mentions</strong> dans les commentaires.",
+    "description": "Inbox get started orbit tip (HTML)"
+  },
+  "inboxGetStartedTipCanned": {
+    "message": "Automatisez et gagnez du temps avec des réponses prédéfinies.",
+    "description": "Inbox get started orbit tip (HTML)"
+  },
+  "inboxGetStartedTipEmails": {
+    "message": "E-mails <strong>liés automatiquement</strong> aux contacts et aux enregistrements. <strong>Marquer comme terminé</strong> pour clôturer les conversations.",
+    "description": "Inbox get started orbit tip (HTML)"
+  },
+  "inboxGetStartedStepMailboxTitle": {
+    "message": "Configurez votre boîte aux lettres",
+    "description": "Get started step title"
+  },
+  "inboxGetStartedStepMailboxSubtitle": {
+    "message": "Rassemblez tous vos e-mails au même endroit.",
+    "description": "Get started step subtitle"
+  },
+  "inboxGetStartedStepGroupTitle": {
+    "message": "Gérer les boîtes aux lettres de groupe",
+    "description": "Get started step title"
+  },
+  "inboxGetStartedStepGroupSubtitle": {
+    "message": "Organisez les e-mails avec votre équipe.",
+    "description": "Get started step subtitle"
+  },
+  "inboxGetStartedStepSocialTitle": {
+    "message": "Ajouter des comptes sociaux",
+    "description": "Get started step title"
+  },
+  "inboxGetStartedStepSocialSubtitle": {
+    "message": "Connectez WhatsApp, Instagram et plus encore.",
+    "description": "Get started step subtitle"
+  },
+  "inboxGetStartedStepChatTitle": {
+    "message": "Chat en direct",
+    "description": "Get started step title"
+  },
+  "inboxGetStartedStepChatSubtitle": {
+    "message": "Interagissez avec vos clients en temps réel.",
+    "description": "Get started step subtitle"
+  },
+  "inboxGetStartedStepConnect": {
+    "message": "Connecter",
+    "description": "Get started step action"
+  },
+  "inboxGetStartedStepSetup": {
+    "message": "Installation",
+    "description": "Get started step action"
+  },
+  "inboxGetStartedOrOpenSetupFromTheConnect": {
+    "message": "ou ouvrez la configuration à partir du bouton Connecter.",
+    "description": "Auto-migrated from inboxGetStarted"
+  },
+  "inboxGetStartedGmailIsntEnabledOnThisServer": {
+    "message": "Gmail n'est pas encore activé sur ce serveur. Demandez à votre administrateur d'ajouter",
+    "description": "Auto-migrated from inboxGetStarted"
+  },
+  "inboxGetStartedConnecting": {
+    "message": "De liaison…",
+    "description": "Auto-migrated from inboxGetStarted"
+  },
+  "inboxGetStartedConnectYourWorkInboxToSend": {
+    "message": "Connectez votre boîte de réception professionnelle pour envoyer, recevoir et gérer des e-mails avec vos enregistrements CRM.",
+    "description": "Auto-migrated from inboxGetStarted"
+  },
+  "inboxGetStartedGetStartedWithLitedesk": {
+    "message": "Commencez avec LiteDesk",
+    "description": "Auto-migrated from inboxGetStarted"
+  },
+  "inboxProviderCardSoon": {
+    "message": "Bientôt",
+    "description": "Auto-migrated from inboxProviderCard"
+  },
+  "emailComposeDrawerSend": {
+    "message": "Envoyer",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerAttachments": {
+    "message": "Pièces jointes",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerEmailSubject": {
+    "message": "Objet de l'e-mail",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerSubject": {
+    "message": "Sujet",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerThisRecordsEmailThread": {
+    "message": "le fil de discussion de cet enregistrement",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerYourInbox": {
+    "message": "votre boîte de réception",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerWhenRecipientsHitReplyTheirMessage": {
+    "message": "Lorsque les destinataires cliquent sur Répondre, leur message est envoyé ici et acheminé vers",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerBccExampleComCommaSeparated": {
+    "message": "bcc@example.com (séparé par des virgules)",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerCcExampleComCommaSeparated": {
+    "message": "cc@example.com (séparé par des virgules)",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerRecipientExampleComCommaSeparatedFor": {
+    "message": "destinataire@exemple.com (séparé par des virgules pour plusieurs)",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerComposeAndSendAnEmailFrom": {
+    "message": "Composez et envoyez un e-mail à partir de cet enregistrement.",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerSendFromYourWorkspaceRepliesRoute": {
+    "message": "Envoyez depuis votre espace de travail. Les réponses sont renvoyées vers la boîte de réception (aucun enregistrement de personne ou de transaction).",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerSendEmail": {
+    "message": "Envoyer un e-mail",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerSendEmail2": {
+    "message": "Envoyer un e-mail",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailThreadCardAttachment": {
+    "message": "Pièce jointe",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardCreateCase": {
+    "message": "Créer un cas",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardAddTag": {
+    "message": "Ajouter une balise",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardUnassign": {
+    "message": "Annuler l'attribution",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardReplyAll": {
+    "message": "Répondre à tous",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardDeliveryRisk": {
+    "message": "Risque de livraison",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardReplyDueSoon": {
+    "message": "Réponse prochainement",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardReplyOverdue": {
+    "message": "Réponse en retard",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardFollowUp": {
+    "message": "Suivi",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardHighPriority": {
+    "message": "Haute priorité",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardUnread": {
+    "message": "Non lu",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardCreateCase2": {
+    "message": "Créer un cas",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardAddTag2": {
+    "message": "Ajouter une balise",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardUnassign2": {
+    "message": "Annuler l'attribution",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardReplyAll2": {
+    "message": "Répondre à tous",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardDeliveryRisk2": {
+    "message": "Risque de livraison",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardReplyDueSoon2": {
+    "message": "Réponse prochainement",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardReplyOverdue2": {
+    "message": "Réponse en retard",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardFollowUp2": {
+    "message": "Suivi",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardHighPriority2": {
+    "message": "Haute priorité",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "inboxSurfaceDone": {
+    "message": "Fait",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceWorkspaceOwnersCanInsteadSaveOverrides": {
+    "message": "Les propriétaires d'espace de travail peuvent à la place enregistrer les remplacements sous",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceRestartTheApiProcessReloadThis": {
+    "message": "Redémarrez le processus API, rechargez cette page, puis cliquez à nouveau sur Gmail pour terminer l'assistant de connexion.",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceServerEnv": {
+    "message": "serveur/.env",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceOnTheMachineThatRunsThe": {
+    "message": "Sur la machine qui exécute l'API LiteDesk, définissez",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceAuthorizedRedirectUris": {
+    "message": "URI de redirection autorisés",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceUnder": {
+    "message": "Sous",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceOauth20ClientId": {
+    "message": "ID client OAuth 2.0",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceHere": {
+    "message": "ici.",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceConnectGmail": {
+    "message": "Connecter Gmail",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceToTheApiEnvironmentThenEveryone": {
+    "message": "à l'environnement API, alors tout le monde utilise",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceEnableGmailOnThisApiServer": {
+    "message": "Activer Gmail sur ce serveur API",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceOrgUsersToWorkThisInbox": {
+    "message": "org pour travailler sur cette boîte de réception. Sinon, seuls les utilisateurs (et les administrateurs) cochés voient les fils de discussion pour cette boîte aux lettres.",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceLeaveEveryoneUncheckedToAllow": {
+    "message": "Laissez tout le monde décoché pour autoriser",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceParticipants": {
+    "message": "Participants",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSubject": {
+    "message": "Sujet",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceThisThreadIsTiedToYour": {
+    "message": "Ce fil de discussion est lié à votre espace de travail (envoi autonome de la boîte de réception ou courrier de l'espace de travail acheminé), et non à un seul enregistrement CRM.",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceWorkspaceMail": {
+    "message": "Courrier de l'espace de travail",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSnooze1d": {
+    "message": "Répéter 1j",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceDone2": {
+    "message": "Fait",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceWhenMailIsLinkedToRecords": {
+    "message": "Lorsque le courrier est lié à des enregistrements et que le courrier entrant est configuré, les fils de discussion apparaissent ici. Choisissez une autre boîte aux lettres ou un autre dossier dans la barre latérale, ou ouvrez",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceNoConversationsInThisView": {
+    "message": "Aucune conversation dans cette vue",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSelectAllInFolder": {
+    "message": "Tout sélectionner dans le dossier",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSelectUpTo500ThreadsMatching": {
+    "message": "Sélectionnez jusqu'à 500 thèmes correspondant à ce dossier et effectuez une recherche",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSelectAllConversationsInThisView": {
+    "message": "Sélectionnez toutes les conversations dans cette vue",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSelectAllInView": {
+    "message": "Tout sélectionner en vue",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSnoozeToTomorrow": {
+    "message": "Répéter jusqu'à demain",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceRemoveTag": {
+    "message": "Supprimer la balise…",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceReopen": {
+    "message": "Rouvrir",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceMarkDone": {
+    "message": "Marquer comme terminé",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSelectFoldersToSync": {
+    "message": "Sélectionnez les dossiers à synchroniser",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceConnectedAs": {
+    "message": "Connecté comme",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceBackgroundSyncRunsAutomatically": {
+    "message": "La synchronisation en arrière-plan s'exécute automatiquement.",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfacePersonalMailboxLinkedToGoogleGmail": {
+    "message": "Boîte aux lettres personnelle liée à Google (libellés Gmail de votre choix, périmètre en lecture seule).",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceForCopyPasteStepsOrAsk": {
+    "message": "pour les étapes de copier-coller, ou demandez à votre administrateur d'ajouter les trois variables et de redémarrer l'API.",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceClickTheGmailTileAbove": {
+    "message": "Cliquez sur la vignette Gmail ci-dessus",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceOnTheServer": {
+    "message": "sur le serveur).",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSoon": {
+    "message": "Bientôt",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceImap": {
+    "message": "IMAP",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSoon2": {
+    "message": "Bientôt",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceYahoo": {
+    "message": "Yahoo",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSoon3": {
+    "message": "Bientôt",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceOutlook": {
+    "message": "Perspectives",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceGmail": {
+    "message": "Gmail",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSelectYourEmailProvider": {
+    "message": "Sélectionnez votre fournisseur de messagerie",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceConnectYourInboxToLitedesk": {
+    "message": "Connectez votre boîte de réception à LiteDesk",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSendingAs": {
+    "message": "Envoi comme",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceToImportAndReadMailIn": {
+    "message": "pour importer et lire le courrier dans cette boîte de réception.",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceGmailOauth": {
+    "message": "Gmail (OAuth)",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceOutboundEmailUsesYourGoogleApp": {
+    "message": "Les e-mails sortants utilisent votre mot de passe Google App via le relais SMTP Gmail de l'organisation.\n          Connecter",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceDone3": {
+    "message": "Fait",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceEmailSetup": {
+    "message": "Configuration de la messagerie",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSearchMail": {
+    "message": "Rechercher du courrier",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSearchSubjectBodyPeopleLabels": {
+    "message": "Rechercher un sujet, un corps, des personnes, des étiquettes…",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceRefreshFolderCountsOnly": {
+    "message": "Actualiser le dossier compte uniquement",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceRefreshFolderCountsOnly2": {
+    "message": "Actualiser le dossier compte uniquement",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceReloadThreadList": {
+    "message": "Recharger la liste des sujets",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceReloadThreadList2": {
+    "message": "Recharger la liste des sujets",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceOpenAThreadOnItsRecord": {
+    "message": "Ouvrez un fil de discussion sur son enregistrement. Utilisez la liste de diffusion sur la gauche pour changer de boîte aux lettres et de dossiers.",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceContactUs": {
+    "message": "Contactez-nous@…",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceAddressOptional": {
+    "message": "Adresse (facultatif)",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceEGSupport": {
+    "message": "par ex. Soutien",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceLoadingFolders": {
+    "message": "Chargement des dossiers…",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceGmailFolders": {
+    "message": "Dossiers Gmail",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceRefreshFolderCounts": {
+    "message": "Actualiser le nombre de dossiers",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceRefreshFolderCountsOnlyDoesNot": {
+    "message": "Actualiser le nombre de dossiers uniquement (ne recharge pas la liste des fils de discussion)",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceNoMailboxesYetAddOneBelow": {
+    "message": "Pas encore de boîtes aux lettres. Ajoutez-en un ci-dessous ou ouvrez la configuration de la messagerie.",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceConnect": {
+    "message": "Connecter",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceConnectGmailForThisSharedInbox": {
+    "message": "Connectez Gmail pour cette boîte de réception partagée",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceMailboxes": {
+    "message": "Boîtes aux lettres",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceAllMail": {
+    "message": "Tout le courrier",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceMailNavigation": {
+    "message": "Navigation dans la messagerie",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceRefreshMailboxes": {
+    "message": "Actualiser les boîtes aux lettres",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceComposeWorkspaceEmail": {
+    "message": "Composer un e-mail dans l'espace de travail",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceMail": {
+    "message": "Mail",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceMailFoldersAndMailboxes": {
+    "message": "Dossiers de courrier et boîtes aux lettres",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxProviderComingSoonTitle": {
+    "message": "{name} — à venir",
+    "description": "Provider card"
+  },
+  "inboxProviderNotAvailableTitle": {
+    "message": "{name} — non disponible",
+    "description": "Provider card"
+  },
+  "inboxProviderConnectTitle": {
+    "message": "Connectez {name}",
+    "description": "Provider card"
+  },
+  "inboxIntegrationComingSoon": {
+    "message": "Cette intégration arrive bientôt.",
+    "description": "Toast"
+  },
+  "inboxProviderSoonUseGmail": {
+    "message": "{name} arrive bientôt. Utilisez Gmail pour le moment.",
+    "description": "Toast"
+  },
+  "inboxThreadsPartialSelect": {
+    "message": "Seuls les 500 premiers threads de cette vue ont été sélectionnés.",
+    "description": "Toast"
+  }
+}

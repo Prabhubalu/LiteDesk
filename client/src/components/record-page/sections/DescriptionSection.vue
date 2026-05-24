@@ -30,7 +30,7 @@
         v-html="sanitizedDescription"
       ></div>
       <p v-else class="px-6 py-2 text-sm text-gray-500 dark:text-gray-400 italic m-0">
-        {{ canEdit ? 'Add description' : 'No description yet.' }}
+        {{ canEdit ? t('records.descriptionAdd') : t('records.descriptionEmptyReadonly') }}
       </p>
     </div>
   </section>
@@ -38,6 +38,7 @@
 
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import DOMPurify from 'dompurify';
 import { withLinksOpenInNewTab } from '@/utils/richDescriptionHtml';
 import TaskDescriptionEditor from '@/components/record-page/TaskDescriptionEditor.vue';
@@ -51,7 +52,9 @@ const props = defineProps({
   }
 });
 
-const title = computed(() => props.adapter?.getDescriptionTitle?.(props.record, props.context) || 'Description');
+const { t } = useI18n();
+
+const title = computed(() => props.adapter?.getDescriptionTitle?.(props.record, props.context) || t('records.descriptionTitle'));
 const description = computed(() => props.adapter?.getDescription?.(props.record, props.context) || '');
 const sanitizedDescription = computed(() =>
   withLinksOpenInNewTab(DOMPurify.sanitize(String(description.value || '')))

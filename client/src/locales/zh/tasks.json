@@ -1,0 +1,186 @@
+{
+  "relatedTasksWidgetCreateFirstTask": {
+    "message": "创建第一个任务",
+    "description": "Auto-migrated from relatedTasksWidget"
+  },
+  "relatedTasksWidgetNoTasksYet": {
+    "message": "还没有任务",
+    "description": "Auto-migrated from relatedTasksWidget"
+  },
+  "relatedTasksWidgetAddTask": {
+    "message": "添加任务",
+    "description": "Auto-migrated from relatedTasksWidget"
+  },
+  "relatedTasksWidgetLinkTasks": {
+    "message": "链接任务",
+    "description": "Auto-migrated from relatedTasksWidget"
+  },
+  "relatedTasksWidgetRelatedTasks": {
+    "message": "相关任务",
+    "description": "Auto-migrated from relatedTasksWidget"
+  },
+  "taskDetailModalEstimatedHours": {
+    "message": "预计时间",
+    "description": "Auto-migrated from taskDetailModal"
+  },
+  "taskDetailModalCreatedBy": {
+    "message": "创建者",
+    "description": "Auto-migrated from taskDetailModal"
+  },
+  "taskDetailModalWaiting": {
+    "message": "等待",
+    "description": "Auto-migrated from taskDetailModal"
+  },
+  "taskDetailModalToDo": {
+    "message": "待办事项",
+    "description": "Auto-migrated from taskDetailModal"
+  },
+  "taskDetailModalTaskDetails": {
+    "message": "任务详情",
+    "description": "Auto-migrated from taskDetailModal"
+  },
+  "taskEditDrawerWriteOrType": {
+    "message": "写入或键入“/”作为命令",
+    "description": "Task description editor placeholder"
+  },
+  "taskEditDrawerUpdateTheTaskInformationBelow": {
+    "message": "更新下面的任务信息。",
+    "description": "Auto-migrated from taskEditDrawer"
+  },
+  "taskEditDrawerEditTask": {
+    "message": "编辑任务",
+    "description": "Auto-migrated from taskEditDrawer"
+  },
+  "taskFormModalAddSubtask": {
+    "message": "添加子任务",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalSubtaskTitle": {
+    "message": "子任务标题",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalEGUrgentClientBugFix": {
+    "message": "例如，紧急、客户、错误修复",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalTagsCommaSeparated": {
+    "message": "标签（以逗号分隔）",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalEstimatedHours": {
+    "message": "预计时间",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalSelectAssignee": {
+    "message": "选择受让人...",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalUrgent": {
+    "message": "紧迫的",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalWaiting": {
+    "message": "等待",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalToDo": {
+    "message": "待办事项",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalEnterTaskDescription": {
+    "message": "输入任务描述",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalEnterTaskTitle": {
+    "message": "输入任务标题",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskSubtasksFieldAddSubtask": {
+    "message": "添加子任务",
+    "description": "Auto-migrated from taskSubtasksField"
+  },
+  "taskSubtasksFieldSubtaskTitle": {
+    "message": "子任务标题",
+    "description": "Auto-migrated from taskSubtasksField"
+  },
+  "taskSubtasksFieldAddSubtask2": {
+    "message": "添加子任务",
+    "description": "Auto-migrated from taskSubtasksField"
+  },
+  "taskSubtasksFieldAddSubtask3": {
+    "message": "添加子任务",
+    "description": "Auto-migrated from taskSubtasksField"
+  },
+  "taskSubtasksFieldAddSubtask4": {
+    "message": "添加子任务",
+    "description": "Auto-migrated from taskSubtasksField"
+  },
+  "tasksAddTask": {
+    "message": "添加任务",
+    "description": "Auto-migrated from tasks"
+  },
+  "tasksNoTasksInThisStatus": {
+    "message": "此状态下没有任务",
+    "description": "Auto-migrated from tasks"
+  },
+  "tasksLoadingBoard": {
+    "message": "正在加载板...",
+    "description": "Auto-migrated from tasks"
+  },
+  "tasksNoDueDate": {
+    "message": "无截止日期",
+    "description": "Auto-migrated from tasks"
+  },
+  "tasksNewTask": {
+    "message": "新任务",
+    "description": "Auto-migrated from tasks"
+  },
+  "tasksBoard": {
+    "message": "木板",
+    "description": "Auto-migrated from tasks"
+  },
+  "taskFormModalToastErrorSavingTaskPleaseTry": {
+    "message": "保存任务时出错。请再试一次。",
+    "description": "Toast from TaskFormModal.vue"
+  },
+  "sysFieldTitle": {
+    "message": "标题",
+    "description": "System task field label"
+  },
+  "sysFieldStatus": {
+    "message": "地位",
+    "description": "System task field label"
+  },
+  "sysFieldAssignedTo": {
+    "message": "分配给",
+    "description": "System task field label"
+  },
+  "sysFieldDueDate": {
+    "message": "到期日",
+    "description": "System task field label"
+  },
+  "sysFieldDescription": {
+    "message": "描述",
+    "description": "System task field label"
+  },
+  "listViewAll": {
+    "message": "All Tasks",
+    "description": "Tasks list default view title"
+  },
+  "listViewMy": {
+    "message": "My Tasks",
+    "description": "Tasks list assigned-to-me view title"
+  },
+  "listCreate": {
+    "message": "New Task",
+    "description": "Tasks list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "Search tasks...",
+    "description": "Tasks list search placeholder"
+  },
+  "listStatTotal": {
+    "message": "Total Tasks",
+    "description": "Tasks list statistics card"
+  }
+}

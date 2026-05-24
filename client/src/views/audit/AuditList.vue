@@ -13,8 +13,8 @@
     <!-- Page Header -->
     <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">My Audits</h1>
-        <p class="text-gray-600 dark:text-gray-400">View and manage your audit assignments</p>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ t('audit.auditListMyAudits') }}</h1>
+        <p class="text-gray-600 dark:text-gray-400">{{ t('audit.auditListViewAndManageYourAuditAssignments') }}</p>
       </div>
       
       <!-- Mobile Filter Button -->
@@ -24,9 +24,7 @@
       >
         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-        </svg>
-        Filters
-      </button>
+        </svg>{{ t('common.listFilters') }}</button>
     </div>
 
     <!-- Desktop Filters -->
@@ -36,12 +34,12 @@
         @change="applyFilters"
         class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
       >
-        <option value="">All States</option>
-        <option value="Ready to start">Ready to start</option>
-        <option value="checked_in">Checked In</option>
-        <option value="submitted">Submitted</option>
-        <option value="needs_review">Needs Review</option>
-        <option value="closed">Closed</option>
+        <option value="">{{ t('audit.auditListAllStates2') }}</option>
+        <option value="Ready to start">{{ t('audit.auditListReadyToStart2') }}</option>
+        <option value="checked_in">{{ t('audit.auditListCheckedIn2') }}</option>
+        <option value="submitted">{{ t('forms.hubExecutionSubmitted') }}</option>
+        <option value="needs_review">{{ t('audit.auditListNeedsReview2') }}</option>
+        <option value="closed">{{ t('settings.settingsBhClosed') }}</option>
       </select>
       
       <select
@@ -49,10 +47,10 @@
         @change="applyFilters"
         class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
       >
-        <option value="">All Types</option>
-        <option value="Internal Audit">Internal Audit</option>
-        <option value="External Audit">External Audit</option>
-        <option value="Compliance Audit">Compliance Audit</option>
+        <option value="">{{ t('settings.groupsFilterAllTypes') }}</option>
+        <option value="Internal Audit">{{ t('settings.modFieldsEventTypeInternalAudit') }}</option>
+        <option value="External Audit">{{ t('audit.auditListExternalAudit2') }}</option>
+        <option value="Compliance Audit">{{ t('audit.auditListComplianceAudit2') }}</option>
       </select>
       
       <select
@@ -60,9 +58,9 @@
         @change="applyFilters"
         class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
       >
-        <option value="dueAt">Sort by Due Date</option>
-        <option value="createdAt">Sort by Created</option>
-        <option value="auditState">Sort by Status</option>
+        <option value="dueAt">{{ t('audit.auditListSortByDueDate') }}</option>
+        <option value="createdAt">{{ t('audit.auditListSortByCreated') }}</option>
+        <option value="auditState">{{ t('audit.auditListSortByStatus') }}</option>
       </select>
     </div>
 
@@ -72,41 +70,39 @@
       class="lg:hidden mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 space-y-4"
     >
       <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">State</label>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('audit.auditListState') }}</label>
         <select
           v-model="filters.auditState"
           @change="applyFilters"
           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
         >
-          <option value="">All States</option>
-          <option value="Ready to start">Ready to start</option>
-          <option value="checked_in">Checked In</option>
-          <option value="submitted">Submitted</option>
-          <option value="needs_review">Needs Review</option>
-          <option value="closed">Closed</option>
+          <option value="">{{ t('audit.auditListAllStates') }}</option>
+          <option value="Ready to start">{{ t('audit.auditListReadyToStart') }}</option>
+          <option value="checked_in">{{ t('audit.auditListCheckedIn') }}</option>
+          <option value="submitted">{{ t('forms.hubExecutionSubmitted') }}</option>
+          <option value="needs_review">{{ t('audit.auditListNeedsReview') }}</option>
+          <option value="closed">{{ t('settings.settingsBhClosed') }}</option>
         </select>
       </div>
       
       <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type</label>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('settings.modFieldsValidationType') }}</label>
         <select
           v-model="filters.auditType"
           @change="applyFilters"
           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
         >
-          <option value="">All Types</option>
-          <option value="Internal Audit">Internal Audit</option>
-          <option value="External Audit">External Audit</option>
-          <option value="Compliance Audit">Compliance Audit</option>
+          <option value="">{{ t('settings.groupsFilterAllTypes') }}</option>
+          <option value="Internal Audit">{{ t('settings.modFieldsEventTypeInternalAudit') }}</option>
+          <option value="External Audit">{{ t('audit.auditListExternalAudit') }}</option>
+          <option value="Compliance Audit">{{ t('audit.auditListComplianceAudit') }}</option>
         </select>
       </div>
       
       <button
         @click="applyFilters"
         class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-      >
-        Apply Filters
-      </button>
+      >{{ t('audit.auditListApplyFilters') }}</button>
     </div>
 
     <!-- Loading State -->
@@ -119,8 +115,8 @@
       <svg class="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
-      <p class="text-gray-600 dark:text-gray-400 text-lg mb-2">No audits yet</p>
-      <p class="text-sm text-gray-500 dark:text-gray-500">Audits will appear here once they're created. Try adjusting your filters if you're expecting to see audits.</p>
+      <p class="text-gray-600 dark:text-gray-400 text-lg mb-2">{{ t('audit.auditListNoAuditsYet') }}</p>
+      <p class="text-sm text-gray-500 dark:text-gray-500">{{ t('audit.auditListAuditsWillAppearHereOnceTheyre') }}</p>
     </div>
 
     <!-- Audit List -->
@@ -145,9 +141,7 @@
           <router-link
             :to="`/audit/audits/${assignment.eventId}`"
             class="px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
-          >
-            View
-          </router-link>
+          >{{ t('common.viewRecord') }}</router-link>
         </div>
       </div>
 
@@ -156,12 +150,12 @@
         <table class="w-full">
           <thead class="bg-gray-50 dark:bg-gray-900">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Audit</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Scheduled</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Due Date</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('settings.appsNameAudit') }}</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('settings.modFieldsValidationType') }}</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('settings.assignRulesTriggerScheduled') }}</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('forms.correctiveDueDate') }}</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('settings.settingsBhFieldStatus') }}</th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('navigation.portalActions') }}</th>
             </tr>
           </thead>
           <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -187,9 +181,7 @@
                 <router-link
                   :to="`/audit/audits/${assignment.eventId}`"
                   class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
-                >
-                  View
-                </router-link>
+                >{{ t('common.viewRecord') }}</router-link>
               </td>
             </tr>
           </tbody>
@@ -206,16 +198,12 @@
             @click="loadPage(pagination.page - 1)"
             :disabled="pagination.page === 1"
             class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Previous
-          </button>
+          >{{ t('actions.previous') }}</button>
           <button
             @click="loadPage(pagination.page + 1)"
             :disabled="pagination.page >= pagination.totalPages"
             class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Next
-          </button>
+          >{{ t('actions.next') }}</button>
         </div>
       </div>
 
@@ -228,6 +216,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, onMounted, onUnmounted } from 'vue';
 import apiClient from '@/utils/apiClient';
 

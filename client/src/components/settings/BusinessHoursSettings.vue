@@ -1,9 +1,9 @@
 <template>
   <div class="space-y-6 max-w-5xl">
     <div>
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Business Hours &amp; Availability</h2>
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.tabBusinessHoursFull') }}</h2>
       <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        Define when your company, teams, and people are available for booking, SLAs, and assignments.
+        {{ t('settings.tabBusinessHoursDesc') }}
       </p>
     </div>
 
@@ -25,9 +25,9 @@
     </div>
 
     <section v-if="activeTab === 'mine'" class="space-y-4">
-      <AvailabilitySourceCard label="Your schedule" :show-settings-link="false" />
+      <AvailabilitySourceCard :label="t('settings.settingsBhScheduleCardLabel')" :show-settings-link="false" />
       <p class="text-sm text-gray-600 dark:text-gray-400">
-        Personal overrides can be configured by an admin under Schedules.
+        {{ t('settings.settingsBhPersonalOverridesHint') }}
       </p>
     </section>
 
@@ -36,19 +36,19 @@
     <BusinessHoursInsightsPanel v-else-if="activeTab === 'insights' && canManage" />
 
     <section v-else-if="activeTab === 'schedules' && canManage" class="space-y-4">
-      <div v-if="listLoading" class="text-sm text-gray-500 py-12 text-center">Loading schedules…</div>
+      <div v-if="listLoading" class="text-sm text-gray-500 py-12 text-center">{{ t('settings.settingsBhLoadingSchedules') }}</div>
 
       <template v-else>
         <div class="flex flex-wrap items-center justify-between gap-3">
           <p class="text-sm text-gray-600 dark:text-gray-400">
-            {{ sets.length }} schedule{{ sets.length === 1 ? '' : 's' }}
+            {{ t('settings.settingsBhScheduleCount', { count: sets.length }) }}
           </p>
           <button
             type="button"
             class="px-3 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
             @click="openCreateDrawer"
           >
-            Create schedule
+            {{ t('settings.settingsBhCreateSchedule') }}
           </button>
         </div>
 
@@ -66,7 +66,7 @@
                 v-if="set.isDefault"
                 class="text-[10px] uppercase font-semibold px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300"
               >
-                Default
+                {{ t('settings.settingsBhBadgeDefault') }}
               </span>
             </div>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ scopeLabel(set) }}</p>
@@ -78,13 +78,13 @@
           v-else
           class="rounded-xl border border-dashed border-gray-300 dark:border-gray-600 p-12 text-center"
         >
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">No schedules yet.</p>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ t('settings.settingsBhEmptySchedules') }}</p>
           <button
             type="button"
             class="px-4 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
             @click="openCreateDrawer"
           >
-            Create your first schedule
+            {{ t('settings.settingsBhCreateFirstSchedule') }}
           </button>
         </div>
       </template>
@@ -104,6 +104,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useBusinessHours } from '@/composables/useBusinessHours';
 import { useNotifications } from '@/composables/useNotifications';
@@ -112,6 +113,7 @@ import HolidayCalendarManager from '@/components/business-hours/HolidayCalendarM
 import BusinessHoursScheduleDrawer from '@/components/business-hours/BusinessHoursScheduleDrawer.vue';
 import BusinessHoursInsightsPanel from '@/components/business-hours/BusinessHoursInsightsPanel.vue';
 
+const { t } = useI18n();
 const authStore = useAuthStore();
 const { error: notifyError } = useNotifications();
 const { fetchSets, fetchHolidayCalendars } = useBusinessHours();
@@ -123,11 +125,11 @@ const canManage = computed(() => {
 });
 
 const visibleTabs = computed(() => {
-  const tabs = [{ id: 'mine', label: 'My availability' }];
+  const tabs = [{ id: 'mine', label: t('settings.settingsBhTabMine') }];
   if (canManage.value) {
-    tabs.unshift({ id: 'schedules', label: 'Schedules' });
-    tabs.push({ id: 'holidays', label: 'Holiday calendars' });
-    tabs.push({ id: 'insights', label: 'Insights' });
+    tabs.unshift({ id: 'schedules', label: t('settings.settingsBhTabSchedules') });
+    tabs.push({ id: 'holidays', label: t('settings.settingsBhTabHolidays') });
+    tabs.push({ id: 'insights', label: t('settings.settingsBhTabInsights') });
   }
   return tabs;
 });
@@ -144,15 +146,18 @@ const drawerScheduleId = ref(null);
 const holidayCalendarOptions = computed(() =>
   holidayCalendars.value.map((cal) => ({
     value: cal._id,
-    label: `${cal.name} (${cal.dates?.length || 0} holidays)`
+    label: t('settings.settingsBhHolidayCalendarOption', {
+      name: cal.name,
+      count: cal.dates?.length || 0,
+    }),
   }))
 );
 
 function scopeLabel(set) {
-  const t = set.linkedTo?.type || 'company';
-  if (t === 'company') return 'Company';
-  if (t === 'group') return 'Team';
-  return 'Individual';
+  const scopeType = set.linkedTo?.type || 'company';
+  if (scopeType === 'company') return t('settings.settingsBhScopeCompany');
+  if (scopeType === 'group') return t('settings.settingsBhScopeTeam');
+  return t('settings.settingsBhScopeIndividual');
 }
 
 function openCreateDrawer() {
@@ -173,7 +178,7 @@ async function loadList() {
     sets.value = await fetchSets();
     holidayCalendars.value = await fetchHolidayCalendars();
   } catch (e) {
-    notifyError(e?.message || 'Failed to load schedules');
+    notifyError(e?.message || t('settings.settingsBhLoadFailed'));
   } finally {
     listLoading.value = false;
   }

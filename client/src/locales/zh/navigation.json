@@ -1,0 +1,422 @@
+{
+  "settings": {
+    "message": "设置",
+    "description": "Settings area navigation label"
+  },
+  "home": {
+    "message": "家",
+    "description": "Home dashboard navigation label"
+  },
+  "profile": {
+    "message": "轮廓",
+    "description": "User profile settings navigation label"
+  },
+  "inbox": {
+    "message": "收件箱",
+    "description": "Communications inbox navigation label"
+  },
+  "signOut": {
+    "message": "登出",
+    "description": "Sign out of the application"
+  },
+  "noNav": {
+    "message": "没有可用的导航",
+    "description": "Empty sidebar when no modules are configured"
+  },
+  "userMenu": {
+    "message": "用户菜单",
+    "description": "User avatar menu aria-label"
+  },
+  "toggleMenu": {
+    "message": "切换菜单",
+    "description": "Mobile navigation menu toggle"
+  },
+  "closeSidebar": {
+    "message": "关闭侧边栏",
+    "description": "Screen reader label for mobile drawer close"
+  },
+  "openSidebar": {
+    "message": "打开侧边栏",
+    "description": "Screen reader label for mobile drawer open"
+  },
+  "syncStatus": {
+    "message": "同步状态",
+    "description": "Audit offline sync status button"
+  },
+  "portalAudits": {
+    "message": "审计",
+    "description": "Portal bottom nav audits tab"
+  },
+  "portalActions": {
+    "message": "行动",
+    "description": "Portal bottom nav actions tab"
+  },
+  "collapseSidebar": {
+    "message": "折叠侧边栏",
+    "description": "Collapse app sidebar tooltip"
+  },
+  "coreModules": {
+    "message": "核心模块",
+    "description": "Core modules section tooltip"
+  },
+  "coreSection": {
+    "message": "核",
+    "description": "Core modules section heading"
+  },
+  "help": {
+    "message": "帮助",
+    "description": "Sidebar help link"
+  },
+  "loadingNavigation": {
+    "message": "加载导航",
+    "description": "Sidebar skeleton aria-label"
+  },
+  "salesAppFallback": {
+    "message": "销售量",
+    "description": "Default app name when active app is unset"
+  },
+  "tabClose": {
+    "message": "关闭",
+    "description": "Close single tab context menu item"
+  },
+  "tabCloseOthers": {
+    "message": "关闭其他",
+    "description": "Close other tabs context menu item"
+  },
+  "tabCloseToRight": {
+    "message": "关闭右侧的选项卡",
+    "description": "Close tabs to the right context menu item"
+  },
+  "tabCloseAll": {
+    "message": "关闭所有选项卡",
+    "description": "Close all tabs context menu item"
+  },
+  "tabAccount": {
+    "message": "帐户",
+    "description": "Tab bar account menu tooltip"
+  },
+  "tabCloseTab": {
+    "message": "关闭选项卡",
+    "description": "Close tab button aria-label"
+  },
+  "globalSearchPlaceholder": {
+    "message": "搜索或运行命令...",
+    "description": "Global search modal input placeholder"
+  },
+  "globalSearchSearching": {
+    "message": "正在寻找...",
+    "description": "Global search loading state"
+  },
+  "globalSearchNoCommands": {
+    "message": "没有匹配的命令",
+    "description": "Command palette no matches"
+  },
+  "globalSearchNoCommandsHint": {
+    "message": "尝试不同的命令或按 ESC 退出。",
+    "description": "Command palette no matches hint"
+  },
+  "globalSearchNoResults": {
+    "message": "没有找到结果",
+    "description": "Global search no entity results"
+  },
+  "globalSearchNoResultsHint": {
+    "message": "尝试按姓名、电子邮件或关键字进行搜索。",
+    "description": "Global search no results hint"
+  },
+  "globalSearchConfirmTitle": {
+    "message": "你确定吗？",
+    "description": "Destructive command confirmation title"
+  },
+  "globalSearchToCancel": {
+    "message": "取消",
+    "description": "Keyboard hint fragment after ESC"
+  },
+  "globalSearchToConfirm": {
+    "message": "确认",
+    "description": "Keyboard hint fragment after Enter"
+  },
+  "globalSearchCommandsHeader": {
+    "message": "命令",
+    "description": "Command palette section header"
+  },
+  "globalSearchTypeToFind": {
+    "message": "键入以查找命令",
+    "description": "Command palette empty query hint"
+  },
+  "globalSearchStartTyping": {
+    "message": "开始输入搜索内容",
+    "description": "Search mode empty state"
+  },
+  "globalSearchSlashHint": {
+    "message": "使用 / 创建、链接或导航",
+    "description": "Discoverability hint for command mode trigger"
+  },
+  "globalSearchGroupPeople": {
+    "message": "人们",
+    "description": "Search results group label"
+  },
+  "globalSearchGroupOrganizations": {
+    "message": "组织机构",
+    "description": "Search results group label"
+  },
+  "globalSearchGroupWork": {
+    "message": "工作",
+    "description": "Search results group label"
+  },
+  "globalSearchGroupConfiguration": {
+    "message": "配置",
+    "description": "Search results group label"
+  },
+  "globalSearchUnknownUser": {
+    "message": "未知用户",
+    "description": "Fallback display name in search"
+  },
+  "globalSearchLinkModule": {
+    "message": "链接{module}",
+    "description": "Link drawer title when module name capitalized"
+  },
+  "userAccountFallback": {
+    "message": "您的帐户",
+    "description": "User menu display name fallback"
+  },
+  "userStatusLabel": {
+    "message": "状态：{label}",
+    "description": "User menu status dot aria-label"
+  },
+  "userClearStatus": {
+    "message": "状态清晰",
+    "description": "Clear custom status button title"
+  },
+  "userSetAvailability": {
+    "message": "设置可用性",
+    "description": "Availability picker listbox aria-label"
+  },
+  "userSetCustomStatus": {
+    "message": "设置自定义状态...",
+    "description": "Open custom status editor"
+  },
+  "userEditCustomStatus": {
+    "message": "编辑自定义状态...",
+    "description": "Edit existing custom status"
+  },
+  "userStatusPlaceholder": {
+    "message": "你的状况如何？",
+    "description": "Custom status input placeholder"
+  },
+  "userPickEmoji": {
+    "message": "选择表情符号",
+    "description": "Emoji picker button title"
+  },
+  "userYourProfile": {
+    "message": "您的个人资料",
+    "description": "User menu profile link"
+  },
+  "userControlPanel": {
+    "message": "控制面板",
+    "description": "Admin control panel link"
+  },
+  "userBookingPages": {
+    "message": "预订页面",
+    "description": "User menu appointments link"
+  },
+  "userTrash": {
+    "message": "垃圾",
+    "description": "User menu trash link"
+  },
+  "userSwitchToLight": {
+    "message": "切换到灯光模式",
+    "description": "Theme toggle label when dark"
+  },
+  "userSwitchToDark": {
+    "message": "切换到深色模式",
+    "description": "Theme toggle label when light"
+  },
+  "tabBookingPages": {
+    "message": "预订页面",
+    "description": "Tab title for appointments pages"
+  },
+  "approvals": {
+    "message": "批准",
+    "description": "Approvals shell navigation label"
+  },
+  "attention": {
+    "message": "注意力",
+    "description": "Attention shell navigation label"
+  },
+  "search": {
+    "message": "搜索",
+    "description": "Search shell navigation label"
+  },
+  "dashboard": {
+    "message": "概览",
+    "description": "App dashboard navigation label"
+  },
+  "modulePeople": {
+    "message": "人们",
+    "description": "People module navigation label"
+  },
+  "moduleContacts": {
+    "message": "联系方式",
+    "description": "Contacts module navigation label"
+  },
+  "moduleOrganizations": {
+    "message": "组织机构",
+    "description": "Organizations module navigation label"
+  },
+  "moduleTasks": {
+    "message": "任务",
+    "description": "Tasks module navigation label"
+  },
+  "moduleEvents": {
+    "message": "活动",
+    "description": "Events module navigation label"
+  },
+  "moduleForms": {
+    "message": "表格",
+    "description": "Forms module navigation label"
+  },
+  "moduleItems": {
+    "message": "项目",
+    "description": "Items module navigation label"
+  },
+  "moduleDeals": {
+    "message": "商机",
+    "description": "Deals module navigation label"
+  },
+  "moduleResponses": {
+    "message": "回应",
+    "description": "Form responses module navigation label"
+  },
+  "moduleImports": {
+    "message": "进口",
+    "description": "Imports module navigation label"
+  },
+  "moduleCases": {
+    "message": "案例",
+    "description": "Helpdesk cases module navigation label"
+  },
+  "moduleFindings": {
+    "message": "发现",
+    "description": "Audit findings module navigation label"
+  },
+  "moduleAudits": {
+    "message": "审计",
+    "description": "Audits module navigation label"
+  },
+  "appSales": {
+    "message": "销售量",
+    "description": "Sales app name in app switcher"
+  },
+  "appAudit": {
+    "message": "审计",
+    "description": "Audit app name in app switcher"
+  },
+  "appHelpdesk": {
+    "message": "服务台",
+    "description": "Helpdesk app name in app switcher"
+  },
+  "appProjects": {
+    "message": "项目",
+    "description": "Projects app name in app switcher"
+  },
+  "appPortal": {
+    "message": "门户网站",
+    "description": "Portal app name in app switcher"
+  },
+  "salesDashboard": {
+    "message": "销售仪表板",
+    "description": "Sales dashboard tab title"
+  },
+  "auditDashboard": {
+    "message": "审计仪表板",
+    "description": "Audit dashboard tab title"
+  },
+  "appDashboard": {
+    "message": "{app} 仪表板",
+    "description": "App-scoped dashboard tab title"
+  },
+  "tabDemoRequests": {
+    "message": "演示请求",
+    "description": "Demo requests tab title"
+  },
+  "tabInstances": {
+    "message": "实例",
+    "description": "Instances tab title"
+  },
+  "tabAutomationRules": {
+    "message": "自动化规则",
+    "description": "Automation rules tab title"
+  },
+  "tabProcesses": {
+    "message": "流程",
+    "description": "Processes tab title"
+  },
+  "tabBusinessFlows": {
+    "message": "业务流程",
+    "description": "Business flows tab title"
+  },
+  "tabAutomation": {
+    "message": "自动化",
+    "description": "Automation settings tab title"
+  },
+  "tabFlowHealth": {
+    "message": "流动健康",
+    "description": "Business flow health tab title"
+  },
+  "tabEditBusinessFlow": {
+    "message": "编辑业务流程",
+    "description": "Edit business flow tab title"
+  },
+  "tabCreateBusinessFlow": {
+    "message": "创建业务流程",
+    "description": "Create business flow tab title"
+  },
+  "tabBusinessFlow": {
+    "message": "业务流程",
+    "description": "Business flow detail tab title"
+  },
+  "tabMyAudits": {
+    "message": "我的审核",
+    "description": "My audits tab title"
+  },
+  "tabAuditDetail": {
+    "message": "审核详情",
+    "description": "Audit detail tab title"
+  },
+  "tabPersonalBooking": {
+    "message": "个人预订页面",
+    "description": "Personal booking page tab title"
+  },
+  "tabTeamBooking": {
+    "message": "团队预订页面",
+    "description": "Team booking page tab title"
+  },
+  "tabNewTeamPage": {
+    "message": "新团队页面",
+    "description": "New team booking page tab title"
+  },
+  "tabBookingPage": {
+    "message": "预订页面",
+    "description": "User booking page tab title"
+  },
+  "tabCaseDetail": {
+    "message": "案例详情",
+    "description": "Helpdesk case detail tab title"
+  },
+  "tabFormResponseDetail": {
+    "message": "({id}) 详情",
+    "description": "Form response detail tab title"
+  },
+  "tabRecordNamed": {
+    "message": "{module}：{name}",
+    "description": "Record tab with entity name"
+  },
+  "tabRecordDetail": {
+    "message": "{module} 详细信息",
+    "description": "Record detail tab title without name"
+  },
+  "tabPage": {
+    "message": "页",
+    "description": "Generic fallback tab title"
+  }
+}

@@ -1,0 +1,2522 @@
+{
+  "modFieldsBackTitle": {
+    "message": "Back to modules",
+    "description": "Back button"
+  },
+  "modFieldsConfigureModule": {
+    "message": "Configure fields, relationships and quick create",
+    "description": "Selected module subtitle"
+  },
+  "modFieldsCreateModule": {
+    "message": "Create Module",
+    "description": "Create module button"
+  },
+  "modFieldsManageModules": {
+    "message": "Manage modules and configure fields",
+    "description": "List subtitle"
+  },
+  "modFieldsDelete": {
+    "message": "Delete",
+    "description": "Delete module"
+  },
+  "modFieldsCardCounts": {
+    "message": "{fields} Fields · {relationships} Relationships",
+    "description": "Module card counts"
+  },
+  "modFieldsBadgeCore": {
+    "message": "Core",
+    "description": "System module badge"
+  },
+  "modFieldsBadgeCustom": {
+    "message": "Custom",
+    "description": "Custom module badge"
+  },
+  "modFieldsBadgeApp": {
+    "message": "App",
+    "description": "App module badge"
+  },
+  "modFieldsTabDetails": {
+    "message": "Module details",
+    "description": "Top tab"
+  },
+  "modFieldsTabFields": {
+    "message": "Field Configurations",
+    "description": "Top tab"
+  },
+  "modFieldsTabRelationships": {
+    "message": "Relationships",
+    "description": "Top tab"
+  },
+  "modFieldsTabQuick": {
+    "message": "Quick Create",
+    "description": "Top tab"
+  },
+  "modFieldsTabPipeline": {
+    "message": "Pipeline Settings",
+    "description": "Top tab"
+  },
+  "modFieldsTabPlaybooks": {
+    "message": "Playbook Configuration",
+    "description": "Top tab"
+  },
+  "modFieldsTabPeopleTypes": {
+    "message": "Types",
+    "description": "Top tab"
+  },
+  "modFieldsTabStatusTypes": {
+    "message": "Status & Types",
+    "description": "Top tab"
+  },
+  "modFieldsTabStatusPriority": {
+    "message": "Status & Priority",
+    "description": "Top tab"
+  },
+  "modFieldsTabStatus": {
+    "message": "Status",
+    "description": "Top tab"
+  },
+  "modFieldsTabRolesRules": {
+    "message": "Roles & Rules",
+    "description": "Top tab"
+  },
+  "modFieldsTabLogic": {
+    "message": "Logic & Rules",
+    "description": "Top tab"
+  },
+  "modFieldsTabOutcomes": {
+    "message": "Outcomes",
+    "description": "Top tab"
+  },
+  "modFieldsTabAccess": {
+    "message": "Access",
+    "description": "Top tab"
+  },
+  "modFieldsPipelineHint": {
+    "message": "Manage pipeline stages, order, and statuses.",
+    "description": "Pipeline tab hint"
+  },
+  "modFieldsPlaybooksHint": {
+    "message": "Configure playbooks for each pipeline stage.",
+    "description": "Playbooks tab hint"
+  },
+  "modFieldsPeopleMicrocopy": {
+    "message": "Configure how People fields are displayed. Field ownership and application scope are defined by the platform and apps.",
+    "description": "People fields hint"
+  },
+  "modFieldsOrgsMicrocopy": {
+    "message": "Configure how Organization fields are displayed. Field ownership and application scope are defined by the platform and apps.",
+    "description": "Orgs fields hint"
+  },
+  "modFieldsTasksMicrocopy": {
+    "message": "Configure how Task fields are displayed. Field ownership and application scope are defined by the platform and apps.",
+    "description": "Tasks fields hint"
+  },
+  "modFieldsEventsMicrocopy": {
+    "message": "Configure how Event fields are displayed. Field ownership and application scope are defined by the platform and apps.",
+    "description": "Events fields hint"
+  },
+  "modFieldsItemsMicrocopy": {
+    "message": "Configure how Item fields are displayed. Field ownership and application scope are defined by the platform and apps.",
+    "description": "Items fields hint"
+  },
+  "modFieldsFormsMicrocopy": {
+    "message": "Configure Form record fields: visibility, behavior, and rules. Field ownership and application scope are defined by the platform and apps.",
+    "description": "Forms fields hint"
+  },
+  "modFieldsFormsNote": {
+    "message": "Note:",
+    "description": "Forms note label"
+  },
+  "modFieldsFormsNoteBody": {
+    "message": "Forms Settings configure structure and behavior only, not form content. Form sections/questions are edited in the Form Builder. Responses and execution belong in Form Responses and Work interfaces.",
+    "description": "Forms note body"
+  },
+  "modFieldsCapMetadata": {
+    "message": "✓ Metadata Editable",
+    "description": "Forms capability"
+  },
+  "modFieldsCapStructureLocked": {
+    "message": "🔒 Structure Locked (Form Builder)",
+    "description": "Forms capability"
+  },
+  "modFieldsCapContentLocked": {
+    "message": "🔒 Content Locked (Form Builder)",
+    "description": "Forms capability"
+  },
+  "modFieldsAddCustomField": {
+    "message": "Add Custom Field",
+    "description": "Add field button"
+  },
+  "modFieldsFieldsLabel": {
+    "message": "Fields",
+    "description": "Fields sidebar label"
+  },
+  "modFieldsSearchFieldsPh": {
+    "message": "Search fields",
+    "description": "Search placeholder"
+  },
+  "modFieldsShowTenantFields": {
+    "message": "Show Tenant Fields",
+    "description": "Tenant fields toggle"
+  },
+  "modFieldsGroupCoreIdentity": {
+    "message": "Core Identity",
+    "description": "People field group"
+  },
+  "modFieldsBadgeCustomField": {
+    "message": "Custom",
+    "description": "Custom field badge"
+  },
+  "modFieldsBadgeCoreField": {
+    "message": "Core",
+    "description": "Core field badge"
+  },
+  "modFieldsParticipationSales": {
+    "message": "Sales Participation",
+    "description": "Sales participation group"
+  },
+  "modFieldsParticipationApp": {
+    "message": "{app} Participation",
+    "description": "App participation group"
+  },
+  "modFieldsGroupSystemFields": {
+    "message": "System Fields",
+    "description": "System fields group"
+  },
+  "modFieldsGroupCoreBusiness": {
+    "message": "Core Business",
+    "description": "Orgs field group"
+  },
+  "modFieldsGroupCoreTask": {
+    "message": "Core Task Fields",
+    "description": "Tasks field group"
+  },
+  "modFieldsGroupCoreDeal": {
+    "message": "Core Deal Fields",
+    "description": "Deals field group"
+  },
+  "modFieldsGroupCoreEvent": {
+    "message": "Core Event Fields",
+    "description": "Events field group"
+  },
+  "modFieldsGroupCoreItem": {
+    "message": "Core Item Fields",
+    "description": "Items field group"
+  },
+  "modFieldsGroupCoreForm": {
+    "message": "Core Fields",
+    "description": "Forms field group"
+  },
+  "modFieldsBadgeFixed": {
+    "message": "Fixed",
+    "description": "Fixed field badge"
+  },
+  "modFieldsBadgeSystem": {
+    "message": "System",
+    "description": "System field badge"
+  },
+  "modFieldsTabFieldsForms": {
+    "message": "Fields Configuration",
+    "description": "Forms module top tab"
+  },
+  "modFieldsOrgsNoteBody": {
+    "message": "This configures business organizations (Customer, Partner, Vendor), not tenant organizations. Tenant organization settings are managed in Platform Settings.",
+    "description": "Organizations fields note"
+  },
+  "modFieldsTasksNoteBody": {
+    "message": "Tasks Settings configure structure only, never work. Task lists, completion, time tracking, and automation belong in Surfaces and Work interfaces.",
+    "description": "Tasks fields note"
+  },
+  "modFieldsEventsNoteBody": {
+    "message": "Events Settings handle structure and constraints only. Scheduling, calendars, execution, audit workflows, and geo tracking belong in Surfaces and Work interfaces.",
+    "description": "Events fields note"
+  },
+  "modFieldsItemsNoteBody": {
+    "message": "Items Settings configure structure only. Items are supporting/secondary entities used primarily in sales contexts.",
+    "description": "Items fields note"
+  },
+  "modFieldsGroupCoreCase": {
+    "message": "Core Case Fields",
+    "description": "Cases field group"
+  },
+  "modFieldsParticipationAudit": {
+    "message": "Audit Participation",
+    "description": "Audit participation group"
+  },
+  "modFieldsTitleSystemField": {
+    "message": "System field",
+    "description": "System field lock title"
+  },
+  "modFieldsTitleFixedField": {
+    "message": "Fixed position field",
+    "description": "Fixed field lock title"
+  },
+  "modFieldsUntitledField": {
+    "message": "Untitled field",
+    "description": "Fallback field label"
+  },
+  "modFieldsSubTabGeneral": {
+    "message": "General",
+    "description": "Field editor sub-tab"
+  },
+  "modFieldsSubTabValidations": {
+    "message": "Field Validation",
+    "description": "Field editor sub-tab"
+  },
+  "modFieldsSubTabFilters": {
+    "message": "Filter Settings",
+    "description": "Field editor sub-tab"
+  },
+  "modFieldsSubTabDependencies": {
+    "message": "Dependencies",
+    "description": "Field editor sub-tab"
+  },
+  "modFieldsModuleKeyLine": {
+    "message": "Module: {moduleName} • Key: {moduleKey}",
+    "description": "Field editor module and key line"
+  },
+  "modFieldsBadgeFixedPosition": {
+    "message": "Fixed Position",
+    "description": "Fixed position field badge"
+  },
+  "modFieldsMsgSystemField": {
+    "message": "This is a system field and cannot be modified",
+    "description": "System field warning"
+  },
+  "modFieldsMsgCoreIdentity": {
+    "message": "Core identity field. Ownership and scope are defined by the platform.",
+    "description": "Core identity field hint"
+  },
+  "modFieldsMsgParticipation": {
+    "message": "Participation field for {scope}. Ownership and scope are defined by the app.",
+    "description": "Participation field hint"
+  },
+  "modFieldsMsgCoreDeal": {
+    "message": "Core deal field. Ownership and scope are defined by the platform.",
+    "description": "Core deal field hint"
+  },
+  "modFieldsMsgFixedTop": {
+    "message": "This field must always be at the top and visible in table and detail views",
+    "description": "Fixed position field hint"
+  },
+  "modFieldsMsgCoreNoDelete": {
+    "message": "This is a core field and cannot be deleted",
+    "description": "Core field delete warning"
+  },
+  "modFieldsDeleteField": {
+    "message": "Delete Field",
+    "description": "Delete field button"
+  },
+  "modFieldsFieldScope": {
+    "message": "Field scope",
+    "description": "Custom field scope label"
+  },
+  "modFieldsFieldScopeHelp": {
+    "message": "Core fields apply everywhere for this record. App-specific fields appear when you work in that application (for example, opening the person or organization from that app’s list).",
+    "description": "Field scope help"
+  },
+  "modFieldsScopeCoreShared": {
+    "message": "Core (shared across apps)",
+    "description": "Core scope radio"
+  },
+  "modFieldsScopeAppSpecific": {
+    "message": "App-specific",
+    "description": "App scope radio"
+  },
+  "modFieldsApplication": {
+    "message": "Application",
+    "description": "Application select label"
+  },
+  "modFieldsFormType": {
+    "message": "Form Type",
+    "description": "Form type label"
+  },
+  "modFieldsFormTypeHelp": {
+    "message": "Form Type defines how the form is interpreted and executed. You can change the type or add new ones. Built-in types cannot be removed.",
+    "description": "Form type help"
+  },
+  "modFieldsSelectFormType": {
+    "message": "Select Form Type",
+    "description": "Form type select label"
+  },
+  "modFieldsSelectFormTypePh": {
+    "message": "Select a form type...",
+    "description": "Form type select placeholder"
+  },
+  "modFieldsFormTypeBuiltIn": {
+    "message": "(Built-in)",
+    "description": "Built-in form type suffix"
+  },
+  "modFieldsFormTypeCustom": {
+    "message": "(Custom)",
+    "description": "Custom form type suffix"
+  },
+  "modFieldsCustomFormTypes": {
+    "message": "Custom Form Types",
+    "description": "Custom form types list label"
+  },
+  "modFieldsBuiltIn": {
+    "message": "Built-in",
+    "description": "Built-in form type badge"
+  },
+  "modFieldsAddCustomFormType": {
+    "message": "Add Custom Form Type",
+    "description": "Add custom form type label"
+  },
+  "modFieldsFormTypeKeyPh": {
+    "message": "e.g., webform",
+    "description": "Form type key placeholder"
+  },
+  "modFieldsFormTypeLabelPh": {
+    "message": "e.g., Webform",
+    "description": "Form type label placeholder"
+  },
+  "modFieldsFormTypeBuiltinNote": {
+    "message": "Built-in types (Audit, Survey, Feedback) cannot be removed",
+    "description": "Built-in form types note"
+  },
+  "modFieldsLabel": {
+    "message": "Label",
+    "description": "Field label input"
+  },
+  "modFieldsKey": {
+    "message": "Key",
+    "description": "Field key input"
+  },
+  "modFieldsType": {
+    "message": "Type",
+    "description": "Field type select"
+  },
+  "modFieldsHintLabelReadOnly": {
+    "message": "Platform/System field labels cannot be modified",
+    "description": "Read-only label hint"
+  },
+  "modFieldsHintAutoNumberKey": {
+    "message": "Auto-Number fields cannot have custom keys",
+    "description": "Auto-number key hint"
+  },
+  "modFieldsHintSystemKey": {
+    "message": "System fields cannot have their keys modified",
+    "description": "System key hint"
+  },
+  "modFieldsHintCoreIdentityKey": {
+    "message": "Core identity fields cannot have their keys modified",
+    "description": "Core identity key hint"
+  },
+  "modFieldsHintParticipationKey": {
+    "message": "Participation fields cannot have their keys modified",
+    "description": "Participation key hint"
+  },
+  "modFieldsHintCoreKey": {
+    "message": "Core fields cannot have their keys modified",
+    "description": "Core key hint"
+  },
+  "modFieldsHintAutoKey": {
+    "message": "Auto-generated from label, duplicates are automatically handled",
+    "description": "Auto key hint"
+  },
+  "modFieldsHintCoreIdentityType": {
+    "message": "Core identity fields cannot have their type changed",
+    "description": "Core identity type hint"
+  },
+  "modFieldsHintSystemType": {
+    "message": "System fields cannot have their type changed",
+    "description": "System type hint"
+  },
+  "modFieldsHintCoreType": {
+    "message": "Core fields cannot have their type changed",
+    "description": "Core type hint"
+  },
+  "modFieldsFieldMetadata": {
+    "message": "Field Metadata",
+    "description": "Field metadata section"
+  },
+  "modFieldsMetadataOwner": {
+    "message": "Owner:",
+    "description": "Metadata owner label"
+  },
+  "modFieldsMetadataIntent": {
+    "message": "Intent:",
+    "description": "Metadata intent label"
+  },
+  "modFieldsMetadataRequiredFor": {
+    "message": "Required for:",
+    "description": "Metadata required-for label"
+  },
+  "modFieldsRequiredInForm": {
+    "message": "Required in Form",
+    "description": "Required in form checkbox"
+  },
+  "modFieldsTitleRequiredByApp": {
+    "message": "This field is required by the application.",
+    "description": "Required by app title"
+  },
+  "modFieldsTooltipRequiredInForm": {
+    "message": "This controls form submission validation only. Application requirements are defined separately.",
+    "description": "Required in form tooltip"
+  },
+  "modFieldsKeyField": {
+    "message": "Key Field",
+    "description": "Key field checkbox"
+  },
+  "modFieldsShowInTable": {
+    "message": "Show in Table",
+    "description": "Show in table checkbox"
+  },
+  "modFieldsShowInDetail": {
+    "message": "Show in Detail",
+    "description": "Show in detail checkbox"
+  },
+  "modFieldsTitleShowInTable": {
+    "message": "Controls whether this field is visible in the table/list view. Users can still customize visibility in column settings.",
+    "description": "Show in table title"
+  },
+  "modFieldsHintStateFieldsVisible": {
+    "message": "State fields are required and always visible. This is defined by the application.",
+    "description": "State fields hint"
+  },
+  "modFieldsHintSystemAlwaysVisible": {
+    "message": "System fields are always visible",
+    "description": "System visibility hint"
+  },
+  "modFieldsHintFixedAlwaysVisible": {
+    "message": "This field must always be visible in table and detail views",
+    "description": "Fixed visibility hint"
+  },
+  "modFieldsDefaultValue": {
+    "message": "Default Value",
+    "description": "Default value label"
+  },
+  "modFieldsNoDefault": {
+    "message": "No default",
+    "description": "No default option"
+  },
+  "modFieldsDefaultToChecked": {
+    "message": "Default to checked",
+    "description": "Checkbox default label"
+  },
+  "modFieldsMultiPicklistHint": {
+    "message": "Hold Ctrl/Cmd to select multiple options",
+    "description": "Multi-picklist hint"
+  },
+  "modFieldsNone": {
+    "message": "(none)",
+    "description": "Empty default value display"
+  },
+  "modFieldsHintNoDefaultValue": {
+    "message": "This field type cannot have a default value",
+    "description": "No default value hint"
+  },
+  "modFieldsHintSystemNoDefault": {
+    "message": "System fields cannot have default values",
+    "description": "System no default hint"
+  },
+  "modFieldsPlaceholder": {
+    "message": "Placeholder",
+    "description": "Placeholder input label"
+  },
+  "modFieldsPlaceholderPh": {
+    "message": "e.g., Enter full name",
+    "description": "Placeholder example"
+  },
+  "modFieldsPicklistOptions": {
+    "message": "Picklist Options",
+    "description": "Picklist options label"
+  },
+  "modFieldsPicklistOptionsMulti": {
+    "message": "Picklist Options (Multi-Select)",
+    "description": "Multi-picklist options label"
+  },
+  "modFieldsPicklistOptionsRadio": {
+    "message": "Radio Button Options",
+    "description": "Radio options label"
+  },
+  "modFieldsAddOption": {
+    "message": "Add Option",
+    "description": "Add picklist option button"
+  },
+  "modFieldsPipelineStageHint": {
+    "message": "Options for Pipeline and Deal Stage are configured in {section}. Use that section to add or edit pipelines and stages.",
+    "description": "Pipeline stage picklist hint"
+  },
+  "modFieldsPipelinesStagesSection": {
+    "message": "Pipelines & Stages",
+    "description": "Pipelines section name"
+  },
+  "modFieldsOpenPipelinesStages": {
+    "message": "Open Pipelines & Stages",
+    "description": "Navigate to pipelines button"
+  },
+  "modFieldsPeopleTypesPicklistHint": {
+    "message": "{article} ({scope}) options and colors are managed in {typesTab}. They stay in sync with this picklist for forms and lists—edit them there, not here.",
+    "description": "People types picklist hint"
+  },
+  "modFieldsTypesTab": {
+    "message": "Types",
+    "description": "Types tab name"
+  },
+  "modFieldsOpenTypes": {
+    "message": "Open Types",
+    "description": "Open types tab button"
+  },
+  "modFieldsCurrentOptionsReadOnly": {
+    "message": "Current options (read-only)",
+    "description": "Read-only options label"
+  },
+  "modFieldsNoTypesLoaded": {
+    "message": "No types loaded yet.",
+    "description": "No types loaded"
+  },
+  "modFieldsTaskStatusNote": {
+    "message": "The \"Completed\" status is system-controlled and cannot be modified or removed.",
+    "description": "Task status note"
+  },
+  "modFieldsNoteLabel": {
+    "message": "Note:",
+    "description": "Note label prefix"
+  },
+  "modFieldsNoOptionsDefined": {
+    "message": "No options defined. Click \"Add Option\" to add values.",
+    "description": "Empty picklist options"
+  },
+  "modFieldsTitleSystemLocked": {
+    "message": "System-locked",
+    "description": "System locked option title"
+  },
+  "modFieldsTitleDragReorder": {
+    "message": "Drag to reorder",
+    "description": "Drag handle title"
+  },
+  "modFieldsColor": {
+    "message": "Color",
+    "description": "Color label"
+  },
+  "modFieldsColorForOption": {
+    "message": "Color for {label}",
+    "description": "Color picker aria label"
+  },
+  "modFieldsSystemLocked": {
+    "message": "System-Locked",
+    "description": "System locked badge"
+  },
+  "modFieldsRename": {
+    "message": "Rename",
+    "description": "Rename option action"
+  },
+  "modFieldsAddOptionModal": {
+    "message": "Add Option",
+    "description": "Add option modal title"
+  },
+  "modFieldsOptionValue": {
+    "message": "Option Value",
+    "description": "Option value label"
+  },
+  "modFieldsEnterOptionValuePh": {
+    "message": "Enter option value",
+    "description": "Option value placeholder"
+  },
+  "modFieldsColorHexPh": {
+    "message": "#3B82F6",
+    "description": "Color hex placeholder"
+  },
+  "modFieldsPreview": {
+    "message": "Preview",
+    "description": "Preview label"
+  },
+  "modFieldsNumberSettings": {
+    "message": "Number Settings",
+    "description": "Number settings section"
+  },
+  "modFieldsMinValue": {
+    "message": "Minimum Value",
+    "description": "Minimum value label"
+  },
+  "modFieldsMaxValue": {
+    "message": "Maximum Value",
+    "description": "Maximum value label"
+  },
+  "modFieldsDecimalPlaces": {
+    "message": "Decimal Places",
+    "description": "Decimal places label"
+  },
+  "modFieldsCurrencyFormat": {
+    "message": "Currency Format",
+    "description": "Currency format label"
+  },
+  "modFieldsCurrencyPreview": {
+    "message": "Preview: {preview}",
+    "description": "Currency format preview"
+  },
+  "modFieldsTextSettings": {
+    "message": "Text Settings",
+    "description": "Text settings section"
+  },
+  "modFieldsMaxLength": {
+    "message": "Maximum Length",
+    "description": "Maximum length label"
+  },
+  "modFieldsRows": {
+    "message": "Rows",
+    "description": "Text area rows label"
+  },
+  "modFieldsDateSettings": {
+    "message": "Date Settings",
+    "description": "Date settings section"
+  },
+  "modFieldsDateFormat": {
+    "message": "Date Format",
+    "description": "Date format label"
+  },
+  "modFieldsTimeFormat": {
+    "message": "Time Format",
+    "description": "Time format label"
+  },
+  "modFieldsTime12h": {
+    "message": "12 Hour (AM/PM)",
+    "description": "12 hour time format"
+  },
+  "modFieldsTime24h": {
+    "message": "24 Hour",
+    "description": "24 hour time format"
+  },
+  "modFieldsFormulaConfig": {
+    "message": "Formula Configuration",
+    "description": "Formula section"
+  },
+  "modFieldsFormulaExpression": {
+    "message": "Formula Expression",
+    "description": "Formula expression label"
+  },
+  "modFieldsFormulaExpressionPh": {
+    "message": "e.g., {field1} + {field2}",
+    "description": "Formula expression placeholder"
+  },
+  "modFieldsFormulaExpressionHelp": {
+    "message": "Use {fieldKey} to reference other fields. This field is read-only.",
+    "description": "Formula help"
+  },
+  "modFieldsReturnType": {
+    "message": "Return Type",
+    "description": "Formula return type"
+  },
+  "modFieldsLookupConfig": {
+    "message": "Lookup Configuration",
+    "description": "Lookup section"
+  },
+  "modFieldsTargetModule": {
+    "message": "Target Module",
+    "description": "Lookup target module"
+  },
+  "modFieldsSelectModulePh": {
+    "message": "Select module...",
+    "description": "Select module placeholder"
+  },
+  "modFieldsDisplayField": {
+    "message": "Display Field",
+    "description": "Lookup display field"
+  },
+  "modFieldsDisplayFieldAuto": {
+    "message": "Auto (Name/Title)",
+    "description": "Auto display field"
+  },
+  "modFieldsValidationParticipation": {
+    "message": "Validation rules for participation fields are defined by the application.",
+    "description": "Participation validation hint"
+  },
+  "modFieldsValidationEventsParticipation": {
+    "message": "App participation fields are visibility-configurable only. Required state is controlled by event type, not by Settings.",
+    "description": "Events participation validation hint"
+  },
+  "modFieldsPhoneValidationTitle": {
+    "message": "Phone validation is based on the selected country.",
+    "description": "Phone validation title"
+  },
+  "modFieldsPhoneValidationBody": {
+    "message": "Static regex rules are not used for phone fields because each country can have a different number length.",
+    "description": "Phone validation body"
+  },
+  "modFieldsNoValidationRules": {
+    "message": "No Validation Rules",
+    "description": "Empty validations title"
+  },
+  "modFieldsNoValidationRulesBody": {
+    "message": "Add validation conditions to ensure data integrity and enforce business rules for this field.",
+    "description": "Empty validations body"
+  },
+  "modFieldsAddCondition": {
+    "message": "Add Condition",
+    "description": "Add validation condition"
+  },
+  "modFieldsTitleRemoveValidation": {
+    "message": "Remove validation",
+    "description": "Remove validation title"
+  },
+  "modFieldsValidationName": {
+    "message": "Validation Name",
+    "description": "Validation name label"
+  },
+  "modFieldsValidationNamePh": {
+    "message": "e.g., Must match business ID format",
+    "description": "Validation name placeholder"
+  },
+  "modFieldsValidationType": {
+    "message": "Type",
+    "description": "Validation type label"
+  },
+  "modFieldsValidationRegex": {
+    "message": "Regular Expression",
+    "description": "Regex validation type"
+  },
+  "modFieldsValidationLength": {
+    "message": "Length",
+    "description": "Length validation type"
+  },
+  "modFieldsValidationRange": {
+    "message": "Range",
+    "description": "Range validation type"
+  },
+  "modFieldsValidationPicklistSingle": {
+    "message": "Single picklist value matching",
+    "description": "Picklist single validation"
+  },
+  "modFieldsValidationPicklistMulti": {
+    "message": "Multiple picklist value matching",
+    "description": "Picklist multi validation"
+  },
+  "modFieldsValidationEmail": {
+    "message": "Email",
+    "description": "Email validation type"
+  },
+  "modFieldsPattern": {
+    "message": "Pattern",
+    "description": "Regex pattern label"
+  },
+  "modFieldsRegexPatternPh": {
+    "message": "Regex pattern",
+    "description": "Regex pattern placeholder"
+  },
+  "modFieldsMinLength": {
+    "message": "Min Length",
+    "description": "Min length label"
+  },
+  "modFieldsMaxLengthShort": {
+    "message": "Max Length",
+    "description": "Max length label"
+  },
+  "modFieldsMin": {
+    "message": "Min",
+    "description": "Min range label"
+  },
+  "modFieldsMax": {
+    "message": "Max",
+    "description": "Max range label"
+  },
+  "modFieldsAllowedValues": {
+    "message": "Allowed Values (comma separated)",
+    "description": "Allowed values label"
+  },
+  "modFieldsAllowedValuesPh": {
+    "message": "e.g., New, Contacted, Qualified",
+    "description": "Allowed values placeholder"
+  },
+  "modFieldsErrorMessage": {
+    "message": "Error Message",
+    "description": "Validation error message label"
+  },
+  "modFieldsErrorMessagePh": {
+    "message": "Message to show when validation fails",
+    "description": "Error message placeholder"
+  },
+  "modFieldsAddCustomValidation": {
+    "message": "Add custom validation",
+    "description": "Add custom validation button"
+  },
+  "modFieldsFilterSystemUnavailable": {
+    "message": "Filter settings are not available for system fields.",
+    "description": "System filter unavailable"
+  },
+  "modFieldsFilterableHint": {
+    "message": "Filterable fields appear in list filters and saved views.",
+    "description": "Filterable hint"
+  },
+  "modFieldsFilterCoreField": {
+    "message": "Core Field: Filter Type is read-only and locked to schema default.",
+    "description": "Core filter hint"
+  },
+  "modFieldsFilterAppOwned": {
+    "message": "App-Owned Field: Fully editable.",
+    "description": "App-owned filter hint"
+  },
+  "modFieldsEnableFilter": {
+    "message": "Enable as filter",
+    "description": "Enable filter toggle"
+  },
+  "modFieldsEnableFilterHelp": {
+    "message": "Allow this field to be used as a filter in list views",
+    "description": "Enable filter help"
+  },
+  "modFieldsFilterType": {
+    "message": "Filter type",
+    "description": "Filter type label"
+  },
+  "modFieldsSelectFilterTypePh": {
+    "message": "Select filter type...",
+    "description": "Select filter type placeholder"
+  },
+  "modFieldsFilterTypeHelp": {
+    "message": "Filter type is determined by the field's data type",
+    "description": "Filter type help"
+  },
+  "modFieldsFilterPriority": {
+    "message": "Filter priority",
+    "description": "Filter priority label"
+  },
+  "modFieldsFilterPriorityPh": {
+    "message": "Auto-assign",
+    "description": "Filter priority placeholder"
+  },
+  "modFieldsFilterPriorityHelp": {
+    "message": "Lower number = higher priority. Default visible filters are top 3 by priority.",
+    "description": "Filter priority help"
+  },
+  "modFieldsFieldRules": {
+    "message": "Field Rules",
+    "description": "Field rules section"
+  },
+  "modFieldsFieldRulesHelp": {
+    "message": "Control visibility, read-only state, required state, or filter picklist options based on other field values.",
+    "description": "Field rules help"
+  },
+  "modFieldsNoFieldRules": {
+    "message": "No Field Rules",
+    "description": "Empty field rules title"
+  },
+  "modFieldsNoFieldRulesBody": {
+    "message": "Add field dependencies to control visibility, read-only state, required state, or filter picklist options based on other field values.",
+    "description": "Empty field rules body"
+  },
+  "modFieldsAddFieldRule": {
+    "message": "Add Field Rule",
+    "description": "Add field rule button"
+  },
+  "modFieldsTitleRemoveDependency": {
+    "message": "Remove dependency",
+    "description": "Remove dependency title"
+  },
+  "modFieldsDependencyName": {
+    "message": "Dependency Name",
+    "description": "Dependency name label"
+  },
+  "modFieldsDependencyNamePh": {
+    "message": "e.g., Show when Status is Active",
+    "description": "Dependency name placeholder"
+  },
+  "modFieldsDependencyType": {
+    "message": "Dependency Type",
+    "description": "Dependency type label"
+  },
+  "modFieldsDepVisibility": {
+    "message": "Visibility",
+    "description": "Visibility dependency"
+  },
+  "modFieldsDepReadonly": {
+    "message": "Read-only",
+    "description": "Read-only dependency"
+  },
+  "modFieldsDepRequired": {
+    "message": "Required",
+    "description": "Required dependency"
+  },
+  "modFieldsDepPicklistFilter": {
+    "message": "Picklist Options Filter",
+    "description": "Picklist filter dependency"
+  },
+  "modFieldsDepPopup": {
+    "message": "Popup Modal",
+    "description": "Popup dependency"
+  },
+  "modFieldsDepLabelOverride": {
+    "message": "Label Override",
+    "description": "Label override dependency"
+  },
+  "modFieldsLogic": {
+    "message": "Logic",
+    "description": "Dependency logic label"
+  },
+  "modFieldsConditions": {
+    "message": "Conditions",
+    "description": "Conditions label"
+  },
+  "modFieldsNoConditions": {
+    "message": "No conditions defined. Click \"Add Condition\" to get started.",
+    "description": "No conditions message"
+  },
+  "modFieldsField": {
+    "message": "Field",
+    "description": "Condition field label"
+  },
+  "modFieldsSelectFieldPh": {
+    "message": "Select field",
+    "description": "Select field placeholder"
+  },
+  "modFieldsOperator": {
+    "message": "Operator",
+    "description": "Condition operator label"
+  },
+  "modFieldsOpEquals": {
+    "message": "equals",
+    "description": "Equals operator"
+  },
+  "modFieldsOpNotEquals": {
+    "message": "not equals",
+    "description": "Not equals operator"
+  },
+  "modFieldsOpIn": {
+    "message": "in",
+    "description": "In operator"
+  },
+  "modFieldsOpNotIn": {
+    "message": "not in",
+    "description": "Not in operator"
+  },
+  "modFieldsOpExists": {
+    "message": "exists",
+    "description": "Exists operator"
+  },
+  "modFieldsOpGt": {
+    "message": ">",
+    "description": "Greater than operator"
+  },
+  "modFieldsOpLt": {
+    "message": "<",
+    "description": "Less than operator"
+  },
+  "modFieldsOpGte": {
+    "message": "≥",
+    "description": "Greater or equal operator"
+  },
+  "modFieldsOpLte": {
+    "message": "≤",
+    "description": "Less or equal operator"
+  },
+  "modFieldsOpContains": {
+    "message": "contains",
+    "description": "Contains operator"
+  },
+  "modFieldsValue": {
+    "message": "Value",
+    "description": "Condition value label"
+  },
+  "modFieldsSearchSelectValuesPh": {
+    "message": "Search and select values...",
+    "description": "Dependency multi-select placeholder"
+  },
+  "modFieldsOptionCount": {
+    "message": "{count, plural, one {# option} other {# options}}",
+    "description": "Dependency option count"
+  },
+  "modFieldsSelectAll": {
+    "message": "Select All",
+    "description": "Select all options"
+  },
+  "modFieldsClear": {
+    "message": "Clear",
+    "description": "Clear selection"
+  },
+  "modFieldsNoOptionsFound": {
+    "message": "No options found",
+    "description": "No dependency options"
+  },
+  "modFieldsSelectOptionPh": {
+    "message": "Select option",
+    "description": "Select option placeholder"
+  },
+  "modFieldsSelectValuePh": {
+    "message": "Select value",
+    "description": "Select value placeholder"
+  },
+  "modFieldsNumberPh": {
+    "message": "Number",
+    "description": "Number placeholder"
+  },
+  "modFieldsListValuesPh": {
+    "message": "a, b, c",
+    "description": "List values placeholder"
+  },
+  "modFieldsExistsCheck": {
+    "message": "(exists check)",
+    "description": "Exists check disabled input"
+  },
+  "modFieldsTitleRemoveCondition": {
+    "message": "Remove condition",
+    "description": "Remove condition title"
+  },
+  "modFieldsSelectedCount": {
+    "message": "{selected} of {total} selected",
+    "description": "Selected dependency values count"
+  },
+  "modFieldsPicklistOptionsToShow": {
+    "message": "Picklist Options to Show",
+    "description": "Picklist options to show label"
+  },
+  "modFieldsPicklistOptionsToShowHelp": {
+    "message": "Select which options from this field should be visible when the dependency condition is met.",
+    "description": "Picklist options to show help"
+  },
+  "modFieldsNoPicklistOptionsForDep": {
+    "message": "No picklist options available. Please add options to this field first.",
+    "description": "No picklist for dependency"
+  },
+  "modFieldsPicklistFilterTypeOnly": {
+    "message": "Picklist filter is only available for Picklist or Multi-Picklist field types.",
+    "description": "Picklist filter type warning"
+  },
+  "modFieldsPopupFields": {
+    "message": "Fields to Show in Popup",
+    "description": "Popup fields label"
+  },
+  "modFieldsPopupFieldsHelp": {
+    "message": "Select which fields should be displayed in the popup modal when the condition is met.",
+    "description": "Popup fields help"
+  },
+  "modFieldsNoFieldsForPopup": {
+    "message": "No fields available. Please add fields to this module first.",
+    "description": "No fields for popup"
+  },
+  "modFieldsLabelToDisplay": {
+    "message": "Label to Display",
+    "description": "Label override input label"
+  },
+  "modFieldsLabelOverrideHelp": {
+    "message": "Override this field’s label when the conditions are met.",
+    "description": "Label override help"
+  },
+  "modFieldsLabelOverridePh": {
+    "message": "e.g., Auditor",
+    "description": "Label override placeholder"
+  },
+  "modFieldsPicklistValueRules": {
+    "message": "Picklist Value Rules",
+    "description": "Picklist value rules section"
+  },
+  "modFieldsPicklistValueRulesHelp": {
+    "message": "Filter available options in this picklist based on values selected in another picklist field.",
+    "description": "Picklist value rules help"
+  },
+  "modFieldsNoPicklistValueRules": {
+    "message": "No Picklist Value Rules",
+    "description": "Empty picklist value rules"
+  },
+  "modFieldsNoPicklistValueRulesBody": {
+    "message": "Configure which options are available in this picklist based on values in another picklist field.",
+    "description": "Empty picklist value rules body"
+  },
+  "modFieldsAddPicklistValueRule": {
+    "message": "Add Picklist Value Rule",
+    "description": "Add picklist value rule"
+  },
+  "modFieldsTitleRemoveRule": {
+    "message": "Remove rule",
+    "description": "Remove rule title"
+  },
+  "modFieldsParentField": {
+    "message": "Parent Field",
+    "description": "Parent field label"
+  },
+  "modFieldsSelectPicklistFieldPh": {
+    "message": "Select picklist field...",
+    "description": "Select picklist field placeholder"
+  },
+  "modFieldsParentFieldHelp": {
+    "message": "The picklist field whose value determines which options are available in this field",
+    "description": "Parent field help"
+  },
+  "modFieldsValueMapping": {
+    "message": "Value Mapping",
+    "description": "Value mapping label"
+  },
+  "modFieldsValueMappingHelp": {
+    "message": "Map parent field values to allowed options in this picklist",
+    "description": "Value mapping help"
+  },
+  "modFieldsParentValue": {
+    "message": "Parent Value",
+    "description": "Parent value label"
+  },
+  "modFieldsSelectValueEllipsisPh": {
+    "message": "Select value...",
+    "description": "Select value ellipsis placeholder"
+  },
+  "modFieldsAllowedOptions": {
+    "message": "Allowed Options",
+    "description": "Allowed options label"
+  },
+  "modFieldsNoOptionsAvailable": {
+    "message": "No options available",
+    "description": "No options available"
+  },
+  "modFieldsTitleRemoveMapping": {
+    "message": "Remove mapping",
+    "description": "Remove mapping title"
+  },
+  "modFieldsAddValueMapping": {
+    "message": "Add Value Mapping",
+    "description": "Add value mapping button"
+  },
+  "modFieldsAddAnotherPicklistRule": {
+    "message": "Add Another Picklist Value Rule",
+    "description": "Add another picklist rule"
+  },
+  "modFieldsLogicAnd": {
+    "message": "AND",
+    "description": "Dependency logic AND"
+  },
+  "modFieldsLogicOr": {
+    "message": "OR",
+    "description": "Dependency logic OR"
+  },
+  "modFieldsReturnTypeText": {
+    "message": "Text",
+    "description": "Formula return type"
+  },
+  "modFieldsReturnTypeNumber": {
+    "message": "Number",
+    "description": "Formula return type"
+  },
+  "modFieldsReturnTypeDate": {
+    "message": "Date",
+    "description": "Formula return type"
+  },
+  "modFieldsReturnTypeCheckbox": {
+    "message": "Checkbox",
+    "description": "Formula return type"
+  },
+  "modFieldsAuditCorrectiveOwnerRequired": {
+    "message": "Corrective Owner is always required for audit events. This cannot be changed.",
+    "description": "Audit corrective owner locked hint"
+  },
+  "modFieldsQuickCustomFields": {
+    "message": "Custom Fields",
+    "description": "Quick create custom fields group"
+  },
+  "modFieldsQuickCreatePreviewTitle": {
+    "message": "Quick Create Preview",
+    "description": "Quick create preview modal title"
+  },
+  "modFieldsQuickCreateEmpty": {
+    "message": "Empty",
+    "description": "Empty quick create layout cell"
+  },
+  "modFieldsActivityModalTitle": {
+    "message": "Configure Activity",
+    "description": "Configure activity modal title"
+  },
+  "modFieldsActivityStageMeta": {
+    "message": "Stage: {stage} • Activity {number}",
+    "description": "Activity modal stage subtitle"
+  },
+  "modFieldsUntitledStage": {
+    "message": "Untitled stage",
+    "description": "Fallback stage name"
+  },
+  "modFieldsActivitySummary": {
+    "message": "Summary",
+    "description": "Activity summary section title"
+  },
+  "modFieldsActivitySummaryHint": {
+    "message": "Key details about this activity",
+    "description": "Activity summary section hint"
+  },
+  "modFieldsActivityTitleLabel": {
+    "message": "Title",
+    "description": "Activity title label"
+  },
+  "modFieldsActivityTitlePh": {
+    "message": "e.g., Send proposal",
+    "description": "Activity title placeholder"
+  },
+  "modFieldsActionTypeLabel": {
+    "message": "Action Type",
+    "description": "Activity action type label"
+  },
+  "modFieldsDueDaysLabel": {
+    "message": "Due (days after stage entry)",
+    "description": "Activity due days label"
+  },
+  "modFieldsDueSameDayHint": {
+    "message": "Set to 0 if the activity should occur on the same day.",
+    "description": "Due same day hint"
+  },
+  "modFieldsAssignmentLabel": {
+    "message": "Assignment",
+    "description": "Activity assignment label"
+  },
+  "modFieldsSpecifyAssignmentPh": {
+    "message": "Specify {type}",
+    "description": "Assignment target placeholder"
+  },
+  "modFieldsRequiredCompleteStage": {
+    "message": "Required to complete stage",
+    "description": "Required activity checkbox"
+  },
+  "modFieldsAutoCreateStageStart": {
+    "message": "Auto-create when stage starts",
+    "description": "Auto-create activity checkbox"
+  },
+  "modFieldsDescriptionLabel": {
+    "message": "Description",
+    "description": "Description field label"
+  },
+  "modFieldsActivityDescriptionPh": {
+    "message": "Add context or instructions for the team...",
+    "description": "Activity description placeholder"
+  },
+  "modFieldsTriggerAutomation": {
+    "message": "Trigger & Automation",
+    "description": "Trigger section title"
+  },
+  "modFieldsTriggerAutomationHint": {
+    "message": "When should this activity become active?",
+    "description": "Trigger section hint"
+  },
+  "modFieldsTriggerTypeLabel": {
+    "message": "Trigger Type",
+    "description": "Trigger type label"
+  },
+  "modFieldsWaitForActivity": {
+    "message": "Wait for activity",
+    "description": "Wait for activity label"
+  },
+  "modFieldsSelectActivityPh": {
+    "message": "Select activity...",
+    "description": "Select activity placeholder"
+  },
+  "modFieldsUnlockAfterCompleteHint": {
+    "message": "The activity will unlock after the selected one is marked complete.",
+    "description": "Unlock after activity hint"
+  },
+  "modFieldsDelayAmount": {
+    "message": "Delay amount",
+    "description": "Trigger delay amount label"
+  },
+  "modFieldsDelayUnit": {
+    "message": "Delay unit",
+    "description": "Trigger delay unit label"
+  },
+  "modFieldsCustomTriggerDetails": {
+    "message": "Custom trigger details",
+    "description": "Custom trigger details label"
+  },
+  "modFieldsCustomTriggerPh": {
+    "message": "Describe the custom conditions or automations required.",
+    "description": "Custom trigger placeholder"
+  },
+  "modFieldsExistingConditions": {
+    "message": "Existing conditions",
+    "description": "Existing trigger conditions title"
+  },
+  "modFieldsConditionLine": {
+    "message": "{field} {operator} {value}",
+    "description": "Trigger condition summary line"
+  },
+  "modFieldsConditionFieldFallback": {
+    "message": "Field",
+    "description": "Condition field fallback"
+  },
+  "modFieldsConditionEquals": {
+    "message": "equals",
+    "description": "Condition equals operator"
+  },
+  "modFieldsDependenciesTitle": {
+    "message": "Dependencies",
+    "description": "Dependencies section title"
+  },
+  "modFieldsDependenciesHint": {
+    "message": "Control the order activities unlock",
+    "description": "Dependencies section hint"
+  },
+  "modFieldsAddActivityForDeps": {
+    "message": "Add at least one more activity to set dependencies.",
+    "description": "Empty dependencies hint"
+  },
+  "modFieldsAlertsReminders": {
+    "message": "Alerts & Reminders",
+    "description": "Alerts section title"
+  },
+  "modFieldsAddAlert": {
+    "message": "Add alert",
+    "description": "Add alert button"
+  },
+  "modFieldsNoAlerts": {
+    "message": "No alerts configured. Add reminders to keep owners on track.",
+    "description": "Empty alerts state"
+  },
+  "modFieldsAlertNumber": {
+    "message": "Alert {number}",
+    "description": "Alert item heading"
+  },
+  "modFieldsAlertTypeLabel": {
+    "message": "Alert Type",
+    "description": "Alert type label"
+  },
+  "modFieldsSendOffset": {
+    "message": "Send offset",
+    "description": "Alert send offset label"
+  },
+  "modFieldsRecipientsLabel": {
+    "message": "Recipients (comma separated emails/usernames)",
+    "description": "Alert recipients label"
+  },
+  "modFieldsRecipientsPh": {
+    "message": "e.g., revenue-ops@company.com, manager@company.com",
+    "description": "Alert recipients placeholder"
+  },
+  "modFieldsMessageLabel": {
+    "message": "Message",
+    "description": "Alert message label"
+  },
+  "modFieldsAlertMessagePh": {
+    "message": "Reminder content that will be sent to recipients",
+    "description": "Alert message placeholder"
+  },
+  "modFieldsResourcesTitle": {
+    "message": "Resources",
+    "description": "Resources section title"
+  },
+  "modFieldsAddResource": {
+    "message": "Add resource",
+    "description": "Add resource button"
+  },
+  "modFieldsNoResources": {
+    "message": "No supporting documents yet. Attach collateral to speed up execution.",
+    "description": "Empty resources state"
+  },
+  "modFieldsResourceNumber": {
+    "message": "Resource {number}",
+    "description": "Resource item heading"
+  },
+  "modFieldsNameLabel": {
+    "message": "Name",
+    "description": "Resource name label"
+  },
+  "modFieldsResourceNamePh": {
+    "message": "e.g., Proposal template",
+    "description": "Resource name placeholder"
+  },
+  "modFieldsUrlAttachmentRef": {
+    "message": "URL or attachment reference",
+    "description": "Resource URL label"
+  },
+  "modFieldsUrlPh": {
+    "message": "https://...",
+    "description": "Resource URL placeholder"
+  },
+  "modFieldsResourceDescriptionPh": {
+    "message": "What should the team know about this resource?",
+    "description": "Resource description placeholder"
+  },
+  "modFieldsDeleteFieldDialogTitle": {
+    "message": "Delete field",
+    "description": "Delete field confirm dialog title"
+  },
+  "modFieldsDeleteFieldConfirm": {
+    "message": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
+    "description": "Delete field confirm body"
+  },
+  "modFieldsThisField": {
+    "message": "this field",
+    "description": "Delete field fallback name"
+  },
+  "modFieldsPipelineRemoveDefaultFirst": {
+    "message": "Set another pipeline as default before removing this one.",
+    "description": "Cannot remove default pipeline alert"
+  },
+  "modFieldsPipelineMinOne": {
+    "message": "At least one pipeline is required.",
+    "description": "Minimum pipelines alert"
+  },
+  "modFieldsPipelineMinOneStage": {
+    "message": "A pipeline must contain at least one stage.",
+    "description": "Minimum pipeline stages alert"
+  },
+  "modFieldsConfirmDeleteModule": {
+    "message": "Delete module \"{name}\"?",
+    "description": "Delete module confirm"
+  },
+  "modFieldsDeleteModuleFailed": {
+    "message": "Failed to delete module",
+    "description": "Delete module error"
+  },
+  "modFieldsErrPlatformFieldDelete": {
+    "message": "Platform fields cannot be deleted.",
+    "description": "Platform field delete blocked"
+  },
+  "modFieldsErrAppFieldDelete": {
+    "message": "App-managed fields cannot be deleted by organization users.",
+    "description": "App field delete blocked"
+  },
+  "modFieldsErrSystemFieldDelete": {
+    "message": "System fields cannot be deleted.",
+    "description": "System field delete blocked"
+  },
+  "modFieldsErrCoreFieldDelete": {
+    "message": "Core fields cannot be deleted. These fields are essential for the module functionality.",
+    "description": "Core field delete blocked"
+  },
+  "modFieldsErrSaveFailed": {
+    "message": "Failed to save",
+    "description": "Generic save error"
+  },
+  "modFieldsErrSaveFailedWithReason": {
+    "message": "Failed to save: {reason}",
+    "description": "Save error with reason"
+  },
+  "modFieldsErrSaveViolationsSuffix": {
+    "message": "Violations:\n{violations}",
+    "description": "Field mutation violations list"
+  },
+  "modFieldsUnknownError": {
+    "message": "Unknown error",
+    "description": "Unknown error fallback"
+  },
+  "modFieldsErrQuickCreateSaveFailed": {
+    "message": "Failed to save quick create",
+    "description": "Quick create save error"
+  },
+  "modFieldsErrQuickCreateSettingsFailed": {
+    "message": "Failed to save quick create settings",
+    "description": "Quick create settings save error"
+  },
+  "modFieldsErrItemStatusTypesSaveFailed": {
+    "message": "Failed to save item status/types. Please try again.",
+    "description": "Item status types save error"
+  },
+  "modFieldsErrStatusTypesSaveFailed": {
+    "message": "Failed to save status types. Please try again.",
+    "description": "Status types save error"
+  },
+  "modFieldsPbActionTask": {
+    "message": "Task",
+    "description": "Playbook action type task"
+  },
+  "modFieldsPbActionCall": {
+    "message": "Call",
+    "description": "Playbook action type call"
+  },
+  "modFieldsPbActionMeeting": {
+    "message": "Meeting",
+    "description": "Playbook action type meeting"
+  },
+  "modFieldsPbActionEmail": {
+    "message": "Email",
+    "description": "Playbook action type email"
+  },
+  "modFieldsPbActionEvent": {
+    "message": "Event",
+    "description": "Playbook action type event"
+  },
+  "modFieldsPbActionDocument": {
+    "message": "Document Upload",
+    "description": "Playbook action type document"
+  },
+  "modFieldsPbActionApproval": {
+    "message": "Approval",
+    "description": "Playbook action type approval"
+  },
+  "modFieldsPbActionAlert": {
+    "message": "Alert / Reminder",
+    "description": "Playbook action type alert"
+  },
+  "modFieldsPbActionOther": {
+    "message": "Other",
+    "description": "Playbook action type other"
+  },
+  "modFieldsPbModeSequential": {
+    "message": "Sequential (guided steps)",
+    "description": "Playbook mode sequential"
+  },
+  "modFieldsPbModeFlexible": {
+    "message": "Flexible (complete in any order)",
+    "description": "Playbook mode flexible"
+  },
+  "modFieldsPbExitManual": {
+    "message": "Manual: team decides when to move",
+    "description": "Playbook exit manual"
+  },
+  "modFieldsPbExitAllActions": {
+    "message": "Automatic when all actions complete",
+    "description": "Playbook exit all actions"
+  },
+  "modFieldsPbExitAnyAction": {
+    "message": "Automatic when any action completes",
+    "description": "Playbook exit any action"
+  },
+  "modFieldsPbExitCustom": {
+    "message": "Custom conditions",
+    "description": "Playbook exit custom"
+  },
+  "modFieldsPbTriggerStageEntry": {
+    "message": "On stage entry",
+    "description": "Playbook trigger stage entry"
+  },
+  "modFieldsPbTriggerAfterAction": {
+    "message": "After another action completes",
+    "description": "Playbook trigger after action"
+  },
+  "modFieldsPbTriggerTimeDelay": {
+    "message": "After a time delay",
+    "description": "Playbook trigger time delay"
+  },
+  "modFieldsPbTriggerCustom": {
+    "message": "Custom conditions",
+    "description": "Playbook trigger custom"
+  },
+  "modFieldsPbAlertInApp": {
+    "message": "In-app",
+    "description": "Playbook alert in-app"
+  },
+  "modFieldsPbAlertEmail": {
+    "message": "Email",
+    "description": "Playbook alert email channel"
+  },
+  "modFieldsPbAlertSms": {
+    "message": "SMS",
+    "description": "Playbook alert SMS"
+  },
+  "modFieldsPbDelayMinutes": {
+    "message": "Minutes",
+    "description": "Playbook delay minutes"
+  },
+  "modFieldsPbDelayHours": {
+    "message": "Hours",
+    "description": "Playbook delay hours"
+  },
+  "modFieldsPbDelayDays": {
+    "message": "Days",
+    "description": "Playbook delay days"
+  },
+  "modFieldsPbResourceDocument": {
+    "message": "Document",
+    "description": "Playbook resource document"
+  },
+  "modFieldsPbResourceLink": {
+    "message": "Link",
+    "description": "Playbook resource link"
+  },
+  "modFieldsPbResourceForm": {
+    "message": "Form",
+    "description": "Playbook resource form"
+  },
+  "modFieldsPbResourceTemplate": {
+    "message": "Template",
+    "description": "Playbook resource template"
+  },
+  "modFieldsPbResourceOther": {
+    "message": "Other",
+    "description": "Playbook resource other"
+  },
+  "modFieldsPbAssignDealOwner": {
+    "message": "Deal Owner",
+    "description": "Playbook assignment deal owner"
+  },
+  "modFieldsPbAssignStageOwner": {
+    "message": "Stage Owner",
+    "description": "Playbook assignment stage owner"
+  },
+  "modFieldsPbAssignRole": {
+    "message": "Role",
+    "description": "Playbook assignment role"
+  },
+  "modFieldsPbAssignTeam": {
+    "message": "Team",
+    "description": "Playbook assignment team"
+  },
+  "modFieldsPbAssignSpecificUser": {
+    "message": "Specific User",
+    "description": "Playbook assignment specific user"
+  },
+  "modFieldsPlatformOwnedTitle": {
+    "message": "Platform-Owned Capability",
+    "description": "Other tabs section"
+  },
+  "modFieldsPlatformOwnedBody": {
+    "message": "This is a shared platform capability owned by the platform. It cannot be deleted, renamed, or modified. Applications can use this capability, but they cannot change its core definition.",
+    "description": "Other tabs section"
+  },
+  "modFieldsDisplayName": {
+    "message": "Display Name",
+    "description": "Other tabs section"
+  },
+  "modFieldsModuleKeyLabel": {
+    "message": "Module Key",
+    "description": "Other tabs section"
+  },
+  "modFieldsEnabled": {
+    "message": "Enabled",
+    "description": "Other tabs section"
+  },
+  "modFieldsFormModuleDetails": {
+    "message": "Form Module Details",
+    "description": "Other tabs section"
+  },
+  "modFieldsWhoCanConfigure": {
+    "message": "Who Can Configure What",
+    "description": "Other tabs section"
+  },
+  "modFieldsFormPermMatrixIntro": {
+    "message": "This matrix explains configuration authority in Form Settings. Permissions are explanatory only and do not enforce access.",
+    "description": "Other tabs section"
+  },
+  "modFieldsFormPermMatrixEnforcement": {
+    "message": "Actual enforcement happens at API & surface level. This mirrors Event Execution permission design.",
+    "description": "Other tabs section"
+  },
+  "modFieldsEditable": {
+    "message": "Editable",
+    "description": "Other tabs section"
+  },
+  "modFieldsReadOnly": {
+    "message": "Read-Only",
+    "description": "Other tabs section"
+  },
+  "modFieldsAllowed": {
+    "message": "Allowed",
+    "description": "Other tabs section"
+  },
+  "modFieldsNotAllowed": {
+    "message": "Not Allowed",
+    "description": "Other tabs section"
+  },
+  "modFieldsNoPermissionInfo": {
+    "message": "No permission information available.",
+    "description": "Other tabs section"
+  },
+  "modFieldsOrgsStatusTypesDesc": {
+    "message": "Configure organization types and status picklists. These are app-scoped semantics that control workflow states.",
+    "description": "Other tabs section"
+  },
+  "modFieldsOrgsStatusTypesNote": {
+    "message": "Organization types and status values are app-scoped. Changes here affect how organizations are classified and tracked within specific applications (Sales, Helpdesk, etc.).",
+    "description": "Other tabs section"
+  },
+  "modFieldsOrgTypesTitle": {
+    "message": "Organization Types",
+    "description": "Other tabs section"
+  },
+  "modFieldsOrgTypesDesc": {
+    "message": "Enable or disable organization types. These are business classifications used to categorize organizations.",
+    "description": "Other tabs section"
+  },
+  "modFieldsLoadingOrgTypes": {
+    "message": "Loading organization types...",
+    "description": "Other tabs section"
+  },
+  "modFieldsOrgTypeDefaultDesc": {
+    "message": "Business organization type",
+    "description": "Other tabs section"
+  },
+  "modFieldsOrgTypesFootnote": {
+    "message": "Organization types are business classifications. Disabling a type hides it from selection but does not affect existing organizations.",
+    "description": "Other tabs section"
+  },
+  "modFieldsCustomerStatus": {
+    "message": "Customer Status",
+    "description": "Other tabs section"
+  },
+  "modFieldsPartnerStatus": {
+    "message": "Partner Status",
+    "description": "Other tabs section"
+  },
+  "modFieldsVendorStatus": {
+    "message": "Vendor Status",
+    "description": "Other tabs section"
+  },
+  "modFieldsBadgeSales": {
+    "message": "Sales",
+    "description": "Other tabs section"
+  },
+  "modFieldsAddValue": {
+    "message": "Add Value",
+    "description": "Other tabs section"
+  },
+  "modFieldsStatusForCustomer": {
+    "message": "Status values for organizations with type \"Customer\"",
+    "description": "Other tabs section"
+  },
+  "modFieldsStatusForPartner": {
+    "message": "Status values for organizations with type \"Partner\"",
+    "description": "Other tabs section"
+  },
+  "modFieldsStatusForVendor": {
+    "message": "Status values for organizations with type \"Vendor\"",
+    "description": "Other tabs section"
+  },
+  "modFieldsNoStatusValues": {
+    "message": "No status values configured. Click \"Add Value\" to create one.",
+    "description": "Other tabs section"
+  },
+  "modFieldsCustomerStatusFootnote": {
+    "message": "Customer status values are app-scoped (Sales app). Disabled values remain in the system but are hidden from selection.",
+    "description": "Other tabs section"
+  },
+  "modFieldsPartnerStatusFootnote": {
+    "message": "Partner status values are app-scoped (Sales app). Disabled values remain in the system but are hidden from selection.",
+    "description": "Other tabs section"
+  },
+  "modFieldsVendorStatusFootnote": {
+    "message": "Vendor status values are app-scoped (Sales app). Disabled values remain in the system but are hidden from selection.",
+    "description": "Other tabs section"
+  },
+  "modFieldsTasksStatusPriorityDesc": {
+    "message": "Task lifecycle values are configured in Field Configurations. Select the Status or Priority field to edit options.",
+    "description": "Other tabs section"
+  },
+  "modFieldsStatusLabel": {
+    "message": "Status",
+    "description": "Other tabs section"
+  },
+  "modFieldsPriorityLabel": {
+    "message": "Priority",
+    "description": "Other tabs section"
+  },
+  "modFieldsEditInFieldConfig": {
+    "message": "Edit in Field Configurations",
+    "description": "Other tabs section"
+  },
+  "modFieldsNoOptionsDefinedShort": {
+    "message": "No options defined",
+    "description": "Other tabs section"
+  },
+  "modFieldsItemsStatusTypesDesc": {
+    "message": "Configure item types and status picklists. These control how items are classified and their lifecycle states.",
+    "description": "Other tabs section"
+  },
+  "modFieldsItemTypesTitle": {
+    "message": "Item Types",
+    "description": "Other tabs section"
+  },
+  "modFieldsItemTypesDesc": {
+    "message": "Enable or disable item types. These are business classifications used to categorize items.",
+    "description": "Other tabs section"
+  },
+  "modFieldsLoadingItemTypes": {
+    "message": "Loading item types...",
+    "description": "Other tabs section"
+  },
+  "modFieldsItemTypeDefaultDesc": {
+    "message": "Item type classification",
+    "description": "Other tabs section"
+  },
+  "modFieldsItemTypesFootnote": {
+    "message": "Item types are business classifications. Disabling a type hides it from selection but does not affect existing items.",
+    "description": "Other tabs section"
+  },
+  "modFieldsStatusPicklistTitle": {
+    "message": "Status Picklist",
+    "description": "Other tabs section"
+  },
+  "modFieldsStatusPicklistDesc": {
+    "message": "Configure available item status values.",
+    "description": "Other tabs section"
+  },
+  "modFieldsAddStatus": {
+    "message": "Add Status",
+    "description": "Other tabs section"
+  },
+  "modFieldsLoadingStatusValues": {
+    "message": "Loading status values...",
+    "description": "Other tabs section"
+  },
+  "modFieldsItemStatusFootnote": {
+    "message": "Status values control item lifecycle. At least one status value must remain enabled.",
+    "description": "Other tabs section"
+  },
+  "modFieldsEventStatusTitle": {
+    "message": "Event Status",
+    "description": "Other tabs section"
+  },
+  "modFieldsEventStatusDesc": {
+    "message": "Event statuses are system-controlled and required for lifecycle execution.",
+    "description": "Other tabs section"
+  },
+  "modFieldsSystemOwnedStatusesLabel": {
+    "message": "System-Owned Statuses:",
+    "description": "Other tabs section"
+  },
+  "modFieldsEventStatusesLockedBody": {
+    "message": "Planned, Completed, and Cancelled are locked. They cannot be renamed, deleted, reordered, or disabled in Settings.",
+    "description": "Other tabs section"
+  },
+  "modFieldsEventStatusPicklistTitle": {
+    "message": "Event Status Picklist",
+    "description": "Other tabs section"
+  },
+  "modFieldsEventStatusPicklistDesc": {
+    "message": "Visibility-only view of the system status values.",
+    "description": "Other tabs section"
+  },
+  "modFieldsTitleSystemLockedStatus": {
+    "message": "System-locked",
+    "description": "Other tabs section"
+  },
+  "modFieldsEventStatusTransitionsFootnote": {
+    "message": "Status transitions happen from Work interfaces (for example, complete or cancel actions), not from Settings.",
+    "description": "Other tabs section"
+  },
+  "modFieldsRolesRulesDesc": {
+    "message": "Configure role requirements, geo rules, and form-linking rules per event type.",
+    "description": "Other tabs section"
+  },
+  "modFieldsRolesRulesNote": {
+    "message": "This tab configures constraints only. Assignment, workflow transitions, and execution behavior are handled in Work interfaces.",
+    "description": "Other tabs section"
+  },
+  "modFieldsRoleRequirementsTitle": {
+    "message": "Role Requirements per Event Type",
+    "description": "Other tabs section"
+  },
+  "modFieldsRoleRequirementsDesc": {
+    "message": "Configure which roles are mandatory for each event type. This controls field requirements, not role assignment.",
+    "description": "Other tabs section"
+  },
+  "modFieldsRoleRequirementsImportant": {
+    "message": "These checkboxes configure field requirements (which roles must be assigned), not role assignment itself. Role assignment happens in Work interfaces when creating/editing events.",
+    "description": "Other tabs section"
+  },
+  "modFieldsEventTypeMeeting": {
+    "message": "Meeting",
+    "description": "Other tabs section"
+  },
+  "modFieldsEventTypeInternalAudit": {
+    "message": "Internal Audit",
+    "description": "Other tabs section"
+  },
+  "modFieldsEventTypeExternalAuditSingleOrg": {
+    "message": "External Audit — Single Org",
+    "description": "Other tabs section"
+  },
+  "modFieldsEventTypeExternalAuditBeat": {
+    "message": "External Audit Beat",
+    "description": "Other tabs section"
+  },
+  "modFieldsEventTypeFieldSalesBeat": {
+    "message": "Field Sales Beat",
+    "description": "Other tabs section"
+  },
+  "modFieldsAuditorRequired": {
+    "message": "Auditor Required",
+    "description": "Other tabs section"
+  },
+  "modFieldsReviewerRequired": {
+    "message": "Reviewer Required",
+    "description": "Other tabs section"
+  },
+  "modFieldsCorrectiveOwnerRequired": {
+    "message": "Corrective Owner Required",
+    "description": "Other tabs section"
+  },
+  "modFieldsLocked": {
+    "message": "Locked",
+    "description": "Other tabs section"
+  },
+  "modFieldsMeetingAuditorOptional": {
+    "message": "Auditor field is optional for Meeting events.",
+    "description": "Other tabs section"
+  },
+  "modFieldsMeetingReviewerOptional": {
+    "message": "Reviewer field is optional for Meeting events.",
+    "description": "Other tabs section"
+  },
+  "modFieldsMeetingCorrectiveOwnerOptional": {
+    "message": "Corrective Owner field is optional for Meeting events.",
+    "description": "Other tabs section"
+  },
+  "modFieldsAuditAuditorRequired": {
+    "message": "Auditor is always required for audit events. This cannot be changed.",
+    "description": "Other tabs section"
+  },
+  "modFieldsInternalAuditReviewerOptional": {
+    "message": "Reviewer is optional for Internal Audit events (self-review allowed).",
+    "description": "Other tabs section"
+  },
+  "modFieldsExternalAuditReviewerRequired": {
+    "message": "Reviewer is always required for External Audit — Single Org events. This cannot be changed.",
+    "description": "Other tabs section"
+  },
+  "modFieldsExternalAuditBeatReviewerOptional": {
+    "message": "Reviewer is optional for External Audit Beat events.",
+    "description": "Other tabs section"
+  },
+  "modFieldsFieldSalesAuditorOptional": {
+    "message": "Auditor field is optional for Field Sales Beat events.",
+    "description": "Other tabs section"
+  },
+  "modFieldsFieldSalesReviewerOptional": {
+    "message": "Reviewer field is optional for Field Sales Beat events.",
+    "description": "Other tabs section"
+  },
+  "modFieldsFieldSalesCorrectiveOwnerOptional": {
+    "message": "Corrective Owner field is optional for Field Sales Beat events.",
+    "description": "Other tabs section"
+  },
+  "modFieldsGeoRulesTitle": {
+    "message": "Geo Rules",
+    "description": "Other tabs section"
+  },
+  "modFieldsGeoRulesDesc": {
+    "message": "Configure geo requirements per event type. This controls whether geo tracking is required, not geo tracking execution.",
+    "description": "Other tabs section"
+  },
+  "modFieldsGeoRulesImportant": {
+    "message": "These settings configure geo requirements (whether geo tracking must be enabled), not geo tracking execution. Geo tracking execution (GPS capture, radius validation) belongs in Work interfaces.",
+    "description": "Other tabs section"
+  },
+  "modFieldsGeoRequiredAudit": {
+    "message": "Geo is always required for audit events and cannot be disabled.",
+    "description": "Other tabs section"
+  },
+  "modFieldsGeoConfigurable": {
+    "message": "Geo requirement can be configured for this event type.",
+    "description": "Other tabs section"
+  },
+  "modFieldsFormLinkingRulesTitle": {
+    "message": "Form Linking Rules",
+    "description": "Other tabs section"
+  },
+  "modFieldsFormLinkingRulesDesc": {
+    "message": "Configure form linking eligibility per event type. This controls whether forms can be linked, not form assignment or execution.",
+    "description": "Other tabs section"
+  },
+  "modFieldsFormLinkingImportant": {
+    "message": "These settings configure form linking eligibility (whether forms can be linked to events), not form assignment or execution. Form assignment and execution belong in Work interfaces.",
+    "description": "Other tabs section"
+  },
+  "modFieldsAllowLinkingForms": {
+    "message": "Allow Linking Forms",
+    "description": "Other tabs section"
+  },
+  "modFieldsAlwaysAllowed": {
+    "message": "Always Allowed",
+    "description": "Other tabs section"
+  },
+  "modFieldsFormsAlwaysLinkedAudit": {
+    "message": "Forms can always be linked to audit events.",
+    "description": "Other tabs section"
+  },
+  "modFieldsEnableFormLinking": {
+    "message": "Enable or disable form linking for this event type.",
+    "description": "Other tabs section"
+  },
+  "modFieldsRequireFormOnCreation": {
+    "message": "Require Form on Creation",
+    "description": "Other tabs section"
+  },
+  "modFieldsRequireFormOnCreationDesc": {
+    "message": "Require a form to be linked when creating audit events of this type.",
+    "description": "Other tabs section"
+  },
+  "modFieldsPreventUnlinkingAfterStart": {
+    "message": "Prevent Unlinking After Start",
+    "description": "Other tabs section"
+  },
+  "modFieldsPreventUnlinkingAfterStartDesc": {
+    "message": "Prevent unlinking forms from events that have been started (checked in).",
+    "description": "Other tabs section"
+  },
+  "modFieldsLogicRulesDesc": {
+    "message": "Configure form behavior, scoring, and automation rules. Form content is edited in the Form Builder.",
+    "description": "Other tabs section"
+  },
+  "modFieldsCapBehaviorRules": {
+    "message": "✓ Behavior Rules Configurable",
+    "description": "Other tabs section"
+  },
+  "modFieldsCapBehaviorRulesHint": {
+    "message": "Configure auto-assignment and workflow triggers",
+    "description": "Other tabs section"
+  },
+  "modFieldsCapScoringLocked": {
+    "message": "🔒 Scoring Weights Locked",
+    "description": "Other tabs section"
+  },
+  "modFieldsCapScoringLockedHint": {
+    "message": "Managed in Form Builder",
+    "description": "Other tabs section"
+  },
+  "modFieldsCapQuestionLogicLocked": {
+    "message": "🔒 Question Logic Locked",
+    "description": "Other tabs section"
+  },
+  "modFieldsCapQuestionLogicLockedHint": {
+    "message": "Managed in Form Builder",
+    "description": "Other tabs section"
+  },
+  "modFieldsSourceSettings": {
+    "message": "Settings",
+    "description": "Other tabs section"
+  },
+  "modFieldsSourceBuilder": {
+    "message": "Builder",
+    "description": "Other tabs section"
+  },
+  "modFieldsSourceExecution": {
+    "message": "Execution",
+    "description": "Other tabs section"
+  },
+  "modFieldsOutcomesDesc": {
+    "message": "Configure form outcomes, reporting metrics, and post-submission signals. Form content is edited in the Form Builder.",
+    "description": "Other tabs section"
+  },
+  "modFieldsCapOutcomes": {
+    "message": "✓ Outcomes Configurable",
+    "description": "Other tabs section"
+  },
+  "modFieldsCapOutcomesHint": {
+    "message": "Configure audit rules, reporting metrics, and signals",
+    "description": "Other tabs section"
+  },
+  "modFieldsCapExecutionLocked": {
+    "message": "🔒 Execution Behavior Locked",
+    "description": "Other tabs section"
+  },
+  "modFieldsCapExecutionLockedHint": {
+    "message": "Managed in Event Execution / Work interfaces",
+    "description": "Other tabs section"
+  },
+  "modFieldsCapWorkflowLocked": {
+    "message": "🔒 Workflow Execution Locked",
+    "description": "Other tabs section"
+  },
+  "modFieldsCapWorkflowLockedHint": {
+    "message": "Managed in Audit Workflow / Work components",
+    "description": "Other tabs section"
+  },
+  "modFieldsAccessDesc": {
+    "message": "Configure form access, public links, and approval workflows. Form content is edited in the Form Builder.",
+    "description": "Other tabs section"
+  },
+  "modFieldsCapAccess": {
+    "message": "✓ Access Configurable",
+    "description": "Other tabs section"
+  },
+  "modFieldsCapAccessHint": {
+    "message": "Configure public links and approval workflows",
+    "description": "Other tabs section"
+  },
+  "modFieldsCapAuditWorkflowLocked": {
+    "message": "🔒 Audit Workflow Locked",
+    "description": "Other tabs section"
+  },
+  "modFieldsCapAuditWorkflowLockedHint": {
+    "message": "Audit workflow rules are owned by Audit App",
+    "description": "Other tabs section"
+  },
+  "modFieldsRelationshipsIntro": {
+    "message": "Define relationships between this module and other modules. Relationships enable data linking and cross-module references.",
+    "description": "Other tabs section"
+  },
+  "modFieldsAddRelationship": {
+    "message": "Add relationship",
+    "description": "Other tabs section"
+  },
+  "modFieldsFormRelationships": {
+    "message": "Form Relationships",
+    "description": "Other tabs section"
+  },
+  "modFieldsNoRelationships": {
+    "message": "No relationships defined",
+    "description": "Other tabs section"
+  },
+  "modFieldsNoRelationshipsHint": {
+    "message": "Link this module to others (e.g. Deals → Organizations). Use the button above to add one.",
+    "description": "Other tabs section"
+  },
+  "modFieldsRelationshipFallback": {
+    "message": "Relationship {index}",
+    "description": "Other tabs section"
+  },
+  "modFieldsThisModule": {
+    "message": "This module",
+    "description": "Other tabs section"
+  },
+  "modFieldsTitleEditRelationship": {
+    "message": "Edit relationship",
+    "description": "Other tabs section"
+  },
+  "modFieldsTitleRemoveRelationship": {
+    "message": "Remove relationship",
+    "description": "Other tabs section"
+  },
+  "modFieldsPipelinesTitle": {
+    "message": "Pipelines",
+    "description": "Other tabs section"
+  },
+  "modFieldsNoPipelinesYet": {
+    "message": "No pipelines yet.",
+    "description": "Other tabs section"
+  },
+  "modFieldsSelectPipeline": {
+    "message": "Select a pipeline",
+    "description": "Other tabs section"
+  },
+  "modFieldsStageCount": {
+    "message": "{count, plural, one {# stage} other {# stages}}",
+    "description": "Other tabs section"
+  },
+  "modFieldsDefaultPipeline": {
+    "message": "Default pipeline",
+    "description": "Other tabs section"
+  },
+  "modFieldsCustomPipeline": {
+    "message": "Custom pipeline",
+    "description": "Other tabs section"
+  },
+  "modFieldsDefaultLabel": {
+    "message": "Default",
+    "description": "Other tabs section"
+  },
+  "modFieldsTitleMoveUp": {
+    "message": "Move up",
+    "description": "Other tabs section"
+  },
+  "modFieldsTitleMoveDown": {
+    "message": "Move down",
+    "description": "Other tabs section"
+  },
+  "modFieldsTitleRemovePipeline": {
+    "message": "Remove pipeline",
+    "description": "Other tabs section"
+  },
+  "modFieldsSavePipelines": {
+    "message": "Save Pipelines",
+    "description": "Other tabs section"
+  },
+  "modFieldsPipelineName": {
+    "message": "Pipeline Name",
+    "description": "Other tabs section"
+  },
+  "modFieldsColorUsedInUi": {
+    "message": "Used for visual indicators in the UI.",
+    "description": "Other tabs section"
+  },
+  "modFieldsSetAsDefault": {
+    "message": "Set as default",
+    "description": "Other tabs section"
+  },
+  "modFieldsStagesTitle": {
+    "message": "Stages",
+    "description": "Other tabs section"
+  },
+  "modFieldsStagesDesc": {
+    "message": "Configure the stages available in this pipeline.",
+    "description": "Other tabs section"
+  },
+  "modFieldsAddStage": {
+    "message": "Add Stage",
+    "description": "Other tabs section"
+  },
+  "modFieldsStageNumber": {
+    "message": "Stage {number}",
+    "description": "Other tabs section"
+  },
+  "modFieldsTitleRemoveStage": {
+    "message": "Remove stage",
+    "description": "Other tabs section"
+  },
+  "modFieldsTitleStageColor": {
+    "message": "Stage color",
+    "description": "Other tabs section"
+  },
+  "modFieldsStageName": {
+    "message": "Stage Name",
+    "description": "Other tabs section"
+  },
+  "modFieldsStageLabelFallback": {
+    "message": "Stage",
+    "description": "Other tabs section"
+  },
+  "modFieldsProbabilityPercent": {
+    "message": "Probability (%)",
+    "description": "Other tabs section"
+  },
+  "modFieldsDropStageEnd": {
+    "message": "Drop here to move stage to the end",
+    "description": "Other tabs section"
+  },
+  "modFieldsNoPipelineSelected": {
+    "message": "No pipeline selected.",
+    "description": "Other tabs section"
+  },
+  "modFieldsCreatePipeline": {
+    "message": "Create Pipeline",
+    "description": "Other tabs section"
+  },
+  "modFieldsSelectPipelineToEdit": {
+    "message": "Select a pipeline on the left to edit its details.",
+    "description": "Other tabs section"
+  },
+  "modFieldsStagePlaybooksTitle": {
+    "message": "Stage Playbooks",
+    "description": "Other tabs section"
+  },
+  "modFieldsStagePlaybooksDesc": {
+    "message": "Define guidance and automation for each stage in this pipeline.",
+    "description": "Other tabs section"
+  },
+  "modFieldsEnable": {
+    "message": "Enable",
+    "description": "Other tabs section"
+  },
+  "modFieldsStageSettings": {
+    "message": "Stage settings",
+    "description": "Other tabs section"
+  },
+  "modFieldsPlaybookMode": {
+    "message": "Playbook Mode",
+    "description": "Other tabs section"
+  },
+  "modFieldsExitCriteria": {
+    "message": "Exit Criteria",
+    "description": "Other tabs section"
+  },
+  "modFieldsAutoMoveNextStage": {
+    "message": "Auto-move to next stage when criteria met",
+    "description": "Other tabs section"
+  },
+  "modFieldsAutoMoveNextStageHint": {
+    "message": "Automatically progress when conditions are satisfied.",
+    "description": "Other tabs section"
+  },
+  "modFieldsNextStage": {
+    "message": "Next Stage",
+    "description": "Other tabs section"
+  },
+  "modFieldsSelectStagePh": {
+    "message": "Select stage...",
+    "description": "Other tabs section"
+  },
+  "modFieldsCustomTriggerDesc": {
+    "message": "Custom Trigger Description",
+    "description": "Other tabs section"
+  },
+  "modFieldsInternalNotesOptional": {
+    "message": "Internal Notes (optional)",
+    "description": "Other tabs section"
+  },
+  "modFieldsInternalNotesPh": {
+    "message": "Provide additional guidance for your team",
+    "description": "Other tabs section"
+  },
+  "modFieldsActivitiesTitle": {
+    "message": "Activities",
+    "description": "Other tabs section"
+  },
+  "modFieldsActivitiesDesc": {
+    "message": "Add and orchestrate the work your team completes in this stage.",
+    "description": "Other tabs section"
+  },
+  "modFieldsAddActivity": {
+    "message": "Add Activity",
+    "description": "Other tabs section"
+  },
+  "modFieldsEnablePlaybookForStage": {
+    "message": "Enable this playbook to manage activities for the stage.",
+    "description": "Other tabs section"
+  },
+  "modFieldsNoActivitiesYet": {
+    "message": "No activities yet. Click \"Add Activity\" to build a guided checklist.",
+    "description": "Other tabs section"
+  },
+  "modFieldsActionFallback": {
+    "message": "Action {index}",
+    "description": "Other tabs section"
+  },
+  "modFieldsDueInDays": {
+    "message": "Due in {days} day",
+    "description": "Other tabs section"
+  },
+  "modFieldsDueInDaysPlural": {
+    "message": "Due in {days} days",
+    "description": "Other tabs section"
+  },
+  "modFieldsTitleRemoveActivity": {
+    "message": "Remove activity",
+    "description": "Other tabs section"
+  },
+  "modFieldsAutoCreate": {
+    "message": "Auto-create",
+    "description": "Other tabs section"
+  },
+  "modFieldsDependencyCount": {
+    "message": "{count} dependency",
+    "description": "Other tabs section"
+  },
+  "modFieldsDependenciesCount": {
+    "message": "{count} dependencies",
+    "description": "Other tabs section"
+  },
+  "modFieldsAssignedTo": {
+    "message": "Assigned to {label}",
+    "description": "Other tabs section"
+  },
+  "modFieldsSelectPipelinePlaybooks": {
+    "message": "Select a pipeline on the left to configure playbooks.",
+    "description": "Other tabs section"
+  },
+  "modFieldsQuickCreateMode": {
+    "message": "Quick Create Mode",
+    "description": "Other tabs section"
+  },
+  "modFieldsQuickModeSimple": {
+    "message": "Simple",
+    "description": "Other tabs section"
+  },
+  "modFieldsQuickModeAdvanced": {
+    "message": "Advanced",
+    "description": "Other tabs section"
+  },
+  "modFieldsFieldPalette": {
+    "message": "Field Palette",
+    "description": "Other tabs section"
+  },
+  "modFieldsNoQuickCreateFields": {
+    "message": "No eligible fields available for Quick Create.",
+    "description": "Other tabs section"
+  },
+  "modFieldsGroupCoreBusinessFields": {
+    "message": "Core Business Fields",
+    "description": "Other tabs section"
+  },
+  "modFieldsGroupCoreTaskFields": {
+    "message": "Core Task Fields",
+    "description": "Other tabs section"
+  },
+  "modFieldsGroupCoreEventFields": {
+    "message": "Core Event Fields",
+    "description": "Other tabs section"
+  },
+  "modFieldsOrgsQuickCreateHint": {
+    "message": "Organizations require only a name to be created. Additional details can be added later from context.",
+    "description": "Other tabs section"
+  },
+  "modFieldsTasksQuickCreateHint": {
+    "message": "Quick Create is for fast task capture. Only essential fields appear. Detailed configuration happens later.",
+    "description": "Other tabs section"
+  },
+  "modFieldsEventsQuickCreateHint": {
+    "message": "Select non-system event fields to include in Quick Create. Fields are grouped by ownership (core, participation, custom) to match field configuration.",
+    "description": "Other tabs section"
+  },
+  "modFieldsNoQuickCreateFieldsGeneric": {
+    "message": "No fields available for Quick Create.",
+    "description": "Other tabs section"
+  },
+  "modFieldsQuickCreatePeopleHint": {
+    "message": "Select core identity fields to include in Quick Create.",
+    "description": "Other tabs section"
+  },
+  "modFieldsQuickCreateOrgsFooter": {
+    "message": "Organizations require only a name to be created. Additional details can be added later from context. Only core business fields (name, industry, website, phone, address, types) are eligible.",
+    "description": "Other tabs section"
+  },
+  "modFieldsQuickCreateTasksFooter": {
+    "message": "Quick Create is for fast task capture. Only essential fields (title, dueDate, priority, assignedTo, relatedTo) are eligible. Detailed configuration happens later.",
+    "description": "Other tabs section"
+  },
+  "modFieldsQuickCreateEventsFooter": {
+    "message": "Select non-system event fields to include in Quick Create. Fields are grouped by ownership (core, participation, custom).",
+    "description": "Other tabs section"
+  },
+  "modFieldsQuickCreateGenericFooter": {
+    "message": "Select fields to include in Quick Create.",
+    "description": "Other tabs section"
+  },
+  "modFieldsSelectedFieldsOrdered": {
+    "message": "Selected Fields (ordered)",
+    "description": "Other tabs section"
+  },
+  "modFieldsNoFieldsSelected": {
+    "message": "No fields selected.",
+    "description": "Other tabs section"
+  },
+  "modFieldsTitleRequiredFieldIncluded": {
+    "message": "Required field is always included",
+    "description": "Other tabs section"
+  },
+  "modFieldsTitleNameRequired": {
+    "message": "Name is required and cannot be removed",
+    "description": "Other tabs section"
+  },
+  "modFieldsTitleTitleRequired": {
+    "message": "Title is required and cannot be removed",
+    "description": "Other tabs section"
+  },
+  "modFieldsTitleEventNameRequired": {
+    "message": "Event Name is required and cannot be removed",
+    "description": "Other tabs section"
+  },
+  "modFieldsVisualBuilder": {
+    "message": "Visual Builder (Rows / Columns)",
+    "description": "Other tabs section"
+  },
+  "modFieldsAddRow": {
+    "message": "Add Row",
+    "description": "Other tabs section"
+  },
+  "modFieldsNoRowsYet": {
+    "message": "No rows yet. Add a row to start.",
+    "description": "Other tabs section"
+  },
+  "modFieldsRowNumber": {
+    "message": "Row {number}",
+    "description": "Other tabs section"
+  },
+  "modFieldsAddColumn": {
+    "message": "Add Column",
+    "description": "Other tabs section"
+  },
+  "modFieldsRemoveRow": {
+    "message": "Remove Row",
+    "description": "Other tabs section"
+  },
+  "modFieldsSpan": {
+    "message": "Span",
+    "description": "Other tabs section"
+  },
+  "modFieldsWidgetInput": {
+    "message": "Input",
+    "description": "Other tabs section"
+  },
+  "modFieldsWidgetTextarea": {
+    "message": "Textarea",
+    "description": "Other tabs section"
+  },
+  "modFieldsWidgetSelect": {
+    "message": "Select",
+    "description": "Other tabs section"
+  },
+  "modFieldsWidgetDate": {
+    "message": "Date",
+    "description": "Other tabs section"
+  },
+  "modFieldsWidgetNumber": {
+    "message": "Number",
+    "description": "Other tabs section"
+  },
+  "modFieldsPlaceholderGeneric": {
+    "message": "Placeholder",
+    "description": "Other tabs section"
+  },
+  "modFieldsDropFieldHere": {
+    "message": "Drop field here",
+    "description": "Other tabs section"
+  },
+  "modFieldsProbabilityStatus": {
+    "message": "Probability: {probability}% · Status: {status}",
+    "description": "Other tabs section"
+  },
+  "modFieldsGroupParticipation": {
+    "message": "Participation",
+    "description": "Other tabs section"
+  }
+}

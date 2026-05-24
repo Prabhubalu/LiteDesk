@@ -26,12 +26,12 @@
     <!-- List View -->
     <ListView
       v-else
-      :title="listDefinition.title"
+      :title="listPageTitle"
       :description="listDefinition.description"
       :module-key="listDefinition.moduleKey"
       :view-mode="viewMode"
-      :create-label="getCreateLabel()"
-      :search-placeholder="`Search ${listDefinition.title.toLowerCase()}...`"
+      :create-label="listCreateLabel"
+      :search-placeholder="listSearchPlaceholder"
       :data="data"
       :columns="adaptedColumns"
       :loading="dataLoading"
@@ -39,8 +39,8 @@
       infinite-scroll
       :selection-column-variant="selectionColumnVariant"
       :statistics="statistics"
-      :stats-config="statsConfig"
-      :saved-views="savedViews"
+      :stats-config="localizedStatsConfig"
+      :saved-views="displaySavedViews"
       :active-saved-view-id="activeSavedViewId"
       :default-view-id="defaultViewId"
       :sort-field="sortField"
@@ -51,8 +51,8 @@
       :boost-visible-column-keys="boostVisibleColumnKeys"
       :table-id="`${listDefinition.moduleKey}-table`"
       row-key="_id"
-      :empty-title="listDefinition.emptyState?.title || `No ${listDefinition.title.toLowerCase()} yet`"
-      :empty-message="listDefinition.emptyState?.description || `${listDefinition.title} will appear here as you add them.`"
+      :empty-title="listEmptyTitle"
+      :empty-message="listEmptyMessage"
       @create="handleCreate"
       @import="handleImport"
       @export="handleExport"
@@ -84,16 +84,26 @@
   <!-- Error State -->
   <div v-else class="flex items-center justify-center min-h-[60vh]">
     <div class="text-center">
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">List Not Found</h2>
-      <p class="text-gray-600 dark:text-gray-400">
-        The list for this module is not available.
-      </p>
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ t('common.moduleListListNotFound') }}</h2>
+      <p class="text-gray-600 dark:text-gray-400">{{ t('common.moduleListTheListForThisModuleIs') }}</p>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch, nextTick, useAttrs } from 'vue';
+import { useI18n } from 'vue-i18n';
+import {
+  resolveListColumnLabel,
+  resolveListCreateLabel,
+  resolveListFilterLabel,
+  resolveListPageTitle,
+  resolveListSearchPlaceholder,
+  resolveListStatLabel,
+  resolveListViewLabel,
+  resolveModuleDisplayLabel,
+  isRegistrySystemView,
+} from '@/utils/moduleListLabels';
 import ListPageSkeleton from '@/components/common/ListPageSkeleton.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -148,7 +158,8 @@ const props = defineProps({
     default: 'ALL',
     validator: (v) => !v || v === 'ALL' || v === 'SALES' || v === 'HELPDESK'
   },
-  /** Passed to ListView/TableView: 'numbered-hover' shows row # until hover (desktop); 'checkbox' always shows boxes */
+  /** Passed to ListView/TableView: 'numbered-hover' shows row # until hover (desktop);
+   *  'checkbox' always shows boxes */
   selectionColumnVariant: {
     type: String,
     default: 'numbered-hover',
@@ -163,6 +174,7 @@ const router = useRouter();
 const attrs = useAttrs();
 const authStore = useAuthStore();
 const { openTab } = useTabs();
+const { t, te } = useI18n();
 
 const loading = ref(true);
 const dataLoading = ref(false);
@@ -401,12 +413,57 @@ const adaptedColumns = computed(() => {
   
   return listDefinition.value.columns.map(col => ({
     key: col.key,
-    label: col.label,
+    label: resolveListColumnLabel(props.moduleKey, col.key, col.label, t, te),
     sortable: col.sortable ?? false,
     sortKey: col.fieldPath || col.key,
     dataType: col.dataType
   }));
 });
+
+const listPageTitle = computed(() => resolveListPageTitle(props.moduleKey, t, te));
+
+const moduleLabel = computed(() => resolveModuleDisplayLabel(props.moduleKey, t, te));
+const moduleLabelLower = computed(() => moduleLabel.value.toLowerCase());
+
+const listEmptyTitle = computed(() => {
+  const es = listDefinition.value?.emptyState;
+  if (!es || es.type === EmptyStateType.NO_DATA) {
+    return t('common.listEmptyNoModuleYet', { module: moduleLabelLower.value });
+  }
+  return es.title;
+});
+
+const listEmptyMessage = computed(() => {
+  const es = listDefinition.value?.emptyState;
+  if (!es || es.type === EmptyStateType.NO_DATA) {
+    return t('common.listEmptyModuleWillAppear', { module: moduleLabel.value });
+  }
+  return es.description || t('common.listEmptyMessage');
+});
+
+const listSearchPlaceholder = computed(() => resolveListSearchPlaceholder(props.moduleKey, t, te));
+
+const listCreateLabel = computed(() => {
+  const createAction = listDefinition.value?.primaryActions?.find(a => a.type === 'create');
+  const fallback = createAction?.label || `New ${listDefinition.value?.title || 'Item'}`;
+  return resolveListCreateLabel(props.moduleKey, fallback, t, te);
+});
+
+const localizedStatsConfig = computed(() =>
+  statsConfig.value.map((stat) => ({
+    ...stat,
+    name: resolveListStatLabel(props.moduleKey, stat.key, stat.name, t, te),
+  }))
+);
+
+const displaySavedViews = computed(() =>
+  savedViews.value.map((view) => ({
+    ...view,
+    label: isRegistrySystemView(props.moduleKey, view.id)
+      ? resolveListViewLabel(props.moduleKey, view.id, view.label, t, te)
+      : view.label,
+  }))
+);
 
 const boostVisibleColumnKeys = computed(() => {
   if (props.moduleKey !== 'events') return [];
@@ -841,10 +898,16 @@ const adaptedFilters = computed(() => {
           seenKeys.add(canonicalKey);
           deduped.push(filter);
         }
-        return deduped;
+        return deduped.map((filter) => ({
+          ...filter,
+          label: resolveListFilterLabel(props.moduleKey, filter.key, filter.label, t, te),
+        }));
       }
 
-      return enrichedSchemaFilters;
+      return enrichedSchemaFilters.map((filter) => ({
+        ...filter,
+        label: resolveListFilterLabel(props.moduleKey, filter.key, filter.label, t, te),
+      }));
     } catch (error) {
       console.warn('[ModuleList] Error building schema filters:', error);
       console.error('[ModuleList] Filter building error details:', error);
@@ -859,18 +922,12 @@ const adaptedFilters = computed(() => {
   
   return listDefinition.value.filters.map(filter => ({
     key: filter.key,
-    label: filter.label,
+    label: resolveListFilterLabel(props.moduleKey, filter.key, filter.label, t, te),
     options: filter.options || [],
     fieldPath: filter.fieldPath,
     filterType: filter.filterType || 'select'
   }));
 });
-
-// Get create label from primary actions
-const getCreateLabel = () => {
-  const createAction = listDefinition.value?.primaryActions?.find(a => a.type === 'create');
-  return createAction?.label || `New ${listDefinition.value?.title || 'Item'}`;
-};
 
 // Statistics computation is now handled by the registry
 

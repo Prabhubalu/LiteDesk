@@ -1,8 +1,8 @@
 <template>
   <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
     <div class="mb-3 flex items-center justify-between">
-      <h2 class="text-sm font-semibold text-slate-900 dark:text-white">AI Insights</h2>
-      <span class="text-[11px] text-slate-500 dark:text-slate-400">Generated just now</span>
+      <h2 class="text-sm font-semibold text-slate-900 dark:text-white">{{ t('dashboard.aiInsightsStripAiInsights') }}</h2>
+      <span class="text-[11px] text-slate-500 dark:text-slate-400">{{ t('dashboard.aiInsightsStripGeneratedJustNow') }}</span>
     </div>
     <div class="grid grid-cols-1 gap-2 md:grid-cols-4">
       <article
@@ -24,12 +24,15 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 defineProps({
   cards: {
     type: Array,
     default: () => []
   }
 });
+
+const { t } = useI18n();
 
 const cardClass = (idx) => [
   'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200',

@@ -1,11 +1,22 @@
 <template>
   <div class="space-y-6 pb-24">
-    <div>
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Automation</h2>
-      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        Assignment rules resolve ownership: group routing first, then user distribution. Rules run in order; the first match wins.
-        When automation assigns or reassigns someone, they get the same notification path as a manual assignment (system rules and user notification rules), including for delayed and scheduled runs once they apply.
-      </p>
+    <div class="flex items-start gap-3">
+      <button
+        type="button"
+        class="mt-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+        :title="t('settings.assignRulesBackTitle')"
+        @click="goBackToAutomation"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+      </button>
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.automationAssignmentRules') }}</h2>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          {{ t('settings.assignRulesSubtitle') }}
+        </p>
+      </div>
     </div>
 
     <div class="bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900 rounded-xl p-4">
@@ -14,12 +25,12 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <div class="text-sm text-indigo-900 dark:text-indigo-100 space-y-2">
-          <p class="font-medium">Scoped by application and module</p>
+          <p class="font-medium">{{ t('settings.assignRulesInfoTitle') }}</p>
           <p class="text-indigo-800/90 dark:text-indigo-200/90">
-            Each combination stores its own ordered rule list. Simulation mode is safe for testing; turn it off only when execution is wired for that module.
+            {{ t('settings.assignRulesInfoBody1') }}
           </p>
           <p class="text-indigo-800/90 dark:text-indigo-200/90">
-            Delayed and scheduled rules are processed by the server assignment scheduler (typically every minute). If jobs never run, ask your administrator to enable <span class="font-mono text-xs">ENABLE_ASSIGNMENT_SCHEDULER</span> in the deployment environment.
+            {{ t('settings.assignRulesInfoBody2Before') }}<span class="font-mono text-xs">{{ assignmentSchedulerEnvVar }}</span>{{ t('settings.assignRulesInfoBody2After') }}
           </p>
         </div>
       </div>
@@ -29,7 +40,7 @@
     <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 flex flex-col lg:flex-row lg:items-end gap-4">
       <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Application</label>
+          <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.assignRulesLabelApplication') }}</label>
           <select
             v-model="scopeApp"
             class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -38,7 +49,7 @@
           </select>
         </div>
         <div>
-          <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Module</label>
+          <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.assignRulesLabelModule') }}</label>
           <select
             v-model="scopeModule"
             class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -53,7 +64,7 @@
         :disabled="loading"
         @click="loadRuleSet"
       >
-        Refresh
+        {{ t('actions.refresh') }}
       </button>
     </div>
 
@@ -69,36 +80,34 @@
       <!-- Rule set controls -->
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Rule set</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.assignRulesRuleSetTitle') }}</h3>
           <div class="flex flex-wrap items-center gap-3">
             <label
               class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-help"
-              title="When off, this rule set is not used for live or scheduled assignment for this app and module."
+              :title="t('settings.assignRulesEnabledTitle')"
             >
               <input v-model="meta.enabled" type="checkbox" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-              Enabled
+              {{ t('settings.assignRulesEnabled') }}
             </label>
             <label
               class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-help"
-              title="Evaluates rules without changing owners. Delayed and scheduled jobs will skip with ruleset_simulation_only until you turn this off."
+              :title="t('settings.assignRulesSimulationTitle')"
             >
               <input v-model="meta.simulationOnly" type="checkbox" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-              Simulation only
+              {{ t('settings.assignRulesSimulationOnly') }}
             </label>
           </div>
         </div>
         <p v-if="!meta.simulationOnly" class="text-sm text-amber-800 dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-lg px-3 py-2">
-          Live assignment may run for this module when records are created or updated. Confirm execution is enabled server-side for this scope before disabling simulation.
+          {{ t('settings.assignRulesLiveWarning') }}
         </p>
         <div>
-          <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">When rules change</label>
+          <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.assignRulesWhenRulesChange') }}</label>
           <select
             v-model="meta.applyStrategy"
             class="w-full max-w-md px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           >
-            <option value="new_records_only">Apply to new records only</option>
-            <option value="manual_re_evaluation">Allow manual re-evaluation of open records</option>
-            <option value="freeze_mode">Freeze existing assignments</option>
+            <option v-for="opt in applyStrategyOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
           </select>
         </div>
       </div>
@@ -106,7 +115,7 @@
       <!-- Rules -->
       <div class="space-y-3">
         <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Rules</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.assignRulesRulesTitle') }}</h3>
           <button
             type="button"
             class="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
@@ -115,14 +124,14 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
-            Add rule
+            {{ t('settings.assignRulesAddRule') }}
           </button>
         </div>
 
         <p v-if="rules.length === 0" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center border border-dashed border-gray-300 dark:border-gray-600 rounded-xl px-4">
-          No rules yet. Add a rule to define routing for this module.
+          {{ t('settings.assignRulesEmpty') }}
           <span class="block mt-2 text-xs text-gray-400 dark:text-gray-500">
-            After you save live rules (simulation off), matching records can notify new owners the same way as manual assignment.
+            {{ t('settings.assignRulesEmptyHint') }}
           </span>
         </p>
 
@@ -141,25 +150,25 @@
             >
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
-            <span class="font-medium text-gray-900 dark:text-white truncate">{{ rule.name || 'Untitled rule' }}</span>
+            <span class="font-medium text-gray-900 dark:text-white truncate">{{ rule.name || t('settings.assignRulesUntitled') }}</span>
             <span class="text-xs text-gray-500 dark:text-gray-400">#{{ rule.order }}</span>
-            <span v-if="!rule.enabled" class="text-xs px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200">Off</span>
+            <span v-if="!rule.enabled" class="text-xs px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200">{{ t('settings.assignRulesOff') }}</span>
             <span class="ml-auto text-xs text-gray-400">{{ triggerLabel(rule.triggerType) }}</span>
           </button>
           <div v-show="expanded[rule.ruleId]" class="border-t border-gray-200 dark:border-gray-700 p-4 space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Name</label>
+                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.assignRulesLabelName') }}</label>
                 <input v-model="rule.name" type="text" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
               </div>
               <div class="flex items-end gap-4">
                 <div class="flex-1">
-                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Order</label>
+                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.assignRulesLabelOrder') }}</label>
                   <input v-model.number="rule.order" type="number" min="0" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
                 </div>
                 <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 pb-2">
                   <input v-model="rule.enabled" type="checkbox" class="rounded border-gray-300 text-indigo-600" />
-                  Enabled
+                  {{ t('settings.assignRulesEnabled') }}
                 </label>
               </div>
             </div>
@@ -167,73 +176,69 @@
             <div>
               <label
                 class="block text-xs text-gray-500 dark:text-gray-400 mb-1 cursor-help"
-                title="Immediate runs when records are created or updated. Delayed waits then assigns. Scheduled runs on a calendar or cron."
-              >Trigger</label>
+                :title="t('settings.assignRulesTriggerTitle')"
+              >{{ t('settings.assignRulesTrigger') }}</label>
               <select v-model="rule.triggerType" class="w-full max-w-md px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                <option value="immediate">Immediate</option>
-                <option value="delayed">Delayed</option>
-                <option value="scheduled">Scheduled</option>
+                <option v-for="opt in triggerTypeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
               </select>
             </div>
 
             <div v-if="rule.triggerType === 'delayed'" class="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 rounded-lg bg-gray-50 dark:bg-gray-900/40">
               <div>
-                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Delay (minutes)</label>
+                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.assignRulesDelayMinutes') }}</label>
                 <input v-model.number="rule.triggerConfig.delayMinutes" type="number" min="1" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700" />
               </div>
               <label
                 class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 mt-6 cursor-help"
-                title="When the delayed job runs, conditions must still match. If they do not, the job is skipped (rule_no_longer_matches) and no assignment occurs."
+                :title="t('settings.assignRulesDelayedRecheckTitle')"
               >
                 <input v-model="rule.triggerConfig.recheckConditionsAtExecution" type="checkbox" class="rounded border-gray-300 text-indigo-600" />
-                Re-check conditions before assign
+                {{ t('settings.assignRulesRecheckBeforeAssign') }}
               </label>
             </div>
 
             <div v-if="rule.triggerType === 'scheduled'" class="space-y-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-900/40">
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Schedule type</label>
+                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.assignRulesScheduleType') }}</label>
                   <select v-model="rule.triggerConfig.scheduleType" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
-                    <option value="one_time">One-time</option>
-                    <option value="recurring">Recurring</option>
+                    <option v-for="opt in scheduleTypeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                   </select>
                 </div>
                 <div>
-                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Frequency</label>
+                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.assignRulesFrequency') }}</label>
                   <select v-model="rule.triggerConfig.frequency" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="custom">Custom (cron)</option>
+                    <option v-for="opt in frequencyOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                   </select>
                 </div>
                 <div>
-                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Cron expression</label>
-                  <input v-model.trim="rule.triggerConfig.cron" type="text" placeholder="0 10 * * *" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 font-mono" />
+                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.assignRulesCron') }}</label>
+                  <input v-model.trim="rule.triggerConfig.cron" type="text" :placeholder="t('settings.assignRulesCronPh')" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 font-mono" />
                 </div>
               </div>
               <label
                 class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-help"
-                title="When the schedule fires, conditions must still match. If they do not, the run is skipped without changing the owner."
+                :title="t('settings.assignRulesScheduledRecheckTitle')"
               >
                 <input v-model="rule.triggerConfig.recheckConditionsAtExecution" type="checkbox" class="rounded border-gray-300 text-indigo-600" />
-                Re-check conditions at run time
+                {{ t('settings.assignRulesRecheckAtRun') }}
               </label>
             </div>
 
             <!-- Conditions -->
             <div>
               <div class="flex items-center justify-between mb-2">
-                <label class="text-xs font-medium text-gray-500 dark:text-gray-400">Conditions</label>
-                <button type="button" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline" @click="addClause(rule)">Add clause</button>
+                <label class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ t('settings.assignRulesConditions') }}</label>
+                <button type="button" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline" @click="addClause(rule)">{{ t('settings.assignRulesAddClause') }}</button>
               </div>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Empty list matches all records. Field list matches this module; choose Custom path for nested keys (for example <span class="font-mono">customFields.myKey</span>).</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                {{ t('settings.assignRulesConditionsHintBefore') }}<span class="font-mono">{{ customFieldsPathExample }}</span>{{ t('settings.assignRulesConditionsHintAfter') }}
+              </p>
               <div class="space-y-2">
                 <div class="flex items-center gap-2 mb-2">
-                  <span class="text-xs text-gray-500">Match</span>
+                  <span class="text-xs text-gray-500">{{ t('settings.assignRulesMatch') }}</span>
                   <select v-model="rule.conditions.combinator" class="text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1">
-                    <option value="all">all</option>
-                    <option value="any">any</option>
+                    <option v-for="opt in combinatorOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                   </select>
                 </div>
                 <div
@@ -242,26 +247,26 @@
                   class="grid grid-cols-1 md:grid-cols-12 gap-2 items-end"
                 >
                   <div class="md:col-span-3 space-y-1">
-                    <label class="block text-xs text-gray-500 mb-1">Field</label>
+                    <label class="block text-xs text-gray-500 mb-1">{{ t('settings.assignRulesField') }}</label>
                     <select
                       :value="clauseFieldPresetValue(clause)"
                       class="w-full px-2 py-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"
                       @change="onClauseFieldPresetChange(clause, $event)"
                     >
-                      <option value="">Select field…</option>
+                      <option value="">{{ t('settings.assignRulesSelectField') }}</option>
                       <option v-for="opt in conditionFieldOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-                      <option value="__custom__">Custom path…</option>
+                      <option value="__custom__">{{ t('settings.assignRulesCustomPath') }}</option>
                     </select>
                     <input
                       v-if="clauseFieldIsCustom(clause)"
                       v-model.trim="clause.field"
                       type="text"
-                      placeholder="e.g. customFields.region"
+                      :placeholder="t('settings.assignRulesCustomPathPh')"
                       class="w-full px-2 py-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 font-mono"
                     />
                   </div>
                   <div class="md:col-span-3">
-                    <label class="block text-xs text-gray-500 mb-1">Operator</label>
+                    <label class="block text-xs text-gray-500 mb-1">{{ t('settings.assignRulesOperator') }}</label>
                     <select
                       v-model="clause.operator"
                       class="w-full px-2 py-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"
@@ -271,16 +276,16 @@
                     </select>
                   </div>
                   <div class="md:col-span-5">
-                    <label class="block text-xs text-gray-500 mb-1">Value</label>
+                    <label class="block text-xs text-gray-500 mb-1">{{ t('settings.assignRulesValue') }}</label>
                     <template v-if="clause.operator === 'exists'">
-                      <p class="text-xs text-gray-500 dark:text-gray-400 py-2">No value (existence only)</p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400 py-2">{{ t('settings.assignRulesNoValue') }}</p>
                     </template>
                     <select
                       v-else-if="clauseValueOptionList(clause)"
                       v-model="clause.value"
                       class="w-full px-2 py-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     >
-                      <option value="">Select value…</option>
+                      <option value="">{{ t('settings.assignRulesSelectValue') }}</option>
                       <option v-for="opt in clauseValueOptionList(clause)" :key="String(opt.value)" :value="opt.value">{{ opt.label }}</option>
                     </select>
                     <input
@@ -292,7 +297,7 @@
                     />
                   </div>
                   <div class="md:col-span-1 flex justify-end">
-                    <button type="button" class="p-1.5 text-gray-400 hover:text-red-600" title="Remove" @click="removeClause(rule, cIdx)">
+                    <button type="button" class="p-1.5 text-gray-400 hover:text-red-600" :title="t('settings.assignRulesRemoveTitle')" @click="removeClause(rule, cIdx)">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
@@ -304,36 +309,32 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Primary group</label>
+                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.assignRulesPrimaryGroup') }}</label>
                 <select v-model="rule.primaryGroupId" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
-                  <option disabled value="">Select group</option>
+                  <option disabled value="">{{ t('settings.assignRulesSelectGroup') }}</option>
                   <option v-for="g in groups" :key="g._id" :value="String(g._id)">{{ g.name }}</option>
                 </select>
               </div>
               <div>
-                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Distribution</label>
+                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.assignRulesDistribution') }}</label>
                 <select v-model="rule.distribution.mode" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
-                  <option value="queue">Queue (claim)</option>
-                  <option value="round_robin">Round robin</option>
-                  <option value="weighted">Weighted</option>
-                  <option value="load_balanced">Load balanced</option>
-                  <option value="availability_based">Availability-based</option>
+                  <option v-for="opt in distributionModeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                 </select>
                 <p
                   v-if="rule.distribution.mode === 'availability_based'"
                   class="mt-1 text-xs text-gray-500 dark:text-gray-400"
                 >
-                  Only assigns users who are within business hours now; otherwise queues until the next open window.
+                  {{ t('settings.assignRulesAvailabilityHint') }}
                 </p>
               </div>
             </div>
             <div v-if="rule.distribution.mode === 'queue'" class="max-w-xs">
-              <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Claim timeout (minutes, optional)</label>
+              <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.assignRulesClaimTimeout') }}</label>
               <input v-model.number="rule.distribution.queueClaimTimeoutMinutes" type="number" min="1" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700" />
             </div>
 
             <div>
-              <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Fallback groups</label>
+              <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.assignRulesFallbackGroups') }}</label>
               <select v-model="rule.fallbackGroupIds" multiple class="w-full min-h-[88px] px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
                 <option v-for="g in groups" :key="'fb-' + g._id" :value="String(g._id)">{{ g.name }}</option>
               </select>
@@ -342,27 +343,25 @@
             <div class="p-3 rounded-lg border border-gray-200 dark:border-gray-600 space-y-3">
               <label class="inline-flex items-center gap-2 text-sm font-medium text-gray-800 dark:text-gray-200">
                 <input v-model="rule.escalation.enabled" type="checkbox" class="rounded border-gray-300 text-indigo-600" />
-                Escalation chain
+                {{ t('settings.assignRulesEscalation') }}
               </label>
               <div v-if="rule.escalation.enabled" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs text-gray-500 mb-1">Action</label>
+                  <label class="block text-xs text-gray-500 mb-1">{{ t('settings.assignRulesAction') }}</label>
                   <select v-model="rule.escalation.actionType" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
-                    <option value="reassign_group">Reassign group</option>
-                    <option value="notify_owner">Notify owner</option>
-                    <option value="notify_leadership">Notify leadership</option>
+                    <option v-for="opt in escalationActionOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                   </select>
                 </div>
                 <div>
-                  <label class="block text-xs text-gray-500 mb-1">Threshold %</label>
+                  <label class="block text-xs text-gray-500 mb-1">{{ t('settings.assignRulesThreshold') }}</label>
                   <input v-model.number="rule.escalation.thresholdPercent" type="number" min="1" max="100" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700" />
                 </div>
                 <div>
-                  <label class="block text-xs text-gray-500 mb-1">Cooldown (minutes)</label>
+                  <label class="block text-xs text-gray-500 mb-1">{{ t('settings.assignRulesCooldown') }}</label>
                   <input v-model.number="rule.escalation.cooldownMinutes" type="number" min="0" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700" />
                 </div>
                 <div class="md:col-span-2">
-                  <label class="block text-xs text-gray-500 mb-1">Chain groups</label>
+                  <label class="block text-xs text-gray-500 mb-1">{{ t('settings.assignRulesChainGroups') }}</label>
                   <select v-model="rule.escalation.chainGroupIds" multiple class="w-full min-h-[72px] px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
                     <option v-for="g in groups" :key="'ch-' + g._id" :value="String(g._id)">{{ g.name }}</option>
                   </select>
@@ -371,29 +370,27 @@
             </div>
 
             <div class="p-3 rounded-lg border border-gray-200 dark:border-gray-600 space-y-3">
-              <p class="text-sm font-medium text-gray-800 dark:text-gray-200">Reassignment</p>
+              <p class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ t('settings.assignRulesReassignment') }}</p>
               <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                 <input v-model="rule.reassignment.enabled" type="checkbox" class="rounded border-gray-300 text-indigo-600" />
-                Allow automatic reassignment when fields change
+                {{ t('settings.assignRulesAllowReassign') }}
               </label>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs text-gray-500 mb-1">On field revert</label>
+                  <label class="block text-xs text-gray-500 mb-1">{{ t('settings.assignRulesOnRevert') }}</label>
                   <select v-model="rule.reassignment.revertMode" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
-                    <option value="reapply_rules">Reapply rules</option>
-                    <option value="revert_previous_owner">Revert previous owner</option>
-                    <option value="lock_current_owner">Lock current owner</option>
+                    <option v-for="opt in revertModeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                   </select>
                 </div>
                 <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 mt-6">
                   <input v-model="rule.reassignment.lockOnManualOverride" type="checkbox" class="rounded border-gray-300 text-indigo-600" />
-                  Lock after manual override
+                  {{ t('settings.assignRulesLockManual') }}
                 </label>
               </div>
             </div>
 
             <div class="flex justify-end">
-              <button type="button" class="text-sm text-red-600 dark:text-red-400 hover:underline" @click="removeRule(idx)">Remove rule</button>
+              <button type="button" class="text-sm text-red-600 dark:text-red-400 hover:underline" @click="removeRule(idx)">{{ t('settings.assignRulesRemoveRule') }}</button>
             </div>
           </div>
         </div>
@@ -402,22 +399,22 @@
       <!-- Simulation -->
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-4">
         <div class="flex items-center justify-between gap-3">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Simulation</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.assignRulesSimulationTitle2') }}</h3>
           <button
             type="button"
             class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900 hover:opacity-90 disabled:opacity-50"
             :disabled="simulating"
             @click="runSimulation"
           >
-            {{ simulating ? 'Running…' : 'Run simulation' }}
+            {{ simulating ? t('settings.assignRulesRunning') : t('settings.assignRulesRunSimulation') }}
           </button>
         </div>
         <div>
-          <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Sample record (JSON)</label>
+          <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.assignRulesSampleRecord') }}</label>
           <textarea v-model="simulateRecordJson" rows="6" class="w-full px-3 py-2 font-mono text-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
         </div>
         <div>
-          <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Context (optional JSON)</label>
+          <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.assignRulesContextJson') }}</label>
           <textarea v-model="simulateContextJson" rows="3" class="w-full px-3 py-2 font-mono text-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
         </div>
         <div v-if="simulateError" class="text-sm text-red-600 dark:text-red-400">{{ simulateError }}</div>
@@ -436,7 +433,7 @@
         :disabled="saving || loading"
         @click="loadRuleSet"
       >
-        Reset
+        {{ t('settings.assignRulesReset') }}
       </button>
       <button
         type="button"
@@ -444,7 +441,7 @@
         :disabled="saving || loading || !isDirty"
         @click="save"
       >
-        {{ saving ? 'Saving…' : 'Save changes' }}
+        {{ saving ? t('states.saving') : t('settings.saveChanges') }}
       </button>
     </div>
   </div>
@@ -452,118 +449,118 @@
 
 <script setup>
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import apiClient from '@/utils/apiClient';
 import { usePeopleTypes } from '@/composables/usePeopleTypes';
 import { useNotifications } from '@/composables/useNotifications';
 
+const { t } = useI18n();
+/** Technical literals (not translated). */
+const assignmentSchedulerEnvVar = 'ENABLE_ASSIGNMENT_SCHEDULER';
+const customFieldsPathExample = 'customFields.myKey';
 const route = useRoute();
 const router = useRouter();
 const { success: notifySuccess } = useNotifications();
 
+const MODULE_LABEL_KEYS = {
+  cases: 'settings.assignRulesModCases',
+  people: 'settings.assignRulesModPeople',
+  organizations: 'settings.assignRulesModOrganizations',
+  deals: 'settings.assignRulesModDeals',
+  tasks: 'settings.assignRulesModTasks',
+  events: 'settings.assignRulesModEvents',
+  items: 'settings.assignRulesModItems',
+  forms: 'settings.assignRulesModForms'
+};
+
 const APP_MODULES = {
-  HELPDESK: [{ key: 'cases', label: 'Cases' }],
-  SALES: [
-    { key: 'people', label: 'People' },
-    { key: 'organizations', label: 'Organizations' },
-    { key: 'deals', label: 'Deals' },
-    { key: 'tasks', label: 'Tasks' },
-    { key: 'events', label: 'Events' },
-    { key: 'items', label: 'Items' },
-    { key: 'forms', label: 'Forms' }
-  ]
+  HELPDESK: ['cases'],
+  SALES: ['people', 'organizations', 'deals', 'tasks', 'events', 'items', 'forms']
 };
 
 /** Preset condition fields per scope (paths must match server record shape; engine supports dot paths). */
 const ASSIGNMENT_CONDITION_FIELD_OPTIONS = {
   'HELPDESK:cases': [
-    { value: 'priority', label: 'Priority' },
-    { value: 'status', label: 'Status' },
-    { value: 'caseType', label: 'Case type' },
-    { value: 'channel', label: 'Channel' },
-    { value: 'title', label: 'Title' },
-    { value: 'caseId', label: 'Case ID' },
-    { value: 'contactId', label: 'Contact ID' },
-    { value: 'organizationRefId', label: 'Organization ref ID' },
-    { value: 'caseOwnerId', label: 'Case owner ID' },
-    { value: 'source', label: 'Record source' }
+    'priority',
+    'status',
+    'caseType',
+    'channel',
+    'title',
+    'caseId',
+    'contactId',
+    'organizationRefId',
+    'caseOwnerId',
+    'source'
   ],
   'SALES:people': [
-    { value: 'assignedTo', label: 'Assigned to (user ID)' },
-    { value: 'lead_owner', label: 'Lead owner' },
-    { value: 'organization', label: 'Organization (company ID)' },
-    { value: 'derivedStatus', label: 'Derived status' },
-    { value: 'first_name', label: 'First name' },
-    { value: 'last_name', label: 'Last name' },
-    { value: 'email', label: 'Email' },
-    { value: 'type', label: 'Type / sales role' },
-    { value: 'sales_type', label: 'Sales type (alias)' },
-    { value: 'lead_status', label: 'Lead status' },
-    { value: 'contact_status', label: 'Contact status' },
-    { value: 'helpdesk_role', label: 'Helpdesk role' },
-    { value: 'role', label: 'Contact role (decision maker, …)' },
-    { value: 'preferred_contact_method', label: 'Preferred contact method' },
-    { value: 'do_not_contact', label: 'Do not contact' },
-    { value: 'tags', label: 'Tags' }
+    'assignedTo',
+    'lead_owner',
+    'organization',
+    'derivedStatus',
+    'first_name',
+    'last_name',
+    'email',
+    'type',
+    'sales_type',
+    'lead_status',
+    'contact_status',
+    'helpdesk_role',
+    'role',
+    'preferred_contact_method',
+    'do_not_contact',
+    'tags'
   ],
   'SALES:organizations': [
-    { value: 'name', label: 'Name' },
-    { value: 'assignedTo', label: 'Assigned to (user ID)' },
-    { value: 'types', label: 'Types' },
-    { value: 'customerStatus', label: 'Customer status' },
-    { value: 'partnerStatus', label: 'Partner status' },
-    { value: 'vendorStatus', label: 'Vendor status' },
-    { value: 'derivedStatus', label: 'Derived status' },
-    { value: 'territory', label: 'Territory' },
-    { value: 'industry', label: 'Industry' },
-    { value: 'accountManager', label: 'Account manager' },
-    { value: 'tags', label: 'Tags' }
+    'name',
+    'assignedTo',
+    'types',
+    'customerStatus',
+    'partnerStatus',
+    'vendorStatus',
+    'derivedStatus',
+    'territory',
+    'industry',
+    'accountManager',
+    'tags'
   ],
   'SALES:deals': [
-    { value: 'name', label: 'Deal name' },
-    { value: 'ownerId', label: 'Owner ID' },
-    { value: 'stage', label: 'Stage' },
-    { value: 'pipeline', label: 'Pipeline' },
-    { value: 'status', label: 'Status' },
-    { value: 'priority', label: 'Priority' },
-    { value: 'amount', label: 'Amount' },
-    { value: 'probability', label: 'Probability' },
-    { value: 'accountId', label: 'Account ID' },
-    { value: 'contactId', label: 'Contact ID' },
-    { value: 'type', label: 'Type' },
-    { value: 'derivedStatus', label: 'Derived status' },
-    { value: 'currency', label: 'Currency' },
-    { value: 'tags', label: 'Tags' }
+    'name',
+    'ownerId',
+    'stage',
+    'pipeline',
+    'status',
+    'priority',
+    'amount',
+    'probability',
+    'accountId',
+    'contactId',
+    'type',
+    'derivedStatus',
+    'currency',
+    'tags'
   ],
   'SALES:tasks': [
-    { value: 'title', label: 'Title' },
-    { value: 'assignedTo', label: 'Assigned to (user ID)' },
-    { value: 'status', label: 'Status' },
-    { value: 'priority', label: 'Priority' },
-    { value: 'dueDate', label: 'Due date' },
-    { value: 'projectId', label: 'Project ID' },
-    { value: 'relatedTo.type', label: 'Related record type' },
-    { value: 'tags', label: 'Tags' }
+    'title',
+    'assignedTo',
+    'status',
+    'priority',
+    'dueDate',
+    'projectId',
+    'relatedTo.type',
+    'tags'
   ],
-  'SALES:events': [
-    { value: 'title', label: 'Title' },
-    { value: 'status', label: 'Status' },
-    { value: 'name', label: 'Name' }
-  ],
-  'SALES:items': [
-    { value: 'name', label: 'Name' },
-    { value: 'status', label: 'Status' }
-  ],
-  'SALES:forms': [
-    { value: 'name', label: 'Name' },
-    { value: 'status', label: 'Status' }
-  ],
-  _fallback: [
-    { value: 'status', label: 'Status' },
-    { value: 'title', label: 'Title' },
-    { value: 'name', label: 'Name' }
-  ]
+  'SALES:events': ['title', 'status', 'name'],
+  'SALES:items': ['name', 'status'],
+  'SALES:forms': ['name', 'status'],
+  _fallback: ['status', 'title', 'name']
 };
+
+function condFieldI18nKey(value) {
+  const parts = String(value).replace(/\./g, '_').split('_').filter(Boolean);
+  const suffix = parts.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join('');
+  return `settings.assignRulesCondField${suffix}`;
+}
 
 function getConditionFieldOptions(appKey, moduleKey) {
   const key = `${String(appKey || '').toUpperCase()}:${String(moduleKey || '').toLowerCase()}`;
@@ -634,9 +631,9 @@ function getConditionValueEnumList(appKey, moduleKey, fieldPath) {
 function clauseValuePlaceholder(clause) {
   const op = String(clause?.operator || 'equals');
   if (op === 'in' || op === 'not_in') {
-    return 'JSON array, e.g. ["Low","Medium"]';
+    return t('settings.assignRulesValueArrayPh');
   }
-  return 'Value';
+  return t('settings.assignRulesValuePh');
 }
 
 function onClauseOperatorChange(clause) {
@@ -645,23 +642,71 @@ function onClauseOperatorChange(clause) {
   }
 }
 
-const appOptions = [
-  { key: 'HELPDESK', label: 'Helpdesk' },
-  { key: 'SALES', label: 'Sales' }
-];
+const appOptions = computed(() => [
+  { key: 'HELPDESK', label: t('settings.assignRulesAppHelpdesk') },
+  { key: 'SALES', label: t('settings.assignRulesAppSales') }
+]);
 
-const operators = [
-  { value: 'equals', label: 'equals' },
-  { value: 'not_equals', label: 'not equals' },
-  { value: 'contains', label: 'contains' },
-  { value: 'in', label: 'in (array)' },
-  { value: 'not_in', label: 'not in (array)' },
-  { value: 'exists', label: 'exists' },
-  { value: 'gt', label: 'greater than' },
-  { value: 'gte', label: '≥' },
-  { value: 'lt', label: 'less than' },
-  { value: 'lte', label: '≤' }
-];
+const operators = computed(() => [
+  { value: 'equals', label: t('settings.assignRulesOpEquals') },
+  { value: 'not_equals', label: t('settings.assignRulesOpNotEquals') },
+  { value: 'contains', label: t('settings.assignRulesOpContains') },
+  { value: 'in', label: t('settings.assignRulesOpIn') },
+  { value: 'not_in', label: t('settings.assignRulesOpNotIn') },
+  { value: 'exists', label: t('settings.assignRulesOpExists') },
+  { value: 'gt', label: t('settings.assignRulesOpGt') },
+  { value: 'gte', label: t('settings.assignRulesOpGte') },
+  { value: 'lt', label: t('settings.assignRulesOpLt') },
+  { value: 'lte', label: t('settings.assignRulesOpLte') }
+]);
+
+const applyStrategyOptions = computed(() => [
+  { value: 'new_records_only', label: t('settings.assignRulesStrategyNewOnly') },
+  { value: 'manual_re_evaluation', label: t('settings.assignRulesStrategyManual') },
+  { value: 'freeze_mode', label: t('settings.assignRulesStrategyFreeze') }
+]);
+
+const triggerTypeOptions = computed(() => [
+  { value: 'immediate', label: t('settings.assignRulesTriggerImmediate') },
+  { value: 'delayed', label: t('settings.assignRulesTriggerDelayed') },
+  { value: 'scheduled', label: t('settings.assignRulesTriggerScheduled') }
+]);
+
+const scheduleTypeOptions = computed(() => [
+  { value: 'one_time', label: t('settings.assignRulesScheduleOneTime') },
+  { value: 'recurring', label: t('settings.assignRulesScheduleRecurring') }
+]);
+
+const frequencyOptions = computed(() => [
+  { value: 'daily', label: t('settings.assignRulesFreqDaily') },
+  { value: 'weekly', label: t('settings.assignRulesFreqWeekly') },
+  { value: 'custom', label: t('settings.assignRulesFreqCustom') }
+]);
+
+const combinatorOptions = computed(() => [
+  { value: 'all', label: t('settings.assignRulesMatchAll') },
+  { value: 'any', label: t('settings.assignRulesMatchAny') }
+]);
+
+const distributionModeOptions = computed(() => [
+  { value: 'queue', label: t('settings.assignRulesDistQueue') },
+  { value: 'round_robin', label: t('settings.assignRulesDistRoundRobin') },
+  { value: 'weighted', label: t('settings.assignRulesDistWeighted') },
+  { value: 'load_balanced', label: t('settings.assignRulesDistLoadBalanced') },
+  { value: 'availability_based', label: t('settings.assignRulesDistAvailability') }
+]);
+
+const escalationActionOptions = computed(() => [
+  { value: 'reassign_group', label: t('settings.assignRulesEscReassign') },
+  { value: 'notify_owner', label: t('settings.assignRulesEscNotifyOwner') },
+  { value: 'notify_leadership', label: t('settings.assignRulesEscNotifyLeadership') }
+]);
+
+const revertModeOptions = computed(() => [
+  { value: 'reapply_rules', label: t('settings.assignRulesRevertReapply') },
+  { value: 'revert_previous_owner', label: t('settings.assignRulesRevertPrevious') },
+  { value: 'lock_current_owner', label: t('settings.assignRulesRevertLock') }
+]);
 
 const scopeApp = ref('HELPDESK');
 const scopeModule = ref('cases');
@@ -695,8 +740,8 @@ function resolveConditionValueOptions(appKey, moduleKey, fieldKey) {
     }
     if (field === 'do_not_contact') {
       return [
-        { value: 'true', label: 'Yes' },
-        { value: 'false', label: 'No' }
+        { value: 'true', label: t('settings.assignRulesYes') },
+        { value: 'false', label: t('settings.assignRulesNo') }
       ];
     }
   }
@@ -713,15 +758,25 @@ function clauseValueOptionList(clause) {
   return resolveConditionValueOptions(scopeApp.value, scopeModule.value, field);
 }
 
-const moduleOptionsForApp = computed(() => APP_MODULES[scopeApp.value] || APP_MODULES.HELPDESK);
+const moduleOptionsForApp = computed(() =>
+  (APP_MODULES[scopeApp.value] || APP_MODULES.HELPDESK).map((key) => ({
+    key,
+    label: t(MODULE_LABEL_KEYS[key] || MODULE_LABEL_KEYS.cases)
+  }))
+);
 
-const conditionFieldOptions = computed(() => getConditionFieldOptions(scopeApp.value, scopeModule.value));
+const conditionFieldOptions = computed(() =>
+  getConditionFieldOptions(scopeApp.value, scopeModule.value).map((value) => ({
+    value,
+    label: t(condFieldI18nKey(value))
+  }))
+);
 
 function inferClauseFieldSelect(field) {
   const f = String(field || '').trim();
   if (!f) return 'preset';
   const opts = getConditionFieldOptions(scopeApp.value, scopeModule.value);
-  return opts.some((o) => o.value === f) ? 'preset' : 'custom';
+  return opts.includes(f) ? 'preset' : 'custom';
 }
 
 function clauseFieldPresetValue(clause) {
@@ -781,10 +836,10 @@ const simulateContextJson = ref('{}');
 
 const formattedSimulation = computed(() => (simulateResult.value ? JSON.stringify(simulateResult.value, null, 2) : ''));
 
-function triggerLabel(t) {
-  if (t === 'delayed') return 'Delayed';
-  if (t === 'scheduled') return 'Scheduled';
-  return 'Immediate';
+function triggerLabel(triggerType) {
+  if (triggerType === 'delayed') return t('settings.assignRulesTriggerDelayed');
+  if (triggerType === 'scheduled') return t('settings.assignRulesTriggerScheduled');
+  return t('settings.assignRulesTriggerImmediate');
 }
 
 function toggleExpand(ruleId) {
@@ -813,7 +868,7 @@ function normalizeRule(r, index) {
   const triggerType = r.triggerType || 'immediate';
   return {
     ruleId: r.ruleId || `rule_${Date.now()}_${index}`,
-    name: r.name || `Rule ${index + 1}`,
+    name: r.name || t('settings.assignRulesDefaultRuleName', { index: index + 1 }),
     enabled: r.enabled !== false,
     order: Number.isFinite(Number(r.order)) ? Number(r.order) : index,
     triggerType,
@@ -865,7 +920,7 @@ function normalizeRule(r, index) {
 
 function createEmptyRule() {
   const order = rules.value.length;
-  const nr = normalizeRule({ name: `Rule ${order + 1}`, order }, order);
+  const nr = normalizeRule({ name: t('settings.assignRulesDefaultRuleName', { index: order + 1 }), order }, order);
   if (groups.value[0]?._id) nr.primaryGroupId = String(groups.value[0]._id);
   return nr;
 }
@@ -899,9 +954,17 @@ function applyScopeFromRoute() {
   }
   if (typeof m === 'string' && m.trim()) {
     const low = m.toLowerCase();
-    const ok = (APP_MODULES[scopeApp.value] || []).some((x) => x.key === low);
+    const ok = (APP_MODULES[scopeApp.value] || []).includes(low);
     if (ok) scopeModule.value = low;
   }
+}
+
+function goBackToAutomation() {
+  const nextQuery = { ...route.query, tab: 'automation' };
+  delete nextQuery.automationView;
+  delete nextQuery.assignmentApp;
+  delete nextQuery.assignmentModule;
+  router.push({ path: '/settings', query: nextQuery });
 }
 
 function syncScopeToRoute() {
@@ -910,6 +973,7 @@ function syncScopeToRoute() {
     query: {
       ...route.query,
       tab: 'automation',
+      automationView: 'assignment-rules',
       assignmentApp: scopeApp.value,
       assignmentModule: scopeModule.value
     }
@@ -1002,7 +1066,7 @@ async function loadRuleSet() {
     const res = await apiClient.get('/settings/automation/assignment-rules', {
       params: { appKey: scopeApp.value, moduleKey: scopeModule.value }
     });
-    if (!res?.success) throw new Error(res?.message || 'Failed to load');
+    if (!res?.success) throw new Error(res?.message || t('settings.assignRulesLoadFailed'));
     const row = res.data || {};
     meta.enabled = row.enabled !== false;
     meta.simulationOnly = row.simulationOnly !== false;
@@ -1015,7 +1079,7 @@ async function loadRuleSet() {
     });
     lastSavedFingerprint.value = saveStateFingerprint();
   } catch (e) {
-    loadError.value = e.message || 'Failed to load assignment rules';
+    loadError.value = e.message || t('settings.assignRulesLoadFailed');
     lastSavedFingerprint.value = null;
   } finally {
     loading.value = false;
@@ -1027,7 +1091,9 @@ async function save() {
   for (let i = 0; i < rules.value.length; i++) {
     const g = rules.value[i].primaryGroupId;
     if (!g) {
-      saveError.value = `Rule "${rules.value[i].name || i + 1}" needs a primary group.`;
+      saveError.value = t('settings.assignRulesPrimaryGroupRequired', {
+        name: rules.value[i].name || String(i + 1)
+      });
       return;
     }
   }
@@ -1042,8 +1108,8 @@ async function save() {
       rules: payloadRulesForApi()
     };
     const res = await apiClient.put('/settings/automation/assignment-rules', body);
-    if (!res?.success) throw new Error(res?.message || 'Save failed');
-    notifySuccess('Assignment rules saved');
+    if (!res?.success) throw new Error(res?.message || t('settings.assignRulesSaveFailed'));
+    notifySuccess(t('settings.assignRulesSaved'));
     await loadRuleSet();
   } catch (e) {
     const serverErr = e.response?.data?.error;
@@ -1052,7 +1118,7 @@ async function save() {
       Array.isArray(serverDetails) && serverDetails.length > 0
         ? ` ${serverDetails.join('; ')}`
         : '';
-    saveError.value = serverErr ? `${serverErr}${extra}` : (e.message || 'Save failed');
+    saveError.value = serverErr ? `${serverErr}${extra}` : (e.message || t('settings.assignRulesSaveFailed'));
   } finally {
     saving.value = false;
   }
@@ -1066,13 +1132,13 @@ async function runSimulation() {
   try {
     record = JSON.parse(simulateRecordJson.value || '{}');
   } catch {
-    simulateError.value = 'Record JSON is invalid';
+    simulateError.value = t('settings.assignRulesRecordJsonInvalid');
     return;
   }
   try {
     context = JSON.parse(simulateContextJson.value || '{}');
   } catch {
-    simulateError.value = 'Context JSON is invalid';
+    simulateError.value = t('settings.assignRulesContextJsonInvalid');
     return;
   }
   simulating.value = true;
@@ -1084,10 +1150,10 @@ async function runSimulation() {
       record,
       context
     });
-    if (!res?.success) throw new Error(res?.message || 'Simulation failed');
+    if (!res?.success) throw new Error(res?.message || t('settings.assignRulesSimulationFailed'));
     simulateResult.value = res.data;
   } catch (e) {
-    simulateError.value = e.message || 'Simulation failed';
+    simulateError.value = e.message || t('settings.assignRulesSimulationFailed');
   } finally {
     simulating.value = false;
   }
@@ -1096,8 +1162,8 @@ async function runSimulation() {
 watch([scopeApp, scopeModule], () => {
   if (syncingFromUrl.value) return;
   const mods = APP_MODULES[scopeApp.value] || [];
-  if (!mods.some((m) => m.key === scopeModule.value)) {
-    scopeModule.value = mods[0]?.key || 'cases';
+  if (!mods.includes(scopeModule.value)) {
+    scopeModule.value = mods[0] || 'cases';
   }
   syncScopeToRoute();
   loadRuleSet();
@@ -1110,7 +1176,7 @@ watch(
     const qa = typeof route.query.assignmentApp === 'string' ? route.query.assignmentApp.toUpperCase() : '';
     const qm = typeof route.query.assignmentModule === 'string' ? route.query.assignmentModule.toLowerCase() : '';
     if (!qa || !APP_MODULES[qa]) return;
-    if (!(APP_MODULES[qa] || []).some((m) => m.key === qm)) return;
+    if (!(APP_MODULES[qa] || []).includes(qm)) return;
     if (qa === scopeApp.value && qm === scopeModule.value) return;
     syncingFromUrl.value = true;
     scopeApp.value = qa;

@@ -1,0 +1,19 @@
+{
+  "builderShellLoading": { "message": "Loading form...", "description": "Form builder page loading" },
+  "builderShellBackToForms": { "message": "Back to Forms", "description": "Navigate back to forms list" },
+  "builderShellNewForm": { "message": "New Form", "description": "Default title for unsaved form" },
+  "builderShellPageTitle": { "message": "Form Builder", "description": "Tab title for form builder" },
+  "builderShellPreview": { "message": "Preview", "description": "Open preview button" },
+  "builderShellPreviewModalTitle": { "message": "Form Preview", "description": "Preview modal heading" },
+  "builderShellTabDetails": { "message": "Details", "description": "Form builder tab" },
+  "builderShellTabSections": { "message": "Sections & Questions", "description": "Form builder tab" },
+  "builderShellTabSettings": { "message": "Settings", "description": "Form builder tab" },
+  "builderShellSaveSuccessUpdated": { "message": "Form updated successfully!", "description": "Manual save success" },
+  "builderShellSaveSuccessCreated": { "message": "Form created successfully!", "description": "Manual save success new form" },
+  "builderShellSaveError": { "message": "Error saving form. Please try again.", "description": "Generic save error" },
+  "builderShellNameRequired": { "message": "Form name is required", "description": "Validation before save" },
+  "builderShellPublicSlugMissing": { "message": "Public link enabled but slug is missing.", "description": "Public link error" },
+  "builderShellPublicLinkNotInResponse": { "message": "Public link not found in server response.", "description": "Public link error" },
+  "builderShellUnexpectedResponse": { "message": "Unexpected response from server.", "description": "Public link error" },
+  "builderShellEnablePublicFailed": { "message": "Failed to enable public link. Please try again.", "description": "Enable public link error" }
+}

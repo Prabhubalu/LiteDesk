@@ -10,6 +10,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 import { getActivityEventComponent } from './activityEventRegistry';
 
@@ -20,6 +21,8 @@ const props = defineProps({
   searchQuery: { type: String, default: '' },
   isThreadViewActive: { type: Boolean, default: false }
 });
+
+const { t } = useI18n();
 
 const component = computed(() => getActivityEventComponent(props.event?.type));
 </script>

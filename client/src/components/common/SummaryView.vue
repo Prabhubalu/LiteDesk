@@ -4,17 +4,17 @@
     <div v-if="loading" class="flex items-center justify-center min-h-screen">
       <div class="text-center">
         <div class="w-16 h-16 border-4 border-gray-200 dark:border-gray-700 border-t-indigo-600 dark:border-t-indigo-500 rounded-full animate-spin mx-auto mb-4"></div>
-        <p class="text-gray-600 dark:text-gray-400 font-medium">Loading {{ recordType }}...</p>
+        <p class="text-gray-600 dark:text-gray-400 font-medium">{{ t('common.summaryLoadingRecord', { type: recordType }) }}</p>
       </div>
     </div>
 
     <!-- Error State -->
     <div v-else-if="error" class="flex items-center justify-center min-h-screen p-4">
       <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Error Loading {{ recordType }}</h2>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ t('common.summaryErrorLoadingTitle', { type: recordType }) }}</h2>
         <p class="text-gray-600 dark:text-gray-400 mb-6">{{ error }}</p>
         <button @click="$emit('close')" class="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium">
-          Close
+          {{ t('actions.close') }}
         </button>
       </div>
     </div>
@@ -61,7 +61,7 @@
                       ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' 
                       : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
                   ]"
-                  :title="isFollowing ? 'Unfollow' : 'Follow'"
+                  :title="isFollowing ? t('actions.unfollow') : t('actions.follow')"
                 >
                       <HeartIconSolid v-if="isFollowing" class="w-4 h-4" />
                       <HeartIcon v-else class="w-4 h-4" />
@@ -76,7 +76,7 @@
                             ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50'
                             : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
                         ]"
-                        :title="tags.length > 0 ? 'Manage Tags' : 'Add Tag'"
+                        :title="tags.length > 0 ? t('common.summaryManageTags') : t('common.summaryAddTag')"
                       >
                         <TagIconSolid v-if="tags.length > 0" class="w-4 h-4" />
                         <TagIcon v-else class="w-4 h-4" />
@@ -93,7 +93,7 @@
                         <MenuItems class="absolute left-0 mt-2 w-64 rounded-lg shadow-xl py-1 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 z-50">
                           <!-- Existing Tags -->
                           <div v-if="tags.length > 0" class="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
-                            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Tags</p>
+                            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">{{ t('common.tagsTitle') }}</p>
                             <div class="flex flex-wrap gap-1">
                               <span 
                                 v-for="(tag, index) in tags" 
@@ -114,7 +114,7 @@
                           <!-- Empty State or Add New -->
                           <div class="px-3 py-2">
                             <div v-if="tags.length === 0" class="text-center py-2 mb-2">
-                              <p class="text-sm text-gray-500 dark:text-gray-400">No tags yet</p>
+                              <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('common.summaryNoTagsYet') }}</p>
                             </div>
                             <MenuItem v-slot="{ active }">
                 <button
@@ -125,7 +125,7 @@
                                 ]"
                               >
                                 <PlusIcon class="w-4 h-4" />
-                                {{ tags.length > 0 ? 'Add Another Tag' : 'Add Tag' }}
+                                {{ tags.length > 0 ? t('common.summaryAddAnotherTag') : t('common.summaryAddTag') }}
                 </button>
                             </MenuItem>
                           </div>
@@ -137,7 +137,7 @@
                 <button
                   @click="copyUrl"
                       class="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                  title="Copy Link"
+                  :title="t('common.summaryCopyLink')"
                 >
                       <LinkIcon class="w-4 h-4" />
                 </button>
@@ -163,7 +163,7 @@
                   :class="getButtonColorClasses(field)"
                   :style="getButtonColorStyle(field)"
                 >
-                  <span>{{ field.value || 'Select...' }}</span>
+                  <span>{{ field.value || t('common.summarySelectPlaceholder') }}</span>
                 </MenuButton>
                 <Transition
                   enter-active-class="transition ease-out duration-100"
@@ -207,7 +207,7 @@
               <Menu v-if="props.recordType !== 'forms'" as="div" class="relative hidden lg:block">
                 <MenuButton class="inline-flex items-center px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium text-sm transition-colors border border-gray-200 dark:border-gray-600">
                     <PlusIcon class="w-4 h-4 mr-2" />
-                    Add Relation
+                    {{ t('common.summaryAddRelation') }}
                   <ChevronDownIcon class="ml-2 h-4 w-4" aria-hidden="true" />
                 </MenuButton>
                 <Transition
@@ -234,14 +234,14 @@
                               class="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                               <PlusIcon class="w-3.5 h-3.5" />
-                              Add
+                              {{ t('actions.add') }}
               </button>
                             <button
                               @click.stop="handleLinkRecords(relationship.moduleKey)"
                               class="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                             >
                               <LinkIcon class="w-3.5 h-3.5" />
-                              Link
+                              {{ t('actions.link') }}
                             </button>
                           </div>
                         </div>
@@ -259,7 +259,7 @@
                 class="hidden lg:inline-flex px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors items-center border border-gray-200 dark:border-gray-600"
               >
                 <PencilSquareIcon class="w-4 h-4 mr-2" />
-                Edit
+                {{ t('actions.edit') }}
               </button>
 
               <!-- View Responses Button (Forms only, Active status only, Desktop only) -->
@@ -269,7 +269,7 @@
                 class="hidden lg:inline-flex px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors items-center border border-indigo-700 dark:border-indigo-600"
               >
                 <DocumentTextIcon class="w-4 h-4 mr-2" />
-                View Responses
+                {{ t('common.summaryViewResponses') }}
               </button>
 
               <!-- More Dropdown -->
@@ -298,7 +298,7 @@
                         ]"
                       >
                         <PencilSquareIcon class="w-4 h-4" />
-                        Edit
+                        {{ t('actions.edit') }}
                       </button>
                     </MenuItem>
 
@@ -313,7 +313,7 @@
                         ]"
                       >
                         <DocumentTextIcon class="w-4 h-4" />
-                        View Responses
+                        {{ t('common.summaryViewResponses') }}
                       </button>
                     </MenuItem>
                     
@@ -336,14 +336,14 @@
                                   class="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                                 >
                                   <PlusIcon class="w-3.5 h-3.5" />
-                                  Add
+                                  {{ t('actions.add') }}
                       </button>
                                 <button
                                   @click.stop="handleLinkRecords(relationship.moduleKey)"
                                   class="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                                 >
                                   <LinkIcon class="w-3.5 h-3.5" />
-                                  Link
+                                  {{ t('actions.link') }}
                                 </button>
                               </div>
                             </div>
@@ -368,7 +368,7 @@
                         ]"
                       >
                         <Square2StackIcon class="w-4 h-4" />
-                        Duplicate
+                        {{ t('actions.duplicate') }}
                       </button>
                     </MenuItem>
 
@@ -383,7 +383,7 @@
                         ]"
                       >
                         <ArchiveBoxIcon class="w-4 h-4" />
-                        Archive
+                        {{ t('actions.archive') }}
                       </button>
                     </MenuItem>
 
@@ -397,7 +397,7 @@
                           'text-red-600 dark:text-red-400'
                         ]"
                       >
-                        Delete Record
+                        {{ t('common.summaryDeleteRecord') }}
                       </button>
                     </MenuItem>
                   </MenuItems>
@@ -410,7 +410,7 @@
         <!-- Tabs Component - Fixed below header -->
         <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
           <div class="px-6">
-            <nav class="flex space-x-8" aria-label="Tabs">
+            <nav class="flex space-x-8" :aria-label="t('common.summaryTabsAria')">
               <!-- Fixed Default Tabs -->
               <button
                 v-for="tab in fixedTabs"
@@ -441,9 +441,9 @@
               <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
                 <DocumentTextIcon class="w-8 h-8 text-gray-400 dark:text-gray-500" />
               </div>
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Form Not Yet Active</h3>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('common.summaryFormNotActive') }}</h3>
               <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                This form has not been used yet. Assign it via events to start collecting responses.
+                {{ t('common.summaryFormNotActiveHint') }}
               </p>
             </div>
           </div>
@@ -458,10 +458,10 @@
             <button
               @click="showWidgetModal = true"
               class="inline-flex items-center gap-2 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full font-medium transition-colors shadow-lg hover:shadow-xl"
-              title="Add Custom Widget"
+              :title="t('common.summaryAddCustomWidget')"
             >
               <PlusIcon class="w-5 h-5" />
-              <span class="hidden sm:inline">Add Widget</span>
+              <span class="hidden sm:inline">{{ t('common.summaryAddWidget') }}</span>
             </button>
           </div>
         </div>
@@ -475,7 +475,7 @@
               <input
                 v-model="detailsSearch"
                 type="text"
-                placeholder="Search tenant fields..."
+                :placeholder="t('common.summarySearchTenantFields')"
                 class="block w-full rounded-md bg-white border border-gray-200 dark:bg-gray-700 dark:border-transparent px-3 py-1.5 pl-10 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:focus:outline-indigo-500"
               />
               <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -490,7 +490,7 @@
                   v-model="showEmptyFields"
                   checkbox-class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
                 />
-                <span class="text-sm text-gray-700 dark:text-gray-300">Show empty fields</span>
+                <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('common.summaryShowEmptyFields') }}</span>
               </label>
             </div>
           </div>
@@ -498,8 +498,8 @@
           <!-- Tenant Fields Block -->
           <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
             <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Tenant Fields</h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Subscription, limits, and organization settings</p>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('common.summaryTenantFields') }}</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ t('common.summaryTenantFieldsHint') }}</p>
             </div>
             <!-- Tenant Fields Grid -->
             <div :class="detailsGridClass" :style="detailsGridStyle">
@@ -526,9 +526,9 @@
               
               <!-- Empty state -->
               <div v-if="getTenantFields.length === 0" class="md:col-span-2 text-center py-8 text-gray-500 dark:text-gray-400">
-                <p v-if="detailsSearch">No tenant fields match your search.</p>
-                <p v-else-if="!showEmptyFields">No tenant fields with values to display.</p>
-                <p v-else>No tenant fields available.</p>
+                <p v-if="detailsSearch">{{ t('common.summaryTenantFieldsNoMatch') }}</p>
+                <p v-else-if="!showEmptyFields">{{ t('common.summaryTenantFieldsNoValues') }}</p>
+                <p v-else>{{ t('common.summaryTenantFieldsNone') }}</p>
               </div>
             </div>
           </div>
@@ -543,7 +543,7 @@
                 <input
                   v-model="detailsSearch"
                   type="text"
-                  placeholder="Search fields..."
+                  :placeholder="t('common.summarySearchFields')"
                   class="block w-full rounded-md bg-white border border-gray-200 dark:bg-gray-700 dark:border-transparent px-3 py-1.5 pl-10 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:focus:outline-indigo-500"
                 />
                 <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -555,7 +555,7 @@
               <div class="flex items-center gap-3">
                 <!-- Show empty fields toggle (Desktop only) -->
                 <div class="hidden lg:flex items-center gap-2">
-                  <span class="text-sm text-gray-700 dark:text-gray-300">Show empty fields</span>
+                  <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('common.summaryShowEmptyFields') }}</span>
                   <Switch
                     v-model="showEmptyFields"
                     :class="[
@@ -563,7 +563,7 @@
                       'relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
                     ]"
                   >
-                    <span class="sr-only">Show empty fields</span>
+                    <span class="sr-only">{{ t('common.summaryShowEmptyFields') }}</span>
                     <span
                       aria-hidden="true"
                       :class="[
@@ -584,7 +584,7 @@
                     icon="cog"
                     @click="goToManageFields"
                   >
-                    Manage Fields
+                    {{ t('common.summaryManageFields') }}
                   </PermissionButton>
                 </div>
 
@@ -606,7 +606,7 @@
                       <!-- Show empty fields toggle -->
                       <MenuItem v-slot="{ active }" as="template">
                         <div :class="['flex items-center justify-between gap-3 px-4 py-2', active ? 'bg-gray-100 dark:bg-gray-700' : '']">
-                          <span class="text-sm text-gray-700 dark:text-gray-300">Show empty fields</span>
+                          <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('common.summaryShowEmptyFields') }}</span>
                           <Switch
                             v-model="showEmptyFields"
                             :class="[
@@ -615,7 +615,7 @@
                             ]"
                             @click.stop
                           >
-                            <span class="sr-only">Show empty fields</span>
+                            <span class="sr-only">{{ t('common.summaryShowEmptyFields') }}</span>
                             <span
                               aria-hidden="true"
                               :class="[
@@ -638,7 +638,7 @@
                           ]"
                         >
                           <Cog6ToothIcon class="w-4 h-4" />
-                          Manage Fields
+                          {{ t('common.summaryManageFields') }}
                   </button>
                       </MenuItem>
                     </MenuItems>
@@ -681,7 +681,7 @@
                       <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-400 text-xs font-semibold flex-shrink-0">
                         ?
                       </div>
-                      <span class="text-sm text-gray-500 dark:text-gray-400 italic">Not available</span>
+                      <span class="text-sm text-gray-500 dark:text-gray-400 italic">{{ t('common.summaryNotAvailable') }}</span>
                     </template>
                     <template v-else>
                       <!-- No createdBy value -->
@@ -703,9 +703,9 @@
               
               <!-- Empty state -->
               <div v-if="getFieldsWithDefinitions.length === 0" class="md:col-span-2 text-center py-8 text-gray-500 dark:text-gray-400">
-                <p v-if="detailsSearch">No fields match your search.</p>
-                <p v-else-if="!showEmptyFields">No fields with values to display.</p>
-                <p v-else>No fields available.</p>
+                <p v-if="detailsSearch">{{ t('common.summaryFieldsNoMatch') }}</p>
+                <p v-else-if="!showEmptyFields">{{ t('common.summaryFieldsNoValues') }}</p>
+                <p v-else>{{ t('common.summaryFieldsNone') }}</p>
               </div>
             </div>
           </div>
@@ -716,16 +716,16 @@
         <div v-else-if="activeTab === 'usage' && props.recordType === 'forms' && props.record?.status === 'Active'" class="space-y-4">
           <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
             <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Form Usage</h3>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('common.summaryFormUsage') }}</h3>
               <p class="text-sm text-gray-600 dark:text-gray-400">
-                List of form submissions with status, score, and submission date.
+                {{ t('common.summaryFormUsageHint') }}
               </p>
             </div>
             
             <!-- Loading State -->
             <div v-if="formResponsesLoading" class="p-12 text-center">
               <div class="w-8 h-8 border-4 border-gray-200 dark:border-gray-700 border-t-indigo-600 dark:border-t-indigo-500 rounded-full animate-spin mx-auto mb-4"></div>
-              <p class="text-sm text-gray-600 dark:text-gray-400">Loading submissions...</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('common.summaryLoadingSubmissions') }}</p>
             </div>
             
             <!-- Submissions Table -->
@@ -733,11 +733,11 @@
               <table class="w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead class="bg-gray-50 dark:bg-gray-900">
                   <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Submitted</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Submitted By</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Score</th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('common.summaryColSubmitted') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('common.summaryColSubmittedBy') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('common.summaryColStatus') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('common.summaryColScore') }}</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('common.summaryColActions') }}</th>
                   </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -765,7 +765,7 @@
                           {{ response.submittedBy.firstName }} {{ response.submittedBy.lastName }}
                         </span>
                       </div>
-                      <span v-else class="text-sm text-gray-500 dark:text-gray-400">Anonymous</span>
+                      <span v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('common.summaryAnonymous') }}</span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                       <BadgeCell 
@@ -793,7 +793,7 @@
                         @click.stop="viewResponseDetail(response)"
                         class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300"
                       >
-                        View
+                        {{ t('common.viewRecord') }}
                       </button>
                     </td>
                   </tr>
@@ -811,14 +811,14 @@
                     :disabled="formResponsesPagination.currentPage === 1"
                     class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Previous
+                    {{ t('actions.previous') }}
                   </button>
                   <button
                     @click="formResponsesPagination.currentPage < formResponsesPagination.totalPages && (formResponsesPagination.currentPage++, fetchFormResponses())"
                     :disabled="formResponsesPagination.currentPage >= formResponsesPagination.totalPages"
                     class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Next
+                    {{ t('actions.next') }}
                   </button>
                 </div>
               </div>
@@ -829,9 +829,9 @@
               <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
                 <DocumentTextIcon class="w-8 h-8 text-gray-400 dark:text-gray-500" />
               </div>
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Submissions Yet</h3>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('common.summaryNoSubmissions') }}</h3>
               <p class="text-sm text-gray-600 dark:text-gray-400">
-                This form hasn't received any submissions yet.
+                {{ t('common.summaryNoSubmissionsHint') }}
               </p>
             </div>
           </div>
@@ -841,9 +841,9 @@
         <div v-else-if="activeTab === 'preview' && props.recordType === 'forms'" class="space-y-4">
           <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
             <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Form Preview</h3>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('common.summaryFormPreview') }}</h3>
               <p class="text-sm text-gray-600 dark:text-gray-400">
-                Preview how this form will appear to users when filling it out.
+                {{ t('common.summaryFormPreviewHint') }}
               </p>
             </div>
             
@@ -862,16 +862,16 @@
             <div class="p-6 border-b border-gray-200 dark:border-gray-700">
               <div class="flex items-center justify-between">
                 <div>
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Form Responses</h3>
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('common.summaryFormResponses') }}</h3>
                   <p class="text-sm text-gray-600 dark:text-gray-400">
-                    View and manage all responses submitted for this form.
+                    {{ t('common.summaryFormResponsesHint') }}
                   </p>
                 </div>
                 <button
                   @click="viewFormResponses"
                   class="px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
                 >
-                  View All Responses →
+                  {{ t('common.summaryViewAllResponses') }} →
                 </button>
               </div>
             </div>
@@ -879,7 +879,7 @@
             <!-- Loading State -->
             <div v-if="formResponsesLoading" class="p-12 text-center">
               <div class="w-8 h-8 border-4 border-gray-200 dark:border-gray-700 border-t-indigo-600 dark:border-t-indigo-500 rounded-full animate-spin mx-auto mb-4"></div>
-              <p class="text-sm text-gray-600 dark:text-gray-400">Loading responses...</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('common.summaryLoadingResponses') }}</p>
             </div>
             
             <!-- Responses Table -->
@@ -887,12 +887,12 @@
               <table class="w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead class="bg-gray-50 dark:bg-gray-900">
                   <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Submitted</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Submitted By</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Score</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">KPIs</th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('common.summaryColSubmitted') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('common.summaryColSubmittedBy') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('common.summaryColStatus') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('common.summaryColScore') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('common.summaryColKpis') }}</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('common.summaryColActions') }}</th>
                   </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -920,7 +920,7 @@
                           {{ response.submittedBy.firstName }} {{ response.submittedBy.lastName }}
                         </span>
                       </div>
-                      <span v-else class="text-sm text-gray-500 dark:text-gray-400">Anonymous</span>
+                      <span v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('common.summaryAnonymous') }}</span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                       <BadgeCell 
@@ -962,7 +962,7 @@
                         @click.stop="viewResponseDetail(response)"
                         class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300"
                       >
-                        View
+                        {{ t('common.viewRecord') }}
                       </button>
                     </td>
                   </tr>
@@ -980,14 +980,14 @@
                     :disabled="formResponsesPagination.currentPage === 1"
                     class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Previous
+                    {{ t('actions.previous') }}
                   </button>
                   <button
                     @click="formResponsesPagination.currentPage < formResponsesPagination.totalPages && (formResponsesPagination.currentPage++, fetchFormResponses())"
                     :disabled="formResponsesPagination.currentPage >= formResponsesPagination.totalPages"
                     class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Next
+                    {{ t('actions.next') }}
                   </button>
                 </div>
               </div>
@@ -998,7 +998,7 @@
                   @click="viewFormResponses"
                   class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
                 >
-                  View All Responses →
+                  {{ t('common.summaryViewAllResponses') }} →
                 </button>
               </div>
             </div>
@@ -1008,15 +1008,15 @@
               <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
                 <DocumentTextIcon class="w-8 h-8 text-gray-400 dark:text-gray-500" />
               </div>
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Responses Yet</h3>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('common.summaryNoResponses') }}</h3>
               <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                This form hasn't received any responses yet.
+                {{ t('common.summaryNoResponsesHint') }}
               </p>
               <button
                 @click="viewFormResponses"
                 class="px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
               >
-                View All Responses
+                {{ t('common.summaryViewAllResponses') }}
               </button>
             </div>
           </div>
@@ -1030,7 +1030,7 @@
               <Menu as="div" class="relative">
                 <MenuButton class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
                   <FunnelIcon class="w-5 h-5" />
-                  <span>Filters</span>
+                  <span>{{ t('common.listFilters') }}</span>
                   <ChevronDownIcon class="w-4 h-4" />
                 </MenuButton>
                 <Transition
@@ -1045,14 +1045,14 @@
                     <div class="p-4 space-y-4">
                       <!-- Search -->
                       <div>
-                        <label for="activity-search" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Search</label>
+                        <label for="activity-search" class="block text-sm/6 font-medium text-gray-900 dark:text-white">{{ t('actions.search') }}</label>
                         <div class="relative mt-1">
                           <MagnifyingGlassIcon class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
                           <input
                             id="activity-search"
                             v-model="activitySearchQuery"
                             type="text"
-                            placeholder="Search activities..."
+                            :placeholder="t('common.summarySearchActivities')"
                             class="block w-full rounded-md bg-gray-100 px-3 py-2 pl-10 text-gray-900 text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:text-white dark:bg-gray-700 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
                           />
                   </div>
@@ -1060,7 +1060,7 @@
                       
                       <!-- User Filter -->
                       <div>
-                        <label for="activity-user" class="block text-sm/6 font-medium text-gray-900 dark:text-white">User</label>
+                        <label for="activity-user" class="block text-sm/6 font-medium text-gray-900 dark:text-white">{{ t('common.summaryUser') }}</label>
                         <Listbox v-model="activityFilterUser" as="div" class="mt-1 relative">
                           <ListboxButton
                             class="block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500 relative cursor-default text-left"
@@ -1086,7 +1086,7 @@
                                     active ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100'
                                   ]"
                                 >
-                                  <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">All Users</span>
+                                  <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">{{ t('common.summaryAllUsers') }}</span>
                                   <span
                                     v-if="selected"
                                     class="absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600 dark:text-indigo-400"
@@ -1123,7 +1123,7 @@
                       
                       <!-- Type Filter -->
                       <div>
-                        <label for="activity-type" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Type</label>
+                        <label for="activity-type" class="block text-sm/6 font-medium text-gray-900 dark:text-white">{{ t('common.summaryType') }}</label>
                         <Listbox v-model="activityFilterType" as="div" class="mt-1 relative">
                           <ListboxButton
                             class="block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500 relative cursor-default text-left"
@@ -1149,7 +1149,7 @@
                                     active ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100'
                                   ]"
                                 >
-                                  <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">All Types</span>
+                                  <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">{{ t('common.summaryAllTypes') }}</span>
                                   <span
                                     v-if="selected"
                                     class="absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600 dark:text-indigo-400"
@@ -1168,7 +1168,7 @@
                                     active ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100'
                                   ]"
                                 >
-                                  <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">Comments</span>
+                                  <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">{{ t('common.summaryComments') }}</span>
                                   <span
                                     v-if="selected"
                                     class="absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600 dark:text-indigo-400"
@@ -1187,7 +1187,7 @@
                                     active ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100'
                                   ]"
                                 >
-                                  <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">Field Changes</span>
+                                  <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">{{ t('common.summaryFieldChanges') }}</span>
                                   <span
                                     v-if="selected"
                                     class="absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600 dark:text-indigo-400"
@@ -1206,7 +1206,7 @@
                                     active ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100'
                                   ]"
                                 >
-                                  <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">Tags</span>
+                                  <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">{{ t('common.tagsTitle') }}</span>
                                   <span
                                     v-if="selected"
                                     class="absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600 dark:text-indigo-400"
@@ -1226,7 +1226,7 @@
             </div>
             
             <div v-if="activityItems.length === 0" class="text-center py-8 text-gray-500 dark:text-gray-400">
-                No activity yet
+                {{ t('common.summaryNoActivity') }}
               </div>
             <div v-else class="flow-root">
               <div class="max-w-2xl mx-auto">
@@ -1406,7 +1406,7 @@
                     <!-- Header -->
                     <div class="bg-indigo-700 dark:bg-indigo-800 px-4 py-6 sm:px-6">
                       <div class="flex items-center justify-between">
-                        <DialogTitle class="text-base font-semibold text-white">Add Widget</DialogTitle>
+                        <DialogTitle class="text-base font-semibold text-white">{{ t('common.summaryAddWidget') }}</DialogTitle>
                         <div class="ml-3 flex h-7 items-center">
               <button
                             type="button" 
@@ -1414,13 +1414,13 @@
                             @click="showWidgetModal = false"
                           >
                             <span class="absolute -inset-2.5"></span>
-                            <span class="sr-only">Close panel</span>
+                            <span class="sr-only">{{ t('common.closePanel') }}</span>
                             <XMarkIcon class="size-6" aria-hidden="true" />
                           </button>
                         </div>
                       </div>
                       <div class="mt-1">
-                        <p class="text-sm text-indigo-300">Select a widget to add to your dashboard</p>
+                        <p class="text-sm text-indigo-300">{{ t('common.summarySelectWidget') }}</p>
                       </div>
                     </div>
 
@@ -1453,14 +1453,14 @@
                                 @click="removeWidget(widget.type)"
                                 class="px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 border border-red-200 dark:border-red-800 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                               >
-                                Remove
+                                {{ t('actions.remove') }}
                               </button>
                               <button
                                 v-else
                                 @click="addWidget(widget.type)"
                                 class="px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 border border-indigo-200 dark:border-indigo-800 rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
                               >
-                                Add
+                                {{ t('actions.add') }}
               </button>
             </div>
           </div>
@@ -1480,9 +1480,9 @@
                             : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
                         ]"
                         @click="resetToDefaultLayout"
-                        title="Reset widget layout to default order"
+                        :title="t('common.summaryResetLayoutTooltip')"
                       >
-                        Reset to Default
+                        {{ t('common.summaryResetToDefault') }}
                       </button>
                       <div class="flex gap-3">
                         <button 
@@ -1490,7 +1490,7 @@
                           class="rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700" 
                           @click="showWidgetModal = false"
                         >
-                          Close
+                          {{ t('actions.close') }}
                         </button>
                       </div>
                     </div>
@@ -1509,21 +1509,21 @@
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="showTagModal = false"></div>
         <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
           <div class="px-6 py-4">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Add Tag</h3>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">{{ t('common.summaryAddTag') }}</h3>
             <input
               v-model="newTag"
               @keyup.enter="addTag"
               type="text"
-              placeholder="Enter tag name"
+              :placeholder="t('common.tagsEnterTagName')"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
           <div class="px-6 py-3 bg-gray-50 dark:bg-gray-700 flex justify-end space-x-3">
             <button @click="showTagModal = false" class="px-4 py-2 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-500 font-medium">
-              Cancel
+              {{ t('actions.cancel') }}
             </button>
             <button @click="addTag" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium">
-              Add
+              {{ t('actions.add') }}
             </button>
           </div>
         </div>
@@ -1587,11 +1587,11 @@
                 </div>
                 <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
                   <DialogTitle as="h3" class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-                    Reset Widget Layout
+                    {{ t('common.summaryResetWidgetLayout') }}
                   </DialogTitle>
                   <div class="mt-2">
                     <p class="text-sm text-gray-500 dark:text-gray-400">
-                      Are you sure you want to reset the widget layout to default? This will remove all customizations including widget positions, sizes, and any widgets you've added or removed.
+                      {{ t('common.summaryResetLayoutConfirmBody') }}
                     </p>
                   </div>
                 </div>
@@ -1602,14 +1602,14 @@
                   class="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
                   @click="confirmResetLayout"
                 >
-                  Reset to Default
+                  {{ t('common.summaryResetToDefault') }}
                 </button>
                 <button
                   type="button"
                   class="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 sm:mt-0 sm:w-auto"
                   @click="showResetConfirmModal = false"
                 >
-                  Cancel
+                  {{ t('actions.cancel') }}
                 </button>
               </div>
             </DialogPanel>
@@ -1635,6 +1635,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch, createApp, h, toRef } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Menu, MenuButton, MenuItem, MenuItems, Listbox, ListboxButton, ListboxOptions, ListboxOption, Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot, Switch } from '@headlessui/vue';
 import { GridStack } from 'gridstack';
 import 'gridstack/dist/gridstack.min.css';
@@ -1691,6 +1692,8 @@ import {
   ArchiveBoxIcon
 } from '@heroicons/vue/24/outline';
 import { HeartIcon as HeartIconSolid, TagIcon as TagIconSolid, ChatBubbleLeftEllipsisIcon } from '@heroicons/vue/24/solid';
+
+const { t } = useI18n();
 
 // Props
 const props = defineProps({
@@ -1869,30 +1872,25 @@ const availableRelationships = computed(() => {
 // For forms: add Usage and Responses tabs if status is Active
 const fixedTabs = computed(() => {
   const baseTabs = [
-    { id: 'summary', name: 'Summary' },
-    { id: 'details', name: 'Details' },
-    { id: 'updates', name: 'Updates' }
+    { id: 'summary', name: t('records.tabSummary') },
+    { id: 'details', name: t('records.tabDetails') },
+    { id: 'updates', name: t('records.tabUpdates') }
   ];
-  
+
   // For forms: add Preview, Usage and Responses tabs
   if (props.recordType === 'forms') {
     const formStatus = props.record?.status;
-    // Always add Preview tab before Updates
-    baseTabs.splice(2, 0, { id: 'preview', name: 'Preview' });
+    baseTabs.splice(2, 0, { id: 'preview', name: t('records.tabPreview') });
     if (formStatus === 'Active') {
-      // Insert Usage and Responses tabs before Preview tab
-      baseTabs.splice(2, 0, 
-        { id: 'usage', name: 'Usage' },
-        { id: 'responses', name: 'Responses' }
+      baseTabs.splice(2, 0,
+        { id: 'usage', name: t('records.tabUsage') },
+        { id: 'responses', name: t('records.tabResponses') }
       );
     }
-  } else {
-    // Add Tenant Details tab if viewing a tenant organization
-    if (props.record?.isTenant === true) {
-      baseTabs.splice(2, 0, { id: 'tenant-details', name: 'Tenant Details' });
-    }
+  } else if (props.record?.isTenant === true) {
+    baseTabs.splice(2, 0, { id: 'tenant-details', name: t('records.tabTenantDetails') });
   }
-  
+
   return baseTabs;
 });
 
@@ -3945,11 +3943,11 @@ const getWidgetContent = (widgetType) => {
     case 'lifecycle-stage':
       return `<p>Status: ${props.record?.status || 'Active'}</p>`;
     case 'metrics':
-      return '<p>No metrics available.</p>';
+      return `<p>${t('common.summaryNoMetrics')}</p>`;
     case 'key-fields':
-      return '<p>Key fields will be displayed here.</p>';
+      return `<p>${t('common.summaryKeyFieldsPlaceholder')}</p>`;
     default:
-      return '<p>Widget content</p>';
+      return `<p>${t('common.summaryWidgetContent')}</p>`;
   }
 };
 
@@ -4150,7 +4148,7 @@ const confirmResetLayout = async () => {
     window.location.reload();
   } catch (error) {
     console.error('Error resetting layout to default:', error);
-    alert('Failed to reset layout. Please try again.');
+    alert(t('common.summaryResetLayoutFailed'));
   }
 };
 
@@ -4422,7 +4420,7 @@ const toggleFollow = () => {
 const copyUrl = () => {
   const url = window.location.href;
   navigator.clipboard.writeText(url).then(() => {
-    alert('URL copied to clipboard!');
+    alert(t('common.summaryUrlCopied'));
   });
 };
 
@@ -5038,7 +5036,7 @@ const handlePopupSave = async (updatedData) => {
       // Revert local changes on error
       // Note: We'd need to store original values to properly revert
       // For now, just show an error - the parent component should handle refresh
-      alert('Failed to save field updates. Please try again.');
+      alert(t('common.summarySaveFieldsFailed'));
       return;
     }
   }

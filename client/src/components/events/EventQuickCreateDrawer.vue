@@ -24,6 +24,7 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 
 const props = defineProps({
@@ -38,6 +39,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close', 'saved']);
+
+const { t } = useI18n();
 
 const handleClose = () => {
   emit('close');

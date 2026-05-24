@@ -75,9 +75,7 @@
           <div class="flex-1">
             <div class="flex items-center gap-2 mb-2">
               <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ event?.eventName || assignment.auditName || assignment.auditType || 'Audit' }}</h1>
-              <span v-if="hasQueuedActions" class="text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded-full">
-                Saved locally
-              </span>
+              <span v-if="hasQueuedActions" class="text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded-full">{{ t('audit.auditDetailSavedLocally') }}</span>
             </div>
             <div class="flex flex-wrap items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
               <span :class="getStatusBadgeClass(assignment.auditState)" class="px-3 py-1 text-sm font-medium rounded-full">
@@ -108,13 +106,13 @@
           v-if="hasRecentAutoSubmit"
           class="mb-4 rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 px-3 py-2"
         >
-          <p class="text-sm font-medium text-green-800 dark:text-green-200">Submitted automatically</p>
-          <p class="text-xs text-green-700 dark:text-green-300 mt-0.5">Your audit form submission was applied and the audit was sent for review.</p>
+          <p class="text-sm font-medium text-green-800 dark:text-green-200">{{ t('audit.auditDetailSubmittedAutomatically') }}</p>
+          <p class="text-xs text-green-700 dark:text-green-300 mt-0.5">{{ t('audit.auditDetailYourAuditFormSubmissionWasApplied') }}</p>
         </div>
 
         <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
           <div class="flex-1">
-            <p class="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400 mb-1">Next step</p>
+            <p class="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400 mb-1">{{ t('audit.auditDetailNextStep') }}</p>
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white">{{ nextStep.title }}</h2>
             <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ nextStep.description }}</p>
           </div>
@@ -202,47 +200,41 @@
             <button
               @click="handleCopySeatRequest"
               class="px-3 py-1.5 text-xs rounded-md bg-red-600 text-white hover:bg-red-700 active:bg-red-800 transition-colors"
-            >
-              Request Seat
-            </button>
+            >{{ t('audit.auditDetailRequestSeat') }}</button>
             <button
               @click="fetchAuditDetail"
               :disabled="loading"
               class="px-3 py-1.5 text-xs rounded-md border border-red-300 dark:border-red-700 text-red-800 dark:text-red-200 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              Refresh Access
-            </button>
+            >{{ t('audit.auditDetailRefreshAccess') }}</button>
           </div>
         </div>
       </div>
 
       <!-- Execution Context Card -->
       <div v-if="executionContext" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 lg:p-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Execution Context</h2>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('audit.auditDetailExecutionContext') }}</h2>
         <div class="space-y-3">
           <div v-if="executionContext.checkedInAt" class="flex items-center text-sm">
             <CheckCircleIcon class="w-5 h-5 text-green-600 dark:text-green-400 mr-2" />
-            <span class="text-gray-600 dark:text-gray-400">Checked in: </span>
+            <span class="text-gray-600 dark:text-gray-400">{{ t('audit.auditDetailCheckedIn') }}</span>
             <span class="text-gray-900 dark:text-white font-medium ml-1">{{ formatDateTime(executionContext.checkedInAt) }}</span>
           </div>
           <div v-if="executionContext.checkedOutAt" class="flex items-center text-sm">
             <XCircleIcon class="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" />
-            <span class="text-gray-600 dark:text-gray-400">Checked out: </span>
+            <span class="text-gray-600 dark:text-gray-400">{{ t('audit.auditDetailCheckedOut') }}</span>
             <span class="text-gray-900 dark:text-white font-medium ml-1">{{ formatDateTime(executionContext.checkedOutAt) }}</span>
           </div>
           <div v-if="executionContext.geo" class="flex items-start text-sm">
             <MapPinIcon class="w-5 h-5 text-purple-600 dark:text-purple-400 mr-2 mt-0.5" />
             <div>
-              <span class="text-gray-600 dark:text-gray-400">Location: </span>
+              <span class="text-gray-600 dark:text-gray-400">{{ t('audit.auditDetailLocation') }}</span>
               <span class="text-gray-900 dark:text-white font-medium">{{ executionContext.geo.address || 'Recorded' }}</span>
               <a
                 v-if="executionContext.geo.latitude && executionContext.geo.longitude"
                 :href="`https://maps.google.com/?q=${executionContext.geo.latitude},${executionContext.geo.longitude}`"
                 target="_blank"
                 class="ml-2 text-blue-600 dark:text-blue-400 hover:underline text-xs"
-              >
-                View on map
-              </a>
+              >{{ t('audit.auditDetailViewOnMap') }}</a>
             </div>
           </div>
         </div>
@@ -250,10 +242,10 @@
 
       <!-- Timeline Card -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 lg:p-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Timeline</h2>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('audit.auditDetailTimeline') }}</h2>
         <div v-if="timeline.length === 0" class="text-center py-12">
           <ClockIcon class="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-          <p class="text-gray-500 dark:text-gray-400 font-medium">No timeline events yet</p>
+          <p class="text-gray-500 dark:text-gray-400 font-medium">{{ t('audit.auditDetailNoTimelineEventsYet') }}</p>
           <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">{{ timelineEmptyHint }}</p>
         </div>
         <div v-else class="space-y-6">
@@ -380,9 +372,7 @@
           <button
             @click="closeActionConfirmDialog"
             class="px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-          >
-            Cancel
-          </button>
+          >{{ t('performance.cancelWizard') }}</button>
           <button
             @click="executeConfirmedAction"
             :class="confirmToneClass"
@@ -397,6 +387,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {

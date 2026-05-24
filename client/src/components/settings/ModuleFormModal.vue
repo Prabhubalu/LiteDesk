@@ -5,7 +5,7 @@
         <!-- Header -->
         <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between z-10">
           <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-            New Module
+            {{ t('settings.settingsModFormNewModule') }}
           </h2>
           <button @click="$emit('close')" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -19,37 +19,37 @@
           <!-- Module Name -->
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Module Name <span class="text-red-500">*</span>
+              {{ t('settings.settingsModFormNameLabel') }} <span class="text-red-500">*</span>
             </label>
             <input
               v-model="form.name"
               type="text"
               required
-              placeholder="e.g., Assets, Products, Cases"
+              :placeholder="t('settings.settingsModFormNamePh')"
               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               :class="{ 'border-red-500': formErrors.name }"
             />
             <p v-if="formErrors.name" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ formErrors.name }}</p>
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">The display name for this module</p>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.settingsModFormNameHint') }}</p>
           </div>
 
           <!-- Module Key -->
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Module Key <span class="text-red-500">*</span>
+              {{ t('settings.modFieldsModuleKeyLabel') }} <span class="text-red-500">*</span>
             </label>
             <input
               v-model="form.key"
               type="text"
               required
-              placeholder="e.g., assets, products, cases"
+              :placeholder="t('settings.settingsModFormKeyPh')"
               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               :class="{ 'border-red-500': formErrors.key }"
             />
             <p v-if="formErrors.key" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ formErrors.key }}</p>
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Lowercase key used internally (auto-generated from name, duplicates are automatically handled)
-              <span v-if="checkingDuplicate" class="text-blue-600 dark:text-blue-400 ml-1">Checking...</span>
+              {{ t('settings.settingsModFormKeyHint') }}
+              <span v-if="checkingDuplicate" class="text-blue-600 dark:text-blue-400 ml-1">{{ t('settings.settingsModFormCheckingDuplicate') }}</span>
             </p>
           </div>
 
@@ -60,14 +60,14 @@
               @click="$emit('close')" 
               class="px-6 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
             >
-              Cancel
+              {{ t('actions.cancel') }}
             </button>
             <button 
               type="submit" 
               :disabled="saving || !form.name || !form.key" 
               class="px-6 py-2.5 rounded-lg bg-indigo-600 dark:bg-indigo-700 text-white font-medium hover:bg-indigo-700 dark:hover:bg-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {{ saving ? 'Creating...' : 'Create Module' }}
+              {{ saving ? t('settings.settingsModFormCreating') : t('settings.modFieldsCreateModule') }}
             </button>
           </div>
         </form>
@@ -78,7 +78,10 @@
 
 <script setup>
 import { ref, watch, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
+
+const { t } = useI18n();
 
 const props = defineProps({
   module: {
@@ -205,13 +208,13 @@ const handleSubmit = async () => {
   try {
     // Validate
     if (!form.value.name || form.value.name.trim() === '') {
-      formErrors.value.name = 'Module name is required';
+      formErrors.value.name = t('settings.settingsModFormNameRequired');
       saving.value = false;
       return;
     }
 
     if (!form.value.key || form.value.key.trim() === '') {
-      formErrors.value.key = 'Module key is required';
+      formErrors.value.key = t('settings.settingsModFormKeyRequired');
       saving.value = false;
       return;
     }
@@ -219,7 +222,7 @@ const handleSubmit = async () => {
     // Validate key format (lowercase, alphanumeric, hyphens)
     const keyPattern = /^[a-z0-9-]+$/;
     if (!keyPattern.test(form.value.key)) {
-      formErrors.value.key = 'Key must contain only lowercase letters, numbers, and hyphens';
+      formErrors.value.key = t('settings.settingsModFormKeyFormat');
       saving.value = false;
       return;
     }
@@ -259,10 +262,9 @@ const handleSubmit = async () => {
         formErrors.value.name = message;
       }
     } else {
-      alert(error.message || 'Failed to create module');
+      alert(error.message || t('settings.settingsModFormCreateFailed'));
     }
     saving.value = false;
   }
 };
 </script>
-

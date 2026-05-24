@@ -11,9 +11,7 @@
     <div class="px-6 py-4">
       <div class="flex items-center justify-between">
         <div>
-          <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">
-            Related Records
-          </h3>
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">{{ t('records.taskRelatedRecordsTab') }}</h3>
           <p class="text-xs text-gray-500 dark:text-gray-400">
             View records scoped to {{ personName }}
           </p>
@@ -30,7 +28,7 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          <span>View all deals</span>
+          <span>{{ t('people.relationshipDrillDownsViewAllDeals') }}</span>
         </button>
         
         <!-- View all tasks - only if person has participation -->
@@ -42,7 +40,7 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
           </svg>
-          <span>View all tasks</span>
+          <span>{{ t('people.relationshipDrillDownsViewAllTasks') }}</span>
         </button>
         
         <!-- View all meetings - only if person has participation -->
@@ -54,7 +52,7 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          <span>View all meetings</span>
+          <span>{{ t('people.relationshipDrillDownsViewAllMeetings') }}</span>
         </button>
         
         <!-- View all cases - only if HELPDESK participation exists -->
@@ -66,7 +64,7 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          <span>View all cases</span>
+          <span>{{ t('people.relationshipDrillDownsViewAllCases') }}</span>
         </button>
       </div>
     </div>
@@ -74,6 +72,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { useTabs } from '@/composables/useTabs';
 
@@ -94,6 +93,8 @@ const props = defineProps({
     default: null
   }
 });
+
+const { t } = useI18n();
 
 const router = useRouter();
 const { openTab } = useTabs();

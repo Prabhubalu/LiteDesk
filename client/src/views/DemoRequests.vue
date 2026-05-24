@@ -3,8 +3,8 @@
     <!-- Header -->
     <div class="flex justify-between items-center mb-8">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Demo Requests</h1>
-        <p class="text-lg text-gray-600 dark:text-gray-400 mt-2">Manage and track all demo requests from potential customers</p>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ t('settings.tabDemoRequests') }}</h1>
+        <p class="text-lg text-gray-600 dark:text-gray-400 mt-2">{{ t('process.controlPlaneDemoRequestsDesc') }}</p>
       </div>
     </div>
 
@@ -18,7 +18,7 @@
         </div>
         <div>
           <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.total || 0 }}</p>
-          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Requests</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('common.demoRequestsTotalRequests') }}</p>
         </div>
       </div>
 
@@ -30,7 +30,7 @@
         </div>
         <div>
           <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.thisMonth || 0 }}</p>
-          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">This Month</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('common.demoRequestsThisMonth') }}</p>
         </div>
       </div>
 
@@ -42,7 +42,7 @@
         </div>
         <div>
           <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.byStatus?.pending || 0 }}</p>
-          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Pending</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('process.flowHealthPending') }}</p>
         </div>
       </div>
 
@@ -54,7 +54,7 @@
         </div>
         <div>
           <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.byStatus?.converted || 0 }}</p>
-          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Converted</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('common.demoRequestsConverted3') }}</p>
         </div>
       </div>
     </div>
@@ -69,7 +69,7 @@
           <input 
             v-model="searchQuery" 
             type="text" 
-            placeholder="Search demo requests..."
+            :placeholder="t('common.demoRequestsSearchDemoRequests')"
             @input="debouncedSearch"
             class="w-full pl-9 pr-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
           />
@@ -82,13 +82,13 @@
           @change="fetchDemoRequests"
           class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer text-sm"
         >
-          <option value="">All Status</option>
-          <option value="pending">Pending</option>
-          <option value="contacted">Contacted</option>
-          <option value="demo_scheduled">Demo Scheduled</option>
-          <option value="demo_completed">Demo Completed</option>
-          <option value="converted">Converted</option>
-          <option value="rejected">Rejected</option>
+          <option value="">{{ t('settings.groupsFilterAllStatus') }}</option>
+          <option value="pending">{{ t('process.flowHealthPending') }}</option>
+          <option value="contacted">{{ t('common.demoRequestsContacted2') }}</option>
+          <option value="demo_scheduled">{{ t('common.demoRequestsDemoScheduled2') }}</option>
+          <option value="demo_completed">{{ t('common.demoRequestsDemoCompleted2') }}</option>
+          <option value="converted">{{ t('common.demoRequestsConverted2') }}</option>
+          <option value="rejected">{{ t('process.flowHealthRejected') }}</option>
         </select>
 
         <button 
@@ -98,15 +98,13 @@
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-          Clear
-        </button>
+          </svg>{{ t('settings.modFieldsClear') }}</button>
       </div>
     </div>
 
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-12">
-      <p class="text-gray-600 dark:text-gray-400">Loading demo requests...</p>
+      <p class="text-gray-600 dark:text-gray-400">{{ t('common.demoRequestsLoadingDemoRequests') }}</p>
     </div>
 
     <!-- Error State -->
@@ -119,14 +117,14 @@
       <table class="w-full border-collapse">
         <thead class="bg-gray-50 dark:bg-gray-900">
           <tr>
-            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">Company</th>
-            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">Contact</th>
-            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">Email</th>
-            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">Industry</th>
-            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">Size</th>
-            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">Status</th>
-            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">Date</th>
-            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">Actions</th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">{{ t('settings.settingsBhScopeCompany') }}</th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">{{ t('forms.hubLinkedContact') }}</th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">{{ t('settings.settingsAddFieldTypeEmail') }}</th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">{{ t('settings.assignRulesCondFieldIndustry') }}</th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">{{ t('common.demoRequestsSize') }}</th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">{{ t('settings.settingsBhFieldStatus') }}</th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">{{ t('settings.settingsAddFieldTypeDate') }}</th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">{{ t('navigation.portalActions') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -147,18 +145,14 @@
                 <button 
                   @click="viewDetails(request)"
                   class="px-3 py-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-all hover:scale-105"
-                  title="View Details"
-                >
-                  View
-                </button>
+                  :title="t('process.execLogsViewDetails')"
+                >{{ t('common.viewRecord') }}</button>
                 <button 
                   v-if="request.status !== 'converted'"
                   @click="openConvertModal(request)"
                   class="px-3 py-1.5 text-sm font-medium text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all hover:scale-105"
-                  title="Convert to Organization"
-                >
-                  Convert
-                </button>
+                  :title="t('common.demoRequestsConvertToOrganization2')"
+                >{{ t('common.demoRequestsConvert2') }}</button>
               </div>
             </td>
           </tr>
@@ -168,62 +162,60 @@
 
     <!-- Empty State -->
     <div v-else class="empty-state">
-      <p class="text-gray-600 dark:text-gray-400 text-center py-12">
-        No demo requests found
-      </p>
+      <p class="text-gray-600 dark:text-gray-400 text-center py-12">{{ t('common.demoRequestsNoDemoRequestsFound') }}</p>
     </div>
 
     <!-- Details Modal -->
     <div v-if="selectedRequest" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="closeModal">
       <div class="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" @click.stop>
         <div class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Demo Request Details</h2>
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('common.demoRequestsDemoRequestDetails') }}</h2>
           <button @click="closeModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-3xl font-bold">×</button>
         </div>
         
         <div class="p-6">
           <div class="mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Company Information</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">{{ t('common.demoRequestsCompanyInformation') }}</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <span class="text-sm text-gray-600 dark:text-gray-400">Company Name:</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('common.demoRequestsCompanyName') }}</span>
                 <p class="font-medium text-gray-900 dark:text-white">{{ selectedRequest.companyName }}</p>
               </div>
               <div>
-                <span class="text-sm text-gray-600 dark:text-gray-400">Industry:</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('common.demoRequestsIndustry') }}</span>
                 <p class="font-medium text-gray-900 dark:text-white">{{ selectedRequest.industry }}</p>
               </div>
               <div>
-                <span class="text-sm text-gray-600 dark:text-gray-400">Company Size:</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('common.demoRequestsCompanySize') }}</span>
                 <p class="font-medium text-gray-900 dark:text-white">{{ selectedRequest.companySize }}</p>
               </div>
             </div>
           </div>
 
           <div class="mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Contact Information</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">{{ t('common.demoRequestsContactInformation') }}</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <span class="text-sm text-gray-600 dark:text-gray-400">Contact Name:</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('common.demoRequestsContactName') }}</span>
                 <p class="font-medium text-gray-900 dark:text-white">{{ selectedRequest.contactName }}</p>
               </div>
               <div>
-                <span class="text-sm text-gray-600 dark:text-gray-400">Email:</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('common.demoRequestsEmail') }}</span>
                 <p class="font-medium text-gray-900 dark:text-white">{{ selectedRequest.email }}</p>
               </div>
               <div>
-                <span class="text-sm text-gray-600 dark:text-gray-400">Phone:</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('common.demoRequestsPhone') }}</span>
                 <p class="font-medium text-gray-900 dark:text-white">{{ selectedRequest.phone || 'N/A' }}</p>
               </div>
               <div>
-                <span class="text-sm text-gray-600 dark:text-gray-400">Job Title:</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('common.demoRequestsJobTitle') }}</span>
                 <p class="font-medium text-gray-900 dark:text-white">{{ selectedRequest.jobTitle || 'N/A' }}</p>
               </div>
             </div>
           </div>
 
           <div v-if="selectedRequest.message" class="mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Message</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">{{ t('settings.modFieldsMessageLabel') }}</h3>
             <p class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 text-gray-700 dark:text-gray-300">{{ selectedRequest.message }}</p>
           </div>
 
@@ -234,54 +226,53 @@
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-green-600 dark:text-green-400">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span class="font-medium text-green-800 dark:text-green-200">This prospect is already in your CRM!</span>
+              <span class="font-medium text-green-800 dark:text-green-200">{{ t('common.demoRequestsThisProspectIsAlreadyInYour') }}</span>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div v-if="selectedRequest.organizationId">
-                <span class="text-sm text-gray-600 dark:text-gray-400">Organization:</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('common.demoRequestsOrganization') }}</span>
                 <p class="font-medium text-gray-900 dark:text-white">
                   {{ selectedRequest.organizationId.name }} 
                   <span class="text-gray-500 dark:text-gray-400">({{ selectedRequest.organizationId.industry }})</span>
                 </p>
               </div>
               <div v-if="selectedRequest.contactId">
-                <span class="text-sm text-gray-600 dark:text-gray-400">Contact:</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('common.demoRequestsContact') }}</span>
                 <p class="font-medium text-gray-900 dark:text-white">
                   {{ selectedRequest.contactId.first_name }} {{ selectedRequest.contactId.last_name }}
                   <span class="inline-block px-2 py-1 text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 rounded-full ml-2">{{ selectedRequest.contactId.lifecycle_stage }}</span>
                 </p>
               </div>
               <div v-if="selectedRequest.contactId">
-                <span class="text-sm text-gray-600 dark:text-gray-400">Contact Email:</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('common.demoRequestsContactEmail') }}</span>
                 <p class="font-medium text-gray-900 dark:text-white">{{ selectedRequest.contactId.email }}</p>
               </div>
               <div v-if="selectedRequest.contactId && selectedRequest.contactId.phone">
-                <span class="text-sm text-gray-600 dark:text-gray-400">Contact Phone:</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('common.demoRequestsContactPhone') }}</span>
                 <p class="font-medium text-gray-900 dark:text-white">{{ selectedRequest.contactId.phone }}</p>
               </div>
             </div>
             
             <div class="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 dark:border-yellow-600 rounded">
               <p class="text-sm text-yellow-800 dark:text-yellow-200">
-                <strong>Note:</strong> This contact exists in a separate organization. They will see their own CRM data when they log in.
-              </p>
+                <strong>{{ t('settings.modFieldsNoteLabel') }}</strong>{{ t('common.demoRequestsThisContactExistsInASeparate') }}</p>
             </div>
           </div>
 
           <div class="mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Update Status</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">{{ t('common.demoRequestsUpdateStatus') }}</h3>
             <div class="flex gap-3">
               <select 
                 v-model="updateStatusValue" 
                 class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               >
-                <option value="pending">Pending</option>
-                <option value="contacted">Contacted</option>
-                <option value="demo_scheduled">Demo Scheduled</option>
-                <option value="demo_completed">Demo Completed</option>
-                <option value="converted">Converted</option>
-                <option value="rejected">Rejected</option>
+                <option value="pending">{{ t('process.flowHealthPending') }}</option>
+                <option value="contacted">{{ t('common.demoRequestsContacted') }}</option>
+                <option value="demo_scheduled">{{ t('common.demoRequestsDemoScheduled') }}</option>
+                <option value="demo_completed">{{ t('common.demoRequestsDemoCompleted') }}</option>
+                <option value="converted">{{ t('common.demoRequestsConverted') }}</option>
+                <option value="rejected">{{ t('process.flowHealthRejected') }}</option>
               </select>
               <button 
                 @click="updateStatus" 
@@ -300,12 +291,12 @@
     <div v-if="convertModalRequest" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="closeConvertModal">
       <div class="bg-white dark:bg-gray-800 rounded-xl max-w-lg w-full mx-4" @click.stop>
         <div class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Convert to Organization</h2>
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('common.demoRequestsConvertToOrganization') }}</h2>
           <button @click="closeConvertModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-3xl font-bold">×</button>
         </div>
         
         <div class="p-6">
-          <p class="mb-6 text-gray-700 dark:text-gray-300">Convert <strong class="text-gray-900 dark:text-white">{{ convertModalRequest.companyName }}</strong> to an active organization?</p>
+          <p class="mb-6 text-gray-700 dark:text-gray-300">{{ t('common.demoRequestsConvert') }}<strong class="text-gray-900 dark:text-white">{{ convertModalRequest.companyName }}</strong> to an active organization?</p>
           
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Temporary Password *</label>
@@ -313,18 +304,18 @@
               v-model="convertPassword" 
               type="password" 
               class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              placeholder="Enter temporary password for owner"
+              :placeholder="t('common.demoRequestsEnterTemporaryPasswordForOwner')"
               required
             />
           </div>
 
           <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subscription Tier</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('common.demoRequestsSubscriptionTier') }}</label>
             <select v-model="convertTier" class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-              <option value="trial">Trial (15 days)</option>
-              <option value="starter">Starter</option>
-              <option value="professional">Professional</option>
-              <option value="enterprise">Enterprise</option>
+              <option value="trial">{{ t('common.demoRequestsTrial15Days') }}</option>
+              <option value="starter">{{ t('common.demoRequestsStarter') }}</option>
+              <option value="professional">{{ t('common.demoRequestsProfessional') }}</option>
+              <option value="enterprise">{{ t('common.demoRequestsEnterprise') }}</option>
             </select>
           </div>
 
@@ -336,9 +327,7 @@
             >
               {{ converting ? 'Converting...' : 'Convert' }}
             </button>
-            <button @click="closeConvertModal" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors">
-              Cancel
-            </button>
+            <button @click="closeConvertModal" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors">{{ t('performance.cancelWizard') }}</button>
           </div>
         </div>
       </div>
@@ -347,6 +336,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, onMounted, computed } from 'vue';
 import apiClient from '../utils/apiClient';
 
@@ -439,7 +431,7 @@ const updateStatus = async () => {
     }
   } catch (err) {
     console.error('Error updating status:', err);
-    alert('Failed to update status');
+    alert(t('common.demoRequestsToastFailedToUpdateStatus'));
   } finally {
     updatingStatus.value = false;
   }
@@ -474,14 +466,14 @@ const convertRequest = async () => {
     );
     
     if (data.success) {
-      alert('Successfully converted to organization!');
+      alert(t('common.demoRequestsToastSuccessfullyConvertedToOrganization'));
       closeConvertModal();
       await fetchDemoRequests();
       await fetchStats();
     }
   } catch (err) {
     console.error('Error converting request:', err);
-    alert(err.message || 'Failed to convert request');
+    alert(err.message || t('common.demoRequestsToastFailedToConvertRequest'));
   } finally {
     converting.value = false;
   }

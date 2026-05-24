@@ -2,7 +2,7 @@
   <div class="max-w-full">
     <!-- Header -->
     <div class="mb-6">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Trash</h1>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('navigation.userTrash') }}</h1>
       <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
         Items can be restored within {{ retentionDays }} days. After that, they are permanently removed.
       </p>
@@ -12,7 +12,7 @@
     <div v-if="stats" class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
       <!-- Total in Trash -->
       <div class="rounded-xl border border-gray-200/80 dark:border-gray-700/80 bg-white dark:bg-gray-800/80 px-4 py-3 shadow-sm">
-        <p class="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Total in Trash</p>
+        <p class="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('common.trashTotalInTrash') }}</p>
         <p class="mt-1 text-xl font-semibold tabular-nums text-gray-900 dark:text-white">
           {{ stats.total }} {{ stats.total === 1 ? 'item' : 'items' }}
         </p>
@@ -26,7 +26,7 @@
             : 'border-gray-200/80 dark:border-gray-700/80 bg-white dark:bg-gray-800/80'
         ]"
       >
-        <p class="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Expiring in 7 Days</p>
+        <p class="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('common.trashExpiringIn7Days') }}</p>
         <p
           :class="[
             'mt-1 flex items-center gap-1.5 text-xl font-semibold tabular-nums',
@@ -39,14 +39,14 @@
       </div>
       <!-- Oldest Item (countdown) -->
       <div class="rounded-xl border border-gray-200/80 dark:border-gray-700/80 bg-white dark:bg-gray-800/80 px-4 py-3 shadow-sm">
-        <p class="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Oldest Item</p>
+        <p class="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('common.trashOldestItem') }}</p>
         <p class="mt-1 text-xl font-semibold tabular-nums text-gray-900 dark:text-white">
           {{ oldestItemDisplay }}
         </p>
       </div>
       <!-- Retention -->
       <div class="rounded-xl border border-gray-200/80 dark:border-gray-700/80 bg-white dark:bg-gray-800/80 px-4 py-3 shadow-sm">
-        <p class="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Retention</p>
+        <p class="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('common.trashRetention') }}</p>
         <p class="mt-1 text-xl font-semibold tabular-nums text-gray-900 dark:text-white">
           {{ retentionDays }} days
         </p>
@@ -62,7 +62,7 @@
           <input
             v-model="searchQuery"
             type="search"
-            placeholder="Search name, module, deleted by..."
+            :placeholder="t('common.trashSearchNameModuleDeletedBy')"
             class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 py-2 pl-9 pr-3 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             @input="debouncedSearch"
           />
@@ -87,7 +87,7 @@
             >
               <ListboxOption value="" v-slot="{ active }">
                 <li :class="['relative cursor-default select-none py-2 pl-3 pr-9', active ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100']">
-                  <span class="block truncate">All modules</span>
+                  <span class="block truncate">{{ t('common.trashAllModules') }}</span>
                 </li>
               </ListboxOption>
               <ListboxOption v-for="(label, key) in MODULE_LABELS" :key="key" :value="key" v-slot="{ active }">
@@ -121,7 +121,7 @@
             >
               <ListboxOption value="" v-slot="{ active }">
                 <li :class="['relative cursor-default select-none py-2 pl-3 pr-9', active ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100']">
-                  <span class="block truncate">All users</span>
+                  <span class="block truncate">{{ t('common.trashAllUsers') }}</span>
                 </li>
               </ListboxOption>
               <ListboxOption v-for="u in (stats?.deletedByUsers || [])" :key="u.id" :value="u.id" v-slot="{ active }">
@@ -151,7 +151,7 @@
               type="date"
               :max="filterDeletedTo || undefined"
               class="sr-only"
-              aria-label="Deleted from"
+              :aria-label="t('common.trashDeletedFrom')"
             />
             <span class="block text-sm text-gray-700 dark:text-gray-300">
               {{ formatDateDisplay(filterDeletedFrom) || 'From' }}
@@ -172,7 +172,7 @@
               type="date"
               :min="filterDeletedFrom || undefined"
               class="sr-only"
-              aria-label="Deleted to"
+              :aria-label="t('common.trashDeletedTo')"
             />
             <span class="block text-sm text-gray-700 dark:text-gray-300">
               {{ formatDateDisplay(filterDeletedTo) || 'To' }}
@@ -185,9 +185,7 @@
           class="flex items-center gap-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
           @click="clearFilters"
         >
-          <XMarkIcon class="h-4 w-4" />
-          Clear
-        </button>
+          <XMarkIcon class="h-4 w-4" />{{ t('settings.modFieldsClear') }}</button>
       </div>
       <!-- Right: Sort + Empty Trash -->
       <div class="flex items-center gap-3">
@@ -225,9 +223,7 @@
           type="button"
           class="rounded-lg border border-red-300 dark:border-red-800 bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
           @click="showEmptyTrashModal = true"
-        >
-          Empty Trash
-        </button>
+        >{{ t('common.trashEmptyTrash') }}</button>
       </div>
     </div>
 
@@ -243,23 +239,17 @@
         type="button"
         class="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-500 transition-colors"
         @click="bulkRestore"
-      >
-        Restore selected
-      </button>
+      >{{ t('common.trashRestoreSelected') }}</button>
       <button
         type="button"
         class="rounded-lg border border-red-300 dark:border-red-700 px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
         @click="bulkPurge"
-      >
-        Delete permanently
-      </button>
+      >{{ t('common.trashDeletePermanently') }}</button>
       <button
         type="button"
         class="ml-auto text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
         @click="selectedIds.clear()"
-      >
-        Clear selection
-      </button>
+      >{{ t('common.tableClearSelection') }}</button>
     </div>
 
     <!-- Loading -->
@@ -278,10 +268,8 @@
     <!-- Empty -->
     <div v-else-if="items.length === 0" class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 py-16 text-center">
       <TrashIcon class="mx-auto h-14 w-14 text-gray-400 dark:text-gray-500" />
-      <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">Trash is empty</h3>
-      <p class="mt-2 max-w-sm mx-auto text-sm text-gray-500 dark:text-gray-400">
-        Deleted items will appear here. You can restore them or permanently delete them before they expire.
-      </p>
+      <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">{{ t('common.trashTrashIsEmpty') }}</h3>
+      <p class="mt-2 max-w-sm mx-auto text-sm text-gray-500 dark:text-gray-400">{{ t('common.trashDeletedItemsWillAppearHereYou') }}</p>
     </div>
 
     <!-- Table -->
@@ -297,11 +285,11 @@
                 @change="toggleSelectAll"
               />
             </th>
-            <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Name</th>
-            <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Module</th>
-            <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Deleted by</th>
-            <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Auto delete in</th>
-            <th class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Actions</th>
+            <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('settings.settingsBhFieldName') }}</th>
+            <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('settings.assignRulesLabelModule') }}</th>
+            <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('common.trashDeletedBy') }}</th>
+            <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('common.trashAutoDeleteIn') }}</th>
+            <th class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('navigation.portalActions') }}</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -349,18 +337,14 @@
                   class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                   @click="restore(item)"
                 >
-                  <ArrowPathIcon class="h-4 w-4" />
-                  Restore
-                </button>
+                  <ArrowPathIcon class="h-4 w-4" />{{ t('common.trashRestore') }}</button>
                 <button
                   v-if="!item.isLegalHold"
                   type="button"
                   class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                   @click="purge(item)"
                 >
-                  <TrashIcon class="h-4 w-4" />
-                  Delete
-                </button>
+                  <TrashIcon class="h-4 w-4" />{{ t('settings.modFieldsDelete') }}</button>
               </div>
             </td>
           </tr>
@@ -381,17 +365,13 @@
             :disabled="pagination.page <= 1"
             class="rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             @click="loadPage(pagination.page - 1)"
-          >
-            Previous
-          </button>
+          >{{ t('actions.previous') }}</button>
           <button
             type="button"
             :disabled="pagination.page * pagination.limit >= pagination.total"
             class="rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             @click="loadPage(pagination.page + 1)"
-          >
-            Next
-          </button>
+          >{{ t('actions.next') }}</button>
         </div>
       </div>
     </div>
@@ -422,6 +402,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, computed, onMounted, watch } from 'vue';
 import { TrashIcon, ArrowPathIcon, MagnifyingGlassIcon, ExclamationTriangleIcon, ChevronUpDownIcon, CheckIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue';
@@ -673,14 +656,14 @@ async function restore(item) {
     const res = await apiClient(`/trash/${item.moduleKey}/${item.recordId}/restore`, { method: 'POST' });
     if (res?.success) {
       if (res.orphanedReferences?.length) {
-        alert('Restored. Some parent records were permanently deleted.');
+        alert(t('common.trashToastRestoredSomeParentRecordsWere'));
       }
       await Promise.all([loadItems(pagination.value?.page || 1), loadStats()]);
     } else {
-      alert(res?.message || 'Failed to restore');
+      alert(res?.message || t('common.trashToastFailedToRestore'));
     }
   } catch (e) {
-    alert(e.message || 'Failed to restore');
+    alert(e.message || t('common.trashToastFailedToRestore2'));
   }
 }
 
@@ -700,10 +683,10 @@ async function confirmPurge() {
         purgeTarget.value = null;
         await Promise.all([loadItems(pagination.value?.page || 1), loadStats()]);
       } else {
-        alert(res?.message || 'Failed to delete');
+        alert(res?.message || t('common.trashToastFailedToDelete'));
       }
     } catch (e) {
-      alert(e.message || 'Failed to delete');
+      alert(e.message || t('common.trashToastFailedToDelete2'));
     } finally {
       purging.value = false;
     }

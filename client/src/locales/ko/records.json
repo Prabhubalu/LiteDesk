@@ -1,0 +1,1214 @@
+{
+  "shellErrorTitle": {
+    "message": "기록을 로드하는 중 오류가 발생했습니다.",
+    "description": "Record page load error heading"
+  },
+  "shellLoadFailed": {
+    "message": "레코드를 로드하지 못했습니다.",
+    "description": "Record page load error fallback"
+  },
+  "contextTabsAria": {
+    "message": "컨텍스트 패널 탭",
+    "description": "Vertical context tab rail aria label"
+  },
+  "fieldsHeadingSr": {
+    "message": "레코드 필드",
+    "description": "Screen reader heading for record fields section"
+  },
+  "customFieldsHeadingSr": {
+    "message": "사용자 정의 필드",
+    "description": "Screen reader heading for custom fields section"
+  },
+  "relatedRecordsHeadingSr": {
+    "message": "관련 기록",
+    "description": "Screen reader heading for related records section"
+  },
+  "activityHeadingSr": {
+    "message": "활동(최신 항목이 맨 아래에 있음)",
+    "description": "Activity timeline screen reader heading"
+  },
+  "activityReply": {
+    "message": "회신하다",
+    "description": "Reply to comment action"
+  },
+  "activityEmpty": {
+    "message": "아직 활동이 없습니다.",
+    "description": "Empty activity feed"
+  },
+  "activityCommentPh": {
+    "message": "댓글을 쓰세요...",
+    "description": "Comment composer placeholder"
+  },
+  "activityAddAttachment": {
+    "message": "첨부파일 추가",
+    "description": "Add attachment button title"
+  },
+  "activityMention": {
+    "message": "언급하다",
+    "description": "Mention button title"
+  },
+  "activityEmoji": {
+    "message": "이모티콘",
+    "description": "Emoji picker button title"
+  },
+  "activityCommentBtn": {
+    "message": "논평",
+    "description": "Submit comment button"
+  },
+  "activityUpdated": {
+    "message": "업데이트됨",
+    "description": "Default system activity verb"
+  },
+  "activitySystemWithAction": {
+    "message": "{action} 이 기록",
+    "description": "System activity fallback with action verb"
+  },
+  "tagsTitle": {
+    "message": "태그",
+    "description": "Tags popover title"
+  },
+  "tagsNewTag": {
+    "message": "새 태그",
+    "description": "New tag button"
+  },
+  "tagsNoPermission": {
+    "message": "태그를 수정할 권한이 없습니다.",
+    "description": "Tags read-only message"
+  },
+  "tagsRemoveFromRecord": {
+    "message": "이 기록에서 삭제",
+    "description": "Remove tag from record action"
+  },
+  "tagsEditTag": {
+    "message": "태그 수정",
+    "description": "Edit tag action"
+  },
+  "tagsDeleteFromModule": {
+    "message": "모듈에서 태그 삭제",
+    "description": "Delete tag from module action"
+  },
+  "tagsSearchHint": {
+    "message": "사용 가능한 태그를 보려면 검색창을 클릭하세요.",
+    "description": "Tags search hint"
+  },
+  "tagsNoneYet": {
+    "message": "이 인스턴스에는 아직 생성된 태그가 없습니다.",
+    "description": "Empty tags list"
+  },
+  "tagsCreateFirst": {
+    "message": "첫 번째 태그 만들기",
+    "description": "Create first tag CTA"
+  },
+  "tagsPublic": {
+    "message": "공공의",
+    "description": "Public tag badge"
+  },
+  "tagsTagName": {
+    "message": "태그 이름",
+    "description": "Tag name field label"
+  },
+  "tagsColor": {
+    "message": "색상",
+    "description": "Tag color field label"
+  },
+  "tagsMakePublic": {
+    "message": "태그를 공개로 설정",
+    "description": "Make tag public checkbox"
+  },
+  "tagsSearchPh": {
+    "message": "태그 검색 또는 만들기",
+    "description": "Tag search placeholder"
+  },
+  "tagsTagActions": {
+    "message": "태그 작업",
+    "description": "Tag actions menu aria label"
+  },
+  "tagsNamePh": {
+    "message": "태그 이름을 입력하세요.",
+    "description": "Tag name input placeholder"
+  },
+  "detailsTitle": {
+    "message": "세부",
+    "description": "Details section title"
+  },
+  "detailsSelectOption": {
+    "message": "옵션을 선택하세요",
+    "description": "Empty picklist placeholder"
+  },
+  "detailsLinkRecord": {
+    "message": "기록을 연결하려면 클릭하세요.",
+    "description": "Empty lookup field placeholder"
+  },
+  "relatedTitle": {
+    "message": "관련된",
+    "description": "Related section title"
+  },
+  "relatedEmpty": {
+    "message": "아직 관련 기록이 없습니다.",
+    "description": "Empty related list"
+  },
+  "relatedEmptyHint": {
+    "message": "이 기록을 관련 항목에 연결합니다.",
+    "description": "Empty related hint"
+  },
+  "relatedUnlink": {
+    "message": "풀리다",
+    "description": "Unlink related record"
+  },
+  "relatedActionsAria": {
+    "message": "관련 레코드 작업",
+    "description": "Related record actions menu aria"
+  },
+  "stageHistoryTitle": {
+    "message": "무대 역사",
+    "description": "Stage history section title"
+  },
+  "subtasksEditAria": {
+    "message": "하위 할 일 수정",
+    "description": "Edit subtask button title"
+  },
+  "subtasksDeleteAria": {
+    "message": "하위 할 일 삭제",
+    "description": "Delete subtask button title"
+  },
+  "subtasksNamePh": {
+    "message": "작업 이름",
+    "description": "New subtask name placeholder"
+  },
+  "subtasksEmpty": {
+    "message": "아직 하위 할 일이 없습니다.",
+    "description": "Empty subtasks list"
+  },
+  "stateHeadingSr": {
+    "message": "기록 상태",
+    "description": "Record state section screen reader heading"
+  },
+  "descriptionTitle": {
+    "message": "설명",
+    "description": "Description section default title"
+  },
+  "descriptionEmpty": {
+    "message": "설명 없음",
+    "description": "Empty description placeholder"
+  },
+  "tabSummary": {
+    "message": "요약",
+    "description": "Right pane summary tab"
+  },
+  "tabDetails": {
+    "message": "세부",
+    "description": "Right pane details tab"
+  },
+  "tabUpdates": {
+    "message": "업데이트",
+    "description": "Right pane updates tab"
+  },
+  "tabContentFallback": {
+    "message": "{name} 내용",
+    "description": "Right pane tab placeholder content"
+  },
+  "sectionActionFallback": {
+    "message": "행동",
+    "description": "Section stack action button fallback label"
+  },
+  "descriptionAdd": {
+    "message": "설명 추가",
+    "description": "Editable empty description CTA"
+  },
+  "descriptionEmptyReadonly": {
+    "message": "아직 설명이 없습니다.",
+    "description": "Read-only empty description"
+  },
+  "subtasksHeader": {
+    "message": "하위 작업({completed}/{total})",
+    "description": "Subtasks section header with counts"
+  },
+  "subtasksUntitled": {
+    "message": "제목 없는 하위 할 일",
+    "description": "Subtask without title"
+  },
+  "subtasksViewAll": {
+    "message": "모두 보기({count})",
+    "description": "View all subtasks link"
+  },
+  "relatedUntitled": {
+    "message": "제목 없음",
+    "description": "Related record without title"
+  },
+  "genericLoading": {
+    "message": "{module} 로드 중...",
+    "description": "Record page loading message"
+  },
+  "genericErrorTitle": {
+    "message": "{module} 로드 중 오류가 발생했습니다.",
+    "description": "Record page error title"
+  },
+  "genericNavPrevious": {
+    "message": "이전 {singular}",
+    "description": "Previous record navigation"
+  },
+  "genericNavNext": {
+    "message": "다음 {singular}",
+    "description": "Next record navigation"
+  },
+  "genericTagsAria": {
+    "message": "태그",
+    "description": "Tags button aria"
+  },
+  "genericCopyUrl": {
+    "message": "URL 복사",
+    "description": "Copy URL button"
+  },
+  "genericMoreActions": {
+    "message": "추가 작업",
+    "description": "More actions menu"
+  },
+  "genericSendEmail": {
+    "message": "이메일 보내기",
+    "description": "Send email menu action"
+  },
+  "genericBackTo": {
+    "message": "{singular}로 돌아가기",
+    "description": "Back from expanded section"
+  },
+  "genericCollapseSection": {
+    "message": "섹션 접기",
+    "description": "Collapse section aria"
+  },
+  "genericCollapse": {
+    "message": "무너지다",
+    "description": "Collapse button title"
+  },
+  "genericNoDescInVersion": {
+    "message": "이 버전에는 설명이 없습니다.",
+    "description": "Empty description version"
+  },
+  "genericVersionHistory": {
+    "message": "버전 기록",
+    "description": "Description version history title"
+  },
+  "genericCurrentVersion": {
+    "message": "현재 버전",
+    "description": "Current version label"
+  },
+  "genericVersionRetention": {
+    "message": "버전 기록은 최대 365일 동안 저장됩니다.",
+    "description": "Version retention note"
+  },
+  "genericRestoreVersion": {
+    "message": "이 버전을 복원하세요",
+    "description": "Restore description version"
+  },
+  "genericRestoring": {
+    "message": "복원 중…",
+    "description": "Restore in progress"
+  },
+  "genericSomeone": {
+    "message": "누구",
+    "description": "Unknown version author"
+  },
+  "genericKeyFields": {
+    "message": "주요 분야",
+    "description": "Key fields section heading"
+  },
+  "genericAppParticipation": {
+    "message": "앱 참여",
+    "description": "People app participation section"
+  },
+  "genericConvertToContact": {
+    "message": "연락처로 변환",
+    "description": "Convert lead to contact"
+  },
+  "genericNotInAnyApp": {
+    "message": "이 사람은 아직 어떤 앱에도 참여하고 있지 않습니다.",
+    "description": "Empty people participation"
+  },
+  "genericAddRecord": {
+    "message": "레코드 추가",
+    "description": "Add related record button"
+  },
+  "genericLinkRecord": {
+    "message": "링크 기록",
+    "description": "Link record button"
+  },
+  "genericShowEmptyFields": {
+    "message": "빈 필드 표시",
+    "description": "Show empty fields toggle"
+  },
+  "genericNoFieldsMatch": {
+    "message": "필터와 일치하는 필드가 없습니다.",
+    "description": "Details filter no match"
+  },
+  "genericNoFieldsToShow": {
+    "message": "표시할 필드가 없습니다.",
+    "description": "Empty details fields"
+  },
+  "genericNoRecordLoaded": {
+    "message": "로드된 레코드가 없습니다.",
+    "description": "No record state"
+  },
+  "genericIntegrations": {
+    "message": "통합",
+    "description": "Integrations section title"
+  },
+  "genericNoIntegrations": {
+    "message": "구성된 통합이 없습니다.",
+    "description": "Empty integrations"
+  },
+  "genericFilterFieldsPh": {
+    "message": "필드 필터링…",
+    "description": "Details field filter placeholder"
+  },
+  "genericOpenInNewTab": {
+    "message": "새 탭에서 열기",
+    "description": "Open record in new tab"
+  },
+  "genericEditParticipation": {
+    "message": "참여 편집",
+    "description": "Edit app participation"
+  },
+  "genericAddToApp": {
+    "message": "{app}에 추가",
+    "description": "Add person to app"
+  },
+  "genericLinkDrawerAddAndLink": {
+    "message": "레코드 추가 및 연결",
+    "description": "Link drawer title multi"
+  },
+  "genericLinkDrawerLink": {
+    "message": "링크 레코드",
+    "description": "Link drawer title single"
+  },
+  "genericReactorUnavailable": {
+    "message": "원자로 세부정보를 확인할 수 없음",
+    "description": "Reactor panel unavailable"
+  },
+  "genericUnlinkFailed": {
+    "message": "레코드 연결을 해제하는 중에 오류가 발생했습니다. 다시 시도해 주세요.",
+    "description": "Unlink related record error"
+  },
+  "genericThreadAssigned": {
+    "message": "할당된 스레드",
+    "description": "Thread assign success"
+  },
+  "genericThreadUnassigned": {
+    "message": "스레드가 할당되지 않았습니다.",
+    "description": "Thread unassign success"
+  },
+  "genericThreadAssignFailed": {
+    "message": "스레드를 할당하지 못했습니다.",
+    "description": "Thread assign error"
+  },
+  "genericThreadUnassignFailed": {
+    "message": "스레드 할당을 해제하지 못했습니다.",
+    "description": "Thread unassign error"
+  },
+  "genericTagAdded": {
+    "message": "태그가 추가됨",
+    "description": "Tag add success"
+  },
+  "genericTagAddFailed": {
+    "message": "태그를 추가하지 못했습니다.",
+    "description": "Tag add error"
+  },
+  "genericTagRemoved": {
+    "message": "태그가 삭제되었습니다.",
+    "description": "Tag remove success"
+  },
+  "genericTagRemoveFailed": {
+    "message": "태그를 제거하지 못했습니다.",
+    "description": "Tag remove error"
+  },
+  "genericThreadMarkedDone": {
+    "message": "스레드가 완료로 표시됨",
+    "description": "Thread done success"
+  },
+  "genericThreadReopened": {
+    "message": "스레드가 다시 열렸습니다.",
+    "description": "Thread reopen success"
+  },
+  "genericThreadStatusFailed": {
+    "message": "스레드 상태를 업데이트하지 못했습니다.",
+    "description": "Thread status error"
+  },
+  "genericConfirmCancelAppt": {
+    "message": "이 약속을 취소하시겠습니까? 게스트는 공개 링크를 사용하여 다시 예약할 수 있습니다.",
+    "description": "Cancel appointment confirm"
+  },
+  "genericApptCancelled": {
+    "message": "약속이 취소되었습니다.",
+    "description": "Appointment cancel success"
+  },
+  "genericApptCancelFailed": {
+    "message": "약속을 취소할 수 없습니다.",
+    "description": "Appointment cancel error"
+  },
+  "genericConfirmCompleteAppt": {
+    "message": "이 약속을 완료됨으로 표시하시겠습니까?",
+    "description": "Complete appointment confirm"
+  },
+  "genericApptCompleted": {
+    "message": "예약 완료",
+    "description": "Appointment complete success"
+  },
+  "genericApptCompleteFailed": {
+    "message": "약속을 완료할 수 없습니다.",
+    "description": "Appointment complete error"
+  },
+  "genericConfirmNoShowAppt": {
+    "message": "이 약속을 불참으로 표시하시겠습니까? 이벤트는 계획대로 캘린더에 유지됩니다.",
+    "description": "No-show appointment confirm"
+  },
+  "genericApptNoShow": {
+    "message": "불참으로 표시됨",
+    "description": "No-show success"
+  },
+  "genericApptNoShowFailed": {
+    "message": "불참으로 표시할 수 없습니다.",
+    "description": "No-show error"
+  },
+  "genericApptRescheduled": {
+    "message": "약속이 변경되었습니다.",
+    "description": "Appointment reschedule success"
+  },
+  "genericEmailSent": {
+    "message": "이메일이 전송되었습니다",
+    "description": "Email send success"
+  },
+  "genericEmailSendFailed": {
+    "message": "이메일을 보내지 못했습니다.",
+    "description": "Email send error"
+  },
+  "genericNotParticipatingIn": {
+    "message": "아직 {app}에 참여하지 않음",
+    "description": "People not in app context"
+  },
+  "genericDetailsEmptyValuesHint": {
+    "message": "값이 포함된 필드가 없습니다. 나머지 항목을 보려면 '빈 필드 표시'를 켜세요.",
+    "description": "Details tab empty values hint"
+  },
+  "genericPersonReacted": {
+    "message": "사람이 반응했다",
+    "description": "Single reaction tooltip suffix"
+  },
+  "genericPeopleReacted": {
+    "message": "사람들이 반응했다",
+    "description": "Multiple reactions tooltip suffix"
+  },
+  "genericTabActivity": {
+    "message": "활동",
+    "description": "Right pane activity tab"
+  },
+  "commentComposerDefaultPh": {
+    "message": "댓글 쓰기... 사용자 또는 그룹을 @멘션하세요.",
+    "description": "Default comment composer placeholder"
+  },
+  "commentAddFile": {
+    "message": "파일 추가",
+    "description": "Attach file toolbar button"
+  },
+  "commentMentionTitle": {
+    "message": "누군가를 언급하세요({atSymbol})",
+    "description": "Mention toolbar button"
+  },
+  "commentAddEmoji": {
+    "message": "이모티콘 추가",
+    "description": "Emoji picker toolbar button"
+  },
+  "commentSubmitLabel": {
+    "message": "논평",
+    "description": "Submit comment button label"
+  },
+  "commentMentionLoading": {
+    "message": "로드 중…",
+    "description": "Mention dropdown loading"
+  },
+  "commentMentionGroup": {
+    "message": "그룹",
+    "description": "Mention item group badge"
+  },
+  "commentMentionEmpty": {
+    "message": "사용자 또는 그룹을 찾을 수 없습니다.",
+    "description": "Empty mention search"
+  },
+  "commentRemoveAttachment": {
+    "message": "{name} 제거",
+    "description": "Remove attachment aria-label"
+  },
+  "editableListboxSearchPh": {
+    "message": "찾다…",
+    "description": "Inline field listbox search"
+  },
+  "editablePhonePh": {
+    "message": "전화 번호",
+    "description": "Phone field edit placeholder"
+  },
+  "editableUnassigned": {
+    "message": "할당되지 않음",
+    "description": "Empty user field value"
+  },
+  "editableSelectOption": {
+    "message": "옵션을 선택하세요",
+    "description": "Empty select/entity option"
+  },
+  "editableNoMatches": {
+    "message": "일치하는 항목이 없습니다.",
+    "description": "Listbox filter empty state"
+  },
+  "editableUnknownUser": {
+    "message": "알 수 없는 사용자",
+    "description": "User option fallback label"
+  },
+  "dealLoading": {
+    "message": "거래 로드 중…",
+    "description": "Deal record page loading"
+  },
+  "dealErrorTitle": {
+    "message": "거래를 로드하는 중에 오류가 발생했습니다.",
+    "description": "Deal record page error title"
+  },
+  "dealNavPrevious": {
+    "message": "이전 거래",
+    "description": "Previous deal navigation"
+  },
+  "dealNavNext": {
+    "message": "다음 거래",
+    "description": "Next deal navigation"
+  },
+  "dealModuleLabel": {
+    "message": "거래",
+    "description": "Deal module singular label"
+  },
+  "dealBackTo": {
+    "message": "거래로 돌아가기",
+    "description": "Collapse expanded deal section"
+  },
+  "dealEmailContact": {
+    "message": "이메일 연락처",
+    "description": "Email contact action"
+  },
+  "dealEditAria": {
+    "message": "거래 수정",
+    "description": "Edit deal action"
+  },
+  "dealVersionRetentionNote": {
+    "message": "버전 기록은 거래 설명에 최대 365일 동안 저장됩니다.",
+    "description": "Deal description version retention"
+  },
+  "dealWeightedAmount": {
+    "message": "가중 {amount}",
+    "description": "Deal weighted amount label"
+  },
+  "dealExpectedValuePh": {
+    "message": "기대값",
+    "description": "Deal amount field placeholder"
+  },
+  "dealProbabilityPh": {
+    "message": "개연성",
+    "description": "Deal probability placeholder"
+  },
+  "dealCloseDatePh": {
+    "message": "마감일",
+    "description": "Deal expected close date placeholder"
+  },
+  "dealStarAria": {
+    "message": "별",
+    "description": "Star/follow deal"
+  },
+  "dealUnstarAria": {
+    "message": "별표 해제",
+    "description": "Unfollow deal"
+  },
+  "dealRelatedRecordsTab": {
+    "message": "관련 기록",
+    "description": "Deal right pane related tab"
+  },
+  "dealDuplicateNotImplemented": {
+    "message": "거래에 대한 중복 작업이 아직 구현되지 않았습니다.",
+    "description": "Deal duplicate stub alert"
+  },
+  "dealExportNotImplemented": {
+    "message": "거래에 대한 수출 조치가 아직 구현되지 않았습니다.",
+    "description": "Deal export stub alert"
+  },
+  "dealDeleteFailed": {
+    "message": "거래를 삭제하지 못했습니다.",
+    "description": "Deal delete error"
+  },
+  "dealCopyUrlFailed": {
+    "message": "URL을 복사하지 못했습니다.",
+    "description": "Deal copy URL error"
+  },
+  "dealCommentAddFailed": {
+    "message": "댓글을 추가하지 못했습니다.",
+    "description": "Deal add comment error"
+  },
+  "dealCommentUpdateFailed": {
+    "message": "댓글을 업데이트하지 못했습니다.",
+    "description": "Deal edit comment error"
+  },
+  "dealCreateTaskFailed": {
+    "message": "작업을 생성하지 못했습니다.",
+    "description": "Deal create related task error"
+  },
+  "dealCreateCaseFailed": {
+    "message": "케이스를 생성하지 못했습니다.",
+    "description": "Deal create related case error"
+  },
+  "dealAttachedFilesFallback": {
+    "message": "첨부파일",
+    "description": "Comment with attachments only"
+  },
+  "dealUnnamedOrganization": {
+    "message": "이름이 없는 조직",
+    "description": "Organization picker fallback"
+  },
+  "dealUnnamedPerson": {
+    "message": "이름 없음",
+    "description": "Person picker fallback"
+  },
+  "taskLoading": {
+    "message": "작업 로드 중…",
+    "description": "Task record page loading"
+  },
+  "taskErrorTitle": {
+    "message": "작업을 로드하는 중 오류가 발생했습니다.",
+    "description": "Task record page error title"
+  },
+  "taskNavPrevious": {
+    "message": "이전 작업",
+    "description": "Previous task navigation"
+  },
+  "taskNavNext": {
+    "message": "다음 작업",
+    "description": "Next task navigation"
+  },
+  "taskModuleLabel": {
+    "message": "일",
+    "description": "Task module singular label"
+  },
+  "taskBackTo": {
+    "message": "작업으로 돌아가기",
+    "description": "Collapse expanded task section"
+  },
+  "taskEditAria": {
+    "message": "작업 수정",
+    "description": "Edit task action"
+  },
+  "taskEmailAssignee": {
+    "message": "담당자에게 이메일 보내기",
+    "description": "Email task assignee action"
+  },
+  "taskVersionRetentionNote": {
+    "message": "버전 기록은 작업 설명에 최대 365일 동안 저장됩니다.",
+    "description": "Task description version retention"
+  },
+  "taskStarAria": {
+    "message": "별",
+    "description": "Star/follow task"
+  },
+  "taskUnstarAria": {
+    "message": "별표 해제",
+    "description": "Unfollow task"
+  },
+  "taskRelatedRecordsTab": {
+    "message": "관련 기록",
+    "description": "Task right pane related tab"
+  },
+  "taskCopyUrlSuccess": {
+    "message": "URL이 클립보드에 복사되었습니다!",
+    "description": "Task copy URL success"
+  },
+  "taskLinkModuleFailed": {
+    "message": "{moduleKey}을(를) 연결하는 중에 오류가 발생했습니다. 다시 시도해 주세요.",
+    "description": "Task link related record error"
+  },
+  "taskRelatedGroupProject": {
+    "message": "프로젝트",
+    "description": "Related project group heading"
+  },
+  "taskRelatedGroupPeople": {
+    "message": "사람들",
+    "description": "Related people group heading"
+  },
+  "taskRelatedGroupEvents": {
+    "message": "이벤트",
+    "description": "Related events group heading"
+  },
+  "taskRelatedGroupDeals": {
+    "message": "거래",
+    "description": "Related deals group heading"
+  },
+  "taskRelatedGroupForms": {
+    "message": "양식",
+    "description": "Related forms group heading"
+  },
+  "taskCloseTimestampDetails": {
+    "message": "타임스탬프 세부정보 닫기",
+    "description": "Close timestamp popover aria"
+  },
+  "activityCloseSearchAria": {
+    "message": "검색 닫기",
+    "description": "Close activity search bar"
+  },
+  "activityNotificationsAria": {
+    "message": "알림",
+    "description": "Activity notifications button"
+  },
+  "activityFilterAria": {
+    "message": "활동 필터링",
+    "description": "Activity filter menu button"
+  },
+  "activityFilterHeading": {
+    "message": "활동",
+    "description": "Activity filter menu title"
+  },
+  "activityUnselectAll": {
+    "message": "모두 선택 취소",
+    "description": "Clear all activity filters"
+  },
+  "activitySelectAll": {
+    "message": "모두 선택",
+    "description": "Enable all activity filters"
+  },
+  "activityFilterComments": {
+    "message": "댓글",
+    "description": "Activity filter: comments"
+  },
+  "activityFilterEmail": {
+    "message": "이메일",
+    "description": "Activity filter: email"
+  },
+  "activityFilterUpdates": {
+    "message": "업데이트",
+    "description": "Activity filter: updates"
+  },
+  "activityFilterDoneThreads": {
+    "message": "완료된 스레드",
+    "description": "Activity filter: done threads"
+  },
+  "activityFilterAssignedToMe": {
+    "message": "나에게 할당됨",
+    "description": "Activity filter: assigned to me"
+  },
+  "activityFilterTaggedThreads": {
+    "message": "태그된 스레드",
+    "description": "Activity filter: tagged threads"
+  },
+  "activityFilterUntaggedThreads": {
+    "message": "태그가 지정되지 않은 스레드",
+    "description": "Activity filter: untagged threads"
+  },
+  "activitySearchPh": {
+    "message": "찾다…",
+    "description": "Activity search input placeholder"
+  },
+  "activityClearSearchAria": {
+    "message": "검색 지우기",
+    "description": "Clear activity search"
+  },
+  "activityClearSearchTitle": {
+    "message": "분명한",
+    "description": "Clear search button title"
+  },
+  "activityThreadBy": {
+    "message": "스레드 기준",
+    "description": "Thread view author prefix"
+  },
+  "activityNothingFound": {
+    "message": "아무것도 발견되지 않았습니다",
+    "description": "No activities match filters"
+  },
+  "activitySelectOneFilter": {
+    "message": "필터를 하나 이상 선택하세요.",
+    "description": "Empty filter state hint"
+  },
+  "activityResetFilters": {
+    "message": "필터 재설정",
+    "description": "Reset activity filters button"
+  },
+  "activityReplyPh": {
+    "message": "댓글에 답하다…",
+    "description": "Thread reply composer placeholder"
+  },
+  "activityCommentEdited": {
+    "message": "(수정됨)",
+    "description": "Comment edited indicator"
+  },
+  "activityEditCommentAria": {
+    "message": "댓글 수정",
+    "description": "Edit comment button aria"
+  },
+  "activityReplyToCommentAria": {
+    "message": "댓글에 답장하기",
+    "description": "Reply to comment button aria"
+  },
+  "activityEditCommentPh": {
+    "message": "댓글 수정…",
+    "description": "Edit comment composer placeholder"
+  },
+  "notesBlockedContext": {
+    "message": "앱 컨텍스트가 모호합니다. 표시할 메모를 결정할 수 없습니다.",
+    "description": "Notes blocked when app context unclear"
+  },
+  "notesAdding": {
+    "message": "첨가…",
+    "description": "Submit note in progress"
+  },
+  "notesAddNoteBtn": {
+    "message": "메모 추가",
+    "description": "Submit new note button"
+  },
+  "notesUserFallback": {
+    "message": "사용자",
+    "description": "Author name fallback in notes list"
+  },
+  "notesAddANoteAboveToGet": {
+    "message": "시작하려면 위에 메모를 추가하세요.",
+    "description": "Auto-migrated from notes"
+  },
+  "notesNoNotesYet": {
+    "message": "아직 메모가 없습니다.",
+    "description": "Auto-migrated from notes"
+  },
+  "notesWriteANote": {
+    "message": "메모를 작성하세요...",
+    "description": "Auto-migrated from notes"
+  },
+  "notesAddNote": {
+    "message": "메모 추가",
+    "description": "Auto-migrated from notes"
+  },
+  "notesCannotLoadNotes": {
+    "message": "메모를 로드할 수 없습니다",
+    "description": "Auto-migrated from notes"
+  },
+  "notesErrorLoadingNotes": {
+    "message": "메모를 로드하는 중 오류가 발생했습니다.",
+    "description": "Auto-migrated from notes"
+  },
+  "notesLoadingNotes": {
+    "message": "메모 로드 중...",
+    "description": "Auto-migrated from notes"
+  },
+  "filesUploadAFileAboveToGet": {
+    "message": "시작하려면 위의 파일을 업로드하세요.",
+    "description": "Auto-migrated from files"
+  },
+  "filesNoFilesUploadedYet": {
+    "message": "아직 업로드된 파일이 없습니다.",
+    "description": "Auto-migrated from files"
+  },
+  "filesDownload": {
+    "message": "다운로드",
+    "description": "Auto-migrated from files"
+  },
+  "filesAllowedImagesPdfWordExcelCsv": {
+    "message": "허용됨: 이미지, PDF, Word, Excel, CSV(최대 10MB)",
+    "description": "Auto-migrated from files"
+  },
+  "filesUploadFile": {
+    "message": "파일 업로드",
+    "description": "Auto-migrated from files"
+  },
+  "filesCannotLoadFiles": {
+    "message": "파일을 로드할 수 없습니다",
+    "description": "Auto-migrated from files"
+  },
+  "filesErrorLoadingFiles": {
+    "message": "파일을 로드하는 중 오류가 발생했습니다.",
+    "description": "Auto-migrated from files"
+  },
+  "filesLoadingFiles": {
+    "message": "파일 로드 중...",
+    "description": "Auto-migrated from files"
+  },
+  "activityTimelineCannotLoadActivities": {
+    "message": "활동을 로드할 수 없습니다.",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "activityTimelineErrorLoadingActivities": {
+    "message": "활동을 로드하는 중에 오류가 발생했습니다.",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "activityTimelineLoadingActivities": {
+    "message": "활동 로드 중...",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "taskDescriptionEditorInsertLink": {
+    "message": "링크 삽입",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorRemoveLink": {
+    "message": "링크 삭제",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorNumberedList": {
+    "message": "번호가 매겨진 목록",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorBulletList": {
+    "message": "글머리 기호 목록",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorStrikethrough": {
+    "message": "취소선",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorItalic": {
+    "message": "이탤릭체",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorBold": {
+    "message": "용감한",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading3": {
+    "message": "제목 3",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading2": {
+    "message": "제목 2",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading1": {
+    "message": "제목 1",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "recordDetailThisRecordTypeIsNotConfigured": {
+    "message": "이 레코드 유형은 구성되지 않았습니다.",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "recordDetailRecordNotFound": {
+    "message": "기록을 찾을 수 없음",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "recordDetailLoading": {
+    "message": "로드 중...",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "relatedRecordsPanelThisRecordRequiresTheFollowingRelationships": {
+    "message": "이 레코드를 연결하려면 다음 관계가 필요합니다.",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelRequiredRelationships": {
+    "message": "필수 관계",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelLinkThisRecordToPeopleOrganizations": {
+    "message": "이 기록을 사람, 조직, 작업, 이벤트 또는 양식에 연결합니다.",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelNoRelationshipsConfiguredForThisRecord": {
+    "message": "이 레코드 유형에 대해 구성된 관계가 없습니다.",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelErrorLoadingRelatedRecords": {
+    "message": "관련 레코드를 로드하는 중에 오류가 발생했습니다.",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelLoadingRelatedRecords": {
+    "message": "관련 레코드 로드 중...",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsRendererNoRelationshipsConfiguredForThisRecord": {
+    "message": "이 레코드 유형에 대해 구성된 관계가 없습니다.",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsRendererTheFollowingRequiredRelationshipsMustBe": {
+    "message": "저장하기 전에 다음 필수 관계를 연결해야 합니다.",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsRendererRequiredRelationshipsMissing": {
+    "message": "필수 관계가 누락되었습니다.",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsTabLinkExisting": {
+    "message": "기존 링크",
+    "description": "Auto-migrated from relatedRecordsTab"
+  },
+  "relationshipUnlinkConfirmAreYouSureYouWantTo": {
+    "message": "연결을 해제하시겠습니까?",
+    "description": "Auto-migrated from relationshipUnlinkConfirm"
+  },
+  "reactionBarReactToComment": {
+    "message": "댓글에 반응하기",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarLikeComment": {
+    "message": "댓글 좋아요",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarReactToComment2": {
+    "message": "댓글에 반응하기",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarLikeComment2": {
+    "message": "댓글 좋아요",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "activitySystemRowShowMore": {
+    "message": "더 보기",
+    "description": "Auto-migrated from activitySystemRow"
+  },
+  "approvalHistoryEscalatedToNewApprovers": {
+    "message": "새 승인자에게 에스컬레이션됨",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryProcess": {
+    "message": "프로세스:",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryReason": {
+    "message": "이유:",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryDecidedBy": {
+    "message": "결정자:",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryNoApprovalHistoryFound": {
+    "message": "승인 내역을 찾을 수 없습니다.",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryApprovalHistory": {
+    "message": "승인 내역",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "linkRecordModalLinking": {
+    "message": "연결 중...",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "linkRecordModalSelectARecordType": {
+    "message": "레코드 유형을 선택하세요...",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "linkRecordModalRecordType": {
+    "message": "레코드 유형",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "recordDetailToastFailedToDeleteRecordPlease": {
+    "message": "레코드를 삭제하지 못했습니다. 다시 시도해 주세요.",
+    "description": "Toast from RecordDetail.vue"
+  },
+  "instanceManagementToastInstanceManagementUiComingSoon": {
+    "message": "인스턴스 관리 UI가 곧 출시됩니다!",
+    "description": "Toast from InstanceManagement.vue"
+  },
+  "useRecordHeaderActionsToastUrlCopiedToClipboard": {
+    "message": "URL이 클립보드에 복사되었습니다!",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "useRecordHeaderActionsToastErrorExportingRecordPleaseTry": {
+    "message": "레코드를 내보내는 중에 오류가 발생했습니다. 다시 시도해 주세요.",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "useRecordHeaderActionsToastErrorDeletingRecordPleaseTry": {
+    "message": "기록을 삭제하는 중에 오류가 발생했습니다. 다시 시도해 주세요.",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "tabPreview": {
+    "message": "시사",
+    "description": "Form summary preview tab"
+  },
+  "tabUsage": {
+    "message": "용법",
+    "description": "Form summary usage tab"
+  },
+  "tabResponses": {
+    "message": "응답",
+    "description": "Form summary responses tab"
+  },
+  "tabTenantDetails": {
+    "message": "임차인 세부정보",
+    "description": "Organization tenant details tab"
+  },
+  "relatedRecordsTitle": {
+    "message": "관련 기록",
+    "description": "Left column related records section title"
+  },
+  "subtasksTitle": {
+    "message": "하위 작업",
+    "description": "Task record subtasks section title"
+  },
+  "subtasksTitleWithCount": {
+    "message": "하위 작업({completed}/{total})",
+    "description": "Task subtasks section title with completion counts"
+  },
+  "sectionAddSubtask": {
+    "message": "하위 할 일 추가",
+    "description": "Add subtask action label"
+  },
+  "sectionExpand": {
+    "message": "확장하다",
+    "description": "Expand record section action"
+  },
+  "sectionHistory": {
+    "message": "역사",
+    "description": "Description history action"
+  },
+  "sectionLinkRecord": {
+    "message": "링크 기록",
+    "description": "Link related record action"
+  },
+  "sectionAddRecord": {
+    "message": "레코드 추가",
+    "description": "Add related record action"
+  },
+  "sectionViewMore": {
+    "message": "더 보기",
+    "description": "Load more subtasks action"
+  },
+  "sectionViewLess": {
+    "message": "간략히 보기",
+    "description": "Collapse field list action"
+  },
+  "sectionViewAll": {
+    "message": "모두 보기({count})",
+    "description": "Expand details field list"
+  },
+  "sectionGroupCore": {
+    "message": "핵심",
+    "description": "Field group label"
+  },
+  "sectionGroupSystem": {
+    "message": "체계",
+    "description": "Field group label"
+  },
+  "sectionGroupOther": {
+    "message": "다른",
+    "description": "Field group label"
+  },
+  "sectionCreatedVia": {
+    "message": "다음을 통해 생성됨",
+    "description": "Record source field label"
+  },
+  "sectionGroupRecord": {
+    "message": "기록",
+    "description": "Record metadata group label"
+  },
+  "activitySystemActorSystem": {
+    "message": "체계",
+    "description": "System actor label in activity feed"
+  },
+  "activitySystemFieldFallback": {
+    "message": "필드",
+    "description": "Fallback when system event field label is unknown"
+  },
+  "activitySystemChanged": {
+    "message": "변경됨",
+    "description": "System field change activity between actor and field"
+  },
+  "activitySystemChangedTo": {
+    "message": "{field}을(를) 다음으로 변경했습니다.",
+    "description": "Tags/system field change lead-in"
+  },
+  "activitySystemChangedFromTo": {
+    "message": "{field}을 \"{from}\"에서 \"{to}\"로 변경했습니다.",
+    "description": "Generic field change summary"
+  },
+  "activityUpdatedRecord": {
+    "message": "이 기록을 업데이트했습니다.",
+    "description": "Generic system activity fallback"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "activityCloseSearchAria": { "message": "Close search", "description": "Close activity search bar" },
+  "activityNotificationsAria": { "message": "Notifications", "description": "Activity notifications button" },
+  "activityFilterAria": { "message": "Filter activities", "description": "Activity filter menu button" },
+  "activityFilterHeading": { "message": "Activities", "description": "Activity filter menu title" },
+  "activityUnselectAll": { "message": "Unselect all", "description": "Clear all activity filters" },
+  "activitySelectAll": { "message": "Select all", "description": "Enable all activity filters" },
+  "activityFilterComments": { "message": "Comments", "description": "Activity filter: comments" },
+  "activityFilterEmail": { "message": "Email", "description": "Activity filter: email" },
+  "activityFilterUpdates": { "message": "Updates", "description": "Activity filter: updates" },
+  "activityFilterDoneThreads": { "message": "Done threads", "description": "Activity filter: done threads" },
+  "activityFilterAssignedToMe": { "message": "Assigned to me", "description": "Activity filter: assigned to me" },
+  "activityFilterTaggedThreads": { "message": "Tagged threads", "description": "Activity filter: tagged threads" },
+  "activityFilterUntaggedThreads": { "message": "Untagged threads", "description": "Activity filter: untagged threads" },
+  "activitySearchPh": { "message": "Search…", "description": "Activity search input placeholder" },
+  "activityClearSearchAria": { "message": "Clear search", "description": "Clear activity search" },
+  "activityClearSearchTitle": { "message": "Clear", "description": "Clear search button title" },
+  "activityThreadBy": { "message": "Thread by", "description": "Thread view author prefix" },
+  "activityNothingFound": { "message": "Nothing found", "description": "No activities match filters" },
+  "activitySelectOneFilter": { "message": "Please select at least one filter.", "description": "Empty filter state hint" },
+  "activityResetFilters": { "message": "Reset filters", "description": "Reset activity filters button" },
+  "activityReplyPh": { "message": "Reply to comment…", "description": "Thread reply composer placeholder" }
+}

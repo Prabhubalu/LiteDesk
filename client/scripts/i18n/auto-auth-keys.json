@@ -1,0 +1,106 @@
+{
+  "registrationFormByRegisteringYoullBecomeTheOwner": {
+    "message": "By registering, you'll become the Owner of your organization with full access to all trial features.",
+    "description": "Auto-migrated from registrationForm"
+  },
+  "registrationFormSelectYourIndustry": {
+    "message": "Select your industry",
+    "description": "Auto-migrated from registrationForm"
+  },
+  "registrationFormBusinessVertical": {
+    "message": "Business Vertical",
+    "description": "Auto-migrated from registrationForm"
+  },
+  "registrationFormSelectYourIndustry2": {
+    "message": "Select your industry",
+    "description": "Auto-migrated from registrationForm"
+  },
+  "registrationFormConfirmPassword": {
+    "message": "Confirm Password",
+    "description": "Auto-migrated from registrationForm"
+  },
+  "registrationFormJohnSmith": {
+    "message": "John Smith",
+    "description": "Auto-migrated from registrationForm"
+  },
+  "registrationFormAcmeCorporation": {
+    "message": "Acme Corporation",
+    "description": "Auto-migrated from registrationForm"
+  },
+  "registrationFormRegisterYourBusiness": {
+    "message": "Register Your Business",
+    "description": "Auto-migrated from registrationForm"
+  },
+  "demoRequestFormGoBackToHome": {
+    "message": "Go back to home",
+    "description": "Auto-migrated from demoRequestForm"
+  },
+  "demoRequestFormDemoRequestSubmitted": {
+    "message": "Demo Request Submitted!",
+    "description": "Auto-migrated from demoRequestForm"
+  },
+  "demoRequestFormRequestDemo": {
+    "message": "Request Demo",
+    "description": "Auto-migrated from demoRequestForm"
+  },
+  "demoRequestFormTellUsWhatAreYouLooking": {
+    "message": "Tell us what are you looking to achieve with Nurtura...",
+    "description": "Auto-migrated from demoRequestForm"
+  },
+  "demoRequestFormPrimaryGoal": {
+    "message": "Primary Goal",
+    "description": "Auto-migrated from demoRequestForm"
+  },
+  "demoRequestFormSelectSize": {
+    "message": "Select Size",
+    "description": "Auto-migrated from demoRequestForm"
+  },
+  "demoRequestFormConsulting": {
+    "message": "Consulting",
+    "description": "Auto-migrated from demoRequestForm"
+  },
+  "demoRequestFormEducation": {
+    "message": "Education",
+    "description": "Auto-migrated from demoRequestForm"
+  },
+  "demoRequestFormRealEstate": {
+    "message": "Real Estate",
+    "description": "Auto-migrated from demoRequestForm"
+  },
+  "demoRequestFormManufacturing": {
+    "message": "Manufacturing",
+    "description": "Auto-migrated from demoRequestForm"
+  },
+  "demoRequestFormRetail": {
+    "message": "Retail",
+    "description": "Auto-migrated from demoRequestForm"
+  },
+  "demoRequestFormFinance": {
+    "message": "Finance",
+    "description": "Auto-migrated from demoRequestForm"
+  },
+  "demoRequestFormHealthcare": {
+    "message": "Healthcare",
+    "description": "Auto-migrated from demoRequestForm"
+  },
+  "demoRequestFormTechnology": {
+    "message": "Technology",
+    "description": "Auto-migrated from demoRequestForm"
+  },
+  "demoRequestFormSelectIndustry": {
+    "message": "Select Industry",
+    "description": "Auto-migrated from demoRequestForm"
+  },
+  "demoRequestFormEGSalesManagerCeo": {
+    "message": "e.g. Sales Manager, CEO",
+    "description": "Auto-migrated from demoRequestForm"
+  },
+  "demoRequestFormYourEmailCom": {
+    "message": "your@email.com",
+    "description": "Auto-migrated from demoRequestForm"
+  },
+  "demoRequestFormEnterYourFullName": {
+    "message": "Enter your full name",
+    "description": "Auto-migrated from demoRequestForm"
+  }
+}

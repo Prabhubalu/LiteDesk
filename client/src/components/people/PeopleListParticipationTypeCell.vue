@@ -28,6 +28,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import { getRoleDisplay } from '@/utils/getRoleDisplay';
@@ -43,6 +44,8 @@ const props = defineProps({
   badgeOptionsByApp: { type: Object, default: () => ({}) },
   roleBadgeVariantMap: { type: Object, required: true },
 });
+
+const { t } = useI18n();
 
 function badgeOptionsForApp(appKey) {
   return props.badgeOptionsByApp[appKey] || [];

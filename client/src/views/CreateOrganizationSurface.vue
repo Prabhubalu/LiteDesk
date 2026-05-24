@@ -100,9 +100,7 @@ Post-creation behavior is driven by invocation context via query params:
           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
         </svg>
         <div class="flex-1">
-          <h3 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">
-            Validation Errors
-          </h3>
+          <h3 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">{{ t('organizations.createOrganizationSurfaceValidationErrors') }}</h3>
           <ul class="list-disc list-inside space-y-1">
             <li v-for="(message, field) in validationErrors" :key="field" class="text-sm text-red-700 dark:text-red-300">
               <span class="font-medium">{{ field }}:</span> {{ message }}
@@ -119,7 +117,7 @@ Post-creation behavior is driven by invocation context via query params:
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
-        <p class="text-sm text-blue-700 dark:text-blue-300">Loading organization data...</p>
+        <p class="text-sm text-blue-700 dark:text-blue-300">{{ t('organizations.createOrganizationSurfaceLoadingOrganizationData') }}</p>
       </div>
     </div>
 
@@ -130,9 +128,7 @@ Post-creation behavior is driven by invocation context via query params:
           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
         </svg>
         <div class="flex-1">
-          <h3 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-1">
-            Error
-          </h3>
+          <h3 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-1">{{ t('organizations.createOrganizationSurfaceError') }}</h3>
           <p class="text-sm text-red-700 dark:text-red-300">{{ error }}</p>
         </div>
       </div>
@@ -144,20 +140,19 @@ Post-creation behavior is driven by invocation context via query params:
     <form @submit.prevent="handleSubmit" class="space-y-6" :class="{ 'opacity-50 pointer-events-none': loading && mode === 'edit' }">
       <!-- 1. Core Business Identity -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Core Business Identity</h2>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('organizations.createOrganizationSurfaceCoreBusinessIdentity') }}</h2>
         
         <div class="space-y-4">
           <!-- Name (required) -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Name <span class="text-red-500">*</span>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.settingsBhFieldName') }}<span class="text-red-500">*</span>
             </label>
             <input
               v-model="formData.name"
               type="text"
               required
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              placeholder="Organization name"
+              :placeholder="t('organizations.createOrganizationSurfaceOrganizationName')"
             />
             <p v-if="validationErrors.name" class="mt-1 text-sm text-red-600 dark:text-red-400">
               {{ validationErrors.name }}
@@ -167,9 +162,7 @@ Post-creation behavior is driven by invocation context via query params:
           <!-- Types (multi-select: Customer, Partner, Vendor, Distributor, Dealer) -->
           <!-- EDIT MODE: Read-only if types are already set (used in relationships) -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Types
-            </label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.peopleTypesTitle') }}</label>
             <div class="space-y-2">
               <label
                 v-for="type in organizationTypes"
@@ -186,9 +179,7 @@ Post-creation behavior is driven by invocation context via query params:
                 <span class="text-sm text-gray-700 dark:text-gray-300">{{ type }}</span>
               </label>
             </div>
-            <p v-if="mode === 'edit' && typesReadOnly" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Types cannot be changed once the organization is in use
-            </p>
+            <p v-if="mode === 'edit' && typesReadOnly" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('organizations.createOrganizationSurfaceTypesCannotBeChangedOnceThe') }}</p>
             <p v-if="validationErrors.types" class="mt-1 text-sm text-red-600 dark:text-red-400">
               {{ validationErrors.types }}
             </p>
@@ -200,9 +191,7 @@ Post-creation behavior is driven by invocation context via query params:
           
           <!-- Customer Status (shown when Customer type is selected) -->
           <div v-if="shouldShowStatusField('customerStatus', formData.types)">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Customer Status
-              <span v-if="isStatusReadOnly('customerStatus')" class="ml-2 text-xs text-gray-500 dark:text-gray-400 italic">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.modFieldsCustomerStatus') }}<span v-if="isStatusReadOnly('customerStatus')" class="ml-2 text-xs text-gray-500 dark:text-gray-400 italic">
                 (System-owned)
               </span>
             </label>
@@ -221,7 +210,7 @@ Post-creation behavior is driven by invocation context via query params:
               v-model="formData.customerStatus"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
-              <option :value="null">Select status...</option>
+              <option :value="null">{{ t('organizations.createOrganizationSurfaceSelectStatus3') }}</option>
               <option
                 v-for="status in customerStatusOptions"
                 :key="status"
@@ -237,9 +226,7 @@ Post-creation behavior is driven by invocation context via query params:
 
           <!-- Partner Status (shown when Partner type is selected) -->
           <div v-if="shouldShowStatusField('partnerStatus', formData.types)">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Partner Status
-              <span v-if="isStatusReadOnly('partnerStatus')" class="ml-2 text-xs text-gray-500 dark:text-gray-400 italic">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.modFieldsPartnerStatus') }}<span v-if="isStatusReadOnly('partnerStatus')" class="ml-2 text-xs text-gray-500 dark:text-gray-400 italic">
                 (System-owned)
               </span>
             </label>
@@ -258,7 +245,7 @@ Post-creation behavior is driven by invocation context via query params:
               v-model="formData.partnerStatus"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
-              <option :value="null">Select status...</option>
+              <option :value="null">{{ t('organizations.createOrganizationSurfaceSelectStatus2') }}</option>
               <option
                 v-for="status in partnerStatusOptions"
                 :key="status"
@@ -274,9 +261,7 @@ Post-creation behavior is driven by invocation context via query params:
 
           <!-- Vendor Status (shown when Vendor type is selected) -->
           <div v-if="shouldShowStatusField('vendorStatus', formData.types)">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Vendor Status
-              <span v-if="isStatusReadOnly('vendorStatus')" class="ml-2 text-xs text-gray-500 dark:text-gray-400 italic">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.modFieldsVendorStatus') }}<span v-if="isStatusReadOnly('vendorStatus')" class="ml-2 text-xs text-gray-500 dark:text-gray-400 italic">
                 (System-owned)
               </span>
             </label>
@@ -295,7 +280,7 @@ Post-creation behavior is driven by invocation context via query params:
               v-model="formData.vendorStatus"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
-              <option :value="null">Select status...</option>
+              <option :value="null">{{ t('organizations.createOrganizationSurfaceSelectStatus') }}</option>
               <option
                 v-for="status in vendorStatusOptions"
                 :key="status"
@@ -318,7 +303,7 @@ Post-creation behavior is driven by invocation context via query params:
           @click="showOptionalFields = !showOptionalFields"
           class="w-full flex items-center justify-between text-left"
         >
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Optional Business Context</h2>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('organizations.createOrganizationSurfaceOptionalBusinessContext') }}</h2>
           <svg
             :class="['w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform', { 'rotate-180': showOptionalFields }]"
             fill="none"
@@ -332,14 +317,12 @@ Post-creation behavior is driven by invocation context via query params:
         <div v-if="showOptionalFields" class="mt-4 space-y-4">
           <!-- Industry -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Industry
-            </label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.assignRulesCondFieldIndustry') }}</label>
             <input
               v-model="formData.industry"
               type="text"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              placeholder="e.g., Technology, Healthcare, Manufacturing"
+              :placeholder="t('organizations.createOrganizationSurfaceEGTechnologyHealthcareManufacturing')"
             />
             <p v-if="validationErrors.industry" class="mt-1 text-sm text-red-600 dark:text-red-400">
               {{ validationErrors.industry }}
@@ -348,9 +331,7 @@ Post-creation behavior is driven by invocation context via query params:
 
           <!-- Website -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Website
-            </label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('organizations.createOrganizationSurfaceWebsite') }}</label>
             <input
               v-model="formData.website"
               type="text"
@@ -359,7 +340,7 @@ Post-creation behavior is driven by invocation context via query params:
               @input="handleWebsiteInput"
               @blur="handleWebsiteBlur"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              placeholder="https://example.com"
+              :placeholder="t('organizations.createOrganizationSurfaceHttpsExampleCom')"
             />
             <p v-if="validationErrors.website" class="mt-1 text-sm text-red-600 dark:text-red-400">
               {{ validationErrors.website }}
@@ -368,12 +349,10 @@ Post-creation behavior is driven by invocation context via query params:
 
           <!-- Phone -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Phone
-            </label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.settingsAddFieldTypePhone') }}</label>
             <PhoneInput
               :model-value="formData.phone"
-              placeholder="Phone number"
+              :placeholder="t('settings.profilePhone')"
               input-class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               :invalid="Boolean(validationErrors.phone)"
               @update:model-value="formData.phone = $event"
@@ -386,14 +365,12 @@ Post-creation behavior is driven by invocation context via query params:
 
           <!-- Address -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Address
-            </label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('organizations.createOrganizationSurfaceAddress') }}</label>
             <textarea
               v-model="formData.address"
               rows="3"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              placeholder="Street address, city, state, zip"
+              :placeholder="t('organizations.createOrganizationSurfaceStreetAddressCityStateZip')"
             ></textarea>
             <p v-if="validationErrors.address" class="mt-1 text-sm text-red-600 dark:text-red-400">
               {{ validationErrors.address }}
@@ -408,9 +385,7 @@ Post-creation behavior is driven by invocation context via query params:
           type="button"
           @click="handleCancel"
           class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-        >
-          Cancel
-        </button>
+        >{{ t('performance.cancelWizard') }}</button>
         <button
           type="submit"
           :disabled="submitting || !formData.name"
@@ -425,6 +400,7 @@ Post-creation behavior is driven by invocation context via query params:
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -462,6 +438,8 @@ const props = defineProps({
     default: false
   }
 });
+
+const { t } = useI18n();
 
 // Emits
 const emit = defineEmits(['close', 'saved']);

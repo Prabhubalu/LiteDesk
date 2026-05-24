@@ -94,6 +94,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 const props = defineProps({
   type: {
     type: String,
@@ -114,6 +115,8 @@ const props = defineProps({
     default: null
   }
 });
+
+const { t } = useI18n();
 
 const formatTime = (dateString) => {
   if (!dateString) return '';

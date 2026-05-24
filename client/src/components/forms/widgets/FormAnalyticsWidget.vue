@@ -15,8 +15,11 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import CardWidget from '@/components/common/CardWidget.vue';
 import apiClient from '@/utils/apiClient';
+
+const { t } = useI18n();
 
 const props = defineProps({
   formId: {
@@ -25,7 +28,7 @@ const props = defineProps({
   },
   metricType: {
     type: String,
-    required: true, // 'total-responses', 'avg-compliance', 'avg-rating', 'response-rate'
+    required: true,
     validator: (value) => ['total-responses', 'avg-compliance', 'avg-rating', 'response-rate'].includes(value)
   }
 });
@@ -37,46 +40,34 @@ const data = ref(null);
 const title = computed(() => {
   switch (props.metricType) {
     case 'total-responses':
-      return 'Total Responses';
+      return t('forms.widgetTotalResponses');
     case 'avg-compliance':
-      return 'Avg Compliance';
+      return t('forms.widgetAvgCompliance');
     case 'avg-rating':
-      return 'Avg Rating';
+      return t('forms.widgetAvgRating');
     case 'response-rate':
-      return 'Response Rate';
+      return t('forms.widgetResponseRate');
     default:
-      return 'Analytics';
+      return t('forms.widgetAnalytics');
   }
 });
 
 const displayValue = computed(() => {
   if (!data.value) {
-    console.log('displayValue: data.value is null, returning 0');
-    // Return 0 instead of '—' so widget always shows something
-    return props.metricType === 'avg-rating' ? '0.0/5' : 
-           (props.metricType === 'avg-compliance' || props.metricType === 'response-rate') ? '0%' : 
+    return props.metricType === 'avg-rating' ? '0.0/5' :
+           (props.metricType === 'avg-compliance' || props.metricType === 'response-rate') ? '0%' :
            '0';
   }
-  
-  console.log('displayValue: data.value =', data.value, 'metricType =', props.metricType);
-  
+
   switch (props.metricType) {
     case 'total-responses':
-      const total = data.value.totalResponses ?? 0;
-      console.log('displayValue: total-responses =', total);
-      return total;
+      return data.value.totalResponses ?? 0;
     case 'avg-compliance':
-      const compliance = data.value.avgCompliance ?? 0;
-      console.log('displayValue: avg-compliance =', compliance);
-      return `${Math.round(compliance)}%`;
+      return `${Math.round(data.value.avgCompliance ?? 0)}%`;
     case 'avg-rating':
-      const rating = data.value.avgRating ?? 0;
-      console.log('displayValue: avg-rating =', rating);
-      return `${Number(rating).toFixed(1)}/5`;
+      return `${Number(data.value.avgRating ?? 0).toFixed(1)}/5`;
     case 'response-rate':
-      const rate = data.value.responseRate ?? 0;
-      console.log('displayValue: response-rate =', rate);
-      return `${Math.round(rate)}%`;
+      return `${Math.round(data.value.responseRate ?? 0)}%`;
     default:
       return '0';
   }
@@ -85,112 +76,81 @@ const displayValue = computed(() => {
 const subtitle = computed(() => {
   switch (props.metricType) {
     case 'avg-rating':
-      return 'Out of 5 stars';
+      return t('forms.widgetSubtitleStars');
     case 'avg-compliance':
     case 'response-rate':
-      return 'Percentage';
+      return t('forms.widgetSubtitlePercent');
     default:
       return null;
   }
 });
 
 const fetchAnalytics = async () => {
-  console.log('FormAnalyticsWidget fetchAnalytics called', { formId: props.formId, metricType: props.metricType });
   loading.value = true;
   error.value = null;
-  
+
   try {
-    // Fetch form responses to calculate analytics - use direct URL with query params
     const url = `/forms/${props.formId}/responses?page=1&limit=1000`;
-    console.log('FormAnalyticsWidget - Fetching from URL:', url);
     const response = await apiClient(url, {
       method: 'GET'
     });
-    
-    console.log('FormAnalyticsWidget - Form ID:', props.formId);
-    console.log('FormAnalyticsWidget - Metric type:', props.metricType);
-    console.log('FormAnalyticsWidget - Full response:', response);
-    
-    // Handle different response structures
+
     let responses = [];
     let totalResponses = 0;
-    
+
     if (response && response.success) {
-      // Response has success: true
       if (Array.isArray(response.data)) {
         responses = response.data;
       } else if (response.data && Array.isArray(response.data.data)) {
         responses = response.data.data;
       }
-      
+
       totalResponses = response.pagination?.totalResponses || response.data?.pagination?.totalResponses || responses.length;
     } else if (Array.isArray(response)) {
-      // Response is directly an array
       responses = response;
       totalResponses = responses.length;
     } else if (response && Array.isArray(response.data)) {
-      // Response.data is an array
       responses = response.data;
       totalResponses = response.pagination?.totalResponses || responses.length;
     }
-    
-    console.log(`Found ${responses.length} responses (total: ${totalResponses}) for analytics`);
-    console.log('Sample response:', responses[0]);
-    
+
     if (responses.length > 0) {
       switch (props.metricType) {
         case 'total-responses':
-          data.value = {
-            totalResponses: totalResponses
-          };
-          console.log('Set total responses:', data.value.totalResponses);
+          data.value = { totalResponses };
           break;
-        case 'avg-compliance':
+        case 'avg-compliance': {
           const complianceValues = responses
-            .map(r => {
-              // Try different possible paths for compliance percentage
-              return r.kpis?.compliancePercentage || 
-                     r.kpis?.finalScore || 
+            .map(r => r.kpis?.compliancePercentage ||
+                     r.kpis?.finalScore ||
                      r.compliancePercentage ||
-                     (r.kpis && typeof r.kpis === 'object' ? r.kpis.compliance : null);
-            })
+                     (r.kpis && typeof r.kpis === 'object' ? r.kpis.compliance : null))
             .filter(v => v !== undefined && v !== null && !isNaN(v));
-          console.log('Compliance values found:', complianceValues.length, complianceValues);
           data.value = {
             avgCompliance: complianceValues.length > 0
               ? complianceValues.reduce((sum, val) => sum + Number(val), 0) / complianceValues.length
               : 0
           };
-          console.log('Set avg compliance:', data.value.avgCompliance);
           break;
-        case 'avg-rating':
+        }
+        case 'avg-rating': {
           const ratingValues = responses
-            .map(r => {
-              return r.kpis?.avgRating || 
+            .map(r => r.kpis?.avgRating ||
                      r.avgRating ||
-                     (r.kpis && typeof r.kpis === 'object' ? r.kpis.rating : null);
-            })
+                     (r.kpis && typeof r.kpis === 'object' ? r.kpis.rating : null))
             .filter(v => v !== undefined && v !== null && !isNaN(v));
-          console.log('Rating values found:', ratingValues.length, ratingValues);
           data.value = {
             avgRating: ratingValues.length > 0
               ? ratingValues.reduce((sum, val) => sum + Number(val), 0) / ratingValues.length
               : 0
           };
-          console.log('Set avg rating:', data.value.avgRating);
           break;
+        }
         case 'response-rate':
-          // Response rate would need event data to calculate properly
-          // For now, we'll use a placeholder calculation
-          data.value = {
-            responseRate: responses.length > 0 ? 85 : 0 // Placeholder
-          };
-          console.log('Set response rate:', data.value.responseRate);
+          data.value = { responseRate: responses.length > 0 ? 85 : 0 };
           break;
       }
     } else {
-      // No responses found - set to 0
-      console.log('No responses found, setting to 0');
       switch (props.metricType) {
         case 'total-responses':
           data.value = { totalResponses: 0 };
@@ -208,8 +168,7 @@ const fetchAnalytics = async () => {
     }
   } catch (err) {
     console.error('Error fetching form analytics:', err);
-    error.value = err.message || 'Failed to load analytics';
-    // Set default values even on error
+    error.value = t('forms.widgetLoadFailed');
     switch (props.metricType) {
       case 'total-responses':
         data.value = { totalResponses: 0 };
@@ -230,8 +189,6 @@ const fetchAnalytics = async () => {
 };
 
 onMounted(() => {
-  console.log('FormAnalyticsWidget onMounted', { formId: props.formId, metricType: props.metricType });
   fetchAnalytics();
 });
 </script>
-

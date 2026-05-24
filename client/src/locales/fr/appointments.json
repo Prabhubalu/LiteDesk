@@ -1,0 +1,1006 @@
+{
+  "daySun": {
+    "message": "Soleil",
+    "description": "Weekday abbreviation"
+  },
+  "dayMon": {
+    "message": "Lun",
+    "description": "Weekday abbreviation"
+  },
+  "dayTue": {
+    "message": "Mar",
+    "description": "Weekday abbreviation"
+  },
+  "dayWed": {
+    "message": "Épouser",
+    "description": "Weekday abbreviation"
+  },
+  "dayThu": {
+    "message": "Jeu",
+    "description": "Weekday abbreviation"
+  },
+  "dayFri": {
+    "message": "Ven",
+    "description": "Weekday abbreviation"
+  },
+  "daySat": {
+    "message": "Assis",
+    "description": "Weekday abbreviation"
+  },
+  "slot15": {
+    "message": "15 minutes",
+    "description": "Slot duration option"
+  },
+  "slot30": {
+    "message": "30 minutes",
+    "description": "Slot duration option"
+  },
+  "slot45": {
+    "message": "45 minutes",
+    "description": "Slot duration option"
+  },
+  "slot60": {
+    "message": "1 heure",
+    "description": "Slot duration option"
+  },
+  "buffer0": {
+    "message": "Pas de tampon",
+    "description": "Buffer between meetings option"
+  },
+  "buffer5": {
+    "message": "5 minutes",
+    "description": "Buffer between meetings option"
+  },
+  "buffer10": {
+    "message": "10 minutes",
+    "description": "Buffer between meetings option"
+  },
+  "buffer15": {
+    "message": "15 minutes",
+    "description": "Buffer between meetings option"
+  },
+  "buffer30": {
+    "message": "30 minutes",
+    "description": "Buffer between meetings option"
+  },
+  "meetInPerson": {
+    "message": "En personne",
+    "description": "Meeting format option"
+  },
+  "meetGoogle": {
+    "message": "Google Rencontre",
+    "description": "Meeting format option"
+  },
+  "meetTeams": {
+    "message": "Équipes Microsoft",
+    "description": "Meeting format option"
+  },
+  "typeDemo": {
+    "message": "Démo",
+    "description": "Appointment type label"
+  },
+  "typeConsultation": {
+    "message": "Consultation",
+    "description": "Appointment type label"
+  },
+  "typeSupport": {
+    "message": "Soutien",
+    "description": "Appointment type label"
+  },
+  "typeOther": {
+    "message": "Autre",
+    "description": "Appointment type label"
+  },
+  "sourcePublicPage": {
+    "message": "Page publique",
+    "description": "Booking source label"
+  },
+  "sourceManual": {
+    "message": "Manuel",
+    "description": "Booking source label"
+  },
+  "sourceIntegration": {
+    "message": "Intégration",
+    "description": "Booking source label"
+  },
+  "sourceCampaign": {
+    "message": "Campagne",
+    "description": "Booking source label"
+  },
+  "sourceUnknown": {
+    "message": "—",
+    "description": "Fallback booking source label"
+  },
+  "availHeading": {
+    "message": "Disponibilité",
+    "description": "Booking schedule section title"
+  },
+  "availHint": {
+    "message": "Contrôle quand les visiteurs peuvent réserver. La longueur des créneaux horaires et les tampons s'appliquent en plus de votre emploi du temps.",
+    "description": "Booking schedule section subtitle"
+  },
+  "scheduleInherit": {
+    "message": "Utiliser mes heures d'ouverture",
+    "description": "Schedule source radio label"
+  },
+  "scheduleInheritHint": {
+    "message": "Depuis Paramètres → Heures d’ouverture (par défaut personnel, équipe ou entreprise).",
+    "description": "Schedule source radio hint"
+  },
+  "scheduleCustom": {
+    "message": "Utiliser un horaire enregistré",
+    "description": "Schedule source radio label"
+  },
+  "scheduleCustomHint": {
+    "message": "Choisissez un horaire que vous avez créé pendant les heures de bureau.",
+    "description": "Schedule source radio hint"
+  },
+  "scheduleLegacy": {
+    "message": "Horaires uniquement pour cette page de réservation",
+    "description": "Schedule source radio label"
+  },
+  "scheduleLegacyHint": {
+    "message": "Jours et heures personnalisés qui ne modifient pas votre emploi du temps principal.",
+    "description": "Schedule source radio hint"
+  },
+  "inheritedSchedule": {
+    "message": "Calendrier hérité",
+    "description": "Availability source card label"
+  },
+  "savedSchedule": {
+    "message": "Calendrier enregistré",
+    "description": "Business hours set select label"
+  },
+  "selectSchedulePh": {
+    "message": "Sélectionnez un horaire…",
+    "description": "Business hours set placeholder"
+  },
+  "loadingSchedules": {
+    "message": "Chargement des plannings…",
+    "description": "Schedule list loading"
+  },
+  "noSchedules": {
+    "message": "Pas encore d'horaires.",
+    "description": "Empty schedule list"
+  },
+  "createScheduleInSettings": {
+    "message": "Créez-en un dans les paramètres",
+    "description": "Link to create business hours"
+  },
+  "availableDays": {
+    "message": "Jours disponibles",
+    "description": "Day picker label"
+  },
+  "timeFrom": {
+    "message": "Depuis",
+    "description": "Working hours start"
+  },
+  "timeTo": {
+    "message": "À",
+    "description": "Working hours end"
+  },
+  "timezone": {
+    "message": "Fuseau horaire",
+    "description": "Timezone select label"
+  },
+  "slotLength": {
+    "message": "Longueur de la fente",
+    "description": "Slot duration label"
+  },
+  "bufferBetween": {
+    "message": "Tampon entre les réunions",
+    "description": "Buffer duration label"
+  },
+  "embedHeading": {
+    "message": "Intégrez sur votre site Web",
+    "description": "Embed section title"
+  },
+  "embedHint": {
+    "message": "Ajoutez une réservation à n’importe quelle page avec une balise iframe ou script. Enregistrez d’abord votre page pour que le slug soit en direct.",
+    "description": "Embed section subtitle"
+  },
+  "embedTabIframe": {
+    "message": "Iframe",
+    "description": "Embed code tab"
+  },
+  "embedTabScript": {
+    "message": "Scénario",
+    "description": "Embed code tab"
+  },
+  "embedPreview": {
+    "message": "Aperçu",
+    "description": "Embed preview label"
+  },
+  "embedPreviewTitle": {
+    "message": "Aperçu de l'intégration de la réservation",
+    "description": "Iframe title for embed preview"
+  },
+  "embedCodeToCopy": {
+    "message": "Code à copier",
+    "description": "Snippet copy section label"
+  },
+  "embedCopied": {
+    "message": "Copié",
+    "description": "Copy button after success"
+  },
+  "embedUrlLabel": {
+    "message": "URL d'intégration :",
+    "description": "Embed URL label prefix"
+  },
+  "embedCodeCopied": {
+    "message": "Code d'intégration copié",
+    "description": "Toast after copying embed snippet"
+  },
+  "detailBadge": {
+    "message": "Rendez-vous",
+    "description": "Appointment detail card badge"
+  },
+  "bookedVia": {
+    "message": "Réservé via {source}",
+    "description": "Booking source line"
+  },
+  "bookedBy": {
+    "message": "Réservé par",
+    "description": "Booked by field label"
+  },
+  "guestTimezone": {
+    "message": "Fuseau horaire des invités",
+    "description": "Guest timezone label"
+  },
+  "bookingPage": {
+    "message": "Page de réservation",
+    "description": "Public page slug label"
+  },
+  "meetingLink": {
+    "message": "Lien de la réunion",
+    "description": "Meeting link label"
+  },
+  "joinMeeting": {
+    "message": "Rejoindre la réunion",
+    "description": "Meeting link anchor text"
+  },
+  "bookingAnswers": {
+    "message": "Réponses à la réservation",
+    "description": "Custom form responses heading"
+  },
+  "markedNoShow": {
+    "message": "Marqué comme non-présentation",
+    "description": "No-show banner"
+  },
+  "join": {
+    "message": "Rejoindre",
+    "description": "Join meeting button"
+  },
+  "reschedule": {
+    "message": "Reprogrammer",
+    "description": "Reschedule action"
+  },
+  "linkCopied": {
+    "message": "Lien copié",
+    "description": "Copy booking URL toast"
+  },
+  "copyGuestLink": {
+    "message": "Copier le lien invité",
+    "description": "Copy guest manage link action"
+  },
+  "markCompleted": {
+    "message": "Marquer terminé",
+    "description": "Complete appointment action"
+  },
+  "markNoShow": {
+    "message": "Marquer une non-présentation",
+    "description": "No-show action"
+  },
+  "cancelAppointment": {
+    "message": "Annuler le rendez-vous",
+    "description": "Cancel appointment action"
+  },
+  "guestLinkLoadFailed": {
+    "message": "Impossible de charger le lien invité",
+    "description": "Guest link API error"
+  },
+  "guestLinkCopyFailed": {
+    "message": "Impossible de copier le lien invité",
+    "description": "Guest link clipboard error"
+  },
+  "statsTotal": {
+    "message": "Total",
+    "description": "Stats card label"
+  },
+  "statsCompleted": {
+    "message": "Complété",
+    "description": "Stats card label"
+  },
+  "statsCancelled": {
+    "message": "Annulé",
+    "description": "Stats card label"
+  },
+  "statsNoShowRate": {
+    "message": "% de non-présentation",
+    "description": "Stats card label"
+  },
+  "rescheduleTitle": {
+    "message": "Reprogrammer un rendez-vous",
+    "description": "Reschedule modal title"
+  },
+  "pickNewDate": {
+    "message": "Choisissez une nouvelle date",
+    "description": "Reschedule date picker label"
+  },
+  "loadingTimes": {
+    "message": "Temps de chargement…",
+    "description": "Slot loading state"
+  },
+  "noTimesThisDay": {
+    "message": "Aucun horaire disponible ce jour.",
+    "description": "Empty slots state"
+  },
+  "emailGuestUpdated": {
+    "message": "Envoyer un e-mail à l'invité avec l'heure mise à jour",
+    "description": "Reschedule notify checkbox"
+  },
+  "confirmNewTime": {
+    "message": "Confirmer la nouvelle heure",
+    "description": "Reschedule submit button"
+  },
+  "loadTimesFailed": {
+    "message": "Impossible de charger les temps",
+    "description": "Slots fetch error"
+  },
+  "rescheduleFailed": {
+    "message": "Échec de la replanification",
+    "description": "Reschedule submit error"
+  },
+  "customFieldsHeading": {
+    "message": "Questions de réservation",
+    "description": "Custom fields editor title"
+  },
+  "customFieldsHint": {
+    "message": "Champs supplémentaires facultatifs que les clients remplissent lors de la réservation (après le nom et l'e-mail).",
+    "description": "Custom fields editor subtitle"
+  },
+  "addQuestion": {
+    "message": "+ Ajouter une question",
+    "description": "Add custom field button"
+  },
+  "noCustomQuestions": {
+    "message": "Aucune question personnalisée pour l'instant.",
+    "description": "Empty custom fields state"
+  },
+  "questionN": {
+    "message": "Question __USI_0__",
+    "description": "Custom field index label"
+  },
+  "fieldLabel": {
+    "message": "Étiquette",
+    "description": "Custom field label input"
+  },
+  "fieldType": {
+    "message": "Type de champ",
+    "description": "Custom field type select"
+  },
+  "fieldKey": {
+    "message": "Clé de champ",
+    "description": "Custom field key input"
+  },
+  "fieldRequired": {
+    "message": "Requis",
+    "description": "Custom field required checkbox"
+  },
+  "fieldOptions": {
+    "message": "Options (une par ligne)",
+    "description": "Select field options textarea"
+  },
+  "fieldTypeText": {
+    "message": "Texte court",
+    "description": "Custom field type option"
+  },
+  "fieldTypeTextarea": {
+    "message": "Texte long",
+    "description": "Custom field type option"
+  },
+  "fieldTypeEmail": {
+    "message": "E-mail",
+    "description": "Custom field type option"
+  },
+  "fieldTypePhone": {
+    "message": "Téléphone",
+    "description": "Custom field type option"
+  },
+  "fieldTypeSelect": {
+    "message": "Dérouler",
+    "description": "Custom field type option"
+  },
+  "labelPhCompany": {
+    "message": "par ex. Nom de l'entreprise",
+    "description": "Custom field label placeholder"
+  },
+  "keyPhCompany": {
+    "message": "Nom de l'entreprise",
+    "description": "Custom field key placeholder"
+  },
+  "optionsPh": {
+    "message": "Option A\nOption B",
+    "description": "Select options placeholder"
+  },
+  "shareModalTitle": {
+    "message": "Partager la page de réservation",
+    "description": "Share modal title"
+  },
+  "shareModalHint": {
+    "message": "Envoyez votre lien de réservation par e-mail aux contacts de votre espace de travail.",
+    "description": "Share modal subtitle"
+  },
+  "searchContactsSr": {
+    "message": "Rechercher des contacts",
+    "description": "Share modal search sr-only label"
+  },
+  "searchContactsPh": {
+    "message": "Rechercher des contacts par nom ou par e-mail…",
+    "description": "Share modal search placeholder"
+  },
+  "noContactsSearch": {
+    "message": "Aucun contact ne correspond à votre recherche.",
+    "description": "Share modal empty search"
+  },
+  "noContactsEmail": {
+    "message": "Aucun contact avec une adresse e-mail pour l'instant.",
+    "description": "Share modal empty list"
+  },
+  "contactsSelected": {
+    "message": "{count, plural, one {# contact selected} other {# contacts selected}}",
+    "description": "Share modal selection count"
+  },
+  "composeEmail": {
+    "message": "Composer un e-mail",
+    "description": "Share modal primary action"
+  },
+  "loadContactsFailed": {
+    "message": "Impossible de charger les contacts",
+    "description": "Share modal fetch error"
+  },
+  "contactFallback": {
+    "message": "Contact",
+    "description": "Contact row fallback name"
+  },
+  "shareEmailSubject": {
+    "message": "Prendre un rendez-vous – {title}",
+    "description": "Default share email subject"
+  },
+  "shareEmailTitleFallback": {
+    "message": "mon calendrier",
+    "description": "Share email subject fallback title"
+  },
+  "shareEmailBodyHi": {
+    "message": "<p>Bonjour,</p>",
+    "description": "Default share email body paragraph"
+  },
+  "shareEmailBodyLink": {
+    "message": "<p>Veuillez utiliser le lien ci-dessous pour consulter mes disponibilités et réserver une heure qui vous convient :</p>",
+    "description": "Default share email body paragraph"
+  },
+  "shareEmailBodyClosing": {
+    "message": "<p>Au plaisir de vous connecter.</p>",
+    "description": "Default share email body paragraph"
+  },
+  "backToPages": {
+    "message": "← Pages de réservation",
+    "description": "Back link to pages hub"
+  },
+  "adminBookingPage": {
+    "message": "Administrateur · Page de réservation",
+    "description": "Configure view admin eyebrow"
+  },
+  "personalBookingPage": {
+    "message": "Page de réservation personnelle",
+    "description": "Configure view personal eyebrow"
+  },
+  "bookingPageTitle": {
+    "message": "Page de réservation",
+    "description": "Configure view title"
+  },
+  "userBookingPage": {
+    "message": "Page de réservation des utilisateurs",
+    "description": "Admin edit default title"
+  },
+  "adminConfigureHint": {
+    "message": "Configurez la page de réservation publique et la disponibilité de cet utilisateur.",
+    "description": "Admin configure subtitle"
+  },
+  "personalConfigureHint": {
+    "message": "Partagez votre lien afin que les clients puissent réserver du temps sur votre calendrier. Chaque réservation crée automatiquement un événement.",
+    "description": "Personal configure subtitle"
+  },
+  "automationsLink": {
+    "message": "Mettre en place des automatisations pour les réservations →",
+    "description": "Link to automation rules"
+  },
+  "pageLive": {
+    "message": "Page en direct",
+    "description": "Enable toggle label"
+  },
+  "publicLinkHeading": {
+    "message": "Lien public",
+    "description": "Public link section title"
+  },
+  "publicLinkHint": {
+    "message": "Il s'agit de l'URL que vous partagez avec les clients.",
+    "description": "Public link section subtitle"
+  },
+  "pageName": {
+    "message": "Nom de la page",
+    "description": "Display name field"
+  },
+  "pageNamePh": {
+    "message": "par ex. Réservez une démo avec Alex",
+    "description": "Display name placeholder"
+  },
+  "urlPath": {
+    "message": "Chemin de l'URL",
+    "description": "Slug field label"
+  },
+  "slugTaken": {
+    "message": "Cette URL est déjà prise",
+    "description": "Slug availability warning"
+  },
+  "meetingFormat": {
+    "message": "Format de réunion",
+    "description": "Meeting type section title"
+  },
+  "msTeamsHeading": {
+    "message": "Microsoft Outlook et équipes",
+    "description": "Microsoft calendar section"
+  },
+  "msTeamsHint": {
+    "message": "Connectez Microsoft 365 pour créer automatiquement des liens Teams et masquer les heures où vous êtes occupé sur Outlook.",
+    "description": "Microsoft calendar section hint"
+  },
+  "msOAuthNotConfigured": {
+    "message": "Microsoft OAuth n'est pas encore configuré sur le serveur API. Demandez à votre administrateur de définir",
+    "description": "Microsoft OAuth warning prefix"
+  },
+  "savePageFirstMs": {
+    "message": "Enregistrez d'abord cette page, puis connectez Microsoft Calendar.",
+    "description": "Microsoft connect prerequisite"
+  },
+  "connectedAs": {
+    "message": "Connecté en tant que {email}",
+    "description": "Calendar connected status"
+  },
+  "notConnected": {
+    "message": "Non connecté",
+    "description": "Calendar disconnected status"
+  },
+  "opening": {
+    "message": "Ouverture…",
+    "description": "OAuth popup opening state"
+  },
+  "connectMicrosoft": {
+    "message": "Connectez Microsoft",
+    "description": "Connect Microsoft button"
+  },
+  "disconnect": {
+    "message": "Déconnecter",
+    "description": "Disconnect calendar button"
+  },
+  "msAzureHint": {
+    "message": "Enregistrez une application dans",
+    "description": "Microsoft setup hint prefix"
+  },
+  "msAzureLink": {
+    "message": "Inscriptions d’application Azure",
+    "description": "Microsoft setup link text"
+  },
+  "msAzureHintSuffix": {
+    "message": "avec des autorisations déléguées : Calendars.Read, Calendars.ReadWrite, OnlineMeetings.ReadWrite, User.Read.",
+    "description": "Microsoft setup hint suffix"
+  },
+  "msRedirectHint": {
+    "message": "Ajoutez cet URI de redirection dans Azure → Authentification → Web :",
+    "description": "Microsoft redirect URI hint"
+  },
+  "googleHeading": {
+    "message": "Google Agenda et Meet",
+    "description": "Google calendar section"
+  },
+  "googleHint": {
+    "message": "Connectez Google Agenda pour créer automatiquement des liens Meet et masquer les heures où vous êtes occupé sur Google.",
+    "description": "Google calendar section hint"
+  },
+  "savePageFirstGoogle": {
+    "message": "Enregistrez d'abord cette page, puis connectez Google Agenda.",
+    "description": "Google connect prerequisite"
+  },
+  "connectGoogle": {
+    "message": "Connecter Google Agenda",
+    "description": "Connect Google button"
+  },
+  "googleSetupHint": {
+    "message": "Utilise la même application Google OAuth que Gmail (Paramètres → Intégrations → E-mail). Activer le",
+    "description": "Google setup hint part 1"
+  },
+  "googleCalendarApi": {
+    "message": "API Google Agenda",
+    "description": "Google setup bold phrase"
+  },
+  "googleSetupHint2": {
+    "message": "dans votre projet Google Cloud. Si vous voyez « Autorisation insuffisante », supprimez cette application à",
+    "description": "Google setup hint part 2"
+  },
+  "googlePermissionsLink": {
+    "message": "Autorisations du compte Google",
+    "description": "Google permissions link"
+  },
+  "googleSetupHint3": {
+    "message": "puis reconnectez-vous.",
+    "description": "Google setup hint part 3"
+  },
+  "googleRedirectHint": {
+    "message": "Ajoutez cette URL exacte sous Google Cloud → Client OAuth → URI de redirection autorisés :",
+    "description": "Google redirect URI hint"
+  },
+  "branding": {
+    "message": "Image de marque",
+    "description": "Branding section title"
+  },
+  "accentColor": {
+    "message": "Couleur d'accentuation",
+    "description": "Theme color label"
+  },
+  "welcomeMessage": {
+    "message": "Message de bienvenue",
+    "description": "Welcome note label"
+  },
+  "livePreview": {
+    "message": "Aperçu en direct",
+    "description": "Preview panel label"
+  },
+  "yourName": {
+    "message": "Votre nom",
+    "description": "Preview fallback name"
+  },
+  "minMeeting": {
+    "message": "Réunion de {minutes} min",
+    "description": "Preview slot duration label"
+  },
+  "welcomePreviewPh": {
+    "message": "Aperçu du message de bienvenue…",
+    "description": "Preview welcome placeholder"
+  },
+  "pagePaused": {
+    "message": "La page est en pause",
+    "description": "Preview paused banner"
+  },
+  "pageSaved": {
+    "message": "Page de réservation enregistrée",
+    "description": "Save success toast"
+  },
+  "googleStartFailed": {
+    "message": "Impossible de démarrer la connexion Google",
+    "description": "Google OAuth start error"
+  },
+  "msStartFailed": {
+    "message": "Impossible de démarrer la connexion Microsoft",
+    "description": "Microsoft OAuth start error"
+  },
+  "connectionFailed": {
+    "message": "La connexion a échoué",
+    "description": "OAuth generic error"
+  },
+  "googleDisconnected": {
+    "message": "Google Agenda déconnecté",
+    "description": "Google disconnect toast"
+  },
+  "msDisconnected": {
+    "message": "Calendrier Microsoft déconnecté",
+    "description": "Microsoft disconnect toast"
+  },
+  "calendarConnected": {
+    "message": "{provider} Calendrier connecté",
+    "description": "OAuth success toast"
+  },
+  "calendarConnectFailed": {
+    "message": "{provider} Échec de la connexion au calendrier",
+    "description": "OAuth error toast"
+  },
+  "hubEyebrow": {
+    "message": "Planification",
+    "description": "Pages hub eyebrow"
+  },
+  "hubTitle": {
+    "message": "Pages de réservation",
+    "description": "Pages hub title"
+  },
+  "hubHint": {
+    "message": "Partagez un lien pour que les clients réservent du temps sur votre calendrier. Chaque réservation crée automatiquement un événement.",
+    "description": "Pages hub subtitle"
+  },
+  "personalPageBtn": {
+    "message": "+ Page personnelle",
+    "description": "Create personal page button"
+  },
+  "teamPageBtn": {
+    "message": "+ Page d'équipe",
+    "description": "Create team page button"
+  },
+  "emptyTitle": {
+    "message": "Créez votre première page de réservation",
+    "description": "Empty state title"
+  },
+  "emptyHint": {
+    "message": "Choisissez la manière dont vous souhaitez que les clients planifient : un lien personnel rien que pour vous ou un lien partagé pour votre équipe.",
+    "description": "Empty state subtitle"
+  },
+  "cardPersonalTitle": {
+    "message": "Page de réservation personnelle",
+    "description": "Empty state card title"
+  },
+  "cardPersonalHint": {
+    "message": "Un lien avec vos disponibilités. Idéal pour les consultants et les titulaires de comptes.",
+    "description": "Empty state card hint"
+  },
+  "setupMyPage": {
+    "message": "Configurer ma page →",
+    "description": "Empty state personal CTA"
+  },
+  "cardTeamTitle": {
+    "message": "Page de réservation des équipes",
+    "description": "Empty state team card title"
+  },
+  "cardTeamHint": {
+    "message": "Un seul lien achemine automatiquement les réunions entre les membres de l’équipe.",
+    "description": "Empty state team card hint"
+  },
+  "createTeamPage": {
+    "message": "Créer une page d'équipe →",
+    "description": "Empty state team CTA"
+  },
+  "teamAdminOnly": {
+    "message": "Les pages d'équipe peuvent être créées par les administrateurs de l'espace de travail.",
+    "description": "Non-admin team hint"
+  },
+  "badgeTeam": {
+    "message": "Équipe",
+    "description": "Page list team badge"
+  },
+  "badgePersonal": {
+    "message": "Personnel",
+    "description": "Page list personal badge"
+  },
+  "badgeLive": {
+    "message": "En direct",
+    "description": "Page enabled badge"
+  },
+  "badgePaused": {
+    "message": "En pause",
+    "description": "Page disabled badge"
+  },
+  "copyLink": {
+    "message": "Copier le lien",
+    "description": "Copy booking link action"
+  },
+  "copied": {
+    "message": "Copié",
+    "description": "Copy link success button label"
+  },
+  "share": {
+    "message": "Partager",
+    "description": "Share page action"
+  },
+  "myBookingPage": {
+    "message": "Ma page de réservation",
+    "description": "Personal page default label"
+  },
+  "teamPageMembers": {
+    "message": "Page de l'équipe ({count} membres)",
+    "description": "Team page default label"
+  },
+  "userFallback": {
+    "message": "Utilisateur",
+    "description": "Owner name fallback"
+  },
+  "bookingLinkCopied": {
+    "message": "Lien de réservation copié",
+    "description": "Copy page link toast"
+  },
+  "loadPagesFailed": {
+    "message": "Impossible de charger les pages de réservation",
+    "description": "Pages list fetch error"
+  },
+  "emailQueued": {
+    "message": "E-mail en file d'attente",
+    "description": "Email send queued toast"
+  },
+  "emailSent": {
+    "message": "E-mail envoyé",
+    "description": "Email send success toast"
+  },
+  "emailSendFailed": {
+    "message": "Échec de l'envoi de l'e-mail",
+    "description": "Email send error toast"
+  },
+  "tabPersonalPage": {
+    "message": "Page de réservation personnelle",
+    "description": "Tab title for personal configure"
+  },
+  "tabTeamNew": {
+    "message": "Nouvelle page d'équipe",
+    "description": "Tab title for new team page"
+  },
+  "tabTeamPage": {
+    "message": "Page d'équipe",
+    "description": "Tab title for team configure"
+  },
+  "tabPersonalShort": {
+    "message": "Page personnelle",
+    "description": "Tab title for personal page edit"
+  },
+  "tabUserBooking": {
+    "message": "{name} · Réservation",
+    "description": "Tab title for admin user configure"
+  },
+  "teamEyebrow": {
+    "message": "Réservation d'équipe",
+    "description": "Team configure eyebrow"
+  },
+  "teamCreateTitle": {
+    "message": "Créer une page d'équipe",
+    "description": "Team configure new title"
+  },
+  "teamEditTitle": {
+    "message": "Modifier la page de l'équipe",
+    "description": "Team configure edit title"
+  },
+  "teamConfigureHint": {
+    "message": "Un lien pour les clients : les réunions sont automatiquement attribuées à votre équipe.",
+    "description": "Team configure subtitle"
+  },
+  "saveTeamPage": {
+    "message": "Enregistrer la page de l'équipe",
+    "description": "Team save button"
+  },
+  "teamDetails": {
+    "message": "Détails de l'équipe",
+    "description": "Team details section"
+  },
+  "teamName": {
+    "message": "Nom de l'équipe",
+    "description": "Team display name label"
+  },
+  "teamNamePh": {
+    "message": "par ex. Équipe commerciale",
+    "description": "Team name placeholder"
+  },
+  "publicUrl": {
+    "message": "URL publique",
+    "description": "Team slug label"
+  },
+  "urlTaken": {
+    "message": "URL déjà prise",
+    "description": "Team slug warning"
+  },
+  "assignment": {
+    "message": "Affectation",
+    "description": "Assignment strategy label"
+  },
+  "assignRoundRobin": {
+    "message": "Tournoi à la ronde (rotation équitable)",
+    "description": "Assignment strategy option"
+  },
+  "assignFirstAvailable": {
+    "message": "Premier membre disponible",
+    "description": "Assignment strategy option"
+  },
+  "teamMembers": {
+    "message": "Membres de l'équipe",
+    "description": "Team members section"
+  },
+  "teamMembersHint": {
+    "message": "Seuls les membres sélectionnés peuvent recevoir des réservations à partir de cette page. La connexion au calendrier de la page de réservation personnelle de chaque membre (Google ou Microsoft, correspondant au format de réunion ci-dessous) est utilisée pour masquer les heures de pointe.",
+    "description": "Team members section hint"
+  },
+  "loadingUsers": {
+    "message": "Chargement des utilisateurs…",
+    "description": "Org users loading"
+  },
+  "selectOneMember": {
+    "message": "Sélectionnez au moins un membre.",
+    "description": "Team members validation"
+  },
+  "welcomeNote": {
+    "message": "Mot de bienvenue",
+    "description": "Team branding welcome label"
+  },
+  "welcomeNotePh": {
+    "message": "Réservez du temps avec notre équipe…",
+    "description": "Team welcome placeholder"
+  },
+  "teamBookingLink": {
+    "message": "Lien de réservation d'équipe",
+    "description": "Team public URL label"
+  },
+  "teamPageSaved": {
+    "message": "Page de réservation d'équipe enregistrée",
+    "description": "Team save success toast"
+  },
+  "saveFailed": {
+    "message": "Échec de l'enregistrement",
+    "description": "Generic save error"
+  },
+  "loadTeamFailed": {
+    "message": "Échec du chargement de la page de l'équipe",
+    "description": "Team load error"
+  },
+  "publicLoading": {
+    "message": "Chargement du rendez-vous…",
+    "description": "Public manage loading"
+  },
+  "publicUnavailable": {
+    "message": "Indisponible",
+    "description": "Public manage error title"
+  },
+  "publicCancelledTitle": {
+    "message": "Rendez-vous annulé",
+    "description": "Public cancel success title"
+  },
+  "publicCancelledHint": {
+    "message": "Vous pouvez réserver une nouvelle heure depuis la page de réservation si nécessaire.",
+    "description": "Public cancel success hint"
+  },
+  "publicUpdatedTitle": {
+    "message": "Rendez-vous mis à jour",
+    "description": "Public reschedule success title"
+  },
+  "publicUpdatedEmail": {
+    "message": "Un email de confirmation a été envoyé avec la nouvelle heure.",
+    "description": "Public reschedule success hint"
+  },
+  "publicManageEyebrow": {
+    "message": "Gérer le rendez-vous",
+    "description": "Public manage header eyebrow"
+  },
+  "publicWithHost": {
+    "message": "avec {name}",
+    "description": "Public manage host line"
+  },
+  "publicScheduled": {
+    "message": "Programmé",
+    "description": "Public manage schedule label"
+  },
+  "publicBack": {
+    "message": "← Retour",
+    "description": "Public reschedule back link"
+  },
+  "publicCancelling": {
+    "message": "Annulation…",
+    "description": "Public cancel in progress"
+  },
+  "publicCannotChange": {
+    "message": "Ce rendez-vous ne peut plus être modifié en ligne.",
+    "description": "Public manage locked state"
+  },
+  "publicLinkInvalid": {
+    "message": "Ce lien n'est pas valide ou a expiré.",
+    "description": "Public manage load error"
+  },
+  "publicNotFound": {
+    "message": "Pas trouvé",
+    "description": "Public manage API not found"
+  },
+  "publicCancelFailed": {
+    "message": "Échec de l'annulation",
+    "description": "Public cancel error"
+  },
+  "publicCancelConfirm": {
+    "message": "Annuler ce rendez-vous ?",
+    "description": "Public cancel confirm dialog"
+  },
+  "providerGoogle": {
+    "message": "Google",
+    "description": "Calendar provider name"
+  },
+  "providerMicrosoft": {
+    "message": "Microsoft",
+    "description": "Calendar provider name"
+  }
+}

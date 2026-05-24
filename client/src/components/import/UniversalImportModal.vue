@@ -4,7 +4,7 @@
     <div class="fixed inset-0 bg-black/50 dark:bg-black/75 backdrop-blur-sm z-[9999] flex items-center justify-center p-4" @click.self="$emit('close')">
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
       <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Import Data</h2>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('import.universalImportModalImportData') }}</h2>
         <button @click="$emit('close')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -19,8 +19,8 @@
             <svg class="mx-auto h-16 w-16 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
             </svg>
-            <h3 class="mt-4 text-xl font-semibold text-gray-900 dark:text-white">Select Module to Import</h3>
-            <p class="mt-2 text-gray-600 dark:text-gray-400">Choose which module you want to import data into</p>
+            <h3 class="mt-4 text-xl font-semibold text-gray-900 dark:text-white">{{ t('import.universalImportModalSelectModuleToImport') }}</h3>
+            <p class="mt-2 text-gray-600 dark:text-gray-400">{{ t('import.universalImportModalChooseWhichModuleYouWantTo') }}</p>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -36,15 +36,9 @@
                   </svg>
                 </div>
                 <div class="flex-1 text-left">
-                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                    Contacts
-                  </h4>
-                  <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Import customer contacts, leads, and prospects
-                  </p>
-                  <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
-                    Fields: Name, Email, Phone, Company, etc.
-                  </p>
+                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{{ t('settings.settingsSubDetailUsageContacts') }}</h4>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ t('import.universalImportModalImportCustomerContactsLeadsAndProspects') }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">{{ t('import.universalImportModalFieldsNameEmailPhoneCompanyEtc') }}</p>
                 </div>
                 <svg class="w-6 h-6 text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -64,15 +58,9 @@
                   </svg>
                 </div>
                 <div class="flex-1 text-left">
-                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                    Deals
-                  </h4>
-                  <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Import sales opportunities and deals
-                  </p>
-                  <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
-                    Fields: Name, Amount, Stage, Status, etc.
-                  </p>
+                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{{ t('settings.settingsSubDetailUsageDeals') }}</h4>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ t('import.universalImportModalImportSalesOpportunitiesAndDeals') }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">{{ t('import.universalImportModalFieldsNameAmountStageStatusEtc') }}</p>
                 </div>
                 <svg class="w-6 h-6 text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -92,15 +80,9 @@
                   </svg>
                 </div>
                 <div class="flex-1 text-left">
-                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                    Tasks
-                  </h4>
-                  <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Import tasks and to-do items
-                  </p>
-                  <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
-                    Fields: Title, Description, Status, Priority, etc.
-                  </p>
+                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{{ t('settings.coreModDetailModuleTasks') }}</h4>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ t('import.universalImportModalImportTasksAndToDoItems') }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">{{ t('import.universalImportModalFieldsTitleDescriptionStatusPriorityEtc') }}</p>
                 </div>
                 <svg class="w-6 h-6 text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -120,15 +102,9 @@
                   </svg>
                 </div>
                 <div class="flex-1 text-left">
-                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                    Organizations
-                  </h4>
-                  <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Import companies and organizations
-                  </p>
-                  <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
-                    Fields: Name, Industry, Website, Phone, etc.
-                  </p>
+                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{{ t('settings.coreModDetailModuleOrganizations') }}</h4>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ t('import.universalImportModalImportCompaniesAndOrganizations') }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">{{ t('import.universalImportModalFieldsNameIndustryWebsitePhoneEtc') }}</p>
                 </div>
                 <svg class="w-6 h-6 text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -153,10 +129,13 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref } from 'vue';
 import CSVImportModal from './CSVImportModal.vue';
 
 const emit = defineEmits(['close', 'import-complete']);
+
+const { t } = useI18n();
 
 const selectedModule = ref(null);
 const fileName = ref('');

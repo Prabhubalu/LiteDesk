@@ -1,0 +1,2382 @@
+{
+  "recordsCount": {
+    "message": "{count, plural, one {# record} other {# records}}",
+    "description": "Record list count with ICU pluralization"
+  },
+  "itemsSelected": {
+    "message": "{count, plural, one {# item selected} other {# items selected}}",
+    "description": "Bulk selection count in list views"
+  },
+  "welcomeUser": {
+    "message": "स्वागत है, {name}",
+    "description": "Personalized greeting with interpolation"
+  },
+  "assignedToUser": {
+    "message": "Assigned to {gender, select, female {her} male {him} other {them}}",
+    "description": "ICU select example for gendered copy (platform chrome only)"
+  },
+  "localeDevTitle": {
+    "message": "स्थानीयकरण क्यूए",
+    "description": "Developer settings section for i18n tools"
+  },
+  "pseudoLocaleHint": {
+    "message": "छद्म स्थान पाठ का विस्तार करते हैं और अनुवाद से पहले लेआउट समस्याओं को उजागर करते हैं।",
+    "description": "Help text for pseudo-locale developer toggle"
+  },
+  "moreActions": {
+    "message": "अधिक क्रियाएं",
+    "description": "Overflow menu trigger aria-label"
+  },
+  "loadingList": {
+    "message": "सूची लोड हो रही है",
+    "description": "List skeleton aria-label"
+  },
+  "viewRecord": {
+    "message": "देखना",
+    "description": "Row action: open record"
+  },
+  "importData": {
+    "message": "आयात",
+    "description": "Module header import action"
+  },
+  "exportData": {
+    "message": "निर्यात",
+    "description": "Module header export action"
+  },
+  "listSaveView": {
+    "message": "दृश्य सहेजें",
+    "description": "List view: save current filters/columns"
+  },
+  "listFilters": {
+    "message": "फिल्टर",
+    "description": "List view filters panel title"
+  },
+  "listAllRecords": {
+    "message": "सभी",
+    "description": "List filter tab: all records"
+  },
+  "listClearFilters": {
+    "message": "फ़िल्टर साफ़ करें",
+    "description": "Reset active list filters"
+  },
+  "listLoadingOptions": {
+    "message": "विकल्प लोड हो रहे हैं...",
+    "description": "Filter dropdown loading state"
+  },
+  "listClear": {
+    "message": "स्पष्ट",
+    "description": "Clear single filter or selection"
+  },
+  "listViewName": {
+    "message": "नाम देखें",
+    "description": "Saved view name field label"
+  },
+  "listDeleteView": {
+    "message": "दृश्य हटाएँ",
+    "description": "Delete saved list view action"
+  },
+  "listCustomizeView": {
+    "message": "दृश्य अनुकूलित करें",
+    "description": "Open list view customization drawer"
+  },
+  "listLayoutOptions": {
+    "message": "लेआउट विकल्प",
+    "description": "List layout section title"
+  },
+  "listRowHeight": {
+    "message": "पंक्ति की ऊंचाई",
+    "description": "Table row height setting"
+  },
+  "listReset": {
+    "message": "रीसेट करें",
+    "description": "Reset view settings to defaults"
+  },
+  "listColumnWidths": {
+    "message": "कॉलम की चौड़ाई",
+    "description": "Column width customization section"
+  },
+  "listDefaultView": {
+    "message": "डिफ़ॉल्ट दृश्य",
+    "description": "Mark view as org default"
+  },
+  "listManageFields": {
+    "message": "फ़ील्ड प्रबंधित करें",
+    "description": "Open field visibility manager"
+  },
+  "listFieldRequired": {
+    "message": "आवश्यक",
+    "description": "Field cannot be hidden"
+  },
+  "listFieldLocked": {
+    "message": "बंद",
+    "description": "Field locked from reorder"
+  },
+  "listFieldHidden": {
+    "message": "छिपा हुआ",
+    "description": "Hidden fields section"
+  },
+  "listNoHiddenFields": {
+    "message": "कोई छिपा हुआ फ़ील्ड नहीं",
+    "description": "Empty hidden fields state"
+  },
+  "listNewCustomField": {
+    "message": "नया कस्टम फ़ील्ड",
+    "description": "Create custom field from list manager"
+  },
+  "listCustomizeKanban": {
+    "message": "कानबन को अनुकूलित करें",
+    "description": "Kanban board customization"
+  },
+  "deleteTitleBulk": {
+    "message": "हटाएं {count} {recordTypePlural}",
+    "description": "Bulk delete dialog title"
+  },
+  "deleteTitleSingle": {
+    "message": "{recordType} हटाएं",
+    "description": "Single delete dialog title"
+  },
+  "deleteConfirmBulk": {
+    "message": "क्या आप वाकई {count} {recordTypeLabel} को हटाना चाहते हैं? इस एक्शन को वापस नहीं किया जा सकता।",
+    "description": "Bulk delete confirmation"
+  },
+  "deleteConfirmSingle": {
+    "message": "क्या आप वाकई {target} को हटाना चाहते हैं? इस एक्शन को वापस नहीं किया जा सकता।",
+    "description": "Single delete confirmation; target is quoted name or type"
+  },
+  "deleteInProgress": {
+    "message": "हटाया जा रहा है...",
+    "description": "Delete button in progress"
+  },
+  "listEditView": {
+    "message": "संपादित देखें",
+    "description": "Edit saved list view action title"
+  },
+  "listDeleteViewAction": {
+    "message": "दृश्य हटाएँ",
+    "description": "Delete saved list view action title"
+  },
+  "listSaveViewHint": {
+    "message": "वर्तमान दृश्य को नए सहेजे गए दृश्य के रूप में सहेजें",
+    "description": "Save view button tooltip"
+  },
+  "listHideStatistics": {
+    "message": "आँकड़े छिपाएँ",
+    "description": "Stats panel toggle tooltip when visible"
+  },
+  "listShowStatistics": {
+    "message": "आंकड़े दिखाएं",
+    "description": "Stats panel toggle tooltip when hidden"
+  },
+  "listStatsShort": {
+    "message": "आँकड़े",
+    "description": "Short stats toggle label"
+  },
+  "listHideShort": {
+    "message": "छिपाना",
+    "description": "Short hide label for stats toggle"
+  },
+  "listSuggestedLabel": {
+    "message": "सुझाव दिया:",
+    "description": "Suggested filters section prefix"
+  },
+  "listSuggestedHint": {
+    "message": "सामान्य उपयोग पर आधारित सुझाव. कुछ भी स्वचालित रूप से लागू नहीं होता है.",
+    "description": "Suggested filters tooltip"
+  },
+  "listSuggestedConfigure": {
+    "message": "{filter} फ़िल्टर को कॉन्फ़िगर करने के लिए क्लिक करें",
+    "description": "Suggested filter chip tooltip"
+  },
+  "listClearSearch": {
+    "message": "{title} के लिए स्पष्ट खोज",
+    "description": "Clear search input aria-label"
+  },
+  "listViewNameExample": {
+    "message": "उदाहरण के लिए, सेल्स लीड्स",
+    "description": "Saved view name placeholder"
+  },
+  "listViewDescOptional": {
+    "message": "विवरण (वैकल्पिक)",
+    "description": "Saved view description field label"
+  },
+  "listViewDescPlaceholder": {
+    "message": "इस दृश्य के लिए वैकल्पिक विवरण",
+    "description": "Saved view description placeholder"
+  },
+  "listSaveCurrentView": {
+    "message": "वर्तमान दृश्य सहेजें",
+    "description": "Save view modal title"
+  },
+  "listEditViewTitle": {
+    "message": "संपादित देखें",
+    "description": "Edit view modal title"
+  },
+  "listDeleteViewConfirm": {
+    "message": "क्या आप वाकई \"{viewName}\" को हटाना चाहते हैं? इस एक्शन को वापस नहीं किया जा सकता।",
+    "description": "Delete saved view confirmation"
+  },
+  "listClearSelection": {
+    "message": "स्पष्ट चयन",
+    "description": "Bulk selection clear button tooltip"
+  },
+  "listRowsSelected": {
+    "message": "{count, plural, one {# {singular} selected} other {# {plural} selected}}",
+    "description": "Bulk row selection count in list"
+  },
+  "listSearchFields": {
+    "message": "फ़ील्ड खोजें",
+    "description": "Field manager search placeholder"
+  },
+  "listShownCount": {
+    "message": "दिखाया गया ({count})",
+    "description": "Visible fields section header"
+  },
+  "listKanbanOptions": {
+    "message": "कानबन विकल्प",
+    "description": "Kanban settings section title"
+  },
+  "listCardSize": {
+    "message": "कार्ड का आकार",
+    "description": "Kanban card size setting"
+  },
+  "listStackFields": {
+    "message": "खेतों को ढेर करें",
+    "description": "Kanban stack fields toggle"
+  },
+  "listCollapseEmpty": {
+    "message": "खाली कॉलम संक्षिप्त करें",
+    "description": "Kanban collapse empty columns toggle"
+  },
+  "listShowEmptyFields": {
+    "message": "खाली फ़ील्ड दिखाएँ",
+    "description": "Kanban show empty fields toggle"
+  },
+  "listShowClosedRecords": {
+    "message": "बंद रिकार्ड दिखाएँ",
+    "description": "Kanban show closed records toggle"
+  },
+  "darkMode": {
+    "message": "डार्क मोड",
+    "description": "Dark color mode menu option"
+  },
+  "lightMode": {
+    "message": "लाइट मोड",
+    "description": "Light color mode menu option"
+  },
+  "tableClearSelection": {
+    "message": "स्पष्ट चयन",
+    "description": "Clear bulk row selection"
+  },
+  "tableAllPageSelected": {
+    "message": "इस पृष्ठ पर सभी {count} आइटम चयनित हैं।",
+    "description": "Select-all banner when current page is fully selected"
+  },
+  "tableSelectAllItems": {
+    "message": "सभी {count} आइटम चुनें",
+    "description": "Expand selection to all pages"
+  },
+  "tableAllSelected": {
+    "message": "सभी {count} चयनित",
+    "description": "All records across pages selected"
+  },
+  "tableSelectedCount": {
+    "message": "{count, plural, one {# selected} other {# selected}}",
+    "description": "Bulk selection count in data table"
+  },
+  "tableDeleteSelected": {
+    "message": "चयनित को हटाओ",
+    "description": "Bulk delete action label"
+  },
+  "tableColumns": {
+    "message": "कॉलम",
+    "description": "Column settings button label"
+  },
+  "tableColumnSettings": {
+    "message": "कॉलम सेटिंग्स",
+    "description": "Column settings modal title"
+  },
+  "tableManageColumns": {
+    "message": "कॉलम प्रबंधित करें",
+    "description": "Column manager section title"
+  },
+  "tableManageColumnsHint": {
+    "message": "दृश्यता टॉगल करें और पुन: व्यवस्थित करने के लिए खींचें",
+    "description": "Column manager help text"
+  },
+  "tableVisibleCount": {
+    "message": "{total} का {visible} दृश्यमान",
+    "description": "Visible column count in settings"
+  },
+  "tableUnfreezeColumn": {
+    "message": "कॉलम को अनफ़्रीज़ करें",
+    "description": "Unfreeze sticky column tooltip"
+  },
+  "tableFreezeColumn": {
+    "message": "स्तंभ को फ़्रीज़ करें",
+    "description": "Freeze sticky column tooltip"
+  },
+  "tableFreezeMax": {
+    "message": "अधिकतम 2 कॉलम फ्रीज किये जा सकते हैं",
+    "description": "Freeze limit tooltip"
+  },
+  "tableFrozen": {
+    "message": "जमा हुआ",
+    "description": "Frozen column badge"
+  },
+  "tableResetDefault": {
+    "message": "वितथ पर ले जाएं",
+    "description": "Reset column settings"
+  },
+  "tableShowingResults": {
+    "message": "{total} परिणामों में से {start} से {end} को दिखाया जा रहा है",
+    "description": "Pagination summary"
+  },
+  "tableSortAscending": {
+    "message": "छोटे से बड़े क्रम में क्रमबद्ध करें",
+    "description": "Table column sort ascending"
+  },
+  "tableSortDescending": {
+    "message": "अवरोही छांट",
+    "description": "Table column sort descending"
+  },
+  "tableClearSort": {
+    "message": "स्पष्ट प्रकार",
+    "description": "Remove column sort"
+  },
+  "tableToggleSort": {
+    "message": "{column} के लिए सॉर्ट टॉगल करें",
+    "description": "Sort toggle aria-label"
+  },
+  "tableRowSelectSr": {
+    "message": "पंक्ति क्रमांक और पंक्तियाँ चुनें",
+    "description": "Screen reader label for selection column"
+  },
+  "tableLoadingSr": {
+    "message": "लोड हो रहा है टेबल",
+    "description": "Screen reader label for table loading skeleton"
+  },
+  "metricsTitle": {
+    "message": "मेट्रिक्स",
+    "description": "Metrics widget card title"
+  },
+  "metricsConfigure": {
+    "message": "मेट्रिक्स कॉन्फ़िगर करें",
+    "description": "Open metrics configuration"
+  },
+  "metricsEmptyYet": {
+    "message": "अभी तक कोई मेट्रिक्स कॉन्फ़िगर नहीं किया गया है.",
+    "description": "Empty metrics widget state"
+  },
+  "metricsEmptyPanel": {
+    "message": "कोई मेट्रिक्स कॉन्फ़िगर नहीं किया गया.",
+    "description": "Empty metrics config panel"
+  },
+  "metricsAdd": {
+    "message": "मीट्रिक जोड़ें",
+    "description": "Add a new metric row"
+  },
+  "metricsLabel": {
+    "message": "लेबल",
+    "description": "Metric label column"
+  },
+  "metricsSource": {
+    "message": "स्रोत",
+    "description": "Metric data source column"
+  },
+  "metricsField": {
+    "message": "मैदान",
+    "description": "Metric field column"
+  },
+  "metricsAggregation": {
+    "message": "एकत्रीकरण",
+    "description": "Metric aggregation column"
+  },
+  "metricsDragReorder": {
+    "message": "पुन: व्यवस्थित करने के लिए खींचें",
+    "description": "Metric row drag handle tooltip"
+  },
+  "metricsDelete": {
+    "message": "मीट्रिक हटाएँ",
+    "description": "Remove metric row"
+  },
+  "metricsClosePanel": {
+    "message": "पैनल बंद करें",
+    "description": "Close metrics config drawer"
+  },
+  "keyFieldsTitle": {
+    "message": "प्रमुख क्षेत्र",
+    "description": "Key fields widget title"
+  },
+  "keyFieldsEmptyValue": {
+    "message": "खाली",
+    "description": "Empty key field value placeholder"
+  },
+  "keyFieldsNone": {
+    "message": "कोई कुंजी फ़ील्ड कॉन्फ़िगर नहीं की गई",
+    "description": "No key fields empty state"
+  },
+  "keyFieldsHint": {
+    "message": "मॉड्यूल सेटिंग्स में फ़ील्ड को \"कुंजी फ़ील्ड\" के रूप में चिह्नित करें",
+    "description": "Key fields configuration hint"
+  },
+  "closePanel": {
+    "message": "पैनल बंद करें",
+    "description": "Screen reader label for closing a side panel"
+  },
+  "formAssignToMe": {
+    "message": "मुझे सौंप दो",
+    "description": "Assign current user to a reviewer field"
+  },
+  "formNoOptions": {
+    "message": "कोई विकल्प उपलब्ध नहीं है.",
+    "description": "Empty picklist dropdown"
+  },
+  "formNoMatchingRecords": {
+    "message": "कोई मेल खाता रिकॉर्ड नहीं मिला.",
+    "description": "Empty lookup combobox search results"
+  },
+  "formNoRecordsFound": {
+    "message": "कोई रिकॉर्ड नहीं मिला",
+    "description": "Empty lookup modal list"
+  },
+  "formSelected": {
+    "message": "चयनित",
+    "description": "Lookup row already selected badge"
+  },
+  "formCreateNew": {
+    "message": "नया निर्माण",
+    "description": "Create related record from lookup footer"
+  },
+  "formSearchOptions": {
+    "message": "विकल्प खोजें...",
+    "description": "Picklist search placeholder"
+  },
+  "formSearchRecords": {
+    "message": "रिकॉर्ड खोजें...",
+    "description": "Lookup combobox search placeholder"
+  },
+  "formBrowseRecords": {
+    "message": "रिकॉर्ड ब्राउज़ करें",
+    "description": "Open lookup record picker modal"
+  },
+  "formCreateAndSelect": {
+    "message": "बनाएं और चुनें",
+    "description": "Create new lookup record shortcut"
+  },
+  "formUploading": {
+    "message": "अपलोड हो रहा है...",
+    "description": "Image upload in progress"
+  },
+  "formUploadImage": {
+    "message": "तस्विर अपलोड करना",
+    "description": "Image upload trigger button"
+  },
+  "formRefreshing": {
+    "message": "ताज़ा...",
+    "description": "Lookup modal refresh in progress"
+  },
+  "formLookupSelectTitle": {
+    "message": "{label} चुनें",
+    "description": "Lookup modal title"
+  },
+  "formLookupChooseOne": {
+    "message": "{field} भरने के लिए एक {module} चुनें",
+    "description": "Lookup modal subtitle"
+  },
+  "formLookupSearchModule": {
+    "message": "खोजें {module}...",
+    "description": "Lookup modal search placeholder"
+  },
+  "formLookupNoMatch": {
+    "message": "कोई {module} \"{query}\" से मेल नहीं खाता।",
+    "description": "Lookup modal empty state with search query"
+  },
+  "formLookupNoRecordsYet": {
+    "message": "अभी तक चुनने के लिए कोई {module} नहीं है।",
+    "description": "Lookup modal empty state without query"
+  },
+  "formLookupCreateModule": {
+    "message": "नया {module} बनाएं",
+    "description": "Lookup modal create CTA with module name"
+  },
+  "lifecycleStageTitle": {
+    "message": "जीवनचक्र चरण",
+    "description": "Lifecycle stage widget title"
+  },
+  "lifecycleType": {
+    "message": "प्रकार:",
+    "description": "Lifecycle widget type label"
+  },
+  "lifecycleAge": {
+    "message": "आयु:",
+    "description": "Lifecycle widget age label"
+  },
+  "lifecycleJustCreated": {
+    "message": "अभी बनाया गया",
+    "description": "Record age when created today"
+  },
+  "lifecycleAgeDays": {
+    "message": "{days, plural, one {# day} other {# days}}",
+    "description": "Record age in days"
+  },
+  "lifecycleAgeZero": {
+    "message": "0 दिन",
+    "description": "Record age fallback when no createdAt"
+  },
+  "searchPlaceholder": {
+    "message": "खोज...",
+    "description": "Generic search input placeholder"
+  },
+  "filterAll": {
+    "message": "सभी",
+    "description": "Filter option: no restriction"
+  },
+  "filterAllNamed": {
+    "message": "सभी {label}",
+    "description": "Filter option: all values for a named field"
+  },
+  "filterDays": {
+    "message": "दिन",
+    "description": "Relative date filter days input label"
+  },
+  "filterDate": {
+    "message": "तारीख",
+    "description": "Single date filter input label"
+  },
+  "filterFrom": {
+    "message": "से",
+    "description": "Date range filter start label"
+  },
+  "filterTo": {
+    "message": "को",
+    "description": "Date range filter end label"
+  },
+  "filterDaysPlaceholder": {
+    "message": "जैसे 7",
+    "description": "Relative date filter days input placeholder"
+  },
+  "dependencyNoFields": {
+    "message": "प्रदर्शित करने के लिए कोई फ़ील्ड नहीं",
+    "description": "Dependency popup empty state"
+  },
+  "drawerBackQuickCreate": {
+    "message": "त्वरित निर्माण पर वापस जाएँ",
+    "description": "Toggle from full create form to quick create"
+  },
+  "drawerShowAllFields": {
+    "message": "सभी फ़ील्ड दिखाएँ",
+    "description": "Expand quick create drawer to full form"
+  },
+  "formQuickCreateFields": {
+    "message": "त्वरित फ़ील्ड बनाएँ",
+    "description": "Section heading for quick-create field group"
+  },
+  "taskDescriptionPlaceholder": {
+    "message": "कमांड के लिए '/' लिखें या टाइप करें",
+    "description": "Task description editor placeholder"
+  },
+  "taskDescriptionFallback": {
+    "message": "विवरण",
+    "description": "Task description field fallback label"
+  },
+  "taskRelatedToFallback": {
+    "message": "संदर्भ के",
+    "description": "Task related-to field fallback label"
+  },
+  "taskSubtasksLabel": {
+    "message": "उप-कार्य",
+    "description": "Task subtasks field label"
+  },
+  "tagsTitle": {
+    "message": "टैग",
+    "description": "Tags picker panel title"
+  },
+  "tagsNewTag": {
+    "message": "नया टैग",
+    "description": "Create a new tag definition"
+  },
+  "tagsSearchPlaceholder": {
+    "message": "टैग खोजें या बनाएं",
+    "description": "Tags picker search input"
+  },
+  "tagsClickSearchHint": {
+    "message": "उपलब्ध टैग देखने के लिए खोज बॉक्स पर क्लिक करें।",
+    "description": "Tags picker collapsed hint"
+  },
+  "tagsNoTagsYet": {
+    "message": "इस कार्यक्षेत्र में अभी तक कोई टैग नहीं है.",
+    "description": "Empty workspace tags list"
+  },
+  "tagsCreateFirst": {
+    "message": "पहला टैग बनाएं",
+    "description": "CTA when no tags exist"
+  },
+  "tagsCreateNamed": {
+    "message": "\"{name}\" बनाएं",
+    "description": "Create tag from search query"
+  },
+  "tagsPublic": {
+    "message": "जनता",
+    "description": "Public tag badge"
+  },
+  "tagsRemoveTag": {
+    "message": "टैग हटाएँ",
+    "description": "Remove tag from selection aria-label"
+  },
+  "tagsEditTag": {
+    "message": "टैग संपादित करें",
+    "description": "Edit tag definition action"
+  },
+  "tagsTagActions": {
+    "message": "क्रियाएँ टैग करें",
+    "description": "Tag row overflow menu aria-label"
+  },
+  "tagsTagName": {
+    "message": "टैग नाम",
+    "description": "Tag editor name field label"
+  },
+  "tagsEnterTagName": {
+    "message": "टैग नाम दर्ज करें",
+    "description": "Tag editor name placeholder"
+  },
+  "tagsColor": {
+    "message": "रंग",
+    "description": "Tag editor color field label"
+  },
+  "tagsMakePublic": {
+    "message": "टैग को सार्वजनिक करें",
+    "description": "Tag editor public toggle label"
+  },
+  "tagsRemoveFromSelection": {
+    "message": "चयन से हटाएँ",
+    "description": "Unassign tag from current record"
+  },
+  "tagsAddToSelection": {
+    "message": "चयन में जोड़ें",
+    "description": "Assign tag to current record"
+  },
+  "tagsDeleteFromModule": {
+    "message": "मॉड्यूल से टैग हटाएं",
+    "description": "Delete tag definition from module"
+  },
+  "tagsRemovedNamed": {
+    "message": "\"{name}\" हटा दिया गया।",
+    "description": "Tag removal pending undo banner"
+  },
+  "tagsUndoSeconds": {
+    "message": "पूर्ववत करें ({seconds})",
+    "description": "Undo tag removal countdown"
+  },
+  "linkRecordsBackToType": {
+    "message": "रिकॉर्ड प्रकार पर वापस जाएँ",
+    "description": "Return to link records type selector"
+  },
+  "linkRecordsLinked": {
+    "message": "जुड़ा हुआ",
+    "description": "Already-linked record type badge"
+  },
+  "linkRecordsNoTypes": {
+    "message": "इस मॉड्यूल के लिए कोई लिंक करने योग्य रिकॉर्ड प्रकार कॉन्फ़िगर नहीं किया गया है। सेटिंग्स → मॉड्यूल में संबंधों को कॉन्फ़िगर करें।",
+    "description": "Empty linkable types state"
+  },
+  "linkRecordsNoMatch": {
+    "message": "कोई मेल खाता रिकॉर्ड नहीं मिला. अपनी खोज या फ़िल्टर समायोजित करने का प्रयास करें.",
+    "description": "Empty link records search results"
+  },
+  "linkRecordsCreateNew": {
+    "message": "नया निर्माण",
+    "description": "Create record from link drawer"
+  },
+  "linkRecordsSelectedCount": {
+    "message": "{count, plural, one {# selected} other {# selected}}",
+    "description": "Link drawer multi-select count"
+  },
+  "linkRecordsLink": {
+    "message": "जोड़ना",
+    "description": "Confirm link records action"
+  },
+  "kanbanExpandColumn": {
+    "message": "कॉलम का विस्तार करें",
+    "description": "Expand collapsed kanban column"
+  },
+  "kanbanNoItems": {
+    "message": "कोई आइटम नहीं",
+    "description": "Empty kanban column placeholder"
+  },
+  "summaryLoadingRecord": {
+    "message": "लोड हो रहा है {type}...",
+    "description": "Record summary page loading state"
+  },
+  "summaryErrorLoadingTitle": {
+    "message": "लोड करने में त्रुटि {type}",
+    "description": "Record summary page error headline"
+  },
+  "summaryNoTagsYet": {
+    "message": "अभी तक कोई टैग नहीं",
+    "description": "Empty tags on record header"
+  },
+  "summaryManageTags": {
+    "message": "टैग प्रबंधित करें",
+    "description": "Open tag manager when tags exist"
+  },
+  "summaryAddTag": {
+    "message": "टैग जोड़ें",
+    "description": "Add a tag to the record"
+  },
+  "summaryAddAnotherTag": {
+    "message": "एक और टैग जोड़ें",
+    "description": "Add another tag when some exist"
+  },
+  "summaryCopyLink": {
+    "message": "लिंक की प्रतिलिपि करें",
+    "description": "Copy record URL to clipboard"
+  },
+  "summarySelectPlaceholder": {
+    "message": "चुनना...",
+    "description": "Unset lifecycle/status dropdown value"
+  },
+  "summaryAddRelation": {
+    "message": "संबंध जोड़ें",
+    "description": "Add related record menu"
+  },
+  "summaryViewResponses": {
+    "message": "प्रतिक्रियाएँ देखें",
+    "description": "Open form responses list"
+  },
+  "summaryDeleteRecord": {
+    "message": "रिकॉर्ड हटाएँ",
+    "description": "Delete current record action"
+  },
+  "summaryFormNotActive": {
+    "message": "फॉर्म अभी सक्रिय नहीं है",
+    "description": "Inactive form empty state title"
+  },
+  "summaryFormNotActiveHint": {
+    "message": "इस फॉर्म का अभी तक उपयोग नहीं किया गया है. प्रतिक्रियाएँ एकत्र करना शुरू करने के लिए इसे ईवेंट के माध्यम से असाइन करें।",
+    "description": "Inactive form empty state body"
+  },
+  "summaryAddWidget": {
+    "message": "विजेट जोड़ें",
+    "description": "Add dashboard widget CTA"
+  },
+  "summaryAddCustomWidget": {
+    "message": "कस्टम विजेट जोड़ें",
+    "description": "Add widget floating button tooltip"
+  },
+  "summaryShowEmptyFields": {
+    "message": "खाली फ़ील्ड दिखाएँ",
+    "description": "Toggle empty fields in details tab"
+  },
+  "summaryTenantFields": {
+    "message": "किरायेदार क्षेत्र",
+    "description": "Tenant details tab section title"
+  },
+  "summaryTenantFieldsHint": {
+    "message": "सदस्यता, सीमाएँ और संगठन सेटिंग्स",
+    "description": "Tenant details tab subtitle"
+  },
+  "summaryTenantFieldsNoMatch": {
+    "message": "कोई भी टैनेंट फ़ील्ड आपकी खोज से मेल नहीं खाती.",
+    "description": "Tenant fields search empty"
+  },
+  "summaryTenantFieldsNoValues": {
+    "message": "प्रदर्शित करने के लिए मानों वाला कोई टैनेंट फ़ील्ड नहीं।",
+    "description": "Tenant fields all empty hidden"
+  },
+  "summaryTenantFieldsNone": {
+    "message": "कोई किरायेदार फ़ील्ड उपलब्ध नहीं है.",
+    "description": "No tenant fields configured"
+  },
+  "summaryManageFields": {
+    "message": "फ़ील्ड प्रबंधित करें",
+    "description": "Open field management settings"
+  },
+  "summaryNotAvailable": {
+    "message": "उपलब्ध नहीं है",
+    "description": "Field value unavailable placeholder"
+  },
+  "summaryFieldsNoMatch": {
+    "message": "कोई फ़ील्ड आपकी खोज से मेल नहीं खाती.",
+    "description": "Details tab search empty"
+  },
+  "summaryFieldsNoValues": {
+    "message": "प्रदर्शित करने के लिए मानों वाला कोई फ़ील्ड नहीं.",
+    "description": "Details tab all empty hidden"
+  },
+  "summaryFieldsNone": {
+    "message": "कोई फ़ील्ड उपलब्ध नहीं है.",
+    "description": "No fields configured on module"
+  },
+  "summaryFormUsage": {
+    "message": "प्रपत्र उपयोग",
+    "description": "Form submissions section title"
+  },
+  "summaryFormUsageHint": {
+    "message": "स्थिति, स्कोर और जमा करने की तारीख के साथ फॉर्म जमा करने की सूची।",
+    "description": "Form submissions section subtitle"
+  },
+  "summaryLoadingSubmissions": {
+    "message": "सबमिशन लोड हो रहा है...",
+    "description": "Form submissions table loading"
+  },
+  "summaryColSubmitted": {
+    "message": "प्रस्तुत किया गया",
+    "description": "Submission date column"
+  },
+  "summaryColSubmittedBy": {
+    "message": "द्वारा प्रस्तुत किया गया",
+    "description": "Submitter column"
+  },
+  "summaryColStatus": {
+    "message": "स्थिति",
+    "description": "Status column header"
+  },
+  "summaryColScore": {
+    "message": "अंक",
+    "description": "Score column header"
+  },
+  "summaryColActions": {
+    "message": "कार्रवाई",
+    "description": "Actions column header"
+  },
+  "summaryColKpis": {
+    "message": "केपीआई",
+    "description": "KPI column header"
+  },
+  "summaryAnonymous": {
+    "message": "गुमनाम",
+    "description": "Anonymous submitter label"
+  },
+  "summaryNoSubmissions": {
+    "message": "अभी तक कोई सबमिशन नहीं",
+    "description": "Empty form submissions state"
+  },
+  "summaryNoSubmissionsHint": {
+    "message": "इस फॉर्म को अभी तक कोई सबमिशन प्राप्त नहीं हुआ है.",
+    "description": "Empty form submissions body"
+  },
+  "summaryFormPreview": {
+    "message": "प्रपत्र पूर्वावलोकन",
+    "description": "Form preview section title"
+  },
+  "summaryFormPreviewHint": {
+    "message": "पूर्वावलोकन करें कि यह फ़ॉर्म भरते समय उपयोगकर्ताओं को कैसा दिखाई देगा।",
+    "description": "Form preview section subtitle"
+  },
+  "summaryFormResponses": {
+    "message": "प्रपत्र प्रतिक्रियाएँ",
+    "description": "Form responses section title"
+  },
+  "summaryFormResponsesHint": {
+    "message": "इस फ़ॉर्म के लिए सबमिट की गई सभी प्रतिक्रियाएँ देखें और प्रबंधित करें।",
+    "description": "Form responses section subtitle"
+  },
+  "summaryLoadingResponses": {
+    "message": "प्रतिक्रियाएँ लोड हो रही हैं...",
+    "description": "Form responses table loading"
+  },
+  "summaryNoResponses": {
+    "message": "अभी तक कोई प्रतिक्रिया नहीं",
+    "description": "Empty form responses state"
+  },
+  "summaryNoResponsesHint": {
+    "message": "इस फॉर्म को अभी तक कोई प्रतिक्रिया नहीं मिली है.",
+    "description": "Empty form responses body"
+  },
+  "summaryViewAllResponses": {
+    "message": "सभी प्रतिक्रियाएँ देखें",
+    "description": "Navigate to full responses list"
+  },
+  "summaryUser": {
+    "message": "उपयोगकर्ता",
+    "description": "Activity filter user label"
+  },
+  "summaryAllUsers": {
+    "message": "सभी उपयोगकर्ता",
+    "description": "Activity filter all users option"
+  },
+  "summaryType": {
+    "message": "प्रकार",
+    "description": "Activity filter type label"
+  },
+  "summaryAllTypes": {
+    "message": "सभी प्रकार",
+    "description": "Activity filter all types option"
+  },
+  "summaryComments": {
+    "message": "टिप्पणियाँ",
+    "description": "Activity type filter comments"
+  },
+  "summaryFieldChanges": {
+    "message": "फ़ील्ड परिवर्तन",
+    "description": "Activity type filter field changes"
+  },
+  "summaryNoActivity": {
+    "message": "अभी तक कोई गतिविधि नहीं",
+    "description": "Empty activity feed"
+  },
+  "summarySelectWidget": {
+    "message": "अपने डैशबोर्ड में जोड़ने के लिए एक विजेट चुनें",
+    "description": "Add widget drawer subtitle"
+  },
+  "summaryResetToDefault": {
+    "message": "वितथ पर ले जाएं",
+    "description": "Reset widget layout action"
+  },
+  "summaryResetWidgetLayout": {
+    "message": "विजेट लेआउट रीसेट करें",
+    "description": "Reset layout confirmation title"
+  },
+  "summaryResetLayoutConfirmBody": {
+    "message": "क्या आप वाकई विजेट लेआउट को डिफ़ॉल्ट पर रीसेट करना चाहते हैं? यह विजेट स्थिति, आकार और आपके द्वारा जोड़े या हटाए गए किसी भी विजेट सहित सभी अनुकूलन हटा देगा।",
+    "description": "Reset layout confirmation body"
+  },
+  "summaryResetLayoutTooltip": {
+    "message": "विजेट लेआउट को डिफ़ॉल्ट क्रम पर रीसेट करें",
+    "description": "Reset layout button tooltip"
+  },
+  "summaryNoMetrics": {
+    "message": "कोई मेट्रिक्स उपलब्ध नहीं है.",
+    "description": "Empty metrics widget fallback"
+  },
+  "summaryKeyFieldsPlaceholder": {
+    "message": "मुख्य फ़ील्ड यहां प्रदर्शित किए जाएंगे.",
+    "description": "Empty key fields widget fallback"
+  },
+  "summaryWidgetContent": {
+    "message": "विजेट सामग्री",
+    "description": "Generic widget placeholder"
+  },
+  "summaryTabsAria": {
+    "message": "टैब",
+    "description": "Record summary tab list aria-label"
+  },
+  "summarySearchTenantFields": {
+    "message": "किरायेदार फ़ील्ड खोजें...",
+    "description": "Tenant fields search placeholder"
+  },
+  "summarySearchFields": {
+    "message": "फ़ील्ड खोजें...",
+    "description": "Details fields search placeholder"
+  },
+  "summarySearchActivities": {
+    "message": "गतिविधियाँ खोजें...",
+    "description": "Activity feed search placeholder"
+  },
+  "summaryUrlCopied": {
+    "message": "यूआरएल क्लिपबोर्ड पर कॉपी किया गया!",
+    "description": "Copy link success toast"
+  },
+  "summaryResetLayoutFailed": {
+    "message": "लेआउट रीसेट करने में विफल. कृपया पुन: प्रयास करें।",
+    "description": "Reset layout error toast"
+  },
+  "summarySaveFieldsFailed": {
+    "message": "फ़ील्ड अपडेट सहेजने में विफल. कृपया पुन: प्रयास करें।",
+    "description": "Inline field save error toast"
+  },
+  "moduleListTheListForThisModuleIs": {
+    "message": "इस मॉड्यूल की सूची उपलब्ध नहीं है.",
+    "description": "Auto-migrated from moduleList"
+  },
+  "moduleListListNotFound": {
+    "message": "सूची नहीं मिली",
+    "description": "Auto-migrated from moduleList"
+  },
+  "targetWizardStepperTargetCreationProgress": {
+    "message": "लक्ष्य निर्माण प्रगति",
+    "description": "Auto-migrated from targetWizardStepper"
+  },
+  "trashRestore": {
+    "message": "पुनर्स्थापित करना",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAutoDeleteIn": {
+    "message": "स्वतः हटाएँ",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedBy": {
+    "message": "द्वारा हटा दिया गया",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedItemsWillAppearHereYou": {
+    "message": "हटाए गए आइटम यहां दिखाई देंगे. आप उनकी समाप्ति से पहले उन्हें पुनर्स्थापित कर सकते हैं या उन्हें स्थायी रूप से हटा सकते हैं।",
+    "description": "Auto-migrated from trash"
+  },
+  "trashTrashIsEmpty": {
+    "message": "कचरा खाली है",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletePermanently": {
+    "message": "स्थायी रूप से हटाएँ",
+    "description": "Auto-migrated from trash"
+  },
+  "trashRestoreSelected": {
+    "message": "चयनित पुनर्स्थापित करें",
+    "description": "Auto-migrated from trash"
+  },
+  "trashEmptyTrash": {
+    "message": "कचरा खाली करें",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedTo": {
+    "message": "को हटा दिया गया",
+    "description": "Auto-migrated from trash"
+  },
+  "trashDeletedFrom": {
+    "message": "से हटा दिया गया",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAllUsers": {
+    "message": "सभी उपयोगकर्ता",
+    "description": "Auto-migrated from trash"
+  },
+  "trashAllModules": {
+    "message": "सभी मॉड्यूल",
+    "description": "Auto-migrated from trash"
+  },
+  "trashSearchNameModuleDeletedBy": {
+    "message": "खोज नाम, मॉड्यूल, द्वारा हटा दिया गया...",
+    "description": "Auto-migrated from trash"
+  },
+  "trashRetention": {
+    "message": "अवधारण",
+    "description": "Auto-migrated from trash"
+  },
+  "trashOldestItem": {
+    "message": "सबसे पुरानी वस्तु",
+    "description": "Auto-migrated from trash"
+  },
+  "trashExpiringIn7Days": {
+    "message": "7 दिनों में समाप्त हो रहा है",
+    "description": "Auto-migrated from trash"
+  },
+  "trashTotalInTrash": {
+    "message": "कुल कूड़ेदान में",
+    "description": "Auto-migrated from trash"
+  },
+  "approvalDetailEnterRejectionReason": {
+    "message": "अस्वीकृति का कारण दर्ज करें...",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailReason": {
+    "message": "कारण",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailRejectingWillBlockThisAction": {
+    "message": "अस्वीकार करने से यह कार्रवाई अवरुद्ध हो जाएगी.",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailRejectApproval": {
+    "message": "अनुमोदन अस्वीकार करें",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailYouAreNotAuthorizedToApprove": {
+    "message": "आप इस अनुरोध को स्वीकृत या अस्वीकार करने के लिए अधिकृत नहीं हैं।",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailReason2": {
+    "message": "कारण:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecidedAt": {
+    "message": "पर निर्णय लिया गया:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecidedBy": {
+    "message": "द्वारा निर्णय लिया गया:",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailDecisionAlreadyMade": {
+    "message": "निर्णय पहले ही हो चुका है",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailYourDecision": {
+    "message": "अपने निर्णय",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailThisApprovalWasEscalatedDueTo": {
+    "message": "समय सीमा के भीतर कोई प्रतिक्रिया नहीं मिलने के कारण इस अनुमोदन को आगे बढ़ा दिया गया था। नए अनुमोदनकर्ताओं को सूचित कर दिया गया है.",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailEscalated": {
+    "message": "तना हुआ",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailIfRejected": {
+    "message": "यदि अस्वीकार कर दिया गया",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailIfApproved": {
+    "message": "यदि स्वीकृत हो",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailWhatWillHappen": {
+    "message": "क्या हो जाएगा",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailWhyApprovalIsRequired": {
+    "message": "अनुमोदन की आवश्यकता क्यों है?",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailEntity": {
+    "message": "इकाई",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailContext": {
+    "message": "प्रसंग",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalDetailBackToApprovals": {
+    "message": "स्वीकृतियों पर वापस जाएँ",
+    "description": "Auto-migrated from approvalDetail"
+  },
+  "approvalInboxEnterRejectionReason": {
+    "message": "अस्वीकृति का कारण दर्ज करें...",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxReason": {
+    "message": "कारण",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRejectingWillBlockThisActionPlease": {
+    "message": "अस्वीकार करने से यह कार्रवाई अवरुद्ध हो जाएगी. कृपया कोई कारण बताएं.",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRejectApproval": {
+    "message": "अनुमोदन अस्वीकार करें",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxDueIn": {
+    "message": "में होने के कारण:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRequestedAt": {
+    "message": "यहां अनुरोध किया गया:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxRequestedBy": {
+    "message": "द्वारा अनुरोध किया गया:",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxAllCaughtUpYouHaveNo": {
+    "message": "सारी जानकारी प्राप्त! आपके पास कोई अनुमोदन अनुरोध लंबित नहीं है.",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxNoApprovalsPending": {
+    "message": "कोई अनुमोदन लंबित नहीं है",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxReviewAndApprovePendingRequests": {
+    "message": "लंबित अनुरोधों की समीक्षा करें और उन्हें स्वीकृत करें",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "approvalInboxApprovals": {
+    "message": "स्वीकृति",
+    "description": "Auto-migrated from approvalInbox"
+  },
+  "demoRequestsEnterprise": {
+    "message": "उद्यम",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsProfessional": {
+    "message": "पेशेवर",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsStarter": {
+    "message": "स्टार्टर",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsTrial15Days": {
+    "message": "परीक्षण (15 दिन)",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSubscriptionTier": {
+    "message": "सदस्यता स्तर",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsEnterTemporaryPasswordForOwner": {
+    "message": "स्वामी के लिए अस्थायी पासवर्ड दर्ज करें",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvert": {
+    "message": "बदलना",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvertToOrganization": {
+    "message": "संगठन में कनवर्ट करें",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted": {
+    "message": "परिवर्तित",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoCompleted": {
+    "message": "डेमो पूरा हुआ",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoScheduled": {
+    "message": "डेमो शेड्यूल किया गया",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContacted": {
+    "message": "व्यक्ति से संपर्क किया",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsUpdateStatus": {
+    "message": "अद्यतन स्थिति",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisContactExistsInASeparate": {
+    "message": "यह संपर्क एक अलग संगठन में मौजूद है. जब वे लॉग इन करेंगे तो उन्हें अपना स्वयं का सीआरएम डेटा दिखाई देगा।",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactPhone": {
+    "message": "संपर्क फ़ोन:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactEmail": {
+    "message": "ई - मेल से संपर्क करे:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContact": {
+    "message": "संपर्क करना:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsOrganization": {
+    "message": "संगठन:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisProspectIsAlreadyInYour": {
+    "message": "यह संभावना आपके CRM में पहले से ही है!",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsJobTitle": {
+    "message": "नौकरी का शीर्षक:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsPhone": {
+    "message": "फ़ोन:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsEmail": {
+    "message": "ईमेल:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactName": {
+    "message": "संपर्क नाम:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContactInformation": {
+    "message": "संपर्क जानकारी",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanySize": {
+    "message": "संग का आकार:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsIndustry": {
+    "message": "उद्योग:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanyName": {
+    "message": "कंपनी का नाम:",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsCompanyInformation": {
+    "message": "कारखाना की जानकारी",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoRequestDetails": {
+    "message": "डेमो अनुरोध विवरण",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsNoDemoRequestsFound": {
+    "message": "कोई डेमो अनुरोध नहीं मिला",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvert2": {
+    "message": "बदलना",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConvertToOrganization2": {
+    "message": "संगठन में कनवर्ट करें",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSize": {
+    "message": "आकार",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsLoadingDemoRequests": {
+    "message": "डेमो अनुरोध लोड हो रहा है...",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted2": {
+    "message": "परिवर्तित",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoCompleted2": {
+    "message": "डेमो पूरा हुआ",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsDemoScheduled2": {
+    "message": "डेमो शेड्यूल किया गया",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsContacted2": {
+    "message": "व्यक्ति से संपर्क किया",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsSearchDemoRequests": {
+    "message": "डेमो अनुरोध खोजें...",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsConverted3": {
+    "message": "परिवर्तित",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsThisMonth": {
+    "message": "इस महीने",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "demoRequestsTotalRequests": {
+    "message": "कुल अनुरोध",
+    "description": "Auto-migrated from demoRequests"
+  },
+  "publicBookingViewPoweredByYourCrm": {
+    "message": "आपके सीआरएम द्वारा संचालित",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYourDetails": {
+    "message": "आपका विवरण",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYourTime": {
+    "message": "आपका समय",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewAvailableTimes": {
+    "message": "उपलब्ध समय",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewPickADate": {
+    "message": "एक तारीख चुनें",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewBookWithOurTeam": {
+    "message": "हमारी टीम के साथ बुक करें",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewRescheduleOrCancel": {
+    "message": "पुनर्निर्धारित करें या रद्द करें",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewAConfirmationHasBeenSentTo": {
+    "message": "आपके ईमेल पर पुष्टि भेजी गई है। आपको अपनी नियुक्ति से पहले एक अनुस्मारक मिलेगा।",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewYoureBooked": {
+    "message": "आप बुक हो गए!",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewPageUnavailable": {
+    "message": "पेज अनुपलब्ध",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "publicBookingViewLoadingCalendar": {
+    "message": "कैलेंडर लोड हो रहा है...",
+    "description": "Auto-migrated from publicBookingView"
+  },
+  "notificationOverviewOpenHealthDashboard": {
+    "message": "स्वास्थ्य डैशबोर्ड खोलें",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewViewDeliveryStatisticsChannelHealthEvent": {
+    "message": "डिलीवरी आँकड़े, चैनल स्वास्थ्य, ईवेंट वॉल्यूम और उपयोगकर्ता अधिसूचना पैटर्न देखें। इससे पहले कि संभावित मुद्दे आपकी टीम पर प्रभाव डालें, उन्हें पहचानें।",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewHealthDashboard": {
+    "message": "स्वास्थ्य डैशबोर्ड",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewMonitorNotificationDeliveryHealthAndAnalytics": {
+    "message": "अपने संगठन में अधिसूचना वितरण स्वास्थ्य और विश्लेषण की निगरानी करें।",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAdminTools": {
+    "message": "व्यवस्थापक उपकरण",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageDigests": {
+    "message": "पाचन का प्रबंधन करें",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewReceiveDailyOrWeeklySummariesOf": {
+    "message": "वास्तविक समय अलर्ट के बजाय अपनी सूचनाओं का दैनिक या साप्ताहिक सारांश प्राप्त करें। सूचित रहते हुए अधिसूचना शोर कम करें।",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewDigests": {
+    "message": "डाइजेस्ट",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageRules": {
+    "message": "नियम प्रबंधित करें",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewCreateCustomNotificationConditionsSetUp": {
+    "message": "कस्टम अधिसूचना स्थितियाँ बनाएँ. असाइनमेंट, प्राथमिकताओं, स्थितियों और बहुत कुछ के आधार पर नियम सेट करें।",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManagePreferences": {
+    "message": "प्राथमिकताएँ प्रबंधित करें",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewToggleWhatTypesOfNotificationsYou": {
+    "message": "टॉगल करें कि आपको प्रति ईवेंट किस प्रकार की सूचनाएं प्राप्त होती हैं। नियंत्रित करें कि प्रत्येक अधिसूचना प्रकार के लिए कौन से चैनल का उपयोग किया जाता है।",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewPreferences": {
+    "message": "प्राथमिकताएँ",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewCustomizeYourNotificationExperienceToMatch": {
+    "message": "अपने वर्कफ़्लो से मेल खाने के लिए अपने अधिसूचना अनुभव को अनुकूलित करें।",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewYourNotificationControl": {
+    "message": "आपका अधिसूचना नियंत्रण",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewManageDeliveryChannels": {
+    "message": "डिलीवरी चैनल प्रबंधित करें",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable": {
+    "message": "विन्यास",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable2": {
+    "message": "विन्यास",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhatsapp": {
+    "message": "WhatsApp",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable3": {
+    "message": "विन्यास",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewPush": {
+    "message": "धकेलना",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConfigurable4": {
+    "message": "विन्यास",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAlwaysOn": {
+    "message": "हमेशा बने रहें",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewChooseWhereAndHowYouReceive": {
+    "message": "चुनें कि आपको विभिन्न डिलीवरी चैनलों पर सूचनाएं कहां और कैसे प्राप्त होंगी।",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewHowYoureNotified": {
+    "message": "आपको कैसे सूचित किया जाता है",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined": {
+    "message": "सिस्टम से परिभाषित",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAccountActivitySystemUpdatesAndCompliance": {
+    "message": "खाता गतिविधि, सिस्टम अपडेट और अनुपालन-संबंधी सूचनाएं।",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined2": {
+    "message": "सिस्टम से परिभाषित",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewActivityThatInvolvesCollaborationAndReview": {
+    "message": "गतिविधि जिसमें सहयोग और समीक्षा शामिल है।",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewConversations": {
+    "message": "बात चिट",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewRemindersForUpcomingOrOverdueItems": {
+    "message": "आगामी या अतिदेय वस्तुओं के लिए अनुस्मारक।",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewDeadlines": {
+    "message": "समय सीमा",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewStatusChangesSubmissionsApprovalsAndOther": {
+    "message": "स्थिति परिवर्तन, सबमिशन, अनुमोदन और अन्य महत्वपूर्ण अपडेट।",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewSystemDefined3": {
+    "message": "सिस्टम से परिभाषित",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhenTasksAuditsOrCorrectiveActions": {
+    "message": "जब आपको कार्य, ऑडिट या सुधारात्मक कार्रवाइयां सौंपी जाती हैं।",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewAssignments": {
+    "message": "कार्य",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewNotificationsAreOrganizedByIntentTo": {
+    "message": "सूचनाएं आपको अभिभूत हुए बिना सूचित रहने में मदद करने के इरादे से व्यवस्थित की जाती हैं।",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewWhatYoureNotifiedAbout": {
+    "message": "आपको किस बारे में सूचित किया गया है",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewLearnHowNotificationsWorkAndWhat": {
+    "message": "जानें कि सूचनाएं कैसे काम करती हैं और आप क्या नियंत्रित कर सकते हैं।",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationOverviewNotificationOverview": {
+    "message": "अधिसूचना अवलोकन",
+    "description": "Auto-migrated from notificationOverview"
+  },
+  "notificationHealthHighVolume": {
+    "message": "उच्च परिमाण",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoUserDataAvailable": {
+    "message": "कोई उपयोगकर्ता डेटा उपलब्ध नहीं है",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthFlag": {
+    "message": "झंडा",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthReceived": {
+    "message": "प्राप्त",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthHighVolumeUsers": {
+    "message": "उच्च-मात्रा वाले उपयोगकर्ता",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoEventDataAvailable": {
+    "message": "कोई घटना डेटा उपलब्ध नहीं है",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthTopEventTypes": {
+    "message": "शीर्ष इवेंट प्रकार",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNoChannelDataAvailable": {
+    "message": "कोई चैनल डेटा उपलब्ध नहीं है",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthLastFailure": {
+    "message": "अंतिम विफलता",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthSent": {
+    "message": "भेजा",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthChannelHealth": {
+    "message": "चैनल स्वास्थ्य",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthDegradedChannels": {
+    "message": "ख़राब चैनल",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthActiveChannels": {
+    "message": "सक्रिय चैनल",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthReadRate": {
+    "message": "दर पढ़ें",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthTotalNotifications": {
+    "message": "कुल सूचनाएं",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthMonitorNotificationDeliveryAndChannelHealth": {
+    "message": "अधिसूचना वितरण और चैनल स्वास्थ्य की निगरानी करें",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthNotificationHealth": {
+    "message": "अधिसूचना स्वास्थ्य",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationHealthHealth": {
+    "message": "स्वास्थ्य",
+    "description": "Auto-migrated from notificationHealth"
+  },
+  "notificationPreferencesReceiveAWeeklySummaryViaEmail": {
+    "message": "ईमेल के माध्यम से साप्ताहिक सारांश प्राप्त करें। दैनिक रुकावटों के बिना सूचित रहने के लिए बिल्कुल सही।",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWeeklyDigest": {
+    "message": "साप्ताहिक डाइजेस्ट",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesReceiveADailySummaryOfYour": {
+    "message": "अपनी सूचनाओं का दैनिक सारांश प्राप्त करें। आपको सूचित रखते हुए अधिसूचना शोर को कम करता है।",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesDailyDigest": {
+    "message": "दैनिक खुलासा",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesReceiveSummariesInsteadOfRealTime": {
+    "message": "वास्तविक समय सूचनाओं के बजाय सारांश प्राप्त करें",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationDigests": {
+    "message": "अधिसूचना डाइजेस्ट",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSmsIsOnlyUsedAsA": {
+    "message": "एसएमएस का उपयोग केवल अंतिम उपाय के रूप में किया जाता है जब अन्य चैनल उपलब्ध नहीं होते हैं। संदेशों को छोटा रखा जाता है और जब संभव हो तो डीप लिंक शामिल किए जाते हैं।",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSmsNotifications": {
+    "message": "एसएमएस सूचनाएं",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWhatsappNotificationsAreOnlySentFor": {
+    "message": "व्हाट्सएप नोटिफिकेशन केवल ऑडिट और पोर्टल ऐप्स में उच्च-प्राथमिकता वाले इवेंट के लिए भेजे जाते हैं।",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWhatsappNotifications": {
+    "message": "व्हाट्सएप सूचनाएं",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPushNotificationsAreBlockedEnableThem": {
+    "message": "पुश सूचनाएँ अवरुद्ध हैं. उन्हें अपनी ब्राउज़र सेटिंग में सक्षम करें.",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesTestNotification": {
+    "message": "परीक्षण अधिसूचना",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesEnablePushNotifications": {
+    "message": "पुश सूचनाएँ सक्षम करें",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPushNotifications": {
+    "message": "सूचनाएं धक्का",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesThereAreNoConfigurableNotificationEvents": {
+    "message": "इस ऐप के लिए अभी तक कोई कॉन्फ़िगर करने योग्य अधिसूचना ईवेंट नहीं हैं।\n          सूचनाएं अपने सुरक्षित डिफ़ॉल्ट का उपयोग करना जारी रखेंगी।",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesInApp": {
+    "message": "ऐप में",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesSystemEventManagedByArivu": {
+    "message": "सिस्टम इवेंट (अरिवु द्वारा प्रबंधित)",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesClickAChannelToJumpTo": {
+    "message": "किसी चैनल की सेटिंग पर जाने के लिए उस पर क्लिक करें। इस ऐप के लिए अक्षम चैनल उपलब्ध नहीं हैं।",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationDelivery": {
+    "message": "अधिसूचना वितरण",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesWeCouldntLoadYourNotificationPreferences": {
+    "message": "हम अभी आपकी अधिसूचना प्राथमिकताएँ लोड नहीं कर सके। सूचनाएं होंगी\n        उनके डिफ़ॉल्ट का उपयोग जारी रखें. आप ऐप का सुरक्षित रूप से उपयोग करना जारी रख सकते हैं।",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesCouldntSaveChangesPleaseTryAgain": {
+    "message": "परिवर्तन सहेजे नहीं जा सके. कृपया पुन: प्रयास करें।",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesHealthDashboard": {
+    "message": "स्वास्थ्य डैशबोर्ड",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationRules": {
+    "message": "अधिसूचना नियम",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesControlInAppAndEmailNotifications": {
+    "message": "इस कार्यक्षेत्र के लिए इन-ऐप और ईमेल सूचनाओं को नियंत्रित करें।",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesNotificationPreferences": {
+    "message": "अधिसूचना प्राथमिकताएँ",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationPreferencesPreferences": {
+    "message": "प्राथमिकताएँ",
+    "description": "Auto-migrated from notificationPreferences"
+  },
+  "notificationRulesDeleteRule": {
+    "message": "नियम हटाएँ",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesEditRule": {
+    "message": "नियम संपादित करें",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesCreateYourFirstRule": {
+    "message": "अपना पहला नियम बनाएं",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesGetStartedByCreatingYourFirst": {
+    "message": "अपना पहला अधिसूचना नियम बनाकर आरंभ करें।",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesNoNotificationRulesYet": {
+    "message": "अभी तक कोई अधिसूचना नियम नहीं",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesFailedToLoadNotificationRules": {
+    "message": "अधिसूचना नियम लोड करने में विफल",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesDeleteAnExistingRuleToCreate": {
+    "message": "नया नियम बनाने के लिए मौजूदा नियम हटाएँ।",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesCreateCustomNotificationTriggersForModules": {
+    "message": "उन मॉड्यूल के लिए कस्टम अधिसूचना ट्रिगर बनाएं जिनकी आप परवाह करते हैं।",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "notificationRulesNotificationRules": {
+    "message": "अधिसूचना नियम",
+    "description": "Auto-migrated from notificationRules"
+  },
+  "contactDetailToastFailedToDeleteContact": {
+    "message": "संपर्क हटाने में विफल",
+    "description": "Toast from ContactDetail.vue"
+  },
+  "contactDetailToastFailedToUnlinkOrganization": {
+    "message": "संगठन को अनलिंक करने में विफल",
+    "description": "Toast from ContactDetail.vue"
+  },
+  "dealDetailToastFailedToDeleteDeal": {
+    "message": "सौदा हटाने में विफल",
+    "description": "Toast from DealDetail.vue"
+  },
+  "dealDetailToastFailedToAddNote": {
+    "message": "नोट जोड़ने में विफल",
+    "description": "Toast from DealDetail.vue"
+  },
+  "dealsToastErrorDeletingDealPleaseTry": {
+    "message": "डील हटाने में त्रुटि. कृपया पुन: प्रयास करें।",
+    "description": "Toast from Deals.vue"
+  },
+  "dealsToastErrorPerformingBulkActionPlease": {
+    "message": "बल्क कार्रवाई करने में त्रुटि. कृपया पुन: प्रयास करें।",
+    "description": "Toast from Deals.vue"
+  },
+  "dealsToastFailedToExportDeals": {
+    "message": "सौदे निर्यात करने में विफल.",
+    "description": "Toast from Deals.vue"
+  },
+  "demoRequestsToastFailedToUpdateStatus": {
+    "message": "स्थिति अपडेट करने में विफल",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "demoRequestsToastSuccessfullyConvertedToOrganization": {
+    "message": "संगठन में सफलतापूर्वक परिवर्तित!",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "demoRequestsToastFailedToConvertRequest": {
+    "message": "अनुरोध परिवर्तित करने में विफल",
+    "description": "Toast from DemoRequests.vue"
+  },
+  "eventDetailToastFailedToDeleteEvent": {
+    "message": "ईवेंट हटाने में विफल",
+    "description": "Toast from EventDetail.vue"
+  },
+  "eventDetailToastFailedToAddNote": {
+    "message": "नोट जोड़ने में विफल",
+    "description": "Toast from EventDetail.vue"
+  },
+  "eventExecutionSurfaceToastLocationIsRequiredForCheck": {
+    "message": "चेक-इन के लिए स्थान आवश्यक है. कृपया स्थान पहुंच की अनुमति दें और पुनः प्रयास करें।",
+    "description": "Toast from EventExecutionSurface.vue"
+  },
+  "eventsToastErrorPerformingBulkActionPlease": {
+    "message": "बल्क कार्रवाई करने में त्रुटि. कृपया पुन: प्रयास करें।",
+    "description": "Toast from Events.vue"
+  },
+  "eventsToastErrorExportingEventsPleaseTry": {
+    "message": "ईवेंट निर्यात करने में त्रुटि. कृपया पुन: प्रयास करें।",
+    "description": "Toast from Events.vue"
+  },
+  "groupDetailToastFailedToLoadGroup": {
+    "message": "समूह लोड करने में विफल",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToAddMember": {
+    "message": "सदस्य जोड़ने में विफल",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToRemoveMember": {
+    "message": "सदस्य को हटाने में विफल",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupDetailToastFailedToDeleteGroup": {
+    "message": "समूह हटाने में विफल",
+    "description": "Toast from GroupDetail.vue"
+  },
+  "groupsToastErrorPerformingBulkActionPlease": {
+    "message": "बल्क कार्रवाई करने में त्रुटि. कृपया पुन: प्रयास करें।",
+    "description": "Toast from Groups.vue"
+  },
+  "groupsToastErrorDeletingGroupPleaseTry": {
+    "message": "समूह हटाने में त्रुटि. कृपया पुन: प्रयास करें।",
+    "description": "Toast from Groups.vue"
+  },
+  "organizationDetailToastFailedToDeleteOrganizationPlease": {
+    "message": "संगठन को हटाने में विफल. कृपया पुन: प्रयास करें।",
+    "description": "Toast from OrganizationDetail.vue"
+  },
+  "organizationsToastUnknownError": {
+    "message": "अज्ञात त्रुटि",
+    "description": "Toast from Organizations.vue"
+  },
+  "organizationsToastErrorExportingOrganizationsPleaseTry": {
+    "message": "संगठनों को निर्यात करने में त्रुटि. कृपया पुन: प्रयास करें।",
+    "description": "Toast from Organizations.vue"
+  },
+  "organizationsToastErrorExportingOrganizationsPleaseTry2": {
+    "message": "संगठनों को निर्यात करने में त्रुटि. कृपया पुन: प्रयास करें।",
+    "description": "Toast from Organizations.vue"
+  },
+  "peopleToastUnknownError": {
+    "message": "अज्ञात त्रुटि",
+    "description": "Toast from People.vue"
+  },
+  "peopleToastErrorExportingPeoplePleaseTry": {
+    "message": "लोगों को निर्यात करने में त्रुटि. कृपया पुन: प्रयास करें।",
+    "description": "Toast from People.vue"
+  },
+  "peopleToastErrorExportingContactsPleaseTry": {
+    "message": "संपर्क निर्यात करने में त्रुटि. कृपया पुन: प्रयास करें।",
+    "description": "Toast from People.vue"
+  },
+  "responsesToastFormIdNotFoundPlease": {
+    "message": "फॉर्म आईडी नहीं मिला. पृष्ठ को रीफ्रेश करें और पुन: प्रयास करें।",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToApproveResponsePlease": {
+    "message": "प्रतिक्रिया स्वीकृत करने में विफल. कृपया पुन: प्रयास करें।",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease2": {
+    "message": "फॉर्म आईडी नहीं मिला. पृष्ठ को रीफ्रेश करें और पुन: प्रयास करें।",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToRejectResponsePlease": {
+    "message": "प्रतिक्रिया अस्वीकार करने में विफल. कृपया पुन: प्रयास करें।",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease3": {
+    "message": "फॉर्म आईडी नहीं मिला. पृष्ठ को रीफ्रेश करें और पुन: प्रयास करें।",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease4": {
+    "message": "फॉर्म आईडी नहीं मिला. पृष्ठ को रीफ्रेश करें और पुन: प्रयास करें।",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToRestoreResponsePlease": {
+    "message": "प्रतिक्रिया पुनर्स्थापित करने में विफल. कृपया पुन: प्रयास करें।",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastSubmittedResponsesCannotBeDeleted": {
+    "message": "सबमिट की गई प्रतिक्रियाओं को हटाया नहीं जा सकता. इसके बजाय संग्रहित करें या अमान्य करें का उपयोग करें।",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFormIdNotFoundPlease5": {
+    "message": "फॉर्म आईडी नहीं मिला. पृष्ठ को रीफ्रेश करें और पुन: प्रयास करें।",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastFailedToDeleteResponsePlease": {
+    "message": "प्रतिक्रिया हटाने में विफल. कृपया पुन: प्रयास करें।",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastExportFunctionalityForAllResponses": {
+    "message": "सभी प्रतिक्रियाओं के लिए निर्यात कार्यक्षमता जल्द ही आ रही है!",
+    "description": "Toast from Responses.vue"
+  },
+  "responsesToastAnErrorOccurredDuringExport": {
+    "message": "निर्यात के दौरान एक त्रुटि उत्पन्न हुई.",
+    "description": "Toast from Responses.vue"
+  },
+  "tasksToastFailedToUpdateTaskStatus": {
+    "message": "कार्य स्थिति अद्यतन करने में विफल",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastFailedToDeleteTask": {
+    "message": "कार्य हटाने में विफल.",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastErrorPerformingBulkActionPlease": {
+    "message": "बल्क कार्रवाई करने में त्रुटि. कृपया पुन: प्रयास करें।",
+    "description": "Toast from Tasks.vue"
+  },
+  "tasksToastErrorExportingTasksPleaseTry": {
+    "message": "कार्य निर्यात करने में त्रुटि. कृपया पुन: प्रयास करें।",
+    "description": "Toast from Tasks.vue"
+  },
+  "trashToastRestoredSomeParentRecordsWere": {
+    "message": "बहाल किया गया। कुछ मूल रिकॉर्ड स्थायी रूप से हटा दिए गए थे.",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToRestore": {
+    "message": "पुनर्स्थापित करने में विफल",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToRestore2": {
+    "message": "पुनर्स्थापित करने में विफल",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToDelete": {
+    "message": "हटाने में विफल",
+    "description": "Toast from Trash.vue"
+  },
+  "trashToastFailedToDelete2": {
+    "message": "हटाने में विफल",
+    "description": "Toast from Trash.vue"
+  },
+  "notificationPreferencesToastPushNotificationsAreNotSupported": {
+    "message": "इस ब्राउज़र में पुश सूचनाएँ समर्थित नहीं हैं.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastEnablePushNotifications": {
+    "message": "पुश सूचनाएँ सक्षम करें",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastNotificationsAreNotSupportedIn": {
+    "message": "इस ब्राउज़र में सूचनाएं समर्थित नहीं हैं.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationTriggeredCheckYour": {
+    "message": "परीक्षण अधिसूचना चालू हो गई. अपने सिस्टम नोटिफिकेशन की जांच करें.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationTriggeredIfYou": {
+    "message": "परीक्षण अधिसूचना चालू हो गई. यदि आप इसे नहीं देखते हैं, तो अधिसूचना केंद्र/ब्राउज़र ओएस सेटिंग्स जांचें।",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastUnknownError": {
+    "message": "अज्ञात त्रुटि",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationPreferencesToastTestNotificationFailedSeeConsole": {
+    "message": "परीक्षण अधिसूचना विफल रही. विवरण के लिए कंसोल देखें.",
+    "description": "Toast from NotificationPreferences.vue"
+  },
+  "notificationRulesToastFailedToDeleteRulePlease": {
+    "message": "नियम हटाने में विफल. कृपया पुन: प्रयास करें।",
+    "description": "Toast from NotificationRules.vue"
+  },
+  "pronounYou": {
+    "message": "आप",
+    "description": "First-person actor label in activity feed"
+  },
+  "relativeJustNow": {
+    "message": "अभी",
+    "description": "Relative time under one minute"
+  },
+  "relativeOneMinuteAgo": {
+    "message": "1 मिनट पहले",
+    "description": "Relative time one minute"
+  },
+  "relativeManyMinutesAgo": {
+    "message": "{count} मिनट पहले",
+    "description": "Relative time multiple minutes"
+  },
+  "relativeOneHourAgo": {
+    "message": "1 घंटे पहले",
+    "description": "Relative time one hour"
+  },
+  "relativeManyHoursAgo": {
+    "message": "{count} घंटे पहले",
+    "description": "Relative time multiple hours"
+  },
+  "relativeOneDayAgo": {
+    "message": "1 दिन पहले",
+    "description": "Relative time one day"
+  },
+  "relativeManyDaysAgo": {
+    "message": "{count} दिन पहले",
+    "description": "Relative time multiple days"
+  },
+  "relativeOneMonthAgo": {
+    "message": "1 महीने पहले",
+    "description": "Relative time one month"
+  },
+  "relativeManyMonthsAgo": {
+    "message": "{count} महीने पहले",
+    "description": "Relative time multiple months"
+  },
+  "relativeOneYearAgo": {
+    "message": "1 साल पहले",
+    "description": "Relative time one year"
+  },
+  "relativeManyYearsAgo": {
+    "message": "{count} साल पहले",
+    "description": "Relative time multiple years"
+  },
+  "phraseAnnualRevenue": {
+    "message": "वार्षिक राजस्व",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLeadSource": {
+    "message": "लीड स्रोत",
+    "description": "Common tenant custom field label"
+  },
+  "phraseIndustry": {
+    "message": "उद्योग",
+    "description": "Common tenant custom field label"
+  },
+  "phraseWebsite": {
+    "message": "वेबसाइट",
+    "description": "Common tenant custom field label"
+  },
+  "phraseFax": {
+    "message": "फैक्स",
+    "description": "Common tenant custom field label"
+  },
+  "phraseAddress": {
+    "message": "पता",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCity": {
+    "message": "शहर",
+    "description": "Common tenant custom field label"
+  },
+  "phraseState": {
+    "message": "राज्य",
+    "description": "Common tenant custom field label"
+  },
+  "phraseZipCode": {
+    "message": "ज़िप कोड",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCountry": {
+    "message": "देश",
+    "description": "Common tenant custom field label"
+  },
+  "phraseDepartment": {
+    "message": "विभाग",
+    "description": "Common tenant custom field label"
+  },
+  "phraseJobTitle": {
+    "message": "नौकरी का शीर्षक",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLinkedin": {
+    "message": "Linkedin",
+    "description": "Common tenant custom field label"
+  },
+  "phrasePriority": {
+    "message": "प्राथमिकता",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRating": {
+    "message": "रेटिंग",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCategory": {
+    "message": "वर्ग",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSubcategory": {
+    "message": "उपश्रेणी",
+    "description": "Common tenant custom field label"
+  },
+  "phraseProduct": {
+    "message": "उत्पाद",
+    "description": "Common tenant custom field label"
+  },
+  "phraseQuantity": {
+    "message": "मात्रा",
+    "description": "Common tenant custom field label"
+  },
+  "phraseUnitPrice": {
+    "message": "यूनिट मूल्य",
+    "description": "Common tenant custom field label"
+  },
+  "phraseDiscount": {
+    "message": "छूट",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTax": {
+    "message": "कर",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTotal": {
+    "message": "कुल",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSubtotal": {
+    "message": "उप-योग",
+    "description": "Common tenant custom field label"
+  },
+  "phraseContractStart": {
+    "message": "अनुबंध प्रारंभ",
+    "description": "Common tenant custom field label"
+  },
+  "phraseContractEnd": {
+    "message": "अनुबंध समाप्ति",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRenewalDate": {
+    "message": "नवीनीकरण दिनांक",
+    "description": "Common tenant custom field label"
+  },
+  "phraseMrr": {
+    "message": "एमआरआर",
+    "description": "Common tenant custom field label"
+  },
+  "phraseArr": {
+    "message": "आगमन",
+    "description": "Common tenant custom field label"
+  },
+  "phraseEmployees": {
+    "message": "कर्मचारी",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRevenue": {
+    "message": "आय",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTerritory": {
+    "message": "इलाका",
+    "description": "Common tenant custom field label"
+  },
+  "phraseRegion": {
+    "message": "क्षेत्र",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTimezone": {
+    "message": "समयक्षेत्र",
+    "description": "Common tenant custom field label"
+  },
+  "phraseCurrency": {
+    "message": "मुद्रा",
+    "description": "Common tenant custom field label"
+  },
+  "phrasePoNumber": {
+    "message": "पीओ नंबर",
+    "description": "Common tenant custom field label"
+  },
+  "phraseInvoiceNumber": {
+    "message": "चालान संख्या",
+    "description": "Common tenant custom field label"
+  },
+  "phraseOrderNumber": {
+    "message": "क्रम संख्या",
+    "description": "Common tenant custom field label"
+  },
+  "phraseSerialNumber": {
+    "message": "क्रम संख्या",
+    "description": "Common tenant custom field label"
+  },
+  "phraseExternalId": {
+    "message": "बाहरी आईडी",
+    "description": "Common tenant custom field label"
+  },
+  "phraseLastActivity": {
+    "message": "अंतिम गतिविधि",
+    "description": "Common tenant custom field label"
+  },
+  "phraseNextFollowUp": {
+    "message": "अगला अनुवर्ती",
+    "description": "Common tenant custom field label"
+  },
+  "phraseInfluencer": {
+    "message": "प्रभावशाली व्यक्ति",
+    "description": "Common tenant custom field label"
+  },
+  "phraseMobile": {
+    "message": "गतिमान",
+    "description": "Common tenant custom field label"
+  },
+  "phraseColor": {
+    "message": "रंग",
+    "description": "Common tenant custom field label"
+  },
+  "phraseEmoji": {
+    "message": "इमोजी",
+    "description": "Common tenant custom field label"
+  },
+  "phraseTrend": {
+    "message": "रुझान",
+    "description": "Common tenant custom field label"
+  },
+  "phraseAccount": {
+    "message": "खाता",
+    "description": "Common tenant custom field label"
+  },
+  "phraseHelpdesk": {
+    "message": "सहायता केंद्र",
+    "description": "App/product name"
+  },
+  "phrasePortal": {
+    "message": "पोर्टल",
+    "description": "App/product name"
+  },
+  "fieldRequiredBadge": {
+    "message": "Required",
+    "description": "Badge on required fields in settings and forms"
+  },
+  "required": {
+    "message": "Required",
+    "description": "Required field indicator (alias for settings badges)"
+  },
+  "listSearchModule": {
+    "message": "Search {module}...",
+    "description": "Module list search placeholder"
+  },
+  "listCreateModule": {
+    "message": "New {module}",
+    "description": "Generic module list create button"
+  },
+  "listViewAllModule": {
+    "message": "All {module}",
+    "description": "Generic all-records list view title"
+  },
+  "listViewMyModule": {
+    "message": "My {module}",
+    "description": "Generic assigned-to-me list view title"
+  },
+  "listViewCustom": {
+    "message": "कस्टम",
+    "description": "List view title when filters or search are applied"
+  },
+  "listStatAssignedToMe": {
+    "message": "मुझे सौंपे गए",
+    "description": "List statistics card label"
+  },
+  "listStatUnassigned": {
+    "message": "असाइन नहीं",
+    "description": "List statistics card label"
+  },
+  "listStatCompleted": {
+    "message": "Completed",
+    "description": "List statistics card label"
+  },
+  "listStatOverdue": {
+    "message": "Overdue",
+    "description": "List statistics card label"
+  },
+  "listDefaultViewTooltip": {
+    "message": "Default list (loads when opening)",
+    "description": "Tooltip on active default saved list view"
+  },
+  "listSetDefaultViewTooltip": {
+    "message": "Set as default list",
+    "description": "Tooltip to mark a saved list view as default"
+  },
+  "listCoreFields": {
+    "message": "Core Fields",
+    "description": "Customize list field group label"
+  },
+  "listParticipationFields": {
+    "message": "Participation",
+    "description": "Customize list field group label"
+  },
+  "listSystemFields": {
+    "message": "System Fields",
+    "description": "Customize list field group label"
+  },
+  "listParticipationApp": {
+    "message": "Participation: {app}",
+    "description": "Customize list participation field group label"
+  },
+  "listRowHeightSmall": {
+    "message": "Small",
+    "description": "List row height option"
+  },
+  "listRowHeightMedium": {
+    "message": "Medium",
+    "description": "List row height option"
+  },
+  "listRowHeightLarge": {
+    "message": "Large",
+    "description": "List row height option"
+  },
+  "listRowHeightHuge": {
+    "message": "Huge",
+    "description": "List row height option"
+  },
+  "listEmptyTitle": {
+    "message": "अभी कोई रिकॉर्ड नहीं",
+    "description": "Default list empty state title"
+  },
+  "listEmptyMessage": {
+    "message": "अपना पहला रिकॉर्ड जोड़कर शुरू करें",
+    "description": "Default list empty state description"
+  },
+  "listEmptyNoModuleYet": {
+    "message": "अभी कोई {module} नहीं",
+    "description": "Module list empty state title"
+  },
+  "listEmptyModuleWillAppear": {
+    "message": "जैसे-जैसे आप {module} जोड़ेंगे, वे यहाँ दिखाई देंगे।",
+    "description": "Module list empty state description"
+  },
+  "listEmptyNoMatchFilters": {
+    "message": "आपके फ़िल्टर से कोई {module} मेल नहीं खाता",
+    "description": "List empty title when filters are active"
+  },
+  "listEmptyNoMatchSearchAndFilters": {
+    "message": "आपकी खोज या फ़िल्टर से कोई {module} मेल नहीं खाता। उन्हें समायोजित करें या सब कुछ साफ़ करके फिर से शुरू करें।",
+    "description": "List empty message when search and filters are active"
+  },
+  "listEmptyNoMatchSearch": {
+    "message": "\"{query}\" से मेल खाता कोई {module} नहीं मिला। कोई दूसरा कीवर्ड आज़माएँ या खोज साफ़ करें।",
+    "description": "List empty message when search is active"
+  },
+  "listEmptyNoMatchFiltersOnly": {
+    "message": "आपके फ़िल्टर से कोई {module} मेल नहीं खाता। अधिक परिणाम देखने के लिए फ़िल्टर समायोजित या साफ़ करें।",
+    "description": "List empty message when only filters are active"
+  },
+  "listClearSearchAndFilters": {
+    "message": "खोज और फ़िल्टर साफ़ करें",
+    "description": "Button to reset list search and filters"
+  },
+  "listFilterAll": {
+    "message": "सभी {filter}",
+    "description": "Filter dropdown placeholder when no value selected"
+  },
+  "listUnknown": {
+    "message": "अज्ञात",
+    "description": "Fallback label for unknown filter option"
+  },
+  "listNoDataAvailable": {
+    "message": "कोई डेटा उपलब्ध नहीं",
+    "description": "Table empty state title fallback"
+  },
+  "listNoRecordsFound": {
+    "message": "कोई रिकॉर्ड नहीं मिला।",
+    "description": "Table empty state message fallback"
+  },
+  "listEmptyIllustrationAlt": {
+    "message": "कोई रिकॉर्ड नहीं चित्र",
+    "description": "Alt text for list empty state illustration"
+  },
+  "phraseDefaultInParens": {
+    "message": "(डिफ़ॉल्ट)",
+    "description": "Suffix for default pipeline or option"
+  }
+}

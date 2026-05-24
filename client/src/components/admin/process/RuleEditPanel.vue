@@ -27,15 +27,15 @@
             >
               <DialogPanel class="pointer-events-auto w-screen max-w-md">
                 <div class="flex h-full flex-col bg-white dark:bg-gray-800 shadow-xl">
-                  <!-- Header -->
                   <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                     <div class="flex items-center justify-between">
                       <DialogTitle class="text-lg font-semibold text-gray-900 dark:text-white">
-                        Edit Rule
+                        {{ t('process.rulePanelEditHeading') }}
                       </DialogTitle>
                       <button
-                        @click="$emit('close')"
+                        type="button"
                         class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        @click="$emit('close')"
                       >
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -44,42 +44,40 @@
                     </div>
                   </div>
 
-                  <!-- Content -->
                   <div class="flex-1 overflow-y-auto p-6">
-                    <!-- Field Rule Panel -->
                     <div v-if="rule.nodeType === 'field_rule'" class="space-y-4">
                       <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Field <span class="text-red-500">*</span>
+                          {{ t('process.fieldField') }} <span class="text-red-500">*</span>
                         </label>
                         <input
                           v-model="ruleData.fieldKey"
                           type="text"
-                          placeholder="e.g. approval"
+                          :placeholder="t('process.phApproval')"
                           class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                         />
                       </div>
                       <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Rule Type <span class="text-red-500">*</span>
+                          {{ t('process.fieldRuleType') }} <span class="text-red-500">*</span>
                         </label>
                         <select
                           v-model="ruleData.rule"
                           class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                         >
-                          <option value="mandatory">Make mandatory</option>
-                          <option value="default">Set default value</option>
-                          <option value="visibility">Show / hide field</option>
+                          <option value="mandatory">{{ t('process.fieldRuleMandatory') }}</option>
+                          <option value="default">{{ t('process.fieldRuleDefault') }}</option>
+                          <option value="visibility">{{ t('process.fieldRuleVisibility') }}</option>
                         </select>
                       </div>
                       <div v-if="ruleData.rule === 'default'">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Default Value
+                          {{ t('process.fieldDefaultValue') }}
                         </label>
                         <input
                           v-model="ruleData.value"
                           type="text"
-                          placeholder="Enter default value"
+                          :placeholder="t('process.phDefaultValue')"
                           class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                         />
                       </div>
@@ -89,194 +87,190 @@
                             v-model="ruleData.value"
                             checkbox-class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                           />
-                          <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Show field</span>
+                          <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ t('process.fieldShowField') }}</span>
                         </label>
                       </div>
                       <div v-if="ruleData.rule === 'mandatory'" class="text-xs text-gray-500 dark:text-gray-400 italic p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
-                        This field will be mandatory when the process runs
+                        {{ t('process.wizardFieldMandatoryHint') }}
                       </div>
                     </div>
 
-                    <!-- Ownership Rule Panel -->
                     <div v-else-if="rule.nodeType === 'ownership_rule'" class="space-y-4">
                       <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Assignment Type <span class="text-red-500">*</span>
+                          {{ t('process.fieldAssignmentType') }} <span class="text-red-500">*</span>
                         </label>
                         <select
                           v-model="ruleData.assignment"
                           class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                         >
-                          <option value="owner">Specific user</option>
-                          <option value="role">Role</option>
-                          <option value="rule">Rule-based</option>
+                          <option value="owner">{{ t('process.ownershipSpecificUser') }}</option>
+                          <option value="role">{{ t('process.ownershipRole') }}</option>
+                          <option value="rule">{{ t('process.ownershipRuleBased') }}</option>
                         </select>
                       </div>
                       <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Target <span class="text-red-500">*</span>
+                          {{ t('process.fieldTarget') }} <span class="text-red-500">*</span>
                         </label>
                         <input
                           v-model="ruleData.target"
                           type="text"
-                          placeholder="User ID, role name, or rule reference"
+                          :placeholder="t('process.phOwnershipTarget')"
                           class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                         />
                       </div>
                       <div class="text-xs text-gray-500 dark:text-gray-400 italic p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
-                        Assignment will follow existing permission rules.
+                        {{ t('process.wizardOwnershipHint') }}
                       </div>
                     </div>
 
-                    <!-- Status Guard Panel -->
                     <div v-else-if="rule.nodeType === 'status_guard'" class="space-y-4">
                       <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Field <span class="text-red-500">*</span>
+                          {{ t('process.fieldField') }} <span class="text-red-500">*</span>
                         </label>
                         <select
                           v-model="ruleData.field"
                           class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                         >
-                          <option value="status">Status</option>
-                          <option value="lifecycle">Lifecycle</option>
-                          <option value="stage">Stage</option>
+                          <option value="status">{{ t('process.statusFieldStatus') }}</option>
+                          <option value="lifecycle">{{ t('process.statusFieldLifecycle') }}</option>
+                          <option value="stage">{{ t('process.statusFieldStage') }}</option>
                         </select>
                       </div>
                       <div class="grid grid-cols-2 gap-3">
                         <div>
                           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            From
+                            {{ t('process.fieldFrom') }}
                           </label>
                           <input
                             v-model="ruleData.from"
                             type="text"
-                            placeholder="e.g. Open"
+                            :placeholder="t('process.phStatusFrom')"
                             class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                           />
                         </div>
                         <div>
                           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            To
+                            {{ t('process.fieldTo') }}
                           </label>
                           <input
                             v-model="ruleData.to"
                             type="text"
-                            placeholder="e.g. Closed Won"
+                            :placeholder="t('process.phStatusTo')"
                             class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                           />
                         </div>
                       </div>
                       <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Block Reason (shown to users)
+                          {{ t('process.fieldBlockReason') }}
                         </label>
                         <input
                           v-model="ruleData.blockReason"
                           type="text"
-                          placeholder="e.g. Approval required"
+                          :placeholder="t('process.phBlockReason')"
                           class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                         />
                       </div>
                     </div>
 
-                    <!-- Action Panel -->
                     <div v-else-if="rule.nodeType === 'action'" class="space-y-4">
                       <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Action Type <span class="text-red-500">*</span>
+                          {{ t('process.fieldActionType') }} <span class="text-red-500">*</span>
                         </label>
                         <select
                           v-model="ruleData.actionType"
                           class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                         >
-                          <option value="">Select action...</option>
-                          <option value="create_task">Create Task</option>
-                          <option value="notify_user">Send Notification</option>
-                          <option value="start_process">Start Process</option>
+                          <option value="">{{ t('process.phSelectAction') }}</option>
+                          <option value="create_task">{{ t('process.actionCreateTask') }}</option>
+                          <option value="notify_user">{{ t('process.actionNotifyUser') }}</option>
+                          <option value="start_process">{{ t('process.actionStartProcess') }}</option>
                         </select>
                       </div>
 
-                      <!-- Create Task Params -->
                       <div v-if="ruleData.actionType === 'create_task'" class="space-y-3">
                         <div>
                           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Task Title <span class="text-red-500">*</span>
+                            {{ t('process.fieldTaskTitle') }} <span class="text-red-500">*</span>
                           </label>
                           <input
                             v-model="ruleData.params.title"
                             type="text"
-                            placeholder="e.g. Follow up on deal"
+                            :placeholder="t('process.phTaskTitle')"
                             class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                           />
                         </div>
                         <div>
                           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Description
+                            {{ t('process.fieldDescription') }}
                           </label>
                           <textarea
                             v-model="ruleData.params.description"
                             rows="2"
-                            placeholder="Task description..."
+                            :placeholder="t('process.phTaskDescription')"
                             class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                           ></textarea>
                         </div>
                         <div>
                           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Assign To
+                            {{ t('process.fieldAssignTo') }}
                           </label>
                           <select
                             v-model="ruleData.params.assignee"
                             class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                           >
-                            <option value="owner">Record Owner</option>
-                            <option value="triggeredBy">User Who Triggered</option>
+                            <option value="owner">{{ t('process.assigneeOwnerTitle') }}</option>
+                            <option value="triggeredBy">{{ t('process.assigneeTriggeredByTitle') }}</option>
                           </select>
                         </div>
                       </div>
 
-                      <!-- Notify User Params -->
                       <div v-if="ruleData.actionType === 'notify_user'" class="space-y-3">
                         <div>
                           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Message <span class="text-red-500">*</span>
+                            {{ t('process.fieldMessage') }} <span class="text-red-500">*</span>
                           </label>
                           <textarea
                             v-model="ruleData.params.message"
                             rows="3"
-                            placeholder="Notification message..."
+                            :placeholder="t('process.phNotifyMessage')"
                             class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                           ></textarea>
                         </div>
                         <div>
                           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Recipient
+                            {{ t('process.fieldRecipient') }}
                           </label>
                           <select
                             v-model="ruleData.params.recipient"
                             class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                           >
-                            <option value="owner">Record Owner</option>
-                            <option value="triggeredBy">User Who Triggered</option>
+                            <option value="owner">{{ t('process.assigneeOwnerTitle') }}</option>
+                            <option value="triggeredBy">{{ t('process.assigneeTriggeredByTitle') }}</option>
                           </select>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <!-- Footer -->
                   <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-end gap-3">
                     <button
-                      @click="$emit('close')"
+                      type="button"
                       class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      @click="$emit('close')"
                     >
-                      Cancel
+                      {{ t('actions.cancel') }}
                     </button>
                     <button
-                      @click="saveRule"
+                      type="button"
                       class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+                      @click="saveRule"
                     >
-                      Save
+                      {{ t('actions.save') }}
                     </button>
                   </div>
                 </div>
@@ -291,8 +285,11 @@
 
 <script setup>
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
-import { ref, watch, computed } from 'vue';
+import { ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
+
+const { t } = useI18n();
 
 const props = defineProps({
   rule: {
@@ -312,7 +309,7 @@ const ruleData = ref({});
 watch(() => props.rule, (newRule) => {
   if (newRule && newRule.node) {
     const config = newRule.node.config || {};
-    
+
     if (newRule.nodeType === 'field_rule') {
       ruleData.value = {
         fieldKey: config.fieldKey || '',
@@ -326,11 +323,11 @@ watch(() => props.rule, (newRule) => {
       };
     } else if (newRule.nodeType === 'status_guard') {
       const transition = config.allowedTransitions?.[0] || '';
-      const [from, to] = transition.includes('→') ? transition.split('→').map(s => s.trim()) : ['', ''];
+      const [from, to] = transition.includes('→') ? transition.split('→').map((s) => s.trim()) : ['', ''];
       ruleData.value = {
         field: config.field || 'stage',
-        from: from,
-        to: to,
+        from,
+        to,
         blockReason: config.blockReason || ''
       };
     } else if (newRule.nodeType === 'action') {
@@ -344,36 +341,35 @@ watch(() => props.rule, (newRule) => {
 
 const saveRule = () => {
   const updatedNode = { ...props.rule.node };
-  
-  // Get entity type from existing nodes or default
+
   const getEntityType = () => {
-    const fieldRuleNode = props.process.nodes?.find(n => n.type === 'field_rule');
+    const fieldRuleNode = props.process.nodes?.find((n) => n.type === 'field_rule');
     if (fieldRuleNode?.config?.entityType) return fieldRuleNode.config.entityType;
-    const ownershipNode = props.process.nodes?.find(n => n.type === 'ownership_rule');
+    const ownershipNode = props.process.nodes?.find((n) => n.type === 'ownership_rule');
     if (ownershipNode?.config?.entityType) return ownershipNode.config.entityType;
-    const statusGuardNode = props.process.nodes?.find(n => n.type === 'status_guard');
+    const statusGuardNode = props.process.nodes?.find((n) => n.type === 'status_guard');
     if (statusGuardNode?.config?.entityType) return statusGuardNode.config.entityType;
-    return 'deal'; // Default
+    return 'deal';
   };
 
   const entityType = getEntityType();
-  
+
   if (props.rule.nodeType === 'field_rule') {
     updatedNode.config = {
-      entityType: entityType,
+      entityType,
       fieldKey: ruleData.value.fieldKey,
       rule: ruleData.value.rule,
       value: ruleData.value.rule === 'visibility' ? ruleData.value.value : ruleData.value.value || true
     };
   } else if (props.rule.nodeType === 'ownership_rule') {
     updatedNode.config = {
-      entityType: entityType,
+      entityType,
       assignment: ruleData.value.assignment,
       target: ruleData.value.target
     };
   } else if (props.rule.nodeType === 'status_guard') {
     updatedNode.config = {
-      entityType: entityType,
+      entityType,
       field: ruleData.value.field,
       allowedTransitions: [`${ruleData.value.from} → ${ruleData.value.to}`]
     };

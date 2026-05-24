@@ -5,26 +5,18 @@
       <div>
         <!-- Breadcrumb -->
         <nav class="mb-4 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-          <router-link to="/settings" class="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-            Settings
-          </router-link>
+          <router-link to="/settings" class="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">{{ t('settings.modFieldsSourceSettings') }}</router-link>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
-            <router-link to="/settings?tab=notifications&notificationPage=overview" class="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-              Notifications
-            </router-link>
+            <router-link to="/settings?tab=notifications&notificationPage=overview" class="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">{{ t('settings.helpdeskExecNotifications') }}</router-link>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
-            <span class="text-gray-900 dark:text-white">Rules</span>
+            <span class="text-gray-900 dark:text-white">{{ t('settings.assignRulesRulesTitle') }}</span>
         </nav>
-        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-          Notification Rules
-        </h1>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-          Create custom notification triggers for modules you care about.
-        </p>
+        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{{ t('common.notificationRulesNotificationRules') }}</h1>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('common.notificationRulesCreateCustomNotificationTriggersForModules') }}</p>
       </div>
       <button
         @click="openCreateModal"
@@ -33,9 +25,7 @@
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-        Create Rule
-      </button>
+        </svg>{{ t('notifications.ruleCreate') }}</button>
     </header>
 
     <!-- Limit Warning -->
@@ -51,9 +41,7 @@
           <p class="text-sm font-medium text-amber-800 dark:text-amber-200">
             You've reached the maximum of {{ ruleLimits.maxTotal }} notification rules.
           </p>
-          <p class="mt-1 text-sm text-amber-700 dark:text-amber-300">
-            Delete an existing rule to create a new one.
-          </p>
+          <p class="mt-1 text-sm text-amber-700 dark:text-amber-300">{{ t('common.notificationRulesDeleteAnExistingRuleToCreate') }}</p>
         </div>
       </div>
     </div>
@@ -77,9 +65,7 @@
           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
         </svg>
         <div class="ml-3">
-          <p class="text-sm font-medium text-red-800 dark:text-red-200">
-            Failed to load notification rules
-          </p>
+          <p class="text-sm font-medium text-red-800 dark:text-red-200">{{ t('common.notificationRulesFailedToLoadNotificationRules') }}</p>
           <p class="mt-1 text-sm text-red-700 dark:text-red-300">
             {{ error }}
           </p>
@@ -105,12 +91,8 @@
           d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
         />
       </svg>
-      <h3 class="mt-4 text-sm font-medium text-gray-900 dark:text-white">
-        No notification rules yet
-      </h3>
-      <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-        Get started by creating your first notification rule.
-      </p>
+      <h3 class="mt-4 text-sm font-medium text-gray-900 dark:text-white">{{ t('common.notificationRulesNoNotificationRulesYet') }}</h3>
+      <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{{ t('common.notificationRulesGetStartedByCreatingYourFirst') }}</p>
       <div class="mt-6">
         <button
           @click="openCreateModal"
@@ -119,9 +101,7 @@
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          Create your first rule
-        </button>
+          </svg>{{ t('common.notificationRulesCreateYourFirstRule') }}</button>
       </div>
     </div>
 
@@ -176,7 +156,7 @@
               @click="openEditModal(rule)"
               type="button"
               class="p-2 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-              aria-label="Edit rule"
+              :aria-label="t('common.notificationRulesEditRule')"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -186,7 +166,7 @@
               @click="handleDelete(rule)"
               type="button"
               class="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-              aria-label="Delete rule"
+              :aria-label="t('common.notificationRulesDeleteRule')"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -208,6 +188,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, computed, onMounted } from 'vue';
 import { useNotificationRules } from '@/composables/useNotificationRules';
 import RuleBuilderModal from '@/components/notifications/RuleBuilderModal.vue';
@@ -274,7 +257,7 @@ async function handleDelete(rule) {
     await loadRuleLimits();
   } catch (error) {
     console.error('[NotificationRules] Error deleting rule:', error);
-    alert('Failed to delete rule. Please try again.');
+    alert(t('common.notificationRulesToastFailedToDeleteRulePlease'));
   }
 }
 

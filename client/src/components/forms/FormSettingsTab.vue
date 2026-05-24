@@ -1,11 +1,11 @@
 <template>
   <div class="space-y-6">
-    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Form Settings</h2>
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('forms.tabSettingsHeading') }}</h2>
 
     <!-- KPI Metrics -->
     <div>
       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-        KPI Metrics
+        {{ t('forms.settingsKpiMetrics') }}
       </label>
       <div class="space-y-2">
         <label class="flex items-center">
@@ -14,7 +14,7 @@
             checkbox-class="w-4 h-4"
             @change="toggleKpiMetric('Compliance %', $event.target.checked)"
           />
-          <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Compliance Percentage</span>
+          <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ t('forms.settingsKpiCompliance') }}</span>
         </label>
         <label class="flex items-center">
           <HeadlessCheckbox
@@ -22,7 +22,7 @@
             checkbox-class="w-4 h-4"
             @change="toggleKpiMetric('Satisfaction %', $event.target.checked)"
           />
-          <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Satisfaction Percentage</span>
+          <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ t('forms.settingsKpiSatisfaction') }}</span>
         </label>
         <label class="flex items-center">
           <HeadlessCheckbox
@@ -30,7 +30,7 @@
             checkbox-class="w-4 h-4"
             @change="toggleKpiMetric('Avg Rating', $event.target.checked)"
           />
-          <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Average Rating</span>
+          <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ t('forms.settingsKpiAvgRating') }}</span>
         </label>
       </div>
     </div>
@@ -38,16 +38,16 @@
     <!-- Scoring Formula -->
     <div>
       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-        Scoring Formula
+        {{ t('forms.settingsScoringFormula') }}
       </label>
       <input
         v-model="localForm.scoringFormula"
         type="text"
-        placeholder="e.g., (Passed / Total) * 100"
+        :placeholder="t('forms.settingsScoringFormulaPh')"
         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
       />
       <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-        Formula for calculating overall form score
+        {{ t('forms.settingsScoringFormulaHint') }}
       </p>
     </div>
 
@@ -55,7 +55,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Pass Threshold (%)
+          {{ t('forms.settingsPassThreshold') }}
         </label>
         <input
           v-model.number="localForm.thresholds.pass"
@@ -67,7 +67,7 @@
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Partial Threshold (%)
+          {{ t('forms.settingsPartialThreshold') }}
         </label>
         <input
           v-model.number="localForm.thresholds.partial"
@@ -87,17 +87,17 @@
           id="autoAssignment"
           checkbox-class="w-4 h-4"
         />
-        <span class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Auto Assignment</span>
+        <span class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('forms.settingsAutoAssignment') }}</span>
       </label>
       <div v-if="localForm.autoAssignment.enabled" class="ml-6 mt-2">
         <select
           v-model="localForm.autoAssignment.linkTo"
           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
         >
-          <option value="org">Organization</option>
-          <option value="deal">Deal</option>
-          <option value="task">Task</option>
-          <option value="event">Event</option>
+          <option value="org">{{ t('forms.settingsLinkOrganization') }}</option>
+          <option value="deal">{{ t('forms.settingsLinkDeal') }}</option>
+          <option value="task">{{ t('forms.settingsLinkTask') }}</option>
+          <option value="event">{{ t('forms.settingsLinkEvent') }}</option>
         </select>
       </div>
     </div>
@@ -105,7 +105,7 @@
     <!-- Workflow On Submit -->
     <div>
       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-        Workflow On Submit
+        {{ t('forms.settingsWorkflowOnSubmit') }}
       </label>
       <div class="space-y-2">
         <label class="flex items-center">
@@ -113,18 +113,18 @@
             v-model="localForm.workflowOnSubmit.createTask"
             checkbox-class="w-4 h-4"
           />
-          <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Create Task</span>
+          <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ t('forms.settingsCreateTask') }}</span>
         </label>
         <div v-if="localForm.workflowOnSubmit.createTask" class="ml-6 mt-2">
-          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Update Field</label>
+          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('forms.settingsUpdateField') }}</label>
           <select
             v-model="localForm.workflowOnSubmit.updateField"
             class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           >
-            <option :value="null">None</option>
-            <option value="status">Status</option>
-            <option value="stage">Stage</option>
-            <option value="custom">Custom Field</option>
+            <option :value="null">{{ t('forms.settingsUpdateFieldNone') }}</option>
+            <option value="status">{{ t('forms.settingsUpdateFieldStatus') }}</option>
+            <option value="stage">{{ t('forms.settingsUpdateFieldStage') }}</option>
+            <option value="custom">{{ t('forms.settingsUpdateFieldCustom') }}</option>
           </select>
         </div>
       </div>
@@ -138,15 +138,15 @@
           id="approvalWorkflow"
           checkbox-class="w-4 h-4"
         />
-        <span class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Require Approval</span>
+        <span class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('forms.settingsRequireApproval') }}</span>
       </label>
       <div v-if="localForm.approvalWorkflow.enabled" class="ml-6 mt-2">
-        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Approver</label>
+        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('forms.settingsApprover') }}</label>
         <select
           v-model="localForm.approvalWorkflow.approver"
           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
         >
-          <option :value="null">Select Approver</option>
+          <option :value="null">{{ t('forms.settingsSelectApprover') }}</option>
           <option v-for="user in users" :key="user._id" :value="user._id">
             {{ user.firstName }} {{ user.lastName }} ({{ user.email }})
           </option>
@@ -157,13 +157,13 @@
     <!-- Assigned To -->
     <div>
       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-        Assigned To
+        {{ t('forms.settingsAssignedTo') }}
       </label>
       <select
         v-model="localForm.assignedTo"
         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
       >
-        <option :value="null">Unassigned</option>
+        <option :value="null">{{ t('records.editableUnassigned') }}</option>
         <option v-for="user in users" :key="user._id" :value="user._id">
           {{ user.firstName }} {{ user.lastName }} ({{ user.email }})
         </option>
@@ -173,7 +173,7 @@
     <!-- Form Version -->
     <div v-if="localForm.formVersion">
       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-        Form Version
+        {{ t('forms.settingsFormVersion') }}
       </label>
       <input
         :value="localForm.formVersion"
@@ -186,7 +186,7 @@
     <!-- Public Link -->
     <div v-if="localForm.publicLink?.enabled" class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-        Public Link
+        {{ t('forms.settingsPublicLink') }}
       </label>
       <div class="flex items-center gap-2">
         <input
@@ -199,7 +199,7 @@
           @click="copyPublicLink"
           class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium"
         >
-          Copy
+          {{ t('actions.copy') }}
         </button>
       </div>
     </div>
@@ -208,7 +208,10 @@
 
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
+
+const { t } = useI18n();
 
 const props = defineProps({
   form: {
@@ -302,9 +305,7 @@ onMounted(() => {
 const copyPublicLink = () => {
   if (localForm.value.publicLink?.url) {
     navigator.clipboard.writeText(localForm.value.publicLink.url);
-    // You can add a toast notification here
-    alert('Public link copied to clipboard!');
+    alert(t('forms.settingsPublicLinkCopied'));
   }
 };
 </script>
-

@@ -1,0 +1,722 @@
+{
+  "connectInboxWizardLitedeskUsesAReadOnlyGmail": {
+    "message": "लाइटडेस्क उन संदेशों को आयात करने के लिए रीड-ओनली जीमेल स्कोप का उपयोग करता है जिन तक आपकी पहुंच पहले से है।",
+    "description": "Auto-migrated from connectInboxWizard"
+  },
+  "connectInboxWizardToProceedIfYouTrustThis": {
+    "message": "यदि आपको इस कार्यक्षेत्र पर भरोसा है तो आगे बढ़ें।",
+    "description": "Auto-migrated from connectInboxWizard"
+  },
+  "connectInboxWizardGoogleMayShowAWarningFor": {
+    "message": "Google परीक्षण के दौरान ऐप्स के लिए चेतावनी दिखा सकता है. उपयोग",
+    "description": "Auto-migrated from connectInboxWizard"
+  },
+  "connectInboxWizardBeforeYouApproveAccess": {
+    "message": "इससे पहले कि आप पहुंच स्वीकृत करें",
+    "description": "Auto-migrated from connectInboxWizard"
+  },
+  "connectInboxWizardWorkEmailAddress": {
+    "message": "कार्य ईमेल पता",
+    "description": "Auto-migrated from connectInboxWizard"
+  },
+  "connectMailboxModalDone": {
+    "message": "हो गया",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalNotNow": {
+    "message": "अभी नहीं",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalToContinueWhenYouTrustThis": {
+    "message": "जब आपको इस कार्यक्षेत्र पर भरोसा हो तो इसे जारी रखें।",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalIfGoogleShowsAnUnverifiedApp": {
+    "message": "यदि Google एक असत्यापित-ऐप चेतावनी दिखाता है, तो चुनें",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalYouCanSendFromTheCrm": {
+    "message": "एक बार आपका मेलबॉक्स लिंक हो जाने पर आप सीआरएम से भेज सकते हैं।",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalLitedeskImportsMailUsingARead": {
+    "message": "लाइटडेस्क केवल पढ़ने योग्य जीमेल स्कोप (आपके द्वारा चुने गए फ़ोल्डर) का उपयोग करके मेल आयात करता है।",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalGoogleOpensInAPopupSo": {
+    "message": "Google एक पॉपअप में खुलता है ताकि आप साइन इन कर सकें और पहुंच स्वीकृत कर सकें।",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalWhatHappensNext": {
+    "message": "आगे क्या होता है",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalWorkEmailAddress": {
+    "message": "कार्य ईमेल पता",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalOrCredentialsUnder": {
+    "message": "या के अंतर्गत क्रेडेंशियल",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalGmailIsntEnabledOnThisServer": {
+    "message": "इस सर्वर पर Gmail सक्षम नहीं है. एक व्यवस्थापक जोड़ सकता है",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalYouCompanyCom": {
+    "message": "you@company.com",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalGmailAddress": {
+    "message": "जीमेल पता",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalYourOrganizationHasNotEnabledGmail": {
+    "message": "आपके संगठन ने अभी तक Gmail SMTP सक्षम नहीं किया है. एक व्यवस्थापक को चुनना होगा",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalYourRoleCannotCreateAPersonal": {
+    "message": "आपकी भूमिका एक व्यक्तिगत मेलबॉक्स नहीं बना सकती. किसी व्यवस्थापक से पूछें.",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalPersonalMailbox": {
+    "message": "व्यक्तिगत मेलबॉक्स",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalLitedeskCreatesAPrivate": {
+    "message": "लाइटडेस्क एक प्राइवेट बनाता है",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalOneQuickStepFirst": {
+    "message": "पहला एक त्वरित कदम",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalSupportCompanyCom": {
+    "message": "support@company.com",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalSharedEmailAddress": {
+    "message": "साझा किया गया ईमेल पता",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalDisplayName": {
+    "message": "प्रदर्शित होने वाला नाम",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalSharedTeamMailbox": {
+    "message": "साझा टीम मेलबॉक्स",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalCreateA": {
+    "message": "एक बनाने के",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalGmailIsntEnabledOnThisServer2": {
+    "message": "इस सर्वर पर अभी तक Gmail सक्षम नहीं है. एक व्यवस्थापक जोड़ सकता है",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalKeepConversationsLinkedToPeopleDeals": {
+    "message": "बातचीत को लोगों, सौदों और कार्यों से जोड़कर रखें",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalSyncThreadsToYourWorkspaceInbox": {
+    "message": "थ्रेड्स को अपने कार्यक्षेत्र इनबॉक्स में सिंक करें",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "connectMailboxModalSendAndReceiveEmailInsideThe": {
+    "message": "CRM के अंदर ईमेल भेजें और प्राप्त करें",
+    "description": "Auto-migrated from connectMailboxModal"
+  },
+  "emailThreadReaderForward": {
+    "message": "आगे",
+    "description": "Auto-migrated from emailThreadReader"
+  },
+  "emailThreadReaderSent": {
+    "message": "भेजा",
+    "description": "Auto-migrated from emailThreadReader"
+  },
+  "emailThreadReaderReloadThread": {
+    "message": "धागा पुनः लोड करें",
+    "description": "Auto-migrated from emailThreadReader"
+  },
+  "emailThreadReaderReloadThread2": {
+    "message": "धागा पुनः लोड करें",
+    "description": "Auto-migrated from emailThreadReader"
+  },
+  "emailThreadReaderSnoozeToTomorrow": {
+    "message": "कल के लिए याद दिलाएं",
+    "description": "Auto-migrated from emailThreadReader"
+  },
+  "emailThreadReaderSnoozeToTomorrow2": {
+    "message": "कल के लिए याद दिलाएं",
+    "description": "Auto-migrated from emailThreadReader"
+  },
+  "emailThreadReaderBackToInbox": {
+    "message": "इनबॉक्स पर वापस जाएँ",
+    "description": "Auto-migrated from emailThreadReader"
+  },
+  "emailThreadReaderBackToInbox2": {
+    "message": "इनबॉक्स पर वापस जाएँ",
+    "description": "Auto-migrated from emailThreadReader"
+  },
+  "gmailMailboxFolderModalSystemLabelsInboxSentCategoriesAnd": {
+    "message": "सिस्टम लेबल (इनबॉक्स, भेजे गए, श्रेणियां) और आपके कस्टम लेबल सूचीबद्ध हैं। कम से कम एक का चयन करें.",
+    "description": "Auto-migrated from gmailMailboxFolderModal"
+  },
+  "gmailMailboxFolderModalLoadingFoldersFromGmail": {
+    "message": "जीमेल से फ़ोल्डर्स लोड हो रहे हैं...",
+    "description": "Auto-migrated from gmailMailboxFolderModal"
+  },
+  "gmailMailboxFolderModalChooseWhichGmailLabelsLitedeskImports": {
+    "message": "चुनें कि कौन सा जीमेल लेबल लाइटडेस्क आयात करता है। सिंक एक शेड्यूल पर चलता है और जब आप अभी सिंक का उपयोग करते हैं।",
+    "description": "Auto-migrated from gmailMailboxFolderModal"
+  },
+  "gmailMailboxFolderModalMailboxFolders": {
+    "message": "मेलबॉक्स फ़ोल्डर",
+    "description": "Auto-migrated from gmailMailboxFolderModal"
+  },
+  "inboxGetStartedTipAssign": {
+    "message": "फ़ॉलो-अप के लिए प्रत्येक ईमेल को समूह मेलबॉक्स में असाइन करें।",
+    "description": "Inbox get started orbit tip"
+  },
+  "inboxGetStartedTipMentions": {
+    "message": "टिप्पणियों में <strong>उल्लेख</strong> का उपयोग करके सहयोग करें।",
+    "description": "Inbox get started orbit tip (HTML)"
+  },
+  "inboxGetStartedTipCanned": {
+    "message": "डिब्बाबंद उत्तरों के साथ स्वचालित करें और समय बचाएं।",
+    "description": "Inbox get started orbit tip (HTML)"
+  },
+  "inboxGetStartedTipEmails": {
+    "message": "संपर्कों और रिकॉर्ड्स को ईमेल <strong>ऑटो-लिंक</strong> करें। बातचीत बंद करने के लिए <strong>हो गया के रूप में चिह्नित करें</strong>।",
+    "description": "Inbox get started orbit tip (HTML)"
+  },
+  "inboxGetStartedStepMailboxTitle": {
+    "message": "अपना मेलबॉक्स सेट करें",
+    "description": "Get started step title"
+  },
+  "inboxGetStartedStepMailboxSubtitle": {
+    "message": "अपने सभी ईमेल एक स्थान पर लाएँ।",
+    "description": "Get started step subtitle"
+  },
+  "inboxGetStartedStepGroupTitle": {
+    "message": "समूह मेलबॉक्स प्रबंधित करें",
+    "description": "Get started step title"
+  },
+  "inboxGetStartedStepGroupSubtitle": {
+    "message": "अपनी टीम के साथ ईमेल व्यवस्थित करें.",
+    "description": "Get started step subtitle"
+  },
+  "inboxGetStartedStepSocialTitle": {
+    "message": "सामाजिक खाते जोड़ें",
+    "description": "Get started step title"
+  },
+  "inboxGetStartedStepSocialSubtitle": {
+    "message": "व्हाट्सएप, इंस्टाग्राम और बहुत कुछ कनेक्ट करें।",
+    "description": "Get started step subtitle"
+  },
+  "inboxGetStartedStepChatTitle": {
+    "message": "सीधी बातचीत",
+    "description": "Get started step title"
+  },
+  "inboxGetStartedStepChatSubtitle": {
+    "message": "वास्तविक समय में अपने ग्राहकों से जुड़ें।",
+    "description": "Get started step subtitle"
+  },
+  "inboxGetStartedStepConnect": {
+    "message": "जोड़ना",
+    "description": "Get started step action"
+  },
+  "inboxGetStartedStepSetup": {
+    "message": "स्थापित करना",
+    "description": "Get started step action"
+  },
+  "inboxGetStartedOrOpenSetupFromTheConnect": {
+    "message": "या कनेक्ट बटन से सेटअप खोलें।",
+    "description": "Auto-migrated from inboxGetStarted"
+  },
+  "inboxGetStartedGmailIsntEnabledOnThisServer": {
+    "message": "इस सर्वर पर अभी तक Gmail सक्षम नहीं है. अपने व्यवस्थापक से जोड़ने के लिए कहें",
+    "description": "Auto-migrated from inboxGetStarted"
+  },
+  "inboxGetStartedConnecting": {
+    "message": "कनेक्ट हो रहा है...",
+    "description": "Auto-migrated from inboxGetStarted"
+  },
+  "inboxGetStartedConnectYourWorkInboxToSend": {
+    "message": "अपने सीआरएम रिकॉर्ड के साथ ईमेल भेजने, प्राप्त करने और प्रबंधित करने के लिए अपने कार्य इनबॉक्स को कनेक्ट करें।",
+    "description": "Auto-migrated from inboxGetStarted"
+  },
+  "inboxGetStartedGetStartedWithLitedesk": {
+    "message": "लाइटडेस्क से शुरुआत करें",
+    "description": "Auto-migrated from inboxGetStarted"
+  },
+  "inboxProviderCardSoon": {
+    "message": "जल्द ही",
+    "description": "Auto-migrated from inboxProviderCard"
+  },
+  "emailComposeDrawerSend": {
+    "message": "भेजना",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerAttachments": {
+    "message": "संलग्नक",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerEmailSubject": {
+    "message": "ईमेल विषय",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerSubject": {
+    "message": "विषय",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerThisRecordsEmailThread": {
+    "message": "इस रिकॉर्ड का ईमेल थ्रेड",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerYourInbox": {
+    "message": "आपका इनबॉक्स",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerWhenRecipientsHitReplyTheirMessage": {
+    "message": "जब प्राप्तकर्ता उत्तर दबाते हैं, तो उनका संदेश यहां भेजा जाता है और भेजा जाता है",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerBccExampleComCommaSeparated": {
+    "message": "bcc@example.com (अल्पविराम से अलग)",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerCcExampleComCommaSeparated": {
+    "message": "cc@example.com (अल्पविराम से अलग)",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerRecipientExampleComCommaSeparatedFor": {
+    "message": "Recipient@example.com (एकाधिक के लिए अल्पविराम से अलग)",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerComposeAndSendAnEmailFrom": {
+    "message": "इस रिकॉर्ड से एक ईमेल लिखें और भेजें.",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerSendFromYourWorkspaceRepliesRoute": {
+    "message": "अपने कार्यक्षेत्र से भेजें. उत्तर इनबॉक्स में वापस आ जाते हैं (कोई व्यक्ति या डील रिकॉर्ड नहीं)।",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerSendEmail": {
+    "message": "ईमेल भेजें",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailComposeDrawerSendEmail2": {
+    "message": "ईमेल भेजें",
+    "description": "Auto-migrated from emailComposeDrawer"
+  },
+  "emailThreadCardAttachment": {
+    "message": "लगाव",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardCreateCase": {
+    "message": "केस बनाएं",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardAddTag": {
+    "message": "टैग जोड़ें",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardUnassign": {
+    "message": "निरस्त करें",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardReplyAll": {
+    "message": "सभी को उत्तर दें",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardDeliveryRisk": {
+    "message": "वितरण जोखिम",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardReplyDueSoon": {
+    "message": "उत्तर जल्द ही दिया जाएगा",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardReplyOverdue": {
+    "message": "उत्तर अतिदेय",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardFollowUp": {
+    "message": "पालन ​​करें",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardHighPriority": {
+    "message": "उच्च प्राथमिकता",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardUnread": {
+    "message": "अपठित ग",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardCreateCase2": {
+    "message": "केस बनाएं",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardAddTag2": {
+    "message": "टैग जोड़ें",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardUnassign2": {
+    "message": "निरस्त करें",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardReplyAll2": {
+    "message": "सभी को उत्तर दें",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardDeliveryRisk2": {
+    "message": "वितरण जोखिम",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardReplyDueSoon2": {
+    "message": "उत्तर जल्द ही दिया जाएगा",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardReplyOverdue2": {
+    "message": "उत्तर अतिदेय",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardFollowUp2": {
+    "message": "पालन ​​करें",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "emailThreadCardHighPriority2": {
+    "message": "उच्च प्राथमिकता",
+    "description": "Auto-migrated from emailThreadCard"
+  },
+  "inboxSurfaceDone": {
+    "message": "हो गया",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceWorkspaceOwnersCanInsteadSaveOverrides": {
+    "message": "कार्यस्थल के मालिक इसके बजाय ओवरराइड को सहेज सकते हैं",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceRestartTheApiProcessReloadThis": {
+    "message": "एपीआई प्रक्रिया को पुनरारंभ करें, इस पृष्ठ को पुनः लोड करें, फिर कनेक्शन विज़ार्ड को पूरा करने के लिए जीमेल पर फिर से क्लिक करें।",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceServerEnv": {
+    "message": "सर्वर/.env",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceOnTheMachineThatRunsThe": {
+    "message": "लाइटडेस्क एपीआई चलाने वाली मशीन पर, सेट करें",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceAuthorizedRedirectUris": {
+    "message": "अधिकृत रीडायरेक्ट यूआरआई",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceUnder": {
+    "message": "अंतर्गत",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceOauth20ClientId": {
+    "message": "OAuth 2.0 क्लाइंट आईडी",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceHere": {
+    "message": "यहाँ।",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceConnectGmail": {
+    "message": "जीमेल कनेक्ट करें",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceToTheApiEnvironmentThenEveryone": {
+    "message": "एपीआई वातावरण में, फिर हर कोई उपयोग करता है",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceEnableGmailOnThisApiServer": {
+    "message": "इस एपीआई सर्वर पर जीमेल सक्षम करें",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceOrgUsersToWorkThisInbox": {
+    "message": "org उपयोगकर्ताओं को इस इनबॉक्स पर काम करने के लिए। अन्यथा केवल चेक किए गए उपयोगकर्ता (और व्यवस्थापक) ही इस मेलबॉक्स के लिए थ्रेड देखते हैं।",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceLeaveEveryoneUncheckedToAllow": {
+    "message": "अनुमति देने के लिए सभी को अनियंत्रित छोड़ दें",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceParticipants": {
+    "message": "प्रतिभागियों",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSubject": {
+    "message": "विषय",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceThisThreadIsTiedToYour": {
+    "message": "यह थ्रेड आपके कार्यक्षेत्र (इनबॉक्स स्टैंडअलोन सेंड या रूटेड वर्कस्पेस मेल) से जुड़ा है, एक भी सीआरएम रिकॉर्ड से नहीं।",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceWorkspaceMail": {
+    "message": "कार्यक्षेत्र मेल",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSnooze1d": {
+    "message": "स्नूज़ 1डी",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceDone2": {
+    "message": "हो गया",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceWhenMailIsLinkedToRecords": {
+    "message": "जब मेल को रिकॉर्ड से लिंक किया जाता है और इनबाउंड कॉन्फ़िगर किया जाता है, तो थ्रेड यहां दिखाई देते हैं। साइडबार में कोई अन्य मेलबॉक्स या फ़ोल्डर चुनें, या खोलें",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceNoConversationsInThisView": {
+    "message": "इस दृश्य में कोई बातचीत नहीं",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSelectAllInFolder": {
+    "message": "फ़ोल्डर में सभी का चयन करें",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSelectUpTo500ThreadsMatching": {
+    "message": "इस फ़ोल्डर से मेल खाने वाले 500 थ्रेड तक चुनें और खोजें",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSelectAllConversationsInThisView": {
+    "message": "इस दृश्य में सभी वार्तालापों का चयन करें",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSelectAllInView": {
+    "message": "दृश्य में सभी का चयन करें",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSnoozeToTomorrow": {
+    "message": "कल के लिए याद दिलाएं",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceRemoveTag": {
+    "message": "टैग हटाएं...",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceReopen": {
+    "message": "फिर से खोलना",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceMarkDone": {
+    "message": "हो गया चिह्नित करें",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSelectFoldersToSync": {
+    "message": "सिंक करने के लिए फ़ोल्डर्स का चयन करें",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceConnectedAs": {
+    "message": "के रूप में जुड़ा हुआ है",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceBackgroundSyncRunsAutomatically": {
+    "message": "बैकग्राउंड सिंक स्वचालित रूप से चलता है।",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfacePersonalMailboxLinkedToGoogleGmail": {
+    "message": "Google से लिंक किया गया व्यक्तिगत मेलबॉक्स (आपके द्वारा चुने गए जीमेल लेबल, केवल-पढ़ने का दायरा)।",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceForCopyPasteStepsOrAsk": {
+    "message": "कॉपी-पेस्ट चरणों के लिए, या अपने व्यवस्थापक से तीन वेरिएबल जोड़ने और एपीआई को पुनरारंभ करने के लिए कहें।",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceClickTheGmailTileAbove": {
+    "message": "ऊपर जीमेल टाइल पर क्लिक करें",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceOnTheServer": {
+    "message": "सर्वर पर)।",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSoon": {
+    "message": "जल्द ही",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceImap": {
+    "message": "आईएमएपी",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSoon2": {
+    "message": "जल्द ही",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceYahoo": {
+    "message": "याहू",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSoon3": {
+    "message": "जल्द ही",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceOutlook": {
+    "message": "आउटलुक",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceGmail": {
+    "message": "जीमेल लगीं",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSelectYourEmailProvider": {
+    "message": "अपना ईमेल प्रदाता चुनें",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceConnectYourInboxToLitedesk": {
+    "message": "अपने इनबॉक्स को लाइटडेस्क से कनेक्ट करें",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSendingAs": {
+    "message": "के रूप में भेजा जा रहा है",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceToImportAndReadMailIn": {
+    "message": "इस इनबॉक्स में मेल आयात करने और पढ़ने के लिए।",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceGmailOauth": {
+    "message": "जीमेल (OAuth)",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceOutboundEmailUsesYourGoogleApp": {
+    "message": "आउटबाउंड ईमेल संगठन के जीमेल एसएमटीपी रिले के माध्यम से आपके Google ऐप पासवर्ड का उपयोग करता है।\n          जोड़ना",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceDone3": {
+    "message": "हो गया",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceEmailSetup": {
+    "message": "ईमेल सेटअप",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSearchMail": {
+    "message": "मेल खोजें",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceSearchSubjectBodyPeopleLabels": {
+    "message": "विषय, मुख्य भाग, लोग, लेबल खोजें...",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceRefreshFolderCountsOnly": {
+    "message": "रिफ्रेश फ़ोल्डर केवल मायने रखता है",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceRefreshFolderCountsOnly2": {
+    "message": "रिफ्रेश फ़ोल्डर केवल मायने रखता है",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceReloadThreadList": {
+    "message": "थ्रेड सूची पुनः लोड करें",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceReloadThreadList2": {
+    "message": "थ्रेड सूची पुनः लोड करें",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceOpenAThreadOnItsRecord": {
+    "message": "इसके रिकॉर्ड पर एक थ्रेड खोलें. मेलबॉक्स और फ़ोल्डर स्विच करने के लिए बाईं ओर मेल सूची का उपयोग करें।",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceContactUs": {
+    "message": "हमसे संपर्क करें@…",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceAddressOptional": {
+    "message": "पता (वैकल्पिक)",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceEGSupport": {
+    "message": "जैसे सहायता",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceLoadingFolders": {
+    "message": "फ़ोल्डर लोड हो रहे हैं...",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceGmailFolders": {
+    "message": "जीमेल फ़ोल्डर्स",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceRefreshFolderCounts": {
+    "message": "फ़ोल्डर संख्या ताज़ा करें",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceRefreshFolderCountsOnlyDoesNot": {
+    "message": "रीफ्रेश फ़ोल्डर केवल गिनती करता है (थ्रेड सूची को पुनः लोड नहीं करता है)",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceNoMailboxesYetAddOneBelow": {
+    "message": "अभी तक कोई मेलबॉक्स नहीं. नीचे एक जोड़ें या ईमेल सेटअप खोलें।",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceConnect": {
+    "message": "जोड़ना",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceConnectGmailForThisSharedInbox": {
+    "message": "इस साझा इनबॉक्स के लिए जीमेल कनेक्ट करें",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceMailboxes": {
+    "message": "मेलबॉक्स",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceAllMail": {
+    "message": "सभी मेल",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceMailNavigation": {
+    "message": "मेल नेविगेशन",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceRefreshMailboxes": {
+    "message": "मेलबॉक्स ताज़ा करें",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceComposeWorkspaceEmail": {
+    "message": "कार्यक्षेत्र ईमेल लिखें",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceMail": {
+    "message": "मेल",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxSurfaceMailFoldersAndMailboxes": {
+    "message": "मेल फ़ोल्डर और मेलबॉक्स",
+    "description": "Auto-migrated from inboxSurface"
+  },
+  "inboxProviderComingSoonTitle": {
+    "message": "{name} - जल्द ही आ रहा है",
+    "description": "Provider card"
+  },
+  "inboxProviderNotAvailableTitle": {
+    "message": "{name} - उपलब्ध नहीं है",
+    "description": "Provider card"
+  },
+  "inboxProviderConnectTitle": {
+    "message": "{name} कनेक्ट करें",
+    "description": "Provider card"
+  },
+  "inboxIntegrationComingSoon": {
+    "message": "यह एकीकरण जल्द ही होने वाला है.",
+    "description": "Toast"
+  },
+  "inboxProviderSoonUseGmail": {
+    "message": "{name} जल्द ही आ रहा है। अभी के लिए जीमेल का प्रयोग करें।",
+    "description": "Toast"
+  },
+  "inboxThreadsPartialSelect": {
+    "message": "इस दृश्य में केवल पहले 500 थ्रेड्स का चयन किया गया था।",
+    "description": "Toast"
+  }
+}

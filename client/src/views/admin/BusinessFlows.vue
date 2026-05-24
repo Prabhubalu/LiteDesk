@@ -4,10 +4,10 @@
     <header class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div>
         <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-          Business Flows
+          {{ t('process.flowListTitle') }}
         </h1>
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-          Visual grouping of multiple processes into end-to-end business stories
+          {{ t('process.flowListDescription') }}
         </p>
       </div>
       <div class="flex items-center gap-2">
@@ -16,13 +16,13 @@
           @click="openTemplates"
           class="px-4 py-2 text-sm font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors"
         >
-          Start with Template
+          {{ t('process.flowStartWithTemplate') }}
         </button>
         <button
           @click="createFlow"
           class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
         >
-          Create from Scratch
+          {{ t('process.flowCreateFromScratch') }}
         </button>
       </div>
     </header>
@@ -46,23 +46,23 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
       </svg>
       <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-        Get started faster with ready-made flows
+        {{ t('process.flowEmptyTitle') }}
       </h3>
       <p class="text-sm text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
-        Use proven templates to set up common business processes in minutes. You can edit everything after import.
+        {{ t('process.flowEmptyMessage') }}
       </p>
       <div class="flex items-center justify-center gap-3">
         <button
           @click="openTemplates"
           class="px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
         >
-          Start with a Template
+          {{ t('process.flowStartWithTemplateBtn') }}
         </button>
         <button
           @click="createFlow"
           class="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         >
-          Create from scratch
+          {{ t('process.flowCreateFromScratchBtn') }}
         </button>
       </div>
     </div>
@@ -91,11 +91,11 @@
 
             <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
               <div>
-                <span class="font-medium">Processes:</span>
-                {{ flow.processIds?.length || 0 }} process{{ (flow.processIds?.length || 0) !== 1 ? 'es' : '' }}
+                <span class="font-medium">{{ t('process.flowMetaProcesses') }}</span>
+                {{ t('process.flowProcessCount', { count: flow.processIds?.length || 0 }) }}
               </div>
               <div v-if="flow.updatedAt">
-                <span class="font-medium">Last updated:</span>
+                <span class="font-medium">{{ t('process.flowMetaLastUpdated') }}</span>
                 {{ formatDate(flow.updatedAt) }}
               </div>
             </div>
@@ -106,19 +106,19 @@
               @click="viewFlow(flow)"
               class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
-              View
+              {{ t('common.viewRecord') }}
             </button>
             <button
               @click="editFlow(flow)"
               class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
-              Edit
+              {{ t('actions.edit') }}
             </button>
             <button
               @click="confirmDelete(flow)"
               class="px-4 py-2 text-sm font-medium text-red-700 dark:text-red-300 bg-white dark:bg-gray-800 border border-red-300 dark:border-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
             >
-              Delete
+              {{ t('actions.delete') }}
             </button>
           </div>
         </div>
@@ -132,23 +132,23 @@
       @click.self="deletingFlow = null"
     >
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Delete Business Flow</h3>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('process.flowDeleteModalTitle') }}</h3>
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          Are you sure you want to delete "{{ deletingFlow.name }}"? This action cannot be undone.
+          {{ t('process.flowDeleteConfirm', { name: deletingFlow.name }) }}
         </p>
         <div class="flex items-center justify-end gap-3">
           <button
             @click="deletingFlow = null"
             class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
-            Cancel
+            {{ t('actions.cancel') }}
           </button>
           <button
             @click="handleDelete"
             :disabled="processing"
             class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {{ processing ? 'Deleting...' : 'Delete' }}
+            {{ processing ? t('process.flowDeleting') : t('actions.delete') }}
           </button>
         </div>
       </div>
@@ -164,7 +164,7 @@
         <div class="p-6">
           <div class="flex items-center justify-between mb-2">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              Choose a Business Flow Template
+              {{ t('process.flowTemplateModalTitle') }}
             </h3>
             <button
               @click="showTemplates = false"
@@ -176,13 +176,13 @@
             </button>
           </div>
           <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-            Templates help you go live faster. You can edit everything after import.
+            {{ t('process.flowTemplateModalHint') }}
           </p>
 
           <!-- Loading -->
           <div v-if="loadingTemplates" class="text-center py-8">
             <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Loading templates...</p>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ t('process.flowLoadingTemplates') }}</p>
           </div>
 
           <!-- Templates Grid (Improved cards) -->
@@ -208,7 +208,7 @@
               
               <!-- What this sets up -->
               <div v-if="template.highlights && template.highlights.length > 0" class="mb-3">
-                <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">What this sets up:</p>
+                <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">{{ t('process.flowTemplateHighlights') }}</p>
                 <ul class="space-y-1">
                   <li
                     v-for="(highlight, idx) in template.highlights"
@@ -224,9 +224,9 @@
               </div>
               
               <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                <span>{{ template.processCount }} process{{ template.processCount !== 1 ? 'es' : '' }}</span>
+                <span>{{ t('process.flowProcessCount', { count: template.processCount }) }}</span>
                 <span class="text-indigo-600 dark:text-indigo-400 font-medium group-hover:underline">
-                  Select →
+                  {{ t('process.flowTemplateSelect') }}
                 </span>
               </div>
             </div>
@@ -234,7 +234,7 @@
 
           <!-- Empty State -->
           <div v-else class="text-center py-8">
-            <p class="text-sm text-gray-600 dark:text-gray-400">No templates available</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('process.flowNoTemplates') }}</p>
           </div>
         </div>
       </div>
@@ -248,15 +248,15 @@
     >
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-          Import "{{ selectedTemplate.name }}"
+          {{ t('process.flowImportTitle', { name: selectedTemplate.name }) }}
         </h3>
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          This will create {{ selectedTemplate.processCount }} process{{ selectedTemplate.processCount !== 1 ? 'es' : '' }} and a Business Flow.
+          {{ t('process.flowImportBody', { count: selectedTemplate.processCount }) }}
         </p>
         
         <!-- What will be created -->
         <div v-if="selectedTemplate.highlights && selectedTemplate.highlights.length > 0" class="mb-4 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
-          <p class="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">What will be created:</p>
+          <p class="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('process.flowImportWhatCreated') }}</p>
           <ul class="space-y-1">
             <li
               v-for="(highlight, idx) in selectedTemplate.highlights"
@@ -273,7 +273,7 @@
         
         <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mb-4">
           <p class="text-xs text-blue-800 dark:text-blue-200">
-            <strong>You can edit everything after import.</strong> All processes start as Draft and require your review before activation.
+            {{ t('process.flowImportNote') }}
           </p>
         </div>
         <div class="flex items-center justify-end gap-3">
@@ -281,14 +281,14 @@
             @click="selectedTemplate = null"
             class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
-            Cancel
+            {{ t('actions.cancel') }}
           </button>
           <button
             @click="confirmImport"
             :disabled="importing"
             class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {{ importing ? 'Importing...' : 'Import Template' }}
+            {{ importing ? t('process.flowImporting') : t('process.flowImportTemplate') }}
           </button>
         </div>
       </div>
@@ -299,9 +299,11 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
 
+const { t } = useI18n();
 const router = useRouter();
 const { success: showSuccess, error: showError } = useNotifications();
 
@@ -323,7 +325,7 @@ const loadFlows = async () => {
     const response = await apiClient.get('/admin/business-flows');
     flows.value = response.data || [];
   } catch (err) {
-    error.value = err.message || 'Failed to load business flows';
+    error.value = err.message || t('process.flowLoadFailed');
     console.error('Error loading business flows:', err);
   } finally {
     loading.value = false;
@@ -361,18 +363,18 @@ const confirmImport = async () => {
   try {
     const response = await apiClient.post(`/admin/business-flow-templates/${selectedTemplate.value.key}/import`);
     if (response.success) {
-      showSuccess('Template imported successfully. Review and activate processes when ready.');
+      showSuccess(t('process.flowImportSuccess'));
       selectedTemplate.value = null;
       await loadFlows();
       // Navigate to the imported flow
       if (response.data?.businessFlowId) {
-        router.push(`/control/flows/${response.data.businessFlowId}`);
+        router.push(`/settings/automation/flows/${response.data.businessFlowId}`);
       }
     } else {
-      showError(response.message || 'Failed to import template');
+      showError(response.message || t('process.flowImportFailed'));
     }
   } catch (err) {
-    showError(err.message || 'Failed to import template');
+    showError(err.message || t('process.flowImportFailed'));
   } finally {
     importing.value = false;
   }
@@ -385,15 +387,15 @@ const formatDate = (dateString) => {
 };
 
 const createFlow = () => {
-  router.push('/control/flows/create');
+  router.push('/settings/automation/flows/create');
 };
 
 const viewFlow = (flow) => {
-  router.push(`/control/flows/${flow._id}`);
+  router.push(`/settings/automation/flows/${flow._id}`);
 };
 
 const editFlow = (flow) => {
-  router.push(`/control/flows/${flow._id}/edit`);
+  router.push(`/settings/automation/flows/${flow._id}/edit`);
 };
 
 const confirmDelete = (flow) => {
@@ -406,21 +408,21 @@ const handleDelete = async () => {
   try {
     const response = await apiClient.delete(`/admin/business-flows/${deletingFlow.value._id}`);
     if (response.success) {
-      showSuccess('Business flow deleted');
+      showSuccess(t('process.flowDeleteSuccess'));
       deletingFlow.value = null;
       await loadFlows();
     } else {
-      showError(response.message || 'Failed to delete');
+      showError(response.message || t('process.flowDeleteFailed'));
     }
   } catch (err) {
-    showError(err.message || 'Failed to delete');
+    showError(err.message || t('process.flowDeleteFailed'));
   } finally {
     processing.value = false;
   }
 };
 
 onMounted(() => {
-  document.title = 'Business Flows | Arivu';
+  document.title = t('process.flowListPageTitle');
   loadFlows();
 });
 </script>

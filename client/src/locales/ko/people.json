@@ -1,0 +1,658 @@
+{
+  "attachToAppModalDetailFields": {
+    "message": "세부정보 필드",
+    "description": "Auto-migrated from attachToAppModal"
+  },
+  "attachToAppModalStateFields": {
+    "message": "상태 필드",
+    "description": "Auto-migrated from attachToAppModal"
+  },
+  "attachToAppModalValidationErrors": {
+    "message": "검증 오류",
+    "description": "Auto-migrated from attachToAppModal"
+  },
+  "attachToAppModalAddingParticipation": {
+    "message": "참여 추가",
+    "description": "Auto-migrated from attachToAppModal"
+  },
+  "attachToAppModalAddThisPersonToTheApp": {
+    "message": "이 사람을 앱에 추가하고 참여 필드를 설정하세요.",
+    "description": "Auto-migrated from attachToAppModal"
+  },
+  "detachFromAppModalThisWillRemoveThisPersonFrom": {
+    "message": "이 사람이 다음에서 삭제됩니다.",
+    "description": "Auto-migrated from detachFromAppModal"
+  },
+  "detachFromAppModalHistoricalRecordsAndActivityLogsWill": {
+    "message": "기록과 활동 로그는 보존됩니다.",
+    "description": "Auto-migrated from detachFromAppModal"
+  },
+  "historyLayerActivityTimeline": {
+    "message": "활동 타임라인",
+    "description": "Auto-migrated from historyLayer"
+  },
+  "historyLayerHistory": {
+    "message": "역사",
+    "description": "Auto-migrated from historyLayer"
+  },
+  "identityLayerFullName": {
+    "message": "성명",
+    "description": "Auto-migrated from identityLayer"
+  },
+  "identityLayerEditProfile": {
+    "message": "프로필 수정",
+    "description": "Auto-migrated from identityLayer"
+  },
+  "identityLayerRecognitionFirstIdentityInformation": {
+    "message": "인식 우선 신원 정보",
+    "description": "Auto-migrated from identityLayer"
+  },
+  "momentumLayerAllSystemsAreUpToDate": {
+    "message": "모든 시스템이 최신 상태입니다.",
+    "description": "Auto-migrated from momentumLayer"
+  },
+  "momentumLayerNothingNeedsAttentionRightNow": {
+    "message": "지금은 주의가 필요한 것이 없습니다.",
+    "description": "Auto-migrated from momentumLayer"
+  },
+  "momentumLayerShowLess": {
+    "message": "간략히 보기",
+    "description": "Auto-migrated from momentumLayer"
+  },
+  "momentumLayerCurrentActivityAndPriorities": {
+    "message": "현재 활동 및 우선순위",
+    "description": "Auto-migrated from momentumLayer"
+  },
+  "momentumLayerMomentum": {
+    "message": "기세",
+    "description": "Auto-migrated from momentumLayer"
+  },
+  "participationCardNoAdditionalInformationAvailable": {
+    "message": "추가 정보가 없습니다.",
+    "description": "Auto-migrated from participationCard"
+  },
+  "participationCardHideDetails": {
+    "message": "세부정보 숨기기",
+    "description": "Auto-migrated from participationCard"
+  },
+  "participationCardViewDetails": {
+    "message": "세부정보 보기",
+    "description": "Auto-migrated from participationCard"
+  },
+  "participationEditModalDetailFields": {
+    "message": "세부정보 필드",
+    "description": "Auto-migrated from participationEditModal"
+  },
+  "participationEditModalChangingTypeUpdatesStatusAutomatically": {
+    "message": "유형을 변경하면 상태가 자동으로 업데이트됩니다.",
+    "description": "Auto-migrated from participationEditModal"
+  },
+  "participationEditModalValidationErrors": {
+    "message": "검증 오류",
+    "description": "Auto-migrated from participationEditModal"
+  },
+  "participationEditModalEditingParticipationDetails": {
+    "message": "참가 세부정보 편집",
+    "description": "Auto-migrated from participationEditModal"
+  },
+  "participationEditModalUpdateParticipationDetailsForThisPerson": {
+    "message": "이 사람의 참여 세부정보 업데이트",
+    "description": "Auto-migrated from participationEditModal"
+  },
+  "participationLayerAttachToApp": {
+    "message": "앱에 연결",
+    "description": "Auto-migrated from participationLayer"
+  },
+  "participationLayerThisPersonIsNotParticipatingIn": {
+    "message": "이 사람은 아직 어떤 앱에도 참여하고 있지 않습니다.",
+    "description": "Auto-migrated from participationLayer"
+  },
+  "participationLayerNoAppParticipations": {
+    "message": "앱 참여 없음",
+    "description": "Auto-migrated from participationLayer"
+  },
+  "participationLayerAppParticipationsAndRoles": {
+    "message": "앱 참여 및 역할",
+    "description": "Auto-migrated from participationLayer"
+  },
+  "participationLayerAttachToApp2": {
+    "message": "앱에 연결",
+    "description": "Auto-migrated from participationLayer"
+  },
+  "participationOverviewPanelAvailableApps": {
+    "message": "사용 가능한 앱",
+    "description": "Auto-migrated from participationOverviewPanel"
+  },
+  "participationOverviewPanelNoAppParticipationsYet": {
+    "message": "아직 앱 참여가 없습니다.",
+    "description": "Auto-migrated from participationOverviewPanel"
+  },
+  "participationOverviewPanelSummaryOfThisPersonsParticipationAcross": {
+    "message": "이 사람의 지원서 참여 요약",
+    "description": "Auto-migrated from participationOverviewPanel"
+  },
+  "participationOverviewPanelParticipationOverview": {
+    "message": "참여개요",
+    "description": "Auto-migrated from participationOverviewPanel"
+  },
+  "participationOverviewPanelPlatformMediated": {
+    "message": "플랫폼 중재",
+    "description": "Auto-migrated from participationOverviewPanel"
+  },
+  "peopleQuickCreateDrawerCouldNotLoadPeopleModulePlease": {
+    "message": "인물 모듈을 로드할 수 없습니다. 다시 시도해 주세요.",
+    "description": "Auto-migrated from peopleQuickCreateDrawer"
+  },
+  "peopleQuickCreateDrawerAddToApp": {
+    "message": "앱에 추가",
+    "description": "Auto-migrated from peopleQuickCreateDrawer"
+  },
+  "peopleQuickCreateDrawerCreatesIdentityOnlyNoAppParticipation": {
+    "message": "ID만 생성합니다. 앱 참여가 없습니다.",
+    "description": "Auto-migrated from peopleQuickCreateDrawer"
+  },
+  "peopleQuickCreateDrawerOptionalChooseAnAppBelowTo": {
+    "message": "선택사항: 참여를 추가하려면 아래 앱을 선택하거나 신원 확인용으로만 저장하세요.",
+    "description": "Auto-migrated from peopleQuickCreateDrawer"
+  },
+  "peopleQuickCreateDrawerCreatePerson": {
+    "message": "사람 만들기",
+    "description": "Auto-migrated from peopleQuickCreateDrawer"
+  },
+  "relationshipDrillDownsViewAllCases": {
+    "message": "모든 사례 보기",
+    "description": "Auto-migrated from relationshipDrillDowns"
+  },
+  "relationshipDrillDownsViewAllMeetings": {
+    "message": "모든 회의 보기",
+    "description": "Auto-migrated from relationshipDrillDowns"
+  },
+  "relationshipDrillDownsViewAllTasks": {
+    "message": "모든 작업 보기",
+    "description": "Auto-migrated from relationshipDrillDowns"
+  },
+  "relationshipDrillDownsViewAllDeals": {
+    "message": "모든 거래 보기",
+    "description": "Auto-migrated from relationshipDrillDowns"
+  },
+  "salesConvertLeadModalNoContactFieldsAvailable": {
+    "message": "사용 가능한 연락처 필드가 없습니다.",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "salesConvertLeadModalDetailFields": {
+    "message": "세부정보 필드",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "salesConvertLeadModalStateFields": {
+    "message": "상태 필드",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "salesConvertLeadModalValidationErrors": {
+    "message": "검증 오류",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "salesConvertLeadModalCoreIdentityFieldsNameEmailEtc": {
+    "message": "핵심 ID 필드(이름, 이메일 등)는 수정되지 않습니다. 리드 관련 필드는 다음과 같습니다.\n                              지워졌습니다.",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "salesConvertLeadModalConvertingSalesParticipation": {
+    "message": "판매 참여 전환",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "salesConvertLeadModalConvertLeadToContact": {
+    "message": "리드를 연락처로 변환",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "contactFormModalRecordType": {
+    "message": "레코드 유형",
+    "description": "Auto-migrated from contactFormModal"
+  },
+  "peopleCreateChooseHowYouWantToAdd": {
+    "message": "이 사람을 추가할 방법을 선택하세요. 이 인텐트는 전체 생성 세션 동안 잠깁니다.",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreateSelectIntent": {
+    "message": "의도 선택",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreateError": {
+    "message": "오류",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreateResolvingAppContext": {
+    "message": "앱 컨텍스트 확인 중...",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreatePleaseSelectWhichAppToUse": {
+    "message": "사용할 앱을 선택하세요:",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreateTypeOwnershipAmbiguity": {
+    "message": "유형 소유권 모호성",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreatePleaseSelectAnAppContextTo": {
+    "message": "사람을 만들려면 앱 컨텍스트를 선택하세요.",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreateAmbiguousAppContext": {
+    "message": "모호한 앱 컨텍스트",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleDetailThisActionWillBeLoggedIn": {
+    "message": "이 작업은 활동 타임라인에 기록됩니다.",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailContactStatusWillBeSetTo": {
+    "message": "연락처 상태가 활성으로 설정됩니다(아직 설정되지 않은 경우).",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailLeadSpecificFieldsWillBeCleared": {
+    "message": "리드 관련 필드가 지워집니다.",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailPersonsRoleChangesFromLeadTo": {
+    "message": "개인의 역할이 리드에서 담당자로 변경됩니다.",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailThisWillUpdateThisPersonsRole": {
+    "message": "그러면 영업에서 이 사람의 역할이 업데이트됩니다.",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailConvertSalesLeadToContact": {
+    "message": "영업 리드를 연락처로 전환",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailReEngage": {
+    "message": "재참여",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailNurturing": {
+    "message": "육성",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailDisqualified": {
+    "message": "실격",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailQualified": {
+    "message": "자격 있는",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailContacted": {
+    "message": "연락함",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailSelectStatus": {
+    "message": "상태 선택...",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailLeadStatus": {
+    "message": "리드 상태",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailInfluencer": {
+    "message": "인플루언서",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailDecisionMaker": {
+    "message": "의사결정자",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailSelectRole": {
+    "message": "역할 선택...",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailDoNotContact": {
+    "message": "연락하지 마세요",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailSelectStatus2": {
+    "message": "상태 선택...",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailContactStatus": {
+    "message": "연락처 상태",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailYouAreAddingThisPersonTo": {
+    "message": "이 사람을 다음에 추가하고 있습니다.",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailThisPersonIsAlreadyPartOf": {
+    "message": "이 사람은 이미 사용 가능한 모든 앱의 일부입니다.",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAllAppsAttached": {
+    "message": "연결된 모든 앱",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailChooseHowYouWantToAdd": {
+    "message": "이 사람을 앱에 추가할 방법을 선택하세요.",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailSelectIntent": {
+    "message": "의도 선택",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailValidationErrors": {
+    "message": "검증 오류",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAddThisPersonToAnotherApp": {
+    "message": "이 사람을 다른 앱에 추가",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAttachToApp": {
+    "message": "앱에 연결",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailImmutableAuditStreamForThisPerson": {
+    "message": "이 사람에 대한 변경 불가능한 감사 스트림",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailActivityTimeline": {
+    "message": "활동 타임라인",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailEntity": {
+    "message": "실재",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAppAwareAttachmentsForThisPerson": {
+    "message": "이 사람에 대한 앱 인식 첨부 파일",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailFiles": {
+    "message": "파일",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailEntity2": {
+    "message": "실재",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAppAwareNotesForThisPerson": {
+    "message": "이 사람을 위한 앱 인식 메모",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailEntity3": {
+    "message": "실재",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailChangesThisPersonsRoleWithinSales": {
+    "message": "영업 내에서 이 사람의 역할을 변경합니다.",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAppSpecificFields": {
+    "message": "앱별 필드",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailDoNotContact2": {
+    "message": "연락하지 마세요",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailMobileNumber": {
+    "message": "휴대폰 번호",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailMobile": {
+    "message": "이동하는",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailLastUpdated": {
+    "message": "마지막 업데이트",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailDoNotContact3": {
+    "message": "연락하지 마세요",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailCreatedVia": {
+    "message": "다음을 통해 생성됨",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailSharedAcrossAllApps": {
+    "message": "모든 앱에서 공유됨",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailCoreInformation": {
+    "message": "핵심정보",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailEntity4": {
+    "message": "실재",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailThisPersonIsAlreadyPartOf2": {
+    "message": "이 사람은 이미 사용 가능한 모든 앱의 일부입니다.",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAddsThisPersonToANew": {
+    "message": "복제본을 생성하지 않고 이 사람을 새 앱에 추가합니다.",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAttachToAnotherApp": {
+    "message": "다른 앱에 연결",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAddThisPersonToAnotherApp2": {
+    "message": "이 사람을 다른 앱에 추가",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAttachToApp2": {
+    "message": "앱에 연결",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAppContext": {
+    "message": "앱 컨텍스트",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailViewingIn": {
+    "message": "보기",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailErrorLoadingProfile": {
+    "message": "프로필을 로드하는 중 오류가 발생했습니다.",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleQuickCreateCreatePerson": {
+    "message": "사람 만들기",
+    "description": "Auto-migrated from peopleQuickCreate"
+  },
+  "peopleQuickCreateError": {
+    "message": "오류",
+    "description": "Auto-migrated from peopleQuickCreate"
+  },
+  "peopleQuickCreateLoadingFields": {
+    "message": "필드 로드 중...",
+    "description": "Auto-migrated from peopleQuickCreate"
+  },
+  "peopleQuickCreateCreateACorePersonIdentity": {
+    "message": "핵심 개인 신원 만들기",
+    "description": "Auto-migrated from peopleQuickCreate"
+  },
+  "peopleQuickCreateAddPerson": {
+    "message": "사람 추가",
+    "description": "Auto-migrated from peopleQuickCreate"
+  },
+  "peopleSurfaceThisPersonIsAlreadyPartOf": {
+    "message": "이 사람은 이미 사용 가능한 모든 앱의 일부입니다.",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceAllAppsAttached": {
+    "message": "연결된 모든 앱",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceChooseHowYouWantToAdd": {
+    "message": "이 사람을 앱에 추가할 방법을 선택하세요.",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceSelectIntent": {
+    "message": "의도 선택",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceValidationErrors": {
+    "message": "검증 오류",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceAddThisPersonToAnotherApp": {
+    "message": "이 사람을 다른 앱에 추가",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceAttachToApp": {
+    "message": "앱에 연결",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceActionAvailability": {
+    "message": "작업 가용성",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceErrorLoadingProfile": {
+    "message": "프로필을 로드하는 중 오류가 발생했습니다.",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "contactDetailNoTasks": {
+    "message": "작업 없음",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailNoDeals": {
+    "message": "거래 없음",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailNoOrg": {
+    "message": "조직 없음",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailRelations": {
+    "message": "처지",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailDoNotContact": {
+    "message": "연락하지 마세요",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailBackToContacts": {
+    "message": "연락처로 돌아가기",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailErrorLoadingContact": {
+    "message": "연락처를 로드하는 중 오류가 발생했습니다.",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailLoadingContact": {
+    "message": "연락처 로드 중...",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactFormModalToastFailedToSaveContactPlease": {
+    "message": "연락처를 저장하지 못했습니다. 자세한 내용은 콘솔을 확인해주세요.",
+    "description": "Toast from ContactFormModal.vue"
+  },
+  "statusDropdownToastFailedToUpdateStatus": {
+    "message": "상태를 업데이트하지 못했습니다.",
+    "description": "Toast from StatusDropdown.vue"
+  },
+  "statusDropdownToastErrorUpdatingStatus": {
+    "message": "상태를 업데이트하는 중에 오류가 발생했습니다.",
+    "description": "Toast from StatusDropdown.vue"
+  },
+  "sysFieldAssignedTo": {
+    "message": "할당 대상",
+    "description": "System people field label"
+  },
+  "sysFieldEmail": {
+    "message": "이메일",
+    "description": "System people field label"
+  },
+  "sysFieldPhone": {
+    "message": "핸드폰",
+    "description": "System people field label"
+  },
+  "sysFieldMobile": {
+    "message": "이동하는",
+    "description": "System people field label"
+  },
+  "sysFieldFirstName": {
+    "message": "이름",
+    "description": "System people field label"
+  },
+  "sysFieldLastName": {
+    "message": "성",
+    "description": "System people field label"
+  },
+  "sysFieldName": {
+    "message": "이름",
+    "description": "System people field label"
+  },
+  "sysFieldOrganization": {
+    "message": "조직",
+    "description": "System people field label"
+  },
+  "sysFieldDescription": {
+    "message": "설명",
+    "description": "System people field label"
+  },
+  "sysFieldTags": {
+    "message": "태그",
+    "description": "System people field label"
+  },
+  "sysFieldDoNotContact": {
+    "message": "연락하지 마세요",
+    "description": "System people field label"
+  },
+  "sysFieldTitle": {
+    "message": "제목",
+    "description": "System people field label"
+  },
+  "sysFieldType": {
+    "message": "유형",
+    "description": "System people field label"
+  },
+  "sysFieldStatus": {
+    "message": "상태",
+    "description": "System people field label"
+  },
+  "sysFieldSource": {
+    "message": "원천",
+    "description": "System people field label"
+  },
+  "sysFieldOwner": {
+    "message": "소유자",
+    "description": "System people field label"
+  },
+  "sysFieldCreatedBy": {
+    "message": "작성자",
+    "description": "System people field label"
+  },
+  "contextAllApps": {
+    "message": "All Apps",
+    "description": "People list app context tab"
+  },
+  "listViewAll": {
+    "message": "All People",
+    "description": "People list default view title"
+  },
+  "listViewMy": {
+    "message": "My People",
+    "description": "People list assigned-to-me view title"
+  },
+  "listCreate": {
+    "message": "New Person",
+    "description": "People list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "Search people...",
+    "description": "People list search placeholder"
+  },
+  "listStatTotal": {
+    "message": "Total People",
+    "description": "People list statistics card"
+  },
+  "listStatWithOrganization": {
+    "message": "With Organization",
+    "description": "People list statistics card"
+  },
+  "listStatWithoutOrganization": {
+    "message": "Without Organization",
+    "description": "People list statistics card"
+  }
+}

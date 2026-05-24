@@ -1,0 +1,330 @@
+{
+  "organizationAuditWidgetNoAuditHistoryAvailable": {
+    "message": "감사 내역이 없습니다.",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetDownloadReport": {
+    "message": "보고서 다운로드",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetCompliance": {
+    "message": "규정 준수:",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetScore": {
+    "message": "점수:",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetTrend": {
+    "message": "경향",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetTotalAudits": {
+    "message": "총 감사",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetLoadingAuditHistory": {
+    "message": "감사 기록 ​​로드 중...",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetViewAll": {
+    "message": "모두 보기",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationAuditWidgetAuditHistory": {
+    "message": "감사 내역",
+    "description": "Auto-migrated from organizationAuditWidget"
+  },
+  "organizationQuickCreateDrawerBackToQuick": {
+    "message": "빠른으로 돌아가기",
+    "description": "Auto-migrated from organizationQuickCreateDrawer"
+  },
+  "organizationQuickCreateDrawerFullForm": {
+    "message": "전체 형태",
+    "description": "Auto-migrated from organizationQuickCreateDrawer"
+  },
+  "organizationQuickCreateDrawerOtherFields": {
+    "message": "기타 분야",
+    "description": "Auto-migrated from organizationQuickCreateDrawer"
+  },
+  "organizationQuickCreateDrawerQuickCreateFields": {
+    "message": "빠른 생성 필드",
+    "description": "Auto-migrated from organizationQuickCreateDrawer"
+  },
+  "relatedContactsWidgetAddContact": {
+    "message": "연락처 추가",
+    "description": "Auto-migrated from relatedContactsWidget"
+  },
+  "relatedContactsWidgetNoContactsLinkedYetLinkContacts": {
+    "message": "아직 연결된 연락처가 없습니다. 연락처를 여기에서 보려면 이 조직에 연락처를 연결하세요.",
+    "description": "Auto-migrated from relatedContactsWidget"
+  },
+  "relatedContactsWidgetAddContact2": {
+    "message": "연락처 추가",
+    "description": "Auto-migrated from relatedContactsWidget"
+  },
+  "relatedContactsWidgetLinkContacts": {
+    "message": "연락처 링크",
+    "description": "Auto-migrated from relatedContactsWidget"
+  },
+  "relatedContactsWidgetRelatedContacts": {
+    "message": "관련 연락처",
+    "description": "Auto-migrated from relatedContactsWidget"
+  },
+  "relatedOrganizationWidgetNoOrganizationLinked": {
+    "message": "연결된 조직 없음",
+    "description": "Auto-migrated from relatedOrganizationWidget"
+  },
+  "relatedOrganizationWidgetLinkOrganization": {
+    "message": "링크 조직",
+    "description": "Auto-migrated from relatedOrganizationWidget"
+  },
+  "relatedOrganizationWidgetRelatedOrganizations": {
+    "message": "관련 기관",
+    "description": "Auto-migrated from relatedOrganizationWidget"
+  },
+  "relatedUsersWidgetAddUser": {
+    "message": "사용자 추가",
+    "description": "Auto-migrated from relatedUsersWidget"
+  },
+  "relatedUsersWidgetNoUsersLinkedYetLinkUsers": {
+    "message": "아직 연결된 사용자가 없습니다. 사용자를 이 조직에 연결하면 여기에서 볼 수 있습니다.",
+    "description": "Auto-migrated from relatedUsersWidget"
+  },
+  "relatedUsersWidgetAddUser2": {
+    "message": "사용자 추가",
+    "description": "Auto-migrated from relatedUsersWidget"
+  },
+  "relatedUsersWidgetRelatedUsers": {
+    "message": "관련 사용자",
+    "description": "Auto-migrated from relatedUsersWidget"
+  },
+  "organizationSurfaceRecentActivity": {
+    "message": "최근 활동",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceActionAvailability": {
+    "message": "작업 가용성",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceEmployees": {
+    "message": "직원:",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceRevenue": {
+    "message": "수익:",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceAddress": {
+    "message": "주소:",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfacePhone": {
+    "message": "핸드폰:",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceWebsite": {
+    "message": "웹사이트:",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceTheseDetailsAreManagedByThe": {
+    "message": "이러한 세부정보는 이를 사용하는 앱(예: 영업, 헬프데스크)에서 관리됩니다.",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceEditBusinessDetails": {
+    "message": "비즈니스 세부정보 수정",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceBusinessDetails": {
+    "message": "사업내용",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceWorkExistsForThisApp": {
+    "message": "이 앱에 대한 작업이 존재합니다.",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfacePeopleAssociatedWithThisOrganization": {
+    "message": "이 조직과 관련된 사람들",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfacePrimaryContact": {
+    "message": "기본 연락처:",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceTryAgain": {
+    "message": "다시 시도하세요",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "organizationSurfaceErrorLoadingOrganization": {
+    "message": "조직을 로드하는 중 오류가 발생했습니다.",
+    "description": "Auto-migrated from organizationSurface"
+  },
+  "createOrganizationSurfaceStreetAddressCityStateZip": {
+    "message": "거리 주소, 시, 주, 우편번호",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceAddress": {
+    "message": "주소",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceHttpsExampleCom": {
+    "message": "https://example.com",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceWebsite": {
+    "message": "웹사이트",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceEGTechnologyHealthcareManufacturing": {
+    "message": "예: 기술, 의료, 제조",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceOptionalBusinessContext": {
+    "message": "선택적 비즈니스 컨텍스트",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceSelectStatus": {
+    "message": "상태 선택...",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceSelectStatus2": {
+    "message": "상태 선택...",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceSelectStatus3": {
+    "message": "상태 선택...",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceTypesCannotBeChangedOnceThe": {
+    "message": "조직이 사용 중이면 유형을 변경할 수 없습니다.",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceOrganizationName": {
+    "message": "조직 이름",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceCoreBusinessIdentity": {
+    "message": "핵심 비즈니스 정체성",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceError": {
+    "message": "오류",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceLoadingOrganizationData": {
+    "message": "조직 데이터 로드 중...",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "createOrganizationSurfaceValidationErrors": {
+    "message": "검증 오류",
+    "description": "Auto-migrated from createOrganizationSurface"
+  },
+  "groupsNoGroupsFound": {
+    "message": "그룹을 찾을 수 없습니다.",
+    "description": "Auto-migrated from groups"
+  },
+  "groupsOrganizeUsersIntoTeamsAndDepartments": {
+    "message": "사용자를 팀과 부서로 구성",
+    "description": "Auto-migrated from groups"
+  },
+  "groupsGroups": {
+    "message": "여러 떼",
+    "description": "Auto-migrated from groups"
+  },
+  "groupDetailSelectAUser": {
+    "message": "사용자를 선택하세요...",
+    "description": "Auto-migrated from groupDetail"
+  },
+  "groupDetailAddMember": {
+    "message": "회원 추가",
+    "description": "Auto-migrated from groupDetail"
+  },
+  "groupDetailNoMembersYetAddMembersTo": {
+    "message": "아직 회원이 없습니다. 시작하려면 구성원을 추가하세요.",
+    "description": "Auto-migrated from groupDetail"
+  },
+  "groupDetailRemoveMember": {
+    "message": "회원 삭제",
+    "description": "Auto-migrated from groupDetail"
+  },
+  "groupDetailAddMember2": {
+    "message": "회원 추가",
+    "description": "Auto-migrated from groupDetail"
+  },
+  "groupDetailLoadingGroup": {
+    "message": "그룹 로드 중...",
+    "description": "Auto-migrated from groupDetail"
+  },
+  "organizationFormModalToastFailedToSaveOrganization": {
+    "message": "조직을 저장하지 못했습니다.",
+    "description": "Toast from OrganizationFormModal.vue"
+  },
+  "sysFieldName": {
+    "message": "이름",
+    "description": "System organization field label"
+  },
+  "sysFieldEmail": {
+    "message": "이메일",
+    "description": "System organization field label"
+  },
+  "sysFieldPhone": {
+    "message": "핸드폰",
+    "description": "System organization field label"
+  },
+  "sysFieldWebsite": {
+    "message": "웹사이트",
+    "description": "System organization field label"
+  },
+  "sysFieldIndustry": {
+    "message": "산업",
+    "description": "System organization field label"
+  },
+  "sysFieldAssignedTo": {
+    "message": "할당 대상",
+    "description": "System organization field label"
+  },
+  "sysFieldDescription": {
+    "message": "설명",
+    "description": "System organization field label"
+  },
+  "sysFieldTags": {
+    "message": "태그",
+    "description": "System organization field label"
+  },
+  "listViewAll": {
+    "message": "All Organizations",
+    "description": "Organizations list default view title"
+  },
+  "listViewMy": {
+    "message": "My Organizations",
+    "description": "Organizations list assigned-to-me view title"
+  },
+  "listViewActive": {
+    "message": "Active",
+    "description": "Organizations list active view title"
+  },
+  "listViewTrial": {
+    "message": "Trial",
+    "description": "Organizations list trial view title"
+  },
+  "listCreate": {
+    "message": "New Organization",
+    "description": "Organizations list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "Search organizations...",
+    "description": "Organizations list search placeholder"
+  },
+  "listStatTotal": {
+    "message": "Total Organizations",
+    "description": "Organizations list statistics card"
+  },
+  "listStatActive": {
+    "message": "Active",
+    "description": "Organizations list statistics card"
+  },
+  "listStatTrial": {
+    "message": "Trial",
+    "description": "Organizations list statistics card"
+  }
+}

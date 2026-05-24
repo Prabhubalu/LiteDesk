@@ -51,18 +51,18 @@
 
       <!-- Findings Summary -->
       <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Findings Summary</h2>
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">{{ t('audit.portalAuditDetailFindingsSummary') }}</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-            <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Findings</p>
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{{ t('audit.portalAuditDetailTotalFindings') }}</p>
             <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ findingsSummary.total || 0 }}</p>
           </div>
           <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-            <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Open</p>
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.salesPipeStatusOpen') }}</p>
             <p class="text-2xl font-bold text-amber-600 dark:text-amber-400">{{ findingsSummary.open || 0 }}</p>
           </div>
           <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-            <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Closed</p>
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.settingsBhClosed') }}</p>
             <p class="text-2xl font-bold text-green-600 dark:text-green-400">{{ findingsSummary.closed || 0 }}</p>
           </div>
         </div>
@@ -70,15 +70,15 @@
 
       <!-- Corrective Actions -->
       <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Corrective Actions</h2>
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">{{ t('forms.reportCorrectiveActions') }}</h2>
         
         <!-- Empty State -->
         <div v-if="correctiveActions.length === 0" class="text-center py-12">
           <svg class="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <p class="text-gray-600 dark:text-gray-400 mb-2">No corrective actions</p>
-          <p class="text-sm text-gray-500 dark:text-gray-500">All findings have been addressed</p>
+          <p class="text-gray-600 dark:text-gray-400 mb-2">{{ t('audit.portalAuditDetailNoCorrectiveActions') }}</p>
+          <p class="text-sm text-gray-500 dark:text-gray-500">{{ t('audit.portalAuditDetailAllFindingsHaveBeenAddressed') }}</p>
         </div>
 
         <!-- Corrective Actions List -->
@@ -118,14 +118,12 @@
               v-if="canUploadEvidence && action.status === 'OPEN'"
               class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700"
             >
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Upload Evidence</h4>
+              <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('audit.portalAuditDetailUploadEvidence2') }}</h4>
               
               <!-- Upload Form -->
               <div class="space-y-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Files
-                  </label>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('audit.portalAuditDetailFiles') }}</label>
                   <input
                     type="file"
                     ref="fileInput"
@@ -136,14 +134,12 @@
                 </div>
                 
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Comments
-                  </label>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('records.activityFilterComments') }}</label>
                   <textarea
                     v-model="actionComments[action._id || action.id]"
                     rows="3"
                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
-                    placeholder="Add any additional comments..."
+                    :placeholder="t('audit.portalAuditDetailAddAnyAdditionalComments')"
                   ></textarea>
                 </div>
 
@@ -152,15 +148,15 @@
                   :disabled="uploadingEvidence[action._id || action.id]"
                   class="w-full lg:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  <span v-if="uploadingEvidence[action._id || action.id]">Uploading...</span>
-                  <span v-else>Upload Evidence</span>
+                  <span v-if="uploadingEvidence[action._id || action.id]">{{ t('common.formUploading') }}</span>
+                  <span v-else>{{ t('audit.portalAuditDetailUploadEvidence') }}</span>
                 </button>
               </div>
             </div>
 
             <!-- Evidence List -->
             <div v-if="action.evidence && action.evidence.length > 0" class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Uploaded Evidence</h4>
+              <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('audit.portalAuditDetailUploadedEvidence') }}</h4>
               <div class="space-y-2">
                 <div
                   v-for="(evidence, idx) in action.evidence"
@@ -181,9 +177,7 @@
                     :href="evidence.url"
                     target="_blank"
                     class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
-                  >
-                    Download
-                  </a>
+                  >{{ t('audit.portalAuditDetailDownload') }}</a>
                 </div>
               </div>
             </div>
@@ -193,11 +187,11 @@
 
       <!-- Timeline (Read-Only) -->
       <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Timeline</h2>
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">{{ t('audit.portalAuditDetailTimeline') }}</h2>
         
         <!-- Empty State -->
         <div v-if="timeline.length === 0" class="text-center py-8">
-          <p class="text-gray-600 dark:text-gray-400">No timeline events</p>
+          <p class="text-gray-600 dark:text-gray-400">{{ t('audit.portalAuditDetailNoTimelineEvents') }}</p>
         </div>
 
         <!-- Timeline List -->
@@ -233,6 +227,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';

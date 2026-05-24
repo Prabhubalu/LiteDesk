@@ -1,0 +1,422 @@
+{
+  "settings": {
+    "message": "Настройки",
+    "description": "Settings area navigation label"
+  },
+  "home": {
+    "message": "Дом",
+    "description": "Home dashboard navigation label"
+  },
+  "profile": {
+    "message": "Профиль",
+    "description": "User profile settings navigation label"
+  },
+  "inbox": {
+    "message": "Входящие",
+    "description": "Communications inbox navigation label"
+  },
+  "signOut": {
+    "message": "выход",
+    "description": "Sign out of the application"
+  },
+  "noNav": {
+    "message": "Нет доступной навигации",
+    "description": "Empty sidebar when no modules are configured"
+  },
+  "userMenu": {
+    "message": "Меню пользователя",
+    "description": "User avatar menu aria-label"
+  },
+  "toggleMenu": {
+    "message": "Переключить меню",
+    "description": "Mobile navigation menu toggle"
+  },
+  "closeSidebar": {
+    "message": "Закрыть боковую панель",
+    "description": "Screen reader label for mobile drawer close"
+  },
+  "openSidebar": {
+    "message": "Открыть боковую панель",
+    "description": "Screen reader label for mobile drawer open"
+  },
+  "syncStatus": {
+    "message": "Статус синхронизации",
+    "description": "Audit offline sync status button"
+  },
+  "portalAudits": {
+    "message": "Аудиты",
+    "description": "Portal bottom nav audits tab"
+  },
+  "portalActions": {
+    "message": "Действия",
+    "description": "Portal bottom nav actions tab"
+  },
+  "collapseSidebar": {
+    "message": "Свернуть боковую панель",
+    "description": "Collapse app sidebar tooltip"
+  },
+  "coreModules": {
+    "message": "Основные модули",
+    "description": "Core modules section tooltip"
+  },
+  "coreSection": {
+    "message": "Основной",
+    "description": "Core modules section heading"
+  },
+  "help": {
+    "message": "Помощь",
+    "description": "Sidebar help link"
+  },
+  "loadingNavigation": {
+    "message": "Загрузка навигации",
+    "description": "Sidebar skeleton aria-label"
+  },
+  "salesAppFallback": {
+    "message": "Продажи",
+    "description": "Default app name when active app is unset"
+  },
+  "tabClose": {
+    "message": "Закрывать",
+    "description": "Close single tab context menu item"
+  },
+  "tabCloseOthers": {
+    "message": "Закрыть других",
+    "description": "Close other tabs context menu item"
+  },
+  "tabCloseToRight": {
+    "message": "Закрыть вкладки справа",
+    "description": "Close tabs to the right context menu item"
+  },
+  "tabCloseAll": {
+    "message": "Закрыть все вкладки",
+    "description": "Close all tabs context menu item"
+  },
+  "tabAccount": {
+    "message": "Счет",
+    "description": "Tab bar account menu tooltip"
+  },
+  "tabCloseTab": {
+    "message": "Закрыть вкладку",
+    "description": "Close tab button aria-label"
+  },
+  "globalSearchPlaceholder": {
+    "message": "Найдите или выполните команду…",
+    "description": "Global search modal input placeholder"
+  },
+  "globalSearchSearching": {
+    "message": "Идет поиск…",
+    "description": "Global search loading state"
+  },
+  "globalSearchNoCommands": {
+    "message": "Нет подходящих команд",
+    "description": "Command palette no matches"
+  },
+  "globalSearchNoCommandsHint": {
+    "message": "Попробуйте другую команду или нажмите ESC для выхода.",
+    "description": "Command palette no matches hint"
+  },
+  "globalSearchNoResults": {
+    "message": "Результаты не найдены",
+    "description": "Global search no entity results"
+  },
+  "globalSearchNoResultsHint": {
+    "message": "Попробуйте выполнить поиск по имени, адресу электронной почты или ключевому слову.",
+    "description": "Global search no results hint"
+  },
+  "globalSearchConfirmTitle": {
+    "message": "Вы уверены?",
+    "description": "Destructive command confirmation title"
+  },
+  "globalSearchToCancel": {
+    "message": "отменить",
+    "description": "Keyboard hint fragment after ESC"
+  },
+  "globalSearchToConfirm": {
+    "message": "подтвердить",
+    "description": "Keyboard hint fragment after Enter"
+  },
+  "globalSearchCommandsHeader": {
+    "message": "Команды",
+    "description": "Command palette section header"
+  },
+  "globalSearchTypeToFind": {
+    "message": "Введите, чтобы найти команду",
+    "description": "Command palette empty query hint"
+  },
+  "globalSearchStartTyping": {
+    "message": "Начните вводить текст для поиска",
+    "description": "Search mode empty state"
+  },
+  "globalSearchSlashHint": {
+    "message": "Используйте / для создания, ссылки или навигации.",
+    "description": "Discoverability hint for command mode trigger"
+  },
+  "globalSearchGroupPeople": {
+    "message": "Люди",
+    "description": "Search results group label"
+  },
+  "globalSearchGroupOrganizations": {
+    "message": "Организации",
+    "description": "Search results group label"
+  },
+  "globalSearchGroupWork": {
+    "message": "Работа",
+    "description": "Search results group label"
+  },
+  "globalSearchGroupConfiguration": {
+    "message": "Конфигурация",
+    "description": "Search results group label"
+  },
+  "globalSearchUnknownUser": {
+    "message": "Неизвестный пользователь",
+    "description": "Fallback display name in search"
+  },
+  "globalSearchLinkModule": {
+    "message": "Ссылка {module}",
+    "description": "Link drawer title when module name capitalized"
+  },
+  "userAccountFallback": {
+    "message": "Ваш аккаунт",
+    "description": "User menu display name fallback"
+  },
+  "userStatusLabel": {
+    "message": "Статус: {label}",
+    "description": "User menu status dot aria-label"
+  },
+  "userClearStatus": {
+    "message": "Очистить статус",
+    "description": "Clear custom status button title"
+  },
+  "userSetAvailability": {
+    "message": "Установить доступность",
+    "description": "Availability picker listbox aria-label"
+  },
+  "userSetCustomStatus": {
+    "message": "Установить собственный статус…",
+    "description": "Open custom status editor"
+  },
+  "userEditCustomStatus": {
+    "message": "Изменить пользовательский статус…",
+    "description": "Edit existing custom status"
+  },
+  "userStatusPlaceholder": {
+    "message": "Какой у тебя статус?",
+    "description": "Custom status input placeholder"
+  },
+  "userPickEmoji": {
+    "message": "Выберите смайлик",
+    "description": "Emoji picker button title"
+  },
+  "userYourProfile": {
+    "message": "Ваш профиль",
+    "description": "User menu profile link"
+  },
+  "userControlPanel": {
+    "message": "Панель управления",
+    "description": "Admin control panel link"
+  },
+  "userBookingPages": {
+    "message": "Страницы бронирования",
+    "description": "User menu appointments link"
+  },
+  "userTrash": {
+    "message": "Мусор",
+    "description": "User menu trash link"
+  },
+  "userSwitchToLight": {
+    "message": "Переключиться в светлый режим",
+    "description": "Theme toggle label when dark"
+  },
+  "userSwitchToDark": {
+    "message": "Переключиться в темный режим",
+    "description": "Theme toggle label when light"
+  },
+  "tabBookingPages": {
+    "message": "Страницы бронирования",
+    "description": "Tab title for appointments pages"
+  },
+  "approvals": {
+    "message": "Разрешения",
+    "description": "Approvals shell navigation label"
+  },
+  "attention": {
+    "message": "Внимание",
+    "description": "Attention shell navigation label"
+  },
+  "search": {
+    "message": "Поиск",
+    "description": "Search shell navigation label"
+  },
+  "dashboard": {
+    "message": "Обзор",
+    "description": "App dashboard navigation label"
+  },
+  "modulePeople": {
+    "message": "Люди",
+    "description": "People module navigation label"
+  },
+  "moduleContacts": {
+    "message": "Контакты",
+    "description": "Contacts module navigation label"
+  },
+  "moduleOrganizations": {
+    "message": "Организации",
+    "description": "Organizations module navigation label"
+  },
+  "moduleTasks": {
+    "message": "Задачи",
+    "description": "Tasks module navigation label"
+  },
+  "moduleEvents": {
+    "message": "События",
+    "description": "Events module navigation label"
+  },
+  "moduleForms": {
+    "message": "Формы",
+    "description": "Forms module navigation label"
+  },
+  "moduleItems": {
+    "message": "Предметы",
+    "description": "Items module navigation label"
+  },
+  "moduleDeals": {
+    "message": "Сделки",
+    "description": "Deals module navigation label"
+  },
+  "moduleResponses": {
+    "message": "Ответы",
+    "description": "Form responses module navigation label"
+  },
+  "moduleImports": {
+    "message": "Импорт",
+    "description": "Imports module navigation label"
+  },
+  "moduleCases": {
+    "message": "Случаи",
+    "description": "Helpdesk cases module navigation label"
+  },
+  "moduleFindings": {
+    "message": "Выводы",
+    "description": "Audit findings module navigation label"
+  },
+  "moduleAudits": {
+    "message": "Аудиты",
+    "description": "Audits module navigation label"
+  },
+  "appSales": {
+    "message": "Продажи",
+    "description": "Sales app name in app switcher"
+  },
+  "appAudit": {
+    "message": "Аудит",
+    "description": "Audit app name in app switcher"
+  },
+  "appHelpdesk": {
+    "message": "Служба поддержки",
+    "description": "Helpdesk app name in app switcher"
+  },
+  "appProjects": {
+    "message": "Проекты",
+    "description": "Projects app name in app switcher"
+  },
+  "appPortal": {
+    "message": "Портал",
+    "description": "Portal app name in app switcher"
+  },
+  "salesDashboard": {
+    "message": "Панель продаж",
+    "description": "Sales dashboard tab title"
+  },
+  "auditDashboard": {
+    "message": "Панель аудита",
+    "description": "Audit dashboard tab title"
+  },
+  "appDashboard": {
+    "message": "{app} Панель мониторинга",
+    "description": "App-scoped dashboard tab title"
+  },
+  "tabDemoRequests": {
+    "message": "Запросы на демонстрацию",
+    "description": "Demo requests tab title"
+  },
+  "tabInstances": {
+    "message": "Экземпляры",
+    "description": "Instances tab title"
+  },
+  "tabAutomationRules": {
+    "message": "Правила автоматизации",
+    "description": "Automation rules tab title"
+  },
+  "tabProcesses": {
+    "message": "Процессы",
+    "description": "Processes tab title"
+  },
+  "tabBusinessFlows": {
+    "message": "Бизнес-потоки",
+    "description": "Business flows tab title"
+  },
+  "tabAutomation": {
+    "message": "Автоматизация",
+    "description": "Automation settings tab title"
+  },
+  "tabFlowHealth": {
+    "message": "Здоровье потока",
+    "description": "Business flow health tab title"
+  },
+  "tabEditBusinessFlow": {
+    "message": "Редактировать бизнес-поток",
+    "description": "Edit business flow tab title"
+  },
+  "tabCreateBusinessFlow": {
+    "message": "Создать бизнес-поток",
+    "description": "Create business flow tab title"
+  },
+  "tabBusinessFlow": {
+    "message": "Бизнес-поток",
+    "description": "Business flow detail tab title"
+  },
+  "tabMyAudits": {
+    "message": "Мои аудиты",
+    "description": "My audits tab title"
+  },
+  "tabAuditDetail": {
+    "message": "Подробности аудита",
+    "description": "Audit detail tab title"
+  },
+  "tabPersonalBooking": {
+    "message": "Персональная страница бронирования",
+    "description": "Personal booking page tab title"
+  },
+  "tabTeamBooking": {
+    "message": "Страница бронирования команды",
+    "description": "Team booking page tab title"
+  },
+  "tabNewTeamPage": {
+    "message": "Новая страница команды",
+    "description": "New team booking page tab title"
+  },
+  "tabBookingPage": {
+    "message": "Страница бронирования",
+    "description": "User booking page tab title"
+  },
+  "tabCaseDetail": {
+    "message": "Подробности дела",
+    "description": "Helpdesk case detail tab title"
+  },
+  "tabFormResponseDetail": {
+    "message": "({id}) Подробности",
+    "description": "Form response detail tab title"
+  },
+  "tabRecordNamed": {
+    "message": "{module}: {name}",
+    "description": "Record tab with entity name"
+  },
+  "tabRecordDetail": {
+    "message": "{module} Подробности",
+    "description": "Record detail tab title without name"
+  },
+  "tabPage": {
+    "message": "Страница",
+    "description": "Generic fallback tab title"
+  }
+}

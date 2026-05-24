@@ -4,6 +4,7 @@ const { protect } = require('../middleware/authMiddleware');
 const { requireAdmin } = require('../middleware/permissionMiddleware');
 const {
   getAllProcesses,
+  getDesignerMetadata,
   getProcessById,
   createProcess,
   updateProcess,
@@ -11,6 +12,8 @@ const {
   duplicateProcess,
   testProcess,
   getProcessExecutions,
+  getExecutionGraphState,
+  rotateProcessWebhookSecret,
   deleteProcess
 } = require('../controllers/processController');
 
@@ -20,6 +23,7 @@ router.use(requireAdmin());
 
 // CRUD endpoints
 router.get('/', getAllProcesses);
+router.get('/designer-metadata', getDesignerMetadata);
 router.get('/:id', getProcessById);
 router.post('/', createProcess);
 router.put('/:id', updateProcess);
@@ -30,7 +34,9 @@ router.put('/:id/status', updateProcessStatus);
 
 // Process operations
 router.post('/:id/duplicate', duplicateProcess);
+router.post('/:id/webhook/rotate-secret', rotateProcessWebhookSecret);
 router.post('/:id/test', testProcess);
 router.get('/:id/executions', getProcessExecutions);
+router.get('/:id/executions/:executionId/graph-state', getExecutionGraphState);
 
 module.exports = router;

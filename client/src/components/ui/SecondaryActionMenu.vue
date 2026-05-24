@@ -5,7 +5,7 @@
       @click="toggleMenu"
       class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors flex items-center justify-center min-w-[40px] min-h-[40px]"
       :aria-expanded="isOpen"
-      aria-label="More actions"
+      :aria-label="t('common.moreActions')"
     >
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
@@ -51,7 +51,10 @@
 
 <script setup>
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import clickOutside from '@/directives/clickOutside';
+
+const { t } = useI18n();
 
 const props = defineProps({
   actions: {

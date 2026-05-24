@@ -4,18 +4,16 @@
     <div v-if="loading" class="flex items-center justify-center min-h-screen">
       <div class="text-center">
         <div class="w-16 h-16 border-4 border-gray-200 dark:border-gray-700 border-t-indigo-600 dark:border-t-indigo-500 rounded-full animate-spin mx-auto mb-4"></div>
-        <p class="text-gray-600 dark:text-gray-400 font-medium">Loading contact...</p>
+        <p class="text-gray-600 dark:text-gray-400 font-medium">{{ t('people.contactDetailLoadingContact') }}</p>
       </div>
     </div>
 
     <!-- Error -->
     <div v-else-if="error" class="flex items-center justify-center min-h-screen p-4">
       <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Error Loading Contact</h2>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ t('people.contactDetailErrorLoadingContact') }}</h2>
         <p class="text-gray-600 dark:text-gray-400 mb-6">{{ error }}</p>
-        <button @click="$router.push('/people')" class="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium">
-          Back to Contacts
-        </button>
+        <button @click="$router.push('/people')" class="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium">{{ t('people.contactDetailBackToContacts') }}</button>
       </div>
     </div>
 
@@ -27,22 +25,18 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          <span class="font-medium">Back</span>
+          <span class="font-medium">{{ t('performance.back') }}</span>
         </button>
 
         <div class="flex items-center gap-2">
           <button @click="editContact" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 font-medium text-gray-700 dark:text-gray-300 transition-all">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-            Edit
-          </button>
+            </svg>{{ t('settings.groupsEditTitle') }}</button>
           <button @click="deleteContact" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-all">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-            Delete
-          </button>
+            </svg>{{ t('settings.modFieldsDelete') }}</button>
         </div>
       </div>
 
@@ -173,13 +167,13 @@
                 <svg class="w-4 h-4 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                 </svg>
-                <span class="text-xs font-medium text-red-900 dark:text-red-200">Do Not Contact</span>
+                <span class="text-xs font-medium text-red-900 dark:text-red-200">{{ t('people.contactDetailDoNotContact') }}</span>
               </div>
             </div>
 
             <!-- Tags -->
             <div v-if="contact.tags && contact.tags.length > 0" class="pt-4 border-t border-gray-200 dark:border-gray-700">
-              <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mb-2">Tags</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mb-2">{{ t('settings.assignRulesCondFieldTags') }}</p>
               <div class="flex flex-wrap gap-1.5">
                 <span v-for="tag in contact.tags" :key="tag" class="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-xs font-medium">
                   {{ tag }}
@@ -196,7 +190,7 @@
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3">
               <div class="flex items-center justify-between">
                 <div>
-                  <p class="text-xs text-gray-600 dark:text-gray-400 font-medium">Deals</p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400 font-medium">{{ t('settings.settingsSubDetailUsageDeals') }}</p>
                   <p class="text-xl font-bold text-gray-900 dark:text-white mt-0.5">{{ contact.relatedDeals?.length || 0 }}</p>
                 </div>
                 <div class="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
@@ -210,7 +204,7 @@
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3">
               <div class="flex items-center justify-between">
                 <div>
-                  <p class="text-xs text-gray-600 dark:text-gray-400 font-medium">Notes</p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400 font-medium">{{ t('forms.fieldNotes') }}</p>
                   <p class="text-xl font-bold text-gray-900 dark:text-white mt-0.5">{{ notesCountDisplay }}</p>
                 </div>
                 <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
@@ -224,7 +218,7 @@
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3">
               <div class="flex items-center justify-between">
                 <div>
-                  <p class="text-xs text-gray-600 dark:text-gray-400 font-medium">Score</p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400 font-medium">{{ t('forms.rbSortScore') }}</p>
                   <p class="text-xl font-bold text-gray-900 dark:text-white mt-0.5">{{ contact.score || 0 }}</p>
                 </div>
                 <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
@@ -266,7 +260,7 @@
 
           <!-- Related Records (Platform-Level) -->
           <div v-if="contact._id" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-            <h3 class="text-base font-bold text-gray-900 dark:text-white mb-4">Related Records</h3>
+            <h3 class="text-base font-bold text-gray-900 dark:text-white mb-4">{{ t('records.taskRelatedRecordsTab') }}</h3>
             <RelatedRecordsRenderer
               app-key="SALES"
               module-key="contacts"
@@ -278,7 +272,7 @@
 
           <!-- Old Relations Widget - Grid Layout (HIDDEN, keeping for reference) -->
           <div v-if="false" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-            <h3 class="text-base font-bold text-gray-900 dark:text-white mb-3">Relations</h3>
+            <h3 class="text-base font-bold text-gray-900 dark:text-white mb-3">{{ t('people.contactDetailRelations') }}</h3>
 
             <!-- Grid of Relation Tiles -->
             <div class="grid grid-cols-3 sm:grid-cols-3 gap-3">
@@ -303,9 +297,9 @@
                 </div>
                 <div v-else>
                   <p class="text-xl font-bold text-gray-400 dark:text-gray-500">0</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">No org</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ t('people.contactDetailNoOrg') }}</p>
                 </div>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Organization</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ t('settings.profileMetaOrg') }}</p>
               </div>
 
               <!-- Deals Tile -->
@@ -329,9 +323,9 @@
                 </div>
                 <div v-else>
                   <p class="text-xl font-bold text-gray-400 dark:text-gray-500">0</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">No deals</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ t('people.contactDetailNoDeals') }}</p>
                 </div>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Deals</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ t('settings.settingsSubDetailUsageDeals') }}</p>
               </div>
 
               <!-- Tasks Tile -->
@@ -355,9 +349,9 @@
                 </div>
                 <div v-else>
                   <p class="text-xl font-bold text-gray-400 dark:text-gray-500">0</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">No tasks</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ t('people.contactDetailNoTasks') }}</p>
                 </div>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Tasks</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ t('settings.coreModDetailModuleTasks') }}</p>
               </div>
             </div>
           </div>
@@ -385,7 +379,7 @@
             v-if="contact._id"
             class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4"
           >
-            <h3 class="text-base font-bold text-gray-900 dark:text-white mb-3">Notes</h3>
+            <h3 class="text-base font-bold text-gray-900 dark:text-white mb-3">{{ t('forms.fieldNotes') }}</h3>
             <Notes
               entity-type="Person"
               :entity-id="contact._id"
@@ -419,6 +413,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useTabs } from '@/composables/useTabs';
@@ -562,7 +559,7 @@ const deleteContact = async () => {
     router.push('/people');
   } catch (err) {
     console.error('Error deleting contact:', err);
-    alert('Failed to delete contact');
+    alert(t('common.contactDetailToastFailedToDeleteContact'));
   }
 };
 
@@ -618,7 +615,7 @@ const unlinkOrganization = async () => {
     }
   } catch (error) {
     console.error('Error unlinking organization:', error);
-    alert('Failed to unlink organization');
+    alert(t('common.contactDetailToastFailedToUnlinkOrganization'));
   }
 };
 

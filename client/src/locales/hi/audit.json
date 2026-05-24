@@ -1,0 +1,750 @@
+{
+  "syncDrawerYoureCurrentlyOfflineActionsWillSync": {
+    "message": "आप अभी ऑफ़लाइन हैं. जब आप वापस ऑनलाइन होंगे तो क्रियाएँ स्वचालित रूप से समन्वयित हो जाएँगी।",
+    "description": "Auto-migrated from syncDrawer"
+  },
+  "syncDrawerSyncComplete": {
+    "message": "सिंक पूर्ण",
+    "description": "Auto-migrated from syncDrawer"
+  },
+  "syncDrawerPleaseRefreshTheAuditAndTry": {
+    "message": "कृपया ऑडिट ताज़ा करें और पुनः प्रयास करें।",
+    "description": "Auto-migrated from syncDrawer"
+  },
+  "syncDrawerAuditStateChangedOnServer": {
+    "message": "सर्वर पर ऑडिट स्थिति बदल गई",
+    "description": "Auto-migrated from syncDrawer"
+  },
+  "syncDrawerYouNoLongerHaveAccess": {
+    "message": "अब आपके पास पहुंच नहीं है",
+    "description": "Auto-migrated from syncDrawer"
+  },
+  "syncDrawerAuditWasClosedRemotely": {
+    "message": "ऑडिट दूर से बंद कर दिया गया था",
+    "description": "Auto-migrated from syncDrawer"
+  },
+  "syncDrawerPossibleReasons": {
+    "message": "संभावित कारण:",
+    "description": "Auto-migrated from syncDrawer"
+  },
+  "syncDrawerSyncStopped": {
+    "message": "सिंक रुक गया",
+    "description": "Auto-migrated from syncDrawer"
+  },
+  "syncDrawerPendingActions": {
+    "message": "लंबित कार्रवाइयां",
+    "description": "Auto-migrated from syncDrawer"
+  },
+  "syncDrawerSyncStatus": {
+    "message": "सिंक स्थिति",
+    "description": "Auto-migrated from syncDrawer"
+  },
+  "auditDashboardNoAuditsAssignedYet": {
+    "message": "अभी तक कोई ऑडिट नहीं सौंपा गया है",
+    "description": "Auto-migrated from auditDashboard"
+  },
+  "auditDashboardRecentAudits": {
+    "message": "हालिया ऑडिट",
+    "description": "Auto-migrated from auditDashboard"
+  },
+  "auditDashboardNeedsReview": {
+    "message": "समीक्षा की आवश्यकता है",
+    "description": "Auto-migrated from auditDashboard"
+  },
+  "auditDashboardOverdue": {
+    "message": "अतिदेय",
+    "description": "Auto-migrated from auditDashboard"
+  },
+  "auditDashboardDueToday": {
+    "message": "आज देय",
+    "description": "Auto-migrated from auditDashboard"
+  },
+  "auditDashboardAssigned": {
+    "message": "सौंपा गया",
+    "description": "Auto-migrated from auditDashboard"
+  },
+  "auditDashboardViewYourAssignedAuditsAndTrack": {
+    "message": "अपने निर्दिष्ट ऑडिट देखें और प्रगति ट्रैक करें",
+    "description": "Auto-migrated from auditDashboard"
+  },
+  "auditDashboardAuditDashboard": {
+    "message": "ऑडिट डैशबोर्ड",
+    "description": "Auto-migrated from auditDashboard"
+  },
+  "auditDetailNoTimelineEventsYet": {
+    "message": "अभी तक कोई टाइमलाइन इवेंट नहीं",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditDetailTimeline": {
+    "message": "समय",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditDetailViewOnMap": {
+    "message": "मानचित्र पर देखें",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditDetailLocation": {
+    "message": "जगह:",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditDetailCheckedOut": {
+    "message": "बाहर की जाँच:",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditDetailCheckedIn": {
+    "message": "आगमन की सूचना दिया:",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditDetailExecutionContext": {
+    "message": "निष्पादन प्रसंग",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditDetailRefreshAccess": {
+    "message": "पहुंच ताज़ा करें",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditDetailRequestSeat": {
+    "message": "सीट का अनुरोध करें",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditDetailNextStep": {
+    "message": "अगला कदम",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditDetailYourAuditFormSubmissionWasApplied": {
+    "message": "आपका ऑडिट फॉर्म सबमिशन लागू किया गया था और ऑडिट समीक्षा के लिए भेजा गया था।",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditDetailSubmittedAutomatically": {
+    "message": "स्वचालित रूप से सबमिट किया गया",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditDetailSavedLocally": {
+    "message": "स्थानीय स्तर पर सहेजा गया",
+    "description": "Auto-migrated from auditDetail"
+  },
+  "auditListAuditsWillAppearHereOnceTheyre": {
+    "message": "ऑडिट बन जाने के बाद वे यहां दिखाई देंगे। यदि आप ऑडिट देखने की उम्मीद कर रहे हैं तो अपने फ़िल्टर समायोजित करने का प्रयास करें।",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListNoAuditsYet": {
+    "message": "अभी तक कोई ऑडिट नहीं",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListApplyFilters": {
+    "message": "फ़िल्टर लागू करें",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListComplianceAudit": {
+    "message": "अनुरूपता का परीक्षण",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListExternalAudit": {
+    "message": "बाहरी लेखापरीक्षा",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListNeedsReview": {
+    "message": "समीक्षा की आवश्यकता है",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListCheckedIn": {
+    "message": "आगमन की सूचना दिया",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListReadyToStart": {
+    "message": "शुरू करने के लिए तैयार",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListAllStates": {
+    "message": "सभी राज्य",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListState": {
+    "message": "राज्य",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListSortByStatus": {
+    "message": "स्थिति के अनुसार क्रमबद्ध करें",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListSortByCreated": {
+    "message": "निर्मित के अनुसार क्रमबद्ध करें",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListSortByDueDate": {
+    "message": "नियत तिथि के अनुसार क्रमबद्ध करें",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListComplianceAudit2": {
+    "message": "अनुरूपता का परीक्षण",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListExternalAudit2": {
+    "message": "बाहरी लेखापरीक्षा",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListNeedsReview2": {
+    "message": "समीक्षा की आवश्यकता है",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListCheckedIn2": {
+    "message": "आगमन की सूचना दिया",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListReadyToStart2": {
+    "message": "शुरू करने के लिए तैयार",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListAllStates2": {
+    "message": "सभी राज्य",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListViewAndManageYourAuditAssignments": {
+    "message": "अपने ऑडिट असाइनमेंट देखें और प्रबंधित करें",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditListMyAudits": {
+    "message": "मेरे ऑडिट",
+    "description": "Auto-migrated from auditList"
+  },
+  "auditScheduleSurfaceScheduling": {
+    "message": "शेड्यूलिंग...",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceUnableToScheduleAudit": {
+    "message": "ऑडिट शेड्यूल करने में असमर्थ",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceNoFormSelected": {
+    "message": "कोई प्रपत्र चयनित नहीं",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceImmutable": {
+    "message": "अडिग",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceLinkedForm": {
+    "message": "लिंक किया गया फॉर्म",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceEnd": {
+    "message": "अंत:",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceStart": {
+    "message": "शुरू करना:",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceImmutable2": {
+    "message": "अडिग",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceImmutable3": {
+    "message": "अडिग",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceRoles": {
+    "message": "भूमिकाएँ",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceImmutable4": {
+    "message": "अडिग",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceImmutable5": {
+    "message": "अडिग",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceAuditType": {
+    "message": "लेखापरीक्षा प्रकार",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceAuditTitlesAreGeneratedAutomaticallyFor": {
+    "message": "निरंतरता के लिए ऑडिट शीर्षक स्वचालित रूप से उत्पन्न होते हैं।",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceOnceScheduledTheseSettingsCannotBe": {
+    "message": "एक बार निर्धारित होने के बाद, इन सेटिंग्स को बदला नहीं जा सकता।",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceReviewYourAuditConfigurationBeforeScheduling": {
+    "message": "शेड्यूल करने से पहले अपने ऑडिट कॉन्फ़िगरेशन की समीक्षा करें।",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceSearchForAnAuditFormTo": {
+    "message": "लिंक करने के लिए ऑडिट फॉर्म खोजें",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceTheAuditorWillFillOutThis": {
+    "message": "ऑडिट निष्पादन के दौरान ऑडिटर इस फॉर्म को भरेगा",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceOnceTheAuditIsScheduledThe": {
+    "message": "एक बार ऑडिट निर्धारित होने के बाद, फॉर्म को बदला नहीं जा सकता",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceReadyFormsWillAutomaticallyBecomeActive": {
+    "message": "लिंक होने पर तैयार फॉर्म स्वचालित रूप से सक्रिय हो जाएंगे",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceTheFormWillBeExecutedDuring": {
+    "message": "ऑडिट के दौरान फॉर्म निष्पादित किया जाएगा",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceWhatHappensAfterLinking": {
+    "message": "लिंक करने के बाद क्या होता है:",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceChangeForm": {
+    "message": "फॉर्म बदलें",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceSelectedForm": {
+    "message": "चयनित प्रपत्र",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceTypeToSearchForms": {
+    "message": "फ़ॉर्म खोजने के लिए टाइप करें...",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceSearchForAuditFormsOnlyReady": {
+    "message": "ऑडिट फॉर्म खोजें. केवल तैयार और सक्रिय फॉर्म ही उपलब्ध हैं।",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceSearchForms": {
+    "message": "प्रपत्र खोजें",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceTheFormWillBeExecutedDuring2": {
+    "message": "ऑडिट के दौरान फॉर्म निष्पादित किया जाएगा। एक बार लिंक और शेड्यूल होने के बाद फॉर्म को बदला नहीं जा सकता।",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceLinkAnAuditFormToThis": {
+    "message": "एक ऑडिट फॉर्म को इस ऑडिट इवेंट से लिंक करें।",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceWhenTheAuditIsScheduledTo": {
+    "message": "जब ऑडिट समाप्त होने वाला हो.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceWhenTheAuditIsScheduledTo2": {
+    "message": "ऑडिट कब शुरू होने वाला है.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceTimesAreInYourLocalTimezone": {
+    "message": "समय आपके स्थानीय समयक्षेत्र में हैं. ऑडिट को पूर्व में शेड्यूल नहीं किया जा सकता.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceScheduleTheAuditStartAndEnd": {
+    "message": "ऑडिट प्रारंभ और समाप्ति समय निर्धारित करें।",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceTheUserResponsibleForAddressingAudit": {
+    "message": "उपयोगकर्ता ऑडिट निष्कर्षों को संबोधित करने और सुधारात्मक कार्रवाइयों को लागू करने के लिए जिम्मेदार है। सभी ऑडिट प्रकारों के लिए आवश्यक.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceCorrectiveOwner": {
+    "message": "सुधारात्मक स्वामी",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceOptionalReviewerForInternalAuditsSelf": {
+    "message": "आंतरिक लेखापरीक्षा के लिए वैकल्पिक समीक्षक। आत्म-समीक्षा की अनुमति है.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceIndependentReviewerWhoCannotBeThe": {
+    "message": "स्वतंत्र समीक्षक जो लेखापरीक्षक के समान नहीं हो सकता। बाहरी ऑडिट के लिए आवश्यक.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceReviewer": {
+    "message": "आलोचक",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceTheUserWhoWillConductThe": {
+    "message": "वह उपयोगकर्ता जो ऑडिट करेगा. सभी ऑडिट प्रकारों के लिए आवश्यक.",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceAuditor": {
+    "message": "लेखा परीक्षक",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceSelfReviewIsAllowedForInternal": {
+    "message": "आंतरिक ऑडिट के लिए स्व-समीक्षा की अनुमति है।",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceReviewerIsRequiredAndCannotBe": {
+    "message": "समीक्षक की आवश्यकता है और वह ऑडिटर के समान नहीं हो सकता।",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceRoleAssignmentsDetermineWhoConductsReviews": {
+    "message": "भूमिका असाइनमेंट यह निर्धारित करते हैं कि ऑडिट निष्कर्षों का संचालन, समीक्षा और समाधान कौन करता है।",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceSearchForOrganizationsToSelect": {
+    "message": "चुनने के लिए संगठन खोजें",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceAddressRequiredForAudits": {
+    "message": "ऑडिट के लिए आवश्यक पता",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceSelectedOrganizations": {
+    "message": "चयनित संगठन",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceTypeToSearchOrganizations": {
+    "message": "संगठनों को खोजने के लिए टाइप करें...",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceSearchOrganizations": {
+    "message": "संगठन खोजें",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceStreetCityStateCountry": {
+    "message": "सड़क, शहर, राज्य, देश",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceAddress": {
+    "message": "पता",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceCloseAddressEditor": {
+    "message": "पता संपादक बंद करें",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceOrganization": {
+    "message": "संगठन:",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceAddAddress": {
+    "message": "पता जोड़ें",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceCancelScheduling": {
+    "message": "शेड्यूल रद्द करें",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceAddAddress2": {
+    "message": "पता जोड़ें",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceMissingAddress": {
+    "message": "गुम पता:",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceAuditsRequireAPhysicalLocationPlease": {
+    "message": "ऑडिट के लिए एक भौतिक स्थान की आवश्यकता होती है। कृपया इस संगठन को जारी रखने के लिए एक पता जोड़ें।",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceOrganizationAddressRequired": {
+    "message": "संगठन का पता आवश्यक है",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceInternalAuditsAreAutomaticallyScopedTo": {
+    "message": "आंतरिक ऑडिट स्वचालित रूप से आपके संगठन तक सीमित हो जाते हैं।",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceInternalAuditsTargetYourOrganizationOnly": {
+    "message": "आंतरिक ऑडिट केवल आपके संगठन को लक्षित करते हैं।",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceSelectMultipleOrganizationsMinimum2For": {
+    "message": "ऑडिट रूट के लिए एकाधिक संगठनों (न्यूनतम 2) का चयन करें।",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceSelectExactlyOneOrganizationToAudit": {
+    "message": "ऑडिट के लिए बिल्कुल एक संगठन का चयन करें।",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceTargetOrganizationsDetermineTheScopeOf": {
+    "message": "लक्षित संगठन ऑडिट का दायरा निर्धारित करते हैं।",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceRequirements": {
+    "message": "आवश्यकताएं:",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceChooseTheTypeThatMatchesYour": {
+    "message": "वह प्रकार चुनें जो आपकी ऑडिट आवश्यकताओं से मेल खाता हो।",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceAuditTypeDeterminesRolesGeoRules": {
+    "message": "ऑडिट प्रकार भूमिकाएं, भौगोलिक नियम और फॉर्म आवश्यकताएं निर्धारित करता है।",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceAuditSchedulingSteps": {
+    "message": "ऑडिट शेड्यूलिंग चरण",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfacePlanAndConfigureAnAuditBefore": {
+    "message": "निष्पादन शुरू होने से पहले ऑडिट की योजना बनाएं और कॉन्फ़िगर करें।",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "auditScheduleSurfaceScheduleAudit": {
+    "message": "शेड्यूल ऑडिट",
+    "description": "Auto-migrated from auditScheduleSurface"
+  },
+  "portalActionsViewAudit": {
+    "message": "ऑडिट देखें",
+    "description": "Auto-migrated from portalActions"
+  },
+  "portalActionsDownload": {
+    "message": "डाउनलोड करना",
+    "description": "Auto-migrated from portalActions"
+  },
+  "portalActionsUploadedEvidence": {
+    "message": "साक्ष्य अपलोड किया गया",
+    "description": "Auto-migrated from portalActions"
+  },
+  "portalActionsUploadEvidence": {
+    "message": "साक्ष्य अपलोड करें",
+    "description": "Auto-migrated from portalActions"
+  },
+  "portalActionsAddAnyAdditionalComments": {
+    "message": "कोई अतिरिक्त टिप्पणी जोड़ें...",
+    "description": "Auto-migrated from portalActions"
+  },
+  "portalActionsFiles": {
+    "message": "फ़ाइलें",
+    "description": "Auto-migrated from portalActions"
+  },
+  "portalActionsUploadEvidence2": {
+    "message": "साक्ष्य अपलोड करें",
+    "description": "Auto-migrated from portalActions"
+  },
+  "portalActionsNoCorrectiveActions": {
+    "message": "कोई सुधारात्मक कार्रवाई नहीं",
+    "description": "Auto-migrated from portalActions"
+  },
+  "portalActionsClearFilters": {
+    "message": "फ़िल्टर साफ़ करें",
+    "description": "Auto-migrated from portalActions"
+  },
+  "portalActionsAllStatuses": {
+    "message": "सभी क़ानून",
+    "description": "Auto-migrated from portalActions"
+  },
+  "portalActionsTrackAndManageAllCorrectiveActions": {
+    "message": "सभी सुधारात्मक कार्रवाइयों को ट्रैक और प्रबंधित करें",
+    "description": "Auto-migrated from portalActions"
+  },
+  "portalAuditDetailNoTimelineEvents": {
+    "message": "कोई समयरेखा घटनाएँ नहीं",
+    "description": "Auto-migrated from portalAuditDetail"
+  },
+  "portalAuditDetailTimeline": {
+    "message": "समय",
+    "description": "Auto-migrated from portalAuditDetail"
+  },
+  "portalAuditDetailDownload": {
+    "message": "डाउनलोड करना",
+    "description": "Auto-migrated from portalAuditDetail"
+  },
+  "portalAuditDetailUploadedEvidence": {
+    "message": "साक्ष्य अपलोड किया गया",
+    "description": "Auto-migrated from portalAuditDetail"
+  },
+  "portalAuditDetailUploadEvidence": {
+    "message": "साक्ष्य अपलोड करें",
+    "description": "Auto-migrated from portalAuditDetail"
+  },
+  "portalAuditDetailAddAnyAdditionalComments": {
+    "message": "कोई अतिरिक्त टिप्पणी जोड़ें...",
+    "description": "Auto-migrated from portalAuditDetail"
+  },
+  "portalAuditDetailFiles": {
+    "message": "फ़ाइलें",
+    "description": "Auto-migrated from portalAuditDetail"
+  },
+  "portalAuditDetailUploadEvidence2": {
+    "message": "साक्ष्य अपलोड करें",
+    "description": "Auto-migrated from portalAuditDetail"
+  },
+  "portalAuditDetailAllFindingsHaveBeenAddressed": {
+    "message": "सभी निष्कर्षों पर ध्यान दिया गया है",
+    "description": "Auto-migrated from portalAuditDetail"
+  },
+  "portalAuditDetailNoCorrectiveActions": {
+    "message": "कोई सुधारात्मक कार्रवाई नहीं",
+    "description": "Auto-migrated from portalAuditDetail"
+  },
+  "portalAuditDetailTotalFindings": {
+    "message": "कुल निष्कर्ष",
+    "description": "Auto-migrated from portalAuditDetail"
+  },
+  "portalAuditDetailFindingsSummary": {
+    "message": "निष्कर्ष सारांश",
+    "description": "Auto-migrated from portalAuditDetail"
+  },
+  "portalAuditListClearFilters": {
+    "message": "फ़िल्टर साफ़ करें",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalAuditListNoAuditsYet": {
+    "message": "अभी तक कोई ऑडिट नहीं",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalAuditListClearFilters2": {
+    "message": "फ़िल्टर साफ़ करें",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalAuditListComplianceAudit": {
+    "message": "अनुरूपता का परीक्षण",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalAuditListExternalAudit": {
+    "message": "बाहरी लेखापरीक्षा",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalAuditListWaitingForCorrectiveActions": {
+    "message": "सुधारात्मक कार्रवाई की प्रतीक्षा है",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalAuditListAllStatuses": {
+    "message": "सभी क़ानून",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalAuditListClearFilters3": {
+    "message": "फ़िल्टर साफ़ करें",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalAuditListComplianceAudit2": {
+    "message": "अनुरूपता का परीक्षण",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalAuditListExternalAudit2": {
+    "message": "बाहरी लेखापरीक्षा",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalAuditListWaitingForCorrectiveActions2": {
+    "message": "सुधारात्मक कार्रवाई की प्रतीक्षा है",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalAuditListAllStatuses2": {
+    "message": "सभी क़ानून",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalAuditListViewAuditsConductedOnYourOrganization": {
+    "message": "अपने संगठन पर किए गए ऑडिट देखें",
+    "description": "Auto-migrated from portalAuditList"
+  },
+  "portalDashboardAuditsWillAppearHereOnceThey": {
+    "message": "ऑडिट उपलब्ध होते ही यहां दिखाई देंगे",
+    "description": "Auto-migrated from portalDashboard"
+  },
+  "portalDashboardNoAuditActivityYet": {
+    "message": "अभी तक कोई ऑडिट गतिविधि नहीं",
+    "description": "Auto-migrated from portalDashboard"
+  },
+  "portalDashboardViewAll": {
+    "message": "सभी को देखें",
+    "description": "Auto-migrated from portalDashboard"
+  },
+  "portalDashboardRecentAuditActivity": {
+    "message": "हाल की ऑडिट गतिविधि",
+    "description": "Auto-migrated from portalDashboard"
+  },
+  "portalDashboardCompletedAudits": {
+    "message": "पूर्ण ऑडिट",
+    "description": "Auto-migrated from portalDashboard"
+  },
+  "portalDashboardOpenCorrectiveActions": {
+    "message": "सुधारात्मक कार्रवाइयां खोलें",
+    "description": "Auto-migrated from portalDashboard"
+  },
+  "portalDashboardTotalAudits": {
+    "message": "कुल ऑडिट",
+    "description": "Auto-migrated from portalDashboard"
+  },
+  "portalDashboardTrackYourAuditsAndManageCorrective": {
+    "message": "अपने ऑडिट को ट्रैक करें और सुधारात्मक कार्रवाइयों का प्रबंधन करें",
+    "description": "Auto-migrated from portalDashboard"
+  },
+  "portalDashboardYourTrialWillExpireSoonContact": {
+    "message": "आपका परीक्षण जल्द ही समाप्त हो जाएगा. सदस्यता विकल्पों के लिए अपने व्यवस्थापक से संपर्क करें.",
+    "description": "Auto-migrated from portalDashboard"
+  },
+  "portalProfileAccountInformation": {
+    "message": "खाता संबंधी जानकारी",
+    "description": "Auto-migrated from portalProfile"
+  },
+  "portalProfileYourAccountInformation": {
+    "message": "आपके खाते की जानकारी",
+    "description": "Auto-migrated from portalProfile"
+  },
+  "responsesEnterReasonForArchivingInvalidatingThis": {
+    "message": "इस प्रतिक्रिया को संग्रहीत/अमान्य करने का कारण दर्ज करें...",
+    "description": "Auto-migrated from responses"
+  },
+  "responsesReason": {
+    "message": "कारण",
+    "description": "Auto-migrated from responses"
+  },
+  "responsesMarkAsInvalidWithReasonFor": {
+    "message": "कारण सहित अमान्य के रूप में चिह्नित करें (ऑडिट ट्रेल के लिए)",
+    "description": "Auto-migrated from responses"
+  },
+  "responsesInvalidate": {
+    "message": "अमान्य",
+    "description": "Auto-migrated from responses"
+  },
+  "responsesHideFromActiveListsWhilePreserving": {
+    "message": "डेटा संरक्षित करते समय सक्रिय सूचियों से छिपाएँ",
+    "description": "Auto-migrated from responses"
+  },
+  "responsesAuditResponsesCannotBeDeletedUse": {
+    "message": "ऑडिट प्रत्युत्तरों को हटाया नहीं जा सकता. सक्रिय सूचियों से छिपाने के लिए पुरालेख का उपयोग करें, या किसी कारण से अमान्य के रूप में चिह्नित करने के लिए अमान्य का उपयोग करें। ऑडिट ट्रेल के लिए सभी डेटा सुरक्षित रखा जाता है।",
+    "description": "Auto-migrated from responses"
+  },
+  "responsesAuditIntegrity": {
+    "message": "लेखापरीक्षा सत्यनिष्ठा:",
+    "description": "Auto-migrated from responses"
+  },
+  "responsesArchiveInvalidateResponse": {
+    "message": "पुरालेख/अमान्य प्रतिक्रिया",
+    "description": "Auto-migrated from responses"
+  },
+  "responsesRestore": {
+    "message": "पुनर्स्थापित करना",
+    "description": "Auto-migrated from responses"
+  },
+  "responsesArchiveInvalidate": {
+    "message": "पुरालेख/अमान्य करें",
+    "description": "Auto-migrated from responses"
+  },
+  "responsesNotApplicable": {
+    "message": "लागू नहीं",
+    "description": "Auto-migrated from responses"
+  },
+  "responsesResponseExecutionMustAlwaysStartFrom": {
+    "message": "प्रतिक्रिया निष्पादन हमेशा इवेंट चेक-इन से शुरू होना चाहिए।",
+    "description": "Auto-migrated from responses"
+  },
+  "responseDetailTimeline": {
+    "message": "समय",
+    "description": "Auto-migrated from responseDetail"
+  },
+  "responseDetailFinalScore": {
+    "message": "अंतिम स्कोर",
+    "description": "Auto-migrated from responseDetail"
+  },
+  "responseDetailTotalQuestions": {
+    "message": "कुल सवाल",
+    "description": "Auto-migrated from responseDetail"
+  },
+  "responseDetailAuditor": {
+    "message": "लेखा परीक्षक",
+    "description": "Auto-migrated from responseDetail"
+  },
+  "responseDetailExecutionSummary": {
+    "message": "निष्पादन सारांश",
+    "description": "Auto-migrated from responseDetail"
+  },
+  "responseDetailReadOnlyAccess": {
+    "message": "केवल पढ़ने योग्य पहुंच",
+    "description": "Auto-migrated from responseDetail"
+  },
+  "responseDetailErrorLoadingResponse": {
+    "message": "प्रतिक्रिया लोड करने में त्रुटि",
+    "description": "Auto-migrated from responseDetail"
+  }
+}

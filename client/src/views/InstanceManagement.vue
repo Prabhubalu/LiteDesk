@@ -3,8 +3,8 @@
     <!-- Header -->
     <div class="flex justify-between items-center mb-8">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Instance Management</h1>
-        <p class="text-lg text-gray-600 dark:text-gray-400 mt-2">Monitor and manage all customer instances</p>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ t('platform.instanceManagementInstanceManagement') }}</h1>
+        <p class="text-lg text-gray-600 dark:text-gray-400 mt-2">{{ t('platform.instanceManagementMonitorAndManageAllCustomerInstances') }}</p>
       </div>
     </div>
 
@@ -18,7 +18,7 @@
         </div>
         <div>
           <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.totalInstances || 0 }}</p>
-          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Instances</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('platform.instanceManagementTotalInstances') }}</p>
         </div>
       </div>
 
@@ -30,7 +30,7 @@
         </div>
         <div>
           <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.activeInstances || 0 }}</p>
-          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active Instances</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('platform.instanceManagementActiveInstances') }}</p>
         </div>
       </div>
 
@@ -42,7 +42,7 @@
         </div>
         <div>
           <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.provisioningInstances || 0 }}</p>
-          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Provisioning</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('platform.instanceManagementProvisioning2') }}</p>
         </div>
       </div>
 
@@ -54,7 +54,7 @@
         </div>
         <div>
           <p class="text-2xl font-bold text-gray-900 dark:text-white">${{ formatNumber(statistics.totalMRR || 0) }}</p>
-          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Monthly Revenue</p>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('platform.instanceManagementMonthlyRevenue') }}</p>
         </div>
       </div>
     </div>
@@ -69,7 +69,7 @@
           <input 
             v-model="searchQuery" 
             type="text" 
-            placeholder="Search instances..."
+            :placeholder="t('platform.instanceManagementSearchInstances')"
             @input="debouncedSearch"
             class="w-full pl-9 pr-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
           />
@@ -78,28 +78,28 @@
 
       <div class="flex flex-wrap gap-3">
         <select v-model="filters.status" @change="fetchInstances" class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer text-sm">
-          <option value="">All Status</option>
-          <option value="provisioning">Provisioning</option>
-          <option value="active">Active</option>
-          <option value="suspended">Suspended</option>
-          <option value="terminated">Terminated</option>
-          <option value="failed">Failed</option>
+          <option value="">{{ t('settings.groupsFilterAllStatus') }}</option>
+          <option value="provisioning">{{ t('platform.instanceManagementProvisioning') }}</option>
+          <option value="active">{{ t('settings.settingsBhStatusActive') }}</option>
+          <option value="suspended">{{ t('settings.settingsAppMgmtStatusSuspended') }}</option>
+          <option value="terminated">{{ t('platform.instanceManagementTerminated') }}</option>
+          <option value="failed">{{ t('process.execFailed') }}</option>
         </select>
 
         <select v-model="filters.subscriptionStatus" @change="fetchInstances" class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer text-sm">
-          <option value="">All Subscriptions</option>
-          <option value="trial">Trial</option>
-          <option value="active">Active</option>
-          <option value="past_due">Past Due</option>
-          <option value="canceled">Canceled</option>
+          <option value="">{{ t('platform.instanceManagementAllSubscriptions') }}</option>
+          <option value="trial">{{ t('settings.settingsSubsPlanTrial') }}</option>
+          <option value="active">{{ t('settings.settingsBhStatusActive') }}</option>
+          <option value="past_due">{{ t('platform.instanceManagementPastDue') }}</option>
+          <option value="canceled">{{ t('platform.instanceManagementCanceled') }}</option>
         </select>
 
         <select v-model="filters.healthStatus" @change="fetchInstances" class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer text-sm">
-          <option value="">All Health</option>
-          <option value="healthy">Healthy</option>
-          <option value="degraded">Degraded</option>
-          <option value="unhealthy">Unhealthy</option>
-          <option value="unknown">Unknown</option>
+          <option value="">{{ t('platform.instanceManagementAllHealth') }}</option>
+          <option value="healthy">{{ t('platform.instanceManagementHealthy') }}</option>
+          <option value="degraded">{{ t('platform.instanceManagementDegraded') }}</option>
+          <option value="unhealthy">{{ t('platform.instanceManagementUnhealthy') }}</option>
+          <option value="unknown">{{ t('settings.groupFormUnknown') }}</option>
         </select>
 
         <button 
@@ -109,16 +109,14 @@
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-          Clear
-        </button>
+          </svg>{{ t('settings.modFieldsClear') }}</button>
       </div>
     </div>
 
     <!-- Loading State -->
     <div v-if="loading" class="flex flex-col items-center justify-center py-12 text-gray-600 dark:text-gray-400">
       <div class="w-10 h-10 border-3 border-gray-300 dark:border-gray-600 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
-      <p>Loading instances...</p>
+      <p>{{ t('platform.instanceManagementLoadingInstances') }}</p>
     </div>
 
     <!-- Instances Table -->
@@ -126,16 +124,16 @@
       <table class="w-full border-collapse">
         <thead class="bg-gray-50 dark:bg-gray-900">
           <tr>
-            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">Instance</th>
-            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">Subdomain</th>
-            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">Owner</th>
-            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">Status</th>
-            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">Health</th>
-            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">Subscription</th>
+            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">{{ t('platform.instanceManagementInstance') }}</th>
+            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">{{ t('platform.instanceManagementSubdomain2') }}</th>
+            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">{{ t('settings.roleUsersOwner') }}</th>
+            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">{{ t('settings.settingsBhFieldStatus') }}</th>
+            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">{{ t('platform.instanceManagementHealth') }}</th>
+            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">{{ t('platform.instanceManagementSubscription2') }}</th>
             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">MRR</th>
-            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">Users</th>
-            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">Created</th>
-            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">Actions</th>
+            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">{{ t('settings.settingsSubDetailUsageUsers') }}</th>
+            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">{{ t('forms.hubColCreated') }}</th>
+            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">{{ t('navigation.portalActions') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -183,13 +181,13 @@
             <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">{{ formatDate(instance.createdAt) }}</td>
             <td class="px-6 py-4 text-sm border-b border-gray-200 dark:border-gray-700">
               <div class="flex gap-2">
-                <button @click="viewInstance(instance)" class="w-8 h-8 rounded-md bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center transition-colors" title="View Details">
+                <button @click="viewInstance(instance)" class="w-8 h-8 rounded-md bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center transition-colors" :title="t('process.execLogsViewDetails')">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 text-gray-600 dark:text-gray-400">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
                 </button>
-                <button @click="manageInstance(instance)" class="w-8 h-8 rounded-md bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center transition-colors" title="Manage">
+                <button @click="manageInstance(instance)" class="w-8 h-8 rounded-md bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center transition-colors" :title="t('platform.instanceManagementManage')">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 text-gray-600 dark:text-gray-400">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -207,8 +205,8 @@
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
       </svg>
-      <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Instances Found</h3>
-      <p class="text-gray-600 dark:text-gray-400">No customer instances match your current filters.</p>
+      <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">{{ t('platform.instanceManagementNoInstancesFound') }}</h3>
+      <p class="text-gray-600 dark:text-gray-400">{{ t('platform.instanceManagementNoCustomerInstancesMatchYourCurrent') }}</p>
     </div>
 
     <!-- Pagination -->
@@ -217,9 +215,7 @@
         @click="changePage(pagination.currentPage - 1)" 
         :disabled="pagination.currentPage === 1"
         class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-      >
-        Previous
-      </button>
+      >{{ t('actions.previous') }}</button>
       <span class="text-gray-600 dark:text-gray-400 text-sm">
         Page {{ pagination.currentPage }} of {{ pagination.totalPages }}
       </span>
@@ -227,9 +223,7 @@
         @click="changePage(pagination.currentPage + 1)" 
         :disabled="pagination.currentPage === pagination.totalPages"
         class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-      >
-        Next
-      </button>
+      >{{ t('actions.next') }}</button>
     </div>
 
     <!-- Instance Details Modal -->
@@ -244,22 +238,22 @@
 
         <div class="p-6">
           <div class="mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Instance Information</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('platform.instanceManagementInstanceInformation') }}</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Instance Name:</label>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ t('platform.instanceManagementInstanceName') }}</label>
                 <span class="text-sm text-gray-900 dark:text-white">{{ selectedInstance.instanceName }}</span>
               </div>
               <div>
-                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Subdomain:</label>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ t('platform.instanceManagementSubdomain') }}</label>
                 <span class="text-sm text-gray-900 dark:text-white">{{ selectedInstance.subdomain }}</span>
               </div>
               <div>
-                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Kubernetes Namespace:</label>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ t('platform.instanceManagementKubernetesNamespace') }}</label>
                 <span class="text-sm text-gray-900 dark:text-white">{{ selectedInstance.kubernetesNamespace }}</span>
               </div>
               <div>
-                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Status:</label>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ t('platform.instanceManagementStatus2') }}</label>
                 <span :class="getStatusClass(selectedInstance.status)">
                   {{ selectedInstance.status }}
                 </span>
@@ -268,30 +262,30 @@
           </div>
 
           <div class="mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">URLs</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('platform.instanceManagementUrls') }}</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Frontend:</label>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ t('platform.instanceManagementFrontend') }}</label>
                 <a :href="selectedInstance.urls?.frontend" target="_blank" class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">{{ selectedInstance.urls?.frontend }}</a>
               </div>
               <div>
-                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">API:</label>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ t('platform.instanceManagementApi') }}</label>
                 <a :href="selectedInstance.urls?.api" target="_blank" class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">{{ selectedInstance.urls?.api }}</a>
               </div>
             </div>
           </div>
 
           <div class="mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Subscription</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('platform.instanceManagementSubscription') }}</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Tier:</label>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ t('platform.instanceManagementTier') }}</label>
                 <span :class="getSubscriptionClass(selectedInstance.subscription?.tier)">
                   {{ selectedInstance.subscription?.tier }}
                 </span>
               </div>
               <div>
-                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Status:</label>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ t('platform.instanceManagementStatus') }}</label>
                 <span class="text-sm text-gray-900 dark:text-white">{{ selectedInstance.subscription?.status }}</span>
               </div>
               <div>
@@ -299,51 +293,51 @@
                 <span class="text-sm text-gray-900 dark:text-white">${{ selectedInstance.subscription?.mrr || 0 }}</span>
               </div>
               <div>
-                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Trial End:</label>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ t('platform.instanceManagementTrialEnd') }}</label>
                 <span class="text-sm text-gray-900 dark:text-white">{{ formatDate(selectedInstance.subscription?.trialEndDate) }}</span>
               </div>
             </div>
           </div>
 
           <div class="mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Metrics</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('forms.rbMetrics') }}</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Total Users:</label>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ t('platform.instanceManagementTotalUsers') }}</label>
                 <span class="text-sm text-gray-900 dark:text-white">{{ selectedInstance.metrics?.totalUsers || 0 }}</span>
               </div>
               <div>
-                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Total Contacts:</label>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ t('platform.instanceManagementTotalContacts') }}</label>
                 <span class="text-sm text-gray-900 dark:text-white">{{ selectedInstance.metrics?.totalContacts || 0 }}</span>
               </div>
               <div>
-                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Total Deals:</label>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ t('platform.instanceManagementTotalDeals') }}</label>
                 <span class="text-sm text-gray-900 dark:text-white">{{ selectedInstance.metrics?.totalDeals || 0 }}</span>
               </div>
               <div>
-                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Storage Used:</label>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ t('platform.instanceManagementStorageUsed') }}</label>
                 <span class="text-sm text-gray-900 dark:text-white">{{ selectedInstance.metrics?.storageUsedGB || 0 }} GB</span>
               </div>
             </div>
           </div>
 
           <div class="mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Database Connection</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('platform.instanceManagementDatabaseConnection') }}</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Host:</label>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ t('platform.instanceManagementHost') }}</label>
                 <span class="text-sm text-gray-900 dark:text-white">{{ selectedInstance.databaseConnection?.host }}</span>
               </div>
               <div>
-                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Port:</label>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ t('platform.instanceManagementPort') }}</label>
                 <span class="text-sm text-gray-900 dark:text-white">{{ selectedInstance.databaseConnection?.port }}</span>
               </div>
               <div>
-                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Database:</label>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ t('platform.instanceManagementDatabase') }}</label>
                 <span class="text-sm text-gray-900 dark:text-white">{{ selectedInstance.databaseConnection?.database }}</span>
               </div>
               <div>
-                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Username:</label>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ t('platform.instanceManagementUsername') }}</label>
                 <span class="text-sm text-gray-900 dark:text-white">{{ selectedInstance.databaseConnection?.username }}</span>
               </div>
             </div>
@@ -351,12 +345,8 @@
         </div>
 
         <div class="flex items-center justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
-          <button @click="closeModal" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors">
-            Close
-          </button>
-          <button @click="manageInstance(selectedInstance)" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors">
-            Manage Instance
-          </button>
+          <button @click="closeModal" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors">{{ t('settings.roleDrawerCloseSr') }}</button>
+          <button @click="manageInstance(selectedInstance)" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors">{{ t('platform.instanceManagementManageInstance') }}</button>
         </div>
       </div>
     </div>
@@ -364,6 +354,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, onMounted, computed } from 'vue';
 import apiClient from '../utils/apiClient';
 
@@ -455,7 +448,7 @@ const viewInstance = (instance) => {
 const manageInstance = (instance) => {
   // TODO: Implement instance management modal
   console.log('Manage instance:', instance);
-  alert('Instance management UI coming soon!');
+  alert(t('records.instanceManagementToastInstanceManagementUiComingSoon'));
 };
 
 const closeModal = () => {

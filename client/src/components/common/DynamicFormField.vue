@@ -16,7 +16,7 @@
         class="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline whitespace-nowrap"
         @click="assignReviewerToMe"
       >
-        Assign to me
+        {{ t('common.formAssignToMe') }}
       </button>
     </div>
 
@@ -280,7 +280,7 @@
                     @keydown.escape.stop
                     @click.stop
                     @mousedown.stop
-                    placeholder="Search options..."
+                    :placeholder="t('common.formSearchOptions')"
                     class="w-full pl-9 pr-3 py-2 text-sm rounded-md bg-gray-100 dark:bg-gray-700 outline-1 -outline-offset-1 outline-gray-300/20 dark:outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:outline-indigo-500 text-gray-900 dark:text-white placeholder:text-gray-500 relative z-10"
                     autocomplete="off"
                   />
@@ -290,7 +290,7 @@
               <!-- Options list (scrollable) -->
               <div class="max-h-60 overflow-auto py-1">
                 <div v-if="filteredSearchablePicklistOptions.length === 0" class="relative cursor-default select-none px-4 py-2 text-gray-700 dark:text-gray-300">
-                  No options available.
+                  {{ t('common.formNoOptions') }}
                 </div>
                 <ComboboxOption
                   v-for="(option, optIdx) in filteredSearchablePicklistOptions"
@@ -411,7 +411,7 @@
                 type="button"
                 @click.stop="removeMultiSelect(selected)"
                 class="ml-0.5 rounded-full hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors"
-                aria-label="Remove"
+                :aria-label="t('actions.remove')"
               >
                 <XMarkIcon class="h-3.5 w-3.5" />
               </button>
@@ -473,7 +473,7 @@
               v-if="filteredPicklistOptions.length === 0"
               class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400"
             >
-              No options available
+              {{ t('common.formNoOptions') }}
             </div>
           </div>
         </div>
@@ -542,7 +542,7 @@
               type="button"
               @click.stop="openLookupModal"
               class="flex-shrink-0 flex items-center justify-center p-1.5 rounded text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-              title="Browse records"
+              :title="t('common.formBrowseRecords')"
             >
               <MagnifyingGlassIcon class="w-5 h-5" />
             </button>
@@ -551,7 +551,7 @@
               type="button"
               @click.stop="openLookupCreateDrawer"
               class="flex-shrink-0 flex items-center justify-center p-1.5 rounded text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-              title="Create and select"
+              :title="t('common.formCreateAndSelect')"
             >
               <PlusIcon class="w-5 h-5" />
             </button>
@@ -582,7 +582,7 @@
                     @keydown.escape.stop
                     @click.stop
                     @mousedown.stop
-                    placeholder="Search records..."
+                    :placeholder="t('common.formSearchRecords')"
                     class="w-full pl-9 pr-3 py-2 text-sm rounded-md bg-gray-100 dark:bg-gray-700 outline-1 -outline-offset-1 outline-gray-300/20 dark:outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:outline-indigo-500 text-gray-900 dark:text-white placeholder:text-gray-500 relative z-10"
                     autocomplete="off"
                   />
@@ -592,7 +592,7 @@
               <!-- Options list (scrollable) -->
               <div class="max-h-60 overflow-auto py-1">
                 <div v-if="filteredSearchableLookupOptions.length === 0" class="relative cursor-default select-none px-4 py-2 text-gray-700 dark:text-gray-300">
-                  No matching records found.
+                  {{ t('common.formNoMatchingRecords') }}
                 </div>
                 <button
                   v-if="filteredSearchableLookupOptions.length === 0 && canCreateLookupRecord"
@@ -680,7 +680,7 @@
                       <div class="flex-shrink-0 bg-indigo-700 dark:bg-indigo-800 px-4 py-6 sm:px-6">
                         <div class="flex items-center justify-between">
                           <DialogTitle class="text-base font-semibold text-white">
-                            Select {{ lookupModuleSingularLabel }}
+                            {{ t('common.formLookupSelectTitle', { label: lookupModuleSingularLabel }) }}
                           </DialogTitle>
                           <div class="ml-3 flex h-7 items-center">
                             <button
@@ -689,13 +689,13 @@
                               @click="closeLookupModal"
                             >
                               <span class="absolute -inset-2.5" />
-                              <span class="sr-only">Close panel</span>
+                              <span class="sr-only">{{ t('common.closePanel') }}</span>
                               <XMarkIcon class="size-6" aria-hidden="true" />
                             </button>
                           </div>
                         </div>
                         <p class="mt-1 text-sm text-indigo-300">
-                          Choose one {{ lookupModuleSingularLabel.toLowerCase() }} to fill <span class="font-medium text-white">{{ effectiveLabel }}</span>
+                          {{ t('common.formLookupChooseOne', { module: lookupModuleSingularLabel.toLowerCase(), field: effectiveLabel }) }}
                         </p>
                       </div>
 
@@ -711,7 +711,7 @@
                                 v-model="lookupModalSearchInput"
                                 type="search"
                                 class="block w-full rounded-md bg-gray-100 dark:bg-gray-700 pl-9 pr-3 py-2 text-gray-900 dark:text-white text-sm outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:bg-gray-800 dark:outline-white/10"
-                                :placeholder="`Search ${lookupModulePluralLabel.toLowerCase()}...`"
+                                :placeholder="t('common.formLookupSearchModule', { module: lookupModulePluralLabel.toLowerCase() })"
                                 autocomplete="off"
                                 @input="handleLookupSearchInput"
                               />
@@ -720,10 +720,10 @@
                               type="button"
                               class="inline-flex shrink-0 items-center justify-center rounded-md bg-white dark:bg-gray-800 p-2 text-gray-500 dark:text-gray-300 shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                               :disabled="lookupModalLoading"
-                              :title="lookupModalLoading ? 'Refreshing...' : 'Refresh'"
+                              :title="lookupModalLoading ? t('common.formRefreshing') : t('actions.refresh')"
                               @click="refreshLookupModalData"
                             >
-                              <span class="sr-only">Refresh</span>
+                              <span class="sr-only">{{ t('actions.refresh') }}</span>
                               <ArrowPathIcon class="size-4" :class="lookupModalLoading ? 'animate-spin' : ''" aria-hidden="true" />
                             </button>
                           </div>
@@ -750,13 +750,13 @@
                             <div class="flex size-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
                               <MagnifyingGlassIcon class="size-6 text-gray-400 dark:text-gray-500" aria-hidden="true" />
                             </div>
-                            <h4 class="mt-4 text-sm font-semibold text-gray-900 dark:text-white">No records found</h4>
+                            <h4 class="mt-4 text-sm font-semibold text-gray-900 dark:text-white">{{ t('common.formNoRecordsFound') }}</h4>
                             <p class="mt-1 max-w-sm text-sm text-gray-500 dark:text-gray-400">
                               <template v-if="lookupModalSearchQuery">
-                                No {{ lookupModulePluralLabel.toLowerCase() }} match <span class="font-medium text-gray-700 dark:text-gray-300">"{{ lookupModalSearchQuery }}"</span>.
+                                {{ t('common.formLookupNoMatch', { module: lookupModulePluralLabel.toLowerCase(), query: lookupModalSearchQuery }) }}
                               </template>
                               <template v-else>
-                                There are no {{ lookupModulePluralLabel.toLowerCase() }} to choose from yet.
+                                {{ t('common.formLookupNoRecordsYet', { module: lookupModulePluralLabel.toLowerCase() }) }}
                               </template>
                             </p>
                             <button
@@ -766,7 +766,7 @@
                               @click="openLookupCreateDrawer"
                             >
                               <PlusIcon class="size-4" aria-hidden="true" />
-                              Create new {{ lookupModuleSingularLabel.toLowerCase() }}
+                              {{ t('common.formLookupCreateModule', { module: lookupModuleSingularLabel.toLowerCase() }) }}
                             </button>
                           </div>
 
@@ -801,7 +801,7 @@
                                     class="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-200"
                                   >
                                     <CheckSolidIcon class="size-3" aria-hidden="true" />
-                                    Selected
+                                    {{ t('common.formSelected') }}
                                   </span>
                                 </div>
                                 <p
@@ -817,7 +817,7 @@
                                   class="rounded-md bg-white dark:bg-gray-800 px-3 py-1.5 text-xs font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
                                   @click="handleLookupRowClick(row)"
                                 >
-                                  Select
+                                  {{ t('actions.select') }}
                                 </button>
                               </div>
                             </li>
@@ -836,17 +836,17 @@
                             @click="openLookupCreateDrawer"
                           >
                             <PlusIcon class="size-4" aria-hidden="true" />
-                            Create new
+                            {{ t('common.formCreateNew') }}
                           </button>
                           <div class="ml-1 flex items-center gap-1">
                             <button
                               type="button"
                               class="inline-flex size-8 items-center justify-center rounded-md text-gray-500 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
                               :disabled="lookupModalCurrentPage <= 1 || lookupModalLoading"
-                              :title="'Previous page'"
+                              :title="t('actions.previous')"
                               @click="handleLookupPageChange(lookupModalCurrentPage - 1)"
                             >
-                              <span class="sr-only">Previous page</span>
+                              <span class="sr-only">{{ t('actions.previous') }}</span>
                               <ChevronLeftIcon class="size-4" aria-hidden="true" />
                             </button>
                             <span class="min-w-12 text-center text-xs font-medium text-gray-600 dark:text-gray-300 tabular-nums">
@@ -856,10 +856,10 @@
                               type="button"
                               class="inline-flex size-8 items-center justify-center rounded-md text-gray-500 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
                               :disabled="lookupModalCurrentPage >= lookupModalTotalPages || lookupModalLoading"
-                              :title="'Next page'"
+                              :title="t('actions.next')"
                               @click="handleLookupPageChange(lookupModalCurrentPage + 1)"
                             >
-                              <span class="sr-only">Next page</span>
+                              <span class="sr-only">{{ t('actions.next') }}</span>
                               <ChevronRightIcon class="size-4" aria-hidden="true" />
                             </button>
                           </div>
@@ -947,8 +947,8 @@
       >
         <div class="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400">
           <ArrowUpTrayIcon class="w-5 h-5" />
-          <span v-if="uploading">Uploading...</span>
-          <span v-else>Upload Image</span>
+          <span v-if="uploading">{{ t('common.formUploading') }}</span>
+          <span v-else>{{ t('common.formUploadImage') }}</span>
         </div>
       </button>
     </div>
@@ -974,6 +974,7 @@
 <script setup>
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Dialog, DialogPanel, DialogTitle, Listbox, ListboxButton, ListboxOptions, ListboxOption, Combobox, ComboboxButton, ComboboxInput, ComboboxOptions, ComboboxOption, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { CheckIcon, ChevronUpDownIcon, ChevronLeftIcon, ChevronRightIcon, XMarkIcon, MagnifyingGlassIcon, ArrowUpTrayIcon, PlusIcon, ArrowPathIcon } from '@heroicons/vue/24/outline';
 import { CheckIcon as CheckSolidIcon } from '@heroicons/vue/24/solid';
@@ -992,6 +993,8 @@ import { CURRENCY_OPTIONS, DEFAULT_CURRENCY_CODE } from '@/utils/currencyOptions
 import { useAuthStore } from '@/stores/authRegistry';
 import { canEditField } from '@/platform/fields/fieldCapabilityEngine';
 import { isModuleRegistered } from '@/platform/fields/FieldRegistry';
+
+const { t } = useI18n();
 
 const _c = globalThis.console;
 function fieldDbg(...args) {
@@ -1544,13 +1547,13 @@ const handleImageUpload = async (event) => {
 
   // Validate file type
   if (!file.type.startsWith('image/')) {
-    alert('Please select an image file');
+    alert(t('validation.imageFileRequired'));
     return;
   }
 
   // Validate file size (10MB limit)
   if (file.size > 10 * 1024 * 1024) {
-    alert('Image size must be less than 10MB');
+    alert(t('validation.imageMaxSize'));
     return;
   }
 
@@ -1582,7 +1585,7 @@ const handleImageUpload = async (event) => {
     }
   } catch (error) {
     console.error('Image upload error:', error);
-    alert('Failed to upload image. Please try again.');
+    alert(t('validation.imageUploadFailed'));
   } finally {
     uploading.value = false;
     // Reset input to allow re-uploading the same file

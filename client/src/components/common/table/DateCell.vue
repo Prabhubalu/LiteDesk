@@ -5,6 +5,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 
 const props = defineProps({
@@ -25,6 +26,8 @@ const props = defineProps({
     default: false
   }
 });
+
+const { t } = useI18n();
 
 const formattedDate = computed(() => {
   if (!props.value) return '-';

@@ -20,7 +20,7 @@
               v-if="view !== 'providers'"
               type="button"
               class="mt-0.5 rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-800 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-              aria-label="Back"
+              :aria-label="t('performance.back')"
               @click="goBack"
             >
               <ArrowLeftIcon class="h-5 w-5" />
@@ -36,7 +36,7 @@
             <button
               type="button"
               class="shrink-0 rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-800 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-              aria-label="Close"
+              :aria-label="t('settings.roleDrawerCloseSr')"
               @click="close"
             >
               <XMarkIcon class="h-5 w-5" />
@@ -77,15 +77,15 @@
             >
               <li class="flex gap-2">
                 <CheckCircleIcon class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                <span>Send and receive email inside the CRM</span>
+                <span>{{ t('inbox.connectMailboxModalSendAndReceiveEmailInsideThe') }}</span>
               </li>
               <li class="flex gap-2">
                 <CheckCircleIcon class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                <span>Sync threads to your workspace inbox</span>
+                <span>{{ t('inbox.connectMailboxModalSyncThreadsToYourWorkspaceInbox') }}</span>
               </li>
               <li class="flex gap-2">
                 <CheckCircleIcon class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                <span>Keep conversations linked to people, deals, and tasks</span>
+                <span>{{ t('inbox.connectMailboxModalKeepConversationsLinkedToPeopleDeals') }}</span>
               </li>
             </ul>
 
@@ -114,9 +114,7 @@
             <p
               v-if="reason === 'inbox' && !gmailOAuthReady"
               class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100"
-            >
-              Gmail isn’t enabled on this server yet. An administrator can add
-              <code class="rounded bg-amber-100 px-1 font-mono text-[10px] dark:bg-amber-950/80">GOOGLE_GMAIL_*</code>
+            >{{ t('inbox.connectMailboxModalGmailIsntEnabledOnThisServer2') }}<code class="rounded bg-amber-100 px-1 font-mono text-[10px] dark:bg-amber-950/80">GOOGLE_GMAIL_*</code>
               in the API environment, or use Settings → Integrations.
             </p>
             <p
@@ -130,25 +128,20 @@
           <!-- Create mailbox -->
           <template v-else-if="view === 'create-mailbox'">
             <div v-if="mailboxKind === 'group'" class="space-y-3">
-              <p class="text-sm text-gray-700 dark:text-gray-300">
-                Create a <span class="font-medium">shared team mailbox</span>, then connect Google Workspace / Gmail.
+              <p class="text-sm text-gray-700 dark:text-gray-300">{{ t('inbox.connectMailboxModalCreateA') }}<span class="font-medium">{{ t('inbox.connectMailboxModalSharedTeamMailbox') }}</span>, then connect Google Workspace / Gmail.
               </p>
-              <label class="block text-sm font-medium text-gray-800 dark:text-gray-200">
-                Display name
-                <input
+              <label class="block text-sm font-medium text-gray-800 dark:text-gray-200">{{ t('inbox.connectMailboxModalDisplayName') }}<input
                   v-model="groupLabel"
                   type="text"
                   class="mt-1.5 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-950 dark:text-white"
-                  placeholder="Support"
+                  :placeholder="t('appointments.typeSupport')"
                 >
               </label>
-              <label class="block text-sm font-medium text-gray-800 dark:text-gray-200">
-                Shared email address
-                <input
+              <label class="block text-sm font-medium text-gray-800 dark:text-gray-200">{{ t('inbox.connectMailboxModalSharedEmailAddress') }}<input
                   v-model="groupEmail"
                   type="email"
                   class="mt-1.5 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-950 dark:text-white"
-                  placeholder="support@company.com"
+                  :placeholder="t('inbox.connectMailboxModalSupportCompanyCom')"
                 >
               </label>
               <button
@@ -162,9 +155,8 @@
             </div>
             <template v-else>
             <div class="rounded-xl border border-blue-100 bg-blue-50/80 px-4 py-3 text-sm text-blue-950 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-100">
-              <p class="font-medium">One quick step first</p>
-              <p class="mt-1 text-xs leading-relaxed text-blue-900/90 dark:text-blue-200/90">
-                LiteDesk creates a private <span class="font-medium">personal mailbox</span> for your account, then links it to
+              <p class="font-medium">{{ t('inbox.connectMailboxModalOneQuickStepFirst') }}</p>
+              <p class="mt-1 text-xs leading-relaxed text-blue-900/90 dark:text-blue-200/90">{{ t('inbox.connectMailboxModalLitedeskCreatesAPrivate') }}<span class="font-medium">{{ t('inbox.connectMailboxModalPersonalMailbox') }}</span> for your account, then links it to
                 {{ selectedProvider?.name || 'your provider' }}.
               </p>
             </div>
@@ -176,9 +168,7 @@
             >
               {{ setupLoading ? 'Creating mailbox…' : 'Create my mailbox' }}
             </button>
-            <p v-if="!flags.canCreatePersonal" class="mt-3 text-center text-xs text-gray-500 dark:text-gray-400">
-              Your role cannot create a personal mailbox. Ask an administrator.
-            </p>
+            <p v-if="!flags.canCreatePersonal" class="mt-3 text-center text-xs text-gray-500 dark:text-gray-400">{{ t('inbox.connectMailboxModalYourRoleCannotCreateAPersonal') }}</p>
             </template>
           </template>
 
@@ -187,24 +177,18 @@
             <p
               v-if="!flags.gmailSmtpOrgConfigured"
               class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100"
-            >
-              Your organization has not enabled Gmail SMTP yet. An admin must choose
-              <span class="font-medium">gmail-smtp</span> under Settings → Integrations → Email and save.
+            >{{ t('inbox.connectMailboxModalYourOrganizationHasNotEnabledGmail') }}<span class="font-medium">{{ t('settings.integrationsProviderOptionGmailSmtp') }}</span> under Settings → Integrations → Email and save.
             </p>
             <template v-else>
-              <label class="block text-sm font-medium text-gray-800 dark:text-gray-200">
-                Gmail address
-                <input
+              <label class="block text-sm font-medium text-gray-800 dark:text-gray-200">{{ t('inbox.connectMailboxModalGmailAddress') }}<input
                   v-model="emailHint"
                   type="email"
                   autocomplete="email"
                   class="mt-1.5 w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm dark:border-gray-600 dark:bg-gray-950 dark:text-white"
-                  placeholder="you@company.com"
+                  :placeholder="t('inbox.connectMailboxModalYouCompanyCom')"
                 >
               </label>
-              <label class="block mt-4 text-sm font-medium text-gray-800 dark:text-gray-200">
-                Google App Password
-                <input
+              <label class="block mt-4 text-sm font-medium text-gray-800 dark:text-gray-200">{{ t('settings.integrationsGmailSmtpHintAppPassword') }}<input
                   v-model="appPassword"
                   type="password"
                   autocomplete="off"
@@ -237,16 +221,11 @@
             <p
               v-if="!gmailOAuthReady"
               class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100"
-            >
-              Gmail isn’t enabled on this server. An administrator can add
-              <code class="rounded bg-amber-100 px-1 font-mono text-[10px] dark:bg-amber-950/80">GOOGLE_GMAIL_*</code>
-              or credentials under <span class="font-medium">Settings → Integrations</span>.
+            >{{ t('inbox.connectMailboxModalGmailIsntEnabledOnThisServer') }}<code class="rounded bg-amber-100 px-1 font-mono text-[10px] dark:bg-amber-950/80">GOOGLE_GMAIL_*</code>{{ t('inbox.connectMailboxModalOrCredentialsUnder') }}<span class="font-medium">Settings → Integrations</span>.
             </p>
 
             <template v-else>
-              <label class="block text-sm font-medium text-gray-800 dark:text-gray-200">
-                Work email address
-                <input
+              <label class="block text-sm font-medium text-gray-800 dark:text-gray-200">{{ t('inbox.connectMailboxModalWorkEmailAddress') }}<input
                   v-model="emailHint"
                   type="email"
                   autocomplete="email"
@@ -261,15 +240,13 @@
               <div
                 class="mt-4 rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-3 text-xs leading-relaxed text-gray-700 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-300"
               >
-                <p class="font-medium text-gray-900 dark:text-white">What happens next</p>
+                <p class="font-medium text-gray-900 dark:text-white">{{ t('inbox.connectMailboxModalWhatHappensNext') }}</p>
                 <ol class="mt-2 list-decimal space-y-1.5 pl-4">
-                  <li>Google opens in a popup so you can sign in and approve access.</li>
-                  <li>LiteDesk imports mail using a read-only Gmail scope (folders you choose).</li>
-                  <li>You can send from the CRM once your mailbox is linked.</li>
+                  <li>{{ t('inbox.connectMailboxModalGoogleOpensInAPopupSo') }}</li>
+                  <li>{{ t('inbox.connectMailboxModalLitedeskImportsMailUsingARead') }}</li>
+                  <li>{{ t('inbox.connectMailboxModalYouCanSendFromTheCrm') }}</li>
                 </ol>
-                <p class="mt-2 text-gray-600 dark:text-gray-400">
-                  If Google shows an unverified-app warning, choose <span class="font-medium">Advanced</span> to continue when you trust this workspace.
-                </p>
+                <p class="mt-2 text-gray-600 dark:text-gray-400">{{ t('inbox.connectMailboxModalIfGoogleShowsAnUnverifiedApp') }}<span class="font-medium">{{ t('settings.settingsRelDrawerAdvanced') }}</span>{{ t('inbox.connectMailboxModalToContinueWhenYouTrustThis') }}</p>
               </div>
             </template>
           </template>
@@ -281,18 +258,14 @@
             type="button"
             class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
             @click="close"
-          >
-            Not now
-          </button>
+          >{{ t('inbox.connectMailboxModalNotNow') }}</button>
           <div class="flex flex-wrap gap-2">
             <button
               v-if="view === 'providers' && personalMailbox && hasConnectedInbox"
               type="button"
               class="rounded-lg px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-950/40"
               @click="close"
-            >
-              Done
-            </button>
+            >{{ t('inbox.connectMailboxModalDone') }}</button>
             <button
               v-else-if="view === 'connect-provider' && selectedProviderId === 'google-smtp' && flags.gmailSmtpOrgConfigured"
               type="button"
@@ -319,6 +292,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, computed, watch } from 'vue';
 import {
   ArrowLeftIcon,
@@ -341,6 +315,8 @@ const props = defineProps({
   /** When set (group), connect Gmail to this mailbox instead of creating one. */
   targetMailbox: { type: Object, default: null }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['update:modelValue', 'connected']);
 
@@ -476,7 +452,7 @@ function onProviderSelect(providerId) {
   const p = getInboxProvider(providerId);
   if (!p || p.status !== 'available') {
     if (p?.status === 'coming_soon') {
-      notifications.info(`${p.name} is coming soon. Use Gmail for now.`);
+      notifications.info(t('inbox.inboxProviderSoonUseGmail', { name: p.name }));
     }
     return;
   }

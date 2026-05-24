@@ -2,9 +2,9 @@
   <div class="space-y-6">
     <!-- Header -->
     <div>
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Subscriptions</h2>
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.tabSubscriptions') }}</h2>
       <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        Manage your application subscriptions, usage, and limits
+        {{ t('settings.settingsSubsListSubtitle') }}
       </p>
     </div>
 
@@ -20,7 +20,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <p class="text-sm text-red-800 dark:text-red-300">
-          {{ error.message || 'Failed to load subscriptions' }}
+          {{ error.message || t('settings.settingsSubsLoadFailed') }}
         </p>
       </div>
     </div>
@@ -30,8 +30,8 @@
       <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Subscriptions</h3>
-      <p class="text-sm text-gray-600 dark:text-gray-400">No active subscriptions found.</p>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.settingsSubsEmptyTitle') }}</h3>
+      <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.settingsSubsEmptyBody') }}</p>
     </div>
 
     <!-- Subscriptions List -->
@@ -71,7 +71,7 @@
                 getPlanBadgeClass(subscription.plan)
               ]"
             >
-              {{ subscription.plan }}
+              {{ planLabel(subscription.plan) }}
             </span>
           </div>
         </div>
@@ -81,7 +81,7 @@
           <!-- Users -->
           <div v-if="subscription.usage?.users">
             <div class="flex items-center justify-between mb-1">
-              <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Users</span>
+              <span class="text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('settings.settingsSubsUsageUsers') }}</span>
               <span class="text-xs text-gray-500 dark:text-gray-500">
                 {{ subscription.usage.users.current }} / {{ subscription.usage.users.limit }}
               </span>
@@ -97,7 +97,7 @@
           <!-- Contacts -->
           <div v-if="subscription.usage?.contacts">
             <div class="flex items-center justify-between mb-1">
-              <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Contacts</span>
+              <span class="text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('settings.settingsSubsUsageContacts') }}</span>
               <span class="text-xs text-gray-500 dark:text-gray-500">
                 {{ subscription.usage.contacts.current }} / {{ subscription.usage.contacts.limit }}
               </span>
@@ -113,9 +113,9 @@
           <!-- Storage -->
           <div v-if="subscription.limits?.storage !== undefined">
             <div class="flex items-center justify-between mb-1">
-              <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Storage</span>
+              <span class="text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('settings.settingsSubsUsageStorage') }}</span>
               <span class="text-xs text-gray-500 dark:text-gray-500">
-                {{ subscription.limits.storage }} GB
+                {{ t('settings.settingsSubsStorageGb', { amount: subscription.limits.storage }) }}
               </span>
             </div>
             <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
@@ -133,7 +133,7 @@
             @click.stop="handleUpgrade(subscription.appKey)"
             class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-300 dark:border-indigo-700 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors"
           >
-            <span>Upgrade {{ subscription.appName }}</span>
+            <span>{{ t('settings.settingsSubsUpgradeCta', { appName: subscription.appName }) }}</span>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
@@ -146,13 +146,24 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import apiClient from '@/utils/apiClient';
 
+const { t } = useI18n();
 const router = useRouter();
 const subscriptions = ref([]);
 const loading = ref(true);
 const error = ref(null);
+
+const PLAN_LABEL_KEYS = {
+  Trial: 'settings.settingsSubsPlanTrial',
+  Paid: 'settings.settingsSubsPlanPaid',
+  Active: 'settings.settingsSubsPlanActive',
+  Suspended: 'settings.settingsSubsPlanSuspended',
+  'Not Subscribed': 'settings.settingsSubsPlanNotSubscribed',
+  DISABLED: 'settings.settingsSubsPlanNotSubscribed',
+};
 
 const fetchSubscriptions = async () => {
   loading.value = true;
@@ -182,9 +193,13 @@ const viewSubscriptionDetail = (appKey) => {
 };
 
 const handleUpgrade = (appKey) => {
-  // Navigate to subscription detail for upgrade
   viewSubscriptionDetail(appKey);
 };
+
+function planLabel(plan) {
+  const key = PLAN_LABEL_KEYS[plan];
+  return key ? t(key) : plan;
+}
 
 const getPlanBadgeClass = (plan) => {
   const classes = {
@@ -202,4 +217,3 @@ onMounted(() => {
   fetchSubscriptions();
 });
 </script>
-

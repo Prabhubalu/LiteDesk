@@ -18,30 +18,26 @@
           class="relative z-10 w-full sm:w-[36rem] max-w-[95vw] bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 shadow-2xl flex flex-col max-h-screen"
           role="dialog"
           aria-modal="true"
-          aria-label="Send Email"
+          :aria-label="t('inbox.emailComposeDrawerSendEmail2')"
         >
           <!-- Header: matches CreateRecordDrawer / TaskEditDrawer -->
           <div class="flex-shrink-0 bg-indigo-700 dark:bg-indigo-800 px-4 py-6 sm:px-6">
             <div class="flex items-center justify-between">
-              <h2 class="text-base font-semibold text-white">Send Email</h2>
+              <h2 class="text-base font-semibold text-white">{{ t('inbox.emailComposeDrawerSendEmail') }}</h2>
               <button
                 type="button"
                 @click="close"
                 class="relative rounded-md text-indigo-200 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white cursor-pointer"
-                aria-label="Close"
+                :aria-label="t('settings.roleDrawerCloseSr')"
               >
                 <span class="absolute -inset-2.5" />
-                <span class="sr-only">Close panel</span>
+                <span class="sr-only">{{ t('forms.previewClosePanelSr') }}</span>
                 <XMarkIcon class="size-6" aria-hidden="true" />
               </button>
             </div>
             <p class="mt-1 text-sm text-indigo-300">
-              <template v-if="standaloneMode">
-                Send from your workspace. Replies route back to Inbox (no person or deal record).
-              </template>
-              <template v-else>
-                Compose and send an email from this record.
-              </template>
+              <template v-if="standaloneMode">{{ t('inbox.emailComposeDrawerSendFromYourWorkspaceRepliesRoute') }}</template>
+              <template v-else>{{ t('inbox.emailComposeDrawerComposeAndSendAnEmailFrom') }}</template>
             </p>
           </div>
 
@@ -58,7 +54,7 @@
 
               <!-- From (read-only; matches server send resolution) -->
               <div>
-                <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">From</label>
+                <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">{{ t('settings.helpdeskAnalyticsFrom') }}</label>
                 <input
                   :value="fromDisplayLine"
                   type="text"
@@ -86,7 +82,7 @@
                   type="email"
                   required
                   class="block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
-                  placeholder="recipient@example.com (comma-separated for multiple)"
+                  :placeholder="t('inbox.emailComposeDrawerRecipientExampleComCommaSeparatedFor')"
                 />
               </div>
 
@@ -115,7 +111,7 @@
                   v-model="form.cc"
                   type="text"
                   class="block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
-                  placeholder="cc@example.com (comma-separated)"
+                  :placeholder="t('inbox.emailComposeDrawerCcExampleComCommaSeparated')"
                 />
               </div>
 
@@ -126,13 +122,13 @@
                   v-model="form.bcc"
                   type="text"
                   class="block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
-                  placeholder="bcc@example.com (comma-separated)"
+                  :placeholder="t('inbox.emailComposeDrawerBccExampleComCommaSeparated')"
                 />
               </div>
 
               <!-- Reply-To (routing address for recipient replies) -->
               <div>
-                <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">Reply-To</label>
+                <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">{{ t('settings.integrationsReplyTo') }}</label>
                 <input
                   :value="replyToDisplay"
                   type="text"
@@ -140,10 +136,8 @@
                   class="block w-full mt-2 rounded-md bg-gray-50 dark:bg-gray-800/80 px-3 py-2 text-gray-700 dark:text-gray-300 text-base outline-1 -outline-offset-1 outline-gray-300/20 sm:text-sm/6 dark:outline-white/10 cursor-default font-mono text-[13px]"
                   :placeholder="composePreviewLoading ? 'Loading…' : '—'"
                 >
-                <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
-                  When recipients hit Reply, their message is sent here and routed into
-                  <template v-if="standaloneMode">your Inbox</template>
-                  <template v-else>this record’s email thread</template>.
+                <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{{ t('inbox.emailComposeDrawerWhenRecipientsHitReplyTheirMessage') }}<template v-if="standaloneMode">{{ t('inbox.emailComposeDrawerYourInbox') }}</template>
+                  <template v-else>{{ t('inbox.emailComposeDrawerThisRecordsEmailThread') }}</template>.
                 </p>
                 <p
                   v-if="replyToNote"
@@ -155,19 +149,19 @@
 
               <!-- Subject -->
               <div>
-                <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">Subject</label>
+                <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">{{ t('inbox.emailComposeDrawerSubject') }}</label>
                 <input
                   v-model="form.subject"
                   type="text"
                   required
                   class="block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
-                  placeholder="Email subject"
+                  :placeholder="t('inbox.emailComposeDrawerEmailSubject')"
                 />
               </div>
 
               <!-- Template -->
               <div>
-                <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">Template</label>
+                <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsPbResourceTemplate') }}</label>
                 <Listbox
                   :model-value="selectedTemplateId"
                   @update:model-value="handleTemplateChange"
@@ -239,7 +233,7 @@
 
               <!-- Body (rich text) -->
               <div>
-                <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">Message</label>
+                <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsMessageLabel') }}</label>
                 <div class="mt-2">
                   <TaskDescriptionEditor
                     v-model="form.body"
@@ -251,7 +245,7 @@
 
               <!-- Attachments -->
               <div>
-                <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">Attachments <span class="font-normal text-gray-500 dark:text-gray-400">(max 10MB per file, 25MB total)</span></label>
+                <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">{{ t('inbox.emailComposeDrawerAttachments') }}<span class="font-normal text-gray-500 dark:text-gray-400">(max 10MB per file, 25MB total)</span></label>
                 <input
                   ref="fileInputRef"
                   type="file"
@@ -281,7 +275,7 @@
                       type="button"
                       @click="removeAttachment(idx)"
                       class="p-1 text-gray-500 hover:text-red-600 dark:hover:text-red-400"
-                      title="Remove"
+                      :title="t('settings.assignRulesRemoveTitle')"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -298,16 +292,12 @@
                 type="button"
                 @click="close"
                 class="rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              >
-                Cancel
-              </button>
+              >{{ t('performance.cancelWizard') }}</button>
               <button
                 type="submit"
                 class="rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 dark:hover:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 :disabled="!toRecipients.length || !form.subject"
-              >
-                Send
-              </button>
+              >{{ t('inbox.emailComposeDrawerSend') }}</button>
             </div>
           </form>
         </aside>
@@ -317,6 +307,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, watch, computed } from 'vue';
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue';
 import { ChevronUpDownIcon, CheckIcon, XMarkIcon } from '@heroicons/vue/24/outline';
@@ -325,7 +316,9 @@ import apiClient from '@/utils/apiClient';
 import TaskDescriptionEditor from '@/components/record-page/TaskDescriptionEditor.vue';
 const props = defineProps({
   isOpen: { type: Boolean, default: false },
-  /** When true, send with `standalone: true` (workspace-scoped); `relatedTo` is not required. */
+  /** When true, send with `standalone: true` (workspace-scoped);
+
+const { t } = useI18n(); `relatedTo` is not required. */
   standaloneMode: { type: Boolean, default: false },
   relatedTo: {
     type: Object,

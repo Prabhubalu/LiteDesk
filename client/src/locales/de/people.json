@@ -1,0 +1,658 @@
+{
+  "attachToAppModalDetailFields": {
+    "message": "Detailfelder",
+    "description": "Auto-migrated from attachToAppModal"
+  },
+  "attachToAppModalStateFields": {
+    "message": "Staatsfelder",
+    "description": "Auto-migrated from attachToAppModal"
+  },
+  "attachToAppModalValidationErrors": {
+    "message": "Validierungsfehler",
+    "description": "Auto-migrated from attachToAppModal"
+  },
+  "attachToAppModalAddingParticipation": {
+    "message": "Beteiligung hinzufügen",
+    "description": "Auto-migrated from attachToAppModal"
+  },
+  "attachToAppModalAddThisPersonToTheApp": {
+    "message": "Fügen Sie diese Person zur App hinzu und legen Sie Teilnahmefelder fest",
+    "description": "Auto-migrated from attachToAppModal"
+  },
+  "detachFromAppModalThisWillRemoveThisPersonFrom": {
+    "message": "Dadurch wird diese Person entfernt",
+    "description": "Auto-migrated from detachFromAppModal"
+  },
+  "detachFromAppModalHistoricalRecordsAndActivityLogsWill": {
+    "message": "Historische Aufzeichnungen und Aktivitätsprotokolle bleiben erhalten",
+    "description": "Auto-migrated from detachFromAppModal"
+  },
+  "historyLayerActivityTimeline": {
+    "message": "Aktivitätszeitleiste",
+    "description": "Auto-migrated from historyLayer"
+  },
+  "historyLayerHistory": {
+    "message": "Geschichte",
+    "description": "Auto-migrated from historyLayer"
+  },
+  "identityLayerFullName": {
+    "message": "Vollständiger Name",
+    "description": "Auto-migrated from identityLayer"
+  },
+  "identityLayerEditProfile": {
+    "message": "Profil bearbeiten",
+    "description": "Auto-migrated from identityLayer"
+  },
+  "identityLayerRecognitionFirstIdentityInformation": {
+    "message": "Erkennungsrelevante Identitätsinformationen",
+    "description": "Auto-migrated from identityLayer"
+  },
+  "momentumLayerAllSystemsAreUpToDate": {
+    "message": "Alle Systeme sind auf dem neuesten Stand.",
+    "description": "Auto-migrated from momentumLayer"
+  },
+  "momentumLayerNothingNeedsAttentionRightNow": {
+    "message": "Im Moment braucht nichts Aufmerksamkeit.",
+    "description": "Auto-migrated from momentumLayer"
+  },
+  "momentumLayerShowLess": {
+    "message": "Weniger anzeigen",
+    "description": "Auto-migrated from momentumLayer"
+  },
+  "momentumLayerCurrentActivityAndPriorities": {
+    "message": "Aktuelle Aktivitäten und Prioritäten",
+    "description": "Auto-migrated from momentumLayer"
+  },
+  "momentumLayerMomentum": {
+    "message": "Schwung",
+    "description": "Auto-migrated from momentumLayer"
+  },
+  "participationCardNoAdditionalInformationAvailable": {
+    "message": "Keine zusätzlichen Informationen verfügbar.",
+    "description": "Auto-migrated from participationCard"
+  },
+  "participationCardHideDetails": {
+    "message": "Details ausblenden",
+    "description": "Auto-migrated from participationCard"
+  },
+  "participationCardViewDetails": {
+    "message": "Details anzeigen",
+    "description": "Auto-migrated from participationCard"
+  },
+  "participationEditModalDetailFields": {
+    "message": "Detailfelder",
+    "description": "Auto-migrated from participationEditModal"
+  },
+  "participationEditModalChangingTypeUpdatesStatusAutomatically": {
+    "message": "Automatische Änderung des Typaktualisierungsstatus",
+    "description": "Auto-migrated from participationEditModal"
+  },
+  "participationEditModalValidationErrors": {
+    "message": "Validierungsfehler",
+    "description": "Auto-migrated from participationEditModal"
+  },
+  "participationEditModalEditingParticipationDetails": {
+    "message": "Teilnahmedetails bearbeiten",
+    "description": "Auto-migrated from participationEditModal"
+  },
+  "participationEditModalUpdateParticipationDetailsForThisPerson": {
+    "message": "Aktualisieren Sie die Teilnahmedetails für diese Person",
+    "description": "Auto-migrated from participationEditModal"
+  },
+  "participationLayerAttachToApp": {
+    "message": "An App anhängen",
+    "description": "Auto-migrated from participationLayer"
+  },
+  "participationLayerThisPersonIsNotParticipatingIn": {
+    "message": "Diese Person nimmt noch an keiner App teil.",
+    "description": "Auto-migrated from participationLayer"
+  },
+  "participationLayerNoAppParticipations": {
+    "message": "Keine App-Teilnahmen",
+    "description": "Auto-migrated from participationLayer"
+  },
+  "participationLayerAppParticipationsAndRoles": {
+    "message": "App-Teilnahmen und Rollen",
+    "description": "Auto-migrated from participationLayer"
+  },
+  "participationLayerAttachToApp2": {
+    "message": "An App anhängen",
+    "description": "Auto-migrated from participationLayer"
+  },
+  "participationOverviewPanelAvailableApps": {
+    "message": "Verfügbare Apps",
+    "description": "Auto-migrated from participationOverviewPanel"
+  },
+  "participationOverviewPanelNoAppParticipationsYet": {
+    "message": "Noch keine App-Teilnahmen.",
+    "description": "Auto-migrated from participationOverviewPanel"
+  },
+  "participationOverviewPanelSummaryOfThisPersonsParticipationAcross": {
+    "message": "Zusammenfassung der Teilnahme dieser Person an allen Bewerbungen",
+    "description": "Auto-migrated from participationOverviewPanel"
+  },
+  "participationOverviewPanelParticipationOverview": {
+    "message": "Teilnahmeübersicht",
+    "description": "Auto-migrated from participationOverviewPanel"
+  },
+  "participationOverviewPanelPlatformMediated": {
+    "message": "Plattformvermittelt",
+    "description": "Auto-migrated from participationOverviewPanel"
+  },
+  "peopleQuickCreateDrawerCouldNotLoadPeopleModulePlease": {
+    "message": "Das People-Modul konnte nicht geladen werden. Bitte versuchen Sie es erneut.",
+    "description": "Auto-migrated from peopleQuickCreateDrawer"
+  },
+  "peopleQuickCreateDrawerAddToApp": {
+    "message": "Zur App hinzufügen",
+    "description": "Auto-migrated from peopleQuickCreateDrawer"
+  },
+  "peopleQuickCreateDrawerCreatesIdentityOnlyNoAppParticipation": {
+    "message": "Schafft nur Identität. Keine App-Teilnahme.",
+    "description": "Auto-migrated from peopleQuickCreateDrawer"
+  },
+  "peopleQuickCreateDrawerOptionalChooseAnAppBelowTo": {
+    "message": "Optional: Wählen Sie unten eine App aus, um die Teilnahme hinzuzufügen, oder speichern Sie sie nur zur Identitätsfeststellung.",
+    "description": "Auto-migrated from peopleQuickCreateDrawer"
+  },
+  "peopleQuickCreateDrawerCreatePerson": {
+    "message": "Person erstellen",
+    "description": "Auto-migrated from peopleQuickCreateDrawer"
+  },
+  "relationshipDrillDownsViewAllCases": {
+    "message": "Alle Fälle anzeigen",
+    "description": "Auto-migrated from relationshipDrillDowns"
+  },
+  "relationshipDrillDownsViewAllMeetings": {
+    "message": "Alle Besprechungen anzeigen",
+    "description": "Auto-migrated from relationshipDrillDowns"
+  },
+  "relationshipDrillDownsViewAllTasks": {
+    "message": "Alle Aufgaben anzeigen",
+    "description": "Auto-migrated from relationshipDrillDowns"
+  },
+  "relationshipDrillDownsViewAllDeals": {
+    "message": "Alle Angebote ansehen",
+    "description": "Auto-migrated from relationshipDrillDowns"
+  },
+  "salesConvertLeadModalNoContactFieldsAvailable": {
+    "message": "Keine Kontaktfelder verfügbar.",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "salesConvertLeadModalDetailFields": {
+    "message": "Detailfelder",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "salesConvertLeadModalStateFields": {
+    "message": "Staatsfelder",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "salesConvertLeadModalValidationErrors": {
+    "message": "Validierungsfehler",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "salesConvertLeadModalCoreIdentityFieldsNameEmailEtc": {
+    "message": "Kernidentitätsfelder (Name, E-Mail usw.) werden nicht geändert. Leadspezifische Felder werden sein\n                              gelöscht.",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "salesConvertLeadModalConvertingSalesParticipation": {
+    "message": "Umsatzbeteiligung umwandeln",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "salesConvertLeadModalConvertLeadToContact": {
+    "message": "Lead in Kontakt umwandeln",
+    "description": "Auto-migrated from salesConvertLeadModal"
+  },
+  "contactFormModalRecordType": {
+    "message": "Datensatztyp",
+    "description": "Auto-migrated from contactFormModal"
+  },
+  "peopleCreateChooseHowYouWantToAdd": {
+    "message": "Wählen Sie aus, wie Sie diese Person hinzufügen möchten. Diese Absicht wird für die gesamte Erstellungssitzung gesperrt.",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreateSelectIntent": {
+    "message": "Wählen Sie Absicht aus",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreateError": {
+    "message": "Fehler",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreateResolvingAppContext": {
+    "message": "App-Kontext wird aufgelöst...",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreatePleaseSelectWhichAppToUse": {
+    "message": "Bitte wählen Sie aus, welche App Sie verwenden möchten:",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreateTypeOwnershipAmbiguity": {
+    "message": "Mehrdeutigkeit der Typeneigentümerschaft",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreatePleaseSelectAnAppContextTo": {
+    "message": "Bitte wählen Sie einen App-Kontext aus, um eine Person zu erstellen:",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleCreateAmbiguousAppContext": {
+    "message": "Mehrdeutiger App-Kontext",
+    "description": "Auto-migrated from peopleCreate"
+  },
+  "peopleDetailThisActionWillBeLoggedIn": {
+    "message": "Diese Aktion wird in der Aktivitätszeitleiste protokolliert",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailContactStatusWillBeSetTo": {
+    "message": "Der Kontaktstatus wird auf „Aktiv“ gesetzt (sofern nicht bereits festgelegt).",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailLeadSpecificFieldsWillBeCleared": {
+    "message": "Leadspezifische Felder werden gelöscht",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailPersonsRoleChangesFromLeadTo": {
+    "message": "Die Rolle der Person ändert sich von „Lead“ zu „Kontakt“.",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailThisWillUpdateThisPersonsRole": {
+    "message": "Dadurch wird die Rolle dieser Person im Vertrieb aktualisiert.",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailConvertSalesLeadToContact": {
+    "message": "Konvertieren Sie einen Vertriebslead in einen Kontakt",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailReEngage": {
+    "message": "Reagieren Sie erneut",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailNurturing": {
+    "message": "Pflegend",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailDisqualified": {
+    "message": "Disqualifiziert",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailQualified": {
+    "message": "Qualifiziert",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailContacted": {
+    "message": "Kontaktiert",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailSelectStatus": {
+    "message": "Status auswählen...",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailLeadStatus": {
+    "message": "Lead-Status",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailInfluencer": {
+    "message": "Influencer",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailDecisionMaker": {
+    "message": "Entscheidungsträger",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailSelectRole": {
+    "message": "Rolle auswählen...",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailDoNotContact": {
+    "message": "Nicht kontaktieren",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailSelectStatus2": {
+    "message": "Status auswählen...",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailContactStatus": {
+    "message": "Kontaktstatus",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailYouAreAddingThisPersonTo": {
+    "message": "Sie fügen diese Person hinzu",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailThisPersonIsAlreadyPartOf": {
+    "message": "Diese Person ist bereits Teil aller verfügbaren Apps.",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAllAppsAttached": {
+    "message": "Alle Apps angehängt",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailChooseHowYouWantToAdd": {
+    "message": "Wählen Sie aus, wie Sie diese Person zu einer App hinzufügen möchten",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailSelectIntent": {
+    "message": "Wählen Sie Absicht aus",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailValidationErrors": {
+    "message": "Validierungsfehler",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAddThisPersonToAnotherApp": {
+    "message": "Fügen Sie diese Person zu einer anderen App hinzu",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAttachToApp": {
+    "message": "An App anhängen",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailImmutableAuditStreamForThisPerson": {
+    "message": "Unveränderlicher Audit-Stream für diese Person",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailActivityTimeline": {
+    "message": "Aktivitätszeitleiste",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailEntity": {
+    "message": "Juristische Person",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAppAwareAttachmentsForThisPerson": {
+    "message": "App-fähige Anhänge für diese Person",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailFiles": {
+    "message": "Dateien",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailEntity2": {
+    "message": "Juristische Person",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAppAwareNotesForThisPerson": {
+    "message": "App-bezogene Notizen für diese Person",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailEntity3": {
+    "message": "Juristische Person",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailChangesThisPersonsRoleWithinSales": {
+    "message": "Ändert die Rolle dieser Person im Vertrieb",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAppSpecificFields": {
+    "message": "App-spezifische Felder",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailDoNotContact2": {
+    "message": "Nicht kontaktieren",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailMobileNumber": {
+    "message": "Handynummer",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailMobile": {
+    "message": "Mobiltelefon",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailLastUpdated": {
+    "message": "Zuletzt aktualisiert",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailDoNotContact3": {
+    "message": "Nicht kontaktieren",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailCreatedVia": {
+    "message": "Erstellt über",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailSharedAcrossAllApps": {
+    "message": "Für alle Apps freigegeben",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailCoreInformation": {
+    "message": "Kerninformationen",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailEntity4": {
+    "message": "Juristische Person",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailThisPersonIsAlreadyPartOf2": {
+    "message": "Diese Person ist bereits Teil aller verfügbaren Apps.",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAddsThisPersonToANew": {
+    "message": "Fügt diese Person einer neuen App hinzu, ohne ein Duplikat zu erstellen.",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAttachToAnotherApp": {
+    "message": "An eine andere App anhängen",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAddThisPersonToAnotherApp2": {
+    "message": "Fügen Sie diese Person zu einer anderen App hinzu",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAttachToApp2": {
+    "message": "An App anhängen",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailAppContext": {
+    "message": "App-Kontext",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailViewingIn": {
+    "message": "Besichtigung",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleDetailErrorLoadingProfile": {
+    "message": "Fehler beim Laden des Profils",
+    "description": "Auto-migrated from peopleDetail"
+  },
+  "peopleQuickCreateCreatePerson": {
+    "message": "Person erstellen",
+    "description": "Auto-migrated from peopleQuickCreate"
+  },
+  "peopleQuickCreateError": {
+    "message": "Fehler",
+    "description": "Auto-migrated from peopleQuickCreate"
+  },
+  "peopleQuickCreateLoadingFields": {
+    "message": "Felder werden geladen...",
+    "description": "Auto-migrated from peopleQuickCreate"
+  },
+  "peopleQuickCreateCreateACorePersonIdentity": {
+    "message": "Erstellen Sie eine zentrale Personenidentität",
+    "description": "Auto-migrated from peopleQuickCreate"
+  },
+  "peopleQuickCreateAddPerson": {
+    "message": "Person hinzufügen",
+    "description": "Auto-migrated from peopleQuickCreate"
+  },
+  "peopleSurfaceThisPersonIsAlreadyPartOf": {
+    "message": "Diese Person ist bereits Teil aller verfügbaren Apps.",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceAllAppsAttached": {
+    "message": "Alle Apps angehängt",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceChooseHowYouWantToAdd": {
+    "message": "Wählen Sie aus, wie Sie diese Person zu einer App hinzufügen möchten",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceSelectIntent": {
+    "message": "Wählen Sie Absicht aus",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceValidationErrors": {
+    "message": "Validierungsfehler",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceAddThisPersonToAnotherApp": {
+    "message": "Fügen Sie diese Person zu einer anderen App hinzu",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceAttachToApp": {
+    "message": "An App anhängen",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceActionAvailability": {
+    "message": "Aktionsverfügbarkeit",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "peopleSurfaceErrorLoadingProfile": {
+    "message": "Fehler beim Laden des Profils",
+    "description": "Auto-migrated from peopleSurface"
+  },
+  "contactDetailNoTasks": {
+    "message": "Keine Aufgaben",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailNoDeals": {
+    "message": "Keine Angebote",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailNoOrg": {
+    "message": "Keine Org",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailRelations": {
+    "message": "Beziehungen",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailDoNotContact": {
+    "message": "Nicht kontaktieren",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailBackToContacts": {
+    "message": "Zurück zu Kontakte",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailErrorLoadingContact": {
+    "message": "Fehler beim Laden des Kontakts",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactDetailLoadingContact": {
+    "message": "Kontakt wird geladen...",
+    "description": "Auto-migrated from contactDetail"
+  },
+  "contactFormModalToastFailedToSaveContactPlease": {
+    "message": "Der Kontakt konnte nicht gespeichert werden. Weitere Informationen finden Sie auf der Konsole.",
+    "description": "Toast from ContactFormModal.vue"
+  },
+  "statusDropdownToastFailedToUpdateStatus": {
+    "message": "Status konnte nicht aktualisiert werden",
+    "description": "Toast from StatusDropdown.vue"
+  },
+  "statusDropdownToastErrorUpdatingStatus": {
+    "message": "Fehler beim Aktualisieren des Status",
+    "description": "Toast from StatusDropdown.vue"
+  },
+  "sysFieldAssignedTo": {
+    "message": "Zugewiesen an",
+    "description": "System people field label"
+  },
+  "sysFieldEmail": {
+    "message": "E-Mail",
+    "description": "System people field label"
+  },
+  "sysFieldPhone": {
+    "message": "Telefon",
+    "description": "System people field label"
+  },
+  "sysFieldMobile": {
+    "message": "Mobiltelefon",
+    "description": "System people field label"
+  },
+  "sysFieldFirstName": {
+    "message": "Vorname",
+    "description": "System people field label"
+  },
+  "sysFieldLastName": {
+    "message": "Nachname",
+    "description": "System people field label"
+  },
+  "sysFieldName": {
+    "message": "Name",
+    "description": "System people field label"
+  },
+  "sysFieldOrganization": {
+    "message": "Organisation",
+    "description": "System people field label"
+  },
+  "sysFieldDescription": {
+    "message": "Beschreibung",
+    "description": "System people field label"
+  },
+  "sysFieldTags": {
+    "message": "Schlagworte",
+    "description": "System people field label"
+  },
+  "sysFieldDoNotContact": {
+    "message": "Nicht kontaktieren",
+    "description": "System people field label"
+  },
+  "sysFieldTitle": {
+    "message": "Titel",
+    "description": "System people field label"
+  },
+  "sysFieldType": {
+    "message": "Typ",
+    "description": "System people field label"
+  },
+  "sysFieldStatus": {
+    "message": "Status",
+    "description": "System people field label"
+  },
+  "sysFieldSource": {
+    "message": "Quelle",
+    "description": "System people field label"
+  },
+  "sysFieldOwner": {
+    "message": "Inhaber",
+    "description": "System people field label"
+  },
+  "sysFieldCreatedBy": {
+    "message": "Erstellt von",
+    "description": "System people field label"
+  },
+  "contextAllApps": {
+    "message": "Alle Apps",
+    "description": "People list app context tab"
+  },
+  "listViewAll": {
+    "message": "Alle Menschen",
+    "description": "People list default view title"
+  },
+  "listViewMy": {
+    "message": "Mein Volk",
+    "description": "People list assigned-to-me view title"
+  },
+  "listCreate": {
+    "message": "Neue Person",
+    "description": "People list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "Personen suchen...",
+    "description": "People list search placeholder"
+  },
+  "listStatTotal": {
+    "message": "Total Leute",
+    "description": "People list statistics card"
+  },
+  "listStatWithOrganization": {
+    "message": "Mit Organisation",
+    "description": "People list statistics card"
+  },
+  "listStatWithoutOrganization": {
+    "message": "Ohne Organisation",
+    "description": "People list statistics card"
+  }
+}

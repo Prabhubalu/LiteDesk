@@ -14,10 +14,11 @@
           <!-- Header -->
           <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 rounded-t-2xl z-10">
             <div class="flex items-center justify-between">
-              <h2 class="text-xl font-bold text-gray-900 dark:text-white">Invite New User</h2>
+              <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ t('settings.inviteTitle') }}</h2>
               <button
                 @click="close"
                 class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                :aria-label="t('common.closePanel')"
               >
                 <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -32,27 +33,27 @@
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  First Name *
+                  {{ t('settings.inviteFirstName') }} *
                 </label>
                 <input
                   v-model="form.firstName"
                   type="text"
                   required
                   class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 focus:border-transparent transition-all"
-                  placeholder="John"
+                  :placeholder="t('settings.inviteFirstNamePh')"
                 />
               </div>
 
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Last Name *
+                  {{ t('settings.inviteLastName') }} *
                 </label>
                 <input
                   v-model="form.lastName"
                   type="text"
                   required
                   class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 focus:border-transparent transition-all"
-                  placeholder="Doe"
+                  :placeholder="t('settings.inviteLastNamePh')"
                 />
               </div>
             </div>
@@ -60,21 +61,21 @@
             <!-- Email -->
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Email Address *
+                {{ t('settings.inviteEmail') }} *
               </label>
               <input
                 v-model="form.email"
                 type="email"
                 required
                 class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 focus:border-transparent transition-all"
-                placeholder="john.doe@company.com"
+                :placeholder="t('settings.inviteEmailPh')"
               />
             </div>
 
             <!-- User Type Selection -->
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                User Type *
+                {{ t('settings.inviteUserType') }} *
               </label>
               <div class="flex items-center gap-4">
                 <label class="flex items-center gap-2">
@@ -85,7 +86,7 @@
                     @change="onUserTypeChange"
                     class="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
                   />
-                  <span class="text-sm text-gray-700 dark:text-gray-300">Internal</span>
+                  <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('settings.inviteInternal') }}</span>
                 </label>
                 <label class="flex items-center gap-2">
                   <input
@@ -95,25 +96,25 @@
                     @change="onUserTypeChange"
                     class="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
                   />
-                  <span class="text-sm text-gray-700 dark:text-gray-300">External</span>
+                  <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('settings.inviteExternal') }}</span>
                 </label>
               </div>
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Internal users are employees. External users are customers, partners, or auditors.
+                {{ t('settings.inviteUserTypeHint') }}
               </p>
             </div>
 
             <!-- Organization Role Selection -->
             <div v-if="availableRoles.length > 0">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Role *
+                {{ t('settings.inviteRole') }} *
               </label>
               <select
                 v-model="form.roleId"
                 required
                 class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 focus:border-transparent transition-all"
               >
-                <option value="">Select a role</option>
+                <option value="">{{ t('settings.inviteSelectRole') }}</option>
                 <option v-for="role in availableRoles" :key="role._id" :value="role._id">
                   {{ role.name }} - {{ role.description }}
                 </option>
@@ -126,13 +127,13 @@
             <!-- App Access Selection -->
             <div v-if="form.userType">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                App Access *
+                {{ t('settings.inviteAppAccess') }} *
               </label>
               <div v-if="loadingCapabilities" class="text-sm text-gray-500 dark:text-gray-400">
-                Loading available apps...
+                {{ t('settings.inviteLoadingApps') }}
               </div>
               <div v-else-if="availableApps.length === 0" class="text-sm text-gray-500 dark:text-gray-400">
-                No apps available for this user type.
+                {{ t('settings.inviteNoApps') }}
               </div>
               <div v-else class="space-y-3">
                 <div
@@ -165,16 +166,16 @@
                           <!-- Seat Usage Info -->
                           <div v-if="app.seatInfo && app.seatInfo.limit !== null" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             <span v-if="app.seatInfo.available !== null">
-                              {{ app.seatInfo.used }}/{{ app.seatInfo.limit }} seats used
+                              {{ t('settings.inviteSeatsUsed', { used: app.seatInfo.used, limit: app.seatInfo.limit }) }}
                               <span v-if="app.seatInfo.available === 0" class="text-red-600 dark:text-red-400 font-medium">
-                                (No seats available)
+                                {{ t('settings.inviteNoSeats') }}
                               </span>
                               <span v-else class="text-green-600 dark:text-green-400">
-                                ({{ app.seatInfo.available }} available)
+                                {{ t('settings.inviteSeatsAvailable', { count: app.seatInfo.available }) }}
                               </span>
                             </span>
                             <span v-else>
-                              Unlimited seats
+                              {{ t('settings.inviteUnlimitedSeats') }}
                             </span>
                           </div>
                         </div>
@@ -183,7 +184,7 @@
                       <!-- Role Selection for Selected App -->
                       <div v-if="isAppSelected(app.appKey)" class="mt-3 ml-7">
                         <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Role for {{ getAppDisplayName(app.appKey) }}:
+                          {{ t('settings.inviteRoleForApp', { app: getAppDisplayName(app.appKey) }) }}
                         </label>
                         <select
                           v-model="selectedAppRoles[app.appKey]"
@@ -212,7 +213,7 @@
             <!-- Password Option -->
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Password
+                {{ t('settings.invitePassword') }}
               </label>
               <div class="flex items-center gap-3 mb-2">
                 <label class="flex items-center gap-2">
@@ -222,7 +223,7 @@
                     value="auto"
                     class="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
                   />
-                  <span class="text-sm text-gray-700 dark:text-gray-300">Auto-generate</span>
+                  <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('settings.invitePasswordAuto') }}</span>
                 </label>
                 <label class="flex items-center gap-2">
                   <input
@@ -231,7 +232,7 @@
                     value="manual"
                     class="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
                   />
-                  <span class="text-sm text-gray-700 dark:text-gray-300">Set manually</span>
+                  <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('settings.invitePasswordManual') }}</span>
                 </label>
               </div>
 
@@ -242,10 +243,10 @@
                 required
                 minlength="8"
                 class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 focus:border-transparent transition-all"
-                placeholder="Minimum 8 characters"
+                :placeholder="t('settings.invitePasswordMin')"
               />
               <p v-else class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                A secure password will be auto-generated. {{ form.sendEmail ? 'It will be sent via email.' : 'You will need to share it with the user manually.' }}
+                {{ passwordAutoHint }}
               </p>
             </div>
 
@@ -258,10 +259,10 @@
               />
               <div class="flex-1">
                 <label for="sendEmail" class="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
-                  Send invitation email with login credentials
+                  {{ t('settings.inviteSendEmail') }}
                 </label>
                 <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                  {{ form.sendEmail ? 'Email will be sent with password' : 'User will be created without email notification' }}
+                  {{ form.sendEmail ? t('settings.inviteSendEmailOn') : t('settings.inviteSendEmailOff') }}
                 </p>
               </div>
             </div>
@@ -278,7 +279,7 @@
                 @click="close"
                 class="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-all"
               >
-                Cancel
+                {{ t('actions.cancel') }}
               </button>
               <button
                 type="submit"
@@ -289,7 +290,7 @@
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span>{{ saving ? 'Inviting...' : 'Invite User' }}</span>
+                <span>{{ saving ? t('settings.inviteSubmitting') : t('settings.inviteSubmit') }}</span>
               </button>
             </div>
           </form>
@@ -302,8 +303,11 @@
 <script setup>
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { ref, watch, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
+
+const { t } = useI18n();
 
 const props = defineProps({
   isOpen: Boolean
@@ -331,6 +335,14 @@ const capabilities = ref([]);
 const loadingCapabilities = ref(false);
 const selectedAppRoles = ref({});
 const validationErrors = ref({});
+
+const passwordAutoHint = computed(() =>
+  t('settings.invitePasswordAutoHint', {
+    delivery: form.value.sendEmail
+      ? t('settings.invitePasswordEmailDelivery')
+      : t('settings.invitePasswordManualDelivery')
+  })
+);
 
 // App display names
 const appDisplayNames = {
@@ -430,7 +442,7 @@ const fetchCapabilities = async () => {
     }
   } catch (err) {
     console.error('Error fetching capabilities:', err);
-    error.value = 'Failed to load available apps. Please try again.';
+    error.value = t('settings.inviteLoadAppsFailed');
   } finally {
     loadingCapabilities.value = false;
   }
@@ -504,7 +516,7 @@ const validateForm = () => {
   validationErrors.value = {};
 
   if (!form.value.roleId) {
-    validationErrors.value.roleId = 'Role is required';
+    validationErrors.value.roleId = t('settings.inviteRoleRequired');
     return false;
   }
 
@@ -512,7 +524,7 @@ const validateForm = () => {
   if (form.value.userType) {
     // Validate at least one app is selected
     if (selectedApps.value.length === 0) {
-      validationErrors.value.appAccess = 'At least one app must be selected';
+      validationErrors.value.appAccess = t('settings.inviteAppAccessRequired');
       return false;
     }
 
@@ -588,19 +600,19 @@ const handleSubmit = async () => {
     if (response.success) {
       // If email not sent and password was auto-generated, show the password
       if (!form.value.sendEmail && response.data.tempPassword) {
-        alert(`User created successfully!\n\nTemporary Password: ${response.data.tempPassword}\n\nPlease share this password with the user securely.`);
+        alert(t('settings.inviteCreatedWithPassword', { password: response.data.tempPassword }));
       }
       emit('user-invited');
       resetForm();
     } else {
-      error.value = response.message || 'Failed to invite user';
+      error.value = response.message || t('settings.inviteFailed');
       if (response.errors && Array.isArray(response.errors)) {
         error.value += ': ' + response.errors.join(', ');
       }
     }
   } catch (err) {
     console.error('Error inviting user:', err);
-    error.value = err.message || 'Failed to invite user';
+    error.value = err.message || t('settings.inviteFailed');
     if (err.response?.data?.errors) {
       error.value += ': ' + err.response.data.errors.join(', ');
     }

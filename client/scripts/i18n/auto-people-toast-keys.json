@@ -1,0 +1,14 @@
+{
+  "contactFormModalToastFailedToSaveContactPlease": {
+    "message": "Failed to save contact. Please check the console for details.",
+    "description": "Toast from ContactFormModal.vue"
+  },
+  "statusDropdownToastFailedToUpdateStatus": {
+    "message": "Failed to update status",
+    "description": "Toast from StatusDropdown.vue"
+  },
+  "statusDropdownToastErrorUpdatingStatus": {
+    "message": "Error updating status",
+    "description": "Toast from StatusDropdown.vue"
+  }
+}

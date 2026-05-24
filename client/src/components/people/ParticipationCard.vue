@@ -35,7 +35,7 @@
         <!-- Current State/Status -->
         <div v-if="currentState" class="mb-4 relative" style="overflow: visible;">
           <div class="flex items-center gap-2">
-            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status</span>
+            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ t('settings.settingsBhFieldStatus') }}</span>
           </div>
           <div class="mt-2 relative" style="overflow: visible;">
             <StatusDropdown
@@ -68,7 +68,7 @@
           @click="showDetails = true"
           class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline font-medium flex items-center gap-1"
         >
-          <span>View details</span>
+          <span>{{ t('people.participationCardViewDetails') }}</span>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
           </svg>
@@ -83,7 +83,7 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
             </svg>
-            <span>Hide details</span>
+            <span>{{ t('people.participationCardHideDetails') }}</span>
           </button>
           <dl class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <template v-for="fieldKey in participationDetailFields" :key="fieldKey">
@@ -101,15 +101,14 @@
       </div>
 
       <!-- Empty State Message -->
-      <div v-if="!hasAdditionalFields && !currentState" class="text-sm text-gray-500 dark:text-gray-400 italic">
-        No additional information available.
-      </div>
+      <div v-if="!hasAdditionalFields && !currentState" class="text-sm text-gray-500 dark:text-gray-400 italic">{{ t('people.participationCardNoAdditionalInformationAvailable') }}</div>
       </div>
     </SurfaceCard>
   </div>
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import SurfaceCard from '@/components/ui/SurfaceCard.vue';
 import CardHeader from '@/components/ui/CardHeader.vue';
 import PrimaryActionButton from '@/components/ui/PrimaryActionButton.vue';
@@ -142,6 +141,8 @@ const props = defineProps({
     default: null
   }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['convert', 'edit', 'edit-details', 'view', 'create-deal', 'create-task', 'create-case', 'schedule-meeting', 'status-updated', 'detach']);
 

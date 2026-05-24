@@ -1,24 +1,6 @@
 <template>
   <div class="bg-gray-50 dark:bg-gray-900">
     <div class="w-full mx-auto">
-      <!-- Header -->
-      <!-- <div class="flex items-center justify-between mb-6">
-        <div>
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-            {{ isEditing ? 'Edit Form' : 'New Form' }}
-          </h1>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {{ isEditing ? 'Update your form details' : 'Follow the steps to create your form' }}
-          </p>
-        </div>
-        <button
-          @click="handleClose"
-          class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-        >
-          <XMarkIcon class="w-5 h-5 text-gray-500 dark:text-gray-400" />
-        </button>
-      </div> -->
-
       <!-- Progress Stepper -->
       <div
         class="fixed z-30 shadow-sm transition-[left] duration-150 ease-out"
@@ -30,7 +12,7 @@
       >
         <div class="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
           <div class="w-full mx-auto">
-            <nav aria-label="Progress">
+            <nav :aria-label="t('forms.wizardProgressAria')">
               <ol role="list" class="divide-y divide-gray-300 dark:divide-gray-700 rounded-md border border-gray-300 dark:border-gray-700 md:flex md:divide-y-0">
                 <li
                   v-for="(step, stepIdx) in steps"
@@ -106,9 +88,9 @@
         <div v-if="currentStepIndex === 0" class="space-y-6 flex-1">
           <div class="max-w-2xl mx-auto space-y-6 w-full p-6">
             <div>
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Form Details</h3>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('forms.tabDetailsHeading') }}</h3>
               <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                Start by providing basic information about your form.
+                {{ t('forms.wizardFormDetailsIntro') }}
               </p>
             </div>
 
@@ -116,7 +98,7 @@
               <!-- Form Name -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Form Name <span class="text-red-500">*</span>
+                  {{ t('forms.fieldFormName') }} <span class="text-red-500">*</span>
                 </label>
                 <input
                   ref="formNameInput"
@@ -124,7 +106,7 @@
                   type="text"
                   required
                   maxlength="255"
-                  placeholder="Enter form name"
+                  :placeholder="t('forms.fieldFormNamePh')"
                   class="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-indigo-500 transition-all"
                 />
               </div>
@@ -132,13 +114,13 @@
               <!-- Description -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Description
+                  {{ t('forms.fieldDescription') }}
                 </label>
                 <textarea
                   v-model="formData.description"
                   rows="3"
                   maxlength="1000"
-                  placeholder="Describe the purpose of this form..."
+                  :placeholder="t('forms.fieldDescriptionPh')"
                   class="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-indigo-500 transition-all"
                 ></textarea>
               </div>
@@ -146,14 +128,14 @@
               <!-- Visibility -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Visibility
+                  {{ t('forms.fieldVisibility') }}
                 </label>
                 <select
                   v-model="formData.visibility"
                   class="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-indigo-500 transition-all cursor-pointer"
                 >
-                  <option value="Internal">Internal</option>
-                  <option value="External">External</option>
+                  <option value="Internal">{{ t('forms.visibilityInternal') }}</option>
+                  <option value="External">{{ t('forms.hubCreateVisibilityExternal') }}</option>
                 </select>
               </div>
             </div>
@@ -162,13 +144,6 @@
 
         <!-- Step 2: Sections & Questions -->
         <div v-else-if="currentStepIndex === 1" class="flex-1 flex flex-col min-h-0">
-          <!-- <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Sections & Questions</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-              Build your form structure by adding sections and questions.
-            </p>
-          </div> -->
-
           <!-- Sections Builder -->
           <SectionsBuilder
             :key="`sections-${currentStepIndex}-${(formData.sections || []).length}`"
@@ -191,10 +166,10 @@
             <!-- Show message for non-Audit forms -->
             <div v-else class="text-center py-12">
               <p class="text-gray-600 dark:text-gray-400 mb-2">
-                Outcomes & Rules are only available for Audit forms.
+                {{ t('forms.hubCreateOutcomesAuditOnly') }}
               </p>
               <p class="text-sm text-gray-500 dark:text-gray-500">
-                This step is skipped for Survey and Feedback forms.
+                {{ t('forms.hubCreateOutcomesSkipped') }}
               </p>
             </div>
           </div>
@@ -251,7 +226,7 @@
               @click="() => { console.log('🔵🔵🔵 CANCEL BUTTON CLICKED'); handleClose(); }"
               class="px-4 py-2 text-sm font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
-              Cancel
+              {{ t('actions.cancel') }}
             </button>
           </div>
           <div class="flex items-center gap-3">
@@ -260,16 +235,16 @@
               @click="previousStep"
               class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
-              Previous
+              {{ t('actions.previous') }}
             </button>
             <button
               v-if="currentStepIndex < steps.length - 1"
               @click="nextStep"
               :disabled="!canProceed"
               class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              :title="!canProceed ? 'Please fill all mandatory fields in the current step' : ''"
+              :title="!canProceed ? t('forms.nextStepBlockedTitle') : undefined"
             >
-              Next
+              {{ t('actions.next') }}
             </button>
             <button
               v-else
@@ -277,8 +252,8 @@
               :disabled="saving || !canSubmit"
               class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              <span v-if="saving">Saving...</span>
-              <span v-else>Save</span>
+              <span v-if="saving">{{ t('states.saving') }}</span>
+              <span v-else>{{ t('actions.save') }}</span>
             </button>
           </div>
         </div>
@@ -293,23 +268,23 @@
     >
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Unsaved Changes
+          {{ t('forms.hubCreateUnsavedTitle') }}
         </h3>
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-          You have unsaved changes. Are you sure you want to leave? Your changes will be lost.
+          {{ t('forms.hubCreateUnsavedBody') }}
         </p>
         <div class="flex justify-end gap-3">
           <button
             @click="cancelClose"
             class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
           >
-            Cancel
+            {{ t('actions.cancel') }}
           </button>
           <button
             @click="confirmClose"
             class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
           >
-            Leave Without Saving
+            {{ t('forms.hubCreateLeaveWithoutSaving') }}
           </button>
         </div>
       </div>
@@ -320,7 +295,8 @@
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount, onActivated, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { CheckIcon, XMarkIcon } from '@heroicons/vue/24/solid';
+import { useI18n } from 'vue-i18n';
+import { CheckIcon } from '@heroicons/vue/24/solid';
 import apiClient from '@/utils/apiClient';
 import { useTabs } from '@/composables/useTabs';
 import { useNotifications, showGlobalNotification } from '@/composables/useNotifications';
@@ -332,6 +308,7 @@ import ResponseTemplateBuilder from '@/components/forms/ResponseTemplateBuilder.
 import FormPreview from '@/components/forms/FormPreview.vue';
 import PreviewAndSave from '@/components/forms/PreviewAndSave.vue';
 
+const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
 const { openTab, closeTab, findTabByPath, activeTabId, findTabById, activeTab } = useTabs();
@@ -431,27 +408,27 @@ const formData = ref({
 const steps = computed(() => [
   {
     id: '01',
-    name: 'Form Details',
+    name: t('forms.wizardStepFormDetails'),
     status: currentStepIndex.value > 0 ? 'complete' : currentStepIndex.value === 0 ? 'current' : 'upcoming'
   },
   {
     id: '02',
-    name: 'Sections & Questions',
+    name: t('forms.wizardStepSectionsQuestions'),
     status: currentStepIndex.value > 1 ? 'complete' : currentStepIndex.value === 1 ? 'current' : 'upcoming'
   },
   {
     id: '03',
-    name: 'Outcomes & Rules',
+    name: t('forms.outcomesHeading'),
     status: currentStepIndex.value > 2 ? 'complete' : currentStepIndex.value === 2 ? 'current' : 'upcoming'
   },
   {
     id: '04',
-    name: 'Response Template',
+    name: t('forms.tabTemplateHeading'),
     status: currentStepIndex.value > 3 ? 'complete' : currentStepIndex.value === 3 ? 'current' : 'upcoming'
   },
   {
     id: '05',
-    name: 'Preview & Save',
+    name: t('forms.previewSaveHeading'),
     status: currentStepIndex.value === 4 ? 'current' : currentStepIndex.value > 4 ? 'complete' : 'upcoming'
   }
 ]);
@@ -822,7 +799,7 @@ const saveDraft = async (dataToSave = formData.value, showNotification = false) 
         // Ensure section has required fields
         const cleanedSection = {
           sectionId: section.sectionId || `section-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          name: section.name || 'Untitled Section',
+          name: section.name || t('forms.builderUntitledSection'),
           order: section.order || 0,
           weightage: section.weightage || 0,
           subsections: [],
@@ -833,7 +810,7 @@ const saveDraft = async (dataToSave = formData.value, showNotification = false) 
         if (section.subsections && Array.isArray(section.subsections)) {
           cleanedSection.subsections = section.subsections.map(subsection => ({
             subsectionId: subsection.subsectionId || `subsection-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            name: subsection.name || 'Untitled Subsection',
+            name: subsection.name || t('forms.builderUntitledSubsection'),
             order: subsection.order || 0,
             weightage: subsection.weightage || 0,
             questions: (subsection.questions || []).filter(q => q && q.questionText && q.questionText.trim())
@@ -953,7 +930,7 @@ const saveDraft = async (dataToSave = formData.value, showNotification = false) 
           console.log('💾 saveDraft: Updating current tab path from', currentTab.path, 'to', newPath);
           // Update tab path and title synchronously before route change
           currentTab.path = newPath;
-          currentTab.title = formData.value.name || 'New Form';
+          currentTab.title = formData.value.name || t('forms.hubCreateLabel');
           
           // Use nextTick to ensure tab update happens before route change
           await nextTick();
@@ -998,7 +975,7 @@ const saveDraft = async (dataToSave = formData.value, showNotification = false) 
       }
       
       // Show subtle "Draft saved" indicator (non-intrusive)
-      draftSavedMessage.value = 'Draft saved';
+      draftSavedMessage.value = t('forms.hubCreateDraftSaved');
       setTimeout(() => {
         draftSavedMessage.value = '';
       }, 2000);
@@ -1468,7 +1445,7 @@ onMounted(async () => {
       }
     } catch (error) {
       console.error('Error loading form for editing:', error);
-      alert('Failed to load form for editing');
+      alert(t('forms.hubCreateLoadEditFailed'));
     }
   }
   
@@ -1480,7 +1457,7 @@ onMounted(async () => {
         const sourceForm = response.data;
         // Prefill all form data but ensure it's treated as a new form
         Object.assign(formData.value, {
-          name: `${sourceForm.name} (Copy)` || 'Untitled Form (Copy)',
+          name: t('forms.rtTemplateDuplicateName', { name: sourceForm.name || t('forms.hubUntitledForm') }),
           description: sourceForm.description || '',
           formType: sourceForm.formType || 'Audit',
           visibility: sourceForm.visibility || 'Internal',
@@ -1572,7 +1549,7 @@ onMounted(async () => {
       }
     } catch (error) {
       console.error('Error loading form for duplication:', error);
-      alert('Failed to load form for duplication');
+      alert(t('forms.hubCreateLoadDuplicateFailed'));
     }
   }
   
@@ -1836,11 +1813,11 @@ const goToStep = (index) => {
   // Before allowing navigation to next step, validate current step
   if (index > currentStepIndex.value && !canProceed.value) {
     if (currentStepIndex.value === 0) {
-      alert('Please fill in all mandatory fields (Form Name and Form Type) before proceeding.');
+      alert(t('forms.wizardStep0RequiredAlert'));
     } else if (currentStepIndex.value === 1) {
-      alert('Please complete all sections and questions. All questions must have text.');
+      alert(t('forms.hubCreateStep1RequiredAlert'));
     } else if (currentStepIndex.value === 2 && isAuditForm.value) {
-      alert('Please select an Audit Result Rule before proceeding.');
+      alert(t('forms.hubCreateAuditRuleRequired'));
     }
     return;
   }
@@ -1856,11 +1833,11 @@ const nextStep = () => {
   if (!canProceed.value) {
     // Show a message to the user about what's missing
     if (currentStepIndex.value === 0) {
-      alert('Please fill in all mandatory fields (Form Name and Form Type) before proceeding.');
+      alert(t('forms.wizardStep0RequiredAlert'));
     } else if (currentStepIndex.value === 1) {
-      alert('Please complete all sections and questions. All questions must have text.');
+      alert(t('forms.hubCreateStep1RequiredAlert'));
     } else if (currentStepIndex.value === 2 && isAuditForm.value) {
-      alert('Please select an Audit Result Rule before proceeding.');
+      alert(t('forms.hubCreateAuditRuleRequired'));
     }
     return;
   }
@@ -1937,7 +1914,7 @@ const cleanFormDataForSubmit = (data) => {
               
               // Assign default name if empty
               if (!cleanedSubsection.name || !cleanedSubsection.name.trim()) {
-                cleanedSubsection.name = `Subsection ${index + 1}`;
+                cleanedSubsection.name = t('forms.hubCreateSubsectionDefault', { number: index + 1 });
               }
               
               return cleanedSubsection;
@@ -1965,7 +1942,7 @@ const handleSubmit = async () => {
     if (previewAndSaveRef.value && previewAndSaveRef.value.validationErrors) {
       const errors = previewAndSaveRef.value.validationErrors;
       if (errors.length > 0) {
-        alert('Please fix the following issues before saving:\n\n' + errors.join('\n'));
+        alert(t('forms.hubCreateValidationFixPrefix', { issues: errors.join('\n') }));
         return;
       }
     }
@@ -1993,7 +1970,7 @@ const handleSubmit = async () => {
     if (isEditing.value) {
       const formId = getFormId();
       if (!formId) {
-        throw new Error('Form ID is required for editing');
+        throw new Error(t('forms.hubCreateFormIdRequired'));
       }
       console.log('💾 saveForm: Updating form:', formId);
       response = await apiClient.put(`/forms/${formId}`, cleanedFormData);
@@ -2039,7 +2016,7 @@ const handleSubmit = async () => {
       
       // Open the form detail tab (this also navigates to it and makes it active)
       openTab(`/forms/${formId}/detail`, {
-        title: response.data.name || 'Form Details',
+        title: response.data.name || t('forms.tabDetailsHeading'),
         icon: 'clipboard-document',
         insertAdjacent: true
       });
@@ -2066,7 +2043,7 @@ const handleSubmit = async () => {
         }
       }
     } else {
-      alert(response.message || 'Failed to save form');
+      alert(response.message || t('forms.saveFormFailed'));
     }
   } catch (error) {
     console.error('Error saving form:', error);
@@ -2075,7 +2052,7 @@ const handleSubmit = async () => {
     console.error('Form data being sent:', JSON.stringify(formData.value, null, 2));
     
     // Get detailed error message - prioritize actual error over generic message
-    let errorMessage = 'Failed to save form';
+    let errorMessage = t('forms.saveFormFailed');
     if (error.response?.data) {
       // Check for actual error first (more specific)
       if (error.response.data.error) {
@@ -2103,7 +2080,7 @@ const handleSubmit = async () => {
       message: errorMessage
     });
     
-    alert(`Error saving form: ${errorMessage}`);
+    alert(t('forms.hubCreateSaveError', { detail: errorMessage }));
   } finally {
     saving.value = false;
   }

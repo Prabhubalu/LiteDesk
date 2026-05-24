@@ -215,7 +215,8 @@ function participationSortOrder(scope) {
 /**
  * Group headers for the right-pane Details tab (explicit uiGroup/group/section, else field registry).
  */
-function getFieldGroupMeta(fieldDef, moduleKeyRaw) {
+function getFieldGroupMeta(fieldDef, moduleKeyRaw, groupLabels = null) {
+  const g = groupLabels || { groupCore: 'Core', groupSystem: 'System', groupOther: 'Other' };
   const explicit = fieldDef?.uiGroup ?? fieldDef?.group ?? fieldDef?.section;
   if (typeof explicit === 'string' && explicit.trim()) {
     const s = explicit.trim();
@@ -224,13 +225,13 @@ function getFieldGroupMeta(fieldDef, moduleKeyRaw) {
   const mk = normalizeModuleKeyForRegistry(moduleKeyRaw || '');
   const fieldKey = String(fieldDef?.key || '').trim();
   if (fieldKey && /^(createdat|updatedat|createdby|modifiedby|updatedby|_id|__v)$/i.test(fieldKey)) {
-    return { id: 'system', label: 'System', sortOrder: 95 };
+    return { id: 'system', label: g.groupSystem, sortOrder: 95 };
   }
   if (mk && fieldKey) {
     try {
       const c = classifyFieldForModule(mk, fieldKey);
-      if (c === 'core') return { id: 'core', label: 'Core', sortOrder: 0 };
-      if (c === 'system') return { id: 'system', label: 'System', sortOrder: 95 };
+      if (c === 'core') return { id: 'core', label: g.groupCore, sortOrder: 0 };
+      if (c === 'system') return { id: 'system', label: g.groupSystem, sortOrder: 95 };
       if (c && c !== 'core' && c !== 'system') {
         return {
           id: `app-${c}`,
@@ -242,7 +243,7 @@ function getFieldGroupMeta(fieldDef, moduleKeyRaw) {
       /* ignore */
     }
   }
-  return { id: '__fields__', label: 'Other', sortOrder: 80 };
+  return { id: '__fields__', label: g.groupOther, sortOrder: 80 };
 }
 
 /**
@@ -279,6 +280,7 @@ function getRecordPaneAllModuleFieldKeys(moduleDefinition, moduleKey = '', field
  */
 export function createGenericRecordAdapter(opts = {}) {
   const {
+    sectionLabels: sl,
     formatDate,
     moduleDefinition,
     canEditDetails,
@@ -299,6 +301,21 @@ export function createGenericRecordAdapter(opts = {}) {
     getEntityOptions
   } = opts;
 
+  const L = sl || {
+    description: 'Description',
+    details: 'Details',
+    related: 'Related Records',
+    expand: 'Expand',
+    history: 'History',
+    linkRecord: 'Link record',
+    addRecord: 'Add record',
+    createdVia: 'Created via',
+    groupCore: 'Core',
+    groupSystem: 'System',
+    groupOther: 'Other',
+    groupRecord: 'Record',
+  };
+
   /** Normalize entity list to { value, label } options. getEntityOptions(fieldKey) may return [] or array of { _id, name } or { value, label }. */
   function entityOptionsFor(fieldKey) {
     if (typeof getEntityOptions !== 'function') return [];
@@ -318,7 +335,7 @@ export function createGenericRecordAdapter(opts = {}) {
     const moduleKeyStr = String(context?.moduleKey || context?.module || '').toLowerCase().trim();
     const rows = detailKeys.map((fieldKey, rowIndex) => {
       const field = fieldsByKey.get(fieldKey);
-      const groupMeta = getFieldGroupMeta(field || { key: fieldKey }, moduleKeyStr);
+      const groupMeta = getFieldGroupMeta(field || { key: fieldKey }, moduleKeyStr, L);
       const fieldType = fieldTypeFromDef(field, fieldKey);
       const normalizedFieldKey = String(fieldKey || '').toLowerCase().trim();
       // Helpdesk: schema uses camelCase (contactId) but field defs may use "Contact Id", contactid, etc.
@@ -482,7 +499,7 @@ export function createGenericRecordAdapter(opts = {}) {
         const dv = String(record.source).trim();
         rows.push({
           key: 'source',
-          label: 'Created via',
+          label: L.createdVia,
           prefixIcon: TagIcon,
           value: record.source,
           displayValue: dv,
@@ -494,7 +511,7 @@ export function createGenericRecordAdapter(opts = {}) {
           canOpenEditor: false,
           onEdit: null,
           groupId: 'meta',
-          groupLabel: 'Record',
+          groupLabel: L.groupRecord,
           groupSortOrder: 250,
           _rowIndex: rows.length
         });
@@ -518,27 +535,27 @@ export function createGenericRecordAdapter(opts = {}) {
       const sections = {
         description: {
           key: 'description',
-          title: 'Description',
+          title: L.description,
           component: DescriptionSection,
           className: 'pt-4 pb-2',
-          actions: (canViewDescriptionHistory && openDescriptionHistory ? [{ key: 'description-history', type: 'history', label: 'History', handler: () => openDescriptionHistory() }] : []).filter(Boolean)
+          actions: (canViewDescriptionHistory && openDescriptionHistory ? [{ key: 'description-history', type: 'history', label: L.history, handler: () => openDescriptionHistory() }] : []).filter(Boolean)
         },
         details: {
           key: 'details',
-          title: 'Details',
+          title: L.details,
           component: DetailsSection,
           className: 'pt-2 pb-2',
-          actions: [!isExpanded && openLeftSection ? { key: 'expand-details', type: 'expand', label: 'Expand', handler: () => openLeftSection('details') } : null].filter(Boolean)
+          actions: [!isExpanded && openLeftSection ? { key: 'expand-details', type: 'expand', label: L.expand, handler: () => openLeftSection('details') } : null].filter(Boolean)
         },
         related: {
           key: 'related',
-          title: 'Related Records',
+          title: L.related,
           component: RelatedSection,
           className: 'pt-2 pb-3',
           actions: [
-            ...(canLinkRecords && openLinkRecordDrawer ? [{ key: 'link-record', type: 'link', label: 'Link record', handler: () => openLinkRecordDrawer() }] : []),
-            ...(canLinkRecords && openAddRecordDrawer ? [{ key: 'add-record', type: 'plus', label: 'Add record', handler: () => openAddRecordDrawer() }] : []),
-            ...(!isExpanded && openLeftSection ? [{ key: 'expand-related', type: 'expand', label: 'Expand', handler: () => openLeftSection('related') }] : [])
+            ...(canLinkRecords && openLinkRecordDrawer ? [{ key: 'link-record', type: 'link', label: L.linkRecord, handler: () => openLinkRecordDrawer() }] : []),
+            ...(canLinkRecords && openAddRecordDrawer ? [{ key: 'add-record', type: 'plus', label: L.addRecord, handler: () => openAddRecordDrawer() }] : []),
+            ...(!isExpanded && openLeftSection ? [{ key: 'expand-related', type: 'expand', label: L.expand, handler: () => openLeftSection('related') }] : [])
           ]
         }
       };

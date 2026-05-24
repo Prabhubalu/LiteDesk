@@ -2,9 +2,9 @@
   <div class="space-y-6">
     <!-- Header -->
     <div>
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Core Modules</h2>
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.tabCoreModules') }}</h2>
       <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        Shared platform capabilities used across all applications
+        {{ t('settings.tabCoreModulesDesc') }}
       </p>
     </div>
 
@@ -20,7 +20,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <p class="text-sm text-red-800 dark:text-red-300">
-          {{ error.message || 'Failed to load core modules' }}
+          {{ error.message || t('settings.settingsCoreModLoadFailed') }}
         </p>
       </div>
     </div>
@@ -30,8 +30,8 @@
       <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
       </svg>
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Core Modules</h3>
-      <p class="text-sm text-gray-600 dark:text-gray-400">No core modules found in the registry.</p>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.settingsCoreModEmptyTitle') }}</h3>
+      <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.settingsCoreModEmptyBody') }}</p>
     </div>
 
     <!-- Modules Grid -->
@@ -55,7 +55,7 @@
               {{ module.name }}
             </h3>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-              {{ getModuleCounts(module.moduleKey).fields }} Fields · {{ getModuleCounts(module.moduleKey).relationships }} Relationships
+              {{ moduleCardCounts(module.moduleKey) }}
             </p>
             <p
               v-if="showModuleDescription(module)"
@@ -78,13 +78,13 @@
             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
-            Core
+            {{ t('settings.modFieldsBadgeCore') }}
           </span>
           <span
             v-else
             class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
           >
-            App
+            {{ t('settings.modFieldsBadgeApp') }}
           </span>
           <span
             v-if="module.applications && module.applications.length > 1"
@@ -93,17 +93,17 @@
             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
-            Shared
+            {{ t('settings.settingsCoreModBadgeShared') }}
           </span>
           <span
             v-if="module.applications && module.applications.some(app => app.required && !app.canToggle)"
             class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
-            title="Some applications require this module and cannot be disabled"
+            :title="t('settings.settingsCoreModLockedTooltip')"
           >
             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
-            Locked
+            {{ t('settings.modFieldsLocked') }}
           </span>
         </div>
       </div>
@@ -113,6 +113,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { fetchCoreModulesSettingsCached, fetchModulesListCached } from '@/utils/tenantSchemaApiCache';
 import {
@@ -125,6 +126,7 @@ import {
   CubeIcon,
 } from '@heroicons/vue/24/outline';
 
+const { t } = useI18n();
 const router = useRouter();
 
 // Module-specific icons (matches sidebar and tab navigation)
@@ -204,6 +206,11 @@ function getModuleCounts(moduleKey) {
   return c ? { fields: c.fields, relationships: c.relationships } : { fields: 0, relationships: 0 };
 }
 
+function moduleCardCounts(moduleKey) {
+  const counts = getModuleCounts(moduleKey);
+  return t('settings.modFieldsCardCounts', counts);
+}
+
 const viewModuleDetail = (moduleKey) => {
   router.push(`/settings?tab=core-modules&moduleKey=${moduleKey}`);
 };
@@ -212,4 +219,3 @@ onMounted(() => {
   fetchCoreModules();
 });
 </script>
-

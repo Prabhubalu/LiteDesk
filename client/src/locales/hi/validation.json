@@ -1,0 +1,30 @@
+{
+  "required": {
+    "message": "यह फ़ील्ड आवश्यक है",
+    "description": "Generic required field validation"
+  },
+  "emailInvalid": {
+    "message": "एक मान्य ईमेल पता दर्ज करें",
+    "description": "Email format validation"
+  },
+  "minLength": {
+    "message": "कम से कम {min, number} अक्षर होना चाहिए",
+    "description": "Minimum length validation with ICU number"
+  },
+  "maxLength": {
+    "message": "अधिकतम {max, number} अक्षर होना चाहिए",
+    "description": "Maximum length validation with ICU number"
+  },
+  "imageFileRequired": {
+    "message": "कृपया एक छवि फ़ाइल चुनें",
+    "description": "Image upload wrong file type"
+  },
+  "imageMaxSize": {
+    "message": "छवि का आकार 10 एमबी से कम होना चाहिए",
+    "description": "Image upload exceeds size limit"
+  },
+  "imageUploadFailed": {
+    "message": "छवि अपलोड करने में विफल. कृपया पुन: प्रयास करें।",
+    "description": "Image upload network or server error"
+  }
+}

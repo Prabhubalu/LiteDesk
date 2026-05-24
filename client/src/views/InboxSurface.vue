@@ -24,15 +24,15 @@
     <!-- Gmail-style left rail: scopes + mailboxes + primary folders -->
     <aside
       class="flex max-h-[min(70vh,520px)] w-full shrink-0 flex-col overflow-hidden rounded-xl border border-gray-200/90 bg-[#f6f8fc] shadow-sm dark:border-gray-700 dark:bg-gray-900/95 lg:max-h-none lg:w-56 lg:rounded-r-none lg:rounded-l-xl lg:border-r-0 xl:w-60"
-      aria-label="Mail folders and mailboxes"
+      :aria-label="t('inbox.inboxSurfaceMailFoldersAndMailboxes')"
     >
       <div class="flex items-center justify-between gap-2 border-b border-gray-200/80 px-3 py-2.5 dark:border-gray-700/80">
-        <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Mail</span>
+        <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ t('inbox.inboxSurfaceMail') }}</span>
         <div class="flex items-center gap-0.5">
           <button
             type="button"
             class="rounded-md p-1.5 text-gray-600 hover:bg-gray-200/80 dark:text-gray-400 dark:hover:bg-gray-800"
-            title="Compose workspace email"
+            :title="t('inbox.inboxSurfaceComposeWorkspaceEmail')"
             @click="openNewCompose"
           >
             <PencilSquareIcon class="h-4 w-4" aria-hidden="true" />
@@ -40,7 +40,7 @@
           <button
             type="button"
             class="rounded-md p-1.5 text-gray-600 hover:bg-gray-200/80 dark:text-gray-400 dark:hover:bg-gray-800"
-            title="Refresh mailboxes"
+            :title="t('inbox.inboxSurfaceRefreshMailboxes')"
             :disabled="mailboxesLoading"
             @click="fetchMailboxes"
           >
@@ -49,7 +49,7 @@
         </div>
       </div>
 
-      <nav class="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-1.5 pb-2 pt-1" aria-label="Mail navigation">
+      <nav class="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-1.5 pb-2 pt-1" :aria-label="t('inbox.inboxSurfaceMailNavigation')">
         <button
           type="button"
           class="flex w-full items-center gap-3 rounded-e-full py-2 pl-3 pr-2 text-left text-sm transition-colors"
@@ -57,19 +57,15 @@
           @click="selectMailboxFilter(null)"
         >
           <InboxIcon class="h-5 w-5 shrink-0 opacity-90" aria-hidden="true" />
-          <span class="min-w-0 flex-1 truncate font-medium">All mail</span>
+          <span class="min-w-0 flex-1 truncate font-medium">{{ t('inbox.inboxSurfaceAllMail') }}</span>
           <span
             v-if="selectedMailboxFilter === null && threadCounts.unread > 0"
             class="shrink-0 rounded-full bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-white dark:bg-blue-500"
           >{{ threadCounts.unread }}</span>
         </button>
 
-        <div class="mt-3 px-2 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-500">
-          Mailboxes
-        </div>
-        <div v-if="mailboxesLoading" class="px-2 py-2 text-xs text-gray-500 dark:text-gray-400">
-          Loading…
-        </div>
+        <div class="mt-3 px-2 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-500">{{ t('inbox.inboxSurfaceMailboxes') }}</div>
+        <div v-if="mailboxesLoading" class="px-2 py-2 text-xs text-gray-500 dark:text-gray-400">{{ t('states.loading') }}</div>
         <p v-else-if="mailboxesError" class="px-2 py-1 text-xs text-amber-700 dark:text-amber-300">
           {{ mailboxesError }}
         </p>
@@ -108,34 +104,26 @@
               v-if="mb.kind === 'group' && mailboxFlags.canCreateGroup && !mb.gmailInboxSync?.connected"
               type="button"
               class="mt-0.5 shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase text-violet-700 hover:bg-violet-100 dark:text-violet-300 dark:hover:bg-violet-900/50"
-              title="Connect Gmail for this shared inbox"
+              :title="t('inbox.inboxSurfaceConnectGmailForThisSharedInbox')"
               @click.stop="openConnectGroupGmail(mb)"
-            >
-              Connect
-            </button>
+            >{{ t('inbox.inboxSurfaceConnect') }}</button>
             <button
               v-else-if="mb.kind === 'group' && mailboxFlags.canCreateGroup"
               type="button"
               class="mt-0.5 shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase text-violet-700 hover:bg-violet-100 dark:text-violet-300 dark:hover:bg-violet-900/50"
               @click.stop="openMembersModal(mb)"
-            >
-              Members
-            </button>
+            >{{ t('settings.groupsLabelMembers') }}</button>
           </button>
         </template>
-        <p v-else class="px-2 py-1 text-xs leading-relaxed text-gray-500 dark:text-gray-400">
-          No mailboxes yet. Add one below or open Email setup.
-        </p>
+        <p v-else class="px-2 py-1 text-xs leading-relaxed text-gray-500 dark:text-gray-400">{{ t('inbox.inboxSurfaceNoMailboxesYetAddOneBelow') }}</p>
 
         <div class="mt-4 flex items-center justify-between gap-1 px-1.5">
-          <div class="px-0.5 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-500">
-            Primary
-          </div>
+          <div class="px-0.5 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-500">{{ t('forms.rtColorPrimary') }}</div>
           <button
             type="button"
             class="rounded-md p-1 text-gray-500 hover:bg-gray-200/80 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-            title="Refresh folder counts only (does not reload the thread list)"
-            aria-label="Refresh folder counts"
+            :title="t('inbox.inboxSurfaceRefreshFolderCountsOnlyDoesNot')"
+            :aria-label="t('inbox.inboxSurfaceRefreshFolderCounts')"
             :disabled="threadCountsRefreshing"
             @click="fetchWorkspaceThreadCountsOnly({ silent: false })"
           >
@@ -158,12 +146,8 @@
         </button>
 
         <template v-if="gmailSidebarFolders.length">
-          <div class="mt-4 px-2 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-500">
-            Gmail folders
-          </div>
-          <p v-if="gmailLabelsLoading" class="px-3 py-1 text-xs text-gray-500 dark:text-gray-400">
-            Loading folders…
-          </p>
+          <div class="mt-4 px-2 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-500">{{ t('inbox.inboxSurfaceGmailFolders') }}</div>
+          <p v-if="gmailLabelsLoading" class="px-3 py-1 text-xs text-gray-500 dark:text-gray-400">{{ t('inbox.inboxSurfaceLoadingFolders') }}</p>
           <button
             v-for="folder in gmailSidebarFolders"
             :key="'gmail-folder-' + folder.id"
@@ -202,23 +186,19 @@
             v-if="showGroupMailboxForm && mailboxFlags.canCreateGroup"
             class="mt-3 space-y-2 border-t border-gray-200/60 px-2 pt-3 dark:border-gray-700/60"
           >
-            <label class="block text-[11px] font-medium text-gray-600 dark:text-gray-300">
-              Name
-              <input
+            <label class="block text-[11px] font-medium text-gray-600 dark:text-gray-300">{{ t('settings.settingsBhFieldName') }}<input
                 v-model="newGroupMailboxLabel"
                 type="text"
                 class="mt-1 w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-xs dark:border-gray-600 dark:bg-gray-950 dark:text-white"
-                placeholder="e.g. Support"
+                :placeholder="t('inbox.inboxSurfaceEGSupport')"
                 autocomplete="off"
               >
             </label>
-            <label class="block text-[11px] font-medium text-gray-600 dark:text-gray-300">
-              Address (optional)
-              <input
+            <label class="block text-[11px] font-medium text-gray-600 dark:text-gray-300">{{ t('inbox.inboxSurfaceAddressOptional') }}<input
                 v-model="newGroupMailboxEmail"
                 type="email"
                 class="mt-1 w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-xs dark:border-gray-600 dark:bg-gray-950 dark:text-white"
-                placeholder="contact-us@…"
+                :placeholder="t('inbox.inboxSurfaceContactUs')"
                 autocomplete="off"
               >
             </label>
@@ -227,9 +207,7 @@
               class="w-full rounded-lg bg-violet-600 py-2 text-xs font-medium text-white hover:bg-violet-700 disabled:opacity-50"
               :disabled="mailboxActionLoading || !newGroupMailboxLabel.trim()"
               @click="createGroupMailbox"
-            >
-              Create
-            </button>
+            >{{ t('settings.roleDrawerPermCreate') }}</button>
           </div>
           <div class="mt-3 space-y-1.5 border-t border-gray-200/60 px-2 py-3 dark:border-gray-700/60">
             <RouterLink
@@ -249,12 +227,8 @@
     <!-- Main list (Gmail-style content pane) -->
     <div class="min-w-0 flex-1 lg:pl-1">
       <div class="mb-4 lg:mb-5">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
-          Inbox
-        </h1>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Open a thread on its record. Use the mail list on the left to switch mailboxes and folders.
-        </p>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">{{ t('navigation.inbox') }}</h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('inbox.inboxSurfaceOpenAThreadOnItsRecord') }}</p>
       </div>
 
       <div
@@ -266,8 +240,8 @@
         <button
           type="button"
           class="inline-flex h-10 w-10 items-center justify-center rounded-full text-gray-600 hover:bg-gray-200/80 dark:text-gray-300 dark:hover:bg-gray-700"
-          title="Reload thread list"
-          aria-label="Reload thread list"
+          :title="t('inbox.inboxSurfaceReloadThreadList2')"
+          :aria-label="t('inbox.inboxSurfaceReloadThreadList')"
           :disabled="emailLoading"
           @click="refreshInboxThreadsAndCounts"
         >
@@ -276,8 +250,8 @@
         <button
           type="button"
           class="inline-flex h-10 w-10 items-center justify-center rounded-full text-gray-600 hover:bg-gray-200/80 dark:text-gray-300 dark:hover:bg-gray-700"
-          title="Refresh folder counts only"
-          aria-label="Refresh folder counts only"
+          :title="t('inbox.inboxSurfaceRefreshFolderCountsOnly2')"
+          :aria-label="t('inbox.inboxSurfaceRefreshFolderCountsOnly')"
           :disabled="threadCountsRefreshing || emailLoading"
           @click="fetchWorkspaceThreadCountsOnly({ silent: false })"
         >
@@ -300,17 +274,17 @@
             type="search"
             enterkeyhint="search"
             class="w-full rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-9 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-blue-400 dark:focus:ring-blue-400"
-            placeholder="Search subject, body, people, labels…"
+            :placeholder="t('inbox.inboxSurfaceSearchSubjectBodyPeopleLabels')"
             autocomplete="off"
-            aria-label="Search mail"
+            :aria-label="t('inbox.inboxSurfaceSearchMail')"
             @input="scheduleEmailSearch"
           />
           <button
             v-if="emailSearchInput.trim()"
             type="button"
             class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-gray-500 hover:bg-gray-100 hover:text-gray-800 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-            title="Clear search"
-            aria-label="Clear search"
+            :title="t('records.activityClearSearchAria')"
+            :aria-label="t('records.activityClearSearchAria')"
             @click="clearEmailSearch"
           >
             <XMarkIcon class="h-4 w-4" aria-hidden="true" />
@@ -320,18 +294,14 @@
           <RouterLink
             :to="{ path: '/settings', query: { tab: 'integrations' } }"
             class="inline-flex items-center rounded-lg px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-200/80 dark:text-gray-300 dark:hover:bg-gray-700"
-          >
-            Email setup
-          </RouterLink>
+          >{{ t('inbox.inboxSurfaceEmailSetup') }}</RouterLink>
           <label class="inline-flex cursor-pointer items-center gap-2 whitespace-nowrap px-2 text-xs text-gray-600 dark:text-gray-400">
             <input
               v-model="emailIncludeDone"
               type="checkbox"
               class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900"
               @change="onEmailIncludeDoneChange"
-            />
-            Done
-          </label>
+            />{{ t('inbox.inboxSurfaceDone3') }}</label>
         </div>
       </div>
 
@@ -342,12 +312,8 @@
         <div class="font-semibold text-emerald-900 dark:text-emerald-100">
           Gmail SMTP send — {{ selectedMailbox.kind === 'group' ? 'Shared' : 'Personal' }}
         </div>
-        <p class="mt-1 text-[11px] leading-snug text-emerald-800/90 dark:text-emerald-200/90">
-          Outbound email uses your Google App Password via the organization’s Gmail SMTP relay.
-          Connect <strong>Gmail (OAuth)</strong> to import and read mail in this inbox.
-        </p>
-        <div class="mt-1 text-[11px] text-emerald-800 dark:text-emerald-200">
-          Sending as <span class="font-mono">{{ selectedMailbox.emailAddress || '—' }}</span>
+        <p class="mt-1 text-[11px] leading-snug text-emerald-800/90 dark:text-emerald-200/90">{{ t('inbox.inboxSurfaceOutboundEmailUsesYourGoogleApp') }}<strong>{{ t('inbox.inboxSurfaceGmailOauth') }}</strong>{{ t('inbox.inboxSurfaceToImportAndReadMailIn') }}</p>
+        <div class="mt-1 text-[11px] text-emerald-800 dark:text-emerald-200">{{ t('inbox.inboxSurfaceSendingAs') }}<span class="font-mono">{{ selectedMailbox.emailAddress || '—' }}</span>
         </div>
       </div>
 
@@ -355,15 +321,11 @@
         v-if="selectedMailbox && !selectedMailbox.gmailInboxSync?.connected && !selectedMailbox.gmailSmtpOutbound?.connected"
         class="border-b border-gray-200 bg-gradient-to-b from-slate-50 to-white px-4 py-6 dark:border-gray-700 dark:from-gray-900 dark:to-gray-900/95 sm:px-6"
       >
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white sm:text-xl">
-          Connect your inbox to LiteDesk
-        </h2>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white sm:text-xl">{{ t('inbox.inboxSurfaceConnectYourInboxToLitedesk') }}</h2>
         <p class="mt-1 max-w-2xl text-sm text-gray-600 dark:text-gray-400">
           Link your work email provider to sync mail into LiteDesk and send from the CRM. Gmail is available today; Outlook, Yahoo, and IMAP are on the roadmap.
         </p>
-        <p class="mt-4 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-500">
-          Select your email provider
-        </p>
+        <p class="mt-4 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-500">{{ t('inbox.inboxSurfaceSelectYourEmailProvider') }}</p>
         <div class="mt-3 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4">
           <button
             type="button"
@@ -379,7 +341,7 @@
             >
               <span class="drop-shadow-sm">G</span>
             </span>
-            <span class="text-sm font-semibold text-gray-900 dark:text-white">Gmail</span>
+            <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('inbox.inboxSurfaceGmail') }}</span>
           </button>
           <div
             class="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-gray-200 bg-gray-50/80 p-4 text-center dark:border-gray-700 dark:bg-gray-900/40"
@@ -387,8 +349,8 @@
             <span class="flex h-14 w-14 items-center justify-center rounded-xl bg-[#0078d4] text-lg font-bold text-white">
               O
             </span>
-            <span class="text-sm font-medium text-gray-500 dark:text-gray-500">Outlook</span>
-            <span class="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-600">Soon</span>
+            <span class="text-sm font-medium text-gray-500 dark:text-gray-500">{{ t('inbox.inboxSurfaceOutlook') }}</span>
+            <span class="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-600">{{ t('inbox.inboxSurfaceSoon3') }}</span>
           </div>
           <div
             class="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-gray-200 bg-gray-50/80 p-4 text-center dark:border-gray-700 dark:bg-gray-900/40"
@@ -396,25 +358,22 @@
             <span class="flex h-14 w-14 items-center justify-center rounded-xl bg-[#6001d2] text-lg font-bold text-white">
               Y
             </span>
-            <span class="text-sm font-medium text-gray-500 dark:text-gray-500">Yahoo</span>
-            <span class="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-600">Soon</span>
+            <span class="text-sm font-medium text-gray-500 dark:text-gray-500">{{ t('inbox.inboxSurfaceYahoo') }}</span>
+            <span class="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-600">{{ t('inbox.inboxSurfaceSoon2') }}</span>
           </div>
           <div
             class="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-gray-200 bg-gray-50/80 p-4 text-center dark:border-gray-700 dark:bg-gray-900/40"
           >
             <EnvelopeIcon class="h-10 w-10 text-gray-400 dark:text-gray-600" aria-hidden="true" />
-            <span class="text-sm font-medium text-gray-500 dark:text-gray-500">IMAP</span>
-            <span class="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-600">Soon</span>
+            <span class="text-sm font-medium text-gray-500 dark:text-gray-500">{{ t('inbox.inboxSurfaceImap') }}</span>
+            <span class="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-600">{{ t('inbox.inboxSurfaceSoon') }}</span>
           </div>
         </div>
         <p
           v-if="!gmailOAuthReady"
           class="mt-4 max-w-2xl rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100"
         >
-          Gmail isn’t enabled on this API yet (missing <code class="rounded bg-amber-100 px-1 font-mono text-[10px] dark:bg-amber-950/80">GOOGLE_GMAIL_*</code> on the server).
-          <span class="mt-1 block font-medium text-amber-950 dark:text-amber-50">Click the Gmail tile above</span>
-          for copy-paste steps, or ask your administrator to add the three variables and restart the API.
-        </p>
+          Gmail isn’t enabled on this API yet (missing <code class="rounded bg-amber-100 px-1 font-mono text-[10px] dark:bg-amber-950/80">GOOGLE_GMAIL_*</code>{{ t('inbox.inboxSurfaceOnTheServer') }}<span class="mt-1 block font-medium text-amber-950 dark:text-amber-50">{{ t('inbox.inboxSurfaceClickTheGmailTileAbove') }}</span>{{ t('inbox.inboxSurfaceForCopyPasteStepsOrAsk') }}</p>
       </div>
 
       <div
@@ -428,13 +387,8 @@
           <template v-if="selectedMailbox.kind === 'group'">
             Shared mailbox linked to Google. Mail syncs on a schedule; use Sync now for an immediate pull.
           </template>
-          <template v-else>
-            Personal mailbox linked to Google (Gmail labels you choose, read-only scope).
-          </template>
-          Background sync runs automatically.
-        </p>
-        <div class="mt-1 text-[11px] text-violet-800 dark:text-violet-200">
-          Connected as <span class="font-mono">{{ selectedMailbox.gmailInboxSync.accountEmail || '—' }}</span>
+          <template v-else>{{ t('inbox.inboxSurfacePersonalMailboxLinkedToGoogleGmail') }}</template>{{ t('inbox.inboxSurfaceBackgroundSyncRunsAutomatically') }}</p>
+        <div class="mt-1 text-[11px] text-violet-800 dark:text-violet-200">{{ t('inbox.inboxSurfaceConnectedAs') }}<span class="font-mono">{{ selectedMailbox.gmailInboxSync.accountEmail || '—' }}</span>
           <span v-if="selectedMailbox.gmailInboxSync.lastSyncAt" class="ml-2 text-violet-700 dark:text-violet-300">
             · Last sync {{ formatShortSyncTime(selectedMailbox.gmailInboxSync.lastSyncAt) }}
           </span>
@@ -448,9 +402,7 @@
             class="rounded-lg border border-violet-300 bg-white px-3 py-1.5 text-xs font-medium text-violet-900 hover:bg-violet-100 dark:border-violet-700 dark:bg-violet-950 dark:text-violet-100 dark:hover:bg-violet-900/40"
             :disabled="gmailSyncLoading"
             @click="gmailFolderModalOpen = true"
-          >
-            Select folders to sync
-          </button>
+          >{{ t('inbox.inboxSurfaceSelectFoldersToSync') }}</button>
           <button
             type="button"
             class="rounded-lg bg-violet-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-violet-700 disabled:opacity-50"
@@ -464,9 +416,7 @@
             class="rounded-lg border border-violet-300 bg-white px-3 py-1.5 text-xs font-medium text-violet-900 hover:bg-violet-100 dark:border-violet-700 dark:bg-violet-950 dark:text-violet-100 dark:hover:bg-violet-900/40"
             :disabled="gmailSyncLoading"
             @click="disconnectGmail"
-          >
-            Disconnect
-          </button>
+          >{{ t('appointments.disconnect') }}</button>
         </div>
       </div>
 
@@ -479,51 +429,37 @@
           type="button"
           class="rounded-lg bg-blue-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
           @click="bulkMarkDone(true)"
-        >
-          Mark done
-        </button>
+        >{{ t('inbox.inboxSurfaceMarkDone') }}</button>
         <button
           type="button"
           class="rounded-lg border border-blue-300 bg-white px-2.5 py-1.5 text-xs font-medium text-blue-900 hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-100 dark:hover:bg-blue-900"
           @click="bulkMarkDone(false)"
-        >
-          Reopen
-        </button>
+        >{{ t('inbox.inboxSurfaceReopen') }}</button>
         <button
           type="button"
           class="rounded-lg border border-blue-300 bg-white px-2.5 py-1.5 text-xs font-medium text-blue-900 hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-100 dark:hover:bg-blue-900"
           @click="bulkAssignToMe"
-        >
-          Assign to me
-        </button>
+        >{{ t('common.formAssignToMe') }}</button>
         <button
           type="button"
           class="rounded-lg border border-blue-300 bg-white px-2.5 py-1.5 text-xs font-medium text-blue-900 hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-100 dark:hover:bg-blue-900"
           @click="bulkPromptAddTag"
-        >
-          Add tag…
-        </button>
+        >{{ t('forms.fieldAddTagPh') }}</button>
         <button
           type="button"
           class="rounded-lg border border-blue-300 bg-white px-2.5 py-1.5 text-xs font-medium text-blue-900 hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-100 dark:hover:bg-blue-900"
           @click="bulkPromptRemoveTag"
-        >
-          Remove tag…
-        </button>
+        >{{ t('inbox.inboxSurfaceRemoveTag') }}</button>
         <button
           type="button"
           class="rounded-lg border border-blue-300 bg-white px-2.5 py-1.5 text-xs font-medium text-blue-900 hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-100 dark:hover:bg-blue-900"
           @click="bulkSnoozeTomorrow"
-        >
-          Snooze to tomorrow
-        </button>
+        >{{ t('inbox.inboxSurfaceSnoozeToTomorrow') }}</button>
         <button
           type="button"
           class="ml-auto text-xs font-medium text-blue-800 underline dark:text-blue-300"
           @click="clearThreadSelection"
-        >
-          Clear
-        </button>
+        >{{ t('settings.modFieldsClear') }}</button>
       </div>
 
       <div
@@ -534,22 +470,20 @@
             type="checkbox"
             class="rounded border-gray-300 text-blue-600 dark:border-gray-600"
             :checked="allVisibleSelected"
-            title="Select all in view"
-            aria-label="Select all conversations in this view"
+            :title="t('inbox.inboxSurfaceSelectAllInView')"
+            :aria-label="t('inbox.inboxSurfaceSelectAllConversationsInThisView')"
             @change="toggleSelectAllVisible($event.target.checked)"
           />
         </span>
         <span />
         <span class="flex min-w-0 items-center gap-2 pl-1">
-          <span class="truncate">Primary</span>
+          <span class="truncate">{{ t('forms.rtColorPrimary') }}</span>
           <button
             type="button"
             class="shrink-0 rounded-md border border-gray-200 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
-            title="Select up to 500 threads matching this folder and search"
+            :title="t('inbox.inboxSurfaceSelectUpTo500ThreadsMatching')"
             @click="selectAllInFolder"
-          >
-            Select all in folder
-          </button>
+          >{{ t('inbox.inboxSurfaceSelectAllInFolder') }}</button>
         </span>
       </div>
 
@@ -563,17 +497,11 @@
         v-else-if="emailThreads.length === 0"
         class="px-4 py-16 text-center sm:px-8"
       >
-        <p class="text-sm font-medium text-gray-900 dark:text-white">
-          No conversations in this view
-        </p>
-        <p class="mx-auto mt-2 max-w-md text-sm text-gray-500 dark:text-gray-400">
-          When mail is linked to records and inbound is configured, threads appear here. Pick another mailbox or folder in the sidebar, or open
-          <RouterLink
+        <p class="text-sm font-medium text-gray-900 dark:text-white">{{ t('inbox.inboxSurfaceNoConversationsInThisView') }}</p>
+        <p class="mx-auto mt-2 max-w-md text-sm text-gray-500 dark:text-gray-400">{{ t('inbox.inboxSurfaceWhenMailIsLinkedToRecords') }}<RouterLink
             :to="{ path: '/settings', query: { tab: 'integrations' } }"
             class="font-medium text-blue-600 hover:underline dark:text-blue-400"
-          >
-            Integrations
-          </RouterLink>
+          >{{ t('settings.integrationsTitle') }}</RouterLink>
           .
         </p>
       </div>
@@ -624,9 +552,7 @@
               <span
                 v-if="row.done"
                 class="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-gray-500 ring-1 ring-gray-200 dark:text-gray-400 dark:ring-gray-600"
-              >
-                Done
-              </span>
+              >{{ t('inbox.inboxSurfaceDone2') }}</span>
               <time
                 class="shrink-0 text-xs tabular-nums text-gray-500 dark:text-gray-400"
                 :datetime="row.lastActivityAt || row.firstActivityAt"
@@ -657,16 +583,12 @@
               type="button"
               class="rounded px-2 py-1 text-left text-[11px] font-medium text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/40"
               @click="openReplyCompose(row)"
-            >
-              Reply
-            </button>
+            >{{ t('records.activityReply') }}</button>
             <button
               type="button"
               class="rounded px-2 py-1 text-left text-[11px] font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
               @click="snoozeRowTomorrow(row)"
-            >
-              Snooze 1d
-            </button>
+            >{{ t('inbox.inboxSurfaceSnooze1d') }}</button>
           </div>
         </li>
       </ul>
@@ -714,32 +636,28 @@
     >
       <div class="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900">
         <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-gray-800">
-          <h3 id="workspace-mail-title" class="text-sm font-semibold text-gray-900 dark:text-white">
-            Workspace mail
-          </h3>
+          <h3 id="workspace-mail-title" class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('inbox.inboxSurfaceWorkspaceMail') }}</h3>
           <button
             type="button"
             class="rounded p-1 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
-            aria-label="Close"
+            :aria-label="t('settings.roleDrawerCloseSr')"
             @click="closeWorkspacePreview"
           >
             ×
           </button>
         </div>
         <div class="space-y-3 px-4 py-4 text-sm text-gray-700 dark:text-gray-300">
-          <p class="text-xs text-gray-500 dark:text-gray-400">
-            This thread is tied to your workspace (Inbox standalone send or routed workspace mail), not a single CRM record.
-          </p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('inbox.inboxSurfaceThisThreadIsTiedToYour') }}</p>
           <div>
-            <span class="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Subject</span>
+            <span class="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">{{ t('inbox.inboxSurfaceSubject') }}</span>
             <p class="mt-0.5 font-medium text-gray-900 dark:text-white">{{ workspacePreviewThread.subject || '(no subject)' }}</p>
           </div>
           <div>
-            <span class="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Participants</span>
+            <span class="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">{{ t('inbox.inboxSurfaceParticipants') }}</span>
             <p class="mt-0.5">{{ workspacePreviewThread.participantDisplay }}</p>
           </div>
           <div v-if="workspacePreviewThread.tags?.length">
-            <span class="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Tags</span>
+            <span class="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">{{ t('settings.assignRulesCondFieldTags') }}</span>
             <p class="mt-0.5">{{ workspacePreviewThread.tags.join(', ') }}</p>
           </div>
           <RouterLink
@@ -770,19 +688,15 @@
           <button
             type="button"
             class="rounded p-1 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
-            aria-label="Close"
+            :aria-label="t('settings.roleDrawerCloseSr')"
             @click="closeMembersModal"
           >
             ×
           </button>
         </div>
-        <p class="px-4 py-2 text-xs text-gray-500 dark:text-gray-400">
-          Leave everyone unchecked to allow <span class="font-medium">all</span> org users to work this inbox. Otherwise only checked users (and admins) see threads for this mailbox.
-        </p>
+        <p class="px-4 py-2 text-xs text-gray-500 dark:text-gray-400">{{ t('inbox.inboxSurfaceLeaveEveryoneUncheckedToAllow') }}<span class="font-medium">all</span>{{ t('inbox.inboxSurfaceOrgUsersToWorkThisInbox') }}</p>
         <div class="max-h-[50vh] overflow-y-auto px-4 pb-2">
-          <div v-if="assignmentUsersLoading" class="py-8 text-center text-sm text-gray-500">
-            Loading users…
-          </div>
+          <div v-if="assignmentUsersLoading" class="py-8 text-center text-sm text-gray-500">{{ t('appointments.loadingUsers') }}</div>
           <ul v-else class="space-y-1">
             <li
               v-for="u in assignmentUsers"
@@ -811,9 +725,7 @@
             type="button"
             class="rounded-lg px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
             @click="closeMembersModal"
-          >
-            Cancel
-          </button>
+          >{{ t('performance.cancelWizard') }}</button>
           <button
             type="button"
             class="rounded-lg bg-violet-600 px-4 py-2 text-xs font-medium text-white hover:bg-violet-700 disabled:opacity-50"
@@ -858,13 +770,11 @@
           @click.stop
         >
           <div class="flex items-start justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-800">
-            <h2 id="gmail-setup-title" class="pr-8 text-lg font-semibold text-gray-900 dark:text-white">
-              Enable Gmail on this API server
-            </h2>
+            <h2 id="gmail-setup-title" class="pr-8 text-lg font-semibold text-gray-900 dark:text-white">{{ t('inbox.inboxSurfaceEnableGmailOnThisApiServer') }}</h2>
             <button
               type="button"
               class="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
-              aria-label="Close"
+              :aria-label="t('settings.roleDrawerCloseSr')"
               @click="gmailServerSetupModalOpen = false"
             >
               <XMarkIcon class="h-5 w-5" />
@@ -873,9 +783,7 @@
           <div class="space-y-4 px-5 py-4 text-sm text-gray-700 dark:text-gray-300">
             <p>
               Google requires a registered OAuth app. LiteDesk never puts the client secret in the browser—you add it
-              <span class="font-medium">once</span>
-              to the API environment, then everyone uses <span class="font-medium">Connect Gmail</span> here.
-            </p>
+              <span class="font-medium">once</span>{{ t('inbox.inboxSurfaceToTheApiEnvironmentThenEveryone') }}<span class="font-medium">{{ t('inbox.inboxSurfaceConnectGmail') }}</span>{{ t('inbox.inboxSurfaceHere') }}</p>
             <ol class="list-decimal space-y-3 pl-5 text-sm">
               <li>
                 In
@@ -885,30 +793,24 @@
                   rel="noopener noreferrer"
                   class="font-medium text-emerald-700 underline hover:text-emerald-800 dark:text-emerald-400"
                 >Google Cloud Console → Credentials</a>,
-                create an <span class="font-medium">OAuth 2.0 Client ID</span> (Web application). Copy the Client ID and Client secret.
+                create an <span class="font-medium">{{ t('inbox.inboxSurfaceOauth20ClientId') }}</span> (Web application). Copy the Client ID and Client secret.
               </li>
-              <li>
-                Under <span class="font-medium">Authorized redirect URIs</span>, add this URL exactly (must match your API host and port):
+              <li>{{ t('inbox.inboxSurfaceUnder') }}<span class="font-medium">{{ t('inbox.inboxSurfaceAuthorizedRedirectUris') }}</span>, add this URL exactly (must match your API host and port):
                 <div class="mt-2 flex flex-wrap items-center gap-2 rounded-lg bg-gray-100 px-3 py-2 font-mono text-xs text-gray-900 dark:bg-gray-800 dark:text-gray-100">
                   <span class="min-w-0 flex-1 break-all">{{ gmailRedirectExample }}</span>
                   <button
                     type="button"
                     class="shrink-0 rounded bg-white px-2 py-1 text-[11px] font-medium text-gray-800 shadow ring-1 ring-gray-200 hover:bg-gray-50 dark:bg-gray-950 dark:text-gray-200 dark:ring-gray-600"
                     @click="copyGmailRedirectExample"
-                  >
-                    Copy
-                  </button>
+                  >{{ t('actions.copy') }}</button>
                 </div>
               </li>
-              <li>
-                On the machine that runs the LiteDesk API, set in <code class="rounded bg-gray-200 px-1 font-mono text-xs dark:bg-gray-700">server/.env</code>:
+              <li>{{ t('inbox.inboxSurfaceOnTheMachineThatRunsThe') }}<code class="rounded bg-gray-200 px-1 font-mono text-xs dark:bg-gray-700">{{ t('inbox.inboxSurfaceServerEnv') }}</code>:
                 <pre class="mt-2 overflow-x-auto rounded-lg bg-gray-900 p-3 text-[11px] leading-relaxed text-gray-100">{{ gmailEnvSnippet }}</pre>
               </li>
-              <li>Restart the API process, reload this page, then click Gmail again to complete the connection wizard.</li>
+              <li>{{ t('inbox.inboxSurfaceRestartTheApiProcessReloadThis') }}</li>
             </ol>
-            <p class="text-xs text-gray-500 dark:text-gray-400">
-              Workspace owners can instead save overrides under
-              <RouterLink
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('inbox.inboxSurfaceWorkspaceOwnersCanInsteadSaveOverrides') }}<RouterLink
                 :to="{ path: '/settings', query: { tab: 'integrations' } }"
                 class="font-medium text-emerald-700 underline dark:text-emerald-400"
                 @click="gmailServerSetupModalOpen = false"
@@ -921,9 +823,7 @@
               type="button"
               class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-white"
               @click="gmailServerSetupModalOpen = false"
-            >
-              Done
-            </button>
+            >{{ t('inbox.inboxSurfaceDone') }}</button>
           </div>
         </div>
       </div>
@@ -939,6 +839,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter, RouterLink } from 'vue-router';
 import apiClient from '@/utils/apiClient';
@@ -1534,7 +1437,7 @@ function onGetStartedGroupSetup() {
 }
 
 function onGetStartedComingSoon() {
-  notifications.info('This integration is coming soon.');
+  notifications.info(t('inbox.inboxIntegrationComingSoon'));
 }
 
 function openNewCompose() {
@@ -1714,7 +1617,7 @@ async function selectAllInFolder() {
     if (res?.success && Array.isArray(res?.data?.threadIds)) {
       selectedThreadIds.value = res.data.threadIds.map(String);
       if (res.data.truncated) {
-        notifications.info('Only the first 500 threads in this view were selected.');
+        notifications.info(t('inbox.inboxThreadsPartialSelect'));
       }
     } else {
       notifications.error(res?.message || 'Could not load thread ids');

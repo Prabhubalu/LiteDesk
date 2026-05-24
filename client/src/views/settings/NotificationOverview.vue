@@ -4,64 +4,44 @@
     <header class="mb-6">
       <!-- Breadcrumb -->
       <nav class="mb-4 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-        <router-link to="/settings" class="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-          Settings
-        </router-link>
+        <router-link to="/settings" class="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">{{ t('settings.modFieldsSourceSettings') }}</router-link>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
         </svg>
-        <router-link to="/settings?tab=notifications&notificationPage=overview" class="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-          Notifications
-        </router-link>
+        <router-link to="/settings?tab=notifications&notificationPage=overview" class="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">{{ t('settings.helpdeskExecNotifications') }}</router-link>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
         </svg>
-        <span class="text-gray-900 dark:text-white">Overview</span>
+        <span class="text-gray-900 dark:text-white">{{ t('settings.roleDrawerTabOverview') }}</span>
       </nav>
-      <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-        Notification Overview
-      </h1>
-      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        Learn how notifications work and what you can control.
-      </p>
+      <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{{ t('common.notificationOverviewNotificationOverview') }}</h1>
+      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('common.notificationOverviewLearnHowNotificationsWorkAndWhat') }}</p>
     </header>
 
     <!-- Section 1: What you're notified about -->
     <section class="mb-8">
-      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        What you're notified about
-      </h2>
-      <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-        Notifications are organized by intent to help you stay informed without being overwhelmed.
-      </p>
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('common.notificationOverviewWhatYoureNotifiedAbout') }}</h2>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">{{ t('common.notificationOverviewNotificationsAreOrganizedByIntentTo') }}</p>
 
       <div class="space-y-4">
         <!-- Assignments -->
         <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
-          <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
-            Assignments
-          </h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-            When tasks, audits, or corrective actions are assigned to you.
-          </p>
+          <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">{{ t('common.notificationOverviewAssignments') }}</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ t('common.notificationOverviewWhenTasksAuditsOrCorrectiveActions') }}</p>
           <div class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
             <p>• Audit assigned to you</p>
             <p>• Task assigned to you</p>
             <p>• Corrective action assigned to you</p>
           </div>
           <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-            <span class="text-xs text-gray-500 dark:text-gray-400">System-defined</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('common.notificationOverviewSystemDefined3') }}</span>
           </div>
         </div>
 
         <!-- Updates -->
         <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
-          <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
-            Updates
-          </h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-            Status changes, submissions, approvals, and other important updates.
-          </p>
+          <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">{{ t('records.activityFilterUpdates') }}</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ t('common.notificationOverviewStatusChangesSubmissionsApprovalsAndOther') }}</p>
           <div class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
             <p>• Audit status changed</p>
             <p>• Task completed</p>
@@ -75,12 +55,8 @@
 
         <!-- Deadlines -->
         <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
-          <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
-            Deadlines
-          </h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-            Reminders for upcoming or overdue items.
-          </p>
+          <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">{{ t('common.notificationOverviewDeadlines') }}</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ t('common.notificationOverviewRemindersForUpcomingOrOverdueItems') }}</p>
           <div class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
             <p>• Corrective action due soon</p>
             <p>• Task deadline approaching</p>
@@ -93,18 +69,14 @@
 
         <!-- Conversations -->
         <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
-          <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
-            Conversations
-          </h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-            Activity that involves collaboration and review.
-          </p>
+          <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">{{ t('common.notificationOverviewConversations') }}</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ t('common.notificationOverviewActivityThatInvolvesCollaborationAndReview') }}</p>
           <div class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
             <p>• Audit needs review</p>
             <p>• Audit approved or rejected</p>
           </div>
           <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-            <span class="text-xs text-gray-500 dark:text-gray-400">System-defined</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('common.notificationOverviewSystemDefined2') }}</span>
           </div>
         </div>
 
@@ -113,9 +85,7 @@
           <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
             Compliance & system events
           </h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-            Account activity, system updates, and compliance-related notifications.
-          </p>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ t('common.notificationOverviewAccountActivitySystemUpdatesAndCompliance') }}</p>
           <div class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
             <p>• Portal account created</p>
             <p>• User added to app</p>
@@ -123,7 +93,7 @@
             <p>• Subscription status changes</p>
           </div>
           <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-            <span class="text-xs text-gray-500 dark:text-gray-400">System-defined</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('common.notificationOverviewSystemDefined') }}</span>
           </div>
         </div>
       </div>
@@ -131,65 +101,53 @@
 
     <!-- Section 2: How you're notified -->
     <section class="mb-8">
-      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        How you're notified
-      </h2>
-      <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-        Choose where and how you receive notifications across different delivery channels.
-      </p>
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('common.notificationOverviewHowYoureNotified') }}</h2>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">{{ t('common.notificationOverviewChooseWhereAndHowYouReceive') }}</p>
 
       <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 mb-4">
         <div class="space-y-4">
           <!-- In-App -->
           <div class="flex items-start justify-between pb-4 border-b border-gray-200 dark:border-gray-700 last:border-0 last:pb-0">
             <div class="flex-1">
-              <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-1">
-                In-app
-              </h3>
+              <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-1">{{ t('settings.modFieldsPbAlertInApp') }}</h3>
               <p class="text-xs text-gray-500 dark:text-gray-400">
                 Always available • All apps
               </p>
             </div>
-            <span class="text-xs text-gray-500 dark:text-gray-400">Always on</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('common.notificationOverviewAlwaysOn') }}</span>
           </div>
 
           <!-- Email -->
           <div class="flex items-start justify-between pb-4 border-b border-gray-200 dark:border-gray-700 last:border-0 last:pb-0">
             <div class="flex-1">
-              <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-1">
-                Email
-              </h3>
+              <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-1">{{ t('settings.settingsAddFieldTypeEmail') }}</h3>
               <p class="text-xs text-gray-500 dark:text-gray-400">
                 Optional • All apps
               </p>
             </div>
-            <span class="text-xs text-gray-500 dark:text-gray-400">Configurable</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('common.notificationOverviewConfigurable4') }}</span>
           </div>
 
           <!-- Push -->
           <div class="flex items-start justify-between pb-4 border-b border-gray-200 dark:border-gray-700 last:border-0 last:pb-0">
             <div class="flex-1">
-              <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-1">
-                Push
-              </h3>
+              <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-1">{{ t('common.notificationOverviewPush') }}</h3>
               <p class="text-xs text-gray-500 dark:text-gray-400">
                 High-priority alerts • Available in selected apps
               </p>
             </div>
-            <span class="text-xs text-gray-500 dark:text-gray-400">Configurable</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('common.notificationOverviewConfigurable3') }}</span>
           </div>
 
           <!-- WhatsApp -->
           <div class="flex items-start justify-between pb-4 border-b border-gray-200 dark:border-gray-700 last:border-0 last:pb-0">
             <div class="flex-1">
-              <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-1">
-                WhatsApp
-              </h3>
+              <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-1">{{ t('common.notificationOverviewWhatsapp') }}</h3>
               <p class="text-xs text-gray-500 dark:text-gray-400">
                 Critical events • Audit, Portal
               </p>
             </div>
-            <span class="text-xs text-gray-500 dark:text-gray-400">Configurable</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('common.notificationOverviewConfigurable2') }}</span>
           </div>
 
           <!-- SMS -->
@@ -202,7 +160,7 @@
                 Emergency fallback • Portal
               </p>
             </div>
-            <span class="text-xs text-gray-500 dark:text-gray-400">Configurable</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('common.notificationOverviewConfigurable') }}</span>
           </div>
         </div>
       </div>
@@ -210,9 +168,7 @@
       <router-link
         to="/settings?tab=notifications&notificationPage=preferences"
         class="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
-      >
-        Manage delivery channels
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      >{{ t('common.notificationOverviewManageDeliveryChannels') }}<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
         </svg>
       </router-link>
@@ -220,30 +176,20 @@
 
     <!-- Section 3: Your notification control -->
     <section class="mb-8">
-      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        Your notification control
-      </h2>
-      <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-        Customize your notification experience to match your workflow.
-      </p>
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('common.notificationOverviewYourNotificationControl') }}</h2>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">{{ t('common.notificationOverviewCustomizeYourNotificationExperienceToMatch') }}</p>
 
       <div class="space-y-4">
         <!-- Preferences -->
         <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
           <div class="flex items-start justify-between">
             <div class="flex-1">
-              <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                Preferences
-              </h3>
-              <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                Toggle what types of notifications you receive per event. Control which channels are used for each notification type.
-              </p>
+              <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">{{ t('common.notificationOverviewPreferences') }}</h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ t('common.notificationOverviewToggleWhatTypesOfNotificationsYou') }}</p>
               <router-link
                 to="/settings?tab=notifications&notificationPage=preferences"
                 class="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
-              >
-                Manage preferences
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              >{{ t('common.notificationOverviewManagePreferences') }}<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
               </router-link>
@@ -255,18 +201,12 @@
         <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
           <div class="flex items-start justify-between">
             <div class="flex-1">
-              <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                Rules
-              </h3>
-              <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                Create custom notification conditions. Set up rules based on assignments, priorities, statuses, and more.
-              </p>
+              <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">{{ t('settings.assignRulesRulesTitle') }}</h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ t('common.notificationOverviewCreateCustomNotificationConditionsSetUp') }}</p>
               <router-link
                 to="/settings?tab=notifications&notificationPage=rules"
                 class="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
-              >
-                Manage rules
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              >{{ t('common.notificationOverviewManageRules') }}<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
               </router-link>
@@ -278,18 +218,12 @@
         <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
           <div class="flex items-start justify-between">
             <div class="flex-1">
-              <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                Digests
-              </h3>
-              <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                Receive daily or weekly summaries of your notifications instead of real-time alerts. Reduce notification noise while staying informed.
-              </p>
+              <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">{{ t('common.notificationOverviewDigests') }}</h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ t('common.notificationOverviewReceiveDailyOrWeeklySummariesOf') }}</p>
               <router-link
                 to="/settings?tab=notifications&notificationPage=preferences#digests"
                 class="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
-              >
-                Manage digests
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              >{{ t('common.notificationOverviewManageDigests') }}<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
               </router-link>
@@ -301,28 +235,18 @@
 
     <!-- Section 4: Admin visibility (admin only) -->
     <section v-if="authStore.isAdminLike" class="mb-8">
-      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        Admin tools
-      </h2>
-      <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-        Monitor notification delivery health and analytics across your organization.
-      </p>
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('common.notificationOverviewAdminTools') }}</h2>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">{{ t('common.notificationOverviewMonitorNotificationDeliveryHealthAndAnalytics') }}</p>
 
       <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
         <div class="flex items-start justify-between">
           <div class="flex-1">
-            <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
-              Health dashboard
-            </h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-              View delivery statistics, channel health, event volume, and user notification patterns. Identify potential issues before they impact your team.
-            </p>
+            <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">{{ t('common.notificationOverviewHealthDashboard') }}</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ t('common.notificationOverviewViewDeliveryStatisticsChannelHealthEvent') }}</p>
             <router-link
               to="/settings?tab=notifications&notificationPage=health"
               class="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
-            >
-              Open health dashboard
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            >{{ t('common.notificationOverviewOpenHealthDashboard') }}<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
             </router-link>
@@ -334,6 +258,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { useAuthStore } from '@/stores/authRegistry';
 
 const authStore = useAuthStore();

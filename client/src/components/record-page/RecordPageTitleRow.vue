@@ -15,6 +15,9 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 defineProps({
   /** When true, the title row is in "sticky" state (scrolled): show border and background. */
   sticky: { type: Boolean, default: false },

@@ -14,17 +14,13 @@
       >
         <div class="flex items-start justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-800">
           <div>
-            <h2 id="gmail-folders-title" class="text-lg font-semibold text-gray-900 dark:text-white">
-              Mailbox folders
-            </h2>
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Choose which Gmail labels LiteDesk imports. Sync runs on a schedule and when you use Sync now.
-            </p>
+            <h2 id="gmail-folders-title" class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('inbox.gmailMailboxFolderModalMailboxFolders') }}</h2>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('inbox.gmailMailboxFolderModalChooseWhichGmailLabelsLitedeskImports') }}</p>
           </div>
           <button
             type="button"
             class="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-800 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-            aria-label="Close"
+            :aria-label="t('settings.roleDrawerCloseSr')"
             @click="close"
           >
             <XMarkIcon class="h-5 w-5" />
@@ -33,13 +29,9 @@
 
         <div class="min-h-0 flex-1 overflow-y-auto px-5 py-4">
           <p v-if="loadError" class="text-sm text-red-600 dark:text-red-400">{{ loadError }}</p>
-          <div v-else-if="loading" class="py-12 text-center text-sm text-gray-500 dark:text-gray-400">
-            Loading folders from Gmail…
-          </div>
+          <div v-else-if="loading" class="py-12 text-center text-sm text-gray-500 dark:text-gray-400">{{ t('inbox.gmailMailboxFolderModalLoadingFoldersFromGmail') }}</div>
           <template v-else>
-            <p class="text-xs text-gray-600 dark:text-gray-400">
-              System labels (Inbox, Sent, categories) and your custom labels are listed. Select at least one.
-            </p>
+            <p class="text-xs text-gray-600 dark:text-gray-400">{{ t('inbox.gmailMailboxFolderModalSystemLabelsInboxSentCategoriesAnd') }}</p>
             <div
               class="mt-3 grid max-h-[min(52vh,360px)] grid-cols-1 gap-2 overflow-y-auto pr-1 sm:grid-cols-2"
             >
@@ -69,9 +61,7 @@
             class="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
             :disabled="saving"
             @click="close"
-          >
-            Cancel
-          </button>
+          >{{ t('performance.cancelWizard') }}</button>
           <button
             type="button"
             class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50"
@@ -87,6 +77,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { ref, watch } from 'vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import apiClient from '@/utils/apiClient';
@@ -95,6 +86,8 @@ const props = defineProps({
   modelValue: { type: Boolean, default: false },
   mailboxId: { type: String, default: '' }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['update:modelValue', 'saved']);
 

@@ -39,9 +39,7 @@
                         <DialogTitle class="text-base font-semibold text-white">
                           Attach to {{ formatAppName(appKey) }}
                         </DialogTitle>
-                        <p class="mt-1 text-sm text-indigo-200">
-                          Add this person to the app and set participation fields
-                        </p>
+                        <p class="mt-1 text-sm text-indigo-200">{{ t('people.attachToAppModalAddThisPersonToTheApp') }}</p>
                       </div>
                       <button
                         type="button"
@@ -49,7 +47,7 @@
                         @click="close"
                       >
                         <span class="absolute -inset-2.5" />
-                        <span class="sr-only">Close panel</span>
+                        <span class="sr-only">{{ t('forms.previewClosePanelSr') }}</span>
                         <XMarkIcon class="size-6" aria-hidden="true" />
                       </button>
                     </div>
@@ -63,9 +61,7 @@
                   <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
                 </svg>
                 <div>
-                  <p class="text-sm font-medium text-blue-900 dark:text-blue-200 mb-1">
-                    Adding participation
-                  </p>
+                  <p class="text-sm font-medium text-blue-900 dark:text-blue-200 mb-1">{{ t('people.attachToAppModalAddingParticipation') }}</p>
                   <p class="text-sm text-blue-700 dark:text-blue-300">
                     You are adding this person to {{ formatAppName(appKey) }}{{ participationTypeDisplay ? ` as ${participationTypeDisplay}` : '' }}. Only participation fields for this app are set. Core identity fields (name, email, etc.) are not modified.
                   </p>
@@ -92,9 +88,7 @@
                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                 </svg>
                 <div class="flex-1">
-                  <h3 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">
-                    Validation errors
-                  </h3>
+                  <h3 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">{{ t('people.attachToAppModalValidationErrors') }}</h3>
                   <ul class="list-disc list-inside space-y-2">
                     <li v-for="(message, field) in validationErrors" :key="field" class="text-sm text-red-700 dark:text-red-300">
                       <span class="font-medium">{{ getFieldLabel(field) }}:</span> {{ message }}
@@ -110,8 +104,7 @@
                 <label
                   for="standalone-participation-role"
                   class="block text-sm/6 font-medium text-gray-900 dark:text-white"
-                >
-                  Role <span class="text-red-500">*</span>
+                >{{ t('settings.modFieldsPbAssignRole') }}<span class="text-red-500">*</span>
                 </label>
                 <HeadlessSelect
                   id="standalone-participation-role"
@@ -130,9 +123,7 @@
 
               <!-- State Fields Section -->
               <div v-if="visibleStateFields.length > 0" class="space-y-4">
-                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
-                  State fields
-                </h3>
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('people.attachToAppModalStateFields') }}</h3>
                 <div class="space-y-6">
                   <div v-for="fieldName in visibleStateFields" :key="fieldName" class="space-y-1">
                     <!-- Hide classifier field if prefilled from participationType -->
@@ -217,9 +208,7 @@
 
               <!-- Detail Fields Section -->
               <div v-if="detailFields.length > 0" class="space-y-4 border-t border-gray-200 pt-6 dark:border-gray-700">
-                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
-                  Detail fields
-                </h3>
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('people.attachToAppModalDetailFields') }}</h3>
                 <div class="space-y-6">
                   <div v-for="fieldName in detailFields" :key="fieldName" class="space-y-1">
                     <label :for="fieldName" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
@@ -313,9 +302,7 @@
                         type="button"
                         class="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-white dark:ring-gray-600 dark:hover:bg-gray-700 cursor-pointer"
                         @click="close"
-                      >
-                        Cancel
-                      </button>
+                      >{{ t('performance.cancelWizard') }}</button>
                       <button
                         type="submit"
                         :disabled="loading"
@@ -340,6 +327,11 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { resolveFieldLabel } from '@/utils/fieldLabelResolver';
+import { getAppNameKey } from '@/utils/navigationLabels';
+
+const { t, te } = useI18n();
 declare const process: { env: Record<string, string | undefined> };
 
 import { ref, computed, watch, onMounted, toRef } from 'vue';
@@ -663,23 +655,15 @@ const visibleParticipationFields = computed(() => {
 
 // Format app name
 const formatAppName = (appKey: string): string => {
-  const appNames: Record<string, string> = {
-    SALES: 'Sales',
-    HELPDESK: 'Helpdesk',
-    AUDIT: 'Audit',
-    PORTAL: 'Portal',
-    PROJECTS: 'Projects'
-  };
-  return appNames[appKey] || appKey;
+  const nameKey = getAppNameKey(appKey);
+  if (nameKey && te(nameKey)) return t(nameKey);
+  return appKey;
 };
 
-// Get field label
 const getFieldLabel = (fieldName: string): string => {
-  // Convert snake_case to Title Case
-  return fieldName
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+  const metadata = getFieldMetadata(fieldName);
+  const apiLabel = metadata?.label || metadata?.displayName;
+  return resolveFieldLabel('people', { key: fieldName, label: apiLabel }, t, te);
 };
 
 // Check if field is required

@@ -31,13 +31,13 @@
       class="mt-4 p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg border border-gray-200 dark:border-gray-600 space-y-4"
     >
       <div class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-        Evidence Required
+        {{ t('forms.evidenceRequiredHeading') }}
       </div>
 
       <!-- Comment -->
       <div v-if="activeEvidenceRule.comment.required !== 'hidden'">
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Comment
+          {{ t('forms.evidenceCommentLabel') }}
           <span v-if="activeEvidenceRule.comment.required === 'required'" class="text-red-500">*</span>
         </label>
         <textarea
@@ -46,7 +46,7 @@
           :required="activeEvidenceRule.comment.required === 'required'"
           rows="3"
           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-          placeholder="Add a comment..."
+          :placeholder="t('forms.evidenceCommentPh')"
         ></textarea>
         <div v-if="evidenceErrors.comment" class="mt-1 text-xs text-red-600 dark:text-red-400">
           {{ evidenceErrors.comment }}
@@ -56,7 +56,7 @@
       <!-- Image Upload -->
       <div v-if="activeEvidenceRule.image.required !== 'hidden'">
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Image Upload
+          {{ t('forms.evidenceImageUploadLabel') }}
           <span v-if="activeEvidenceRule.image.required === 'required'" class="text-red-500">*</span>
         </label>
         <input
@@ -67,7 +67,8 @@
           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
         />
         <div v-if="evidenceData.image" class="mt-2 text-xs text-gray-600 dark:text-gray-400">
-          Selected: {{ evidenceData.image.name || 'Image uploaded' }}
+          {{ t('forms.evidenceSelectedPrefix') }}
+          {{ evidenceData.image.name || t('forms.evidenceImageUploaded') }}
         </div>
         <div v-if="evidenceErrors.image" class="mt-1 text-xs text-red-600 dark:text-red-400">
           {{ evidenceErrors.image }}
@@ -77,7 +78,7 @@
       <!-- Video Upload -->
       <div v-if="activeEvidenceRule.video.required !== 'hidden'">
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Video Upload
+          {{ t('forms.evidenceVideoUploadLabel') }}
           <span v-if="activeEvidenceRule.video.required === 'required'" class="text-red-500">*</span>
         </label>
         <input
@@ -88,7 +89,8 @@
           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
         />
         <div v-if="evidenceData.video" class="mt-2 text-xs text-gray-600 dark:text-gray-400">
-          Selected: {{ evidenceData.video.name || 'Video uploaded' }}
+          {{ t('forms.evidenceSelectedPrefix') }}
+          {{ evidenceData.video.name || t('forms.evidenceVideoUploaded') }}
         </div>
         <div v-if="evidenceErrors.video" class="mt-1 text-xs text-red-600 dark:text-red-400">
           {{ evidenceErrors.video }}
@@ -97,7 +99,7 @@
 
       <!-- Validation Message -->
       <div v-if="hasEvidenceErrors" class="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded">
-        Please add the required evidence to continue
+        {{ t('forms.evidenceAddRequiredHint') }}
       </div>
     </div>
   </div>
@@ -105,6 +107,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
   question: {
@@ -126,6 +129,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update', 'evidence-update']);
+
+const { t } = useI18n();
 
 const evidenceData = ref({
   comment: '',
@@ -172,21 +177,21 @@ const hasEvidenceErrors = computed(() => {
   const rule = activeEvidenceRule.value;
   
   if (rule.comment.required === 'required' && !evidenceData.value.comment.trim()) {
-    evidenceErrors.value.comment = 'Comment is required';
+    evidenceErrors.value.comment = t('forms.evidenceCommentRequired');
     return true;
   } else {
     evidenceErrors.value.comment = '';
   }
   
   if (rule.image.required === 'required' && !evidenceData.value.image) {
-    evidenceErrors.value.image = 'Image is required';
+    evidenceErrors.value.image = t('forms.evidenceImageRequired');
     return true;
   } else {
     evidenceErrors.value.image = '';
   }
   
   if (rule.video.required === 'required' && !evidenceData.value.video) {
-    evidenceErrors.value.video = 'Video is required';
+    evidenceErrors.value.video = t('forms.evidenceVideoRequired');
     return true;
   } else {
     evidenceErrors.value.video = '';
@@ -270,4 +275,3 @@ watch(() => props.value, (newValue) => {
   }
 });
 </script>
-

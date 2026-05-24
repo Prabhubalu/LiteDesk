@@ -1,54 +1,16 @@
 const Role = require('../models/Role');
+const {
+    getRolePermissionCatalog,
+    expandRolePermissionsForUI,
+    normalizeRolePermissions,
+    mergeIncomingRolePermissions,
+    invalidateTenantPermissionCaches
+} = require('../services/rolePermissionCatalogService');
 
-// Normalize incoming UI permissions into Role schema shape
-function normalizeRolePermissions(input) {
-    const src = { ...(input || {}) };
-    // Unify people -> contacts for storage; keep people for response later
-    if (src.people && !src.contacts) {
-        src.contacts = src.people;
-    }
-
-    const modules = ['contacts','organizations','deals','tasks','events','forms','items','reports','users','settings'];
-    const out = {};
-    for (const mod of modules) {
-        const m = src[mod] || {};
-        // Map UI verbs to schema verbs
-        const read = m.read !== undefined ? m.read : (m.view || false);
-        const update = m.update !== undefined ? m.update : (m.edit || false);
-        const exp = m.export !== undefined ? m.export : (m.exportData || false);
-        const imp = m.import || false;
-        const create = !!m.create;
-        const del = m.delete || false;
-        const scope = m.scope; // trust UI value; schema validates enum
-
-        // Per-module custom fields
-        if (mod === 'reports') {
-            out[mod] = { create, read, update, delete: del, export: exp };
-            continue;
-        }
-        if (mod === 'users') {
-            out[mod] = { create, read, update, delete: del, manageRoles: !!m.manageRoles };
-            continue;
-        }
-        if (mod === 'settings') {
-            out[mod] = { view: !!m.view || !!m.read, edit: !!m.edit || !!m.update, manageRoles: !!m.manageRoles, manageBilling: !!m.manageBilling };
-            continue;
-        }
-
-        // Default module shape with import/export/scope where applicable
-        const base = { create, read, update, delete: del };
-        if (['contacts','organizations','deals','tasks','forms','items'].includes(mod)) {
-            base.export = exp;
-            base.import = imp;
-            if (scope) base.scope = scope;
-        }
-        if (mod === 'events') {
-            if (scope) base.scope = scope;
-        }
-        out[mod] = base;
-    }
-
-    return out;
+function attachUIPermissionAliases(roleObj) {
+    if (!roleObj) return roleObj;
+    roleObj.permissions = expandRolePermissionsForUI(roleObj);
+    return roleObj;
 }
 
 // Get all roles for organization
@@ -59,14 +21,7 @@ exports.getRoles = async (req, res) => {
         })
         .populate('parentRole', 'name')
         .sort({ level: 1, name: 1 });
-        // Add UI alias: people -> contacts
-        roles = roles.map(r => {
-            const obj = r.toObject();
-            if (obj.permissions && obj.permissions.contacts && !obj.permissions.people) {
-                obj.permissions.people = obj.permissions.contacts;
-            }
-            return obj;
-        });
+        roles = roles.map((r) => attachUIPermissionAliases(r.toObject()));
         res.json({
             success: true,
             data: roles,
@@ -116,13 +71,9 @@ exports.getRole = async (req, res) => {
             });
         }
 
-        const roleObj = role.toObject();
-        if (roleObj.permissions && roleObj.permissions.contacts && !roleObj.permissions.people) {
-            roleObj.permissions.people = roleObj.permissions.contacts;
-        }
         res.json({
             success: true,
-            data: roleObj
+            data: attachUIPermissionAliases(role.toObject())
         });
     } catch (error) {
         console.error('Get role error:', error);
@@ -170,11 +121,9 @@ exports.createRole = async (req, res) => {
             });
         }
 
-        // Normalize UI permissions to schema shape
-        const normalizedPermissions = normalizeRolePermissions(permissions);
+        const { permissions: normalizedPermissions, appPermissions } = normalizeRolePermissions(permissions);
 
-        // Create new role
-        const newRole = await Role.create({
+        const createPayload = {
             organizationId: req.user.organizationId,
             name: name.trim(),
             description,
@@ -186,13 +135,19 @@ exports.createRole = async (req, res) => {
             canManageTeam: canManageTeam || false,
             canExportData: canExportData || false,
             isSystemRole: false
-        });
+        };
+        if (appPermissions) {
+            createPayload.appPermissions = appPermissions;
+        }
+
+        const newRole = await Role.create(createPayload);
 
         await newRole.populate('parentRole', 'name');
+        invalidateTenantPermissionCaches(req.user.organizationId);
 
         res.status(201).json({
             success: true,
-            data: newRole,
+            data: attachUIPermissionAliases(newRole.toObject()),
             message: 'Role created successfully'
         });
 
@@ -238,10 +193,11 @@ exports.updateRole = async (req, res) => {
 
         // Update fields
         const allowedUpdates = [
-            'description', 
-            'parentRole', 
-            'permissions', 
-            'color', 
+            'description',
+            'parentRole',
+            'permissions',
+            'appPermissions',
+            'color',
             'icon',
             'canViewAllData',
             'canManageTeam',
@@ -252,9 +208,12 @@ exports.updateRole = async (req, res) => {
             allowedUpdates.push('name');
         }
 
-        // Normalize incoming permissions to schema
         if (req.body.permissions) {
-            req.body.permissions = normalizeRolePermissions(req.body.permissions);
+            const merged = mergeIncomingRolePermissions(role, req.body.permissions);
+            req.body.permissions = merged.permissions;
+            if (merged.appPermissions) {
+                req.body.appPermissions = merged.appPermissions;
+            }
         }
 
         allowedUpdates.forEach(field => {
@@ -265,10 +224,11 @@ exports.updateRole = async (req, res) => {
 
         await role.save();
         await role.populate('parentRole', 'name');
+        invalidateTenantPermissionCaches(req.user.organizationId);
 
         res.json({
             success: true,
-            data: role,
+            data: attachUIPermissionAliases(role.toObject()),
             message: 'Role updated successfully'
         });
 
@@ -354,89 +314,20 @@ exports.deleteRole = async (req, res) => {
     }
 };
 
-// Get available permission modules
+// Get available permission modules (tenant-aware catalog)
 exports.getPermissionModules = async (req, res) => {
     try {
-        const modules = [
-            {
-                key: 'people',
-                label: 'People',
-                description: 'Manage people (leads and contacts)',
-                actions: ['create', 'read', 'update', 'delete', 'export', 'import'],
-                hasScope: true
-            },
-            {
-                key: 'organizations',
-                label: 'Organizations',
-                description: 'Manage companies and accounts',
-                actions: ['create', 'read', 'update', 'delete', 'export', 'import'],
-                hasScope: true
-            },
-            {
-                key: 'deals',
-                label: 'Deals',
-                description: 'Manage sales opportunities and pipeline',
-                actions: ['create', 'read', 'update', 'delete', 'export', 'import'],
-                hasScope: true
-            },
-            {
-                key: 'tasks',
-                label: 'Tasks',
-                description: 'Manage tasks and activities',
-                actions: ['create', 'read', 'update', 'delete', 'export'],
-                hasScope: true
-            },
-            {
-                key: 'events',
-                label: 'Events',
-                description: 'Manage calendar and events',
-                actions: ['create', 'read', 'update', 'delete'],
-                hasScope: true
-            },
-            {
-                key: 'forms',
-                label: 'Forms',
-                description: 'Manage forms and form responses',
-                actions: ['create', 'read', 'update', 'delete', 'export'],
-                hasScope: true
-            },
-            {
-                key: 'items',
-                label: 'Items',
-                description: 'Manage products, services, and inventory',
-                actions: ['create', 'read', 'update', 'delete', 'export', 'import'],
-                hasScope: true
-            },
-            {
-                key: 'reports',
-                label: 'Reports',
-                description: 'View and create reports',
-                actions: ['create', 'read', 'update', 'delete', 'export'],
-                hasScope: false
-            },
-            {
-                key: 'users',
-                label: 'User Management',
-                description: 'Manage users and permissions',
-                actions: ['create', 'read', 'update', 'delete', 'manageRoles'],
-                hasScope: false
-            },
-            {
-                key: 'settings',
-                label: 'Settings',
-                description: 'System configuration and settings',
-                actions: ['view', 'edit', 'manageRoles', 'manageBilling'],
-                hasScope: false
-            }
-        ];
+        const catalog = await getRolePermissionCatalog(req.user.organizationId);
 
         res.json({
             success: true,
-            data: modules
+            data: catalog.modules,
+            sections: catalog.sections,
+            enabledApps: catalog.enabledApps
         });
     } catch (error) {
         console.error('Get permission modules error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
             message: 'Error fetching permission modules',
             error: error.message

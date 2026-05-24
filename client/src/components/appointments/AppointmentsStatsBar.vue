@@ -13,7 +13,10 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
+
+const { t } = useI18n();
 
 const props = defineProps({
   active: { type: Boolean, default: false }
@@ -24,10 +27,10 @@ const stats = ref(null);
 const cards = computed(() => {
   if (!stats.value) return [];
   return [
-    { key: 'total', label: 'Total', value: stats.value.totalAppointments ?? 0 },
-    { key: 'completed', label: 'Completed', value: stats.value.completedAppointments ?? 0 },
-    { key: 'cancelled', label: 'Cancelled', value: stats.value.cancelledAppointments ?? 0 },
-    { key: 'noShow', label: 'No-show %', value: `${stats.value.noShowRate ?? 0}%` }
+    { key: 'total', label: t('appointments.statsTotal'), value: stats.value.totalAppointments ?? 0 },
+    { key: 'completed', label: t('appointments.statsCompleted'), value: stats.value.completedAppointments ?? 0 },
+    { key: 'cancelled', label: t('appointments.statsCancelled'), value: stats.value.cancelledAppointments ?? 0 },
+    { key: 'noShow', label: t('appointments.statsNoShowRate'), value: `${stats.value.noShowRate ?? 0}%` }
   ];
 });
 

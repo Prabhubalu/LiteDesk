@@ -1,0 +1,218 @@
+{
+  "salesPipeTitle": {
+    "message": "Pipelines & Stages",
+    "description": "Page heading"
+  },
+  "salesPipeSubtitle": {
+    "message": "Configure sales pipelines and their stages",
+    "description": "Page subtitle"
+  },
+  "salesPipeSidebarPipelines": {
+    "message": "Pipelines",
+    "description": "Sidebar section title"
+  },
+  "salesPipeDragReorder": {
+    "message": "Drag to reorder",
+    "description": "Drag handle tooltip"
+  },
+  "salesPipeStageCount": {
+    "message": "{count, plural, one {# stage} other {# stages}}",
+    "description": "Stage count in pipeline list or detail"
+  },
+  "salesPipeDefaultBadge": {
+    "message": "Default",
+    "description": "Default pipeline badge and radio label"
+  },
+  "salesPipeRemovePipelineTitle": {
+    "message": "Remove pipeline",
+    "description": "Remove pipeline button tooltip"
+  },
+  "salesPipeDropPipelineEnd": {
+    "message": "Drop here to move pipeline to the end",
+    "description": "Pipeline drag drop zone"
+  },
+  "salesPipeEmptyPipelines": {
+    "message": "No pipelines yet.",
+    "description": "Empty pipeline list"
+  },
+  "salesPipeSelectPipeline": {
+    "message": "Select a pipeline",
+    "description": "Detail header when none selected"
+  },
+  "salesPipeDefaultPipelineLabel": {
+    "message": "Default pipeline",
+    "description": "Detail subtitle for default pipeline"
+  },
+  "salesPipeCustomPipelineLabel": {
+    "message": "Custom pipeline",
+    "description": "Detail subtitle for non-default pipeline"
+  },
+  "salesPipeSavePipeline": {
+    "message": "Save Pipeline",
+    "description": "Save pipelines button"
+  },
+  "salesPipeLabelPipelineName": {
+    "message": "Pipeline Name",
+    "description": "Pipeline name field label"
+  },
+  "salesPipeLabelColor": {
+    "message": "Color",
+    "description": "Color field label"
+  },
+  "salesPipeColorHint": {
+    "message": "Used for visual indicators in the UI.",
+    "description": "Pipeline color helper text"
+  },
+  "salesPipeSetAsDefault": {
+    "message": "Set as default",
+    "description": "Set default pipeline button"
+  },
+  "salesPipeStagesTitle": {
+    "message": "Stages",
+    "description": "Stages section heading"
+  },
+  "salesPipeStagesSubtitle": {
+    "message": "Configure the stages available in this pipeline.",
+    "description": "Stages section subtitle"
+  },
+  "salesPipeAddStage": {
+    "message": "Add Stage",
+    "description": "Add stage button"
+  },
+  "salesPipeStageNumber": {
+    "message": "Stage {number}",
+    "description": "Stage row heading with index"
+  },
+  "salesPipeRemoveStageTitle": {
+    "message": "Remove stage",
+    "description": "Remove stage button tooltip"
+  },
+  "salesPipeLabelStageName": {
+    "message": "Stage Name",
+    "description": "Stage name field label"
+  },
+  "salesPipeStageColorTitle": {
+    "message": "Stage color",
+    "description": "Stage color picker tooltip"
+  },
+  "salesPipeStageFallback": {
+    "message": "Stage",
+    "description": "Stage name preview fallback"
+  },
+  "salesPipeLabelProbability": {
+    "message": "Probability (%)",
+    "description": "Stage probability field label"
+  },
+  "salesPipeLabelStatus": {
+    "message": "Status",
+    "description": "Stage status field label"
+  },
+  "salesPipeStatusOpen": {
+    "message": "Open",
+    "description": "Stage status option"
+  },
+  "salesPipeStatusWon": {
+    "message": "Won (Closed)",
+    "description": "Stage status option"
+  },
+  "salesPipeStatusLost": {
+    "message": "Lost (Closed)",
+    "description": "Stage status option"
+  },
+  "salesPipeStatusStalled": {
+    "message": "Stalled",
+    "description": "Stage status option"
+  },
+  "salesPipeDropStageEnd": {
+    "message": "Drop here to move stage to the end",
+    "description": "Stage drag drop zone"
+  },
+  "salesPipeNoPipelineSelected": {
+    "message": "No pipeline selected.",
+    "description": "Empty detail panel"
+  },
+  "salesPipeCreatePipeline": {
+    "message": "Create Pipeline",
+    "description": "Create first pipeline button"
+  },
+  "salesPipeErrDealsModule": {
+    "message": "Deals module not found. Please ensure the Sales app is properly configured.",
+    "description": "Deals module missing error"
+  },
+  "salesPipeErrLoadFailed": {
+    "message": "Failed to load pipelines",
+    "description": "Load pipelines error"
+  },
+  "salesPipeAlertSaveFailed": {
+    "message": "Failed to save pipelines",
+    "description": "Save pipelines alert"
+  },
+  "salesPipeAlertSaveSuccess": {
+    "message": "Pipelines saved successfully",
+    "description": "Save pipelines success alert"
+  },
+  "salesPipeAlertSaveError": {
+    "message": "Failed to save: {message}",
+    "description": "Save pipelines exception alert"
+  },
+  "salesPipeAlertSetDefaultFirst": {
+    "message": "Set another pipeline as default before removing this one.",
+    "description": "Cannot remove default pipeline alert"
+  },
+  "salesPipeAlertMinOnePipeline": {
+    "message": "At least one pipeline is required.",
+    "description": "Cannot remove last pipeline alert"
+  },
+  "salesPipeAlertMinOneStage": {
+    "message": "A pipeline must contain at least one stage.",
+    "description": "Cannot remove last stage alert"
+  },
+  "salesPipeUnknownError": {
+    "message": "Unknown error",
+    "description": "Fallback error message"
+  },
+  "salesPipeDefaultNameSales": {
+    "message": "Sales Pipeline",
+    "description": "Default sales pipeline name"
+  },
+  "salesPipeDefaultNamePipeline": {
+    "message": "Default Pipeline",
+    "description": "Generic default pipeline name"
+  },
+  "salesPipeDefaultNameNumbered": {
+    "message": "Pipeline {number}",
+    "description": "Numbered new pipeline name"
+  },
+  "salesPipeDefaultStageNumbered": {
+    "message": "Stage {number}",
+    "description": "Numbered new stage name"
+  },
+  "salesPipeStageNew": {
+    "message": "New",
+    "description": "Default stage name"
+  },
+  "salesPipeStageQualification": {
+    "message": "Qualification",
+    "description": "Default stage name"
+  },
+  "salesPipeStageProposal": {
+    "message": "Proposal",
+    "description": "Default stage name"
+  },
+  "salesPipeStageNegotiation": {
+    "message": "Negotiation",
+    "description": "Default stage name"
+  },
+  "salesPipeStageContractSent": {
+    "message": "Contract Sent",
+    "description": "Default stage name"
+  },
+  "salesPipeStageClosedWon": {
+    "message": "Closed Won",
+    "description": "Default stage name"
+  },
+  "salesPipeStageClosedLost": {
+    "message": "Closed Lost",
+    "description": "Default stage name"
+  }
+}

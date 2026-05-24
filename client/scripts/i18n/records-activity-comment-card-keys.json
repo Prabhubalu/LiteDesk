@@ -1,0 +1,6 @@
+{
+  "activityCommentEdited": { "message": "(edited)", "description": "Comment edited indicator" },
+  "activityEditCommentAria": { "message": "Edit comment", "description": "Edit comment button aria" },
+  "activityReplyToCommentAria": { "message": "Reply to comment", "description": "Reply to comment button aria" },
+  "activityEditCommentPh": { "message": "Edit comment…", "description": "Edit comment composer placeholder" }
+}

@@ -36,6 +36,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { onMounted, onUpdated, onUnmounted, nextTick, ref, provide, computed } from 'vue';
 
 /**
@@ -48,6 +49,8 @@ const props = defineProps({
   leftExpanded: { type: Boolean, default: false },
   forceMobile: { type: Boolean, default: false }
 });
+
+const { t } = useI18n();
 
 const MOBILE_BREAKPOINT = 1024;
 const TABLET_MIN_WIDTH = 768;

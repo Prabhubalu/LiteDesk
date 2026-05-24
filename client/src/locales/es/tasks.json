@@ -1,0 +1,186 @@
+{
+  "relatedTasksWidgetCreateFirstTask": {
+    "message": "Crear primera tarea",
+    "description": "Auto-migrated from relatedTasksWidget"
+  },
+  "relatedTasksWidgetNoTasksYet": {
+    "message": "Aún no hay tareas",
+    "description": "Auto-migrated from relatedTasksWidget"
+  },
+  "relatedTasksWidgetAddTask": {
+    "message": "Agregar tarea",
+    "description": "Auto-migrated from relatedTasksWidget"
+  },
+  "relatedTasksWidgetLinkTasks": {
+    "message": "Vincular tareas",
+    "description": "Auto-migrated from relatedTasksWidget"
+  },
+  "relatedTasksWidgetRelatedTasks": {
+    "message": "Tareas relacionadas",
+    "description": "Auto-migrated from relatedTasksWidget"
+  },
+  "taskDetailModalEstimatedHours": {
+    "message": "Horas estimadas",
+    "description": "Auto-migrated from taskDetailModal"
+  },
+  "taskDetailModalCreatedBy": {
+    "message": "Creado por",
+    "description": "Auto-migrated from taskDetailModal"
+  },
+  "taskDetailModalWaiting": {
+    "message": "Espera",
+    "description": "Auto-migrated from taskDetailModal"
+  },
+  "taskDetailModalToDo": {
+    "message": "Hacer",
+    "description": "Auto-migrated from taskDetailModal"
+  },
+  "taskDetailModalTaskDetails": {
+    "message": "Detalles de la tarea",
+    "description": "Auto-migrated from taskDetailModal"
+  },
+  "taskEditDrawerWriteOrType": {
+    "message": "Write or type",
+    "description": "Auto-migrated from taskEditDrawer"
+  },
+  "taskEditDrawerUpdateTheTaskInformationBelow": {
+    "message": "Actualice la información de la tarea a continuación.",
+    "description": "Auto-migrated from taskEditDrawer"
+  },
+  "taskEditDrawerEditTask": {
+    "message": "Editar tarea",
+    "description": "Auto-migrated from taskEditDrawer"
+  },
+  "taskFormModalAddSubtask": {
+    "message": "Agregar subtarea",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalSubtaskTitle": {
+    "message": "Título de la subtarea",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalEGUrgentClientBugFix": {
+    "message": "por ejemplo, urgente, cliente, corrección de errores",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalTagsCommaSeparated": {
+    "message": "Etiquetas (separadas por comas)",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalEstimatedHours": {
+    "message": "Horas estimadas",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalSelectAssignee": {
+    "message": "Seleccionar cesionario...",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalUrgent": {
+    "message": "Urgente",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalWaiting": {
+    "message": "Espera",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalToDo": {
+    "message": "Hacer",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalEnterTaskDescription": {
+    "message": "Ingrese la descripción de la tarea",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskFormModalEnterTaskTitle": {
+    "message": "Ingrese el título de la tarea",
+    "description": "Auto-migrated from taskFormModal"
+  },
+  "taskSubtasksFieldAddSubtask": {
+    "message": "Agregar subtarea",
+    "description": "Auto-migrated from taskSubtasksField"
+  },
+  "taskSubtasksFieldSubtaskTitle": {
+    "message": "Título de la subtarea",
+    "description": "Auto-migrated from taskSubtasksField"
+  },
+  "taskSubtasksFieldAddSubtask2": {
+    "message": "Agregar subtarea",
+    "description": "Auto-migrated from taskSubtasksField"
+  },
+  "taskSubtasksFieldAddSubtask3": {
+    "message": "Agregar subtarea",
+    "description": "Auto-migrated from taskSubtasksField"
+  },
+  "taskSubtasksFieldAddSubtask4": {
+    "message": "Agregar subtarea",
+    "description": "Auto-migrated from taskSubtasksField"
+  },
+  "tasksAddTask": {
+    "message": "Agregar tarea",
+    "description": "Auto-migrated from tasks"
+  },
+  "tasksNoTasksInThisStatus": {
+    "message": "No hay tareas en este estado",
+    "description": "Auto-migrated from tasks"
+  },
+  "tasksLoadingBoard": {
+    "message": "Cargando tablero...",
+    "description": "Auto-migrated from tasks"
+  },
+  "tasksNoDueDate": {
+    "message": "Sin fecha de vencimiento",
+    "description": "Auto-migrated from tasks"
+  },
+  "tasksNewTask": {
+    "message": "Nueva tarea",
+    "description": "Auto-migrated from tasks"
+  },
+  "tasksBoard": {
+    "message": "Junta",
+    "description": "Auto-migrated from tasks"
+  },
+  "taskFormModalToastErrorSavingTaskPleaseTry": {
+    "message": "Error al guardar la tarea. Por favor inténtalo de nuevo.",
+    "description": "Toast from TaskFormModal.vue"
+  },
+  "sysFieldTitle": {
+    "message": "Título",
+    "description": "System task field label"
+  },
+  "sysFieldStatus": {
+    "message": "Estado",
+    "description": "System task field label"
+  },
+  "sysFieldAssignedTo": {
+    "message": "Asignado a",
+    "description": "System task field label"
+  },
+  "sysFieldDueDate": {
+    "message": "Fecha de vencimiento",
+    "description": "System task field label"
+  },
+  "sysFieldDescription": {
+    "message": "Descripción",
+    "description": "System task field label"
+  },
+  "listViewAll": {
+    "message": "Todas las tareas",
+    "description": "Tasks list default view title"
+  },
+  "listViewMy": {
+    "message": "Mis tareas",
+    "description": "Tasks list assigned-to-me view title"
+  },
+  "listCreate": {
+    "message": "Nueva tarea",
+    "description": "Tasks list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "Buscar tareas...",
+    "description": "Tasks list search placeholder"
+  },
+  "listStatTotal": {
+    "message": "Tareas totales",
+    "description": "Tasks list statistics card"
+  }
+}

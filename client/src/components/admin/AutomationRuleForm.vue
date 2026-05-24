@@ -31,7 +31,7 @@
                     <div class="bg-indigo-700 dark:bg-indigo-800 px-4 py-6 sm:px-6">
                       <div class="flex items-center justify-between">
                         <DialogTitle class="text-base font-semibold text-white">
-                          {{ isEditing ? 'Edit Automation Rule' : 'New Automation Rule' }}
+                          {{ isEditing ? t('process.ruleFormEditHeading') : t('process.ruleFormNewHeading') }}
                         </DialogTitle>
                         <button
                           type="button"
@@ -50,59 +50,59 @@
 
                       <!-- Basic Info -->
                       <section>
-                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">Basic Information</h3>
+                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">{{ t('process.ruleFormBasicInfo') }}</h3>
                         <div class="space-y-4">
                           <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                              Name <span class="text-red-500">*</span>
+                              {{ t('process.fieldName') }} <span class="text-red-500">*</span>
                             </label>
                             <input
                               v-model="form.name"
                               type="text"
                               required
                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                              placeholder="e.g., Create task when deal is won"
+                              :placeholder="t('process.phRuleName')"
                             />
                           </div>
                           <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                              Description
+                              {{ t('process.fieldDescription') }}
                             </label>
                             <textarea
                               v-model="form.description"
                               rows="2"
                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                              placeholder="Optional description"
+                              :placeholder="t('process.phRuleDescription')"
                             />
                           </div>
                           <div class="grid grid-cols-2 gap-4">
                             <div>
                               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                App <span class="text-red-500">*</span>
+                                {{ t('process.fieldApp') }} <span class="text-red-500">*</span>
                               </label>
                               <select
                                 v-model="form.appKey"
                                 required
                                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                               >
-                                <option value="SALES">SALES</option>
-                                <option value="AUDIT">AUDIT</option>
-                                <option value="PORTAL">PORTAL</option>
+                                <option value="SALES">{{ t('process.appKeySales') }}</option>
+                                <option value="AUDIT">{{ t('process.appKeyAudit') }}</option>
+                                <option value="PORTAL">{{ t('process.appKeyPortal') }}</option>
                               </select>
                             </div>
                             <div>
                               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                Entity Type
+                                {{ t('process.fieldEntityType') }}
                               </label>
                               <select
                                 v-model="form.entityType"
                                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                               >
-                                <option value="">Any</option>
-                                <option value="people">People</option>
-                                <option value="organization">Organization</option>
-                                <option value="deal">Deal</option>
-                                <option value="events">Events / Appointments</option>
+                                <option value="">{{ t('process.entityAny') }}</option>
+                                <option value="people">{{ t('process.entityPeople') }}</option>
+                                <option value="organization">{{ t('process.entityOrganization') }}</option>
+                                <option value="deal">{{ t('process.entityDeal') }}</option>
+                                <option value="events">{{ t('process.entityEvents') }}</option>
                               </select>
                             </div>
                           </div>
@@ -112,7 +112,7 @@
                                 v-model="form.enabled"
                                 checkbox-class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                               />
-                              <span class="text-sm text-gray-700 dark:text-gray-300">Enabled</span>
+                              <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('process.ruleFormEnabled') }}</span>
                             </label>
                             <label class="flex items-start gap-2 mt-3">
                               <HeadlessCheckbox
@@ -120,9 +120,9 @@
                                 checkbox-class="mt-0.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                               />
                               <span class="text-sm text-gray-700 dark:text-gray-300">
-                                Respect business hours
+                                {{ t('process.ruleFormRespectHours') }}
                                 <span class="block text-xs text-gray-500 dark:text-gray-400 font-normal">
-                                  Run this action at the next open window when triggered outside working hours.
+                                  {{ t('process.ruleFormRespectHoursHint') }}
                                 </span>
                               </span>
                             </label>
@@ -135,10 +135,10 @@
                         class="rounded-xl border border-indigo-200/80 bg-indigo-50/60 p-4 dark:border-indigo-800/60 dark:bg-indigo-950/30"
                       >
                         <h3 class="text-sm font-semibold text-indigo-900 dark:text-indigo-200">
-                          Appointment quick start
+                          {{ t('process.ruleFormApptQuickStart') }}
                         </h3>
                         <p class="mt-1 text-xs text-indigo-800/80 dark:text-indigo-300/80">
-                          Pre-fill a rule for common booking workflows.
+                          {{ t('process.ruleFormApptQuickStartHint') }}
                         </p>
                         <div class="mt-3 flex flex-wrap gap-2">
                           <button
@@ -155,11 +155,11 @@
 
                       <!-- Trigger -->
                       <section class="border-t border-gray-200 dark:border-gray-700 pt-6">
-                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">Trigger</h3>
+                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">{{ t('process.ruleFormTrigger') }}</h3>
                         <div class="space-y-4">
                           <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                              Event Type <span class="text-red-500">*</span>
+                              {{ t('process.fieldEventType') }} <span class="text-red-500">*</span>
                             </label>
                             <select
                               v-model="form.trigger.eventType"
@@ -167,7 +167,7 @@
                               @change="onEventTypeChange"
                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                             >
-                              <option value="">Select event...</option>
+                              <option value="">{{ t('process.phSelectEvent') }}</option>
                               <optgroup
                                 v-for="group in eventTypeGroups"
                                 :key="group.key"
@@ -182,17 +182,15 @@
                               v-if="selectedEventMeta?.category === 'appointments'"
                               class="mt-1.5 text-xs text-gray-500 dark:text-gray-400"
                             >
-                              Use entity type
-                              <span class="font-medium text-gray-700 dark:text-gray-300">Events / Appointments</span>
-                              so rules fire for booked meetings.
+                              {{ t('process.ruleFormApptEntityHint', { entityType: t('process.entityEvents') }) }}
                             </p>
                           </div>
                           <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                              Condition (Optional)
+                              {{ t('process.fieldConditionOptional') }}
                             </label>
                             <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                              Add conditions to match specific state values (e.g., stage = "Closed Won")
+                              {{ t('process.ruleFormConditionHint') }}
                             </p>
                             <div class="space-y-2">
                               <div
@@ -204,7 +202,7 @@
                                   v-model="cond.key"
                                   class="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                                 >
-                                  <option value="">Select field...</option>
+                                  <option value="">{{ t('process.phSelectField') }}</option>
                                   <option
                                     v-for="field in availableConditionFields"
                                     :key="field.value"
@@ -217,7 +215,7 @@
                                 <input
                                   v-model="cond.value"
                                   type="text"
-                                  placeholder="Value"
+                                  :placeholder="t('process.phConditionValue')"
                                   class="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                                 />
                                 <button
@@ -235,7 +233,7 @@
                                 @click="addCondition"
                                 class="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
                               >
-                                + Add Condition
+                                {{ t('process.ruleFormAddCondition') }}
                               </button>
                             </div>
                           </div>
@@ -244,11 +242,11 @@
 
                       <!-- Action -->
                       <section class="border-t border-gray-200 dark:border-gray-700 pt-6">
-                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">Action</h3>
+                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">{{ t('process.ruleFormActionSection') }}</h3>
                         <div class="space-y-4">
                           <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                              Action Type <span class="text-red-500">*</span>
+                              {{ t('process.fieldActionType') }} <span class="text-red-500">*</span>
                             </label>
                             <select
                               v-model="form.action.type"
@@ -256,9 +254,9 @@
                               @change="onActionTypeChange"
                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                             >
-                              <option value="">Select action...</option>
-                              <option value="create_task">Create Task</option>
-                              <option value="notify_user">Notify User</option>
+                              <option value="">{{ t('process.phSelectAction') }}</option>
+                              <option value="create_task">{{ t('process.actionCreateTask') }}</option>
+                              <option value="notify_user">{{ t('process.actionNotifyUser') }}</option>
                             </select>
                           </div>
 
@@ -266,19 +264,19 @@
                           <div v-if="form.action.type === 'create_task'" class="space-y-4 pl-4 border-l-2 border-indigo-200 dark:border-indigo-800">
                             <div>
                               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                Task Title <span class="text-red-500">*</span>
+                                {{ t('process.fieldTaskTitle') }} <span class="text-red-500">*</span>
                               </label>
                               <input
                                 v-model="form.action.params.title"
                                 type="text"
                                 required
                                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                                placeholder="e.g., Follow up: deal won"
+                                :placeholder="t('process.phTaskTitle')"
                               />
                             </div>
                             <div>
                               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                Description
+                                {{ t('process.fieldDescription') }}
                               </label>
                               <textarea
                                 v-model="form.action.params.description"
@@ -289,7 +287,7 @@
                             <div class="grid grid-cols-2 gap-4">
                               <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                  Due In (Days)
+                                  {{ t('process.fieldDueInDays') }}
                                 </label>
                                 <input
                                   v-model.number="form.action.params.dueInDays"
@@ -300,41 +298,41 @@
                               </div>
                               <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                  Assign To
+                                  {{ t('process.fieldAssignTo') }}
                                 </label>
                                 <select
                                   v-model="form.action.params.assignee"
                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                                 >
-                                  <option value="triggeredBy">User who triggered</option>
-                                  <option value="owner">Record owner</option>
+                                  <option value="triggeredBy">{{ t('process.assigneeTriggeredBy') }}</option>
+                                  <option value="owner">{{ t('process.assigneeOwner') }}</option>
                                 </select>
                               </div>
                             </div>
                             <div>
                               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                Related Entity
+                                {{ t('process.fieldRelatedEntity') }}
                               </label>
                               <div class="grid grid-cols-2 gap-4">
                                 <select
                                   v-model="form.action.params.relatedEntity.entityType"
                                   class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                                 >
-                                  <option value="">None</option>
-                                  <option value="people">People</option>
-                                  <option value="organization">Organization</option>
-                                  <option value="deal">Deal</option>
-                                  <option value="events">Event / Appointment</option>
+                                  <option value="">{{ t('process.entityNone') }}</option>
+                                  <option value="people">{{ t('process.entityPeople') }}</option>
+                                  <option value="organization">{{ t('process.entityOrganization') }}</option>
+                                  <option value="deal">{{ t('process.entityDeal') }}</option>
+                                  <option value="events">{{ t('process.entityEventAppointment') }}</option>
                                 </select>
                                 <input
                                   v-model="form.action.params.relatedEntity.entityId"
                                   type="text"
-                                  placeholder="ID or '__trigger__'"
+                                  :placeholder="t('process.phRelatedEntityId')"
                                   class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                                 />
                               </div>
                               <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                Use "__trigger__" to link to the event entity
+                                {{ t('process.ruleFormRelatedTriggerHint') }}
                               </p>
                             </div>
                           </div>
@@ -343,26 +341,26 @@
                           <div v-if="form.action.type === 'notify_user'" class="space-y-4 pl-4 border-l-2 border-indigo-200 dark:border-indigo-800">
                             <div>
                               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                Message <span class="text-red-500">*</span>
+                                {{ t('process.fieldMessage') }} <span class="text-red-500">*</span>
                               </label>
                               <textarea
                                 v-model="form.action.params.message"
                                 required
                                 rows="3"
                                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                                placeholder="Notification message"
+                                :placeholder="t('process.phNotifyMessageShort')"
                               />
                             </div>
                             <div>
                               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                Recipient
+                                {{ t('process.fieldRecipient') }}
                               </label>
                               <select
                                 v-model="form.action.params.recipient"
                                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                               >
-                                <option value="triggeredBy">User who triggered</option>
-                                <option value="owner">Record owner</option>
+                                <option value="triggeredBy">{{ t('process.assigneeTriggeredBy') }}</option>
+                                <option value="owner">{{ t('process.assigneeOwner') }}</option>
                               </select>
                             </div>
                           </div>
@@ -376,21 +374,21 @@
                       class="rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
                       @click="$emit('close')"
                     >
-                      Cancel
+                      {{ t('actions.cancel') }}
                     </button>
                     <button
                       type="button"
                       @click="previewRule"
                       class="rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
                     >
-                      Preview
+                      {{ t('process.ruleFormPreview') }}
                     </button>
                     <button
                       type="submit"
                       :disabled="saving"
                       class="inline-flex justify-center rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 dark:hover:bg-indigo-600 disabled:opacity-50"
                     >
-                      {{ saving ? 'Saving...' : (isEditing ? 'Update' : 'Create') }}
+                      {{ saving ? t('states.saving') : (isEditing ? t('actions.update') : t('actions.create')) }}
                     </button>
                   </div>
                 </form>
@@ -406,9 +404,12 @@
 <script setup>
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { ref, computed, watch, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import apiClient from '@/utils/apiClient';
+
+const { t } = useI18n();
 
 const props = defineProps({
   rule: {
@@ -480,10 +481,10 @@ const form = ref({
 
 const conditionEntries = ref([]);
 
-const appointmentTemplates = [
+const appointmentTemplates = computed(() => [
   {
     id: 'booked-notify',
-    label: 'Notify host when booked',
+    label: t('process.tplNotifyBooked'),
     patch: {
       name: 'Notify host on new booking',
       entityType: 'events',
@@ -499,7 +500,7 @@ const appointmentTemplates = [
   },
   {
     id: 'noshow-task',
-    label: 'Task on no-show',
+    label: t('process.tplTaskNoShow'),
     patch: {
       name: 'Follow up after no-show',
       entityType: 'events',
@@ -518,7 +519,7 @@ const appointmentTemplates = [
   },
   {
     id: 'cancelled-notify',
-    label: 'Notify host when cancelled',
+    label: t('process.tplNotifyCancelled'),
     patch: {
       name: 'Notify host on cancellation',
       entityType: 'events',
@@ -532,7 +533,7 @@ const appointmentTemplates = [
       }
     }
   }
-];
+]);
 
 function applyTemplate(tpl) {
   const { patch } = tpl;
@@ -614,10 +615,10 @@ async function previewRule() {
   const data = buildFormData();
   try {
     const res = await apiClient.post('/admin/automation-rules/preview', { rule: data });
-    alert(`Preview: ${res.data.data.plan.length} action(s) would be planned`);
+    alert(t('process.ruleFormPreviewAlert', { count: res.data.data.plan.length }));
     // Could emit preview event to show in a modal
   } catch (err) {
-    validationError.value = err.response?.data?.message || 'Preview failed';
+    validationError.value = err.response?.data?.message || t('process.ruleFormPreviewFailed');
   }
 }
 
@@ -633,7 +634,7 @@ async function handleSubmit() {
     }
     emit('saved');
   } catch (err) {
-    validationError.value = err.response?.data?.message || 'Failed to save rule';
+    validationError.value = err.response?.data?.message || t('process.ruleFormSaveFailed');
   } finally {
     saving.value = false;
   }

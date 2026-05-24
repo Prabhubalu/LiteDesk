@@ -30,6 +30,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 
 const props = defineProps({
@@ -51,6 +52,8 @@ const props = defineProps({
     validator: (value) => ['default', 'primary', 'secondary', 'success', 'warning', 'danger'].includes(value)
   }
 });
+
+const { t } = useI18n();
 
 const iconBgClass = computed(() => {
   const classes = {

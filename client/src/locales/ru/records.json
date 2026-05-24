@@ -1,0 +1,1214 @@
+{
+  "shellErrorTitle": {
+    "message": "Ошибка загрузки записи",
+    "description": "Record page load error heading"
+  },
+  "shellLoadFailed": {
+    "message": "Не удалось загрузить запись",
+    "description": "Record page load error fallback"
+  },
+  "contextTabsAria": {
+    "message": "Вкладки контекстной панели",
+    "description": "Vertical context tab rail aria label"
+  },
+  "fieldsHeadingSr": {
+    "message": "Поля записи",
+    "description": "Screen reader heading for record fields section"
+  },
+  "customFieldsHeadingSr": {
+    "message": "Пользовательские поля",
+    "description": "Screen reader heading for custom fields section"
+  },
+  "relatedRecordsHeadingSr": {
+    "message": "Связанные записи",
+    "description": "Screen reader heading for related records section"
+  },
+  "activityHeadingSr": {
+    "message": "Действия (самые новые внизу)",
+    "description": "Activity timeline screen reader heading"
+  },
+  "activityReply": {
+    "message": "Отвечать",
+    "description": "Reply to comment action"
+  },
+  "activityEmpty": {
+    "message": "Пока никакой активности.",
+    "description": "Empty activity feed"
+  },
+  "activityCommentPh": {
+    "message": "Напишите комментарий...",
+    "description": "Comment composer placeholder"
+  },
+  "activityAddAttachment": {
+    "message": "Добавить вложение",
+    "description": "Add attachment button title"
+  },
+  "activityMention": {
+    "message": "Упомянуть",
+    "description": "Mention button title"
+  },
+  "activityEmoji": {
+    "message": "Эмодзи",
+    "description": "Emoji picker button title"
+  },
+  "activityCommentBtn": {
+    "message": "Комментарий",
+    "description": "Submit comment button"
+  },
+  "activityUpdated": {
+    "message": "обновлено",
+    "description": "Default system activity verb"
+  },
+  "activitySystemWithAction": {
+    "message": "{action} эту запись",
+    "description": "System activity fallback with action verb"
+  },
+  "tagsTitle": {
+    "message": "Теги",
+    "description": "Tags popover title"
+  },
+  "tagsNewTag": {
+    "message": "Новый тег",
+    "description": "New tag button"
+  },
+  "tagsNoPermission": {
+    "message": "У вас недостаточно прав для редактирования тегов.",
+    "description": "Tags read-only message"
+  },
+  "tagsRemoveFromRecord": {
+    "message": "Удалить из этой записи",
+    "description": "Remove tag from record action"
+  },
+  "tagsEditTag": {
+    "message": "Изменить тег",
+    "description": "Edit tag action"
+  },
+  "tagsDeleteFromModule": {
+    "message": "Удалить тег из модуля",
+    "description": "Delete tag from module action"
+  },
+  "tagsSearchHint": {
+    "message": "Нажмите на поле поиска, чтобы просмотреть доступные теги.",
+    "description": "Tags search hint"
+  },
+  "tagsNoneYet": {
+    "message": "В этом экземпляре еще не созданы теги.",
+    "description": "Empty tags list"
+  },
+  "tagsCreateFirst": {
+    "message": "Создать первый тег",
+    "description": "Create first tag CTA"
+  },
+  "tagsPublic": {
+    "message": "Общественный",
+    "description": "Public tag badge"
+  },
+  "tagsTagName": {
+    "message": "Имя тега",
+    "description": "Tag name field label"
+  },
+  "tagsColor": {
+    "message": "Цвет",
+    "description": "Tag color field label"
+  },
+  "tagsMakePublic": {
+    "message": "Сделать тег общедоступным",
+    "description": "Make tag public checkbox"
+  },
+  "tagsSearchPh": {
+    "message": "Найдите или создайте тег",
+    "description": "Tag search placeholder"
+  },
+  "tagsTagActions": {
+    "message": "Действия с тегами",
+    "description": "Tag actions menu aria label"
+  },
+  "tagsNamePh": {
+    "message": "Введите имя тега",
+    "description": "Tag name input placeholder"
+  },
+  "detailsTitle": {
+    "message": "Подробности",
+    "description": "Details section title"
+  },
+  "detailsSelectOption": {
+    "message": "Выберите вариант",
+    "description": "Empty picklist placeholder"
+  },
+  "detailsLinkRecord": {
+    "message": "Нажмите, чтобы связать запись",
+    "description": "Empty lookup field placeholder"
+  },
+  "relatedTitle": {
+    "message": "Связанный",
+    "description": "Related section title"
+  },
+  "relatedEmpty": {
+    "message": "Связанных записей пока нет.",
+    "description": "Empty related list"
+  },
+  "relatedEmptyHint": {
+    "message": "Свяжите эту запись со связанными элементами.",
+    "description": "Empty related hint"
+  },
+  "relatedUnlink": {
+    "message": "Отсоединить",
+    "description": "Unlink related record"
+  },
+  "relatedActionsAria": {
+    "message": "Связанные действия с записью",
+    "description": "Related record actions menu aria"
+  },
+  "stageHistoryTitle": {
+    "message": "История сцены",
+    "description": "Stage history section title"
+  },
+  "subtasksEditAria": {
+    "message": "Изменить подзадачу",
+    "description": "Edit subtask button title"
+  },
+  "subtasksDeleteAria": {
+    "message": "Удалить подзадачу",
+    "description": "Delete subtask button title"
+  },
+  "subtasksNamePh": {
+    "message": "Имя задачи",
+    "description": "New subtask name placeholder"
+  },
+  "subtasksEmpty": {
+    "message": "Подзадач пока нет.",
+    "description": "Empty subtasks list"
+  },
+  "stateHeadingSr": {
+    "message": "Состояние записи",
+    "description": "Record state section screen reader heading"
+  },
+  "descriptionTitle": {
+    "message": "Описание",
+    "description": "Description section default title"
+  },
+  "descriptionEmpty": {
+    "message": "Нет описания",
+    "description": "Empty description placeholder"
+  },
+  "tabSummary": {
+    "message": "Краткое содержание",
+    "description": "Right pane summary tab"
+  },
+  "tabDetails": {
+    "message": "Подробности",
+    "description": "Right pane details tab"
+  },
+  "tabUpdates": {
+    "message": "Обновления",
+    "description": "Right pane updates tab"
+  },
+  "tabContentFallback": {
+    "message": "{name} контент",
+    "description": "Right pane tab placeholder content"
+  },
+  "sectionActionFallback": {
+    "message": "Действие",
+    "description": "Section stack action button fallback label"
+  },
+  "descriptionAdd": {
+    "message": "Добавить описание",
+    "description": "Editable empty description CTA"
+  },
+  "descriptionEmptyReadonly": {
+    "message": "Описания пока нет.",
+    "description": "Read-only empty description"
+  },
+  "subtasksHeader": {
+    "message": "Подзадачи ({completed}/{total})",
+    "description": "Subtasks section header with counts"
+  },
+  "subtasksUntitled": {
+    "message": "Подзадача без названия",
+    "description": "Subtask without title"
+  },
+  "subtasksViewAll": {
+    "message": "Просмотреть все ({count})",
+    "description": "View all subtasks link"
+  },
+  "relatedUntitled": {
+    "message": "Без названия",
+    "description": "Related record without title"
+  },
+  "genericLoading": {
+    "message": "Загрузка {module}…",
+    "description": "Record page loading message"
+  },
+  "genericErrorTitle": {
+    "message": "Ошибка загрузки {module}",
+    "description": "Record page error title"
+  },
+  "genericNavPrevious": {
+    "message": "Предыдущий {singular}",
+    "description": "Previous record navigation"
+  },
+  "genericNavNext": {
+    "message": "Следующий {singular}",
+    "description": "Next record navigation"
+  },
+  "genericTagsAria": {
+    "message": "Теги",
+    "description": "Tags button aria"
+  },
+  "genericCopyUrl": {
+    "message": "Копировать URL",
+    "description": "Copy URL button"
+  },
+  "genericMoreActions": {
+    "message": "Дополнительные действия",
+    "description": "More actions menu"
+  },
+  "genericSendEmail": {
+    "message": "Отправить письмо",
+    "description": "Send email menu action"
+  },
+  "genericBackTo": {
+    "message": "Вернуться в {singular}",
+    "description": "Back from expanded section"
+  },
+  "genericCollapseSection": {
+    "message": "Свернуть раздел",
+    "description": "Collapse section aria"
+  },
+  "genericCollapse": {
+    "message": "Крах",
+    "description": "Collapse button title"
+  },
+  "genericNoDescInVersion": {
+    "message": "В этой версии нет описания.",
+    "description": "Empty description version"
+  },
+  "genericVersionHistory": {
+    "message": "История версий",
+    "description": "Description version history title"
+  },
+  "genericCurrentVersion": {
+    "message": "Текущая версия",
+    "description": "Current version label"
+  },
+  "genericVersionRetention": {
+    "message": "История версий хранится до 365 дней.",
+    "description": "Version retention note"
+  },
+  "genericRestoreVersion": {
+    "message": "Восстановить эту версию",
+    "description": "Restore description version"
+  },
+  "genericRestoring": {
+    "message": "Восстановление…",
+    "description": "Restore in progress"
+  },
+  "genericSomeone": {
+    "message": "Кто-то",
+    "description": "Unknown version author"
+  },
+  "genericKeyFields": {
+    "message": "Ключевые поля",
+    "description": "Key fields section heading"
+  },
+  "genericAppParticipation": {
+    "message": "Участие приложения",
+    "description": "People app participation section"
+  },
+  "genericConvertToContact": {
+    "message": "Преобразовать в контакт",
+    "description": "Convert lead to contact"
+  },
+  "genericNotInAnyApp": {
+    "message": "Этот человек еще не зарегистрирован ни в одном приложении",
+    "description": "Empty people participation"
+  },
+  "genericAddRecord": {
+    "message": "Добавить запись",
+    "description": "Add related record button"
+  },
+  "genericLinkRecord": {
+    "message": "Связать запись",
+    "description": "Link record button"
+  },
+  "genericShowEmptyFields": {
+    "message": "Показать пустые поля",
+    "description": "Show empty fields toggle"
+  },
+  "genericNoFieldsMatch": {
+    "message": "Ни одно поле не соответствует вашему фильтру.",
+    "description": "Details filter no match"
+  },
+  "genericNoFieldsToShow": {
+    "message": "Нет полей для отображения.",
+    "description": "Empty details fields"
+  },
+  "genericNoRecordLoaded": {
+    "message": "Ни одна запись не загружена.",
+    "description": "No record state"
+  },
+  "genericIntegrations": {
+    "message": "Интеграции",
+    "description": "Integrations section title"
+  },
+  "genericNoIntegrations": {
+    "message": "Интеграции не настроены.",
+    "description": "Empty integrations"
+  },
+  "genericFilterFieldsPh": {
+    "message": "Фильтровать поля…",
+    "description": "Details field filter placeholder"
+  },
+  "genericOpenInNewTab": {
+    "message": "Открыть в новой вкладке",
+    "description": "Open record in new tab"
+  },
+  "genericEditParticipation": {
+    "message": "Изменить участие",
+    "description": "Edit app participation"
+  },
+  "genericAddToApp": {
+    "message": "Добавить в {app}",
+    "description": "Add person to app"
+  },
+  "genericLinkDrawerAddAndLink": {
+    "message": "Добавляйте и связывайте записи",
+    "description": "Link drawer title multi"
+  },
+  "genericLinkDrawerLink": {
+    "message": "Ссылка на запись",
+    "description": "Link drawer title single"
+  },
+  "genericReactorUnavailable": {
+    "message": "Подробности о реакторе недоступны.",
+    "description": "Reactor panel unavailable"
+  },
+  "genericUnlinkFailed": {
+    "message": "Ошибка при отмене связи записи. Пожалуйста, попробуйте еще раз.",
+    "description": "Unlink related record error"
+  },
+  "genericThreadAssigned": {
+    "message": "Тема назначена",
+    "description": "Thread assign success"
+  },
+  "genericThreadUnassigned": {
+    "message": "Тема не назначена",
+    "description": "Thread unassign success"
+  },
+  "genericThreadAssignFailed": {
+    "message": "Не удалось назначить тему",
+    "description": "Thread assign error"
+  },
+  "genericThreadUnassignFailed": {
+    "message": "Не удалось отменить назначение темы.",
+    "description": "Thread unassign error"
+  },
+  "genericTagAdded": {
+    "message": "Тег добавлен",
+    "description": "Tag add success"
+  },
+  "genericTagAddFailed": {
+    "message": "Не удалось добавить тег",
+    "description": "Tag add error"
+  },
+  "genericTagRemoved": {
+    "message": "Тег удален",
+    "description": "Tag remove success"
+  },
+  "genericTagRemoveFailed": {
+    "message": "Не удалось удалить тег.",
+    "description": "Tag remove error"
+  },
+  "genericThreadMarkedDone": {
+    "message": "Тема отмечена как завершенная",
+    "description": "Thread done success"
+  },
+  "genericThreadReopened": {
+    "message": "Тема возобновлена",
+    "description": "Thread reopen success"
+  },
+  "genericThreadStatusFailed": {
+    "message": "Не удалось обновить статус темы.",
+    "description": "Thread status error"
+  },
+  "genericConfirmCancelAppt": {
+    "message": "Отменить эту встречу? Гость может забронировать еще раз, используя вашу общедоступную ссылку.",
+    "description": "Cancel appointment confirm"
+  },
+  "genericApptCancelled": {
+    "message": "Встреча отменена",
+    "description": "Appointment cancel success"
+  },
+  "genericApptCancelFailed": {
+    "message": "Не удалось отменить встречу",
+    "description": "Appointment cancel error"
+  },
+  "genericConfirmCompleteAppt": {
+    "message": "Отметить эту встречу как выполненную?",
+    "description": "Complete appointment confirm"
+  },
+  "genericApptCompleted": {
+    "message": "Встреча завершена",
+    "description": "Appointment complete success"
+  },
+  "genericApptCompleteFailed": {
+    "message": "Не удалось завершить встречу",
+    "description": "Appointment complete error"
+  },
+  "genericConfirmNoShowAppt": {
+    "message": "Отметить эту встречу как неявку? Мероприятие останется в вашем календаре, как и планировалось.",
+    "description": "No-show appointment confirm"
+  },
+  "genericApptNoShow": {
+    "message": "Помечено как неявка",
+    "description": "No-show success"
+  },
+  "genericApptNoShowFailed": {
+    "message": "Не удалось отметить неявку",
+    "description": "No-show error"
+  },
+  "genericApptRescheduled": {
+    "message": "Встреча перенесена",
+    "description": "Appointment reschedule success"
+  },
+  "genericEmailSent": {
+    "message": "Письмо отправлено",
+    "description": "Email send success"
+  },
+  "genericEmailSendFailed": {
+    "message": "Не удалось отправить электронное письмо",
+    "description": "Email send error"
+  },
+  "genericNotParticipatingIn": {
+    "message": "Пока не участвую в {app}",
+    "description": "People not in app context"
+  },
+  "genericDetailsEmptyValuesHint": {
+    "message": "Нет полей со значениями. Включите «Показать пустые поля», чтобы увидеть остальное.",
+    "description": "Details tab empty values hint"
+  },
+  "genericPersonReacted": {
+    "message": "человек отреагировал",
+    "description": "Single reaction tooltip suffix"
+  },
+  "genericPeopleReacted": {
+    "message": "люди отреагировали",
+    "description": "Multiple reactions tooltip suffix"
+  },
+  "genericTabActivity": {
+    "message": "Активность",
+    "description": "Right pane activity tab"
+  },
+  "commentComposerDefaultPh": {
+    "message": "Напишите комментарий... @упомяните пользователей или группы",
+    "description": "Default comment composer placeholder"
+  },
+  "commentAddFile": {
+    "message": "Добавить файл",
+    "description": "Attach file toolbar button"
+  },
+  "commentMentionTitle": {
+    "message": "Упомянуть кого-нибудь ({atSymbol})",
+    "description": "Mention toolbar button"
+  },
+  "commentAddEmoji": {
+    "message": "Добавить смайлик",
+    "description": "Emoji picker toolbar button"
+  },
+  "commentSubmitLabel": {
+    "message": "Комментарий",
+    "description": "Submit comment button label"
+  },
+  "commentMentionLoading": {
+    "message": "Загрузка…",
+    "description": "Mention dropdown loading"
+  },
+  "commentMentionGroup": {
+    "message": "Группа",
+    "description": "Mention item group badge"
+  },
+  "commentMentionEmpty": {
+    "message": "Пользователей и групп не найдено",
+    "description": "Empty mention search"
+  },
+  "commentRemoveAttachment": {
+    "message": "Удалить {name}",
+    "description": "Remove attachment aria-label"
+  },
+  "editableListboxSearchPh": {
+    "message": "Поиск…",
+    "description": "Inline field listbox search"
+  },
+  "editablePhonePh": {
+    "message": "Номер телефона",
+    "description": "Phone field edit placeholder"
+  },
+  "editableUnassigned": {
+    "message": "Неназначенный",
+    "description": "Empty user field value"
+  },
+  "editableSelectOption": {
+    "message": "Выберите вариант",
+    "description": "Empty select/entity option"
+  },
+  "editableNoMatches": {
+    "message": "Никаких совпадений.",
+    "description": "Listbox filter empty state"
+  },
+  "editableUnknownUser": {
+    "message": "Неизвестный пользователь",
+    "description": "User option fallback label"
+  },
+  "dealLoading": {
+    "message": "Загрузка сделки…",
+    "description": "Deal record page loading"
+  },
+  "dealErrorTitle": {
+    "message": "Ошибка при загрузке сделки",
+    "description": "Deal record page error title"
+  },
+  "dealNavPrevious": {
+    "message": "Предыдущая сделка",
+    "description": "Previous deal navigation"
+  },
+  "dealNavNext": {
+    "message": "Следующая сделка",
+    "description": "Next deal navigation"
+  },
+  "dealModuleLabel": {
+    "message": "Иметь дело",
+    "description": "Deal module singular label"
+  },
+  "dealBackTo": {
+    "message": "Вернуться к сделке",
+    "description": "Collapse expanded deal section"
+  },
+  "dealEmailContact": {
+    "message": "Контакт по электронной почте",
+    "description": "Email contact action"
+  },
+  "dealEditAria": {
+    "message": "Изменить сделку",
+    "description": "Edit deal action"
+  },
+  "dealVersionRetentionNote": {
+    "message": "История версий будет храниться в описаниях сделок до 365 дней.",
+    "description": "Deal description version retention"
+  },
+  "dealWeightedAmount": {
+    "message": "Взвешенный {amount}",
+    "description": "Deal weighted amount label"
+  },
+  "dealExpectedValuePh": {
+    "message": "Ожидаемая стоимость",
+    "description": "Deal amount field placeholder"
+  },
+  "dealProbabilityPh": {
+    "message": "Вероятность",
+    "description": "Deal probability placeholder"
+  },
+  "dealCloseDatePh": {
+    "message": "Дата закрытия",
+    "description": "Deal expected close date placeholder"
+  },
+  "dealStarAria": {
+    "message": "Звезда",
+    "description": "Star/follow deal"
+  },
+  "dealUnstarAria": {
+    "message": "Снять пометку",
+    "description": "Unfollow deal"
+  },
+  "dealRelatedRecordsTab": {
+    "message": "Связанные записи",
+    "description": "Deal right pane related tab"
+  },
+  "dealDuplicateNotImplemented": {
+    "message": "Повторяющиеся действия для сделок пока не реализованы.",
+    "description": "Deal duplicate stub alert"
+  },
+  "dealExportNotImplemented": {
+    "message": "Экспортное действие для сделок пока не реализовано.",
+    "description": "Deal export stub alert"
+  },
+  "dealDeleteFailed": {
+    "message": "Не удалось удалить сделку.",
+    "description": "Deal delete error"
+  },
+  "dealCopyUrlFailed": {
+    "message": "Не удалось скопировать URL.",
+    "description": "Deal copy URL error"
+  },
+  "dealCommentAddFailed": {
+    "message": "Не удалось добавить комментарий",
+    "description": "Deal add comment error"
+  },
+  "dealCommentUpdateFailed": {
+    "message": "Не удалось обновить комментарий.",
+    "description": "Deal edit comment error"
+  },
+  "dealCreateTaskFailed": {
+    "message": "Не удалось создать задачу",
+    "description": "Deal create related task error"
+  },
+  "dealCreateCaseFailed": {
+    "message": "Не удалось создать обращение.",
+    "description": "Deal create related case error"
+  },
+  "dealAttachedFilesFallback": {
+    "message": "Прикрепленный файл(ы)",
+    "description": "Comment with attachments only"
+  },
+  "dealUnnamedOrganization": {
+    "message": "Безымянная организация",
+    "description": "Organization picker fallback"
+  },
+  "dealUnnamedPerson": {
+    "message": "Безымянный",
+    "description": "Person picker fallback"
+  },
+  "taskLoading": {
+    "message": "Загрузка задачи…",
+    "description": "Task record page loading"
+  },
+  "taskErrorTitle": {
+    "message": "Ошибка загрузки задачи",
+    "description": "Task record page error title"
+  },
+  "taskNavPrevious": {
+    "message": "Предыдущая задача",
+    "description": "Previous task navigation"
+  },
+  "taskNavNext": {
+    "message": "Следующее задание",
+    "description": "Next task navigation"
+  },
+  "taskModuleLabel": {
+    "message": "Задача",
+    "description": "Task module singular label"
+  },
+  "taskBackTo": {
+    "message": "Вернуться к задаче",
+    "description": "Collapse expanded task section"
+  },
+  "taskEditAria": {
+    "message": "Изменить задачу",
+    "description": "Edit task action"
+  },
+  "taskEmailAssignee": {
+    "message": "Адрес электронной почты ответственного",
+    "description": "Email task assignee action"
+  },
+  "taskVersionRetentionNote": {
+    "message": "История версий будет храниться до 365 дней в описаниях задач.",
+    "description": "Task description version retention"
+  },
+  "taskStarAria": {
+    "message": "Звезда",
+    "description": "Star/follow task"
+  },
+  "taskUnstarAria": {
+    "message": "Снять пометку",
+    "description": "Unfollow task"
+  },
+  "taskRelatedRecordsTab": {
+    "message": "Связанные записи",
+    "description": "Task right pane related tab"
+  },
+  "taskCopyUrlSuccess": {
+    "message": "URL-адрес скопирован в буфер обмена!",
+    "description": "Task copy URL success"
+  },
+  "taskLinkModuleFailed": {
+    "message": "Ошибка привязки {moduleKey}. Пожалуйста, попробуйте еще раз.",
+    "description": "Task link related record error"
+  },
+  "taskRelatedGroupProject": {
+    "message": "Проект",
+    "description": "Related project group heading"
+  },
+  "taskRelatedGroupPeople": {
+    "message": "Люди",
+    "description": "Related people group heading"
+  },
+  "taskRelatedGroupEvents": {
+    "message": "События",
+    "description": "Related events group heading"
+  },
+  "taskRelatedGroupDeals": {
+    "message": "Специальные предложения",
+    "description": "Related deals group heading"
+  },
+  "taskRelatedGroupForms": {
+    "message": "Формы",
+    "description": "Related forms group heading"
+  },
+  "taskCloseTimestampDetails": {
+    "message": "Закрыть сведения о временной метке",
+    "description": "Close timestamp popover aria"
+  },
+  "activityCloseSearchAria": {
+    "message": "Закрыть поиск",
+    "description": "Close activity search bar"
+  },
+  "activityNotificationsAria": {
+    "message": "Уведомления",
+    "description": "Activity notifications button"
+  },
+  "activityFilterAria": {
+    "message": "Фильтрация действий",
+    "description": "Activity filter menu button"
+  },
+  "activityFilterHeading": {
+    "message": "Деятельность",
+    "description": "Activity filter menu title"
+  },
+  "activityUnselectAll": {
+    "message": "Отменить выбор всех",
+    "description": "Clear all activity filters"
+  },
+  "activitySelectAll": {
+    "message": "Выбрать все",
+    "description": "Enable all activity filters"
+  },
+  "activityFilterComments": {
+    "message": "Комментарии",
+    "description": "Activity filter: comments"
+  },
+  "activityFilterEmail": {
+    "message": "Электронная почта",
+    "description": "Activity filter: email"
+  },
+  "activityFilterUpdates": {
+    "message": "Обновления",
+    "description": "Activity filter: updates"
+  },
+  "activityFilterDoneThreads": {
+    "message": "Готовые темы",
+    "description": "Activity filter: done threads"
+  },
+  "activityFilterAssignedToMe": {
+    "message": "Назначено мне",
+    "description": "Activity filter: assigned to me"
+  },
+  "activityFilterTaggedThreads": {
+    "message": "Темы с тегами",
+    "description": "Activity filter: tagged threads"
+  },
+  "activityFilterUntaggedThreads": {
+    "message": "Немаркированные темы",
+    "description": "Activity filter: untagged threads"
+  },
+  "activitySearchPh": {
+    "message": "Поиск…",
+    "description": "Activity search input placeholder"
+  },
+  "activityClearSearchAria": {
+    "message": "Очистить поиск",
+    "description": "Clear activity search"
+  },
+  "activityClearSearchTitle": {
+    "message": "Прозрачный",
+    "description": "Clear search button title"
+  },
+  "activityThreadBy": {
+    "message": "Автор темы",
+    "description": "Thread view author prefix"
+  },
+  "activityNothingFound": {
+    "message": "Ничего не найдено",
+    "description": "No activities match filters"
+  },
+  "activitySelectOneFilter": {
+    "message": "Пожалуйста, выберите хотя бы один фильтр.",
+    "description": "Empty filter state hint"
+  },
+  "activityResetFilters": {
+    "message": "Сбросить фильтры",
+    "description": "Reset activity filters button"
+  },
+  "activityReplyPh": {
+    "message": "Ответ на комментарий…",
+    "description": "Thread reply composer placeholder"
+  },
+  "activityCommentEdited": {
+    "message": "(отредактировано)",
+    "description": "Comment edited indicator"
+  },
+  "activityEditCommentAria": {
+    "message": "Редактировать комментарий",
+    "description": "Edit comment button aria"
+  },
+  "activityReplyToCommentAria": {
+    "message": "Ответ на комментарий",
+    "description": "Reply to comment button aria"
+  },
+  "activityEditCommentPh": {
+    "message": "Редактировать комментарий…",
+    "description": "Edit comment composer placeholder"
+  },
+  "notesBlockedContext": {
+    "message": "Контекст приложения неоднозначен. Невозможно определить, какие заметки отображать.",
+    "description": "Notes blocked when app context unclear"
+  },
+  "notesAdding": {
+    "message": "Добавление…",
+    "description": "Submit note in progress"
+  },
+  "notesAddNoteBtn": {
+    "message": "Добавить примечание",
+    "description": "Submit new note button"
+  },
+  "notesUserFallback": {
+    "message": "Пользователь",
+    "description": "Author name fallback in notes list"
+  },
+  "notesAddANoteAboveToGet": {
+    "message": "Добавьте примечание выше, чтобы начать.",
+    "description": "Auto-migrated from notes"
+  },
+  "notesNoNotesYet": {
+    "message": "Примечаний пока нет.",
+    "description": "Auto-migrated from notes"
+  },
+  "notesWriteANote": {
+    "message": "Напишите заметку...",
+    "description": "Auto-migrated from notes"
+  },
+  "notesAddNote": {
+    "message": "Добавить примечание",
+    "description": "Auto-migrated from notes"
+  },
+  "notesCannotLoadNotes": {
+    "message": "Не могу загрузить заметки",
+    "description": "Auto-migrated from notes"
+  },
+  "notesErrorLoadingNotes": {
+    "message": "Ошибка загрузки примечаний",
+    "description": "Auto-migrated from notes"
+  },
+  "notesLoadingNotes": {
+    "message": "Загрузка заметок...",
+    "description": "Auto-migrated from notes"
+  },
+  "filesUploadAFileAboveToGet": {
+    "message": "Загрузите файл выше, чтобы начать.",
+    "description": "Auto-migrated from files"
+  },
+  "filesNoFilesUploadedYet": {
+    "message": "Файлы еще не загружены.",
+    "description": "Auto-migrated from files"
+  },
+  "filesDownload": {
+    "message": "Скачать",
+    "description": "Auto-migrated from files"
+  },
+  "filesAllowedImagesPdfWordExcelCsv": {
+    "message": "Разрешено: изображения, PDF, Word, Excel, CSV (макс. 10 МБ).",
+    "description": "Auto-migrated from files"
+  },
+  "filesUploadFile": {
+    "message": "Загрузить файл",
+    "description": "Auto-migrated from files"
+  },
+  "filesCannotLoadFiles": {
+    "message": "Невозможно загрузить файлы",
+    "description": "Auto-migrated from files"
+  },
+  "filesErrorLoadingFiles": {
+    "message": "Ошибка загрузки файлов",
+    "description": "Auto-migrated from files"
+  },
+  "filesLoadingFiles": {
+    "message": "Загрузка файлов...",
+    "description": "Auto-migrated from files"
+  },
+  "activityTimelineCannotLoadActivities": {
+    "message": "Невозможно загрузить действия",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "activityTimelineErrorLoadingActivities": {
+    "message": "Ошибка загрузки действий",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "activityTimelineLoadingActivities": {
+    "message": "Загрузка действий...",
+    "description": "Auto-migrated from activityTimeline"
+  },
+  "taskDescriptionEditorInsertLink": {
+    "message": "Вставить ссылку",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorRemoveLink": {
+    "message": "Удалить ссылку",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorNumberedList": {
+    "message": "Нумерованный список",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorBulletList": {
+    "message": "Маркированный список",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorStrikethrough": {
+    "message": "Зачеркивание",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorItalic": {
+    "message": "Курсив",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorBold": {
+    "message": "Смелый",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading3": {
+    "message": "Заголовок 3",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading2": {
+    "message": "Заголовок 2",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorHeading1": {
+    "message": "Заголовок 1",
+    "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "recordDetailThisRecordTypeIsNotConfigured": {
+    "message": "Этот тип записи не настроен.",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "recordDetailRecordNotFound": {
+    "message": "Запись не найдена",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "recordDetailLoading": {
+    "message": "Загрузка...",
+    "description": "Auto-migrated from recordDetail"
+  },
+  "relatedRecordsPanelThisRecordRequiresTheFollowingRelationships": {
+    "message": "Для этой записи необходимо связать следующие отношения:",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelRequiredRelationships": {
+    "message": "Требуемые отношения",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelLinkThisRecordToPeopleOrganizations": {
+    "message": "Свяжите эту запись с людьми, организациями, задачами, событиями или формами.",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelNoRelationshipsConfiguredForThisRecord": {
+    "message": "Для этого типа записи не настроены связи.",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelErrorLoadingRelatedRecords": {
+    "message": "Ошибка загрузки связанных записей.",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsPanelLoadingRelatedRecords": {
+    "message": "Загрузка связанных записей...",
+    "description": "Auto-migrated from relatedRecordsPanel"
+  },
+  "relatedRecordsRendererNoRelationshipsConfiguredForThisRecord": {
+    "message": "Для этого типа записи не настроены связи.",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsRendererTheFollowingRequiredRelationshipsMustBe": {
+    "message": "Перед сохранением необходимо связать следующие обязательные отношения:",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsRendererRequiredRelationshipsMissing": {
+    "message": "Отсутствуют необходимые связи",
+    "description": "Auto-migrated from relatedRecordsRenderer"
+  },
+  "relatedRecordsTabLinkExisting": {
+    "message": "Ссылка существующая",
+    "description": "Auto-migrated from relatedRecordsTab"
+  },
+  "relationshipUnlinkConfirmAreYouSureYouWantTo": {
+    "message": "Вы уверены, что хотите отменить связь?",
+    "description": "Auto-migrated from relationshipUnlinkConfirm"
+  },
+  "reactionBarReactToComment": {
+    "message": "Реагировать на комментарий",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarLikeComment": {
+    "message": "Нравится комментарий",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarReactToComment2": {
+    "message": "Реагировать на комментарий",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "reactionBarLikeComment2": {
+    "message": "Нравится комментарий",
+    "description": "Auto-migrated from reactionBar"
+  },
+  "activitySystemRowShowMore": {
+    "message": "Показать больше",
+    "description": "Auto-migrated from activitySystemRow"
+  },
+  "approvalHistoryEscalatedToNewApprovers": {
+    "message": "Передано новым утверждающим",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryProcess": {
+    "message": "Процесс:",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryReason": {
+    "message": "Причина:",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryDecidedBy": {
+    "message": "Решено:",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryNoApprovalHistoryFound": {
+    "message": "История одобрений не найдена",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "approvalHistoryApprovalHistory": {
+    "message": "История одобрений",
+    "description": "Auto-migrated from approvalHistory"
+  },
+  "linkRecordModalLinking": {
+    "message": "Связывание...",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "linkRecordModalSelectARecordType": {
+    "message": "Выберите тип записи...",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "linkRecordModalRecordType": {
+    "message": "Тип записи",
+    "description": "Auto-migrated from linkRecordModal"
+  },
+  "recordDetailToastFailedToDeleteRecordPlease": {
+    "message": "Не удалось удалить запись. Пожалуйста, попробуйте еще раз.",
+    "description": "Toast from RecordDetail.vue"
+  },
+  "instanceManagementToastInstanceManagementUiComingSoon": {
+    "message": "Скоро появится интерфейс управления экземпляром!",
+    "description": "Toast from InstanceManagement.vue"
+  },
+  "useRecordHeaderActionsToastUrlCopiedToClipboard": {
+    "message": "URL-адрес скопирован в буфер обмена!",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "useRecordHeaderActionsToastErrorExportingRecordPleaseTry": {
+    "message": "Ошибка экспорта записи. Пожалуйста, попробуйте еще раз.",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "useRecordHeaderActionsToastErrorDeletingRecordPleaseTry": {
+    "message": "Ошибка удаления записи. Пожалуйста, попробуйте еще раз.",
+    "description": "Toast from useRecordHeaderActions.js"
+  },
+  "tabPreview": {
+    "message": "Предварительный просмотр",
+    "description": "Form summary preview tab"
+  },
+  "tabUsage": {
+    "message": "Использование",
+    "description": "Form summary usage tab"
+  },
+  "tabResponses": {
+    "message": "Ответы",
+    "description": "Form summary responses tab"
+  },
+  "tabTenantDetails": {
+    "message": "Информация об арендаторе",
+    "description": "Organization tenant details tab"
+  },
+  "relatedRecordsTitle": {
+    "message": "Связанные записи",
+    "description": "Left column related records section title"
+  },
+  "subtasksTitle": {
+    "message": "Подзадачи",
+    "description": "Task record subtasks section title"
+  },
+  "subtasksTitleWithCount": {
+    "message": "Подзадачи ({completed}/{total})",
+    "description": "Task subtasks section title with completion counts"
+  },
+  "sectionAddSubtask": {
+    "message": "Добавить подзадачу",
+    "description": "Add subtask action label"
+  },
+  "sectionExpand": {
+    "message": "Расширять",
+    "description": "Expand record section action"
+  },
+  "sectionHistory": {
+    "message": "История",
+    "description": "Description history action"
+  },
+  "sectionLinkRecord": {
+    "message": "Связать запись",
+    "description": "Link related record action"
+  },
+  "sectionAddRecord": {
+    "message": "Добавить запись",
+    "description": "Add related record action"
+  },
+  "sectionViewMore": {
+    "message": "Посмотреть больше",
+    "description": "Load more subtasks action"
+  },
+  "sectionViewLess": {
+    "message": "Посмотреть меньше",
+    "description": "Collapse field list action"
+  },
+  "sectionViewAll": {
+    "message": "Просмотреть все ({count})",
+    "description": "Expand details field list"
+  },
+  "sectionGroupCore": {
+    "message": "Основной",
+    "description": "Field group label"
+  },
+  "sectionGroupSystem": {
+    "message": "Система",
+    "description": "Field group label"
+  },
+  "sectionGroupOther": {
+    "message": "Другой",
+    "description": "Field group label"
+  },
+  "sectionCreatedVia": {
+    "message": "Создано через",
+    "description": "Record source field label"
+  },
+  "sectionGroupRecord": {
+    "message": "Записывать",
+    "description": "Record metadata group label"
+  },
+  "activitySystemActorSystem": {
+    "message": "Система",
+    "description": "System actor label in activity feed"
+  },
+  "activitySystemFieldFallback": {
+    "message": "поле",
+    "description": "Fallback when system event field label is unknown"
+  },
+  "activitySystemChanged": {
+    "message": "измененный",
+    "description": "System field change activity between actor and field"
+  },
+  "activitySystemChangedTo": {
+    "message": "Изменено {field} на",
+    "description": "Tags/system field change lead-in"
+  },
+  "activitySystemChangedFromTo": {
+    "message": "{field} изменен с «{from}» на «{to}».",
+    "description": "Generic field change summary"
+  },
+  "activityUpdatedRecord": {
+    "message": "Обновил эту запись",
+    "description": "Generic system activity fallback"
+  }
+}
