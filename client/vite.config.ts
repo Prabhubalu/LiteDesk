@@ -9,6 +9,8 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
+  const sentryEnabled = Boolean(env.VITE_SENTRY_DSN)
+  const posthogEnabled = Boolean(env.VITE_POSTHOG_KEY)
 
   // Prefer explicit origin. Fall back to legacy VITE_API_URL and normalize trailing /api.
   const apiOriginRaw = env.VITE_API_ORIGIN || env.VITE_API_URL || 'http://localhost:3000'
@@ -65,10 +67,10 @@ export default defineConfig(({ mode }) => {
       output: {
         manualChunks(id) {
           if (id.includes('/node_modules/')) {
-            if (id.includes('/node_modules/@sentry/')) {
+            if (sentryEnabled && id.includes('/node_modules/@sentry/')) {
               return 'vendor-sentry'
             }
-            if (id.includes('/node_modules/posthog-js/')) {
+            if (posthogEnabled && id.includes('/node_modules/posthog-js/')) {
               return 'vendor-posthog'
             }
 
