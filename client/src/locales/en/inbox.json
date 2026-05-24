@@ -196,8 +196,12 @@
     "description": "Get started step title"
   },
   "inboxGetStartedStepMailboxSubtitle": {
-    "message": "Bring all your emails into one place.",
+    "message": "Get a forwarding address for Gmail, Outlook, or any provider.",
     "description": "Get started step subtitle"
+  },
+  "inboxGetStartedInboundParserSubtitle": {
+    "message": "Set up email forwarding to your unique address, or join a shared mailbox your team already created.",
+    "description": "Inbox get started subtitle when inbound parser mode is enabled"
   },
   "inboxGetStartedStepGroupTitle": {
     "message": "Manage group mailboxes",

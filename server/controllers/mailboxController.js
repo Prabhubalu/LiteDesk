@@ -28,6 +28,18 @@ const {
   disconnectMailboxGmailSmtp,
   isMailboxGmailSmtpReady
 } = require('../services/mailboxGmailSmtpService');
+const {
+  isGmailIntegrationEnabled,
+  getEmailIntegrationCapabilities
+} = require('../config/emailFeatureFlags');
+const ParserMailboxRegistry = require('../models/ParserMailboxRegistry');
+const {
+  provisionMailboxWithParser,
+  deprovisionMailboxFromParser,
+  skippedReasonMessage
+} = require('../services/inboundParserProvisioningService');
+const Communication = require('../models/Communication');
+const { getPublicInboundParserStatus } = require('../services/inboundParserConfigService');
 
 function toId(value) {
   if (value == null) return null;
@@ -71,6 +83,15 @@ function serializeMailbox(doc) {
       connected: gmailSmtpReady,
       verifiedAt: o.smtpOutboundVerifiedAt || null
     },
+    inboundParser: {
+      routingAddress: o.routingAddress || '',
+      forwardingHint: o.parserForwardingHint || '',
+      provisionStatus: o.parserProvisionStatus || 'pending',
+      provisionedAt: o.parserProvisionedAt || null,
+      provisioningError: o.parserProvisioningError
+        ? String(o.parserProvisioningError).slice(0, 300)
+        : ''
+    },
     createdAt: o.createdAt,
     updatedAt: o.updatedAt
   };
@@ -99,9 +120,16 @@ async function listMailboxes(req, res) {
 
     const canCreateGroup = isTenantAdmin(req.user);
     const canCreatePersonal = personal.length === 0;
+    const ownedPersonal = personal[0] || null;
+    const canDeletePersonal = ownedPersonal ? canDeleteMailbox(req.user, ownedPersonal) : false;
+    const parserStatus = await getPublicInboundParserStatus();
 
-    const gmailOAuthCheck = await getGmailOAuthAppCredentialsForServer(orgId);
-    const gmailSmtpRelay = await getOrganizationGmailSmtpRelay(orgId);
+    const gmailOAuthCheck = isGmailIntegrationEnabled()
+      ? await getGmailOAuthAppCredentialsForServer(orgId)
+      : { error: 'disabled' };
+    const gmailSmtpRelay = isGmailIntegrationEnabled()
+      ? await getOrganizationGmailSmtpRelay(orgId)
+      : null;
 
     const includeThreadCounts = String(req.query.includeThreadCounts || '').toLowerCase() === 'true';
     const includeDoneForCounts = String(req.query.includeDone || '').toLowerCase() === 'true';
@@ -137,9 +165,13 @@ async function listMailboxes(req, res) {
         mailboxes,
         flags: {
           canCreatePersonal,
+          canDeletePersonal,
           canCreateGroup,
-          gmailOAuthAppConfigured: !gmailOAuthCheck.error,
-          gmailSmtpOrgConfigured: Boolean(gmailSmtpRelay)
+          ...getEmailIntegrationCapabilities(),
+          ...parserStatus,
+          gmailOAuthAppConfigured:
+            isGmailIntegrationEnabled() && !gmailOAuthCheck.error,
+          gmailSmtpOrgConfigured: isGmailIntegrationEnabled() && Boolean(gmailSmtpRelay)
         },
         ...(includeThreadCounts && allMailThreadUnread != null ? { allMailThreadUnread } : {})
       }
@@ -185,9 +217,21 @@ async function createMailbox(req, res) {
         memberUserIds: [],
         createdByUserId: userId,
         status: 'draft',
-        syncStatus: 'not_configured'
+        syncStatus: 'not_configured',
+        parserProvisionStatus: 'pending'
       });
-      return res.status(201).json({ success: true, data: { mailbox: serializeMailbox(doc) } });
+      const provision = await provisionMailboxWithParser({
+        organizationId: orgId,
+        mailbox: doc
+      });
+      const refreshed = await Mailbox.findById(doc._id).lean();
+      return res.status(201).json({
+        success: true,
+        data: {
+          mailbox: serializeMailbox(refreshed || doc),
+          parserProvision: provision
+        }
+      });
     }
 
     let members = [];
@@ -204,9 +248,21 @@ async function createMailbox(req, res) {
       memberUserIds: members,
       createdByUserId: userId,
       status: 'draft',
-      syncStatus: 'not_configured'
+      syncStatus: 'not_configured',
+      parserProvisionStatus: 'pending'
     });
-    return res.status(201).json({ success: true, data: { mailbox: serializeMailbox(doc) } });
+    const provision = await provisionMailboxWithParser({
+      organizationId: orgId,
+      mailbox: doc
+    });
+    const refreshed = await Mailbox.findById(doc._id).lean();
+    return res.status(201).json({
+      success: true,
+      data: {
+        mailbox: serializeMailbox(refreshed || doc),
+        parserProvision: provision
+      }
+    });
   } catch (err) {
     if (err && err.code === 11000) {
       return res.status(409).json({ success: false, message: 'Mailbox already exists' });
@@ -224,6 +280,92 @@ function canEditMailbox(user, mailboxLean) {
     return owner === String(user._id) || isTenantAdmin(user);
   }
   return false;
+}
+
+function canDeleteMailbox(user, mailboxLean) {
+  if (!mailboxLean || mailboxLean.kind !== 'personal') return false;
+  return canEditMailbox(user, mailboxLean);
+}
+
+/**
+ * DELETE /api/mailboxes/:id — personal mailboxes only (owner or tenant admin).
+ */
+async function deleteMailbox(req, res) {
+  try {
+    const orgId = req.user.organizationId;
+    const id = toId(req.params.id);
+    if (!id) {
+      return res.status(400).json({ success: false, message: 'Invalid mailbox id' });
+    }
+
+    const mailbox = await Mailbox.findOne({ _id: id, organizationId: orgId });
+    if (!mailbox) {
+      return res.status(404).json({ success: false, message: 'Mailbox not found' });
+    }
+
+    if (!canDeleteMailbox(req.user, mailbox)) {
+      return res.status(403).json({
+        success: false,
+        message:
+          mailbox.kind === 'group'
+            ? 'Shared mailboxes cannot be deleted here. Contact an administrator.'
+            : 'Not allowed to delete this mailbox'
+      });
+    }
+
+    if (isGmailIntegrationEnabled() && mailbox.inboxProvider === 'google') {
+      const { stopGmailWatchForMailbox } = require('../services/gmailWatchService');
+      await stopGmailWatchForMailbox(mailbox).catch(() => {});
+    }
+    if (isGmailIntegrationEnabled() && mailbox.outboundChannel === 'gmail_smtp') {
+      const { disconnectMailboxGmailSmtp } = require('../services/mailboxGmailSmtpService');
+      await disconnectMailboxGmailSmtp(id, orgId).catch(() => {});
+    }
+
+    const parserDeprovision = await deprovisionMailboxFromParser({
+      organizationId: orgId,
+      mailbox
+    });
+
+    await Communication.updateMany(
+      { organizationId: orgId, mailboxId: id },
+      { $set: { mailboxId: null } }
+    );
+
+    const parserTenantId = String(mailbox.parserTenantId || '').trim();
+    const parserMailboxId = String(mailbox.parserMailboxId || '').trim();
+    if (parserTenantId && parserMailboxId) {
+      await ParserMailboxRegistry.deleteOne({ parserTenantId, parserMailboxId }).catch(() => {});
+    }
+
+    await Mailbox.deleteOne({ _id: id, organizationId: orgId });
+
+    const warnings = [];
+    if (parserDeprovision.messagesExist) {
+      warnings.push(
+        'Mailbox removed from CRM. The inbound parser still has mail history for this address — disable forwarding in your email provider.'
+      );
+    } else if (parserDeprovision.ok === false && !parserDeprovision.skipped) {
+      warnings.push(
+        parserDeprovision.error
+          ? `Mailbox removed from CRM. Parser cleanup: ${parserDeprovision.error}`
+          : 'Mailbox removed from CRM. Parser cleanup did not complete.'
+      );
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        deleted: true,
+        mailboxId: String(id),
+        parserDeprovision
+      },
+      ...(warnings.length ? { warnings } : {})
+    });
+  } catch (err) {
+    console.error('[mailboxController] deleteMailbox:', err);
+    return res.status(500).json({ success: false, message: 'Failed to delete mailbox' });
+  }
 }
 
 /**
@@ -292,6 +434,65 @@ async function updateMailbox(req, res) {
 /**
  * GET /api/mailboxes/:id
  */
+function canProvisionInboundParser(user, mailboxLean) {
+  if (!mailboxLean || !user) return false;
+  if (mailboxLean.kind === 'group') return isTenantAdmin(user);
+  const owner = mailboxLean.ownerUserId && String(mailboxLean.ownerUserId);
+  return isTenantAdmin(user) || owner === String(user._id);
+}
+
+/**
+ * POST /api/mailboxes/:id/inbound-parser/provision
+ * Create or refresh parser routing address for this mailbox.
+ */
+async function provisionMailboxParserHandler(req, res) {
+  try {
+    const orgId = req.user.organizationId;
+    const id = toId(req.params.id);
+    if (!id) {
+      return res.status(400).json({ success: false, message: 'Invalid mailbox id' });
+    }
+
+    const mailbox = await Mailbox.findOne({ _id: id, organizationId: orgId });
+    if (!mailbox) {
+      return res.status(404).json({ success: false, message: 'Mailbox not found' });
+    }
+
+    if (!canProvisionInboundParser(req.user, mailbox)) {
+      return res.status(403).json({
+        success: false,
+        message:
+          mailbox.kind === 'group'
+            ? 'Only admins can provision shared mailbox forwarding addresses'
+            : 'Not allowed to provision this mailbox'
+      });
+    }
+
+    const result = await provisionMailboxWithParser({
+      organizationId: orgId,
+      mailbox
+    });
+
+    const refreshed = await Mailbox.findById(mailbox._id).lean();
+    const skippedMessage = result.skipped ? skippedReasonMessage(result.reason) : null;
+    const failureMessage = result.skipped
+      ? skippedMessage || 'Inbound parser is not configured on this server'
+      : result.error || 'Provisioning failed';
+
+    return res.json({
+      success: Boolean(result.ok || result.routingAddress),
+      data: {
+        mailbox: serializeMailbox(refreshed || mailbox),
+        parserProvision: result
+      },
+      message: result.ok ? undefined : failureMessage
+    });
+  } catch (err) {
+    console.error('[mailboxController] provisionMailboxParserHandler:', err);
+    return res.status(500).json({ success: false, message: 'Failed to provision inbound address' });
+  }
+}
+
 async function getMailbox(req, res) {
   try {
     const orgId = req.user.organizationId;
@@ -664,7 +865,9 @@ module.exports = {
   listMailboxes,
   createMailbox,
   updateMailbox,
+  deleteMailbox,
   getMailbox,
+  provisionMailboxParserHandler,
   gmailOAuthCallback,
   gmailInboxSyncGoogleStart,
   gmailInboxSyncRun,

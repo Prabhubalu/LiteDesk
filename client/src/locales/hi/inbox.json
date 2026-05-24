@@ -718,5 +718,9 @@
   "inboxThreadsPartialSelect": {
     "message": "इस दृश्य में केवल पहले 500 थ्रेड्स का चयन किया गया था।",
     "description": "Toast"
+  },
+  "inboxGetStartedInboundParserSubtitle": {
+    "message": "Set up email forwarding to your unique address, or join a shared mailbox your team already created.",
+    "description": "Inbox get started subtitle when inbound parser mode is enabled"
   }
 }

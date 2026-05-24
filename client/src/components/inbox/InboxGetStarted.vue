@@ -5,7 +5,14 @@
     >
       <div class="min-w-0">
         <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-3xl">{{ t('inbox.inboxGetStartedGetStartedWithLitedesk') }}</h1>
-        <p class="mt-2 max-w-lg text-sm text-gray-600 dark:text-gray-400">{{ t('inbox.inboxGetStartedConnectYourWorkInboxToSend') }}</p>
+        <p class="mt-2 max-w-lg text-sm text-gray-600 dark:text-gray-400">
+          <template v-if="inboundParserMode">
+            {{ t('inbox.inboxGetStartedInboundParserSubtitle') }}
+          </template>
+          <template v-else>
+            {{ t('inbox.inboxGetStartedConnectYourWorkInboxToSend') }}
+          </template>
+        </p>
 
         <ul class="mt-8 space-y-3" role="list">
           <li
@@ -43,7 +50,7 @@
         </ul>
 
         <p
-          v-if="!gmailOAuthReady"
+          v-if="!inboundParserMode && !gmailOAuthReady"
           class="mt-6 max-w-lg rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
         >{{ t('inbox.inboxGetStartedGmailIsntEnabledOnThisServer') }}<code class="rounded bg-amber-100/80 px-1 font-mono text-[10px] dark:bg-amber-950/80">GOOGLE_GMAIL_*</code>{{ t('inbox.inboxGetStartedOrOpenSetupFromTheConnect') }}</p>
       </div>
@@ -103,6 +110,7 @@ import {
 
 defineProps({
   gmailOAuthReady: { type: Boolean, default: true },
+  inboundParserMode: { type: Boolean, default: false },
   connectLoading: { type: Boolean, default: false }
 });
 

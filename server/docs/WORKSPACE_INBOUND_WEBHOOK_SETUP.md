@@ -1,4 +1,7 @@
-# Google Workspace → Arivu inbound webhook
+# Google Workspace → Arivu inbound webhook (legacy)
+
+> **Disabled by default** (`ENABLE_LEGACY_MIME_INBOUND_WEBHOOK=false`). Use the **Arivu Inbound Parser** instead — see [INBOUND_PARSER_CRM_INTEGRATION.md](./INBOUND_PARSER_CRM_INTEGRATION.md).  
+> Re-enable only if you intentionally want Apps Script + raw MIME on `POST /api/webhooks/email/inbound`.
 
 Use this when **catch-all** delivers mail to `inbox@reply.arivusystems.com` and Arivu receives it via **`POST /api/webhooks/email/inbound`** (not Gmail OAuth on that mailbox).
 

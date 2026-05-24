@@ -22,6 +22,7 @@ const crypto = require('crypto');
 const { decodeInboundRawMime } = require('../utils/decodeInboundRawMime');
 const replyToTokenService = require('../services/replyToTokenService');
 const inboundEmailQueueService = require('../services/inboundEmailQueueService');
+const { getEmailIntegrationCapabilities } = require('../config/emailFeatureFlags');
 const inboundProcessingQueue = require('../platform/communication/queues/inboundProcessingQueue');
 const { appendCommunicationEvent } = require('../services/communicationEventWriter');
 const {
@@ -98,10 +99,14 @@ exports.inboundHealth = async (_req, res) => {
       })()
     : null;
 
+  const integration = getEmailIntegrationCapabilities();
+
   return res.json({
     success: true,
     data: {
+      ...integration,
       inboundWebhookPath: '/api/webhooks/email/inbound',
+      parserInboundWebhookPath: '/api/webhooks/arivu/inbound-email',
       webhookSecretConfigured: Boolean(String(process.env.EMAIL_INBOUND_WEBHOOK_SECRET || '').trim()),
       replyTokenSecretConfigured: Boolean(String(process.env.EMAIL_REPLY_TOKEN_SECRET || '').trim()),
       replyToDomain: replyDomain || null,

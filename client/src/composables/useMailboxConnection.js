@@ -1,13 +1,19 @@
 import { ref, computed } from 'vue';
 import apiClient from '@/utils/apiClient';
 import { isMailboxConnectedForProvider } from '@/constants/inboxProviders';
+import { isInboxShellUnblocked, isMailboxInboundReady } from '@/utils/mailboxInboundStatus';
 
 const mailboxes = ref([]);
 const flags = ref({
   canCreatePersonal: false,
+  canDeletePersonal: false,
   canCreateGroup: false,
+  gmailIntegrationEnabled: false,
   gmailOAuthAppConfigured: false,
-  gmailSmtpOrgConfigured: false
+  gmailSmtpOrgConfigured: false,
+  inboundParserEnabled: false,
+  inboundParserConfigured: false,
+  inboundParserProvisionReady: false
 });
 const loading = ref(false);
 const loaded = ref(false);
@@ -24,12 +30,27 @@ const hasConnectedGroupMailbox = computed(() =>
   groupMailboxes.value.some((m) => isMailboxConnectedForProvider(m, 'google'))
 );
 
-/** True when any supported inbox provider is linked (personal or shared mailbox). */
-const hasConnectedInbox = computed(() =>
-  mailboxes.value.some(
-    (m) => isMailboxConnectedForProvider(m, 'google') || isMailboxConnectedForProvider(m, 'google-smtp')
-  )
+/** True when personal mailbox is inbound-ready (Gmail or parser forwarding). */
+const hasConnectedPersonalInbox = computed(() => {
+  const personal = mailboxes.value.find((m) => m.kind === 'personal');
+  return isMailboxInboundReady(personal, flags.value);
+});
+
+/** True when inbox shell should be shown (shared access or connected personal). */
+const hasUsableInboxAccess = computed(() =>
+  isInboxShellUnblocked(mailboxes.value, flags.value)
 );
+
+/** @deprecated Prefer hasUsableInboxAccess / hasConnectedPersonalInbox */
+const hasConnectedInbox = computed(() => {
+  if (!flags.value.gmailIntegrationEnabled) {
+    return hasConnectedPersonalInbox.value
+      || mailboxes.value.some((m) => m.kind === 'group');
+  }
+  return mailboxes.value.some(
+    (m) => isMailboxConnectedForProvider(m, 'google') || isMailboxConnectedForProvider(m, 'google-smtp')
+  );
+});
 
 const connectedPersonalMailbox = computed(
   () =>
@@ -50,9 +71,14 @@ async function refreshMailboxes() {
         mailboxes.value = Array.isArray(res.data.mailboxes) ? res.data.mailboxes : [];
         flags.value = {
           canCreatePersonal: Boolean(res.data.flags?.canCreatePersonal),
+          canDeletePersonal: Boolean(res.data.flags?.canDeletePersonal),
           canCreateGroup: Boolean(res.data.flags?.canCreateGroup),
+          gmailIntegrationEnabled: Boolean(res.data.flags?.gmailIntegrationEnabled),
           gmailOAuthAppConfigured: Boolean(res.data.flags?.gmailOAuthAppConfigured),
-          gmailSmtpOrgConfigured: Boolean(res.data.flags?.gmailSmtpOrgConfigured)
+          gmailSmtpOrgConfigured: Boolean(res.data.flags?.gmailSmtpOrgConfigured),
+          inboundParserEnabled: Boolean(res.data.flags?.inboundParserEnabled),
+          inboundParserConfigured: Boolean(res.data.flags?.inboundParserConfigured),
+          inboundParserProvisionReady: Boolean(res.data.flags?.inboundParserProvisionReady)
         };
       } else {
         mailboxes.value = [];
@@ -68,12 +94,19 @@ async function refreshMailboxes() {
   return inflight;
 }
 
-async function ensurePersonalMailbox() {
+async function ensurePersonalMailbox(input = {}) {
   if (personalMailbox.value?.id) return personalMailbox.value;
   if (!flags.value.canCreatePersonal) return null;
+  const label = String(input.label || 'My work inbox').trim() || 'My work inbox';
+  const body = { kind: 'personal', label };
+  const email =
+    typeof input === 'string'
+      ? input.trim()
+      : String(input.emailAddress || '').trim();
+  if (email) body.emailAddress = email;
   const res = await apiClient('/mailboxes', {
     method: 'POST',
-    body: JSON.stringify({ kind: 'personal', label: 'My work inbox' })
+    body: JSON.stringify(body)
   });
   if (res?.success && res?.data?.mailbox) {
     await refreshMailboxes();
@@ -85,6 +118,45 @@ async function ensurePersonalMailbox() {
 /**
  * @param {{ label: string, emailAddress?: string, memberUserIds?: string[] }} input
  */
+async function deletePersonalMailbox(mailboxId) {
+  if (!mailboxId) return false;
+  const res = await apiClient(`/mailboxes/${encodeURIComponent(mailboxId)}`, {
+    method: 'DELETE'
+  });
+  if (res?.success) {
+    await refreshMailboxes();
+    return res;
+  }
+  return null;
+}
+
+async function provisionMailboxParser(mailboxId) {
+  if (!mailboxId) {
+    return { ok: false, message: 'Missing mailbox id' };
+  }
+  const res = await apiClient(
+    `/mailboxes/${encodeURIComponent(mailboxId)}/inbound-parser/provision`,
+    { method: 'POST' }
+  );
+  const provision = res?.data?.parserProvision;
+  const mailbox = res?.data?.mailbox || null;
+  if (res?.success && mailbox) {
+    await refreshMailboxes();
+    return { ok: true, mailbox };
+  }
+  if (mailbox) {
+    await refreshMailboxes();
+  }
+  const storedError = mailbox?.inboundParser?.provisioningError;
+  const message =
+    res?.message
+    || provision?.message
+    || provision?.error
+    || storedError
+    || 'Could not generate a forwarding address. Ask your platform admin to configure the inbound parser.';
+  return { ok: false, message, mailbox, provision };
+}
+
 async function ensureGroupMailbox(input = {}) {
   const label = String(input.label || 'Shared inbox').trim();
   if (!label) return null;
@@ -115,11 +187,16 @@ export function useMailboxConnection() {
     personalMailbox,
     groupMailboxes,
     hasConnectedInbox,
+    hasConnectedPersonalInbox,
+    hasUsableInboxAccess,
     hasConnectedGroupMailbox,
     connectedPersonalMailbox,
     gmailOAuthReady,
     refreshMailboxes,
     ensurePersonalMailbox,
-    ensureGroupMailbox
+    ensureGroupMailbox,
+    deletePersonalMailbox,
+    provisionMailboxParser,
+    isMailboxInboundReady: (mb) => isMailboxInboundReady(mb, flags.value)
   };
 }

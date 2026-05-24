@@ -565,6 +565,10 @@ const getTitleForPath = (path, params = {}) => {
     '/settings/automation/automation-rules': 'Automation Rules',
     '/settings/automation/processes': 'Processes',
     '/settings/automation/flows': 'Business Flows',
+    '/control/inbound-parser': 'Inbound Parser',
+    '/control/automation-rules': 'Automation Rules',
+    '/control/processes': 'Processes',
+    '/control/flows': 'Business Flows',
     // Audit app routes
     '/audit/dashboard': 'Audit Dashboard',
     '/audit/audits': 'My Audits'

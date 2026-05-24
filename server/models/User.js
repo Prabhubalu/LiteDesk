@@ -180,6 +180,13 @@ const UserSchema = new mongoose.Schema({
         type: Boolean, 
         default: false 
     },  // First user who created the organization
+
+    /** Platform operator (Control Plane, inbound parser config). Not tenant-facing. */
+    isPlatformAdmin: {
+        type: Boolean,
+        default: false,
+        index: true
+    },
     
     // Platform User Type
     // INTERNAL: employees of the organization

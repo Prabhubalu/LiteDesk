@@ -9,18 +9,17 @@
       @click.self="close"
     >
       <div
-        class="relative flex max-h-[min(92vh,680px)] w-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900"
-        :class="modalPanelClass"
+        class="relative flex max-h-[min(92vh,680px)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900"
+        :class="legacyModalWideClass"
         @click.stop
       >
-        <!-- Header -->
         <div class="border-b border-gray-100 px-5 py-4 dark:border-gray-800 sm:px-6">
           <div class="flex items-start gap-3">
             <button
-              v-if="view !== 'providers'"
+              v-if="showBackButton"
               type="button"
               class="mt-0.5 rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-800 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-              :aria-label="t('performance.back')"
+              aria-label="Back"
               @click="goBack"
             >
               <ArrowLeftIcon class="h-5 w-5" />
@@ -36,31 +35,30 @@
             <button
               type="button"
               class="shrink-0 rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-800 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-              :aria-label="t('settings.roleDrawerCloseSr')"
+              aria-label="Close"
               @click="close"
             >
               <XMarkIcon class="h-5 w-5" />
             </button>
           </div>
 
-          <!-- Step indicator -->
-          <div v-if="view !== 'providers'" class="mt-4 flex items-center gap-2">
+          <div v-if="showLegacyStepIndicator" class="mt-4 flex items-center gap-2">
             <span
-              v-for="(label, idx) in stepLabels"
+              v-for="(label, idx) in legacyStepLabels"
               :key="label"
               class="flex items-center gap-2 text-[11px] font-medium"
             >
               <span
                 class="flex h-6 w-6 items-center justify-center rounded-full"
-                :class="stepIndex >= idx
+                :class="legacyStepIndex >= idx
                   ? 'bg-emerald-600 text-white'
                   : 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400'"
               >{{ idx + 1 }}</span>
               <span
-                :class="stepIndex >= idx ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'"
+                :class="legacyStepIndex >= idx ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'"
               >{{ label }}</span>
               <span
-                v-if="idx < stepLabels.length - 1"
+                v-if="idx < legacyStepLabels.length - 1"
                 class="mx-1 h-px w-6 bg-gray-200 dark:bg-gray-700"
                 aria-hidden="true"
               />
@@ -69,221 +67,267 @@
         </div>
 
         <div class="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
-          <!-- Provider picker -->
-          <template v-if="view === 'providers'">
-            <ul
-              v-if="reason !== 'inbox'"
-              class="mb-5 space-y-2 rounded-xl border border-gray-100 bg-gray-50/80 px-4 py-3 text-sm text-gray-700 dark:border-gray-800 dark:bg-gray-800/40 dark:text-gray-300"
+          <!-- Personal mailbox: single-step forwarding (parser mode) -->
+          <template v-if="isPersonalParserFlow">
+            <label class="block text-sm font-medium text-gray-800 dark:text-gray-200">
+              Your name
+              <input
+                v-model="personalLabel"
+                type="text"
+                autocomplete="name"
+                class="mt-1.5 w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm dark:border-gray-600 dark:bg-gray-950 dark:text-white"
+                placeholder="Prabhu Pavithra"
+                :disabled="setupLoading"
+              >
+            </label>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Shown in the inbound parser so your team can see who owns this mailbox.
+            </p>
+            <label class="mt-4 block text-sm font-medium text-gray-800 dark:text-gray-200">
+              Your work email
+              <input
+                v-model="emailHint"
+                type="email"
+                autocomplete="email"
+                class="mt-1.5 w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm dark:border-gray-600 dark:bg-gray-950 dark:text-white"
+                placeholder="hello@arivusystems.com"
+                :disabled="setupLoading"
+              >
+            </label>
+            <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+              The inbox you will forward from (Gmail, Outlook, etc.). Also used as the readable part of your forwarding address.
+            </p>
+
+            <div
+              v-if="setupLoading && !activeMailbox?.inboundParser?.routingAddress"
+              class="mt-5 flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-4 dark:border-gray-700 dark:bg-gray-800/50"
             >
-              <li class="flex gap-2">
-                <CheckCircleIcon class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                <span>{{ t('inbox.connectMailboxModalSendAndReceiveEmailInsideThe') }}</span>
-              </li>
-              <li class="flex gap-2">
-                <CheckCircleIcon class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                <span>{{ t('inbox.connectMailboxModalSyncThreadsToYourWorkspaceInbox') }}</span>
-              </li>
-              <li class="flex gap-2">
-                <CheckCircleIcon class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                <span>{{ t('inbox.connectMailboxModalKeepConversationsLinkedToPeopleDeals') }}</span>
-              </li>
-            </ul>
+              <div class="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-emerald-600 dark:border-gray-600 dark:border-t-emerald-400" />
+              <span class="text-sm text-gray-600 dark:text-gray-300">Creating your mailbox and forwarding address…</span>
+            </div>
+
+            <div
+              v-else-if="activeMailbox?.inboundParser?.routingAddress"
+              class="mt-5 rounded-xl border border-emerald-200 bg-emerald-50/90 px-4 py-4 dark:border-emerald-900/60 dark:bg-emerald-950/25"
+            >
+              <p class="text-xs font-semibold uppercase tracking-wide text-emerald-800 dark:text-emerald-200">
+                Your forwarding address
+              </p>
+              <p class="mt-2 break-all font-mono text-sm leading-relaxed text-emerald-950 dark:text-emerald-50 select-all">
+                {{ activeMailbox.inboundParser.routingAddress }}
+              </p>
+              <button
+                type="button"
+                class="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700"
+                @click="copyRoutingAddress"
+              >
+                {{ routingCopied ? 'Copied' : 'Copy address' }}
+              </button>
+            </div>
 
             <p
-              :class="reason === 'inbox'
-                ? 'text-sm font-semibold text-gray-900 dark:text-white'
-                : 'text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-500'"
+              v-else-if="forwardingError"
+              class="mt-5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100"
             >
-              {{ reason === 'inbox' ? 'Select your email provider:' : 'Choose your email provider' }}
+              {{ forwardingError }}
             </p>
-            <div
-              class="mt-4"
-              :class="reason === 'inbox' ? 'grid grid-cols-2 gap-4 sm:grid-cols-4' : 'mt-3 grid grid-cols-2 gap-3'"
-            >
-              <InboxProviderCard
-                v-for="p in inboxProviders"
-                :key="p.id"
-                :provider="providerForCard(p)"
-                :variant="reason === 'inbox' ? 'picker' : 'default'"
-                :selected="selectedProviderId === p.id"
-                :disabled="p.id === 'google' && !gmailOAuthReady"
-                :unavailable-reason="p.id === 'google' && !gmailOAuthReady ? 'Gmail not configured on server' : ''"
-                @select="onProviderSelect"
-              />
-            </div>
-            <p
-              v-if="reason === 'inbox' && !gmailOAuthReady"
-              class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100"
-            >{{ t('inbox.connectMailboxModalGmailIsntEnabledOnThisServer2') }}<code class="rounded bg-amber-100 px-1 font-mono text-[10px] dark:bg-amber-950/80">GOOGLE_GMAIL_*</code>
-              in the API environment, or use Settings → Integrations.
-            </p>
-            <p
-              v-else-if="reason !== 'inbox'"
-              class="mt-4 text-center text-[11px] text-gray-400 dark:text-gray-500"
-            >
-              Outlook, Yahoo, and IMAP use the same mailbox model — we’ll enable them as integrations ship.
-            </p>
+
+            <ol class="mt-5 space-y-2.5 text-sm text-gray-600 dark:text-gray-400">
+              <li class="flex gap-2">
+                <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200">1</span>
+                <span>Copy the forwarding address above.</span>
+              </li>
+              <li class="flex gap-2">
+                <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200">2</span>
+                <span>In Gmail or Microsoft 365, open <strong class="font-medium text-gray-800 dark:text-gray-200">Settings → Forwarding</strong> and paste this address.</span>
+              </li>
+              <li class="flex gap-2">
+                <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200">3</span>
+                <span>New mail appears in your Arivu inbox.</span>
+              </li>
+            </ol>
           </template>
 
-          <!-- Create mailbox -->
-          <template v-else-if="view === 'create-mailbox'">
-            <div v-if="mailboxKind === 'group'" class="space-y-3">
-              <p class="text-sm text-gray-700 dark:text-gray-300">{{ t('inbox.connectMailboxModalCreateA') }}<span class="font-medium">{{ t('inbox.connectMailboxModalSharedTeamMailbox') }}</span>, then connect Google Workspace / Gmail.
-              </p>
-              <label class="block text-sm font-medium text-gray-800 dark:text-gray-200">{{ t('inbox.connectMailboxModalDisplayName') }}<input
+          <!-- Shared mailbox: parser mode (create + forward in one screen) -->
+          <template v-else-if="isGroupParserFlow">
+            <template v-if="!activeMailbox?.id && !targetMailbox?.id">
+              <label class="block text-sm font-medium text-gray-800 dark:text-gray-200">
+                Shared inbox name
+                <input
                   v-model="groupLabel"
                   type="text"
                   class="mt-1.5 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-950 dark:text-white"
-                  :placeholder="t('appointments.typeSupport')"
+                  placeholder="Support"
                 >
               </label>
-              <label class="block text-sm font-medium text-gray-800 dark:text-gray-200">{{ t('inbox.connectMailboxModalSharedEmailAddress') }}<input
+              <label class="mt-3 block text-sm font-medium text-gray-800 dark:text-gray-200">
+                Team email (optional)
+                <input
                   v-model="groupEmail"
                   type="email"
                   class="mt-1.5 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-950 dark:text-white"
-                  :placeholder="t('inbox.connectMailboxModalSupportCompanyCom')"
+                  placeholder="support@company.com"
                 >
+              </label>
+            </template>
+            <template v-else>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                Forward your team mailbox to this address in Gmail or Microsoft 365.
+              </p>
+            </template>
+
+            <div
+              v-if="setupLoading && !activeMailbox?.inboundParser?.routingAddress"
+              class="mt-4 flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800/50"
+            >
+              <div class="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-violet-600" />
+              <span class="text-sm text-gray-600 dark:text-gray-300">Setting up shared mailbox…</span>
+            </div>
+
+            <div
+              v-else-if="activeMailbox?.inboundParser?.routingAddress"
+              class="mt-4 rounded-xl border border-emerald-200 bg-emerald-50/90 px-4 py-3 dark:border-emerald-900/60 dark:bg-emerald-950/25"
+            >
+              <p class="text-xs font-semibold text-emerald-900 dark:text-emerald-100">Forward to this address</p>
+              <p class="mt-2 break-all font-mono text-sm text-emerald-950 dark:text-emerald-50 select-all">
+                {{ activeMailbox.inboundParser.routingAddress }}
+              </p>
+              <button
+                type="button"
+                class="mt-3 rounded-lg border border-emerald-300 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-100"
+                @click="copyRoutingAddress"
+              >
+                {{ routingCopied ? 'Copied' : 'Copy address' }}
+              </button>
+            </div>
+
+            <p
+              v-else-if="forwardingError"
+              class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100"
+            >
+              {{ forwardingError }}
+            </p>
+          </template>
+
+          <!-- Gmail / legacy multi-step -->
+          <template v-else>
+            <template v-if="legacyView === 'providers'">
+              <ul
+                v-if="reason !== 'inbox'"
+                class="mb-5 space-y-2 rounded-xl border border-gray-100 bg-gray-50/80 px-4 py-3 text-sm text-gray-700 dark:border-gray-800 dark:bg-gray-800/40 dark:text-gray-300"
+              >
+                <li class="flex gap-2">
+                  <CheckCircleIcon class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                  <span>Send and receive email inside the CRM</span>
+                </li>
+                <li class="flex gap-2">
+                  <CheckCircleIcon class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                  <span>Sync threads to your workspace inbox</span>
+                </li>
+              </ul>
+              <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-500">
+                Choose your email provider
+              </p>
+              <div class="mt-4 grid grid-cols-2 gap-3">
+                <InboxProviderCard
+                  v-for="p in inboxProviders"
+                  :key="p.id"
+                  :provider="providerForCard(p)"
+                  :selected="selectedProviderId === p.id"
+                  :disabled="p.id === 'google' && !gmailOAuthReady"
+                  @select="onProviderSelect"
+                />
+              </div>
+            </template>
+
+            <template v-else-if="legacyView === 'create-mailbox'">
+              <p class="text-sm text-gray-700 dark:text-gray-300">
+                Create a <span class="font-medium">shared team mailbox</span>, then connect Gmail.
+              </p>
+              <label class="mt-3 block text-sm font-medium text-gray-800 dark:text-gray-200">
+                Display name
+                <input v-model="groupLabel" type="text" class="mt-1.5 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-950 dark:text-white" placeholder="Support">
+              </label>
+              <label class="mt-3 block text-sm font-medium text-gray-800 dark:text-gray-200">
+                Shared email
+                <input v-model="groupEmail" type="email" class="mt-1.5 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-950 dark:text-white" placeholder="support@company.com">
               </label>
               <button
                 type="button"
-                class="w-full rounded-xl bg-violet-600 px-4 py-3 text-sm font-semibold text-white hover:bg-violet-700 disabled:opacity-50"
-                :disabled="setupLoading || !flags.canCreateGroup || !groupLabel.trim()"
-                @click="createGroupMailbox"
+                class="mt-4 w-full rounded-xl bg-violet-600 px-4 py-3 text-sm font-semibold text-white hover:bg-violet-700 disabled:opacity-50"
+                :disabled="setupLoading || !groupLabel.trim()"
+                @click="createGroupMailboxGmail"
               >
                 {{ setupLoading ? 'Creating…' : 'Create shared mailbox' }}
               </button>
-            </div>
-            <template v-else>
-            <div class="rounded-xl border border-blue-100 bg-blue-50/80 px-4 py-3 text-sm text-blue-950 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-100">
-              <p class="font-medium">{{ t('inbox.connectMailboxModalOneQuickStepFirst') }}</p>
-              <p class="mt-1 text-xs leading-relaxed text-blue-900/90 dark:text-blue-200/90">{{ t('inbox.connectMailboxModalLitedeskCreatesAPrivate') }}<span class="font-medium">{{ t('inbox.connectMailboxModalPersonalMailbox') }}</span> for your account, then links it to
-                {{ selectedProvider?.name || 'your provider' }}.
-              </p>
-            </div>
-            <button
-              type="button"
-              class="mt-5 w-full rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50"
-              :disabled="setupLoading || !flags.canCreatePersonal"
-              @click="createPersonalMailbox"
-            >
-              {{ setupLoading ? 'Creating mailbox…' : 'Create my mailbox' }}
-            </button>
-            <p v-if="!flags.canCreatePersonal" class="mt-3 text-center text-xs text-gray-500 dark:text-gray-400">{{ t('inbox.connectMailboxModalYourRoleCannotCreateAPersonal') }}</p>
             </template>
-          </template>
 
-          <!-- Gmail SMTP (App Password) -->
-          <template v-else-if="view === 'connect-provider' && selectedProviderId === 'google-smtp'">
-            <p
-              v-if="!flags.gmailSmtpOrgConfigured"
-              class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100"
-            >{{ t('inbox.connectMailboxModalYourOrganizationHasNotEnabledGmail') }}<span class="font-medium">{{ t('settings.integrationsProviderOptionGmailSmtp') }}</span> under Settings → Integrations → Email and save.
-            </p>
-            <template v-else>
-              <label class="block text-sm font-medium text-gray-800 dark:text-gray-200">{{ t('inbox.connectMailboxModalGmailAddress') }}<input
+            <template v-else-if="legacyView === 'connect-provider' && selectedProviderId === 'google-smtp'">
+              <label class="block text-sm font-medium text-gray-800 dark:text-gray-200">
+                Gmail address
+                <input v-model="emailHint" type="email" class="mt-1.5 w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm dark:border-gray-600 dark:bg-gray-950 dark:text-white" placeholder="you@company.com">
+              </label>
+              <label class="mt-4 block text-sm font-medium text-gray-800 dark:text-gray-200">
+                Google App Password
+                <input v-model="appPassword" type="password" class="mt-1.5 w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm dark:border-gray-600 dark:bg-gray-950 dark:text-white" placeholder="16-character app password">
+              </label>
+            </template>
+
+            <template v-else-if="legacyView === 'connect-provider' && selectedProviderId === 'google'">
+              <label class="block text-sm font-medium text-gray-800 dark:text-gray-200">
+                Work email address
+                <input
                   v-model="emailHint"
                   type="email"
-                  autocomplete="email"
                   class="mt-1.5 w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm dark:border-gray-600 dark:bg-gray-950 dark:text-white"
-                  :placeholder="t('inbox.connectMailboxModalYouCompanyCom')"
-                >
-              </label>
-              <label class="block mt-4 text-sm font-medium text-gray-800 dark:text-gray-200">{{ t('settings.integrationsGmailSmtpHintAppPassword') }}<input
-                  v-model="appPassword"
-                  type="password"
-                  autocomplete="off"
-                  class="mt-1.5 w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm dark:border-gray-600 dark:bg-gray-950 dark:text-white"
-                  placeholder="16-character app password"
-                >
-              </label>
-              <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                Create one at Google Account → Security → 2-Step Verification → App passwords.
-                This is used only to send mail as you; inbox sync uses Gmail API (OAuth) if you connect Gmail separately.
-              </p>
-            </template>
-          </template>
-
-          <!-- Gmail / Google connect -->
-          <template v-else-if="view === 'connect-provider' && selectedProviderId === 'google'">
-            <div class="mb-4 flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2.5 dark:border-gray-800 dark:bg-gray-800/50">
-              <span
-                v-if="selectedProvider"
-                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-lg font-bold text-white"
-                :class="selectedProvider.iconBgClass"
-                :style="selectedProvider.iconStyle || undefined"
-              >{{ selectedProvider.iconLetter }}</span>
-              <div v-if="selectedProvider" class="min-w-0">
-                <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ selectedProvider.name }}</p>
-                <p class="text-[11px] text-gray-500 dark:text-gray-400">{{ selectedProvider.integrationLabel }}</p>
-              </div>
-            </div>
-
-            <p
-              v-if="!gmailOAuthReady"
-              class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100"
-            >{{ t('inbox.connectMailboxModalGmailIsntEnabledOnThisServer') }}<code class="rounded bg-amber-100 px-1 font-mono text-[10px] dark:bg-amber-950/80">GOOGLE_GMAIL_*</code>{{ t('inbox.connectMailboxModalOrCredentialsUnder') }}<span class="font-medium">Settings → Integrations</span>.
-            </p>
-
-            <template v-else>
-              <label class="block text-sm font-medium text-gray-800 dark:text-gray-200">{{ t('inbox.connectMailboxModalWorkEmailAddress') }}<input
-                  v-model="emailHint"
-                  type="email"
-                  autocomplete="email"
-                  class="mt-1.5 w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-gray-600 dark:bg-gray-950 dark:text-white"
                   :placeholder="selectedProvider?.emailPlaceholder || 'you@company.com'"
                 >
               </label>
-              <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
-                {{ selectedProvider?.connectHint }}
+              <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                You’ll sign in with Google in the next step to sync Gmail.
               </p>
-
-              <div
-                class="mt-4 rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-3 text-xs leading-relaxed text-gray-700 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-300"
-              >
-                <p class="font-medium text-gray-900 dark:text-white">{{ t('inbox.connectMailboxModalWhatHappensNext') }}</p>
-                <ol class="mt-2 list-decimal space-y-1.5 pl-4">
-                  <li>{{ t('inbox.connectMailboxModalGoogleOpensInAPopupSo') }}</li>
-                  <li>{{ t('inbox.connectMailboxModalLitedeskImportsMailUsingARead') }}</li>
-                  <li>{{ t('inbox.connectMailboxModalYouCanSendFromTheCrm') }}</li>
-                </ol>
-                <p class="mt-2 text-gray-600 dark:text-gray-400">{{ t('inbox.connectMailboxModalIfGoogleShowsAnUnverifiedApp') }}<span class="font-medium">{{ t('settings.settingsRelDrawerAdvanced') }}</span>{{ t('inbox.connectMailboxModalToContinueWhenYouTrustThis') }}</p>
-              </div>
             </template>
           </template>
         </div>
 
-        <!-- Footer -->
         <div class="flex flex-wrap items-center justify-between gap-2 border-t border-gray-100 px-5 py-4 dark:border-gray-800 sm:px-6">
           <button
             type="button"
             class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
             @click="close"
-          >{{ t('inbox.connectMailboxModalNotNow') }}</button>
+          >
+            {{ isParserFlow ? 'Cancel' : 'Not now' }}
+          </button>
           <div class="flex flex-wrap gap-2">
             <button
-              v-if="view === 'providers' && personalMailbox && hasConnectedInbox"
-              type="button"
-              class="rounded-lg px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-950/40"
-              @click="close"
-            >{{ t('inbox.connectMailboxModalDone') }}</button>
-            <button
-              v-else-if="view === 'connect-provider' && selectedProviderId === 'google-smtp' && flags.gmailSmtpOrgConfigured"
+              v-if="isPersonalParserFlow || isGroupParserFlow"
               type="button"
               class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50"
-              :disabled="smtpConnectLoading || !emailLooksValid || !appPassword.trim()"
-              @click="connectGmailSmtp"
+              :disabled="primaryParserDisabled"
+              @click="onParserPrimaryAction"
             >
-              {{ smtpConnectLoading ? 'Verifying…' : 'Connect Gmail SMTP' }}
+              {{ parserPrimaryLabel }}
             </button>
-            <button
-              v-else-if="view === 'connect-provider' && selectedProviderId === 'google' && gmailOAuthReady"
-              type="button"
-              class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50"
-              :disabled="gmailSyncLoading || !emailLooksValid"
-              @click="connectGoogle"
-            >
-              {{ gmailSyncLoading ? 'Opening Google…' : 'Continue with Google' }}
-            </button>
+            <template v-else>
+              <button
+                v-if="legacyView === 'connect-provider' && selectedProviderId === 'google-smtp' && flags.gmailSmtpOrgConfigured"
+                type="button"
+                class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50"
+                :disabled="smtpConnectLoading || !emailLooksValid || !appPassword.trim()"
+                @click="connectGmailSmtp"
+              >
+                {{ smtpConnectLoading ? 'Verifying…' : 'Connect Gmail SMTP' }}
+              </button>
+              <button
+                v-else-if="legacyView === 'connect-provider' && selectedProviderId === 'google' && gmailOAuthReady"
+                type="button"
+                class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50"
+                :disabled="gmailSyncLoading || !emailLooksValid"
+                @click="connectGoogle"
+              >
+                {{ gmailSyncLoading ? 'Opening Google…' : 'Continue with Google' }}
+              </button>
+            </template>
           </div>
         </div>
       </div>
@@ -292,31 +336,22 @@
 </template>
 
 <script setup>
-import { useI18n } from 'vue-i18n';
 import { ref, computed, watch } from 'vue';
-import {
-  ArrowLeftIcon,
-  CheckCircleIcon,
-  XMarkIcon
-} from '@heroicons/vue/24/outline';
+import { ArrowLeftIcon, CheckCircleIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useNotifications } from '@/composables/useNotifications';
 import { useMailboxConnection } from '@/composables/useMailboxConnection';
 import { useGmailInboxConnect } from '@/composables/useGmailInboxConnect';
 import apiClient from '@/utils/apiClient';
-import { INBOX_PROVIDERS, getInboxProvider } from '@/constants/inboxProviders';
+import { getAvailableInboxProviders, getInboxProvider } from '@/constants/inboxProviders';
 import InboxProviderCard from '@/components/inbox/InboxProviderCard.vue';
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
   reason: { type: String, default: 'send' },
-  /** `personal` | `group` — shared mailbox uses admin OAuth (R1). */
   mailboxKind: { type: String, default: 'personal' },
-  /** When set (group), connect Gmail to this mailbox instead of creating one. */
   targetMailbox: { type: Object, default: null }
 });
-
-const { t } = useI18n();
 
 const emit = defineEmits(['update:modelValue', 'connected']);
 
@@ -324,31 +359,41 @@ const authStore = useAuthStore();
 const notifications = useNotifications();
 const {
   flags,
+  loaded,
   personalMailbox,
   groupMailboxes,
-  hasConnectedInbox,
   gmailOAuthReady,
   refreshMailboxes,
   ensurePersonalMailbox,
-  ensureGroupMailbox
+  ensureGroupMailbox,
+  provisionMailboxParser
 } = useMailboxConnection();
 
-/** Mailbox id used for OAuth after create-group step */
 const connectTargetMailbox = ref(null);
 const { gmailSyncLoading, startGmailOAuth } = useGmailInboxConnect();
 
-/** @type {import('vue').Ref<'providers' | 'create-mailbox' | 'connect-provider'>} */
-const view = ref('providers');
+const legacyView = ref('providers');
+const activeMailbox = ref(null);
+const forwardingError = ref('');
+const routingCopied = ref(false);
 const selectedProviderId = ref('google');
 const setupLoading = ref(false);
 const emailHint = ref('');
+const personalLabel = ref('');
 const groupLabel = ref('Support');
 const groupEmail = ref('');
 const appPassword = ref('');
 const smtpConnectLoading = ref(false);
 
-const inboxProviders = INBOX_PROVIDERS;
+const isParserMode = computed(() => !flags.value.gmailIntegrationEnabled);
+const isPersonalParserFlow = computed(
+  () => isParserMode.value && props.mailboxKind === 'personal'
+);
+const isGroupParserFlow = computed(
+  () => isParserMode.value && props.mailboxKind === 'group'
+);
 
+const inboxProviders = computed(() => getAvailableInboxProviders(flags.value));
 const selectedProvider = computed(() => getInboxProvider(selectedProviderId.value));
 
 const emailLooksValid = computed(() => {
@@ -356,54 +401,156 @@ const emailLooksValid = computed(() => {
   return s.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 });
 
-const modalPanelClass = computed(() =>
-  view.value === 'providers' && props.reason === 'inbox' ? 'max-w-3xl' : 'max-w-xl'
+const legacyModalWideClass = computed(() =>
+  !isParserMode.value && legacyView.value === 'providers' && props.reason === 'inbox'
+    ? 'max-w-3xl'
+    : ''
+);
+
+const showBackButton = computed(
+  () => !isParserMode.value && legacyView.value !== 'providers'
+);
+
+const showLegacyStepIndicator = computed(
+  () => !isParserMode.value && legacyView.value !== 'providers'
 );
 
 const headerTitle = computed(() => {
+  if (isPersonalParserFlow.value) return 'Connect your personal inbox';
+  if (isGroupParserFlow.value) {
+    return activeMailbox.value?.inboundParser?.routingAddress
+      ? 'Shared mailbox forwarding'
+      : props.targetMailbox?.id
+        ? 'Connect shared mailbox'
+        : 'Create shared mailbox';
+  }
   if (props.mailboxKind === 'group') {
-    if (view.value === 'providers') return 'Connect shared mailbox';
-    if (view.value === 'create-mailbox') return 'Create shared inbox';
-    return 'Connect Gmail for team';
+    if (legacyView.value === 'providers') return 'Connect shared mailbox';
+    if (legacyView.value === 'create-mailbox') return 'Create shared inbox';
+    return 'Connect Gmail';
   }
-  if (view.value === 'providers' && props.reason === 'inbox') {
-    return 'Connect your Inbox to LiteDesk';
-  }
-  if (view.value === 'providers') return 'Connect your inbox';
-  if (view.value === 'create-mailbox') return 'Set up your mailbox';
+  if (legacyView.value === 'providers') return 'Connect your inbox';
+  if (legacyView.value === 'create-mailbox') return 'Set up your mailbox';
   if (selectedProvider.value) return `Connect ${selectedProvider.value.name}`;
   return 'Connect inbox';
 });
 
 const headerSubtitle = computed(() => {
-  if (view.value === 'providers') {
-    if (props.reason === 'inbox') {
-      return 'Manage your work email in a private inbox that stays in sync with your email provider.';
-    }
-    return 'Link your work email to send and receive messages from people, deals, and your inbox.';
+  if (isPersonalParserFlow.value) {
+    return 'Get one forwarding address — works with Gmail, Microsoft 365, or any email provider.';
   }
-  if (view.value === 'create-mailbox') {
-    return 'Your mailbox keeps CRM email separate from other users in your organization.';
+  if (isGroupParserFlow.value) {
+    return activeMailbox.value?.inboundParser?.routingAddress
+      ? 'Add this address in your team mailbox forwarding settings.'
+      : 'Set up a team inbox and forwarding address in one step.';
+  }
+  if (legacyView.value === 'providers') {
+    return 'Link your work email to send and receive from the CRM.';
   }
   if (selectedProvider.value?.id === 'google') {
-    return 'Authorize Google to sync Gmail via OAuth (read-only import + CRM send).';
-  }
-  if (selectedProvider.value?.id === 'google-smtp') {
-    return 'Send email through your organization’s Gmail SMTP relay using an App Password.';
+    return 'Sign in with Google to sync Gmail.';
   }
   return selectedProvider.value?.integrationLabel || '';
 });
 
-const stepLabels = computed(() => {
-  if (view.value === 'create-mailbox') return ['Provider', 'Mailbox'];
+const legacyStepLabels = computed(() => {
+  if (legacyView.value === 'create-mailbox') return ['Provider', 'Mailbox'];
   return ['Provider', 'Mailbox', 'Connect'];
 });
 
-const stepIndex = computed(() => {
-  if (view.value === 'providers') return 0;
-  if (view.value === 'create-mailbox') return 1;
+const legacyStepIndex = computed(() => {
+  if (legacyView.value === 'providers') return 0;
+  if (legacyView.value === 'create-mailbox') return 1;
   return 2;
 });
+
+const parserPrimaryLabel = computed(() => {
+  if (setupLoading.value) return 'Setting up…';
+  if (activeMailbox.value?.inboundParser?.routingAddress) return 'Done';
+  if (isGroupParserFlow.value && !activeMailbox.value?.id) return 'Create & get address';
+  return 'Get forwarding address';
+});
+
+const primaryParserDisabled = computed(() => {
+  if (setupLoading.value) return true;
+  if (isGroupParserFlow.value && !activeMailbox.value?.id && !groupLabel.value.trim()) return true;
+  if (isPersonalParserFlow.value && !personalLabel.value.trim()) return true;
+  return false;
+});
+
+watch(
+  () => props.modelValue,
+  async (open) => {
+    if (!open) return;
+
+    forwardingError.value = '';
+    routingCopied.value = false;
+    connectTargetMailbox.value = props.targetMailbox || null;
+
+    await refreshMailboxes();
+
+    if (isPersonalParserFlow.value) {
+      personalLabel.value =
+        String(props.targetMailbox?.label || '').trim()
+        || String(personalMailbox.value?.label || '').trim()
+        || String(authStore.user?.username || '').trim()
+        || '';
+      emailHint.value =
+        String(props.targetMailbox?.emailAddress || '').trim()
+        || String(personalMailbox.value?.emailAddress || '').trim()
+        || (authStore.user?.email && String(authStore.user.email).includes('@')
+          ? String(authStore.user.email).trim()
+          : '');
+    } else {
+      emailHint.value = props.targetMailbox?.emailAddress
+        ? String(props.targetMailbox.emailAddress).trim()
+        : authStore.user?.email && String(authStore.user.email).includes('@')
+          ? String(authStore.user.email).trim()
+          : '';
+    }
+
+    if (isPersonalParserFlow.value) {
+      activeMailbox.value = personalMailbox.value || null;
+      return;
+    }
+
+    if (isGroupParserFlow.value) {
+      activeMailbox.value = props.targetMailbox || connectTargetMailbox.value || null;
+      if (activeMailbox.value?.id && !activeMailbox.value?.inboundParser?.routingAddress) {
+        void runParserSetup();
+      }
+      return;
+    }
+
+    activeMailbox.value = null;
+    if (props.targetMailbox?.id) {
+      legacyView.value = 'connect-provider';
+    } else if (props.mailboxKind === 'group' && !props.targetMailbox?.id) {
+      legacyView.value = 'create-mailbox';
+    } else {
+      legacyView.value = 'providers';
+    }
+    selectedProviderId.value = inboxProviders.value[0]?.id || 'google';
+  }
+);
+
+function close() {
+  legacyView.value = 'providers';
+  appPassword.value = '';
+  activeMailbox.value = null;
+  forwardingError.value = '';
+  emit('update:modelValue', false);
+}
+
+function goBack() {
+  if (legacyView.value === 'connect-provider') {
+    legacyView.value = props.mailboxKind === 'group' ? 'create-mailbox' : 'providers';
+    return;
+  }
+  if (legacyView.value === 'create-mailbox') {
+    legacyView.value = 'providers';
+  }
+}
 
 function providerForCard(p) {
   if (p.id === 'google' && !gmailOAuthReady.value) {
@@ -415,87 +562,168 @@ function providerForCard(p) {
   return p;
 }
 
-watch(
-  () => props.modelValue,
-  (open) => {
-    if (open) {
-      view.value = props.targetMailbox?.id ? 'connect-provider' : 'providers';
-      selectedProviderId.value = 'google';
-      connectTargetMailbox.value = props.targetMailbox || null;
-      emailHint.value = props.targetMailbox?.emailAddress
-        ? String(props.targetMailbox.emailAddress).trim()
-        : authStore.user?.email && String(authStore.user.email).includes('@')
-          ? String(authStore.user.email).trim()
-          : '';
-      void refreshMailboxes();
-    }
-  }
-);
-
-function close() {
-  view.value = 'providers';
-  appPassword.value = '';
-  emit('update:modelValue', false);
+async function savePersonalMailboxDetails(mailboxId) {
+  if (!mailboxId) return;
+  const body = {};
+  if (personalLabel.value.trim()) body.label = personalLabel.value.trim();
+  if (emailHint.value.trim()) body.emailAddress = emailHint.value.trim();
+  if (!Object.keys(body).length) return;
+  await apiClient(`/mailboxes/${encodeURIComponent(mailboxId)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body)
+  });
+  await refreshMailboxes();
+  activeMailbox.value = personalMailbox.value || activeMailbox.value;
 }
 
-function goBack() {
-  if (view.value === 'connect-provider') {
-    view.value = personalMailbox.value ? 'providers' : 'create-mailbox';
-    return;
-  }
-  if (view.value === 'create-mailbox') {
-    view.value = 'providers';
+async function saveEmailHintOnMailbox(mailboxId) {
+  if (!mailboxId || !emailHint.value.trim()) return;
+  await apiClient(`/mailboxes/${encodeURIComponent(mailboxId)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ emailAddress: emailHint.value.trim() })
+  });
+  await refreshMailboxes();
+  if (isPersonalParserFlow.value) {
+    activeMailbox.value = personalMailbox.value || activeMailbox.value;
+  } else {
+    const id = String(mailboxId);
+    activeMailbox.value =
+      groupMailboxes.value.find((g) => String(g.id) === id) || activeMailbox.value;
   }
 }
 
-function onProviderSelect(providerId) {
-  const p = getInboxProvider(providerId);
-  if (!p || p.status !== 'available') {
-    if (p?.status === 'coming_soon') {
-      notifications.info(t('inbox.inboxProviderSoonUseGmail', { name: p.name }));
+async function runParserSetup() {
+  setupLoading.value = true;
+  forwardingError.value = '';
+  try {
+    let mb = activeMailbox.value;
+
+    if (isPersonalParserFlow.value) {
+      if (!mb?.id) {
+        if (!flags.value.canCreatePersonal) {
+          forwardingError.value = 'You cannot create a personal mailbox. Ask your administrator.';
+          return;
+        }
+        mb = await ensurePersonalMailbox({
+          label: personalLabel.value,
+          emailAddress: emailHint.value
+        });
+      }
+    } else if (isGroupParserFlow.value) {
+      if (!mb?.id) {
+        if (!flags.value.canCreateGroup) {
+          forwardingError.value = 'Only admins can create shared mailboxes.';
+          return;
+        }
+        mb = await ensureGroupMailbox({
+          label: groupLabel.value,
+          emailAddress: groupEmail.value
+        });
+        if (mb?.id) connectTargetMailbox.value = mb;
+      }
     }
-    return;
-  }
-  if (providerId === 'google' && !gmailOAuthReady.value) {
-    notifications.warning('Gmail is not configured on this server yet.');
-    return;
-  }
-  if (providerId === 'google-smtp' && !flags.value.gmailSmtpOrgConfigured) {
-    notifications.warning('Gmail SMTP is not enabled for this organization. Ask an admin to configure it in Settings.');
-    return;
-  }
-  selectedProviderId.value = providerId;
-  if (props.mailboxKind === 'group') {
-    if (props.targetMailbox?.id || connectTargetMailbox.value?.id) {
-      view.value = 'connect-provider';
+
+    if (!mb?.id) {
+      forwardingError.value = 'Could not set up mailbox.';
       return;
     }
-    view.value = 'create-mailbox';
-    return;
-  }
-  if (!personalMailbox.value) {
-    view.value = 'create-mailbox';
-    return;
-  }
-  view.value = 'connect-provider';
-}
 
-async function createPersonalMailbox() {
-  setupLoading.value = true;
-  try {
-    const mb = await ensurePersonalMailbox();
-    if (mb?.id) {
-      notifications.success('Mailbox ready');
-      view.value = 'connect-provider';
-    } else {
-      notifications.error('Could not create personal mailbox');
+    activeMailbox.value = mb;
+
+    // Name + work email drive parser mailboxName and routing prefix — save before provisioning.
+    if (isPersonalParserFlow.value) {
+      await savePersonalMailboxDetails(mb.id);
+      mb = personalMailbox.value || activeMailbox.value;
+      activeMailbox.value = mb;
+    } else if (emailHint.value.trim()) {
+      await saveEmailHintOnMailbox(mb.id);
+      const id = String(mb.id);
+      mb = groupMailboxes.value.find((g) => String(g.id) === id) || mb;
+      activeMailbox.value = mb;
     }
+
+    if (!mb.inboundParser?.routingAddress) {
+      if (loaded.value && !flags.value.inboundParserProvisionReady) {
+        forwardingError.value =
+          'Inbound parser is not ready on this server. Your platform admin must enable it in Control Plane → Inbound Parser (Parser URL + API key), then use Test parser connection.';
+        return;
+      }
+
+      const result = await provisionMailboxParser(mb.id);
+      if (result.ok && result.mailbox) {
+        activeMailbox.value = result.mailbox;
+        mb = result.mailbox;
+      } else {
+        forwardingError.value = result.message
+          || 'Could not generate a forwarding address. Ask your platform admin to configure the inbound parser.';
+        return;
+      }
+    }
+
+    if (isPersonalParserFlow.value) {
+      await savePersonalMailboxDetails(mb.id);
+    } else {
+      await saveEmailHintOnMailbox(mb.id);
+    }
+  } catch (err) {
+    forwardingError.value = err?.message || 'Setup failed';
   } finally {
     setupLoading.value = false;
   }
 }
 
-async function createGroupMailbox() {
+function onParserPrimaryAction() {
+  if (activeMailbox.value?.inboundParser?.routingAddress) {
+    finishConnected();
+    return;
+  }
+  void runParserSetup();
+}
+
+async function copyRoutingAddress() {
+  const addr = activeMailbox.value?.inboundParser?.routingAddress;
+  if (!addr || typeof navigator === 'undefined' || !navigator.clipboard) return;
+  try {
+    await navigator.clipboard.writeText(addr);
+    routingCopied.value = true;
+    notifications.success('Copied forwarding address');
+    setTimeout(() => {
+      routingCopied.value = false;
+    }, 2000);
+  } catch {
+    notifications.warning('Could not copy — select the address and copy manually');
+  }
+}
+
+function finishConnected() {
+  emit('connected');
+  close();
+}
+
+async function onProviderSelect(providerId) {
+  const p = getInboxProvider(providerId);
+  if (!p || p.status !== 'available') return;
+  selectedProviderId.value = providerId;
+  if (props.mailboxKind === 'group') {
+    legacyView.value = props.targetMailbox?.id ? 'connect-provider' : 'create-mailbox';
+    return;
+  }
+  if (!personalMailbox.value) {
+    setupLoading.value = true;
+    try {
+      const mb = await ensurePersonalMailbox();
+      if (!mb?.id) {
+        notifications.error('Could not create personal mailbox');
+        return;
+      }
+    } finally {
+      setupLoading.value = false;
+    }
+  }
+  legacyView.value = 'connect-provider';
+}
+
+async function createGroupMailboxGmail() {
   setupLoading.value = true;
   try {
     const mb = await ensureGroupMailbox({
@@ -504,9 +732,9 @@ async function createGroupMailbox() {
     });
     if (mb?.id) {
       connectTargetMailbox.value = mb;
-      emailHint.value = String(groupEmail.value || mb.emailAddress || '').trim();
       notifications.success('Shared mailbox created');
-      view.value = 'connect-provider';
+      legacyView.value = 'connect-provider';
+      selectedProviderId.value = 'google';
     } else {
       notifications.error('Could not create shared mailbox');
     }
@@ -518,10 +746,6 @@ async function createGroupMailbox() {
 function resolveConnectMailboxId() {
   if (props.targetMailbox?.id) return String(props.targetMailbox.id);
   if (connectTargetMailbox.value?.id) return String(connectTargetMailbox.value.id);
-  if (props.mailboxKind === 'group') {
-    const g = groupMailboxes.value.find((m) => m.id && !m.gmailInboxSync?.connected);
-    return g?.id ? String(g.id) : '';
-  }
   return personalMailbox.value?.id ? String(personalMailbox.value.id) : '';
 }
 
@@ -531,8 +755,7 @@ async function connectGoogle() {
   await startGmailOAuth(mbId, emailHint.value, {
     onConnected: async () => {
       await refreshMailboxes();
-      emit('connected');
-      close();
+      finishConnected();
     }
   });
 }
@@ -542,16 +765,18 @@ async function connectGmailSmtp() {
   if (!mbId || !emailLooksValid.value || !appPassword.value.trim()) return;
   smtpConnectLoading.value = true;
   try {
-    const res = await apiClient.post(`/mailboxes/${encodeURIComponent(mbId)}/outbound/gmail-smtp/connect`, {
-      emailAddress: emailHint.value.trim(),
-      appPassword: appPassword.value.replace(/\s/g, '')
+    const res = await apiClient(`/mailboxes/${encodeURIComponent(mbId)}/outbound/gmail-smtp/connect`, {
+      method: 'POST',
+      body: JSON.stringify({
+        emailAddress: emailHint.value.trim(),
+        appPassword: appPassword.value.replace(/\s/g, '')
+      })
     });
     if (res?.success) {
-      notifications.success('Gmail SMTP connected for sending');
+      notifications.success('Gmail SMTP connected');
       appPassword.value = '';
       await refreshMailboxes();
-      emit('connected');
-      close();
+      finishConnected();
     } else {
       notifications.error(res?.message || 'Could not connect Gmail SMTP');
     }

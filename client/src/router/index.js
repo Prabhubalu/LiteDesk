@@ -270,6 +270,15 @@ const routes = [
     }
   },
   {
+    path: '/control/inbound-parser',
+    name: 'control-inbound-parser',
+    component: () => import('@/views/ControlPlaneInboundParser.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPlatformAdmin: true
+    }
+  },
+  {
     path: '/control/automation-rules',
     redirect: '/settings/automation/automation-rules',
   },

@@ -718,5 +718,9 @@
   "inboxThreadsPartialSelect": {
     "message": "Seuls les 500 premiers threads de cette vue ont été sélectionnés.",
     "description": "Toast"
+  },
+  "inboxGetStartedInboundParserSubtitle": {
+    "message": "Set up email forwarding to your unique address, or join a shared mailbox your team already created.",
+    "description": "Inbox get started subtitle when inbound parser mode is enabled"
   }
 }

@@ -10,6 +10,7 @@
       <InboxGetStarted
         v-else
         :gmail-oauth-ready="gmailOAuthReady"
+        :inbound-parser-mode="!mailboxFlags.gmailIntegrationEnabled"
         :connect-loading="gmailSyncLoading"
         @connect-mailbox="openConnectInboxModal"
         @setup-group="onGetStartedGroupSetup"
@@ -101,12 +102,21 @@
               class="mt-0.5 shrink-0 self-start rounded-full bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-white dark:bg-blue-500"
             >{{ mb.threadUnreadCount }}</span>
             <button
-              v-if="mb.kind === 'group' && mailboxFlags.canCreateGroup && !mb.gmailInboxSync?.connected"
+              v-if="mailboxFlags.gmailIntegrationEnabled && mb.kind === 'group' && mailboxFlags.canCreateGroup && !mb.gmailInboxSync?.connected"
               type="button"
               class="mt-0.5 shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase text-violet-700 hover:bg-violet-100 dark:text-violet-300 dark:hover:bg-violet-900/50"
               :title="t('inbox.inboxSurfaceConnectGmailForThisSharedInbox')"
               @click.stop="openConnectGroupGmail(mb)"
             >{{ t('inbox.inboxSurfaceConnect') }}</button>
+            <button
+              v-else-if="!mailboxFlags.gmailIntegrationEnabled && !mb.inboundParser?.routingAddress && (mb.kind === 'personal' || (mb.kind === 'group' && mailboxFlags.canCreateGroup))"
+              type="button"
+              class="mt-0.5 shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase text-emerald-700 hover:bg-emerald-100 dark:text-emerald-300 dark:hover:bg-emerald-900/50"
+              title="Get your unique forwarding address"
+              @click.stop="openMailboxForwardingSetup(mb)"
+            >
+              Connect
+            </button>
             <button
               v-else-if="mb.kind === 'group' && mailboxFlags.canCreateGroup"
               type="button"
@@ -145,7 +155,7 @@
           >{{ folderCountBadge(opt.value) }}</span>
         </button>
 
-        <template v-if="gmailSidebarFolders.length">
+        <template v-if="mailboxFlags.gmailIntegrationEnabled && gmailSidebarFolders.length">
           <div class="mt-4 px-2 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-500">{{ t('inbox.inboxSurfaceGmailFolders') }}</div>
           <p v-if="gmailLabelsLoading" class="px-3 py-1 text-xs text-gray-500 dark:text-gray-400">{{ t('inbox.inboxSurfaceLoadingFolders') }}</p>
           <button
@@ -171,6 +181,15 @@
               @click="createPersonalMailbox"
             >
               + Personal mailbox
+            </button>
+            <button
+              v-else-if="mailboxFlags.canDeletePersonal && ownedPersonalMailbox"
+              type="button"
+              class="w-full rounded-lg border border-red-200/90 bg-white py-2 text-center text-xs font-medium text-red-800 hover:bg-red-50 disabled:opacity-50 dark:border-red-900/50 dark:bg-gray-950 dark:text-red-200 dark:hover:bg-red-950/40"
+              :disabled="mailboxActionLoading"
+              @click="deletePersonalMailbox"
+            >
+              Remove personal mailbox
             </button>
             <button
               v-if="mailboxFlags.canCreateGroup"
@@ -306,7 +325,7 @@
       </div>
 
       <div
-        v-if="selectedMailbox && selectedMailbox.gmailSmtpOutbound?.connected && !selectedMailbox.gmailInboxSync?.connected"
+        v-if="mailboxFlags.gmailIntegrationEnabled && selectedMailbox && selectedMailbox.gmailSmtpOutbound?.connected && !selectedMailbox.gmailInboxSync?.connected"
         class="border-b border-emerald-200 bg-emerald-50/90 px-3 py-2.5 text-xs text-emerald-950 dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:text-emerald-100"
       >
         <div class="font-semibold text-emerald-900 dark:text-emerald-100">
@@ -318,12 +337,52 @@
       </div>
 
       <div
-        v-if="selectedMailbox && !selectedMailbox.gmailInboxSync?.connected && !selectedMailbox.gmailSmtpOutbound?.connected"
+        v-if="!mailboxFlags.gmailIntegrationEnabled && selectedMailbox?.inboundParser?.routingAddress"
+        class="border-b border-emerald-200 bg-emerald-50/90 px-4 py-3 text-xs text-emerald-950 dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:text-emerald-100"
+      >
+        <div class="font-semibold">Forward mail to this address</div>
+        <p class="mt-1 font-mono text-[11px] break-all select-all">
+          {{ selectedMailbox.inboundParser.routingAddress }}
+        </p>
+        <p v-if="selectedMailbox.inboundParser.forwardingHint" class="mt-1 leading-snug opacity-90">
+          {{ selectedMailbox.inboundParser.forwardingHint }}
+        </p>
+        <p class="mt-1 leading-snug opacity-80">
+          Set up forwarding in Gmail or Microsoft 365 for
+          <span class="font-medium">{{ selectedMailbox.emailAddress || selectedMailbox.label }}</span>.
+          Replies from the CRM use your organization’s outbound email settings.
+        </p>
+        <button
+          v-if="selectedMailbox.kind === 'personal' && mailboxFlags.canDeletePersonal"
+          type="button"
+          class="mt-2 text-[11px] font-medium text-red-800 underline hover:no-underline dark:text-red-200"
+          :disabled="mailboxActionLoading"
+          @click="deletePersonalMailbox"
+        >
+          Remove personal mailbox
+        </button>
+      </div>
+
+      <div
+        v-else-if="!mailboxFlags.gmailIntegrationEnabled && selectedMailbox"
+        class="border-b border-blue-200 bg-blue-50/90 px-4 py-3 text-xs text-blue-950 dark:border-blue-900/60 dark:bg-blue-950/25 dark:text-blue-100"
+      >
+        <div class="font-semibold">Inbound via Arivu Inbound Parser</div>
+        <p v-if="selectedMailbox.inboundParser?.provisioningError" class="mt-1 leading-snug text-amber-900 dark:text-amber-100">
+          Routing address is not ready yet: {{ selectedMailbox.inboundParser.provisioningError }}
+        </p>
+        <p v-else class="mt-1 leading-snug">
+          Create or select a mailbox to get a forwarding address. Your administrator configures the parser connection in Control Plane.
+        </p>
+      </div>
+
+      <div
+        v-else-if="mailboxFlags.gmailIntegrationEnabled && selectedMailbox && !selectedMailbox.gmailInboxSync?.connected && !selectedMailbox.gmailSmtpOutbound?.connected"
         class="border-b border-gray-200 bg-gradient-to-b from-slate-50 to-white px-4 py-6 dark:border-gray-700 dark:from-gray-900 dark:to-gray-900/95 sm:px-6"
       >
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white sm:text-xl">{{ t('inbox.inboxSurfaceConnectYourInboxToLitedesk') }}</h2>
         <p class="mt-1 max-w-2xl text-sm text-gray-600 dark:text-gray-400">
-          Link your work email provider to sync mail into LiteDesk and send from the CRM. Gmail is available today; Outlook, Yahoo, and IMAP are on the roadmap.
+          Link your work email provider to sync mail into Arivu and send from the CRM. Gmail is available today; Outlook, Yahoo, and IMAP are on the roadmap.
         </p>
         <p class="mt-4 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-500">{{ t('inbox.inboxSurfaceSelectYourEmailProvider') }}</p>
         <div class="mt-3 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4">
@@ -377,7 +436,7 @@
       </div>
 
       <div
-        v-else-if="selectedMailbox && selectedMailbox.gmailInboxSync?.connected"
+        v-else-if="mailboxFlags.gmailIntegrationEnabled && selectedMailbox && selectedMailbox.gmailInboxSync?.connected"
         class="border-b border-violet-200 bg-violet-50/90 px-3 py-2.5 text-xs text-violet-950 dark:border-violet-900/60 dark:bg-violet-950/25 dark:text-violet-100"
       >
         <div class="font-semibold text-violet-900 dark:text-violet-100">
@@ -866,6 +925,7 @@ import GmailMailboxFolderModal from '@/components/inbox/GmailMailboxFolderModal.
 import EmailThreadReader from '@/components/inbox/EmailThreadReader.vue';
 import { useConnectMailboxPrompt } from '@/composables/useConnectMailboxPrompt';
 import { isMailboxConnectedForProvider } from '@/constants/inboxProviders';
+import { isInboxShellUnblocked, formatMailboxInboundStatus } from '@/utils/mailboxInboundStatus';
 import { createInboxStream } from '@/composables/useInboxStream';
 import { shouldPromptGmailReconnect, gmailReconnectMessage } from '@/utils/gmailConnectErrors';
 
@@ -884,7 +944,9 @@ const emailIncludeDone = ref(false);
 const mailboxes = ref([]);
 const mailboxFlags = ref({
   canCreatePersonal: false,
+  canDeletePersonal: false,
   canCreateGroup: false,
+  gmailIntegrationEnabled: false,
   gmailOAuthAppConfigured: false
 });
 const mailboxesLoading = ref(true);
@@ -925,6 +987,7 @@ function displayNameForGmailLabelId(id) {
 }
 
 const personalMailboxes = computed(() => mailboxes.value.filter((m) => m.kind === 'personal'));
+const ownedPersonalMailbox = computed(() => personalMailboxes.value[0] || null);
 const groupMailboxes = computed(() => mailboxes.value.filter((m) => m.kind === 'group'));
 
 const selectedMailbox = computed(() => {
@@ -1114,10 +1177,18 @@ function onGmailProviderClick() {
   promptConnectMailbox('inbox');
 }
 
-/** Get Started → Connect: always open provider picker popup. */
+/** Get Started → Connect: personal mailbox + parser forwarding or Gmail. */
 function openConnectInboxModal() {
   if (gmailSyncLoading.value) return;
-  promptConnectMailbox('inbox');
+  promptConnectMailbox('inbox', { mailboxKind: 'personal' });
+}
+
+function openMailboxForwardingSetup(mb) {
+  if (!mb) return;
+  promptConnectMailbox('inbox', {
+    mailboxKind: mb.kind === 'group' ? 'group' : 'personal',
+    targetMailbox: mb
+  });
 }
 
 async function copyGmailRedirectExample() {
@@ -1417,16 +1488,11 @@ function isWorkspaceThreadRow(row) {
   return String(mk).toLowerCase() === 'workspace';
 }
 
-function inboxHasConnectedMailbox() {
-  return mailboxes.value.some(
-    (m) => m.gmailInboxSync?.connected || m.gmailSmtpOutbound?.connected
-  );
-}
-
-/** Full-page onboarding until a personal mailbox is linked (Gmail, etc.). */
-const showInboxGetStarted = computed(
-  () => !mailboxesLoading.value && !inboxHasConnectedMailbox()
-);
+/** Full-page onboarding until user has shared mailbox access or a connected personal mailbox. */
+const showInboxGetStarted = computed(() => {
+  if (mailboxesLoading.value) return false;
+  return !isInboxShellUnblocked(mailboxes.value, mailboxFlags.value);
+});
 
 function onGetStartedGroupSetup() {
   if (!mailboxFlags.value.canCreateGroup) {
@@ -1771,6 +1837,9 @@ async function saveMembersModal() {
 }
 
 function formatMailboxSyncStatus(mb) {
+  if (!mailboxFlags.value.gmailIntegrationEnabled) {
+    return formatMailboxInboundStatus(mb, mailboxFlags.value);
+  }
   if (mb?.gmailInboxSync?.connected) return 'gmail on';
   if (mb?.gmailSmtpOutbound?.connected) return 'smtp send';
   const s = String(mb?.syncStatus || 'not_configured');
@@ -1795,7 +1864,9 @@ const fetchMailboxes = async () => {
       mailboxes.value = Array.isArray(res.data.mailboxes) ? res.data.mailboxes : [];
       mailboxFlags.value = {
         canCreatePersonal: Boolean(res.data.flags?.canCreatePersonal),
+        canDeletePersonal: Boolean(res.data.flags?.canDeletePersonal),
         canCreateGroup: Boolean(res.data.flags?.canCreateGroup),
+        gmailIntegrationEnabled: Boolean(res.data.flags?.gmailIntegrationEnabled),
         gmailOAuthAppConfigured: Boolean(res.data.flags?.gmailOAuthAppConfigured)
       };
       if (gmailSidebarMailbox.value?.gmailInboxSync?.connected) {
@@ -1830,6 +1901,43 @@ const createPersonalMailbox = async () => {
   } catch (err) {
     const msg = err?.response?.data?.message || err?.message || 'Could not create mailbox';
     notifications.error(msg);
+  } finally {
+    mailboxActionLoading.value = false;
+  }
+};
+
+const deletePersonalMailbox = async () => {
+  const mb = ownedPersonalMailbox.value;
+  if (!mb?.id || !mailboxFlags.value.canDeletePersonal) return;
+  const confirmed =
+    typeof window !== 'undefined'
+    && window.confirm(
+      'Remove your personal mailbox?\n\nExisting conversations stay in the inbox but are no longer tied to this mailbox. Turn off email forwarding in Gmail or Microsoft 365 if you configured it.'
+    );
+  if (!confirmed) return;
+
+  mailboxActionLoading.value = true;
+  try {
+    const res = await apiClient(`/mailboxes/${encodeURIComponent(mb.id)}`, { method: 'DELETE' });
+    if (res?.success) {
+      if (selectedMailboxFilter.value && String(selectedMailboxFilter.value) === String(mb.id)) {
+        selectedMailboxFilter.value = null;
+      }
+      await fetchMailboxes();
+      await fetchEmailThreads();
+      const warn = Array.isArray(res.warnings) ? res.warnings[0] : null;
+      if (warn) notifications.warning(warn);
+      else notifications.success('Personal mailbox removed');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('litedesk:mailbox-connected'));
+      }
+    } else {
+      notifications.error(res?.message || 'Could not remove personal mailbox');
+    }
+  } catch (err) {
+    notifications.error(
+      err?.response?.data?.message || err?.message || 'Could not remove personal mailbox'
+    );
   } finally {
     mailboxActionLoading.value = false;
   }

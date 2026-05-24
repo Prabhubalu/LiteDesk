@@ -403,6 +403,27 @@ const checkPermissionFromParam = (paramName, action) => {
     };
 };
 
+/**
+ * Platform administrator only (isPlatformAdmin flag).
+ * Use for Control Plane settings tenants must not access (e.g. inbound parser URLs).
+ */
+const requirePlatformAdmin = () => {
+    return (req, res, next) => {
+        if (!req.user) {
+            return res.status(401).json({ message: 'Authentication required' });
+        }
+        const allowed =
+            req.user.isPlatformAdmin === true || isInternalEmail(req.user.email);
+        if (!allowed) {
+            return res.status(403).json({
+                message: 'Platform administrator access required',
+                code: 'PLATFORM_ADMIN_REQUIRED'
+            });
+        }
+        next();
+    };
+};
+
 module.exports = {
     checkPermission,
     checkPermissionFromParam,
@@ -410,6 +431,7 @@ module.exports = {
     requireAdmin,
     requireOwner,
     requireMasterOrganization,
+    requirePlatformAdmin,
     canManageUsers,
     canManageBilling,
     canManageRoles,
