@@ -398,13 +398,13 @@ import { getAppFields, getParticipationFields } from '@/platform/fields/peopleFi
 
 const { t } = useI18n();
 
-function peopleTypesInUseLabel(count) {
+function peopleTypesInUseLabel(count: number) {
   return count === 1
     ? t('settings.peopleTypesInUseOne', { count })
     : t('settings.peopleTypesInUseOther', { count });
 }
 
-function peopleTypesDeleteInUseLabel(count) {
+function peopleTypesDeleteInUseLabel(count: number) {
   return count === 1
     ? t('settings.peopleTypesDeleteInUseOne', { count })
     : t('settings.peopleTypesDeleteInUseOther', { count });
