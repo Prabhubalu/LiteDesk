@@ -26,7 +26,7 @@
         <div>
           <p class="font-medium text-gray-900 dark:text-white">{{ cal.name }}</p>
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            {{ t('settings.settingsBhHolidayCount', { count: cal.dates?.length || 0 }) }}
+            {{ holidayCountLabel(cal.dates?.length || 0) }}
             <span v-if="cal.region"> · {{ cal.region }}</span>
           </p>
         </div>
@@ -88,6 +88,13 @@ import { useBusinessHours } from '@/composables/useBusinessHours';
 import { useNotifications } from '@/composables/useNotifications';
 
 const { t } = useI18n();
+
+function holidayCountLabel(count) {
+  return count === 1
+    ? t('settings.settingsBhHolidayCountOne', { count })
+    : t('settings.settingsBhHolidayCountOther', { count });
+}
+
 const { fetchHolidayCalendars, importHolidayCsv, deleteHolidayCalendar } = useBusinessHours();
 const { success, error: notifyError } = useNotifications();
 

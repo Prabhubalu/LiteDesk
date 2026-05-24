@@ -280,7 +280,7 @@
     "description": "Password policy option"
   },
   "secRequireSpecialDesc": {
-    "message": "Passwords must contain at least one special character (!@#$%^&*)",
+    "message": "Passwords must contain at least one special character (!{'@'}#$%^&*)",
     "description": "Password policy option desc"
   },
   "secPreventReuse": {
@@ -6531,10 +6531,6 @@
     "message": "Loading schedules…",
     "description": "Schedules list loading"
   },
-  "settingsBhScheduleCount": {
-    "message": "{count, plural, one {# schedule} other {# schedules}}",
-    "description": "Schedule list count"
-  },
   "settingsBhCreateSchedule": {
     "message": "Create schedule",
     "description": "Create schedule button"
@@ -6566,10 +6562,6 @@
   "settingsBhLoadFailed": {
     "message": "Failed to load schedules",
     "description": "Schedules load error"
-  },
-  "settingsBhHolidayCalendarOption": {
-    "message": "{name} ({count, plural, one {# holiday} other {# holidays}})",
-    "description": "Holiday calendar select option"
   },
   "settingsCoreModLoadFailed": {
     "message": "Failed to load core modules",
@@ -7735,9 +7727,13 @@
     "message": "Available Integrations",
     "description": "Catalog list heading"
   },
-  "integrationsCount": {
-    "message": "{count, plural, one {# integration} other {# integrations}}",
-    "description": "Catalog integration count"
+  "integrationsCountOne": {
+    "message": "{count} integration",
+    "description": "Catalog integration count singular"
+  },
+  "integrationsCountOther": {
+    "message": "{count} integrations",
+    "description": "Catalog integration count plural"
   },
   "integrationsScopePlatform": {
     "message": "Platform-wide",
@@ -8000,7 +7996,7 @@
     "description": "OCI region placeholder"
   },
   "integrationsPlaceholderFromEmail": {
-    "message": "hello@yourdomain.com",
+    "message": "hello{'@'}yourdomain.com",
     "description": "From email placeholder"
   },
   "integrationsPlaceholderFromName": {
@@ -8008,7 +8004,7 @@
     "description": "From name placeholder"
   },
   "integrationsPlaceholderReplyTo": {
-    "message": "support@yourdomain.com",
+    "message": "support{'@'}yourdomain.com",
     "description": "Reply-to placeholder"
   },
   "integrationsPlaceholderAwsRegion": {
@@ -8020,7 +8016,7 @@
     "description": "Gmail OAuth redirect URI placeholder"
   },
   "integrationsPlaceholderSearchEmail": {
-    "message": "name@example.com",
+    "message": "name{'@'}example.com",
     "description": "Suppression search placeholder"
   },
   "integrationsPlaceholderWebhookProvider": {
@@ -8843,10 +8839,6 @@
     "message": "Import CSV",
     "description": "Import holiday calendar button"
   },
-  "settingsBhHolidayCount": {
-    "message": "{count, plural, one {# holiday} other {# holidays}}",
-    "description": "Holiday count on calendar card"
-  },
   "settingsBhEmptyHolidayCalendars": {
     "message": "No holiday calendars yet. Import a CSV with date,name per line.",
     "description": "Empty holiday calendars state"
@@ -9058,5 +9050,29 @@
   "modulesAndFieldsImportant3": {
     "message": "Important:",
     "description": "Auto-migrated from modulesAndFields"
+  },
+  "settingsBhScheduleCountOne": {
+    "message": "{count} schedule",
+    "description": "Schedule list count singular"
+  },
+  "settingsBhScheduleCountOther": {
+    "message": "{count} schedules",
+    "description": "Schedule list count plural"
+  },
+  "settingsBhHolidayCountOne": {
+    "message": "{count} holiday",
+    "description": "Holiday count singular"
+  },
+  "settingsBhHolidayCountOther": {
+    "message": "{count} holidays",
+    "description": "Holiday count plural"
+  },
+  "settingsBhHolidayCalendarOptionOne": {
+    "message": "{name} ({count} holiday)",
+    "description": "Holiday calendar select option singular"
+  },
+  "settingsBhHolidayCalendarOptionOther": {
+    "message": "{name} ({count} holidays)",
+    "description": "Holiday calendar select option plural"
   }
 }

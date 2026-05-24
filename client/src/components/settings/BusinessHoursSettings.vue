@@ -41,7 +41,7 @@
       <template v-else>
         <div class="flex flex-wrap items-center justify-between gap-3">
           <p class="text-sm text-gray-600 dark:text-gray-400">
-            {{ t('settings.settingsBhScheduleCount', { count: sets.length }) }}
+            {{ scheduleCountLabel(sets.length) }}
           </p>
           <button
             type="button"
@@ -146,12 +146,21 @@ const drawerScheduleId = ref(null);
 const holidayCalendarOptions = computed(() =>
   holidayCalendars.value.map((cal) => ({
     value: cal._id,
-    label: t('settings.settingsBhHolidayCalendarOption', {
-      name: cal.name,
-      count: cal.dates?.length || 0,
-    }),
+    label: holidayCalendarOptionLabel(cal.name, cal.dates?.length || 0),
   }))
 );
+
+function scheduleCountLabel(count) {
+  return count === 1
+    ? t('settings.settingsBhScheduleCountOne', { count })
+    : t('settings.settingsBhScheduleCountOther', { count });
+}
+
+function holidayCalendarOptionLabel(name, count) {
+  return count === 1
+    ? t('settings.settingsBhHolidayCalendarOptionOne', { name, count })
+    : t('settings.settingsBhHolidayCalendarOptionOther', { name, count });
+}
 
 function scopeLabel(set) {
   const scopeType = set.linkedTo?.type || 'company';

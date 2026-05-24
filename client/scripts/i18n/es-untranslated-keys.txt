@@ -41,9 +41,11 @@ settings.modFieldsPbAssignRole
 settings.modFieldsEditable
 settings.modFieldsStageCount
 settings.modFieldsQuickModeSimple
-settings.settingsBhScheduleCount
+settings.settingsBhScheduleCountOne
+settings.settingsBhScheduleCountOther
 settings.settingsBhScopeIndividual
-settings.settingsBhHolidayCalendarOption
+settings.settingsBhHolidayCalendarOptionOne
+settings.settingsBhHolidayCalendarOptionOther
 settings.settingsSubDetailDaysCount
 settings.settingsAppDetailModuleCount
 settings.settingsAddFieldTypeDecimal
@@ -52,7 +54,8 @@ settings.peopleTypesInUse
 settings.peopleTypesDeleteInUse
 settings.coreModDetailSharedBy
 settings.coreModDetailApplicationCount
-settings.integrationsCount
+settings.integrationsCountOne
+settings.integrationsCountOther
 settings.integrationsProviderOptionGmailSmtp
 settings.integrationsProviderOptionAwsSes
 settings.integrationsAwsSesHintTitle

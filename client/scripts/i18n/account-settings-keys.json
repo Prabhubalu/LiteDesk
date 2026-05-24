@@ -88,7 +88,7 @@
     "description": "Password policy option"
   },
   "secRequireSpecialDesc": {
-    "message": "Passwords must contain at least one special character (!@#$%^&*)",
+    "message": "Passwords must contain at least one special character (!{'@'}#$%^&*)",
     "description": "Password policy option desc"
   },
   "secPreventReuse": {

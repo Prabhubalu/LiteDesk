@@ -11,9 +11,13 @@
   },
   "integrationsLoadFailed": { "message": "Failed to load integrations", "description": "List load error fallback" },
   "integrationsAvailableTitle": { "message": "Available Integrations", "description": "Catalog list heading" },
-  "integrationsCount": {
-    "message": "{count, plural, one {# integration} other {# integrations}}",
-    "description": "Catalog integration count"
+  "integrationsCountOne": {
+    "message": "{count} integration",
+    "description": "Catalog integration count singular"
+  },
+  "integrationsCountOther": {
+    "message": "{count} integrations",
+    "description": "Catalog integration count plural"
   },
   "integrationsScopePlatform": { "message": "Platform-wide", "description": "Platform scope badge" },
   "integrationsScopeApp": { "message": "App-specific", "description": "App scope badge" },
@@ -140,15 +144,15 @@
   "integrationsSavingEmailSettings": { "message": "Saving...", "description": "Save email settings in progress" },
   "integrationsSaveEmailSettings": { "message": "Save Email Settings", "description": "Save email settings button" },
   "integrationsPlaceholderOciRegion": { "message": "us-phoenix-1", "description": "OCI region placeholder" },
-  "integrationsPlaceholderFromEmail": { "message": "hello@yourdomain.com", "description": "From email placeholder" },
+  "integrationsPlaceholderFromEmail": { "message": "hello{'@'}yourdomain.com", "description": "From email placeholder" },
   "integrationsPlaceholderFromName": { "message": "Your Company", "description": "From name placeholder" },
-  "integrationsPlaceholderReplyTo": { "message": "support@yourdomain.com", "description": "Reply-to placeholder" },
+  "integrationsPlaceholderReplyTo": { "message": "support{'@'}yourdomain.com", "description": "Reply-to placeholder" },
   "integrationsPlaceholderAwsRegion": { "message": "us-east-1", "description": "AWS region placeholder" },
   "integrationsPlaceholderGmailRedirect": {
     "message": "https://your-api.example.com/api/mailboxes/inbox-sync/google/callback",
     "description": "Gmail OAuth redirect URI placeholder"
   },
-  "integrationsPlaceholderSearchEmail": { "message": "name@example.com", "description": "Suppression search placeholder" },
+  "integrationsPlaceholderSearchEmail": { "message": "name{'@'}example.com", "description": "Suppression search placeholder" },
   "integrationsPlaceholderWebhookProvider": { "message": "simulator", "description": "Webhook simulator provider placeholder" },
   "integrationsPlaceholderSmtpHostOci": {
     "message": "smtp.email.us-phoenix-1.oci.oraclecloud.com",
