@@ -62,7 +62,7 @@ INBOUND_PARSER_ENABLED=true
    → routingAddress stored on Mailbox
 3. User forwards support@ → routingAddress (Gmail/M365 — no Google API)
 4. Parser ingests → POST CRM /api/webhooks/arivu/inbound-email (JSON + HMAC)
-5. CRM fetches GET parser /admin/messages/{messageId}
+5. CRM fetches GET parser `/integrations/v1/messages/{messageId}` (Bearer `CRM_API_KEY`)
    → Communication in tenant DB (workspace inbox)
 ```
 
