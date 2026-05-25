@@ -8,12 +8,20 @@ const { resolveParserEventIds } = require('../utils/parserIdCodec');
 const { getEffectiveInboundParserConfig } = require('./inboundParserConfigService');
 const { runWithOrganizationTenantContext } = require('../utils/runWithOrganizationTenant');
 
+function parserAddressToString(value) {
+  if (!value) return '';
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'object' && value.address) return String(value.address).trim();
+  return '';
+}
+
 function normalizeAddressList(value) {
   if (!value) return [];
   if (Array.isArray(value)) {
-    return value.map((x) => String(x).trim()).filter(Boolean);
+    return value.map((x) => parserAddressToString(x) || String(x).trim()).filter(Boolean);
   }
-  return [String(value).trim()].filter(Boolean);
+  const one = parserAddressToString(value) || String(value).trim();
+  return one ? [one] : [];
 }
 
 function pickBody(msg) {
@@ -25,33 +33,63 @@ function pickBody(msg) {
   );
 }
 
+function buildParserMessageFetchUrls(parserApiBaseUrl, parserMessageId) {
+  const base = String(parserApiBaseUrl || '').trim().replace(/\/+$/, '');
+  const enc = encodeURIComponent(parserMessageId);
+  const candidates = [
+    `${base}/integrations/v1/messages/${enc}`,
+    `${base}/admin/messages/${enc}`
+  ];
+  if (!base.endsWith('/api')) {
+    candidates.unshift(
+      `${base}/api/integrations/v1/messages/${enc}`,
+      `${base}/api/admin/messages/${enc}`
+    );
+  }
+  return [...new Set(candidates)];
+}
+
 async function fetchParserMessage(parserMessageId) {
   const cfg = await getEffectiveInboundParserConfig();
   if (!cfg.parserApiBaseUrl) {
     throw new Error('Parser API base URL not configured');
   }
-  // Use integrations API (CRM_API_KEY). /admin/messages requires admin UI session when ADMIN_PASSWORD is set.
-  const url = `${cfg.parserApiBaseUrl}/integrations/v1/messages/${encodeURIComponent(parserMessageId)}`;
   const headers = { Accept: 'application/json' };
   if (cfg.parserApiKey) {
     headers.Authorization = `Bearer ${cfg.parserApiKey}`;
     headers['X-Arivu-Api-Key'] = cfg.parserApiKey;
   }
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 20000);
-  let res;
-  try {
-    res = await fetch(url, { method: 'GET', headers, signal: controller.signal });
-  } finally {
+
+  const urls = buildParserMessageFetchUrls(cfg.parserApiBaseUrl, parserMessageId);
+  let lastError = null;
+
+  for (const url of urls) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
+    let res;
+    try {
+      res = await fetch(url, { method: 'GET', headers, signal: controller.signal });
+    } catch (err) {
+      clearTimeout(timeout);
+      lastError = err;
+      continue;
+    }
     clearTimeout(timeout);
+
+    if (res.status === 404) {
+      lastError = new Error(`Parser message fetch failed (404) at ${url}`);
+      continue;
+    }
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(`Parser message fetch failed (${res.status}): ${text.slice(0, 200)}`);
+    }
+    const raw = await res.json();
+    const msg = raw?.message && typeof raw.message === 'object' ? raw.message : raw;
+    return msg;
   }
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(`Parser message fetch failed (${res.status}): ${text.slice(0, 200)}`);
-  }
-  const raw = await res.json();
-  const msg = raw?.message && typeof raw.message === 'object' ? raw.message : raw;
-  return msg;
+
+  throw lastError || new Error('Parser message fetch failed: no URL candidates');
 }
 
 async function processParserInboundEvent(eventDoc) {
@@ -82,7 +120,9 @@ async function processParserInboundEvent(eventDoc) {
 
   const providerMessageKey = `arivu-parser:${eventDoc.parserMessageId}`;
   const body = pickBody(msg);
-  const fromAddress = String(msg.from || msg.fromAddress || '').trim();
+  const fromAddress =
+    parserAddressToString(msg.from)
+    || String(msg.fromAddress || '').trim();
   const subject = String(msg.subject || '').trim();
   const receivedAt = eventDoc.receivedAt || (msg.receivedAt ? new Date(msg.receivedAt) : new Date());
 
