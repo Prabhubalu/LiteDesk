@@ -30,7 +30,8 @@ async function fetchParserMessage(parserMessageId) {
   if (!cfg.parserApiBaseUrl) {
     throw new Error('Parser API base URL not configured');
   }
-  const url = `${cfg.parserApiBaseUrl}/admin/messages/${encodeURIComponent(parserMessageId)}`;
+  // Use integrations API (CRM_API_KEY). /admin/messages requires admin UI session when ADMIN_PASSWORD is set.
+  const url = `${cfg.parserApiBaseUrl}/integrations/v1/messages/${encodeURIComponent(parserMessageId)}`;
   const headers = { Accept: 'application/json' };
   if (cfg.parserApiKey) {
     headers.Authorization = `Bearer ${cfg.parserApiKey}`;
@@ -48,7 +49,9 @@ async function fetchParserMessage(parserMessageId) {
     const text = await res.text().catch(() => '');
     throw new Error(`Parser message fetch failed (${res.status}): ${text.slice(0, 200)}`);
   }
-  return res.json();
+  const raw = await res.json();
+  const msg = raw?.message && typeof raw.message === 'object' ? raw.message : raw;
+  return msg;
 }
 
 async function processParserInboundEvent(eventDoc) {

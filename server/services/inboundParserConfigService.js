@@ -18,7 +18,9 @@ function buildDerivedUrls({ parserApiBaseUrl, crmPublicApiBaseUrl }) {
     crmPublicApiBaseUrl: crm,
     crmWebhookUrl: crm ? `${crm}${WEBHOOK_PATH}` : '',
     parserProvisionUrl: parser ? `${parser}/integrations/v1/mailboxes` : '',
-    parserAdminMessageUrlTemplate: parser ? `${parser}/admin/messages/{messageId}` : ''
+    parserAdminMessageUrlTemplate: parser
+      ? `${parser}/integrations/v1/messages/{messageId}`
+      : ''
   };
 }
 
