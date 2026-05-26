@@ -284,15 +284,15 @@
     "description": "Auto-migrated from emailComposeDrawer"
   },
   "emailComposeDrawerBccExampleComCommaSeparated": {
-    "message": "bcc@example.com (comma-separated)",
+    "message": "bcc{'@'}example.com (comma-separated)",
     "description": "Auto-migrated from emailComposeDrawer"
   },
   "emailComposeDrawerCcExampleComCommaSeparated": {
-    "message": "cc@example.com (comma-separated)",
+    "message": "cc{'@'}example.com (comma-separated)",
     "description": "Auto-migrated from emailComposeDrawer"
   },
   "emailComposeDrawerRecipientExampleComCommaSeparatedFor": {
-    "message": "recipient@example.com (comma-separated for multiple)",
+    "message": "recipient{'@'}example.com (comma-separated for multiple)",
     "description": "Auto-migrated from emailComposeDrawer"
   },
   "emailComposeDrawerComposeAndSendAnEmailFrom": {
@@ -722,5 +722,253 @@
   "inboxGetStartedInboundParserSubtitle": {
     "message": "Set up email forwarding to your unique address, or join a shared mailbox your team already created.",
     "description": "Inbox get started subtitle when inbound parser mode is enabled"
+  },
+  "inboxProSelectConversation": {
+    "message": "Select a conversation",
+    "description": "Empty state when no thread is open in split view"
+  },
+  "inboxProToday": {
+    "message": "Today",
+    "description": "Thread list date group"
+  },
+  "inboxProYesterday": {
+    "message": "Yesterday",
+    "description": "Thread list date group"
+  },
+  "inboxProEarlier": {
+    "message": "Earlier",
+    "description": "Thread list date group"
+  },
+  "inboxProAiSummary": {
+    "message": "AI Summary",
+    "description": "AI summary card title in thread reader"
+  },
+  "inboxProGenerateBrief": {
+    "message": "Generate brief",
+    "description": "AI summary action button"
+  },
+  "inboxProAiSummaryPlaceholder": {
+    "message": "Get a quick summary of this thread. Generate a brief to see key points from the conversation.",
+    "description": "AI summary placeholder text"
+  },
+  "inboxProAiSummaryGenerated": {
+    "message": "{count} messages in this thread. Latest: {preview}…",
+    "description": "AI summary after generate"
+  },
+  "inboxProAiSummaryGeneratedShort": {
+    "message": "{count} messages in this thread.",
+    "description": "AI summary after generate without preview"
+  },
+  "inboxProMessage": {
+    "message": "message",
+    "description": "Singular message count label"
+  },
+  "inboxProMessages": {
+    "message": "messages",
+    "description": "Plural message count label"
+  },
+  "inboxProAttachment": {
+    "message": "attachment",
+    "description": "Singular attachment label"
+  },
+  "inboxProAttachments": {
+    "message": "attachments",
+    "description": "Plural attachment label"
+  },
+  "inboxProClickToReply": {
+    "message": "Click to reply…",
+    "description": "Quick reply placeholder"
+  },
+  "inboxProSend": {
+    "message": "Send",
+    "description": "Quick reply send button"
+  },
+  "inboxContextPanelTitle": {
+    "message": "Contact context",
+    "description": "CRM context panel aria label"
+  },
+  "inboxContextPanelOpenRecord": {
+    "message": "Open record",
+    "description": "Open linked CRM record"
+  },
+  "inboxContextPanelNoContact": {
+    "message": "No linked contact",
+    "description": "Context panel empty state title"
+  },
+  "inboxContextPanelNoContactHint": {
+    "message": "Link this thread to a person or deal to see CRM details here.",
+    "description": "Context panel empty state hint"
+  },
+  "inboxContextPanelUnknownContact": {
+    "message": "Unknown contact",
+    "description": "Fallback contact name"
+  },
+  "inboxContextPanelDetails": {
+    "message": "Details",
+    "description": "Contact details section"
+  },
+  "inboxContextPanelType": {
+    "message": "Type",
+    "description": "Record type field label"
+  },
+  "inboxContextPanelRecord": {
+    "message": "Record",
+    "description": "Record name field label"
+  },
+  "inboxContextPanelDeals": {
+    "message": "Deals",
+    "description": "Deals section title"
+  },
+  "inboxContextPanelDealsHint": {
+    "message": "Related deals will appear here when this thread is linked to a contact.",
+    "description": "Deals section placeholder"
+  },
+  "inboxContextPanelRecentActivity": {
+    "message": "Recent activity",
+    "description": "Activity timeline section"
+  },
+  "inboxContextPanelActivityEmail": {
+    "message": "Email in thread",
+    "description": "Activity item"
+  },
+  "inboxContextPanelActivityThread": {
+    "message": "{count} messages in thread",
+    "description": "Activity item for thread size"
+  },
+  "inboxContextPanelActivityNone": {
+    "message": "No recent activity",
+    "description": "Empty activity"
+  },
+  "inboxContextPanelAiInsights": {
+    "message": "AI Insights",
+    "description": "AI insights card title"
+  },
+  "inboxContextPanelBeta": {
+    "message": "Beta",
+    "description": "Beta badge"
+  },
+  "inboxContextPanelSentiment": {
+    "message": "Sentiment",
+    "description": "AI insight label"
+  },
+  "inboxContextPanelSentimentPositive": {
+    "message": "Positive",
+    "description": "AI sentiment value"
+  },
+  "inboxContextPanelUrgency": {
+    "message": "Urgency",
+    "description": "AI insight label"
+  },
+  "inboxContextPanelUrgencyMedium": {
+    "message": "Medium",
+    "description": "AI urgency value"
+  },
+  "inboxContextPanelIntent": {
+    "message": "Intent",
+    "description": "AI insight label"
+  },
+  "inboxContextPanelIntentFollowUp": {
+    "message": "Follow-up",
+    "description": "AI intent value"
+  },
+  "inboxContextPanelSuggestReply": {
+    "message": "Suggest a reply",
+    "description": "AI suggest reply button"
+  },
+  "inboxContextPanelKindPerson": {
+    "message": "Person",
+    "description": "Record kind label"
+  },
+  "inboxContextPanelKindOrganization": {
+    "message": "Organization",
+    "description": "Record kind label"
+  },
+  "inboxContextPanelKindDeal": {
+    "message": "Deal",
+    "description": "Record kind label"
+  },
+  "inboxContextPanelKindTask": {
+    "message": "Task",
+    "description": "Record kind label"
+  },
+  "inboxContextPanelKindCase": {
+    "message": "Case",
+    "description": "Record kind label"
+  },
+  "emailComposeWindowNewMessage": {
+    "message": "New Message",
+    "description": "Gmail-style compose window title for new email"
+  },
+  "emailComposeWindowReply": {
+    "message": "Reply",
+    "description": "Gmail-style compose window title for reply"
+  },
+  "emailComposeWindowMinimize": {
+    "message": "Minimize",
+    "description": "Collapse compose window to header bar"
+  },
+  "emailComposeWindowRestore": {
+    "message": "Restore",
+    "description": "Expand minimized compose window"
+  },
+  "emailComposeWindowMaximize": {
+    "message": "Maximize",
+    "description": "Expand compose window to large modal"
+  },
+  "emailComposeWindowExitFullscreen": {
+    "message": "Exit full screen",
+    "description": "Shrink maximized compose window"
+  },
+  "emailComposeWindowDiscardDraft": {
+    "message": "Discard draft",
+    "description": "Close compose and discard draft"
+  },
+  "emailComposeWindowSendingDetails": {
+    "message": "Sending details",
+    "description": "Expandable From / Reply-To section in compose window"
+  },
+  "emailDockedReplyPopOut": {
+    "message": "Pop out reply",
+    "description": "Open docked reply in floating compose window"
+  },
+  "emailDockedReplyPlaceholder": {
+    "message": "Write your reply…",
+    "description": "Placeholder in inline docked reply editor"
+  },
+  "emailDockedReplySending": {
+    "message": "Sending…",
+    "description": "Docked reply send button while in progress"
+  },
+  "emailDockedReplyUnknownRecipient": {
+    "message": "Recipient",
+    "description": "Fallback label when reply recipient name is unknown"
+  },
+  "emailDockedReplyEditRecipients": {
+    "message": "Edit recipients",
+    "description": "Click collapsed docked reply header to expand To/Cc/Bcc"
+  },
+  "emailDockedReplyRemoveRecipient": {
+    "message": "Remove recipient",
+    "description": "Remove a recipient chip from docked reply To field"
+  },
+  "inboxSurfaceFolderAll": {
+    "message": "All",
+    "description": "Inbox sidebar folder — all threads"
+  },
+  "inboxSurfaceFolderUnread": {
+    "message": "Unread",
+    "description": "Inbox sidebar folder — unread threads"
+  },
+  "inboxSurfaceFolderSent": {
+    "message": "Sent",
+    "description": "Inbox sidebar folder — threads you sent"
+  },
+  "inboxSurfaceFolderAssignedToMe": {
+    "message": "Assigned to me",
+    "description": "Inbox sidebar folder — assigned threads"
+  },
+  "inboxSurfaceFolderSnoozed": {
+    "message": "Snoozed",
+    "description": "Inbox sidebar folder — snoozed threads"
   }
 }

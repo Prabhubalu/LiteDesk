@@ -860,13 +860,14 @@ function computeWorkspaceThreadCounts(threadsRaw, includeDone, userId) {
   return {
     all: inboxActive.length,
     unread: inboxActive.filter((t) => t.unread).length,
+    sent: inboxActive.filter((t) => t.lastMessageDirection === 'outbound').length,
     assignedToMe: inboxActive.filter((t) => String(t.assignedToUserId || '') === String(userId)).length,
     snoozed: snoozed.length
   };
 }
 
 /**
- * @param {string} filter all|unread|assigned_to_me|snoozed
+ * @param {string} filter all|unread|sent|assigned_to_me|snoozed
  */
 function filterWorkspaceThreadsForFolder({
   threadsRaw,
@@ -883,6 +884,7 @@ function filterWorkspaceThreadsForFolder({
   } else {
     base = base.filter((t) => !t.snoozeActive);
     if (filter === 'unread') base = base.filter((t) => t.unread);
+    else if (filter === 'sent') base = base.filter((t) => t.lastMessageDirection === 'outbound');
     else if (filter === 'assigned_to_me') {
       base = base.filter((t) => String(t.assignedToUserId || '') === String(userId));
     }
@@ -952,7 +954,7 @@ function findWorkspaceCursorPageStart(sortedDesc, cursorDecoded) {
 /**
  * GET /api/communications/workspace-threads
  * Phase 5: cross-record email thread summaries for the current workspace (recent window).
- * Query: includeDone, filter=all|unread|assigned_to_me|snoozed, limit (1–100, default 50), optional mailboxId, optional gmailLabelId, optional search, optional cursor (opaque).
+ * Query: includeDone, filter=all|unread|sent|assigned_to_me|snoozed, limit (1–100, default 50), optional mailboxId, optional gmailLabelId, optional search, optional cursor (opaque).
  * Response data.threads is filtered/sliced; data.counts reflects the same scope before folder filter and before search (for badges).
  */
 exports.getWorkspaceThreads = async (req, res) => {

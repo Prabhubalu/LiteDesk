@@ -1,14 +1,20 @@
 <template>
-  <div class="min-h-screen bg-gray-100/70 dark:bg-gray-900 flex overflow-x-hidden">
+  <div
+    :class="[
+      'flex overflow-x-hidden bg-gray-100/70 dark:bg-gray-900',
+      isInboxRoute ? 'h-dvh max-h-dvh overflow-hidden' : 'min-h-screen'
+    ]"
+  >
     <!-- Sidebar Navigation -->
     <!-- ARCHITECTURE NOTE: GlobalSearch is owned by GlobalSurfacesProvider. -->
     <!-- Sidebar search click dispatches arivu:open-global-search custom event. -->
     <Nav v-model="sidebarCollapsed" />
     
     <!-- Main Content Area - Dynamic margin based on sidebar state -->
-    <main 
+    <main
       :class="[
-        'flex-1 flex flex-col transition-all duration-300 min-h-screen overflow-x-hidden',
+        'flex flex-1 flex-col overflow-x-hidden transition-all duration-300',
+        isInboxRoute ? 'h-dvh max-h-dvh min-h-0 overflow-hidden' : 'min-h-screen',
         sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
       ]"
     >
@@ -18,15 +24,29 @@
       <!-- Content wrapper with padding; min-h-0 so record pages can fill and use internal scroll -->
       <div
         ref="contentWrapperRef"
-        class="flex-1 min-h-0 flex flex-col p-4 lg:p-6 overflow-y-auto overflow-x-hidden mt-16 md:mt-30 lg:mt-14"
+        :class="[
+          'box-border flex min-h-0 flex-1 flex-col overflow-x-hidden',
+          isInboxRoute
+            ? 'min-h-0 overflow-hidden px-4 pb-4 pt-16 md:pt-[7.5rem] lg:px-6 lg:pb-6 lg:pt-14'
+            : 'mt-16 overflow-y-auto p-4 md:mt-30 lg:mt-14 lg:p-6'
+        ]"
         :style="{ '--table-sticky-offset': tableStickyOffset }"
       >
         <!-- Router view for dynamic routes; flex-1 min-h-0 so full-height record pages get a defined height -->
-        <div class="flex-1 min-h-0 flex flex-col">
+        <div
+          :class="[
+            'flex min-h-0 flex-1 flex-col',
+            isInboxRoute ? 'h-full overflow-hidden' : ''
+          ]"
+        >
           <RouterView v-slot="{ Component }">
             <!-- Cap cached route trees: each slot can hold a large list/record page. -->
             <keep-alive :max="5">
-              <component :is="Component" :key="$route.fullPath" />
+              <component
+                :is="Component"
+                :key="routerViewKey"
+                :class="isInboxRoute ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : ''"
+              />
             </keep-alive>
           </RouterView>
         </div>
@@ -47,7 +67,7 @@ const { t } = useI18n();
  * App layouts must NEVER own global surfaces - see GlobalSurfacesProvider.vue.
  */
 
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import Nav from '@/components/Nav.vue';
 import TabBar from '@/components/TabBar.vue';
@@ -57,6 +77,15 @@ import { useSidebarState } from '@/composables/useSidebarState';
 
 const route = useRoute();
 const appShellStore = useAppShellStore();
+
+/** Avoid remounting whole views when only query params change (e.g. inbox ?thread=). */
+const routerViewKey = computed(() => {
+  const name = typeof route.name === 'string' ? route.name : '';
+  if (name === 'inbox') return route.path;
+  return route.fullPath;
+});
+
+const isInboxRoute = computed(() => route.name === 'inbox');
 
 // Sidebar state (locked doctrine): collapsed + lastActiveAppId only.
 const { collapsed: sidebarCollapsed } = useSidebarState();
@@ -139,10 +168,28 @@ const handleResize = () => {
   updateContentOffset();
 };
 
+function setInboxViewportLock(active) {
+  document.documentElement.classList.toggle('overflow-hidden', active);
+  document.body.classList.toggle('overflow-hidden', active);
+}
+
+watch(
+  isInboxRoute,
+  (active) => {
+    setInboxViewportLock(active);
+  },
+  { immediate: true }
+);
+
 onMounted(() => {
   collapseSidebarForRecordOnTablet();
   queueContentOffsetUpdate();
   window.addEventListener('resize', handleResize, { passive: true });
+});
+
+onUnmounted(() => {
+  setInboxViewportLock(false);
+  window.removeEventListener('resize', handleResize);
 });
 </script>
 

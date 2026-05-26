@@ -430,5 +430,21 @@
   "detailQuotaAchieved": {
     "message": "Achieved",
     "description": "Assignment column"
+  },
+  "detailForecastBreakdown": {
+    "message": "{achieved} closed + {pipeline} pipeline",
+    "description": "Forecast components"
+  },
+  "detailForecastNoDealsHint": {
+    "message": "Add Sales · Deals as a data source to include open pipeline.",
+    "description": "Forecast hint"
+  },
+  "detailForecastNoOpenDealsHint": {
+    "message": "No open deals for this target's owner or quota assignees.",
+    "description": "Forecast hint"
+  },
+  "detailForecastProbabilityHint": {
+    "message": "Enable forecast in target settings for achievement probability and risk level.",
+    "description": "Forecast hint"
   }
 }
