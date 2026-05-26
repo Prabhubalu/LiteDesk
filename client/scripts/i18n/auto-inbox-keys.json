@@ -240,15 +240,15 @@
     "description": "Auto-migrated from emailComposeDrawer"
   },
   "emailComposeDrawerBccExampleComCommaSeparated": {
-    "message": "bcc@example.com (comma-separated)",
+    "message": "bcc{'@'}example.com (comma-separated)",
     "description": "Auto-migrated from emailComposeDrawer"
   },
   "emailComposeDrawerCcExampleComCommaSeparated": {
-    "message": "cc@example.com (comma-separated)",
+    "message": "cc{'@'}example.com (comma-separated)",
     "description": "Auto-migrated from emailComposeDrawer"
   },
   "emailComposeDrawerRecipientExampleComCommaSeparatedFor": {
-    "message": "recipient@example.com (comma-separated for multiple)",
+    "message": "recipient{'@'}example.com (comma-separated for multiple)",
     "description": "Auto-migrated from emailComposeDrawer"
   },
   "emailComposeDrawerComposeAndSendAnEmailFrom": {

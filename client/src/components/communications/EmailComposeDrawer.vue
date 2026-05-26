@@ -316,9 +316,7 @@ import apiClient from '@/utils/apiClient';
 import TaskDescriptionEditor from '@/components/record-page/TaskDescriptionEditor.vue';
 const props = defineProps({
   isOpen: { type: Boolean, default: false },
-  /** When true, send with `standalone: true` (workspace-scoped);
-
-const { t } = useI18n(); `relatedTo` is not required. */
+  /** When true, send with `standalone: true` (workspace-scoped); `relatedTo` is not required. */
   standaloneMode: { type: Boolean, default: false },
   relatedTo: {
     type: Object,
@@ -354,6 +352,8 @@ const { t } = useI18n(); `relatedTo` is not required. */
     default: ''
   }
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(['close', 'sent', 'submit']);
 
