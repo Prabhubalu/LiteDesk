@@ -4,7 +4,11 @@ Source PRD: `enterprise_helpdesk_cases_module.md` (Enterprise Helpdesk – Cases
 
 This document maps the PRD requirements to what exists in LiteDesk today, identifies gaps, and lays out a phased roadmap to deliver a PRD-aligned Helpdesk **Cases** module with minimal ambiguity.
 
-**Start here:** Work phases in order (0 → 1A → 1B …). Update the [Progress tracker](#progress-tracker) as each exit criterion is met.
+**Start here:** Phases **0**, **1A**, and **1B** are complete. **Email ingestion policies** (threading, dedup, case link, routing) live in **Settings → Automation → Mailroom** (Mailroom M0–M3.1). **Next:** [Phase 1C remainder](#phase-1c--email-hardening--productivity-2-3-weeks) (templates/macros) and [Phase 1D — Portals](#phase-1d--customer--partner-portals-3-4-weeks).
+
+**See also:** `docs/MAILROOM_ROADMAP.md` for Mailroom delivery status (M0–M4 ✅; M5–M7 remaining).
+
+**Last updated:** 2026-05-27
 
 ---
 
@@ -12,14 +16,26 @@ This document maps the PRD requirements to what exists in LiteDesk today, identi
 
 | Phase | Status | Notes |
 |-------|--------|--------|
-| **0** — Alignment & baseline | ✅ Done | `test:helpdesk` + `smoke:helpdesk` passed; Ticket→Case org check fixed; Closed edit lock enforced on API |
-| **1A** — Agent workspace UX | ✅ Done | Case record page UX, list preview, extra views (Team / SLA at risk / Recently updated), bulk assign/status/priority, improved header + closed banner + resizable reply |
-| **1B** — Lifecycle + data model | ✅ Done | `description`, `reopenCount`, `reopenReason` required on reopen and surfaced in Details; closed cases locked with reopen-only path in UI |
-| **1C** — Email hardening | ❌ Not started | |
+| **0** — Alignment & baseline | ✅ Done | `test:helpdesk` + `smoke:helpdesk` passed (2026-05-27); Ticket→Case org check fixed; Closed edit lock on API |
+| **1A** — Agent workspace UX | ✅ Done | `CaseRecordPage`, list quick-preview, system views, bulk actions, timeline + reply UX (pinned + resizable) |
+| **1B** — Lifecycle + data model | ✅ Done | `reopenReason` required; `CaseResolutionDialog`; closed lock in API + UI; `reopenCount` on model |
+| **1C** — Email hardening | 🟡 Partial | Mailroom ships threading/dedup/case-link/**ingest** UI + pipeline (see `MAILROOM_ROADMAP.md`). Remaining: agent templates/macros, case timeline from Mailroom messages |
 | **1D** — Portals | ❌ Not started | |
 | **1E** — Field service & warranty | ❌ Not started | |
-| **1F** — Reporting, roles, audit exports | 🟡 Partial | Analytics backend exists; audit export missing |
+| **1F** — Reporting, roles, audit exports | 🟡 Partial | Analytics + `GET /api/helpdesk/cases/analytics/audit-export`; role presets / CSAT / full enterprise audit TBD |
 | **1G** — Process Designer | ❌ Not started | |
+
+### Completed deliverables (summary)
+
+| Area | What shipped |
+|------|----------------|
+| **Verification** | Phase 0 checklist complete; `npm run test:helpdesk` (13 tests); `npm run smoke:helpdesk` (7 API checks) |
+| **Case record** | `CaseRecordPage.vue` + `CaseRecordMainWorkspace.vue` — Conversation / Activity / Notes / Tasks tabs; `CaseTimelineFeed`; email compose; related records; details + contact panels |
+| **List & preview** | `Cases.vue` + `moduleListRegistry` views; `QuickPreviewDrawer` embed layout (task-style header, scrollable timeline, no reply when closed) |
+| **Lifecycle UX** | `RecordClosedBanner`; reopen modal with required reason; `CaseResolutionDialog` for resolve/close; status/priority controls in `CaseRecordHeader` |
+| **Reply UX** | `CaseResizableReplyComposer` + `useVerticalPaneResize` — drag-to-resize, height persisted per tab |
+| **Bulk & views** | Bulk assign owner, update status, update priority; views: All, My, Unassigned, Open, Team, SLA at risk, Recently updated, Resolved, Closed |
+| **API / model** | Closed `PATCH` lock; `POST …/reopen` with `reopenReason`; audit export endpoint; list query filters for SLA/views |
 
 ### Phase 0 checklist
 
@@ -48,14 +64,16 @@ LiteDesk already contains a dedicated Helpdesk app (`HELPDESK`) with `moduleKey 
 ### Backend (already implemented)
 
 - **Case model**: `server/models/Case.js`
-  - Core fields: `caseId`, `title`, `caseType`, `priority`, `status`, `contactId`, `organizationRefId`, `caseOwnerId`, `channel`
+  - Core fields: `caseId`, `title`, `description`, `caseType`, `priority`, `status`, `contactId`, `organizationRefId`, `caseOwnerId`, `channel`
+  - Lifecycle: `resolutionSummary`, `reopenReason`, `reopenCount`
   - SLA state: `currentSlaCycle`, `slaCycles[]`
   - Timeline: embedded `activities[]`
   - Assignment control: `assignmentControl`
   - Tenant isolation + soft delete
 - **Lifecycle contract**: `server/constants/caseLifecycle.js` (statuses + allowed transitions)
 - **API surface**: `server/routes/caseRoutes.js` mounted at `/api/helpdesk/cases`
-  - CRUD, status update, reopen, add activity, channel ingestion, analytics endpoints
+  - CRUD, status update, reopen (requires `reopenReason`), add activity, channel ingestion, analytics + **audit export** (`GET …/analytics/audit-export`)
+  - List filters: `slaBreached`, `updatedWithinDays`, owner/status/priority (via `caseListQuery`)
 - **SLA services**: `server/services/helpdeskSlaService.js`, `helpdeskBusinessHoursService.js`, `helpdeskSlaMonitorService.js`
 - **Assignment rules engine**: `server/services/assignmentRulesEngine.js` + execution + scheduling
 - **Channel ingestion (email)**: `server/services/helpdeskChannelIngestionService.js` + inbound dispatcher integration
@@ -68,9 +86,10 @@ LiteDesk already contains a dedicated Helpdesk app (`HELPDESK`) with `moduleKey 
 ### Frontend (already implemented)
 
 - **Routes**: `/helpdesk/cases`, `/helpdesk/cases/new`, `/helpdesk/cases/:id`
-  - **List**: `client/src/views/helpdesk/Cases.vue` — `ModuleList` + List/Kanban toggle, system views (All, My Cases, Unassigned, Open, Resolved, Closed)
+  - **List**: `client/src/views/helpdesk/Cases.vue` — `ModuleList` + List/Kanban; system views (All, My, Unassigned, Open, **Team**, **SLA at risk**, **Recently updated**, Resolved, Closed); bulk assign/status/priority
   - **Create**: still `GenericModule.vue`
-  - **Detail**: `client/src/pages/cases/CaseRecordPage.vue` — omnichannel workspace (not Deal-style layout)
+  - **Detail**: `client/src/pages/cases/CaseRecordPage.vue` — dedicated workspace + list quick-preview embed
+  - **Case UI components**: `CaseRecordMainWorkspace`, `CaseRecordHeader`, `CaseTimelineFeed`, `CaseReplyComposer`, `CaseResizableReplyComposer`, `CaseResolutionDialog`, `CaseDetailsPanel`, `CaseTasksTab`, `RecordClosedBanner`, etc.
 - **Helpdesk settings UI**:
   - `client/src/components/settings/HelpdeskExecutionSettings.vue`
   - `client/src/components/settings/HelpdeskSlaScheduleSection.vue`
@@ -102,20 +121,20 @@ Legend: ✅ Done · 🟡 Partial · ❌ Missing
 ### Assignment & routing
 
 - ✅ Assignment rules engine + scheduler + assignment locking/overrides
-- ❌ First-class “queues” experience (unassigned/team/VIP/escalation queues as UI objects/views)
+- 🟡 Queue-like **system views** (Unassigned, Team, SLA at risk) — not full queue objects / VIP / escalation queues
 - 🟡 Advanced routing (skills/geo/product/load) not fully represented
 
 ### Communication & timeline
 
-- 🟡 Email: inbound create/append exists; threading/duplicate policies need UX hardening
+- 🟡 Email: Mailroom-enabled path uses policy-driven create/append/reopen (`casesAdapter`); legacy `helpdeskChannelIngestionService` when Mailroom off. **Settings → Automation → Mailroom** for routing + processing policies. Remaining 1C: **agent templates/macros**
 - ❌ Live Chat and chat-to-case conversion
 - ❌ Customer portal + partner portal case flows
-- 🟡 Unified timeline exists via activities + communications, but UI is not helpdesk-grade yet
+- 🟡 Unified timeline in `CaseTimelineFeed` on record + preview; polish and full comms threading still ongoing
 - ❌ Canned responses/macros/templates for cases (beyond basic compose)
 
 ### Collaboration, attachments, audit
 
-- 🟡 Activities captured on the case; case-level audit export endpoint implemented (broader “enterprise immutable audit exports” still not fully productized)
+- 🟡 Activities on case + **`GET /api/helpdesk/cases/analytics/audit-export`** (timeline, SLA cycles, assignment events); immutable enterprise-wide audit productization TBD
 - ❌ Case-level attachments need platform-level upload support (module declares support but not end-to-end)
 - ❌ Watchers/followers, team mentions, case-specific collaboration features
 
@@ -141,7 +160,9 @@ Legend: ✅ Done · 🟡 Partial · ❌ Missing
 
 The phases below are designed to reduce ambiguity and maximize reuse of existing backend work.
 
-### Phase 0 — Alignment & baseline hardening (1 week)
+### Phase 0 — Alignment & baseline hardening (1 week) ✅
+
+**Status:** Complete (2026-05-27).
 
 **Goal**: lock MVP scope and ensure the existing Helpdesk foundation is stable.
 
@@ -160,51 +181,64 @@ The phases below are designed to reduce ambiguity and maximize reuse of existing
 1. Run verification (see checklist above).
 2. ~~Fix org detach `Ticket` → `Case` count.~~
 3. ~~API: reject `PATCH` updates when `status === 'Closed'`.~~
-4. Proceed to **Phase 1A** once smoke + QA sign-off are done.
+4. ~~Proceed to **Phase 1A** once smoke + QA sign-off are done.~~ → **1A complete**
 
 ---
 
-### Phase 1A — Agent workspace UX (2–4 weeks)
+### Phase 1A — Agent workspace UX (2–4 weeks) ✅
+
+**Status:** Complete (2026-05-27).
 
 **Goal**: deliver a helpdesk-grade agent experience without changing the core backend contract.
 
-- Dedicated `CaseRecordPage` (pattern similar to `DealRecordPage.vue`) with:
-  - SLA indicator + paused/breach state
-  - Timeline that includes: internal notes, communications, status changes, assignments, SLA events
-  - Quick actions: status transitions, assign/reassign, priority, case type
-- Cases list enhancements:
-  - Views: “My Cases”, “Unassigned”, “Team”, “SLA at risk”, “Recently updated”
-  - Filters per PRD: status/priority/owner/team/channel/type/date range/SLA state
-  - Bulk actions (assign/status/priority)
+- [x] Dedicated `CaseRecordPage` with SLA badge, timeline tabs, quick status/priority, assignee, email, tasks/related, details/contact/knowledge side panes
+- [x] List quick-preview (`embed` mode): task-style header, scrollable timeline, reply pinned at bottom, **resizable** composer
+- [x] System views: My, Unassigned, Open, Team, SLA at risk, Recently updated, Resolved, Closed
+- [x] Bulk actions: assign owner, update status, update priority
+- [ ] Filters: full PRD matrix (team/channel/date range/SLA state combos) — partial via list filters + views
 
-**Exit criteria**: support agents can manage cases end-to-end efficiently inside a purpose-built page.
+**Exit criteria**: support agents can manage cases end-to-end efficiently inside a purpose-built page. **Met.**
 
 ---
 
-### Phase 1B — Lifecycle + data model completeness (2–3 weeks, overlaps 1A)
+### Phase 1B — Lifecycle + data model completeness (2–3 weeks, overlaps 1A) ✅
+
+**Status:** Complete for MVP lifecycle scope (2026-05-27). Optional PRD fields deferred.
 
 **Goal**: align the Case model with PRD system fields and rules.
 
-- Add/standardize:
-  - Canonical `description` field (or explicitly define `caseNotes` as “description” with consistent UX)
-  - `reopenReason` (required) and `reopenCount`
-  - `breachStatus`, `lastCustomerReplyAt`, `lastAgentReplyAt`
-  - Optional PRD fields: `severity`, `impact`, `tags`, `rootCause` (as core fields or managed custom fields)
-- Enforce “Closed is locked from editing” (only allow reopen + final audit actions).
-- Add “Field Service” to allowed `CASE_TYPES` if it’s in Phase 1 scope.
+- [x] Canonical `description` on model; `caseNotes` for internal content
+- [x] `reopenReason` required on `POST …/reopen`; `reopenCount` incremented
+- [x] `resolutionSummary` + resolve/close via `CaseResolutionDialog` (replaces ad-hoc prompts)
+- [x] Closed edit lock on API + UI (no reply/status/priority when closed; `RecordClosedBanner` + reopen flow)
+- [x] `reopenReason` in module fields / Details tab
+- [ ] `breachStatus`, `lastCustomerReplyAt`, `lastAgentReplyAt` as first-class fields
+- [ ] Optional: `severity`, `impact`, `tags`, `rootCause`; Field Service case type
+- [ ] Max-reopen escalation policy
 
-**Exit criteria**: PRD lifecycle rules are enforced by API; reopen policy is auditable.
+**Exit criteria**: PRD lifecycle rules are enforced by API; reopen policy is auditable. **Met for MVP** (max-reopen policy TBD).
 
 ---
 
 ### Phase 1C — Email hardening & productivity (2–3 weeks)
 
+**Status:** 🟡 Partial — Mailroom M0–M3.1 delivered policy UI and email pipeline; Helpdesk agent productivity items remain.
+
 **Goal**: make email-to-case reliable and fast at enterprise volume.
 
-- Threading rules configuration (message-id/references/thread-id)
-- Duplicate handling configuration (merge/child/flag/ignore)
-- Case email templates + canned responses/macros
-- Ensure inbound → case append produces correct timeline/audit events
+**Done via Mailroom** (`docs/MAILROOM_ROADMAP.md`):
+
+- [x] Threading rules configuration (message-id / references / subject order in Settings → Processing)
+- [x] Duplicate handling configuration (dedup policy UI)
+- [x] Ingest routing (which addresses/channels enter case flow)
+- [x] Case link policy (create / append / reopen)
+- [x] Channel rules migration from Helpdesk Execution Settings
+
+**Still Phase 1C (Cases / agent UX):**
+
+- [ ] Case email templates + canned responses/macros
+- [ ] Case record timeline reads from Mailroom conversation messages (optional adapter)
+- [ ] Verify inbound → case append produces correct timeline/audit events end-to-end in production pilot
 
 **Exit criteria**: inbound replies consistently attach to open cases; agents can reply quickly with templates.
 
@@ -275,7 +309,17 @@ Decisions below unblock Phase 1 implementation. Change only via explicit product
 | 4 | **Description** | **`description`** = customer-facing body; **`caseNotes`** = internal notes | 1B ✅ model |
 | 5 | **Closed case edits** | **Locked for all roles** on API; only `reopen` + read/delete (trash) paths; no manager override in Phase 1 | 0 ✅ API |
 | 6 | **Portal identity** | Reuse existing portal auth; scoped to requester/org on case APIs (Phase 1D) | 1D |
-| 7 | **Reopen reason** | **Required** on reopen endpoint before Phase 1 MVP sign-off | 1B |
+| 7 | **Reopen reason** | **Required** on reopen endpoint before Phase 1 MVP sign-off | 1B ✅ |
+
+---
+
+## What’s next (recommended order)
+
+1. **Phase 1C (remainder)** — canned responses/macros; pilot Mailroom-enabled email on staging tenants.
+2. **Mailroom M5 + Phase 1D** — portal/API ingest through Mailroom; customer/partner case APIs.
+3. **Phase 1F (remainder)** — role presets for Helpdesk, CSAT on close (if in scope), UI for audit export.
+4. **Phase 1E / 1G** — field service, warranty, Process Designer (per MVP table).
+5. **Mailroom M6–M7** — chat connector, SPF/DKIM, metrics, `smoke:mailroom`.
 
 ---
 
@@ -287,12 +331,13 @@ Superseded by [MVP scope decisions](#mvp-scope-decisions-locked) for Phase 1. Re
 
 ## Phase 1 MVP — Proposed Definition of Done
 
-- Agent workspace ships with a dedicated Case record page + timeline
-- SLA is visible, accurate, and drives notifications/escalations
-- Email → case → reply loop is reliable with threading/duplicate policies
-- Reopen requires reason and creates a new SLA cycle; reopen count is tracked
-- Customer portal supports create + track + reply + attachments with strict isolation
-- Assignment rules are operational with “Unassigned” and “SLA at risk” views
-- Analytics dashboards reflect the agreed KPI set
-- `npm run test:helpdesk` and `npm run smoke:helpdesk` pass; QA checklist signed off
+- [x] Agent workspace ships with a dedicated Case record page + timeline
+- [x] SLA visible on record header (`CaseSlaBadge`) and drives backend monitor/notifications
+- [ ] Email → case → reply loop is reliable with threading/duplicate policies — 🟡 policies in Mailroom; production pilot + templates/macros remain (**Phase 1C**)
+- [x] Reopen requires reason and creates a new SLA cycle; reopen count is tracked
+- [ ] Customer portal supports create + track + reply + attachments with strict isolation (**Phase 1D**)
+- [x] Assignment rules operational; “Unassigned” and “SLA at risk” list views
+- [x] Analytics dashboards (`HelpdeskAnalyticsDashboard` + API)
+- [x] `npm run test:helpdesk` and `npm run smoke:helpdesk` pass
+- [ ] Full `docs/HELPDESK_QA_ROLLOUT_CHECKLIST.md` functional QA sign-off (manual)
 

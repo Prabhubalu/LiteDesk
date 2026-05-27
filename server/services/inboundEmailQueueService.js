@@ -157,6 +157,29 @@ async function processInboundJob({ rawMimeBase64, headerOrganizationId = null, s
     throw new Error('invalid_inbound_payload');
   }
   try {
+    let organizationId = headerOrganizationId || null;
+    if (!organizationId) {
+      try {
+        const { tryResolveInboundOrganizationId } = require('../platform/communication/inbound/inboundDispatcher');
+        organizationId = await tryResolveInboundOrganizationId(rawBuffer);
+      } catch {
+        /* best-effort */
+      }
+    }
+
+    const {
+      shouldUseMailroomForOrganization,
+      processRawMimeThroughMailroom
+    } = require('../platform/mailroom/pipeline/emailInboundPipeline');
+
+    if (organizationId && (await shouldUseMailroomForOrganization(organizationId))) {
+      return processRawMimeThroughMailroom({
+        rawMime: rawBuffer,
+        headerOrganizationId: organizationId,
+        source
+      });
+    }
+
     const result = await processRawInbound({
       rawMime: rawBuffer,
       headerOrganizationId,

@@ -119,6 +119,458 @@
     "message": "Route records to groups, distribute work across users, run on a schedule, and notify new owners when automation applies.",
     "description": "Assignment rules option description"
   },
+  "automationMailroom": {
+    "message": "Mailroom",
+    "description": "Automation hub Mailroom option"
+  },
+  "automationMailroomDesc": {
+    "message": "Configure omnichannel ingestion, threading, duplicate handling, and case linking policies—without hardcoded channel rules.",
+    "description": "Mailroom option description"
+  },
+  "mailroomBackTitle": {
+    "message": "Back to Automation",
+    "description": "Mailroom settings back button"
+  },
+  "mailroomSubtitle": {
+    "message": "Conversation-first ingestion policies for email, portal, chat, and API channels.",
+    "description": "Mailroom settings subtitle"
+  },
+  "mailroomPhaseNote": {
+    "message": "When enabled, inbound email stores a raw payload, evaluates policies, executes case linking (M3), persists conversations (M2), publishes Mailroom events for automation (M4), then writes Communication records.",
+    "description": "Mailroom phase banner"
+  },
+  "mailroomStatusEnabled": {
+    "message": "Enabled",
+    "description": "Mailroom enabled badge"
+  },
+  "mailroomStatusDisabled": {
+    "message": "Disabled",
+    "description": "Mailroom disabled badge"
+  },
+  "mailroomTabOverview": {
+    "message": "Overview",
+    "description": "Mailroom settings tab"
+  },
+  "mailroomTabRouting": {
+    "message": "Routing",
+    "description": "Mailroom settings tab"
+  },
+  "mailroomTabProcessing": {
+    "message": "Processing",
+    "description": "Mailroom settings tab"
+  },
+  "mailroomTabMonitoring": {
+    "message": "Monitoring",
+    "description": "Mailroom settings tab"
+  },
+  "mailroomTabDeveloper": {
+    "message": "Developer",
+    "description": "Mailroom settings tab"
+  },
+  "mailroomOverviewSetupTitle": {
+    "message": "Mailroom setup",
+    "description": "Overview section title"
+  },
+  "mailroomOverviewSetupHelp": {
+    "message": "Turn on Mailroom and choose a policy template. Customize routing and processing on the other tabs.",
+    "description": "Overview section help"
+  },
+  "mailroomOverviewPipelineTitle": {
+    "message": "How inbound email is processed",
+    "description": "Pipeline overview title"
+  },
+  "mailroomOverviewPipelineHelp": {
+    "message": "Policies run in this order for every message that passes ingest routing.",
+    "description": "Pipeline overview help"
+  },
+  "mailroomOverviewRules": {
+    "message": "rules",
+    "description": "Ingest rule count suffix"
+  },
+  "mailroomPipelineIngest": {
+    "message": "Routing",
+    "description": "Pipeline step label"
+  },
+  "mailroomPipelineThreading": {
+    "message": "Threading",
+    "description": "Pipeline step label"
+  },
+  "mailroomPipelineDedup": {
+    "message": "Dedup",
+    "description": "Pipeline step label"
+  },
+  "mailroomPipelineCaseLink": {
+    "message": "Case link",
+    "description": "Pipeline step label"
+  },
+  "mailroomPipelineEvents": {
+    "message": "Events",
+    "description": "Pipeline step label"
+  },
+  "mailroomProcessingOrderTitle": {
+    "message": "Processing order",
+    "description": "Processing tab banner title"
+  },
+  "mailroomProcessingOrderHelp": {
+    "message": "Threading, duplicate detection, and case linking run in sequence after ingest routing decides the message should enter the case flow.",
+    "description": "Processing tab banner help"
+  },
+  "mailroomSaveBarHint": {
+    "message": "Changes apply to the next inbound message after you save.",
+    "description": "Sticky save bar hint"
+  },
+  "mailroomRunSampleEval": {
+    "message": "Run sample evaluation",
+    "description": "Developer tab evaluate button"
+  },
+  "mailroomEvalEmpty": {
+    "message": "Run a sample evaluation to preview policy decisions without sending email.",
+    "description": "Empty evaluate state"
+  },
+  "mailroomEnabled": {
+    "message": "Enable Mailroom for this organization",
+    "description": "Mailroom enabled toggle"
+  },
+  "mailroomTemplate": {
+    "message": "Policy template",
+    "description": "Mailroom template label"
+  },
+  "mailroomPolicyThreading": {
+    "message": "Threading",
+    "description": "Mailroom policy card"
+  },
+  "mailroomPolicyDedup": {
+    "message": "Duplicates",
+    "description": "Mailroom policy card"
+  },
+  "mailroomPolicyCaseLink": {
+    "message": "Case linking",
+    "description": "Mailroom policy card"
+  },
+  "mailroomStrategies": {
+    "message": "strategies",
+    "description": "Mailroom strategy count suffix"
+  },
+  "mailroomTestPolicies": {
+    "message": "Test policies (sample)",
+    "description": "Mailroom evaluate button"
+  },
+  "mailroomEvaluating": {
+    "message": "Evaluating…",
+    "description": "Mailroom evaluate in progress"
+  },
+  "mailroomEvaluateResult": {
+    "message": "Sample evaluation result",
+    "description": "Mailroom evaluate output heading"
+  },
+  "mailroomSaved": {
+    "message": "Mailroom settings saved.",
+    "description": "Mailroom save success"
+  },
+  "mailroomSaveFailed": {
+    "message": "Failed to save Mailroom settings.",
+    "description": "Mailroom save error"
+  },
+  "mailroomLoadFailed": {
+    "message": "Failed to load Mailroom settings.",
+    "description": "Mailroom load error"
+  },
+  "mailroomThreadingTitle": {
+    "message": "Threading strategies",
+    "description": "Mailroom threading policy section title"
+  },
+  "mailroomThreadingHelp": {
+    "message": "Signals are evaluated top to bottom. Disable or reorder to change how replies attach to conversations.",
+    "description": "Mailroom threading policy help"
+  },
+  "mailroomThreadingSignalMessageId": {
+    "message": "Message-ID",
+    "description": "Threading signal label"
+  },
+  "mailroomThreadingSignalInReplyTo": {
+    "message": "In-Reply-To",
+    "description": "Threading signal label"
+  },
+  "mailroomThreadingSignalReferences": {
+    "message": "References",
+    "description": "Threading signal label"
+  },
+  "mailroomThreadingSignalProviderThread": {
+    "message": "Provider thread ID",
+    "description": "Threading signal label"
+  },
+  "mailroomThreadingSignalSenderSubject": {
+    "message": "Sender + subject",
+    "description": "Threading signal label"
+  },
+  "mailroomMoveUp": {
+    "message": "Move up",
+    "description": "Reorder threading strategy"
+  },
+  "mailroomMoveDown": {
+    "message": "Move down",
+    "description": "Reorder threading strategy"
+  },
+  "mailroomThreadingLogsTitle": {
+    "message": "Recent threading decisions",
+    "description": "Mailroom threading logs heading"
+  },
+  "mailroomThreadingLogsEmpty": {
+    "message": "No threading logs yet. Ingest email with Mailroom enabled to see decisions here.",
+    "description": "Empty threading logs"
+  },
+  "mailroomThreadingMatched": {
+    "message": "Matched",
+    "description": "Threading log matched label"
+  },
+  "mailroomThreadingNoMatch": {
+    "message": "No match",
+    "description": "Threading log no match label"
+  },
+  "mailroomFailuresTitle": {
+    "message": "Processing failures",
+    "description": "Mailroom failures section title"
+  },
+  "mailroomFailuresHelp": {
+    "message": "Failed inbound payloads can be replayed from stored raw data (up to 5 attempts).",
+    "description": "Mailroom failures section help"
+  },
+  "mailroomFailuresEmpty": {
+    "message": "No open processing failures.",
+    "description": "Empty failures list"
+  },
+  "mailroomFailureReplay": {
+    "message": "Replay",
+    "description": "Replay failed payload button"
+  },
+  "mailroomFailureReplaying": {
+    "message": "Replaying…",
+    "description": "Replay in progress"
+  },
+  "mailroomFailureReplayed": {
+    "message": "Payload replayed successfully",
+    "description": "Replay success toast"
+  },
+  "mailroomFailureReplayFailed": {
+    "message": "Replay failed",
+    "description": "Replay error toast"
+  },
+  "mailroomFailureRetries": {
+    "message": "{count} retries",
+    "description": "Failure retry count"
+  },
+  "mailroomDedupTitle": {
+    "message": "Duplicate detection",
+    "description": "Mailroom dedup section title"
+  },
+  "mailroomDedupHelp": {
+    "message": "When Mailroom detects a duplicate inbound message, choose how to handle it. Signal weights come from your active template.",
+    "description": "Mailroom dedup section help"
+  },
+  "mailroomDedupOnDuplicate": {
+    "message": "On duplicate",
+    "description": "Dedup onDuplicate field label"
+  },
+  "mailroomDedupAppendOpen": {
+    "message": "Append to existing open case",
+    "description": "Dedup behavior label"
+  },
+  "mailroomDedupCreateChild": {
+    "message": "Create child case",
+    "description": "Dedup behavior label"
+  },
+  "mailroomDedupFlagReview": {
+    "message": "Flag for review",
+    "description": "Dedup behavior label"
+  },
+  "mailroomDedupIgnore": {
+    "message": "Ignore duplicate",
+    "description": "Dedup behavior label"
+  },
+  "mailroomCaseLinkTitle": {
+    "message": "Case linking",
+    "description": "Mailroom case link section title"
+  },
+  "mailroomCaseLinkHelp": {
+    "message": "Controls create, append, and reopen when linking inbound messages to Helpdesk cases.",
+    "description": "Mailroom case link section help"
+  },
+  "mailroomCaseLinkOpenMatch": {
+    "message": "When open case matches",
+    "description": "Case link open match label"
+  },
+  "mailroomCaseLinkNoMatch": {
+    "message": "When no case matches",
+    "description": "Case link no match label"
+  },
+  "mailroomCaseLinkReopenEnabled": {
+    "message": "Reopen recently resolved cases",
+    "description": "Case link reopen toggle"
+  },
+  "mailroomCaseLinkReopenDays": {
+    "message": "Within days",
+    "description": "Case link reopen window"
+  },
+  "mailroomCaseLinkReopenAction": {
+    "message": "Then",
+    "description": "Case link reopen action label"
+  },
+  "mailroomCaseLinkDefaults": {
+    "message": "New case defaults",
+    "description": "Case link defaults subsection"
+  },
+  "mailroomCaseLinkDefaultType": {
+    "message": "Case type",
+    "description": "Default case type"
+  },
+  "mailroomCaseLinkDefaultPriority": {
+    "message": "Priority",
+    "description": "Default priority"
+  },
+  "mailroomCaseLinkDefaultChannel": {
+    "message": "Channel",
+    "description": "Default channel"
+  },
+  "mailroomCaseLinkCreateCase": {
+    "message": "Create new case",
+    "description": "Case link action"
+  },
+  "mailroomCaseLinkAppend": {
+    "message": "Append to case",
+    "description": "Case link action"
+  },
+  "mailroomCaseLinkReopen": {
+    "message": "Reopen case",
+    "description": "Case link action"
+  },
+  "mailroomCaseLinkFlagReview": {
+    "message": "Flag for review",
+    "description": "Case link action"
+  },
+  "mailroomCaseLinkManualReview": {
+    "message": "Manual review",
+    "description": "Case link action"
+  },
+  "mailroomCaseLinkNoOp": {
+    "message": "No action",
+    "description": "Case link action"
+  },
+  "mailroomIngestTitle": {
+    "message": "Ingest policies",
+    "description": "Mailroom ingest policies section title"
+  },
+  "mailroomIngestHelp": {
+    "message": "Rules are evaluated top-to-bottom. First matching rule decides how this inbound email is handled.",
+    "description": "Mailroom ingest policies help"
+  },
+  "mailroomIngestAddRule": {
+    "message": "Add rule",
+    "description": "Add ingest policy rule button"
+  },
+  "mailroomIngestNoRules": {
+    "message": "No ingest rules yet. Default action will apply.",
+    "description": "Empty ingest rules state"
+  },
+  "mailroomIngestRuleName": {
+    "message": "Rule name",
+    "description": "Ingest rule name placeholder"
+  },
+  "mailroomIngestEnabled": {
+    "message": "Enabled",
+    "description": "Ingest rule enabled label"
+  },
+  "mailroomIngestMatch": {
+    "message": "Match",
+    "description": "Ingest match mode label"
+  },
+  "mailroomIngestMatchAll": {
+    "message": "all conditions",
+    "description": "Ingest match all option"
+  },
+  "mailroomIngestMatchAny": {
+    "message": "any condition",
+    "description": "Ingest match any option"
+  },
+  "mailroomIngestConditionValue": {
+    "message": "Value",
+    "description": "Ingest condition value placeholder"
+  },
+  "mailroomIngestAddCondition": {
+    "message": "Add condition",
+    "description": "Add ingest condition button"
+  },
+  "mailroomIngestRuleAction": {
+    "message": "Action",
+    "description": "Ingest rule action label"
+  },
+  "mailroomIngestDefaultAction": {
+    "message": "Default action (no rule match)",
+    "description": "Ingest default action label"
+  },
+  "mailroomIngestFieldTo": {
+    "message": "To address",
+    "description": "Ingest field label"
+  },
+  "mailroomIngestFieldCc": {
+    "message": "Cc address",
+    "description": "Ingest field label"
+  },
+  "mailroomIngestFieldBcc": {
+    "message": "Bcc address",
+    "description": "Ingest field label"
+  },
+  "mailroomIngestFieldFrom": {
+    "message": "From address",
+    "description": "Ingest field label"
+  },
+  "mailroomIngestFieldFromDomain": {
+    "message": "From domain",
+    "description": "Ingest field label"
+  },
+  "mailroomIngestFieldSubject": {
+    "message": "Subject",
+    "description": "Ingest field label"
+  },
+  "mailroomIngestFieldMailboxKind": {
+    "message": "Mailbox kind",
+    "description": "Ingest field label"
+  },
+  "mailroomIngestOperatorContains": {
+    "message": "contains",
+    "description": "Ingest operator label"
+  },
+  "mailroomIngestOperatorEquals": {
+    "message": "equals",
+    "description": "Ingest operator label"
+  },
+  "mailroomIngestOperatorEndsWith": {
+    "message": "ends with",
+    "description": "Ingest operator label"
+  },
+  "mailroomIngestOperatorIn": {
+    "message": "in list",
+    "description": "Ingest operator label"
+  },
+  "mailroomIngestActionRouteCase": {
+    "message": "Route to case flow",
+    "description": "Ingest action label"
+  },
+  "mailroomIngestActionWorkspaceOnly": {
+    "message": "Workspace only (no case)",
+    "description": "Ingest action label"
+  },
+  "mailroomIngestActionManualReview": {
+    "message": "Manual review",
+    "description": "Ingest action label"
+  },
+  "mailroomIngestActionIgnore": {
+    "message": "Ignore message",
+    "description": "Ingest action label"
+  },
+  "helpdeskExecChannelRulesMailroomNote": {
+    "message": "Duplicate handling and inbound case defaults are configured in Automation → Mailroom. Channel rules here are legacy; run the channel-rules migration script or re-enter values in Mailroom.",
+    "description": "Helpdesk channel rules deprecation note"
+  },
   "automationRules": {
     "message": "Automation Rules",
     "description": "Automation hub option"

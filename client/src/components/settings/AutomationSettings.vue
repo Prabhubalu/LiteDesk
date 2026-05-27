@@ -43,6 +43,7 @@
     </div>
 
     <AssignmentRulesSettings v-else-if="currentView === 'assignment-rules'" />
+    <MailroomSettings v-else-if="currentView === 'mailroom'" />
   </div>
 </template>
 
@@ -53,6 +54,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 const { t } = useI18n();
 import AssignmentRulesSettings from '@/components/settings/AssignmentRulesSettings.vue';
+import MailroomSettings from '@/components/settings/MailroomSettings.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -99,6 +101,20 @@ const ProcessesIcon = () => h('svg', {
   }),
 ]);
 
+const MailroomIcon = () => h('svg', {
+  fill: 'none',
+  stroke: 'currentColor',
+  viewBox: '0 0 24 24',
+  xmlns: 'http://www.w3.org/2000/svg',
+}, [
+  h('path', {
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    'stroke-width': '2',
+    d: 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+  }),
+]);
+
 const BusinessFlowsIcon = () => h('svg', {
   fill: 'none',
   stroke: 'currentColor',
@@ -120,6 +136,14 @@ const automationOptions = [
     descriptionKey: 'settings.automationAssignmentRulesDesc',
     icon: AssignmentRulesIcon,
     iconBg: 'bg-gradient-to-br from-indigo-500 to-indigo-600',
+    inShell: true,
+  },
+  {
+    id: 'mailroom',
+    nameKey: 'settings.automationMailroom',
+    descriptionKey: 'settings.automationMailroomDesc',
+    icon: MailroomIcon,
+    iconBg: 'bg-gradient-to-br from-sky-500 to-sky-600',
     inShell: true,
   },
   {
@@ -151,6 +175,7 @@ const automationOptions = [
 const currentView = computed(() => {
   const view = route.query.automationView;
   if (view === 'assignment-rules') return 'assignment-rules';
+  if (view === 'mailroom') return 'mailroom';
   if (route.query.assignmentApp) return 'assignment-rules';
   return 'overview';
 });

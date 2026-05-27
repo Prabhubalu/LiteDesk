@@ -7,6 +7,8 @@ const ParserInboundEvent = require('../models/ParserInboundEvent');
 const { resolveParserEventIds } = require('../utils/parserIdCodec');
 const { getEffectiveInboundParserConfig } = require('./inboundParserConfigService');
 const { runWithOrganizationTenantContext } = require('../utils/runWithOrganizationTenant');
+const { handleInboundEmailForHelpdesk } = require('./helpdeskChannelIngestionService');
+const Case = require('../models/Case');
 
 function parserAddressToString(value) {
   if (!value) return '';
@@ -92,7 +94,42 @@ async function fetchParserMessage(parserMessageId) {
   throw lastError || new Error('Parser message fetch failed: no URL candidates');
 }
 
-async function processParserInboundEvent(eventDoc) {
+/**
+ * Parser inbound routes to Helpdesk by default (same intent as raw MIME → cases).
+ * Set PARSER_INBOUND_WORKSPACE_ONLY=true to keep personal mailboxes workspace-only.
+ */
+function shouldRouteParserInboundToHelpdesk(mailbox) {
+  const workspaceOnly = String(process.env.PARSER_INBOUND_WORKSPACE_ONLY || '').trim().toLowerCase() === 'true';
+  if (workspaceOnly && String(mailbox?.kind || '').toLowerCase() === 'personal') {
+    return false;
+  }
+  return true;
+}
+
+async function linkCommunicationIdToCaseEmailActivity(caseId, organizationId, communicationId) {
+  if (!caseId || !communicationId) return;
+  const caseRecord = await Case.findOne({ _id: caseId, organizationId }).select('activities');
+  if (!caseRecord?.activities?.length) return;
+
+  for (let i = caseRecord.activities.length - 1; i >= 0; i -= 1) {
+    const act = caseRecord.activities[i];
+    if (act.activityType === 'email_received' && !act.metadata?.communicationId) {
+      act.metadata = { ...(act.metadata || {}), communicationId: String(communicationId) };
+      await caseRecord.save();
+      return;
+    }
+  }
+}
+
+async function processParserInboundEventLegacy(
+  eventDoc,
+  {
+    injectedMessage = null,
+    mailroomCaseResult = null,
+    forceWorkspaceOnly = false,
+    markManualReview = false
+  } = {}
+) {
   const resolved = await resolveParserEventIds(
     eventDoc.parserTenantId,
     eventDoc.parserMailboxId
@@ -113,7 +150,7 @@ async function processParserInboundEvent(eventDoc) {
     { $set: { status: 'processing', organizationId, mailboxObjectId } }
   );
 
-  const msg = await fetchParserMessage(eventDoc.parserMessageId);
+  const msg = injectedMessage || (await fetchParserMessage(eventDoc.parserMessageId));
   if (msg.tenantId && String(msg.tenantId) !== String(eventDoc.parserTenantId)) {
     throw new Error('Parser message tenantId mismatch');
   }
@@ -127,6 +164,7 @@ async function processParserInboundEvent(eventDoc) {
   const receivedAt = eventDoc.receivedAt || (msg.receivedAt ? new Date(msg.receivedAt) : new Date());
 
   let communicationId = null;
+  let helpdeskCaseResult = null;
 
   await runWithOrganizationTenantContext(organizationId, async () => {
     const mailbox = await Mailbox.findOne({
@@ -141,11 +179,41 @@ async function processParserInboundEvent(eventDoc) {
       organizationId,
       providerMessageKey
     })
-      .select('_id')
+      .select('_id relatedTo')
       .lean();
     if (existing) {
       communicationId = existing._id;
       return;
+    }
+
+    let relatedTo = { moduleKey: 'workspace', recordId: organizationId };
+
+    if (mailroomCaseResult?.caseId) {
+      relatedTo = {
+        moduleKey: 'cases',
+        recordId: mailroomCaseResult.caseId
+      };
+      helpdeskCaseResult = {
+        caseRecord: mailroomCaseResult.caseRecord || { _id: mailroomCaseResult.caseId },
+        action: mailroomCaseResult.action
+      };
+    } else if (!forceWorkspaceOnly && shouldRouteParserInboundToHelpdesk(mailbox)) {
+      helpdeskCaseResult = await handleInboundEmailForHelpdesk({
+        organizationId,
+        parsedEmail: {
+          fromAddress,
+          subject,
+          body
+        },
+        communicationDraft: {}
+      });
+      relatedTo = {
+        moduleKey: 'cases',
+        recordId: helpdeskCaseResult.caseRecord._id
+      };
+    }
+    if (markManualReview) {
+      relatedTo = { moduleKey: 'workspace', recordId: organizationId };
     }
 
     const doc = await Communication.create({
@@ -158,9 +226,11 @@ async function processParserInboundEvent(eventDoc) {
       toAddresses: normalizeAddressList(msg.to || msg.toAddresses),
       ccAddresses: normalizeAddressList(msg.cc || msg.ccAddresses),
       messageId: msg.messageId ? String(msg.messageId).trim() : undefined,
+      inReplyTo: msg.inReplyTo ? String(msg.inReplyTo).trim() : undefined,
+      references: msg.references ? String(msg.references).trim() : undefined,
       receivedAt,
       status: 'delivered',
-      relatedTo: { moduleKey: 'workspace', recordId: organizationId },
+      relatedTo,
       mailboxId: mailboxObjectId,
       providerMessageKey,
       providerThreadId: eventDoc.parserThreadId
@@ -168,9 +238,25 @@ async function processParserInboundEvent(eventDoc) {
         : msg.threadId
           ? String(msg.threadId).slice(0, 128)
           : null,
-      metadata: { provider: 'arivu-inbound-parser' }
+      metadata: {
+        provider: 'arivu-inbound-parser',
+        ...(helpdeskCaseResult && {
+          helpdesk: {
+            caseId: String(helpdeskCaseResult.caseRecord._id),
+            action: helpdeskCaseResult.action
+          }
+        })
+      }
     });
     communicationId = doc._id;
+
+    if (helpdeskCaseResult?.caseRecord?._id) {
+      await linkCommunicationIdToCaseEmailActivity(
+        helpdeskCaseResult.caseRecord._id,
+        organizationId,
+        communicationId
+      );
+    }
   });
 
   await ParserInboundEvent.updateOne(
@@ -193,10 +279,62 @@ async function processParserInboundEvent(eventDoc) {
     meta: { provider: 'arivu-inbound-parser', parserMessageId: eventDoc.parserMessageId }
   });
 
-  return { communicationId };
+  return {
+    communicationId,
+    helpdesk: helpdeskCaseResult
+      ? {
+        caseId: helpdeskCaseResult.caseRecord._id,
+        action: helpdeskCaseResult.action
+      }
+      : null
+  };
+}
+
+async function processParserInboundEvent(eventDoc, options = {}) {
+  const resolved = await resolveParserEventIds(
+    eventDoc.parserTenantId,
+    eventDoc.parserMailboxId
+  );
+  if (!resolved) {
+    throw new Error(
+      `Unknown parser mailbox: ${eventDoc.parserTenantId} / ${eventDoc.parserMailboxId}`
+    );
+  }
+
+  const {
+    shouldUseMailroomForOrganization,
+    processParserEventThroughMailroom
+  } = require('../platform/mailroom/pipeline/emailInboundPipeline');
+
+  const runLegacy = (mailroomCaseResult, executionHints = {}) =>
+    processParserInboundEventLegacy(eventDoc, {
+      injectedMessage: options.injectedMessage || null,
+      mailroomCaseResult: mailroomCaseResult || null,
+      forceWorkspaceOnly: executionHints.forceWorkspaceOnly === true,
+      markManualReview: executionHints.markManualReview === true
+    });
+
+  if (await shouldUseMailroomForOrganization(resolved.organizationId)) {
+    return processParserEventThroughMailroom(eventDoc, {
+      processLegacy: runLegacy,
+      injectedMessage: options.injectedMessage || null
+    });
+  }
+
+  return runLegacy(eventDoc);
+}
+
+/**
+ * Local/dev simulation: skip parser API fetch and inject message body directly.
+ */
+async function processParserInboundEventWithMessage(eventDoc, messagePayload) {
+  return processParserInboundEvent(eventDoc, { injectedMessage: messagePayload });
 }
 
 module.exports = {
   fetchParserMessage,
-  processParserInboundEvent
+  processParserInboundEvent,
+  processParserInboundEventLegacy,
+  processParserInboundEventWithMessage,
+  shouldRouteParserInboundToHelpdesk
 };
