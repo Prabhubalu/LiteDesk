@@ -527,5 +527,7 @@ async function handleChannelInteractionForHelpdesk({
 
 module.exports = {
   handleInboundEmailForHelpdesk,
-  handleChannelInteractionForHelpdesk
+  handleChannelInteractionForHelpdesk,
+  createCaseFromInboundEmail,
+  appendInboundEmailActivity
 };

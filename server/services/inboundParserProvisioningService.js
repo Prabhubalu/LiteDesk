@@ -11,6 +11,7 @@ const {
   routingLocalPartFromMailbox
 } = require('../utils/parserIdCodec');
 const { getEffectiveInboundParserConfig } = require('./inboundParserConfigService');
+const { provisionMailboxLocally } = require('./localParserProvisioningService');
 
 const SKIPPED_REASON_MESSAGES = {
   inbound_parser_not_configured:
@@ -24,6 +25,11 @@ function skippedReasonMessage(reason) {
 }
 
 async function provisionMailboxWithParser({ organizationId, mailbox }) {
+  const localProvision = String(process.env.LOCAL_PARSER_PROVISION || '').trim().toLowerCase() === 'true';
+  if (localProvision) {
+    return provisionMailboxLocally({ organizationId, mailbox });
+  }
+
   const cfg = await getEffectiveInboundParserConfig();
   if (!cfg.enabled || !cfg.parserApiBaseUrl) {
     const reason = 'inbound_parser_not_configured';

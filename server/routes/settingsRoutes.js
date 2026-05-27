@@ -5,6 +5,7 @@ const { organizationIsolation } = require('../middleware/organizationMiddleware'
 const controller = require('../controllers/settingsController');
 const helpdeskSettingsController = require('../controllers/helpdeskSettingsController');
 const assignmentRulesController = require('../controllers/assignmentRulesController');
+const mailroomSettingsController = require('../controllers/mailroomSettingsController');
 const { organizationSettingsLimiter } = require('../middleware/rateLimitMiddleware');
 const { uploadSingle } = require('../middleware/uploadMiddleware');
 const {
@@ -41,6 +42,17 @@ router.get('/applications/:appKey', controller.getApplication);
 router.get('/automation/assignment-rules', assignmentRulesController.getAssignmentRuleSet);
 router.put('/automation/assignment-rules', assignmentRulesController.upsertAssignmentRuleSet);
 router.post('/automation/assignment-rules/simulate', assignmentRulesController.simulateAssignmentRules);
+
+// Mailroom (conversation-first ingestion policies)
+router.get('/automation/mailroom', mailroomSettingsController.getMailroomSettings);
+router.put('/automation/mailroom', mailroomSettingsController.updateMailroomSettings);
+router.get('/automation/mailroom/templates', mailroomSettingsController.listMailroomTemplates);
+router.post('/automation/mailroom/evaluate', mailroomSettingsController.evaluateMailroomPolicies);
+router.get('/automation/mailroom/conversations', mailroomSettingsController.listMailroomConversations);
+router.get('/automation/mailroom/conversations/:id', mailroomSettingsController.getMailroomConversation);
+router.get('/automation/mailroom/threading-logs', mailroomSettingsController.listMailroomThreadingLogs);
+router.get('/automation/mailroom/failures', mailroomSettingsController.listMailroomProcessingFailures);
+router.post('/automation/mailroom/failures/:rawPayloadId/replay', mailroomSettingsController.replayMailroomProcessingFailure);
 
 // Subscriptions endpoints
 router.get('/subscriptions', cacheJsonResponse({ namespace: 'settings:subscriptions' }), controller.getSubscriptions);

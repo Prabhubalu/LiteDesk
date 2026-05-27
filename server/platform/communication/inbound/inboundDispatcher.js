@@ -289,7 +289,8 @@ async function processRawInbound({
   rawMime,
   headerOrganizationId = null,
   source = 'inbound-webhook',
-  forcedWorkspaceInbox = null
+  forcedWorkspaceInbox = null,
+  mailroomPrelinkedCase = null
 }) {
   const rawBuffer = ensureBuffer(rawMime);
 
@@ -322,6 +323,17 @@ async function processRawInbound({
     }
     relatedTo = { moduleKey: 'workspace', recordId: oid };
     helpdeskCaseResult = null;
+  } else if (mailroomPrelinkedCase?.caseId) {
+    orgId = headerOrganizationId;
+    if (!orgId || !mongoose.Types.ObjectId.isValid(String(orgId))) {
+      throw new InboundDispatchError('Invalid organization for Mailroom prelinked case', { stage: 'route' });
+    }
+    const caseId = new mongoose.Types.ObjectId(String(mailroomPrelinkedCase.caseId));
+    relatedTo = { moduleKey: 'cases', recordId: caseId };
+    helpdeskCaseResult = {
+      caseRecord: { _id: caseId },
+      action: mailroomPrelinkedCase.action || 'mailroom_linked'
+    };
   } else {
     const tenantCtx = await resolveTenantContext({
       parsedMessage,

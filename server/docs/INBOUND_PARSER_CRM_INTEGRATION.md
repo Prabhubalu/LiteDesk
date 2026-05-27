@@ -64,6 +64,7 @@ INBOUND_PARSER_ENABLED=true
 4. Parser ingests → POST CRM /api/webhooks/arivu/inbound-email (JSON + HMAC)
 5. CRM fetches GET parser `/integrations/v1/messages/{messageId}` (Bearer `CRM_API_KEY`)
    → Communication in tenant DB (workspace inbox)
+   → Helpdesk Case create/append via `helpdeskChannelIngestionService` (default; opt out personal with `PARSER_INBOUND_WORKSPACE_ONLY=true`)
 ```
 
 ## CRM endpoints
@@ -75,6 +76,29 @@ INBOUND_PARSER_ENABLED=true
 | `GET/PUT /api/platform/inbound-parser` | Platform admin config only |
 
 Legacy path (disabled by default): `POST /api/webhooks/email/inbound`
+
+## Local simulation (no remote parser)
+
+For development when the parser cannot reach `localhost`:
+
+```bash
+cd server
+npm run simulate:parser-inbound
+npm run simulate:parser-inbound -- --enable-mailroom
+npm run simulate:parser-inbound -- --http --crm-url http://localhost:3000
+```
+
+See `server/platform/mailroom/README.md` for options (`--from`, `--subject`, `--body`, `--org-id`, `--mailbox-id`).
+
+### Local mailbox simulation (no remote parser)
+
+```bash
+cd server
+npm run simulate:mailbox
+npm run simulate:mailbox -- --kind group --label "Support"
+```
+
+Optional: `LOCAL_PARSER_PROVISION=true` in `server/.env` so **Settings → Mailboxes** UI provisioning also uses local routing addresses.
 
 ## Re-enable Gmail later
 
