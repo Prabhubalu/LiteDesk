@@ -197,6 +197,7 @@ const CaseSchema = new Schema(
     slaBreached: { type: Boolean, default: false },
     businessHoursCalendarId: { type: Schema.Types.ObjectId, ref: 'BusinessHourSet', default: null },
     reopenCount: { type: Number, default: 0, min: 0 },
+    reopenReason: { type: String, trim: true, default: null, maxlength: 1000 },
     lastSlaEventAt: { type: Date, default: null },
     lastCustomerReplyAt: { type: Date, default: null },
     lastAgentReplyAt: { type: Date, default: null },

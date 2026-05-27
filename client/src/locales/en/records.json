@@ -1,4 +1,20 @@
 {
+  "recordClosedTitle": {
+    "message": "This record is closed",
+    "description": "Generic banner title when a record is closed"
+  },
+  "recordClosedDescription": {
+    "message": "You can reopen the record to continue working if your role allows it.",
+    "description": "Generic banner description when a record is closed"
+  },
+  "recordReopen": {
+    "message": "Reopen record",
+    "description": "Generic reopen record button label"
+  },
+  "groupRecord": {
+    "message": "Record",
+    "description": "Group label for generic record metadata fields"
+  },
   "shellErrorTitle": {
     "message": "Error Loading Record",
     "description": "Record page load error heading"

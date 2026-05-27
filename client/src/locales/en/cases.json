@@ -63,6 +63,14 @@
     "message": "Closed cases cannot be edited. Reopen the case first.",
     "description": "Shown when trying to edit a closed case"
   },
+  "recordClosedTitle": {
+    "message": "This case is closed",
+    "description": "Banner title shown when case is closed"
+  },
+  "recordClosedDescription": {
+    "message": "You can reopen the case to continue working, but edits are blocked while it remains Closed.",
+    "description": "Banner description shown when case is closed"
+  },
   "recordKnowledgeTitle": {
     "message": "Knowledge base",
     "description": "Knowledge panel title"
@@ -119,6 +127,10 @@
     "message": "Reply to customer or type an internal note…",
     "description": "Reply composer placeholder"
   },
+  "recordComposerResize": {
+    "message": "Drag to resize reply area",
+    "description": "Aria label for reply composer resize handle"
+  },
   "recordNotesPlaceholder": {
     "message": "Add an internal note…",
     "description": "Notes tab composer placeholder"
@@ -139,6 +151,42 @@
     "message": "Reopen case",
     "description": "Reopen closed case button"
   },
+  "recordReopenReasonPrompt": {
+    "message": "Why are you reopening this case? (required)",
+    "description": "Prompt shown before reopening a case"
+  },
+  "recordReopenReasonRequired": {
+    "message": "Reopen reason is required.",
+    "description": "Shown when user tries to reopen without reason"
+  },
+  "recordReopenSuccess": {
+    "message": "Case reopened",
+    "description": "Success toast when case is reopened"
+  },
+  "recordReopenFailed": {
+    "message": "Failed to reopen case",
+    "description": "Fallback error toast when reopen fails"
+  },
+  "recordReopenDialogTitle": {
+    "message": "Reopen this case?",
+    "description": "Dialog title when reopening a case"
+  },
+  "recordReopenDialogDescription": {
+    "message": "Add a short reason so your team understands why this case is being reopened.",
+    "description": "Dialog description when reopening a case"
+  },
+  "recordReopenDialogLabel": {
+    "message": "Reopen reason",
+    "description": "Label for reopen reason textarea"
+  },
+  "recordReopenDialogCancel": {
+    "message": "Cancel",
+    "description": "Cancel button on reopen dialog"
+  },
+  "recordReopenDialogConfirm": {
+    "message": "Reopen case",
+    "description": "Confirm button on reopen dialog"
+  },
   "recordSupport": {
     "message": "Support",
     "description": "Default agent display name"
@@ -153,7 +201,47 @@
   },
   "recordResolutionPrompt": {
     "message": "Resolution summary (required to resolve or close):",
-    "description": "Prompt when resolving without summary"
+    "description": "Legacy prompt when resolving without summary"
+  },
+  "recordResolutionRequired": {
+    "message": "Resolution summary is required.",
+    "description": "Shown when user tries to resolve or close without a summary"
+  },
+  "recordResolutionDialogTitle": {
+    "message": "Update case status",
+    "description": "Dialog title when resolving or closing a case"
+  },
+  "recordResolutionDialogTitleResolve": {
+    "message": "Resolve this case?",
+    "description": "Dialog title when moving to Resolved"
+  },
+  "recordResolutionDialogTitleClose": {
+    "message": "Close this case?",
+    "description": "Dialog title when moving to Closed"
+  },
+  "recordResolutionDialogDescription": {
+    "message": "Add a resolution summary so your team and the customer know how this case was handled.",
+    "description": "Dialog description when resolving or closing a case"
+  },
+  "recordResolutionDialogLabel": {
+    "message": "Resolution summary",
+    "description": "Label for resolution summary textarea"
+  },
+  "recordResolutionDialogCancel": {
+    "message": "Cancel",
+    "description": "Cancel button on resolve/close dialog"
+  },
+  "recordResolutionDialogConfirm": {
+    "message": "Update status",
+    "description": "Confirm button on resolve/close dialog"
+  },
+  "recordResolutionDialogConfirmResolve": {
+    "message": "Mark resolved",
+    "description": "Confirm button when resolving a case"
+  },
+  "recordResolutionDialogConfirmClose": {
+    "message": "Close case",
+    "description": "Confirm button when closing a case"
   },
   "recordSlaResponse": {
     "message": "First response",
@@ -326,6 +414,10 @@
   "recordDetailsRelated": {
     "message": "Related records",
     "description": "Related records in details"
+  },
+  "recordDetailsReopenReason": {
+    "message": "Reopen reason",
+    "description": "Reopen reason field label in details panel"
   },
   "recordTasksEmpty": {
     "message": "No tasks linked to this case",

@@ -1022,6 +1022,9 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
       { id: 'my-cases', name: 'My Cases', filters: { caseOwnerId: 'me' } },
       { id: 'unassigned', name: 'Unassigned', filters: { caseOwnerId: null } },
       { id: 'open', name: 'Open', filters: { status: ['New', 'Assigned', 'In Progress', 'On Hold'] } },
+      { id: 'team', name: 'Team', filters: { status: ['Assigned', 'In Progress', 'On Hold'] } },
+      { id: 'sla-at-risk', name: 'SLA at risk', filters: { slaBreached: true, status: ['New', 'Assigned', 'In Progress', 'On Hold'] } },
+      { id: 'recently-updated', name: 'Recently updated', filters: { updatedWithinDays: 7 } },
       { id: 'resolved', name: 'Resolved', filters: { status: 'Resolved' } },
       { id: 'closed', name: 'Closed', filters: { status: 'Closed' } }
     ],

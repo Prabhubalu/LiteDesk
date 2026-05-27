@@ -1,13 +1,36 @@
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
 import { getAllowedCaseStatusTransitions, CASE_PRIORITIES } from '@/constants/caseLifecycle';
 
+const CASE_REF_KEYS = ['caseOwnerId', 'contactId', 'organizationRefId'];
+
+/** Keep populated refs when mutation APIs return only ObjectIds. */
+function mergeCaseRecordFromApi(previous, next) {
+  if (!next || typeof next !== 'object') return next;
+  const merged = { ...next };
+  if (!previous) return merged;
+  for (const key of CASE_REF_KEYS) {
+    const prev = previous[key];
+    const nxt = merged[key];
+    if (prev && typeof prev === 'object' && nxt != null && typeof nxt !== 'object') {
+      merged[key] = prev;
+    }
+  }
+  return merged;
+}
+
 export function useCaseRecord(caseIdRef) {
   const notifications = useNotifications();
+  const { t } = useI18n();
   const loading = ref(false);
   const error = ref(null);
   const caseRecord = ref(null);
+
+  function applyCaseRecordUpdate(previous, next) {
+    caseRecord.value = mergeCaseRecordFromApi(previous, next);
+  }
   const sending = ref(false);
   const statusUpdating = ref(false);
   const neighbors = ref({ previousId: null, nextId: null });
@@ -106,6 +129,7 @@ export function useCaseRecord(caseIdRef) {
     if (!id || !status) return false;
     statusUpdating.value = true;
     try {
+      const previous = caseRecord.value;
       const res = await apiClient.patch(`/helpdesk/cases/${id}/status`, {
         status,
         ...extra
@@ -113,7 +137,7 @@ export function useCaseRecord(caseIdRef) {
       if (!res?.success) {
         throw new Error(res?.message || 'Failed to update status');
       }
-      caseRecord.value = res.data;
+      applyCaseRecordUpdate(previous, res.data);
       notifications.success('Status updated');
       return true;
     } catch (err) {
@@ -132,7 +156,7 @@ export function useCaseRecord(caseIdRef) {
         caseOwnerId: caseOwnerId || null
       });
       if (!res?.success) throw new Error(res?.message || 'Failed to update owner');
-      caseRecord.value = res.data;
+      applyCaseRecordUpdate(caseRecord.value, res.data);
       notifications.success('Owner updated');
       return true;
     } catch (err) {
@@ -147,7 +171,7 @@ export function useCaseRecord(caseIdRef) {
     try {
       const res = await apiClient.put(`/helpdesk/cases/${id}`, { priority });
       if (!res?.success) throw new Error(res?.message || 'Failed to update priority');
-      caseRecord.value = res.data;
+      applyCaseRecordUpdate(caseRecord.value, res.data);
       notifications.success('Priority updated');
       return true;
     } catch (err) {
@@ -168,7 +192,7 @@ export function useCaseRecord(caseIdRef) {
         internal: Boolean(internal)
       });
       if (!res?.success) throw new Error(res?.message || 'Failed to send message');
-      caseRecord.value = res.data;
+      applyCaseRecordUpdate(caseRecord.value, res.data);
       return true;
     } catch (err) {
       notifications.error(err?.message || 'Failed to send message');
@@ -178,17 +202,20 @@ export function useCaseRecord(caseIdRef) {
     }
   }
 
-  async function reopenCase() {
+  async function reopenCase(reopenReason) {
     const id = caseIdRef.value;
     if (!id) return false;
     try {
-      const res = await apiClient.post(`/helpdesk/cases/${id}/reopen`);
-      if (!res?.success) throw new Error(res?.message || 'Failed to reopen case');
-      caseRecord.value = res.data;
-      notifications.success('Case reopened');
+      const previous = caseRecord.value;
+      const res = await apiClient.post(`/helpdesk/cases/${id}/reopen`, {
+        reopenReason: String(reopenReason || '').trim()
+      });
+      if (!res?.success) throw new Error(res?.message || t('cases.recordReopenFailed'));
+      applyCaseRecordUpdate(previous, res.data);
+      notifications.success(t('cases.recordReopenSuccess'));
       return true;
     } catch (err) {
-      notifications.error(err?.message || 'Failed to reopen case');
+      notifications.error(err?.message || t('cases.recordReopenFailed'));
       return false;
     }
   }

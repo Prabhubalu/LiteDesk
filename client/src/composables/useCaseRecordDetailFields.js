@@ -1,4 +1,4 @@
-import { ref, computed, watch, unref } from 'vue';
+import { ref, computed, watch, unref, inject } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
@@ -13,6 +13,7 @@ import {
 } from '@/utils/orgContactFormPairing';
 import { filterCaseEditSubmitPayload } from '@/platform/fields/caseFieldModel';
 import { useNotifications } from '@/composables/useNotifications';
+import { CASE_STATUS_RESOLUTION_KEY } from '@/composables/useCaseStatusResolution';
 
 function casePersonRowOrgId(p) {
   if (!p) return '';
@@ -80,6 +81,7 @@ export function useCaseRecordDetailFields({ caseRecord, caseId, canEdit, isClose
   const detailsTabSearchQuery = ref('');
   const detailsShowEmptyFields = ref(false);
   const lookupsLoaded = ref(false);
+  const caseStatusResolution = inject(CASE_STATUS_RESOLUTION_KEY, null);
 
   const recordCrudPathBase = computed(() =>
     getModuleRecordCrudPathBase('cases', {
@@ -116,6 +118,11 @@ export function useCaseRecordDetailFields({ caseRecord, caseId, canEdit, isClose
         if (!rec?._id || !id) return;
         try {
           if (fieldKey === 'status') {
+            if (caseStatusResolution?.changeStatus) {
+              const outcome = await caseStatusResolution.changeStatus(value);
+              if (outcome === 'pending' || outcome === 'unchanged') return;
+              return;
+            }
             const patchBody = { status: value };
             const rs = String(rec?.resolutionSummary ?? '').trim();
             if ((value === 'Resolved' || value === 'Closed') && rs) {

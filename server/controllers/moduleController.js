@@ -606,6 +606,26 @@ function getFieldDataType(key, fieldName, path) {
     if (key === 'forms' && formFieldMappings[fieldName]) {
         return formFieldMappings[fieldName];
     }
+
+    const caseFieldMappings = {
+        caseId: 'Auto-Number',
+        title: 'Text',
+        description: 'Text-Area',
+        caseType: 'Picklist',
+        priority: 'Picklist',
+        status: 'Picklist',
+        caseOwnerId: 'Lookup (Relationship)',
+        contactId: 'Lookup (Relationship)',
+        organizationRefId: 'Lookup (Relationship)',
+        resolutionSummary: 'Text-Area',
+        closureNotes: 'Text-Area',
+        reopenReason: 'Text-Area',
+        caseNotes: 'Text-Area',
+        tags: 'Multi-Picklist'
+    };
+    if (key === 'cases' && caseFieldMappings[fieldName]) {
+        return caseFieldMappings[fieldName];
+    }
     
     // Items module field mappings
     const itemFieldMappings = {
@@ -729,6 +749,36 @@ function getBaseFieldsForKey(key) {
             'do_not_contact',
             'tags'
         ];
+        const casesDefaultFieldOrder = [
+            'caseId',
+            'title',
+            'status',
+            'priority',
+            'caseType',
+            'caseOwnerId',
+            'contactId',
+            'organizationRefId',
+            'channel',
+            'severity',
+            'impact',
+            'description',
+            'caseNotes',
+            'resolutionSummary',
+            'rootCause',
+            'resolutionCode',
+            'closureNotes',
+            'reopenReason',
+            'resolvedAt',
+            'resolvedBy'
+        ];
+        const casesSchemaExcluded = new Set([
+            'activities',
+            'slaCycles',
+            'currentSlaCycle',
+            'assignmentControl',
+            'reopenCount',
+            'customFields'
+        ]);
         const modelByKey = {
             people: require('../models/People'),
             organizations: require('../models/Organization'),
@@ -803,6 +853,12 @@ function getBaseFieldsForKey(key) {
                 if (excluded.has(name)) return false;
                 // Tasks: expose only the single "relatedTo" field, not nested relatedTo.type / relatedTo.id
                 if (key === 'tasks' && (name === 'relatedTo.type' || name === 'relatedTo.id')) return false;
+                if (key === 'cases') {
+                    if (casesSchemaExcluded.has(name)) return false;
+                    for (const excludedField of casesSchemaExcluded) {
+                        if (name.startsWith(`${excludedField}.`)) return false;
+                    }
+                }
                 // Exclude nested paths (e.g., "kpiMetrics.compliancePercentage" should be excluded if "kpiMetrics" is excluded)
                 for (const excludedField of excluded) {
                     if (name.startsWith(excludedField + '.')) {
@@ -885,7 +941,8 @@ function getBaseFieldsForKey(key) {
                 if (key === 'events' && name === 'reviewerId') fieldLabel = 'Reviewer';
                 if (key === 'events' && name === 'auditorId') fieldLabel = 'Auditor';
                 if (key === 'events' && name === 'correctiveOwnerId') fieldLabel = 'Corrective Owner';
-                
+                if (key === 'cases' && name === 'reopenReason') fieldLabel = 'Reopen reason';
+
                 // Add lookupSettings for User lookup fields
                 let lookupSettings = null;
                 
@@ -1246,6 +1303,12 @@ function getBaseFieldsForKey(key) {
                     ? normalizeMeetingEventTypeLabel(path.defaultValue ?? null)
                     : (path.defaultValue ?? null);
 
+                let fieldVisibility = { list: true, detail: true };
+                if (key === 'cases' && name === 'reopenReason') {
+                    dataType = 'Text-Area';
+                    fieldVisibility = { list: false, detail: true };
+                }
+
                 return {
                     key: name,
                     label: fieldLabel,
@@ -1263,7 +1326,7 @@ function getBaseFieldsForKey(key) {
                         (key === 'events' && name === 'linkedFormId') ? 'The form that will be executed as part of this event.' :
                         '',
                     index: !!path._index,
-                    visibility: { list: true, detail: true },
+                    visibility: fieldVisibility,
                     order: 0,
                     validations:
                         dataType === 'Email'
@@ -1288,11 +1351,16 @@ function getBaseFieldsForKey(key) {
             }
         }
 
-        if (key !== 'tasks' && key !== 'people') {
+        if (key !== 'tasks' && key !== 'people' && key !== 'cases') {
             return baseFields;
         }
 
-        const sortOrder = key === 'tasks' ? taskDefaultFieldOrder : peopleDefaultFieldOrder;
+        const sortOrder =
+            key === 'tasks'
+                ? taskDefaultFieldOrder
+                : key === 'people'
+                  ? peopleDefaultFieldOrder
+                  : casesDefaultFieldOrder;
         const sortedFields = [...baseFields].sort((a, b) => {
             const aKey = String(a?.key || '');
             const bKey = String(b?.key || '');
@@ -1307,10 +1375,14 @@ function getBaseFieldsForKey(key) {
             return 0;
         });
 
-        return sortedFields.map((field, index) => ({
+        const ordered = sortedFields.map((field, index) => ({
             ...field,
             order: index
         }));
+        if (key === 'cases') {
+            return enrichCasesModuleFields(ordered);
+        }
+        return ordered;
     } catch (e) {
         return [];
     }
@@ -1786,6 +1858,27 @@ function enrichPeopleFieldsWithPeopleTypes(fields, typeDefs) {
         const key = (f.key || '').toString().trim().toLowerCase();
         if (key === 'sales_type') return { ...f, options };
         return f;
+    });
+}
+
+/** Canonical config for the default read-only Reopen reason field on Cases. */
+function enrichCasesModuleFields(fields) {
+    if (!Array.isArray(fields)) return fields;
+    return fields.map((f) => {
+        const key = String(f?.key || '').trim().toLowerCase();
+        if (key !== 'reopenreason') return f;
+        return {
+            ...f,
+            label: f.label || 'Reopen reason',
+            dataType: 'Text-Area',
+            required: false,
+            keyField: false,
+            visibility: {
+                list: false,
+                detail: true,
+                ...(f.visibility && typeof f.visibility === 'object' ? f.visibility : {})
+            }
+        };
     });
 }
 
@@ -2333,6 +2426,7 @@ exports.listModules = async (req, res) => {
                         const k = String(f?.key || '').toLowerCase();
                         if (k === 'correctiveactionowners') return false;
                         if (k === 'customfields') return false; // Storage bucket, not a configurable field
+                        if (sys.key === 'cases' && k === 'reopencount') return false;
                         // Remove legacy/alias event field keys that should not exist in UI config
                         if (sys.key === 'events' && deprecatedEventAliasKeys.has(k)) return false;
                         return true;
@@ -3182,6 +3276,9 @@ exports.listModules = async (req, res) => {
                 if (sys.key === 'events') {
                     finalFields = (Array.isArray(finalFields) ? finalFields : []).map(normalizeEventFieldConfig);
                 }
+                if (sys.key === 'cases') {
+                    finalFields = enrichCasesModuleFields(finalFields);
+                }
                 const resolvedRelationships = shouldUseOverrideRelationships(override, sys)
                     ? override.relationships
                     : (sys.relationships || []);
@@ -3200,7 +3297,8 @@ exports.listModules = async (req, res) => {
                 customByKey.delete(sys.key);
             } else {
                 // No overrides; ensure base fields have stable order by index
-                const withOrder = sys.fields.map((f, i) => ({ ...f, order: i }));
+                const baseCaseFields = sys.key === 'cases' ? enrichCasesModuleFields(sys.fields) : sys.fields;
+                const withOrder = baseCaseFields.map((f, i) => ({ ...f, order: i }));
 
                 // Provide sensible defaults for system modules that rely on quick create UI.
                 // For Events, include allowSelfReview so it shows up in the create drawer when dependency-visible.

@@ -1,13 +1,175 @@
 <template>
-  <div class="case-record-page-root flex flex-1 min-h-0 flex-col overflow-hidden">
+  <div
+    class="case-record-page-root flex min-h-0 flex-1 flex-col overflow-hidden"
+    :class="embed ? 'w-full min-w-0' : 'h-full'"
+  >
     <RecordPageShell
       :loading="loading"
+      :show-loading="embed"
       :error="error"
       :loading-message="t('cases.recordLoading')"
       :error-title="t('cases.recordErrorTitle')"
+      :use-layout="!embed"
+      :layout-props="recordLayoutProps"
       @retry="fetchCase"
     >
-      <template v-if="caseRecord" #header>
+      <!-- List preview: flat layout (no teleport) so timeline scrolls and reply stays pinned -->
+      <div
+        v-if="embed && caseRecord"
+        class="case-record-embed flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden bg-white dark:bg-gray-900"
+      >
+        <RecordRightPane
+          ref="rightPaneRef"
+          class="h-full min-h-0 w-full flex-1"
+          full-width
+          :tabs="embedPreviewTabs"
+          default-tab="summary"
+          summary-layout="fill"
+          :show-header="true"
+          :show-close-button="true"
+          :title="caseModuleLabel"
+          :persistence-key="`case-${caseRecord._id}`"
+          :record-id="String(caseRecord._id)"
+          @close="handleEmbedClose"
+        >
+          <template v-if="quickPreviewNav" #header-prefix>
+            <div class="mr-2 flex items-center gap-1">
+              <button
+                type="button"
+                class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded border border-gray-200 text-gray-500 transition-colors dark:border-gray-700 dark:text-gray-400"
+                :class="
+                  quickPreviewNav.canPrevious
+                    ? 'hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200'
+                    : 'cursor-not-allowed opacity-40'
+                "
+                :disabled="!quickPreviewNav.canPrevious"
+                :aria-label="t('actions.previous')"
+                @click="quickPreviewNav.onPrev()"
+              >
+                <ChevronLeftIcon class="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded border border-gray-200 text-gray-500 transition-colors dark:border-gray-700 dark:text-gray-400"
+                :class="
+                  quickPreviewNav.canNext
+                    ? 'hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200'
+                    : 'cursor-not-allowed opacity-40'
+                "
+                :disabled="!quickPreviewNav.canNext"
+                :aria-label="t('actions.next')"
+                @click="quickPreviewNav.onNext()"
+              >
+                <ChevronRightIcon class="h-4 w-4" />
+              </button>
+            </div>
+          </template>
+          <template #header-actions>
+            <button
+              type="button"
+              class="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+              :aria-label="t('records.genericOpenInNewTab')"
+              :title="t('records.genericOpenInNewTab')"
+              @click="openCaseInNewTab"
+            >
+              <ArrowTopRightOnSquareIcon class="h-5 w-5" />
+            </button>
+            <button
+              v-if="canEdit && !isClosed"
+              type="button"
+              class="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+              :aria-label="t('actions.edit')"
+              @click="openEditDrawer"
+            >
+              <PencilSquareIcon class="h-5 w-5" />
+            </button>
+          </template>
+
+          <template #tab-summary>
+            <CaseRecordMainWorkspace
+              embed
+              :case-record="caseRecord"
+              :case-id="effectiveCaseId"
+              v-model:active-tab="activeTab"
+              :main-tabs="mainTabs"
+              :tab-activities="tabActivities"
+              :allowed-status-transitions="allowedStatusTransitions"
+              :priorities="priorities"
+              :status-updating="statusUpdating"
+              :is-closed="isClosed"
+              :sending="sending"
+              :can-edit="canEdit"
+              :can-delete="canDelete"
+              :can-email="!!contactEmail"
+              :empty-conversation-title="t('cases.recordEmptyConversationTitle')"
+              :empty-conversation-message="t('cases.recordEmptyConversationMessage')"
+              :empty-activity-title="t('cases.recordEmptyActivityTitle')"
+              :empty-activity-message="t('cases.recordEmptyActivityMessage')"
+              :empty-notes-title="t('cases.recordEmptyNotesTitle')"
+              :empty-notes-message="t('cases.recordEmptyNotesMessage')"
+              :notes-placeholder="t('cases.recordNotesPlaceholder')"
+              @status-change="onStatusSelect"
+              @priority-change="updatePriority"
+              @edit-record="openEditDrawer"
+              @email="openEmailCompose"
+              @delete="showDeleteModal = true"
+              @copy-url="copyUrl"
+              @reopen="handleReopenCase"
+              @send-message="onSendMessage"
+              @send-note="onSendNote"
+              @open-record="openRelatedRecord"
+              @link-task="openLinkTaskDrawer"
+            />
+          </template>
+
+          <template #tab-details>
+            <CaseDetailsPanel
+              :case-record="caseRecord"
+              :case-id="effectiveCaseId"
+              :is-closed="isClosed"
+              :can-edit="canEdit"
+              @edit-record="openEditDrawer"
+            />
+          </template>
+
+          <template #tab-contact>
+            <CaseContactProfilePanel :case-record="caseRecord" :can-edit="canEditPeople" />
+          </template>
+
+          <template #tab-related>
+            <div class="flex h-full flex-col">
+              <div
+                class="record-context-panel__header flex shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900"
+              >
+                <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+                  {{ t('records.relatedTitle') }}
+                </h2>
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/20"
+                  @click="openLinkTaskDrawer"
+                >
+                  {{ t('cases.recordTasksLink') }}
+                </button>
+              </div>
+              <div class="min-h-0 flex-1 overflow-y-auto p-4">
+                <RelatedRecordsPanel
+                  app-key="HELPDESK"
+                  module-key="cases"
+                  :record-id="caseRecord._id"
+                />
+              </div>
+            </div>
+          </template>
+
+          <template #tab-knowledge>
+            <CaseKnowledgePanel />
+          </template>
+        </RecordRightPane>
+      </div>
+
+      <template v-if="caseRecord && !embed" #header>
+        <div class="flex flex-col gap-2">
           <CaseRecordHeader
             :case-record="caseRecord"
             :allowed-status-transitions="allowedStatusTransitions"
@@ -28,83 +190,54 @@
             @previous="goToPrevious"
             @next="goToNext"
           />
+          <RecordClosedBanner
+            v-if="isClosed"
+            module-key="cases"
+            :can-reopen="canEdit"
+            @reopen="handleReopenCase"
+          />
+        </div>
       </template>
 
-      <template v-if="caseRecord" #left>
-          <div class="case-record-left flex min-h-0 flex-1 flex-col">
-            <div class="flex shrink-0 gap-0.5 border-b border-gray-200 dark:border-gray-700">
-              <button
-                v-for="tab in mainTabs"
-                :key="tab.id"
-                type="button"
-                class="border-b-2 px-3 py-2 text-sm font-medium transition-colors"
-                :class="
-                  activeTab === tab.id
-                    ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
-                    : 'border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
-                "
-                @click="activeTab = tab.id"
-              >
-                {{ tab.label }}
-              </button>
-            </div>
-
-            <template v-if="activeTab === 'conversation'">
-              <CaseTimelineFeed
-                :activities="tabActivities"
-                :case-record="caseRecord"
-                :empty-title="t('cases.recordEmptyConversationTitle')"
-                :empty-message="t('cases.recordEmptyConversationMessage')"
-              />
-              <CaseReplyComposer
-                :case-record="caseRecord"
-                :sending="sending"
-                :is-closed="isClosed"
-                :disabled="isClosed"
-                @send="onSendMessage"
-                @reopen="reopenCase"
-              />
-            </template>
-
-            <template v-else-if="activeTab === 'activity'">
-              <CaseTimelineFeed
-                :activities="tabActivities"
-                :case-record="caseRecord"
-                :empty-title="t('cases.recordEmptyActivityTitle')"
-                :empty-message="t('cases.recordEmptyActivityMessage')"
-              />
-            </template>
-
-            <template v-else-if="activeTab === 'notes'">
-              <CaseTimelineFeed
-                :activities="tabActivities"
-                :case-record="caseRecord"
-                :empty-title="t('cases.recordEmptyNotesTitle')"
-                :empty-message="t('cases.recordEmptyNotesMessage')"
-              />
-              <CaseReplyComposer
-                :case-record="caseRecord"
-                :sending="sending"
-                :is-closed="isClosed"
-                :disabled="isClosed"
-                :show-internal-toggle="false"
-                :placeholder="t('cases.recordNotesPlaceholder')"
-                @send="onSendNote"
-                @reopen="reopenCase"
-              />
-            </template>
-
-            <CaseTasksTab
-              v-else-if="activeTab === 'tasks'"
-              :case-id="effectiveCaseId"
-              :can-edit="canEdit"
-              @open-record="openRelatedRecord"
-              @link-task="openLinkTaskDrawer"
-            />
-          </div>
+      <template v-if="caseRecord && !embed" #left>
+        <div class="case-record-left flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+          <CaseRecordMainWorkspace
+            :case-record="caseRecord"
+            :case-id="effectiveCaseId"
+            v-model:active-tab="activeTab"
+            :main-tabs="mainTabs"
+            :tab-activities="tabActivities"
+            :allowed-status-transitions="allowedStatusTransitions"
+            :priorities="priorities"
+            :status-updating="statusUpdating"
+            :is-closed="isClosed"
+            :sending="sending"
+            :can-edit="canEdit"
+            :can-delete="canDelete"
+            :can-email="!!contactEmail"
+            :empty-conversation-title="t('cases.recordEmptyConversationTitle')"
+            :empty-conversation-message="t('cases.recordEmptyConversationMessage')"
+            :empty-activity-title="t('cases.recordEmptyActivityTitle')"
+            :empty-activity-message="t('cases.recordEmptyActivityMessage')"
+            :empty-notes-title="t('cases.recordEmptyNotesTitle')"
+            :empty-notes-message="t('cases.recordEmptyNotesMessage')"
+            :notes-placeholder="t('cases.recordNotesPlaceholder')"
+            @status-change="onStatusSelect"
+            @priority-change="updatePriority"
+            @edit-record="openEditDrawer"
+            @email="openEmailCompose"
+            @delete="showDeleteModal = true"
+            @copy-url="copyUrl"
+            @reopen="handleReopenCase"
+            @send-message="onSendMessage"
+            @send-note="onSendNote"
+            @open-record="openRelatedRecord"
+            @link-task="openLinkTaskDrawer"
+          />
+        </div>
       </template>
 
-      <template v-if="caseRecord" #right>
+      <template v-if="caseRecord && !embed" #right>
           <RecordRightPane
             ref="rightPaneRef"
             :tabs="rightPaneTabs"
@@ -198,25 +331,80 @@
       @close="showDeleteModal = false"
       @confirm="confirmDelete"
     />
+
+    <CaseResolutionDialog
+      :show="showResolutionDialog"
+      v-model="resolutionSummaryInput"
+      :pending-status="pendingStatus || ''"
+      :submitting="resolving"
+      @close="closeResolutionDialog"
+      @confirm="confirmResolution"
+    />
+
+    <Teleport to="body">
+      <div
+        v-if="showReopenDialog"
+        class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/55 backdrop-blur-[1px] px-4 py-6"
+        @click.self="closeReopenDialog"
+      >
+        <div class="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+            {{ t('cases.recordReopenDialogTitle') }}
+          </h3>
+          <p class="mt-1.5 text-sm text-gray-600 dark:text-gray-300">
+            {{ t('cases.recordReopenDialogDescription') }}
+          </p>
+          <label class="mt-5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            {{ t('cases.recordReopenDialogLabel') }}
+            <textarea
+              v-model="reopenReasonInput"
+              rows="5"
+              class="mt-2 block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+            />
+          </label>
+          <div class="mt-5 flex justify-end gap-2.5">
+            <button
+              type="button"
+              class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
+              @click="closeReopenDialog"
+            >
+              {{ t('cases.recordReopenDialogCancel') }}
+            </button>
+            <button
+              type="button"
+              class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+              :disabled="reopening"
+              @click="confirmReopenCase"
+            >
+              {{ t('cases.recordReopenDialogConfirm') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, inject, provide, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import {
   DocumentTextIcon,
   LinkIcon,
   UserIcon,
-  BookOpenIcon
+  BookOpenIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ArrowTopRightOnSquareIcon,
+  PencilSquareIcon,
+  Squares2X2Icon
 } from '@heroicons/vue/24/outline';
 import RecordPageShell from '@/components/record-page/RecordPageShell.vue';
 import RecordRightPane from '@/components/record-page/RecordRightPane.vue';
+import RecordClosedBanner from '@/components/record-page/RecordClosedBanner.vue';
 import CaseRecordHeader from '@/components/cases/CaseRecordHeader.vue';
-import CaseTimelineFeed from '@/components/cases/CaseTimelineFeed.vue';
-import CaseReplyComposer from '@/components/cases/CaseReplyComposer.vue';
-import CaseTasksTab from '@/components/cases/CaseTasksTab.vue';
+import CaseRecordMainWorkspace from '@/components/cases/CaseRecordMainWorkspace.vue';
 import CaseDetailsPanel from '@/components/cases/CaseDetailsPanel.vue';
 import CaseContactProfilePanel from '@/components/cases/CaseContactProfilePanel.vue';
 import CaseKnowledgePanel from '@/components/cases/CaseKnowledgePanel.vue';
@@ -225,7 +413,12 @@ import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import EmailComposeDrawer from '@/components/communications/EmailComposeDrawer.vue';
 import LinkRecordsDrawer from '@/components/common/LinkRecordsDrawer.vue';
 import DeleteConfirmationModal from '@/components/common/DeleteConfirmationModal.vue';
+import CaseResolutionDialog from '@/components/cases/CaseResolutionDialog.vue';
 import { useCaseRecord } from '@/composables/useCaseRecord';
+import {
+  useCaseStatusResolution,
+  CASE_STATUS_RESOLUTION_KEY
+} from '@/composables/useCaseStatusResolution';
 import { useNotifications } from '@/composables/useNotifications';
 import { useTabs } from '@/composables/useTabs';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -241,6 +434,7 @@ const props = defineProps({
 const emit = defineEmits(['close']);
 
 const { t } = useI18n();
+const caseModuleLabel = computed(() => t('navigation.moduleCases'));
 const route = useRoute();
 const router = useRouter();
 const notifications = useNotifications();
@@ -248,6 +442,20 @@ const { openTab, replaceActiveTab } = useTabs();
 const authStore = useAuthStore();
 
 const rightPaneRef = ref(null);
+const quickPreviewNav = inject('quickPreviewNav', null);
+
+/** List preview: conversation in #tab-summary slot, not teleported from RecordPageLayout. */
+if (props.embed) {
+  provide('recordLayoutIsMobile', ref(false));
+}
+
+const recordLayoutProps = computed(() => ({
+  forceMobile: props.embed,
+  leftExpanded: false,
+  class: props.embed
+    ? '!relative !inset-auto flex h-full w-full min-h-0 flex-col overflow-hidden'
+    : ''
+}));
 
 const effectiveCaseId = computed(() => {
   if (props.embed && props.caseId) return props.caseId;
@@ -273,12 +481,27 @@ const {
   deleteCase
 } = useCaseRecord(effectiveCaseId);
 
+const {
+  showResolutionDialog,
+  resolutionSummaryInput,
+  pendingStatus,
+  resolving,
+  changeStatus: changeCaseStatus,
+  confirmResolution,
+  closeResolutionDialog
+} = useCaseStatusResolution({ caseRecord, updateStatus, notifications, t });
+
+provide(CASE_STATUS_RESOLUTION_KEY, { changeStatus: changeCaseStatus });
+
 const activeTab = ref('conversation');
 const showEditDrawer = ref(false);
 const showEmailModal = ref(false);
 const showLinkDrawer = ref(false);
 const showDeleteModal = ref(false);
 const deleting = ref(false);
+const showReopenDialog = ref(false);
+const reopenReasonInput = ref('');
+const reopening = ref(false);
 
 const canEdit = computed(() => authStore.can('cases', 'edit'));
 const canEditPeople = computed(() => authStore.can('people', 'edit'));
@@ -301,6 +524,11 @@ const rightPaneTabs = computed(() => [
   { id: 'contact', name: t('cases.recordTabContact'), icon: UserIcon },
   { id: 'related', name: t('records.relatedTitle'), icon: LinkIcon },
   { id: 'knowledge', name: t('cases.recordRailKnowledge'), icon: BookOpenIcon }
+]);
+
+const embedPreviewTabs = computed(() => [
+  { id: 'summary', name: t('records.tabSummary'), icon: Squares2X2Icon },
+  ...rightPaneTabs.value
 ]);
 
 const tabActivities = computed(() =>
@@ -338,17 +566,7 @@ async function handleEmailSubmit(payload) {
 }
 
 async function onStatusSelect(status) {
-  if (!status || status === caseRecord.value?.status) return;
-  const extra = {};
-  if (status === 'Resolved' || status === 'Closed') {
-    const existing = caseRecord.value?.resolutionSummary;
-    if (!String(existing || '').trim()) {
-      const summary = window.prompt(t('cases.recordResolutionPrompt'));
-      if (!String(summary || '').trim()) return;
-      extra.resolutionSummary = String(summary).trim();
-    }
-  }
-  await updateStatus(status, extra);
+  await changeCaseStatus(status);
 }
 
 async function onSendMessage(payload) {
@@ -366,6 +584,31 @@ async function onSendNote(payload) {
     internal: true,
     activityType: 'comment'
   });
+}
+
+async function handleReopenCase() {
+  reopenReasonInput.value = '';
+  showReopenDialog.value = true;
+}
+
+function closeReopenDialog() {
+  if (reopening.value) return;
+  showReopenDialog.value = false;
+}
+
+async function confirmReopenCase() {
+  const reason = String(reopenReasonInput.value || '').trim();
+  if (!reason) {
+    notifications.warning(t('cases.recordReopenReasonRequired'));
+    return;
+  }
+  reopening.value = true;
+  try {
+    await reopenCase(reason);
+    showReopenDialog.value = false;
+  } finally {
+    reopening.value = false;
+  }
 }
 
 function openEditDrawer() {
@@ -443,6 +686,16 @@ function copyUrl() {
   notifications.success(t('records.useRecordHeaderActionsToastUrlCopiedToClipboard'));
 }
 
+function handleEmbedClose() {
+  if (props.embed) emit('close');
+}
+
+function openCaseInNewTab() {
+  const id = effectiveCaseId.value;
+  if (!id) return;
+  openTab(`/helpdesk/cases/${id}`, { background: false, insertAdjacent: true });
+}
+
 async function confirmDelete() {
   deleting.value = true;
   const ok = await deleteCase();
@@ -467,7 +720,79 @@ async function confirmDelete() {
   padding-right: 0;
 }
 
-.case-record-left {
-  min-height: calc(100vh - 10rem);
+/* Full page: left column is a flex shell; timeline scrolls inside CaseRecordMainWorkspace. */
+.case-record-page-root:not(:has(.case-record-embed)) :deep(.record-page-layout__left) {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 0%;
+  overflow: hidden;
+  padding-bottom: 0;
+}
+
+.case-record-page-root:not(:has(.case-record-embed)) :deep(.record-page-layout__left-content) {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.case-record-page-root:not(:has(.case-record-embed)) .case-record-left {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.case-record-page-root:has(.case-record-left--embed) :deep(.record-page-layout) {
+  position: relative;
+  inset: auto;
+  height: 100%;
+  width: 100%;
+}
+
+.case-record-page-root:has(.case-record-left--embed) :deep(.record-page-layout__header--positioned) {
+  position: relative;
+  top: auto;
+  left: auto;
+  right: auto;
+}
+
+.case-record-page-root:has(.case-record-left--embed) :deep(.record-page-layout__body--with-header),
+.case-record-page-root:has(.case-record-left--embed) :deep(.record-page-layout__body--positioned) {
+  padding-top: 0;
+  margin-left: 0;
+  margin-top: 0;
+  width: 100%;
+}
+
+.case-record-page-root:has(.case-record-left--embed) :deep(.record-page-layout__left) {
+  padding-top: 0;
+  padding-right: 0;
+}
+
+.case-record-page-root:has(.case-record-left--embed) .case-record-left--embed {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.case-record-page-root:has(.case-record-left--embed) :deep(.record-page-layout__left-content) {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  flex: 1;
+}
+
+.case-record-embed {
+  height: 100%;
+  min-height: 0;
+}
+
+.case-record-embed :deep(.record-right-pane) {
+  height: 100%;
+  min-height: 0;
 }
 </style>
