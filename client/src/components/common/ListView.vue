@@ -808,7 +808,7 @@
             >
               <span class="font-semibold">{{ selectedRows.length }}</span>
               <span class="font-medium">
-                {{ t('common.listRowsSelected', {
+                {{ t('common.listRowsSelected', selectedRows.length, {
                   count: selectedRows.length,
                   singular: title.endsWith('s') ? title.slice(0, -1) : title,
                   plural: title,
@@ -1861,6 +1861,10 @@ const loadSavedColumnSettings = () => {
     if (saved) {
       const parsed = JSON.parse(saved);
       if (parsed && Array.isArray(parsed)) {
+        // Cases: guard against old saved settings that included internal/system keys
+        if (props.moduleKey === 'cases') {
+          return parsed.filter((c) => c && c.key && !String(c.key).includes('.'));
+        }
         return parsed;
       }
     }
@@ -2400,6 +2404,18 @@ const initializeColumns = async () => {
         });
       }
     });
+
+    // Cases: remove nested/internal keys from the available column pool (prevents leaking
+    // e.g. assignmentControl.lockReason into the table when backend exposes it as a field key).
+    if (props.moduleKey === 'cases') {
+      for (const key of Array.from(allAvailableColumnsMap.keys())) {
+        const k = String(key || '');
+        if (!k) continue;
+        if (k.includes('.')) {
+          allAvailableColumnsMap.delete(key);
+        }
+      }
+    }
     // Check if module has registry configuration for default columns
     const { getModuleListConfig, buildDefaultColumns } = await import('@/platform/modules/moduleListRegistry').catch(() => ({ getModuleListConfig: () => null, buildDefaultColumns: () => [] }));
     const moduleListConfig = getModuleListConfig(props.moduleKey);
@@ -2492,8 +2508,8 @@ watch(() => props.columns, async () => {
           // Registry not available, use existing logic
         }
         
-        // For modules with field metadata (like people), check system fields
-        if (props.moduleKey === 'people') {
+        // For modules with field metadata (people, cases), check system fields
+        if (props.moduleKey === 'people' || props.moduleKey === 'cases') {
           try {
             const metadata = getFieldMetadata(col.key);
             // System fields: skip entirely (don't add to visibleColumns)

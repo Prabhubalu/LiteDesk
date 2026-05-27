@@ -1838,6 +1838,37 @@ const handleDelete = async (row) => {
 };
 
 const handleBulkAction = (action, rows) => {
+  if (attrs.onBulkAction) {
+    emit('bulk-action', action, rows);
+    return;
+  }
+
+  // Default bulk actions (when parent doesn't override)
+  if (action === 'bulk-delete') {
+    const ids = Array.isArray(rows)
+      ? rows
+        .map((r) => r?._id || r?.id || r)
+        .filter(Boolean)
+      : [];
+    if (ids.length === 0 || !props.moduleKey) return;
+
+    const isHelpdeskCasesModule =
+      String(props.moduleKey || '').toLowerCase() === 'cases' &&
+      String(props.appKey || '').toUpperCase() === 'HELPDESK';
+    const deleteBase = isHelpdeskCasesModule ? '/helpdesk/cases' : `/${props.moduleKey}`;
+
+    Promise
+      .all(ids.map((id) => apiClient.delete(`${deleteBase}/${id}`)))
+      .then(() => fetchData())
+      .catch((error) => {
+        console.error(`[ModuleList] Failed bulk delete for ${props.moduleKey}:`, error);
+        const errorMessage = error?.response?.data?.message || error?.message || 'Bulk delete failed';
+        alert(errorMessage);
+      });
+    return;
+  }
+
+  // Unknown/unsupported bulk actions must be implemented by parent.
   emit('bulk-action', action, rows);
 };
 

@@ -87,6 +87,11 @@ const CaseSchema = new Schema(
       required: true,
       trim: true
     },
+    description: {
+      type: String,
+      trim: true,
+      default: null
+    },
     caseType: {
       type: String,
       enum: CASE_TYPES,
@@ -106,6 +111,9 @@ const CaseSchema = new Schema(
       default: 'New',
       index: true
     },
+    severity: { type: String, default: null, trim: true },
+    impact: { type: String, default: null, trim: true },
+    tags: { type: [String], default: [] },
     contactId: {
       type: Schema.Types.ObjectId,
       ref: 'People',
@@ -116,12 +124,21 @@ const CaseSchema = new Schema(
       ref: 'Organization',
       default: null
     },
+    requesterEmail: { type: String, trim: true, default: null },
+    requesterPhone: { type: String, trim: true, default: null },
+    preferredLanguage: { type: String, trim: true, default: null },
+    customerTier: { type: String, trim: true, default: null },
+    vipCustomer: { type: Boolean, default: false },
     caseOwnerId: {
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
       index: true
     },
+    team: { type: String, trim: true, default: null },
+    queue: { type: String, trim: true, default: null },
+    escalationLevel: { type: String, trim: true, default: null },
+    watchers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     channel: {
       type: String,
       enum: CASE_CHANNELS,
@@ -133,6 +150,11 @@ const CaseSchema = new Schema(
         ref: 'Item'
       }
     ],
+    serialNumber: { type: String, trim: true, default: null },
+    warrantyStatus: { type: String, trim: true, default: null },
+    amcStatus: { type: String, trim: true, default: null },
+    productVersion: { type: String, trim: true, default: null },
+    environment: { type: String, trim: true, default: null },
     caseNotes: {
       type: String,
       trim: true
@@ -141,6 +163,12 @@ const CaseSchema = new Schema(
       type: String,
       trim: true
     },
+    rootCause: { type: String, trim: true, default: null },
+    resolutionCode: { type: String, trim: true, default: null },
+    resolvedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+    resolvedAt: { type: Date, default: null },
+    closureNotes: { type: String, trim: true, default: null },
+    customerConfirmation: { type: Boolean, default: false },
     currentSlaCycle: {
       type: SlaCycleSchema,
       required: true
@@ -162,6 +190,23 @@ const CaseSchema = new Schema(
       enum: RECORD_SOURCE_VALUES,
       default: DEFAULT_RECORD_SOURCE
     },
+    slaPolicyKey: { type: String, trim: true, default: null },
+    firstResponseDueAt: { type: Date, default: null },
+    resolutionDueAt: { type: Date, default: null },
+    slaStatus: { type: String, trim: true, default: null },
+    slaBreached: { type: Boolean, default: false },
+    businessHoursCalendarId: { type: Schema.Types.ObjectId, ref: 'BusinessHourSet', default: null },
+    reopenCount: { type: Number, default: 0, min: 0 },
+    lastSlaEventAt: { type: Date, default: null },
+    lastCustomerReplyAt: { type: Date, default: null },
+    lastAgentReplyAt: { type: Date, default: null },
+    preferredReplyChannel: { type: String, trim: true, default: null },
+    ccEmails: { type: [String], default: [] },
+    conversationCount: { type: Number, default: 0, min: 0 },
+    mergeParentCaseId: { type: Schema.Types.ObjectId, ref: 'Case', default: null },
+    duplicateFlag: { type: Boolean, default: false },
+    sourceMessageId: { type: String, trim: true, default: null },
+    threadId: { type: String, trim: true, default: null },
     assignmentControl: {
       isLocked: { type: Boolean, default: false },
       lockReason: { type: String, default: null, trim: true },
@@ -171,6 +216,16 @@ const CaseSchema = new Schema(
       manualOverrideAt: { type: Date, default: null },
       previousOwnerId: { type: Schema.Types.ObjectId, ref: 'User', default: null }
     },
+    siteVisitRequired: { type: Boolean, default: false },
+    technicianId: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+    visitDate: { type: Date, default: null },
+    visitStatus: { type: String, trim: true, default: null },
+    replacementRequired: { type: Boolean, default: false },
+    sentiment: { type: String, trim: true, default: null },
+    aiSummary: { type: String, trim: true, default: null },
+    suggestedResolution: { type: String, trim: true, default: null },
+    categoryConfidenceScore: { type: Number, default: null, min: 0, max: 1 },
+    autoClassification: { type: Boolean, default: false },
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: 'User'

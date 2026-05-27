@@ -1,10 +1,10 @@
 {
   "recordsCount": {
-    "message": "{count, plural, one {# record} other {# records}}",
+    "message": "{count} record | {count} records",
     "description": "Record list count with ICU pluralization"
   },
   "itemsSelected": {
-    "message": "{count, plural, one {# item selected} other {# items selected}}",
+    "message": "{count} item selected | {count} items selected",
     "description": "Bulk selection count in list views"
   },
   "welcomeUser": {
@@ -220,7 +220,7 @@
     "description": "Bulk selection clear button tooltip"
   },
   "listRowsSelected": {
-    "message": "{count, plural, one {# {singular} selected} other {# {plural} selected}}",
+    "message": "{count} {singular} selected | {count} {plural} selected",
     "description": "Bulk row selection count in list"
   },
   "listSearchFields": {
@@ -416,7 +416,7 @@
     "description": "All records across pages selected"
   },
   "tableSelectedCount": {
-    "message": "{count, plural, one {# selected} other {# selected}}",
+    "message": "{count} selected",
     "description": "Bulk selection count in data table"
   },
   "tableDeleteSelected": {
@@ -824,7 +824,7 @@
     "description": "Create record from link drawer"
   },
   "linkRecordsSelectedCount": {
-    "message": "{count, plural, one {# selected} other {# selected}}",
+    "message": "{count} selected",
     "description": "Link drawer multi-select count"
   },
   "linkRecordsLink": {

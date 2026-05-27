@@ -1,0 +1,370 @@
+{
+  "casesBoard": {
+    "message": "Board",
+    "description": "Cases kanban view label"
+  },
+  "casesNewCase": {
+    "message": "New case",
+    "description": "Create button label for cases"
+  },
+  "casesAddCase": {
+    "message": "Add case",
+    "description": "Kanban add action label for cases"
+  },
+  "casesLoadingBoard": {
+    "message": "Loading cases…",
+    "description": "Loading label for cases kanban board"
+  },
+  "casesNoCasesInThisStatus": {
+    "message": "No cases in this status",
+    "description": "Empty message for a kanban column with no cases"
+  },
+  "casesToastFailedToUpdateStatus": {
+    "message": "Failed to update case status",
+    "description": "Fallback error toast when case status update fails"
+  },
+  "recordLoading": {
+    "message": "Loading case…",
+    "description": "Case record page loading message"
+  },
+  "recordErrorTitle": {
+    "message": "Unable to load case",
+    "description": "Case record page error title"
+  },
+  "recordTabConversation": {
+    "message": "Conversation",
+    "description": "Case record main tab"
+  },
+  "recordTabDetails": {
+    "message": "Details",
+    "description": "Case record right pane details tab"
+  },
+  "recordTabContact": {
+    "message": "Contact",
+    "description": "Case record right pane contact profile tab"
+  },
+  "recordContactEmpty": {
+    "message": "No contact linked to this case.",
+    "description": "Empty state when case has no contact"
+  },
+  "recordContactOpenProfile": {
+    "message": "Open full profile",
+    "description": "Link to open person record in a new tab"
+  },
+  "recordContactUnnamed": {
+    "message": "Unnamed contact",
+    "description": "Fallback label when contact has no name"
+  },
+  "recordContactLoadFailed": {
+    "message": "Could not load contact profile.",
+    "description": "Error loading linked person for case"
+  },
+  "recordEditClosedHint": {
+    "message": "Closed cases cannot be edited. Reopen the case first.",
+    "description": "Shown when trying to edit a closed case"
+  },
+  "recordKnowledgeTitle": {
+    "message": "Knowledge base",
+    "description": "Knowledge panel title"
+  },
+  "recordKnowledgeSoon": {
+    "message": "Article search and suggested answers from your knowledge base will appear here in a future release.",
+    "description": "Knowledge panel placeholder"
+  },
+  "recordTabTasks": {
+    "message": "Tasks",
+    "description": "Case record tasks tab"
+  },
+  "recordTabActivity": {
+    "message": "Activity logs",
+    "description": "Case record activity tab"
+  },
+  "recordTabNotes": {
+    "message": "Notes",
+    "description": "Case record internal notes tab"
+  },
+  "recordEmptyConversationTitle": {
+    "message": "No messages yet",
+    "description": "Empty conversation feed title"
+  },
+  "recordEmptyConversationMessage": {
+    "message": "Customer and agent messages will appear here.",
+    "description": "Empty conversation feed description"
+  },
+  "recordEmptyActivityTitle": {
+    "message": "No activity yet",
+    "description": "Empty activity log title"
+  },
+  "recordEmptyActivityMessage": {
+    "message": "Status changes, assignments, and SLA events are logged here.",
+    "description": "Empty activity log description"
+  },
+  "recordEmptyNotesTitle": {
+    "message": "No internal notes",
+    "description": "Empty notes tab title"
+  },
+  "recordEmptyNotesMessage": {
+    "message": "Add a private note visible only to your team.",
+    "description": "Empty notes tab description"
+  },
+  "recordComposerVia": {
+    "message": "Via",
+    "description": "Reply composer channel label"
+  },
+  "recordComposerFrom": {
+    "message": "From",
+    "description": "Reply composer sender label"
+  },
+  "recordComposerPlaceholder": {
+    "message": "Reply to customer or type an internal note…",
+    "description": "Reply composer placeholder"
+  },
+  "recordNotesPlaceholder": {
+    "message": "Add an internal note…",
+    "description": "Notes tab composer placeholder"
+  },
+  "recordInternalNote": {
+    "message": "Internal note",
+    "description": "Toggle to mark reply as internal"
+  },
+  "recordInternal": {
+    "message": "Internal",
+    "description": "Badge on internal messages"
+  },
+  "recordSend": {
+    "message": "Send",
+    "description": "Send reply button"
+  },
+  "recordReopen": {
+    "message": "Reopen case",
+    "description": "Reopen closed case button"
+  },
+  "recordSupport": {
+    "message": "Support",
+    "description": "Default agent display name"
+  },
+  "recordViaChannel": {
+    "message": "Via {channel}",
+    "description": "Channel label on timeline message"
+  },
+  "recordMacrosSoon": {
+    "message": "Macros (soon)",
+    "description": "Macros placeholder in composer"
+  },
+  "recordResolutionPrompt": {
+    "message": "Resolution summary (required to resolve or close):",
+    "description": "Prompt when resolving without summary"
+  },
+  "recordSlaResponse": {
+    "message": "First response",
+    "description": "SLA response metric label"
+  },
+  "recordSlaResolution": {
+    "message": "Resolution",
+    "description": "SLA resolution metric label"
+  },
+  "recordSlaDue": {
+    "message": "{metric} in {time}",
+    "description": "SLA due in future"
+  },
+  "recordSlaBreached": {
+    "message": "{metric} breached {time} ago",
+    "description": "SLA breached"
+  },
+  "recordSlaPaused": {
+    "message": "SLA paused",
+    "description": "SLA paused badge"
+  },
+  "recordEventCreated": {
+    "message": "Case created",
+    "description": "Timeline system event"
+  },
+  "recordEventReopened": {
+    "message": "Case reopened",
+    "description": "Timeline system event"
+  },
+  "recordEventStatus": {
+    "message": "Status: {from} → {to}",
+    "description": "Timeline status change"
+  },
+  "recordEventAssignment": {
+    "message": "Assignment updated",
+    "description": "Timeline assignment event"
+  },
+  "recordEventSla": {
+    "message": "SLA updated",
+    "description": "Timeline SLA event"
+  },
+  "recordSideConversations": {
+    "message": "Side conversations",
+    "description": "Side panel title"
+  },
+  "recordSideThread": {
+    "message": "Thread",
+    "description": "Side panel thread tab"
+  },
+  "recordSideEmail": {
+    "message": "Email",
+    "description": "Side panel email tab"
+  },
+  "recordSideChild": {
+    "message": "Child tickets",
+    "description": "Side panel child cases tab"
+  },
+  "recordSideSearch": {
+    "message": "Search…",
+    "description": "Side panel search placeholder"
+  },
+  "recordSideNew": {
+    "message": "New side conversation",
+    "description": "Side panel new button"
+  },
+  "recordSideComingSoon": {
+    "message": "Email threads and child cases will be available in a future release.",
+    "description": "Side panel placeholder"
+  },
+  "recordSideNoParticipants": {
+    "message": "No participants linked yet.",
+    "description": "Empty side panel participants"
+  },
+  "recordRoleOwner": {
+    "message": "Case owner",
+    "description": "Participant role"
+  },
+  "recordRoleCustomer": {
+    "message": "Customer",
+    "description": "Participant role"
+  },
+  "recordUtilityRail": {
+    "message": "Case tools",
+    "description": "Utility rail aria label"
+  },
+  "recordRailKnowledge": {
+    "message": "Knowledge base",
+    "description": "Utility rail knowledge"
+  },
+  "recordRailIntegrations": {
+    "message": "Integrations",
+    "description": "Utility rail integrations"
+  },
+  "recordRailProfile": {
+    "message": "Customer profile",
+    "description": "Utility rail profile"
+  },
+  "recordRailConversation": {
+    "message": "Conversation",
+    "description": "Utility rail conversation"
+  },
+  "recordTasksSoon": {
+    "message": "Tasks coming soon",
+    "description": "Tasks tab placeholder title"
+  },
+  "recordTasksSoonDetail": {
+    "message": "Link follow-up tasks to this case from the task module.",
+    "description": "Tasks tab placeholder detail"
+  },
+  "recordHeaderAssignedTo": {
+    "message": "Assigned to",
+    "description": "Case header assignee label"
+  },
+  "recordHeaderStatus": {
+    "message": "Status",
+    "description": "Case header status select label"
+  },
+  "recordHeaderPriority": {
+    "message": "Priority",
+    "description": "Case header priority select label"
+  },
+  "recordSlaAlertPaused": {
+    "message": "SLA paused",
+    "description": "Compact SLA alert when on hold"
+  },
+  "recordSlaAlertOutsideHours": {
+    "message": "Outside business hours",
+    "description": "Compact SLA alert when clock stopped"
+  },
+  "recordHeaderEmail": {
+    "message": "Send email",
+    "description": "Case header email action"
+  },
+  "recordNoContactEmail": {
+    "message": "Add a contact with an email address to send email from this case.",
+    "description": "Error when composing email without contact"
+  },
+  "recordDetailsTitle": {
+    "message": "Case details",
+    "description": "Details drawer title"
+  },
+  "recordDetailsDescription": {
+    "message": "Description",
+    "description": "Details field label"
+  },
+  "recordDetailsInternalNotes": {
+    "message": "Internal notes",
+    "description": "Details field label"
+  },
+  "recordDetailsResolution": {
+    "message": "Resolution",
+    "description": "Details field label"
+  },
+  "recordDetailsLinks": {
+    "message": "Linked records",
+    "description": "Details section"
+  },
+  "recordDetailsNoLinks": {
+    "message": "No contact or organization linked.",
+    "description": "Empty links in details"
+  },
+  "recordDetailsOwner": {
+    "message": "Owner",
+    "description": "Owner field in details"
+  },
+  "recordDetailsUnassigned": {
+    "message": "Unassigned",
+    "description": "Unassigned owner option"
+  },
+  "recordDetailsRelated": {
+    "message": "Related records",
+    "description": "Related records in details"
+  },
+  "recordTasksEmpty": {
+    "message": "No tasks linked to this case",
+    "description": "Empty tasks tab"
+  },
+  "recordTasksLink": {
+    "message": "Link task",
+    "description": "Link task button"
+  },
+  "recordLinkSuccess": {
+    "message": "Records linked",
+    "description": "Toast after linking"
+  },
+  "recordSideComposeEmail": {
+    "message": "Compose email",
+    "description": "Side panel compose"
+  },
+  "recordSideNoSubject": {
+    "message": "(No subject)",
+    "description": "Empty email subject"
+  },
+  "recordSideNoEmails": {
+    "message": "No email threads on this case yet.",
+    "description": "Empty email list in side panel"
+  },
+  "recordSideChildHint": {
+    "message": "Related records linked to this case:",
+    "description": "Child tab hint"
+  },
+  "recordRoleOrganization": {
+    "message": "Organization",
+    "description": "Participant role"
+  },
+  "recordRailEmail": {
+    "message": "Email",
+    "description": "Utility rail email"
+  },
+  "recordRailDetails": {
+    "message": "Details",
+    "description": "Utility rail details"
+  }
+}

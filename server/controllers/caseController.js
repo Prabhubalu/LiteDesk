@@ -146,15 +146,44 @@ function isAllowedEnumValue(value, allowed) {
 
 const MUTABLE_CASE_FIELDS = new Set([
   'title',
+  'description',
   'caseType',
   'priority',
+  'severity',
+  'impact',
+  'tags',
   'contactId',
   'organizationRefId',
+  'requesterEmail',
+  'requesterPhone',
+  'preferredLanguage',
+  'customerTier',
+  'vipCustomer',
   'caseOwnerId',
+  'team',
+  'queue',
+  'escalationLevel',
+  'watchers',
   'channel',
   'relatedItemIds',
+  'serialNumber',
+  'warrantyStatus',
+  'amcStatus',
+  'productVersion',
+  'environment',
   'caseNotes',
-  'resolutionSummary'
+  'resolutionSummary',
+  'rootCause',
+  'resolutionCode',
+  'closureNotes',
+  'customerConfirmation',
+  'preferredReplyChannel',
+  'ccEmails',
+  'siteVisitRequired',
+  'technicianId',
+  'visitDate',
+  'visitStatus',
+  'replacementRequired'
 ]);
 
 /** Reserved incoming keys to skip when merging `incoming` onto the document (extend if needed). */
@@ -185,16 +214,45 @@ exports.createCase = async (req, res) => {
     normalizeCaseRequestBody(req.body);
     const {
       title,
+      description,
       caseType,
       priority,
       status,
+      severity,
+      impact,
+      tags,
       contactId,
       organizationRefId,
+      requesterEmail,
+      requesterPhone,
+      preferredLanguage,
+      customerTier,
+      vipCustomer,
       caseOwnerId,
       channel,
       relatedItemIds,
+      serialNumber,
+      warrantyStatus,
+      amcStatus,
+      productVersion,
+      environment,
       caseNotes,
-      resolutionSummary
+      resolutionSummary,
+      rootCause,
+      resolutionCode,
+      closureNotes,
+      customerConfirmation,
+      preferredReplyChannel,
+      ccEmails,
+      team,
+      queue,
+      escalationLevel,
+      watchers,
+      siteVisitRequired,
+      technicianId,
+      visitDate,
+      visitStatus,
+      replacementRequired
     } = req.body || {};
 
     const resolvedChannel = channel || 'Internal';
@@ -227,10 +285,21 @@ exports.createCase = async (req, res) => {
     if (!notesValidation.valid) {
       return res.status(400).json({ success: false, message: notesValidation.error });
     }
+    const descValidation = normalizeOptionalText(description, 20000);
+    if (!descValidation.valid) {
+      return res.status(400).json({ success: false, message: descValidation.error });
+    }
     const resolutionValidation = normalizeOptionalText(resolutionSummary, 4000);
     if (!resolutionValidation.valid) {
       return res.status(400).json({ success: false, message: resolutionValidation.error });
     }
+
+    const tagsNormalized = Array.isArray(tags)
+      ? [...new Set(tags.map((t) => String(t || '').trim()).filter(Boolean))].slice(0, 50)
+      : [];
+    const ccNormalized = Array.isArray(ccEmails)
+      ? [...new Set(ccEmails.map((t) => String(t || '').trim()).filter(Boolean))].slice(0, 50)
+      : [];
 
     const ownerId = caseOwnerId || req.user._id;
     const ownerExists = await ensureOwnerInOrg(ownerId, req.user.organizationId);
@@ -274,16 +343,45 @@ exports.createCase = async (req, res) => {
       organizationId: req.user.organizationId,
       caseId,
       title: String(title).trim(),
+      description: descValidation.value,
       caseType: resolvedCaseType,
       priority: resolvedPriority,
       status: normalizedStatus,
+      severity: severity ? String(severity).trim() : null,
+      impact: impact ? String(impact).trim() : null,
+      tags: tagsNormalized,
       contactId: contactId || null,
       organizationRefId: organizationRefId || null,
+      requesterEmail: requesterEmail ? String(requesterEmail).trim() : null,
+      requesterPhone: requesterPhone ? String(requesterPhone).trim() : null,
+      preferredLanguage: preferredLanguage ? String(preferredLanguage).trim() : null,
+      customerTier: customerTier ? String(customerTier).trim() : null,
+      vipCustomer: Boolean(vipCustomer),
       caseOwnerId: ownerId,
+      team: team ? String(team).trim() : null,
+      queue: queue ? String(queue).trim() : null,
+      escalationLevel: escalationLevel ? String(escalationLevel).trim() : null,
+      watchers: Array.isArray(watchers) ? watchers.filter((id) => mongoose.Types.ObjectId.isValid(id)) : [],
       channel: resolvedChannel,
       relatedItemIds: relatedItemsValidation.ids,
+      serialNumber: serialNumber ? String(serialNumber).trim() : null,
+      warrantyStatus: warrantyStatus ? String(warrantyStatus).trim() : null,
+      amcStatus: amcStatus ? String(amcStatus).trim() : null,
+      productVersion: productVersion ? String(productVersion).trim() : null,
+      environment: environment ? String(environment).trim() : null,
       caseNotes: notesValidation.value,
       resolutionSummary: resolutionValidation.value,
+      rootCause: rootCause ? String(rootCause).trim() : null,
+      resolutionCode: resolutionCode ? String(resolutionCode).trim() : null,
+      closureNotes: closureNotes ? String(closureNotes).trim() : null,
+      customerConfirmation: Boolean(customerConfirmation),
+      preferredReplyChannel: preferredReplyChannel ? String(preferredReplyChannel).trim() : null,
+      ccEmails: ccNormalized,
+      siteVisitRequired: Boolean(siteVisitRequired),
+      technicianId: mongoose.Types.ObjectId.isValid(technicianId) ? technicianId : null,
+      visitDate: visitDate ? new Date(visitDate) : null,
+      visitStatus: visitStatus ? String(visitStatus).trim() : null,
+      replacementRequired: Boolean(replacementRequired),
       currentSlaCycle: targetAwareCycle,
       activities: [
         {
@@ -466,6 +564,13 @@ exports.updateCase = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Case not found' });
     }
 
+    if (row.status === 'Closed') {
+      return res.status(403).json({
+        success: false,
+        message: 'Closed cases cannot be edited. Reopen the case to make changes.'
+      });
+    }
+
     const previousSnapshot = row.toObject ? row.toObject() : { ...row };
 
     const incomingRaw = { ...req.body };
@@ -532,12 +637,41 @@ exports.updateCase = async (req, res) => {
       }
       incoming.caseNotes = notesValidation.value;
     }
+    if (Object.prototype.hasOwnProperty.call(incoming, 'description')) {
+      const descValidation = normalizeOptionalText(incoming.description, 20000);
+      if (!descValidation.valid) {
+        return res.status(400).json({ success: false, message: descValidation.error });
+      }
+      incoming.description = descValidation.value;
+    }
     if (Object.prototype.hasOwnProperty.call(incoming, 'resolutionSummary')) {
       const resolutionValidation = normalizeOptionalText(incoming.resolutionSummary, 4000);
       if (!resolutionValidation.valid) {
         return res.status(400).json({ success: false, message: resolutionValidation.error });
       }
       incoming.resolutionSummary = resolutionValidation.value;
+    }
+    if (Object.prototype.hasOwnProperty.call(incoming, 'closureNotes')) {
+      const closureValidation = normalizeOptionalText(incoming.closureNotes, 8000);
+      if (!closureValidation.valid) {
+        return res.status(400).json({ success: false, message: closureValidation.error });
+      }
+      incoming.closureNotes = closureValidation.value;
+    }
+    if (Object.prototype.hasOwnProperty.call(incoming, 'tags')) {
+      incoming.tags = Array.isArray(incoming.tags)
+        ? [...new Set(incoming.tags.map((t) => String(t || '').trim()).filter(Boolean))].slice(0, 50)
+        : [];
+    }
+    if (Object.prototype.hasOwnProperty.call(incoming, 'ccEmails')) {
+      incoming.ccEmails = Array.isArray(incoming.ccEmails)
+        ? [...new Set(incoming.ccEmails.map((t) => String(t || '').trim()).filter(Boolean))].slice(0, 50)
+        : [];
+    }
+    if (Object.prototype.hasOwnProperty.call(incoming, 'watchers')) {
+      incoming.watchers = Array.isArray(incoming.watchers)
+        ? incoming.watchers.filter((id) => mongoose.Types.ObjectId.isValid(id))
+        : [];
     }
 
     if (incoming.caseOwnerId && String(incoming.caseOwnerId) !== String(row.caseOwnerId)) {

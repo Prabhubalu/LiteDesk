@@ -1281,23 +1281,24 @@ exports.getSurface = async (req, res) => {
       // Deal model might not exist - skip
     }
     
-    // Check HELPDESK app participation (Tickets/Cases)
+    // Check HELPDESK app participation (Cases)
     try {
-      const Ticket = require('../models/Ticket');
-      const ticketCount = await Ticket.countDocuments({ 
-        organizationId: org._id,
-        tenantOrganizationId: tenantOrganizationId 
+      const Case = require('../models/Case');
+      const caseCount = await Case.countDocuments({
+        organizationRefId: org._id,
+        organizationId: tenantOrganizationId,
+        deletedAt: null
       });
-      
-      if (ticketCount > 0) {
+
+      if (caseCount > 0) {
         apps.push({
           appKey: 'HELPDESK',
           hasWork: true,
-          counts: { tickets: ticketCount }
+          counts: { cases: caseCount }
         });
       }
     } catch (err) {
-      // Ticket model might not exist - skip
+      // Case model might not exist - skip
     }
     
     // Check AUDIT app participation (Audits)

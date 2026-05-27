@@ -124,7 +124,10 @@ import {
   ChatBubbleLeftRightIcon,
   LinkIcon,
   PuzzlePieceIcon,
-  Squares2X2Icon
+  Squares2X2Icon,
+  BookOpenIcon,
+  EnvelopeIcon,
+  UserGroupIcon
 } from '@heroicons/vue/24/outline';
 
 const { t } = useI18n();
@@ -349,7 +352,11 @@ const getTabIcon = (tabId) => {
     'comments': ChatBubbleLeftRightIcon,
     'timeline': ClockIcon,
     'related': LinkIcon,
-    'integrations': PuzzlePieceIcon
+    'integrations': PuzzlePieceIcon,
+    'knowledge': BookOpenIcon,
+    'email': EnvelopeIcon,
+    'participants': UserGroupIcon,
+    'details': DocumentTextIcon
   };
   return iconMap[tabId] || RectangleStackIcon;
 };
