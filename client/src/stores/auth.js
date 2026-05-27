@@ -17,7 +17,15 @@ export const useAuthStore = defineStore('auth', {
         error: null,
     }),
     getters: {
-        isAuthenticated: (state) => !!state.user,
+        isAuthenticated: (state) => {
+            const token = state.user?.token;
+            return Boolean(
+                state.user
+                && token
+                && token !== 'undefined'
+                && token !== 'null'
+            );
+        },
         isOwner: (state) => state.user?.isOwner || false,
         userRole: (state) => state.user?.role || null,
         isAdminLike: (state) => {

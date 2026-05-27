@@ -23,7 +23,7 @@ export const MAILROOM_INGEST_ACTIONS = [
   'ignore'
 ];
 
-export const MAILROOM_INGEST_FIELDS = ['to', 'cc', 'bcc', 'from', 'from_domain', 'subject', 'mailbox_kind'];
+export const MAILROOM_INGEST_FIELDS = ['to', 'cc', 'bcc', 'from', 'from_domain', 'subject', 'mailbox_kind', 'channel'];
 export const MAILROOM_INGEST_OPERATORS = ['contains', 'equals', 'ends_with', 'in'];
 
 export const MAILROOM_DEDUP_BEHAVIOR_LABEL_KEYS = {
@@ -56,7 +56,8 @@ export const MAILROOM_INGEST_FIELD_LABEL_KEYS = {
   from: 'settings.mailroomIngestFieldFrom',
   from_domain: 'settings.mailroomIngestFieldFromDomain',
   subject: 'settings.mailroomIngestFieldSubject',
-  mailbox_kind: 'settings.mailroomIngestFieldMailboxKind'
+  mailbox_kind: 'settings.mailroomIngestFieldMailboxKind',
+  channel: 'settings.mailroomIngestFieldChannel'
 };
 
 export const MAILROOM_INGEST_OPERATOR_LABEL_KEYS = {

@@ -1,4 +1,6 @@
 const mailroomConfigService = require('../services/mailroomConfigService');
+const Organization = require('../models/Organization');
+const crypto = require('crypto');
 const { buildNormalizedMessage } = require('../platform/mailroom/domain/normalizedMessage');
 const { evaluate, evaluatePipeline } = require('../platform/mailroom/policies/policyEngine');
 const { buildEmailCandidates } = require('../platform/mailroom/services/candidatesService');
@@ -7,6 +9,10 @@ const {
   getConversationWithMessages,
   listThreadingLogs
 } = require('../platform/mailroom/services/conversationPersistenceService');
+const {
+  listAttachmentsForConversation,
+  listAttachmentsForMessage
+} = require('../platform/mailroom/services/mailroomAttachmentQueryService');
 const {
   listProcessingFailures,
   replayRawPayload
@@ -17,10 +23,22 @@ async function getMailroomSettings(req, res) {
   try {
     const config = await mailroomConfigService.getOrCreateConfig(req.user.organizationId);
     const templates = mailroomConfigService.listTemplates();
+    let chatEmbed = null;
+    try {
+      const org = await Organization.findById(req.user.organizationId)
+        .select('embed.chat')
+        .lean();
+      chatEmbed = {
+        enabled: org?.embed?.chat?.enabled === true,
+        publicKey: org?.embed?.chat?.publicKey || null
+      };
+    } catch (e) {
+      chatEmbed = null;
+    }
     return res.json({
       success: true,
       data: config,
-      meta: { templates }
+      meta: { templates, chatEmbed }
     });
   } catch (error) {
     console.error('[mailroomSettingsController] getMailroomSettings', error);
@@ -38,6 +56,55 @@ async function updateMailroomSettings(req, res) {
       req.user._id,
       req.body || {}
     );
+
+    // M6: If chat connector is enabled, ensure the tenant has a public embed key.
+    try {
+      const chatEnabled = row?.connectors?.chat?.enabled === true;
+      if (chatEnabled) {
+        const org = await Organization.findById(req.user.organizationId)
+          .select('embed')
+          .lean();
+        const hasKey = Boolean(org?.embed?.chat?.publicKey);
+        if (!hasKey) {
+          const publicKey = `inst_chat_${crypto.randomBytes(16).toString('hex')}`;
+          await Organization.updateOne(
+            { _id: req.user.organizationId },
+            {
+              $set: {
+                'embed.chat.enabled': true,
+                'embed.chat.publicKey': publicKey
+              }
+            }
+          );
+        } else {
+          await Organization.updateOne(
+            { _id: req.user.organizationId },
+            { $set: { 'embed.chat.enabled': true } }
+          );
+        }
+      } else {
+        await Organization.updateOne(
+          { _id: req.user.organizationId },
+          { $set: { 'embed.chat.enabled': false } }
+        );
+      }
+    } catch (embedErr) {
+      console.warn('[mailroomSettingsController] chat embed key sync failed:', embedErr.message);
+    }
+
+    let chatEmbed = null;
+    try {
+      const org = await Organization.findById(req.user.organizationId)
+        .select('embed.chat')
+        .lean();
+      chatEmbed = {
+        enabled: org?.embed?.chat?.enabled === true,
+        publicKey: org?.embed?.chat?.publicKey || null
+      };
+    } catch (_e) {
+      chatEmbed = null;
+    }
+
     return res.json({
       success: true,
       data: {
@@ -48,7 +115,8 @@ async function updateMailroomSettings(req, res) {
         policies: row.policies,
         connectors: row.connectors,
         updatedAt: row.updatedAt
-      }
+      },
+      meta: { chatEmbed }
     });
   } catch (error) {
     const status = error.statusCode || 500;
@@ -166,6 +234,40 @@ async function listMailroomProcessingFailures(req, res) {
   }
 }
 
+async function listMailroomConversationAttachments(req, res) {
+  try {
+    const data = await listAttachmentsForConversation(
+      req.user.organizationId,
+      req.params.conversationId
+    );
+    return res.json({ success: true, data });
+  } catch (error) {
+    const status = error.statusCode || 500;
+    if (status !== 500) {
+      return res.status(status).json({ success: false, message: error.message });
+    }
+    console.error('[mailroomSettingsController] listMailroomConversationAttachments', error);
+    return res.status(500).json({ success: false, message: 'Failed to list attachments' });
+  }
+}
+
+async function listMailroomMessageAttachments(req, res) {
+  try {
+    const data = await listAttachmentsForMessage(
+      req.user.organizationId,
+      req.params.messageId
+    );
+    return res.json({ success: true, data });
+  } catch (error) {
+    const status = error.statusCode || 500;
+    if (status !== 500) {
+      return res.status(status).json({ success: false, message: error.message });
+    }
+    console.error('[mailroomSettingsController] listMailroomMessageAttachments', error);
+    return res.status(500).json({ success: false, message: 'Failed to list attachments' });
+  }
+}
+
 async function replayMailroomProcessingFailure(req, res) {
   try {
     const rawPayloadId = req.params.rawPayloadId;
@@ -194,5 +296,7 @@ module.exports = {
   getMailroomConversation,
   listMailroomThreadingLogs,
   listMailroomProcessingFailures,
+  listMailroomConversationAttachments,
+  listMailroomMessageAttachments,
   replayMailroomProcessingFailure
 };

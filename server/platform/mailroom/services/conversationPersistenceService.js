@@ -168,6 +168,7 @@ async function persistInboundConversationMessage({
     body: normalizedMessage.body || '',
     htmlBody: normalizedMessage.htmlBody || null,
     participants: normalizedMessage.participants || {},
+    attachmentIds: [],
     linkedCaseId: linkedCaseId || caseIdFromThread || null,
     linkedCommunicationId: linkedCommunicationId || null,
     receivedAt,
@@ -176,6 +177,26 @@ async function persistInboundConversationMessage({
       threadingSignal: threadingEvaluation?.signal || null
     }
   });
+
+  // Attachments: resolve + link after message exists (no binaries in Mongo).
+  try {
+    const { resolveAndLinkAttachments } = require('./attachmentService');
+    const ids = await resolveAndLinkAttachments({
+      organizationId,
+      normalizedMessage,
+      conversationId: conversation._id,
+      messageId: message._id
+    });
+    if (ids?.length) {
+      await MailroomMessage.updateOne(
+        { _id: message._id, organizationId },
+        { $set: { attachmentIds: ids } }
+      );
+      message.attachmentIds = ids;
+    }
+  } catch {
+    // Best-effort: don't fail ingestion due to attachment linkage.
+  }
 
   const threadingLog = await MailroomThreadingLog.create({
     organizationId,

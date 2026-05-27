@@ -153,9 +153,22 @@ async function replayRawPayload(organizationId, rawPayloadId) {
         throw err;
       }
     } else {
-      const err = new Error(`Replay not supported for connector: ${payload.connectorType}`);
-      err.statusCode = 422;
-      throw err;
+      if (payload.connectorType === 'public_api' || payload.connectorType === 'portal') {
+        const json = JSON.parse(buffer.toString('utf8'));
+        const { processNormalizedInboundThroughMailroom } = require('../pipeline/genericInboundPipeline');
+        result = await processNormalizedInboundThroughMailroom({
+          organizationId,
+          connectorType: payload.connectorType,
+          source: 'mailroom-replay',
+          jsonPayload: json,
+          message: json?.message || json?.payload?.message || json?.data?.message || null,
+          existingRawPayloadId: rawPayloadId
+        });
+      } else {
+        const err = new Error(`Replay not supported for connector: ${payload.connectorType}`);
+        err.statusCode = 422;
+        throw err;
+      }
     }
 
     return { success: true, result };

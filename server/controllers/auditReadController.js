@@ -24,8 +24,22 @@ const AuditAssignment = require('../models/AuditAssignment');
 const AuditExecutionContext = require('../models/AuditExecutionContext');
 const AuditTimeline = require('../models/AuditTimeline');
 const Event = require('../models/Event');
+const Organization = require('../models/Organization');
 const { resolveAppAccess } = require('../services/accessResolutionService');
 const { resolveAccessFeedback } = require('../utils/executionFeedbackResolver');
+
+/** Organization lives on master DB only — never populate it from tenant-scoped Event queries. */
+async function loadRelatedOrganizationName(relatedToId) {
+    if (!relatedToId) return null;
+    try {
+        const org = await Organization.findById(relatedToId).select('name').lean();
+        if (!org) return null;
+        return { _id: org._id, name: org.name };
+    } catch (err) {
+        console.warn('[auditReadController] Failed to load related organization:', err.message);
+        return null;
+    }
+}
 
 /**
  * Helper: Validate assignment ownership
@@ -203,9 +217,11 @@ exports.getAssignmentDetail = async (req, res) => {
         if (eventObjectId) {
             event = await Event.findById(eventObjectId)
                 .select('_id eventId eventName auditState eventType startDateTime endDateTime relatedToId location geoRequired linkedFormId metadata formAssignment')
-                .populate('relatedToId', 'name')
+                .populate({ path: 'eventOwnerId', select: 'firstName lastName', strictPopulate: false })
                 .lean();
         }
+
+        const relatedOrganization = event ? await loadRelatedOrganizationName(event.relatedToId) : null;
         
         // Fetch execution context if exists
         const executionContext = await AuditExecutionContext.findOne({
@@ -243,10 +259,7 @@ exports.getAssignmentDetail = async (req, res) => {
                     relatedToId: event.relatedToId,
                     location: event.location,
                     geoRequired: event.geoRequired,
-                    relatedOrganization: event.relatedToId ? {
-                        _id: event.relatedToId._id,
-                        name: event.relatedToId.name
-                    } : null
+                    relatedOrganization
                 } : null,
                 executionContext: executionContext ? {
                     executionStatus: executionContext.executionStatus,
@@ -298,7 +311,7 @@ exports.getTimeline = async (req, res) => {
             organizationId: req.user.organizationId
         })
         .sort({ createdAt: 1 }) // ASC - chronological
-        .populate('actorId', 'firstName lastName email')
+        .populate({ path: 'actorId', select: 'firstName lastName email', strictPopulate: false })
         .lean();
         
         // Format response
@@ -322,7 +335,11 @@ exports.getTimeline = async (req, res) => {
         if (formattedTimeline.length <= 1) {
             const eventDoc = await Event.findById(eventObjectId)
                 .select('auditHistory')
-                .populate('auditHistory.actorUserId', 'firstName lastName email')
+                .populate({
+                    path: 'auditHistory.actorUserId',
+                    select: 'firstName lastName email',
+                    strictPopulate: false
+                })
                 .lean();
 
             const actionFromState = (toState) => {

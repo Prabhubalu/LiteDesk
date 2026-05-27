@@ -87,6 +87,7 @@
 
           <template #tab-summary>
             <CaseRecordMainWorkspace
+              ref="mainWorkspaceRef"
               embed
               :case-record="caseRecord"
               :case-id="effectiveCaseId"
@@ -115,6 +116,8 @@
               @delete="showDeleteModal = true"
               @copy-url="copyUrl"
               @reopen="handleReopenCase"
+              @chat-updated="fetchCase"
+              @typing="onTyping"
               @send-message="onSendMessage"
               @send-note="onSendNote"
               @open-record="openRelatedRecord"
@@ -189,6 +192,7 @@
             @copy-url="copyUrl"
             @previous="goToPrevious"
             @next="goToNext"
+            @typing="onTyping"
           />
           <RecordClosedBanner
             v-if="isClosed"
@@ -202,6 +206,7 @@
       <template v-if="caseRecord && !embed" #left>
         <div class="case-record-left flex h-full min-h-0 flex-1 flex-col overflow-hidden">
           <CaseRecordMainWorkspace
+            ref="mainWorkspaceRef"
             :case-record="caseRecord"
             :case-id="effectiveCaseId"
             v-model:active-tab="activeTab"
@@ -229,6 +234,8 @@
             @delete="showDeleteModal = true"
             @copy-url="copyUrl"
             @reopen="handleReopenCase"
+            @chat-updated="fetchCase"
+            @typing="onTyping"
             @send-message="onSendMessage"
             @send-note="onSendNote"
             @open-record="openRelatedRecord"
@@ -442,6 +449,7 @@ const { openTab, replaceActiveTab } = useTabs();
 const authStore = useAuthStore();
 
 const rightPaneRef = ref(null);
+const mainWorkspaceRef = ref(null);
 const quickPreviewNav = inject('quickPreviewNav', null);
 
 /** List preview: conversation in #tab-summary slot, not teleported from RecordPageLayout. */
@@ -570,11 +578,44 @@ async function onStatusSelect(status) {
 }
 
 async function onSendMessage(payload) {
+  const channel = String(caseRecord.value?.channel || '').toLowerCase();
+  const isLiveChat = channel === 'live chat';
+  if (isLiveChat && !payload.internal) {
+    // For live chat cases, replies go to the chat stream (and are mirrored into the case timeline server-side).
+    const body = String(payload.message || '').trim();
+    if (!body) return;
+    try {
+      const res = await apiClient.post(`/helpdesk/cases/${effectiveCaseId.value}/chat/messages`, { body });
+      if (res?.success && res.data) {
+        mainWorkspaceRef.value?.appendLiveChatMessage?.(res.data);
+      } else {
+        await mainWorkspaceRef.value?.refreshLiveChatMessages?.();
+      }
+      await fetchCase();
+    } catch (err) {
+      const msg = err?.response?.data?.message || err?.message || 'Failed to send message';
+      notifications.error(msg);
+    }
+    return;
+  }
   await postActivity({
     ...payload,
     activityType: payload.internal ? 'comment' : 'agent_message',
     internal: payload.internal
   });
+}
+
+async function onTyping(payload) {
+  const channel = String(caseRecord.value?.channel || '').toLowerCase();
+  const isLiveChat = channel === 'live chat';
+  if (!isLiveChat) return;
+  if (payload?.internal) return;
+  try {
+    await apiClient.post(`/helpdesk/cases/${effectiveCaseId.value}/chat/typing`, {});
+  } catch (_) {
+    // Helpful when debugging SSE/typing behavior (EventSource can't show POST errors).
+    console.warn('[CaseRecordPage] chat typing ping failed');
+  }
 }
 
 async function onSendNote(payload) {

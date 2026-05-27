@@ -4,7 +4,7 @@
 
 **Product placement:** **Settings → Automation → Mailroom** (alongside Assignment Rules, Automation Rules, Processes, Business Flows)
 
-**Last updated:** 2026-05-27 (M0–M4 complete; ingest routing + settings UX shipped)
+**Last updated:** 2026-05-28 (M0–M4 complete; M5 partial; M6 shipped for embed chat → cases)
 
 ---
 
@@ -252,8 +252,8 @@ Work phases in order. Update the progress tracker as exit criteria are met.
 | **M3** — Dedup + case link policies | ✅ Done | `casesAdapter` executes policies; parser path skips legacy helpdesk when Mailroom on; channel-rules migration |
 | **M3.1** — Ingest routing + settings UX | ✅ Done | First-class `ingest` policy; tabbed Settings UI (Overview / Routing / Processing / Monitoring / Developer) |
 | **M4** — Events + dispatcher | ✅ Done | Event publisher, failure tracking, replay UI |
-| **M5** — API + Portal connectors | ❌ Not started | Public ingest API, customer/partner portal path |
-| **M6** — Chat connector | ❌ Not started | Live chat sessions → conversation (Case optional per policy) |
+| **M5** — API + Portal connectors | 🟡 Partial | Public ingest API, portal ingest/reply/attachments, partner/customer audience rules (smoke test pending) |
+| **M6** — Chat connector | ✅ Done | Embeddable widget + public instance key + chat sessions/messages + case integration + SSE + typing indicators |
 | **M7** — Hardening & scale | ❌ Not started | Security (SPF/DKIM/DMARC), malware scan, metrics, search, smoke tests |
 
 ### What works today (operator checklist)
@@ -265,7 +265,7 @@ Work phases in order. Update the progress tracker as exit criteria are met.
 - [x] View threading logs and replay failed processing (Monitoring tab)
 - [x] Migrate legacy Helpdesk channel rules to Mailroom policies
 - [x] Local simulation: `npm run simulate:parser-inbound -- --enable-mailroom`
-- [ ] Portal/chat/API channels through same pipeline
+- [x] Portal and Public API channels through same pipeline (connectors)
 - [ ] Classification rules in UI
 - [ ] Enterprise email security hooks (SPF/DKIM/DMARC)
 - [ ] `smoke:mailroom` E2E script
@@ -404,14 +404,20 @@ Work phases in order. Update the progress tracker as exit criteria are met.
 
 ### Phase M6 — Live chat connector (2–3 weeks, can defer)
 
-**Goal:** Chat sessions as conversations; case creation **policy-driven** (optional vs required on unresolved).
+**Goal:** Support embeddable live chat with tenant routing, realtime updates, and end-to-end case handling.
 
 **Deliverables**
 
-- [ ] Chat connector + session external reference
-- [ ] Policies: `case_required_on_close`, `case_optional`, transcript retention
+- [x] Public **instance key** resolution (Option B: `inst_chat_*` key stored on master `Organization`)
+- [x] Embeddable widget assets: `client/public/embed/chat.js` + `client/public/embed/chat/widget.html`
+- [x] Public embed REST: create session, post/list messages, SSE stream (`/embed/chat/*`)
+- [x] Tenant chat persistence: `ChatSession` + `ChatMessage` (tenant DB)
+- [x] Auto-create + link Helpdesk Case on first inbound chat message (`channel = Live Chat`)
+- [x] Authenticated case chat API: list messages, stream SSE, agent send, typing (`/api/helpdesk/cases/:id/chat/*`)
+- [x] Case record UX: live chat cases show chat thread as the workspace conversation surface; bottom composer routes to chat automatically
+- [x] Typing indicators (visitor ↔ agent), TTL-based (in-memory) for now
 
-**Exit criteria:** Chat works without hardcoding “always create case” or “never create case”.
+**Exit criteria:** Visitor can chat from an embedded widget, agent can handle it inside the Case record in realtime. **Met.**
 
 ---
 

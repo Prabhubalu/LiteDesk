@@ -313,6 +313,7 @@ import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headless
 import { ChevronUpDownIcon, CheckIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
+import { uploadCommunicationAttachment } from '@/utils/communicationAttachments';
 import TaskDescriptionEditor from '@/components/record-page/TaskDescriptionEditor.vue';
 const props = defineProps({
   isOpen: { type: Boolean, default: false },
@@ -522,7 +523,6 @@ const MAX_TOTAL_SIZE = 25 * 1024 * 1024; // 25MB total
 async function handleFileSelect(event) {
   const files = event.target.files;
   if (!files?.length) return;
-  const token = authStore.user?.token;
   let runningTotal = attachments.value.reduce((sum, a) => sum + (a.fileSize || 0), 0);
   for (const file of files) {
     if (file.size > MAX_FILE_SIZE) {
@@ -537,26 +537,15 @@ async function handleFileSelect(event) {
     }
     uploading.value = true;
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const res = await fetch('/api/communications/upload', {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: formData
+      const result = await uploadCommunicationAttachment(file);
+      const size = result.fileSize ?? file.size;
+      attachments.value.push({
+        fileName: result.fileName || file.name,
+        fileType: result.fileType || file.type,
+        fileSize: size,
+        storagePath: result.storagePath
       });
-      const result = await res.json();
-      if (result.success) {
-        const size = result.fileSize ?? file.size;
-        attachments.value.push({
-          fileName: result.fileName || file.name,
-          fileType: result.fileType || file.type,
-          fileSize: size,
-          storagePath: result.storagePath
-        });
-        runningTotal += size;
-      } else {
-        error.value = result.message || result.error || 'Upload failed';
-      }
+      runningTotal += size;
     } catch (err) {
       error.value = err.message || 'Upload failed';
     } finally {

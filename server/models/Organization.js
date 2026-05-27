@@ -190,6 +190,15 @@ const OrganizationSchema = new mongoose.Schema({
             default: '#7f56d9' 
         }
     },
+
+    // Public embed keys (Option B) — safe identifiers for widgets.
+    // Stored on master Organization so public requests can resolve tenant context.
+    embed: {
+        chat: {
+            enabled: { type: Boolean, default: false },
+            publicKey: { type: String, default: null, index: true }
+        }
+    },
     
     // Data Region (read-only if fixed, set during organization creation)
     dataRegion: {

@@ -30,7 +30,8 @@ Conversation-first ingestion for omnichannel communication. **Business behavior 
 - **M3** — `casesAdapter` executes case_link/dedup; Mailroom-enabled email skips legacy helpdesk ingest; channel-rules migration script
 - **M3.1** — **Ingest routing** policy (pre-pipeline); tabbed Settings UI (Overview / Routing / Processing / Monitoring / Developer)
 - **M4** — Event publishing + dispatcher; processing failures + replay from Settings UI
-- **M5+** — Portal/API connectors (M5), live chat (M6), hardening (M7)
+- **M5** — Public ingest API + Portal connector (`/api/public/mailroom`, `/portal/mailroom`); see `docs/MAILROOM_API.md`
+- **M6+** — Live chat (M6), hardening (M7)
 
 ## Settings UI (Automation → Mailroom)
 

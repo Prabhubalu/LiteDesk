@@ -27,6 +27,8 @@
 
 const User = require('../models/User');
 const Organization = require('../models/Organization');
+const mailroomConfigService = require('../services/mailroomConfigService');
+const { getPortalRulesForUser } = require('../platform/mailroom/connectors/portal/portalRules');
 const Event = require('../models/Event');
 const FormResponse = require('../models/FormResponse');
 const CorrectiveActionEvidence = require('../models/CorrectiveActionEvidence');
@@ -67,6 +69,17 @@ exports.getMe = async (req, res) => {
             });
         }
 
+        let portalCapabilities = null;
+        try {
+            const organizationId = user.organizationId?._id || user.organizationId;
+            if (organizationId) {
+                const mailroomConfig = await mailroomConfigService.getOrCreateConfig(organizationId);
+                portalCapabilities = await getPortalRulesForUser(user, mailroomConfig);
+            }
+        } catch (capErr) {
+            console.warn('[portalController] getMe portal capabilities:', capErr.message);
+        }
+
         // Return minimal user profile for Portal
         res.json({
             success: true,
@@ -84,7 +97,18 @@ exports.getMe = async (req, res) => {
                     _id: user.organizationId?._id,
                     name: user.organizationId?.name,
                     industry: user.organizationId?.industry
-                }
+                },
+                portalAudience: portalCapabilities?.audience || 'customer',
+                portalCapabilities: portalCapabilities
+                    ? {
+                        audience: portalCapabilities.audience,
+                        channel: portalCapabilities.channel,
+                        allowCreateCase: portalCapabilities.allowCreateCase,
+                        allowReply: portalCapabilities.allowReply,
+                        maxAttachmentsPerMessage: portalCapabilities.maxAttachmentsPerMessage,
+                        maxAttachmentBytes: portalCapabilities.maxAttachmentBytes
+                    }
+                    : null
             }
         });
     } catch (error) {
@@ -279,7 +303,7 @@ exports.listAudits = async (req, res) => {
         // Fetch events (audits)
         const events = await Event.find(query)
             .select('eventId eventName eventType auditState startDateTime endDateTime eventOwnerId createdAt')
-            .populate('eventOwnerId', 'firstName lastName')
+            .populate({ path: 'eventOwnerId', select: 'firstName lastName', strictPopulate: false })
             .sort({ createdAt: -1 })
             .limit(parseInt(limit))
             .skip(skip)
@@ -345,7 +369,7 @@ exports.getAuditDetail = async (req, res) => {
                 relatedToId: organizationId
             })
             .select('eventId eventName eventType auditState startDateTime endDateTime eventOwnerId createdAt auditHistory')
-            .populate('eventOwnerId', 'firstName lastName')
+            .populate({ path: 'eventOwnerId', select: 'firstName lastName', strictPopulate: false })
             .lean();
         } else {
             event = await Event.findOne({
@@ -353,7 +377,7 @@ exports.getAuditDetail = async (req, res) => {
                 relatedToId: organizationId
             })
             .select('eventId eventName eventType auditState startDateTime endDateTime eventOwnerId createdAt auditHistory')
-            .populate('eventOwnerId', 'firstName lastName')
+            .populate({ path: 'eventOwnerId', select: 'firstName lastName', strictPopulate: false })
             .lean();
         }
         
@@ -369,7 +393,7 @@ exports.getAuditDetail = async (req, res) => {
         const formResponse = await FormResponse.findOne({
             'linkedTo.type': 'Event',
             'linkedTo.id': event._id,
-            organizationId: event.organizationId
+            organizationId
         })
         .select('correctiveActions responses')
         .lean();

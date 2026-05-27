@@ -103,6 +103,18 @@ function resolveActiveAppId(
     }
   }
 
+  // 0b) Dedicated app shells (portal customer UI, audit workspace, helpdesk desk)
+  const pathPrefixToAppKey: Array<[string, string]> = [
+    ['/portal/', 'PORTAL'],
+    ['/audit/', 'AUDIT'],
+    ['/helpdesk/', 'HELPDESK'],
+  ];
+  for (const [prefix, appKey] of pathPrefixToAppKey) {
+    if (!normalizedPath.startsWith(prefix)) continue;
+    const matched = apps.find((a) => String(a.appKey || '').toUpperCase() === appKey);
+    if (matched) return matched.appKey;
+  }
+
   // 1) Resolve from current route (dashboard or module match)
   for (const app of apps) {
     if (normalizedPath === app.dashboardRoute || normalizedPath.startsWith(app.dashboardRoute + '/')) {
@@ -338,8 +350,17 @@ function buildAppSwitcherApps(appRegistry: AppRegistry, snapshot: PermissionSnap
     .sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
 }
 
+function resolveRegistryApp(appRegistry: AppRegistry, activeAppId: string) {
+  const direct = appRegistry[activeAppId];
+  if (direct) return direct;
+  const normalized = String(activeAppId || '').toUpperCase();
+  return Object.values(appRegistry).find(
+    (candidate) => String(candidate?.appKey || '').toUpperCase() === normalized
+  );
+}
+
 function buildAppNav(appRegistry: AppRegistry, activeAppId: string, snapshot: PermissionSnapshot): SidebarStructure['appNav'] {
-  const app = appRegistry[activeAppId];
+  const app = resolveRegistryApp(appRegistry, activeAppId);
   if (!app) return { appId: activeAppId, modules: [] };
 
   // Enforce: ONLY one app lens is ever built.

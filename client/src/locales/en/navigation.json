@@ -51,6 +51,10 @@
     "message": "Actions",
     "description": "Portal bottom nav actions tab"
   },
+  "portalCases": {
+    "message": "Cases",
+    "description": "Portal bottom nav support cases tab"
+  },
   "collapseSidebar": {
     "message": "Collapse sidebar",
     "description": "Collapse app sidebar tooltip"

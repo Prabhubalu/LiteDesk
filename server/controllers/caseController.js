@@ -526,9 +526,33 @@ exports.getCaseById = async (req, res) => {
     const activityLimit = Math.max(0, Math.min(Number(req.query.activityLimit) || 200, 500));
     const allActivities = Array.isArray(row.activities) ? row.activities : [];
     const trimmedActivities = activityLimit > 0 ? allActivities.slice(-activityLimit) : [];
+    const { buildCaseTimelineActivities } = require('../platform/mailroom/services/caseTimelineAdapter');
+    const {
+      enrichCaseActivitiesWithMailroomAttachments
+    } = require('../platform/mailroom/services/caseActivityAttachmentService');
+    let mergedTimeline = trimmedActivities;
+    try {
+      mergedTimeline = await buildCaseTimelineActivities(
+        req.user.organizationId,
+        row._id,
+        trimmedActivities
+      );
+    } catch (timelineErr) {
+      console.error('[caseController] getCaseById timeline merge failed', timelineErr);
+    }
+    let activitiesWithAttachments = mergedTimeline;
+    try {
+      activitiesWithAttachments = await enrichCaseActivitiesWithMailroomAttachments(
+        req.user.organizationId,
+        mergedTimeline,
+        row._id
+      );
+    } catch (attachErr) {
+      console.error('[caseController] getCaseById attachment enrich failed', attachErr);
+    }
     const shaped = {
       ...row,
-      activities: trimmedActivities
+      activities: activitiesWithAttachments
     };
 
     const flat = flattenCustomFieldsForResponse(shaped, shaped.customFields);

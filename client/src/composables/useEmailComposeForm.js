@@ -1,6 +1,7 @@
 import { ref, watch, computed } from 'vue';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
+import { uploadCommunicationAttachment } from '@/utils/communicationAttachments';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const MAX_TOTAL_SIZE = 25 * 1024 * 1024;
@@ -203,7 +204,6 @@ export function useEmailComposeForm(props, emit) {
   async function handleFileSelect(event) {
     const files = event.target.files;
     if (!files?.length) return;
-    const token = authStore.user?.token;
     let runningTotal = attachments.value.reduce((sum, a) => sum + (a.fileSize || 0), 0);
     for (const file of files) {
       if (file.size > MAX_FILE_SIZE) {
@@ -218,26 +218,15 @@ export function useEmailComposeForm(props, emit) {
       }
       uploading.value = true;
       try {
-        const formData = new FormData();
-        formData.append('file', file);
-        const res = await fetch('/api/communications/upload', {
-          method: 'POST',
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-          body: formData
+        const result = await uploadCommunicationAttachment(file);
+        const size = result.fileSize ?? file.size;
+        attachments.value.push({
+          fileName: result.fileName || file.name,
+          fileType: result.fileType || file.type,
+          fileSize: size,
+          storagePath: result.storagePath
         });
-        const result = await res.json();
-        if (result.success) {
-          const size = result.fileSize ?? file.size;
-          attachments.value.push({
-            fileName: result.fileName || file.name,
-            fileType: result.fileType || file.type,
-            fileSize: size,
-            storagePath: result.storagePath
-          });
-          runningTotal += size;
-        } else {
-          error.value = result.message || result.error || 'Upload failed';
-        }
+        runningTotal += size;
       } catch (err) {
         error.value = err.message || 'Upload failed';
       } finally {

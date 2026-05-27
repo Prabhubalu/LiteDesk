@@ -13,7 +13,8 @@ export default defineConfig(({ mode }) => {
   const posthogEnabled = Boolean(env.VITE_POSTHOG_KEY)
 
   // Prefer explicit origin. Fall back to legacy VITE_API_URL and normalize trailing /api.
-  const apiOriginRaw = env.VITE_API_ORIGIN || env.VITE_API_URL || 'http://localhost:3000'
+  // Default API port matches server default (PORT || 5000). Override with VITE_API_ORIGIN or VITE_API_URL.
+  const apiOriginRaw = env.VITE_API_ORIGIN || env.VITE_API_URL || 'http://localhost:5000'
   const apiProxyTarget = apiOriginRaw.replace(/\/api\/?$/, '')
 
   return {
@@ -49,13 +50,37 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           // rewrite: (path) => path.replace(/^\/api/, '') // Removes /api prefix when sending to backend
         },
-        // Proxy portal API endpoints only (not frontend routes like /portal/dashboard)
-        // Match portal API endpoints: /portal/me, /portal/org, /portal/health, /portal/audits, /portal/actions, etc.
-        '^/portal/(me|org|health|audits|actions)': {
+        // Embed chat API (widget static files stay under /embed/chat.js and /embed/chat/widget.html).
+        '^/embed/chat/sessions': {
           target: apiProxyTarget,
           changeOrigin: true,
-          // Vite proxy forwards headers by default, but we can be explicit
-          // Note: Authorization header should be forwarded automatically
+        },
+        // Proxy portal REST only when the client sends Bearer auth (fetch/XHR).
+        // Full page refresh hits the same paths as Vue routes (e.g. /portal/cases) without
+        // Authorization — those must be served by the SPA, not the API.
+        '^/portal/(me|org|health|audits|actions|cases|mailroom)(/|$)': {
+          target: apiProxyTarget,
+          changeOrigin: true,
+          bypass(req) {
+            const auth = req.headers?.authorization;
+            const hasBearer =
+              typeof auth === 'string' && auth.toLowerCase().startsWith('bearer ');
+            if (hasBearer) return null;
+
+            const secFetchDest = req.headers?.['sec-fetch-dest'];
+            if (secFetchDest === 'document') return '/index.html';
+
+            const accept = String(req.headers?.accept || '');
+            if (accept.includes('text/html')) return '/index.html';
+
+            return null;
+          },
+          configure: (proxy) => {
+            proxy.on('proxyReq', (proxyReq, req) => {
+              const auth = req.headers?.authorization;
+              if (auth) proxyReq.setHeader('Authorization', auth);
+            });
+          },
         }
       }
     },

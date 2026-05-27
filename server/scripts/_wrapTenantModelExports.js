@@ -68,6 +68,7 @@ const TENANT_SCOPED_MODELS = [
     'MailroomRawPayload',
     'MailroomConversation',
     'MailroomMessage',
+    'MailroomAttachment',
   'DeferredAutomationAction',
     'BusinessHoursDailyKpi',
     'Communication',

@@ -195,6 +195,14 @@
     "message": "Via {channel}",
     "description": "Channel label on timeline message"
   },
+  "recordAttachmentPreview": {
+    "message": "Preview",
+    "description": "Preview mailroom attachment inline in case timeline"
+  },
+  "recordAttachmentDownload": {
+    "message": "Download",
+    "description": "Download mailroom attachment from case timeline"
+  },
   "recordMacrosSoon": {
     "message": "Macros (soon)",
     "description": "Macros placeholder in composer"
@@ -458,5 +466,129 @@
   "recordRailDetails": {
     "message": "Details",
     "description": "Utility rail details"
+  },
+  "portalCasesTitle": {
+    "message": "Support cases",
+    "description": "Portal cases list page title"
+  },
+  "portalCasesSubtitle": {
+    "message": "View and manage your support requests.",
+    "description": "Portal cases list subtitle"
+  },
+  "portalCasesPartnerNoCreate": {
+    "message": "Partner accounts cannot create new cases. Contact your account manager for support.",
+    "description": "Shown when partner users cannot create cases"
+  },
+  "portalCasesNew": {
+    "message": "New case",
+    "description": "Create case button"
+  },
+  "portalCasesEmptyTitle": {
+    "message": "No cases yet",
+    "description": "Empty state title"
+  },
+  "portalCasesEmptyMessage": {
+    "message": "Open a new case to get help from our team.",
+    "description": "Empty state message"
+  },
+  "portalCasesUpdated": {
+    "message": "Updated {date}",
+    "description": "Case list updated timestamp"
+  },
+  "portalCasesCreateTitle": {
+    "message": "Open a new case",
+    "description": "Create modal title"
+  },
+  "portalCasesFieldTitle": {
+    "message": "Subject",
+    "description": "Create form title field"
+  },
+  "portalCasesFieldDescription": {
+    "message": "How can we help?",
+    "description": "Create form description field"
+  },
+  "portalCasesFieldPriority": {
+    "message": "Priority",
+    "description": "Create form priority field"
+  },
+  "portalCasesSubmit": {
+    "message": "Submit case",
+    "description": "Create submit button"
+  },
+  "portalCasesSubmitting": {
+    "message": "Submitting…",
+    "description": "Create submitting state"
+  },
+  "portalCasesCreateFailed": {
+    "message": "Could not create case. Please try again.",
+    "description": "Create error"
+  },
+  "portalCasesLoadFailed": {
+    "message": "Could not load cases. Please try again.",
+    "description": "Load error"
+  },
+  "portalCasesAuthRequired": {
+    "message": "Please sign in to view your support cases.",
+    "description": "Portal cases auth required"
+  },
+  "portalCasesSessionExpired": {
+    "message": "Your session has expired. Please sign out and sign in again.",
+    "description": "Portal cases 401"
+  },
+  "portalCasesAccessDenied": {
+    "message": "You do not have access to the customer portal. Contact your administrator.",
+    "description": "Portal cases 403"
+  },
+  "portalCasesAttachmentsLabel": {
+    "message": "Attachments (optional)",
+    "description": "Portal cases attachments label"
+  },
+  "portalCasesAttachmentUploadFailed": {
+    "message": "Could not upload attachment. Please try again.",
+    "description": "Portal attachment upload error"
+  },
+  "portalCasesBack": {
+    "message": "All cases",
+    "description": "Back to list link"
+  },
+  "portalCasesConversation": {
+    "message": "Conversation",
+    "description": "Timeline section title"
+  },
+  "portalCasesNoMessages": {
+    "message": "No messages yet.",
+    "description": "Empty timeline"
+  },
+  "portalCasesSupport": {
+    "message": "Support",
+    "description": "Agent message label"
+  },
+  "portalCasesReplyLabel": {
+    "message": "Your reply",
+    "description": "Reply composer label"
+  },
+  "portalCasesReplyPlaceholder": {
+    "message": "Type your message…",
+    "description": "Reply placeholder"
+  },
+  "portalCasesReplySend": {
+    "message": "Send reply",
+    "description": "Send reply button"
+  },
+  "portalCasesReplySending": {
+    "message": "Sending…",
+    "description": "Sending reply state"
+  },
+  "portalCasesReplyFailed": {
+    "message": "Could not send reply. Please try again.",
+    "description": "Reply error"
+  },
+  "portalCasesClosedNoReply": {
+    "message": "This case is closed. Replies are not accepted.",
+    "description": "Closed case hint"
+  },
+  "portalCasesNotFound": {
+    "message": "Case not found or you do not have access.",
+    "description": "404 message"
   }
 }

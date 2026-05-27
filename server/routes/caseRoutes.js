@@ -22,6 +22,13 @@ const {
   getCaseAuditExport,
   ingestCaseChannelInteraction
 } = require('../controllers/caseController');
+const {
+  getCaseChatSession,
+  listCaseChatMessages,
+  sendCaseChatMessage,
+  setCaseChatTyping,
+  streamCaseChatMessages
+} = require('../controllers/caseChatController');
 
 const router = express.Router();
 
@@ -49,5 +56,12 @@ router.delete('/:id', checkPermission('cases', 'delete'), deleteCase);
 router.patch('/:id/status', checkPermission('cases', 'edit'), updateCaseStatus);
 router.post('/:id/reopen', checkPermission('cases', 'edit'), reopenCase);
 router.post('/:id/activities', checkPermission('cases', 'edit'), addCaseActivity);
+
+// Live Chat inside cases (realtime via SSE).
+router.get('/:id/chat/session', checkPermission('cases', 'view'), getCaseChatSession);
+router.get('/:id/chat/messages', checkPermission('cases', 'view'), listCaseChatMessages);
+router.get('/:id/chat/stream', checkPermission('cases', 'view'), streamCaseChatMessages);
+router.post('/:id/chat/messages', checkPermission('cases', 'edit'), sendCaseChatMessage);
+router.post('/:id/chat/typing', checkPermission('cases', 'edit'), setCaseChatTyping);
 
 module.exports = router;

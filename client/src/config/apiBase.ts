@@ -34,3 +34,18 @@ export function normalizeToApiPath(url: string): string {
 export function getApiUrlForFetch(url: string): string {
   return withApiOrigin(normalizeToApiPath(url))
 }
+
+/**
+ * Portal REST lives at /portal/* on the API host (not under /api).
+ * Use this for portalApiClient so paths are not double-prefixed with /api.
+ */
+export function getPortalApiUrl(url: string): string {
+  if (!url) return url
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  let path = url.startsWith('/') ? url : `/${url}`
+  path = path.replace(/^\/api\/portal\//, '/portal/')
+  if (!path.startsWith('/portal/')) {
+    path = `/portal${path.startsWith('/') ? path : `/${path}`}`
+  }
+  return withApiOrigin(path)
+}

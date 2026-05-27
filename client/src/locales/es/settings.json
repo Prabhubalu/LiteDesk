@@ -2060,7 +2060,7 @@
     "description": "Invite last name placeholder"
   },
   "inviteEmailPh": {
-    "message": "juan.doe@empresa.com",
+    "message": "juan.doe{'@'}empresa.com",
     "description": "Invite email placeholder"
   },
   "groupFormNamePh": {
@@ -5316,7 +5316,7 @@
     "description": "Alert recipients label"
   },
   "modFieldsRecipientsPh": {
-    "message": "por ejemplo, ingresos-ops@empresa.com, gerente@empresa.com",
+    "message": "por ejemplo, ingresos-ops{'@'}empresa.com, gerente{'@'}empresa.com",
     "description": "Alert recipients placeholder"
   },
   "modFieldsAlertMessagePh": {
