@@ -98,10 +98,14 @@ const protect = async (req, res, next) => {
         req.headers.authorization &&
         req.headers.authorization.startsWith('Bearer')
     ) {
-        try {
-            // Get token from header (Bearer <token>)
-            token = req.headers.authorization.split(' ')[1];
+        token = req.headers.authorization.split(' ')[1];
+    } else if (req.query?.token) {
+        // EventSource cannot send Authorization headers; allow token via query for SSE streams.
+        token = String(req.query.token).trim();
+    }
 
+    if (token) {
+        try {
             req.user = await resolveUserFromToken(token, { lean: false });
 
             if (!req.user) {
@@ -132,15 +136,14 @@ const protect = async (req, res, next) => {
                 console.error('[AuthMiddleware] hydrateUserPermissionsFromRole failed:', hydrateErr.message);
             }
 
-            next();
+            return next();
         } catch (error) {
             console.error('Token verification error:', error.message);
             return res.status(401).json({ message: 'Not authorized, token failed' });
         }
-    } else {
-        // No token provided
-        return res.status(401).json({ message: 'Not authorized, no token' });
     }
+
+    return res.status(401).json({ message: 'Not authorized, no token' });
 };
 
 module.exports = { protect };

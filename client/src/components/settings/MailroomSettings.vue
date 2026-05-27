@@ -161,6 +161,250 @@
         </section>
       </template>
 
+      <!-- Connectors -->
+      <template v-else-if="activeTab === 'connectors'">
+        <MailroomSection
+          :title="t('settings.mailroomConnectorsTitle')"
+          :description="t('settings.mailroomConnectorsHelp')"
+        >
+          <div class="space-y-6">
+            <div>
+              <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.mailroomConnectorsEmailGroupTitle') }}</p>
+              <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.mailroomConnectorsEmailGroupHelp') }}</p>
+              <div class="mt-3 grid grid-cols-1 gap-4">
+                <div class="rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
+                  <div class="flex items-start justify-between gap-4 bg-gray-50 dark:bg-gray-900/40 px-4 py-3 border-b border-gray-200 dark:border-gray-600">
+                    <div class="min-w-0">
+                      <p class="text-sm font-semibold text-gray-900 dark:text-white">Arivu parser</p>
+                      <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Inbound parser webhook → Mailroom (email).</p>
+                    </div>
+                    <span class="text-xs font-medium text-gray-600 dark:text-gray-300">
+                      {{ form.connectors.arivuParser?.enabled !== false ? t('common.enabled') : t('common.disabled') }}
+                    </span>
+                  </div>
+                </div>
+                <div class="rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
+                  <div class="flex items-start justify-between gap-4 bg-gray-50 dark:bg-gray-900/40 px-4 py-3 border-b border-gray-200 dark:border-gray-600">
+                    <div class="min-w-0">
+                      <p class="text-sm font-semibold text-gray-900 dark:text-white">Raw MIME webhook</p>
+                      <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Raw email MIME → Mailroom (email).</p>
+                    </div>
+                    <span class="text-xs font-medium text-gray-600 dark:text-gray-300">
+                      {{ form.connectors.rawMimeWebhook?.enabled !== false ? t('common.enabled') : t('common.disabled') }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.mailroomConnectorsWebGroupTitle') }}</p>
+              <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.mailroomConnectorsWebGroupHelp') }}</p>
+              <div class="mt-3 grid grid-cols-1 gap-4">
+            <div class="rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
+              <div class="flex items-start justify-between gap-4 bg-gray-50 dark:bg-gray-900/40 px-4 py-3 border-b border-gray-200 dark:border-gray-600">
+                <div class="min-w-0">
+                  <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.mailroomConnectorPublicApiTitle') }}</p>
+                  <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.mailroomConnectorPublicApiHelp') }}</p>
+                </div>
+                <label class="inline-flex items-center gap-3 cursor-pointer shrink-0">
+                  <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('common.enabled') }}</span>
+                  <button
+                    type="button"
+                    role="switch"
+                    :aria-checked="form.connectors.publicApi.enabled"
+                    class="relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                    :class="form.connectors.publicApi.enabled ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-600'"
+                    @click="form.connectors.publicApi.enabled = !form.connectors.publicApi.enabled"
+                  >
+                    <span
+                      class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition"
+                      :class="form.connectors.publicApi.enabled ? 'translate-x-5' : 'translate-x-0'"
+                    />
+                  </button>
+                </label>
+              </div>
+              <div class="p-4 space-y-2">
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">
+                  {{ t('settings.mailroomConnectorPublicApiKeyLabel') }}
+                </label>
+                <input
+                  v-model="form.connectors.publicApi.ingestKey"
+                  type="text"
+                  class="w-full max-w-xl rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  :placeholder="t('settings.mailroomConnectorPublicApiKeyPlaceholder')"
+                >
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  {{ t('settings.mailroomConnectorPublicApiCurlHint') }}
+                </p>
+              </div>
+            </div>
+
+            <div class="rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
+              <div class="flex items-start justify-between gap-4 bg-gray-50 dark:bg-gray-900/40 px-4 py-3 border-b border-gray-200 dark:border-gray-600">
+                <div class="min-w-0">
+                  <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.mailroomConnectorPortalTitle') }}</p>
+                  <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.mailroomConnectorPortalHelp') }}</p>
+                </div>
+                <label class="inline-flex items-center gap-3 cursor-pointer shrink-0">
+                  <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('common.enabled') }}</span>
+                  <button
+                    type="button"
+                    role="switch"
+                    :aria-checked="form.connectors.portal.enabled"
+                    class="relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                    :class="form.connectors.portal.enabled ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-600'"
+                    @click="form.connectors.portal.enabled = !form.connectors.portal.enabled"
+                  >
+                    <span
+                      class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition"
+                      :class="form.connectors.portal.enabled ? 'translate-x-5' : 'translate-x-0'"
+                    />
+                  </button>
+                </label>
+              </div>
+              <div class="p-4 space-y-6">
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  {{ t('settings.mailroomConnectorPortalEndpointHint') }}
+                </p>
+
+                <div>
+                  <p class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.mailroomConnectorPortalAudienceTitle') }}</p>
+                  <label class="mt-2 block text-xs text-gray-600 dark:text-gray-400">{{ t('settings.mailroomConnectorPortalPartnerDomains') }}</label>
+                  <textarea
+                    v-model="portalPartnerDomainsText"
+                    rows="3"
+                    class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  />
+                  <label class="mt-3 block text-xs text-gray-600 dark:text-gray-400">{{ t('settings.mailroomConnectorPortalPartnerTypes') }}</label>
+                  <input
+                    v-model="portalPartnerTypesText"
+                    type="text"
+                    class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  >
+                </div>
+
+                <div class="grid gap-4 md:grid-cols-2">
+                  <div class="rounded-lg border border-gray-200 dark:border-gray-600 p-4 space-y-3">
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.mailroomConnectorPortalCustomerRules') }}</p>
+                    <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                      <input v-model="form.connectors.portal.customer.allowCreateCase" type="checkbox" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                      {{ t('settings.mailroomConnectorPortalAllowCreate') }}
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                      <input v-model="form.connectors.portal.customer.allowReply" type="checkbox" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                      {{ t('settings.mailroomConnectorPortalAllowReply') }}
+                    </label>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400">
+                      {{ t('settings.mailroomConnectorPortalMaxAttachments') }}
+                      <input v-model.number="form.connectors.portal.customer.maxAttachmentsPerMessage" type="number" min="0" max="50" class="mt-1 w-full rounded border border-gray-300 bg-white px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                    </label>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400">
+                      {{ t('settings.mailroomConnectorPortalMaxBytes') }}
+                      <input v-model.number="form.connectors.portal.customer.maxAttachmentBytes" type="number" min="0" class="mt-1 w-full rounded border border-gray-300 bg-white px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                    </label>
+                  </div>
+
+                  <div class="rounded-lg border border-gray-200 dark:border-gray-600 p-4 space-y-3">
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.mailroomConnectorPortalPartnerRules') }}</p>
+                    <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                      <input v-model="form.connectors.portal.partner.allowCreateCase" type="checkbox" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                      {{ t('settings.mailroomConnectorPortalAllowCreate') }}
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                      <input v-model="form.connectors.portal.partner.allowReply" type="checkbox" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                      {{ t('settings.mailroomConnectorPortalAllowReply') }}
+                    </label>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400">
+                      {{ t('settings.mailroomConnectorPortalMaxAttachments') }}
+                      <input v-model.number="form.connectors.portal.partner.maxAttachmentsPerMessage" type="number" min="0" max="50" class="mt-1 w-full rounded border border-gray-300 bg-white px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                    </label>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400">
+                      {{ t('settings.mailroomConnectorPortalMaxBytes') }}
+                      <input v-model.number="form.connectors.portal.partner.maxAttachmentBytes" type="number" min="0" class="mt-1 w-full rounded border border-gray-300 bg-white px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                    </label>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400">{{ t('settings.mailroomConnectorPortalAllowedMime') }}</label>
+                    <textarea
+                      v-model="portalPartnerMimeText"
+                      rows="4"
+                      class="mt-1 w-full rounded border border-gray-300 bg-white px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
+              <div class="flex items-start justify-between gap-4 bg-gray-50 dark:bg-gray-900/40 px-4 py-3 border-b border-gray-200 dark:border-gray-600">
+                <div class="min-w-0">
+                  <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.mailroomConnectorChatTitle') }}</p>
+                  <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.mailroomConnectorChatHelp') }}</p>
+                </div>
+                <label class="inline-flex items-center gap-3 cursor-pointer shrink-0">
+                  <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('common.enabled') }}</span>
+                  <button
+                    type="button"
+                    role="switch"
+                    :aria-checked="form.connectors.chat.enabled"
+                    class="relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                    :class="form.connectors.chat.enabled ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-600'"
+                    @click="form.connectors.chat.enabled = !form.connectors.chat.enabled"
+                  >
+                    <span
+                      class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition"
+                      :class="form.connectors.chat.enabled ? 'translate-x-5' : 'translate-x-0'"
+                    />
+                  </button>
+                </label>
+              </div>
+              <div class="p-4 space-y-4">
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  {{ t('settings.mailroomConnectorChatEndpointHint') }}
+                </p>
+
+                <div v-if="!chatEmbedKey" class="text-xs text-gray-500 dark:text-gray-400">
+                  {{ t('settings.mailroomConnectorChatEmbedNotEnabled') }}
+                </div>
+
+                <div v-else class="space-y-3">
+                  <p class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.mailroomConnectorChatEmbedTitle') }}</p>
+                  <div>
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">
+                      {{ t('settings.mailroomConnectorChatEmbedKeyLabel') }}
+                    </label>
+                    <input
+                      :value="chatEmbedKey"
+                      readonly
+                      class="mt-1 w-full max-w-xl rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    >
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">
+                      {{ t('settings.mailroomConnectorChatEmbedSnippetLabel') }}
+                    </label>
+                    <textarea
+                      :value="chatEmbedSnippet"
+                      readonly
+                      rows="4"
+                      class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-mono text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    />
+                    <button
+                      type="button"
+                      class="mt-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                      @click="copyChatSnippet"
+                    >
+                      Copy snippet
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+              </div>
+            </div>
+          </div>
+        </MailroomSection>
+      </template>
+
       <!-- Routing (Ingest) -->
       <template v-else-if="activeTab === 'routing'">
         <MailroomSection
@@ -550,6 +794,7 @@ const threadingLogs = ref([]);
 const processingFailures = ref([]);
 const replayingId = ref('');
 const activeTab = ref(localStorage.getItem(MAILROOM_TAB_KEY) || 'overview');
+const chatEmbedKey = ref('');
 const form = ref({
   enabled: false,
   activeTemplateId: 'helpdesk_standard_email',
@@ -563,6 +808,104 @@ const threadingStrategies = ref([]);
 const openCaseActions = ['append', 'flag_for_review', 'manual_review', 'no_op'];
 const noMatchActions = ['create_case', 'flag_for_review', 'manual_review'];
 const reopenActions = ['reopen', 'create_case', 'append'];
+
+function defaultPortalConnector() {
+  return {
+    enabled: false,
+    audienceDetection: {
+      partnerDomains: [],
+      partnerPeopleTypes: ['Partner']
+    },
+    customer: {
+      allowCreateCase: true,
+      allowReply: true,
+      maxAttachmentsPerMessage: 10,
+      maxAttachmentBytes: 25 * 1024 * 1024
+    },
+    partner: {
+      allowCreateCase: false,
+      allowReply: true,
+      maxAttachmentsPerMessage: 5,
+      maxAttachmentBytes: 10 * 1024 * 1024,
+      allowedMimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf', 'text/plain']
+    }
+  };
+}
+
+function mergePortalConnectorFromApi(raw) {
+  const base = defaultPortalConnector();
+  if (!raw || typeof raw !== 'object') return base;
+  return {
+    ...base,
+    enabled: raw.enabled === true,
+    audienceDetection: {
+      ...base.audienceDetection,
+      partnerDomains: Array.isArray(raw.audienceDetection?.partnerDomains)
+        ? raw.audienceDetection.partnerDomains
+        : base.audienceDetection.partnerDomains,
+      partnerPeopleTypes: Array.isArray(raw.audienceDetection?.partnerPeopleTypes)
+        ? raw.audienceDetection.partnerPeopleTypes
+        : base.audienceDetection.partnerPeopleTypes
+    },
+    customer: { ...base.customer, ...(raw.customer || {}) },
+    partner: {
+      ...base.partner,
+      ...(raw.partner || {}),
+      allowedMimeTypes: Array.isArray(raw.partner?.allowedMimeTypes)
+        ? raw.partner.allowedMimeTypes
+        : base.partner.allowedMimeTypes
+    }
+  };
+}
+
+function ensurePortalConnector() {
+  if (!form.value.connectors) form.value.connectors = {};
+  if (!form.value.connectors.portal) {
+    form.value.connectors.portal = defaultPortalConnector();
+  }
+}
+
+const portalPartnerDomainsText = computed({
+  get() {
+    ensurePortalConnector();
+    return (form.value.connectors.portal.audienceDetection.partnerDomains || []).join('\n');
+  },
+  set(value) {
+    ensurePortalConnector();
+    form.value.connectors.portal.audienceDetection.partnerDomains = String(value)
+      .split(/\n/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+});
+
+const portalPartnerTypesText = computed({
+  get() {
+    ensurePortalConnector();
+    return (form.value.connectors.portal.audienceDetection.partnerPeopleTypes || []).join(', ');
+  },
+  set(value) {
+    ensurePortalConnector();
+    form.value.connectors.portal.audienceDetection.partnerPeopleTypes = String(value)
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+});
+
+const portalPartnerMimeText = computed({
+  get() {
+    ensurePortalConnector();
+    return (form.value.connectors.portal.partner.allowedMimeTypes || []).join('\n');
+  },
+  set(value) {
+    ensurePortalConnector();
+    form.value.connectors.portal.partner.allowedMimeTypes = String(value)
+      .split(/\n/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+});
 
 const dedupForm = reactive({ onDuplicate: 'append_to_existing_open_case' });
 const caseLinkForm = reactive({
@@ -584,6 +927,7 @@ const pipelineSteps = computed(() => [
 
 const tabs = computed(() => [
   { id: 'overview', labelKey: 'settings.mailroomTabOverview' },
+  { id: 'connectors', labelKey: 'settings.mailroomTabConnectors' },
   { id: 'routing', labelKey: 'settings.mailroomTabRouting', badge: ingestRules.value.length || null },
   { id: 'processing', labelKey: 'settings.mailroomTabProcessing' },
   {
@@ -850,12 +1194,23 @@ async function load() {
     const res = await apiClient.get('/settings/automation/mailroom');
     if (!res.success) throw new Error(res.message || 'Load failed');
     templates.value = res.meta?.templates || [];
+    chatEmbedKey.value = res.meta?.chatEmbed?.publicKey || '';
     form.value = {
       enabled: res.data?.enabled === true,
       activeTemplateId: res.data?.activeTemplateId || 'helpdesk_standard_email',
       policies: res.data?.policies || {},
-      connectors: res.data?.connectors || {}
+      connectors: {
+        arivuParser: { enabled: res.data?.connectors?.arivuParser?.enabled !== false },
+        rawMimeWebhook: { enabled: res.data?.connectors?.rawMimeWebhook?.enabled !== false },
+        publicApi: {
+          enabled: res.data?.connectors?.publicApi?.enabled === true,
+          ingestKey: res.data?.connectors?.publicApi?.ingestKey || ''
+        },
+        portal: mergePortalConnectorFromApi(res.data?.connectors?.portal),
+        chat: { enabled: res.data?.connectors?.chat?.enabled === true }
+      }
     };
+    ensurePortalConnector();
     selectedTemplateId.value = form.value.activeTemplateId;
     hydrateThreadingStrategies();
     hydrateIngestPolicy();
@@ -865,6 +1220,25 @@ async function load() {
     loadError.value = e.message || t('settings.mailroomLoadFailed');
   } finally {
     loading.value = false;
+  }
+}
+
+const chatEmbedSnippet = computed(() => {
+  if (!chatEmbedKey.value) return '';
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  // IMPORTANT: never embed a literal script-close tag inside a Vue SFC <script> block.
+  // Browsers terminate the SFC script element early, breaking the component.
+  const closeTag = '</scr' + 'ipt>';
+  return `<script\\n  src=\"${origin}/embed/chat.js\"\\n  data-instance=\"${chatEmbedKey.value}\"\\n  data-position=\"right\"\\n  data-theme=\"light\"\\n>${closeTag}`;
+});
+
+async function copyChatSnippet() {
+  try {
+    if (!chatEmbedSnippet.value) return;
+    await navigator.clipboard.writeText(chatEmbedSnippet.value);
+    notifications.success('Copied');
+  } catch (e) {
+    notifications.error(e.message || 'Copy failed');
   }
 }
 
@@ -884,6 +1258,9 @@ async function save() {
     const res = await apiClient.put('/settings/automation/mailroom', payload);
     if (!res.success) throw new Error(res.message || 'Save failed');
     form.value = { ...form.value, ...res.data };
+    if (res.meta?.chatEmbed?.publicKey) {
+      chatEmbedKey.value = res.meta.chatEmbed.publicKey;
+    }
     hydrateThreadingStrategies();
     hydrateIngestPolicy();
     hydrateDedupAndCaseLink();

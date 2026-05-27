@@ -6,9 +6,9 @@ This document maps the PRD requirements to what exists in LiteDesk today, identi
 
 **Start here:** Phases **0**, **1A**, and **1B** are complete. **Email ingestion policies** (threading, dedup, case link, routing) live in **Settings → Automation → Mailroom** (Mailroom M0–M3.1). **Next:** [Phase 1C remainder](#phase-1c--email-hardening--productivity-2-3-weeks) (templates/macros) and [Phase 1D — Portals](#phase-1d--customer--partner-portals-3-4-weeks).
 
-**See also:** `docs/MAILROOM_ROADMAP.md` for Mailroom delivery status (M0–M4 ✅; M5–M7 remaining).
+**See also:** `docs/MAILROOM_ROADMAP.md` for Mailroom delivery status (M0–M4 ✅; M5 🟡; M6–M7 remaining).
 
-**Last updated:** 2026-05-27
+**Last updated:** 2026-05-28
 
 ---
 
@@ -19,8 +19,8 @@ This document maps the PRD requirements to what exists in LiteDesk today, identi
 | **0** — Alignment & baseline | ✅ Done | `test:helpdesk` + `smoke:helpdesk` passed (2026-05-27); Ticket→Case org check fixed; Closed edit lock on API |
 | **1A** — Agent workspace UX | ✅ Done | `CaseRecordPage`, list quick-preview, system views, bulk actions, timeline + reply UX (pinned + resizable) |
 | **1B** — Lifecycle + data model | ✅ Done | `reopenReason` required; `CaseResolutionDialog`; closed lock in API + UI; `reopenCount` on model |
-| **1C** — Email hardening | 🟡 Partial | Mailroom ships threading/dedup/case-link/**ingest** UI + pipeline (see `MAILROOM_ROADMAP.md`). Remaining: agent templates/macros, case timeline from Mailroom messages |
-| **1D** — Portals | ❌ Not started | |
+| **1C** — Email hardening | 🟡 Partial | Mailroom pipeline + **case timeline adapter** (`mailroom_messages` merged in `GET /api/helpdesk/cases/:id`). Remaining: agent templates/macros |
+| **1D** — Portals | 🟡 Partial | Portal UI + APIs; Mailroom reply; requester scoping; partner/customer channels + rules shipped; smoke test pending |
 | **1E** — Field service & warranty | ❌ Not started | |
 | **1F** — Reporting, roles, audit exports | 🟡 Partial | Analytics + `GET /api/helpdesk/cases/analytics/audit-export`; role presets / CSAT / full enterprise audit TBD |
 | **1G** — Process Designer | ❌ Not started | |
@@ -127,7 +127,7 @@ Legend: ✅ Done · 🟡 Partial · ❌ Missing
 ### Communication & timeline
 
 - 🟡 Email: Mailroom-enabled path uses policy-driven create/append/reopen (`casesAdapter`); legacy `helpdeskChannelIngestionService` when Mailroom off. **Settings → Automation → Mailroom** for routing + processing policies. Remaining 1C: **agent templates/macros**
-- ❌ Live Chat and chat-to-case conversion
+- ✅ Live Chat and chat-to-case conversion (embed widget → chat session/messages → auto-case on first inbound; realtime handling inside the Case record)
 - ❌ Customer portal + partner portal case flows
 - 🟡 Unified timeline in `CaseTimelineFeed` on record + preview; polish and full comms threading still ongoing
 - ❌ Canned responses/macros/templates for cases (beyond basic compose)
@@ -237,7 +237,7 @@ The phases below are designed to reduce ambiguity and maximize reuse of existing
 **Still Phase 1C (Cases / agent UX):**
 
 - [ ] Case email templates + canned responses/macros
-- [ ] Case record timeline reads from Mailroom conversation messages (optional adapter)
+- [x] Case record timeline reads from Mailroom conversation messages (`caseTimelineAdapter.js`)
 - [ ] Verify inbound → case append produces correct timeline/audit events end-to-end in production pilot
 
 **Exit criteria**: inbound replies consistently attach to open cases; agents can reply quickly with templates.
@@ -246,15 +246,24 @@ The phases below are designed to reduce ambiguity and maximize reuse of existing
 
 ### Phase 1D — Customer & partner portals (3–4 weeks)
 
+**Status:** 🟡 Partial — portal case APIs + Mailroom reply path + customer portal UI (`/portal/cases`); partner/customer routing + restrictions shipped (smoke test pending).
+
 **Goal**: enable customers/partners to create and interact with cases securely.
 
-- Portal APIs:
-  - Create case, list own cases, view detail, reply, upload attachments
+- Portal APIs (shipped):
+  - `GET /portal/cases` — list own cases (requester email / contact match)
+  - `POST /portal/cases` — create (`Customer Portal` channel; optional Mailroom ingest)
+  - `GET /portal/cases/:id` — detail + customer-visible timeline
+  - `POST /portal/cases/:id/reply` — reply via Mailroom when enabled
+  - `POST /portal/mailroom/attachments` + download (see `docs/MAILROOM_API.md`)
 - Strict visibility:
-  - No internal notes
-  - Tenant isolation + requester/org scoping
-- Partner restrictions:
-  - limited editing; controlled evidence uploads; field updates if enabled
+  - Internal activities filtered on portal responses
+  - Tenant isolation + requester scoping (`portalCaseAccessService.js`)
+- Partner/customer audience rules (shipped):
+  - Partner vs customer audience detection (appAccess roleKey → People type → email domain)
+  - Partner default restrictions: no case creation, attachment limits + MIME allowlist
+- Remaining portal polish:
+  - Portal E2E smoke test (create + reply + attachments)
 
 **Exit criteria**: customers/partners can self-serve cases without exposure to internal data.
 

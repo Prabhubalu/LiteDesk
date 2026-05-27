@@ -167,6 +167,138 @@
     "message": "Developer",
     "description": "Mailroom settings tab"
   },
+  "mailroomTabConnectors": {
+    "message": "Connectors",
+    "description": "Mailroom settings tab"
+  },
+  "mailroomConnectorsTitle": {
+    "message": "Connectors",
+    "description": "Connectors tab title"
+  },
+  "mailroomConnectorsHelp": {
+    "message": "Configure non-email ingestion sources that feed the Mailroom pipeline.",
+    "description": "Connectors tab help text"
+  },
+  "mailroomConnectorPublicApiTitle": {
+    "message": "Public ingest API",
+    "description": "Public API connector card title"
+  },
+  "mailroomConnectorPublicApiHelp": {
+    "message": "External systems can POST normalized messages into Mailroom using a shared key.",
+    "description": "Public API connector help"
+  },
+  "mailroomConnectorPublicApiKeyLabel": {
+    "message": "Ingest key",
+    "description": "Public API key label"
+  },
+  "mailroomConnectorPublicApiKeyPlaceholder": {
+    "message": "Paste or generate a secret key",
+    "description": "Public API key placeholder"
+  },
+  "mailroomConnectorPublicApiCurlHint": {
+    "message": "Base: /api/public/mailroom — ingest, append, upload/list attachments. See docs/MAILROOM_API.md.",
+    "description": "Public API request hint"
+  },
+  "mailroomConnectorPortalTitle": {
+    "message": "Portal connector",
+    "description": "Portal connector card title"
+  },
+  "mailroomConnectorPortalHelp": {
+    "message": "Allows portal-authenticated users to ingest portal messages into Mailroom.",
+    "description": "Portal connector help"
+  },
+  "mailroomConnectorPortalEndpointHint": {
+    "message": "Base: /portal/mailroom — ingest, case reply, attachments (JWT Portal app). See docs/MAILROOM_API.md.",
+    "description": "Portal endpoint hint"
+  },
+  "mailroomConnectorPortalAudienceTitle": {
+    "message": "Audience detection",
+    "description": "Portal partner/customer detection section"
+  },
+  "mailroomConnectorPortalPartnerDomains": {
+    "message": "Partner email domains (one per line)",
+    "description": "Partner domain list label"
+  },
+  "mailroomConnectorPortalPartnerTypes": {
+    "message": "Partner People types (comma-separated)",
+    "description": "Partner people types label"
+  },
+  "mailroomConnectorPortalCustomerRules": {
+    "message": "Customer portal rules",
+    "description": "Customer portal rules section"
+  },
+  "mailroomConnectorPortalPartnerRules": {
+    "message": "Partner portal rules",
+    "description": "Partner portal rules section"
+  },
+  "mailroomConnectorPortalAllowCreate": {
+    "message": "Allow new cases",
+    "description": "Portal allow create cases toggle"
+  },
+  "mailroomConnectorPortalAllowReply": {
+    "message": "Allow replies",
+    "description": "Portal allow replies toggle"
+  },
+  "mailroomConnectorPortalMaxAttachments": {
+    "message": "Max attachments per message",
+    "description": "Portal max attachments label"
+  },
+  "mailroomConnectorPortalMaxBytes": {
+    "message": "Max attachment size (bytes)",
+    "description": "Portal max attachment bytes label"
+  },
+  "mailroomConnectorPortalAllowedMime": {
+    "message": "Allowed MIME types (partner, one per line)",
+    "description": "Partner allowed mime types"
+  },
+  "mailroomConnectorChatTitle": {
+    "message": "Chat connector",
+    "description": "Chat connector card title"
+  },
+  "mailroomConnectorChatHelp": {
+    "message": "Allows live chat sessions to ingest messages into Mailroom.",
+    "description": "Chat connector help"
+  },
+  "mailroomConnectorChatEndpointHint": {
+    "message": "Base: /api/mailroom/chat — ingest (server-authenticated).",
+    "description": "Chat connector endpoint hint"
+  },
+  "mailroomConnectorChatEmbedTitle": {
+    "message": "Embed widget",
+    "description": "Chat embed widget section title"
+  },
+  "mailroomConnectorChatEmbedKeyLabel": {
+    "message": "Instance key",
+    "description": "Chat embed key label"
+  },
+  "mailroomConnectorChatEmbedSnippetLabel": {
+    "message": "Paste this snippet on your website",
+    "description": "Embed snippet label"
+  },
+  "mailroomConnectorChatEmbedNotEnabled": {
+    "message": "Enable the Chat connector to generate an embed key and snippet.",
+    "description": "Embed hint when chat connector disabled"
+  },
+  "mailroomConnectorsEmailGroupTitle": {
+    "message": "Email ingestion",
+    "description": "Email-related connectors group title"
+  },
+  "mailroomConnectorsEmailGroupHelp": {
+    "message": "These connectors power inbound email ingestion into Mailroom.",
+    "description": "Email-related connectors group help"
+  },
+  "mailroomConnectorsWebGroupTitle": {
+    "message": "Web & integrations",
+    "description": "Non-email connectors group title"
+  },
+  "mailroomConnectorsWebGroupHelp": {
+    "message": "These connectors ingest messages from portal, API, and embedded chat.",
+    "description": "Non-email connectors group help"
+  },
+  "mailroomIngestFieldChannel": {
+    "message": "Channel",
+    "description": "Ingest rule field: message channel"
+  },
   "mailroomOverviewSetupTitle": {
     "message": "Mailroom setup",
     "description": "Overview section title"
@@ -2512,7 +2644,7 @@
     "description": "Invite last name placeholder"
   },
   "inviteEmailPh": {
-    "message": "john.doe@company.com",
+    "message": "john.doe{'@'}company.com",
     "description": "Invite email placeholder"
   },
   "groupFormNamePh": {
@@ -5768,7 +5900,7 @@
     "description": "Alert recipients label"
   },
   "modFieldsRecipientsPh": {
-    "message": "e.g., revenue-ops@company.com, manager@company.com",
+    "message": "e.g., revenue-ops{'@'}company.com, manager{'@'}company.com",
     "description": "Alert recipients placeholder"
   },
   "modFieldsAlertMessagePh": {

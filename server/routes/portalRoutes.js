@@ -39,6 +39,22 @@ const {
     uploadEvidence,
     uploadMiddleware
 } = require('../controllers/portalController');
+const {
+  ingestPortalMessage,
+  replyToCaseFromPortal,
+  uploadPortalAttachment,
+  listPortalConversationAttachments,
+  listPortalMessageAttachments,
+  uploadMiddleware: portalMailroomUploadMiddleware
+} = require('../controllers/portalMailroomController');
+const { downloadMailroomAttachmentForPortal } = require('../controllers/mailroomAttachmentController');
+const {
+  listPortalCases,
+  getPortalCase,
+  createPortalCase,
+  replyPortalCase
+} = require('../controllers/portalCaseController');
+const { mailroomPortalIngestLimiter } = require('../middleware/rateLimitMiddleware');
 
 // Apply middleware to all Portal routes
 // Order: auth → app context → app entitlement → organization isolation → portal enforcement
@@ -60,6 +76,21 @@ router.get('/audits/:eventId', getAuditDetail); // Audit detail
 // Corrective actions endpoints
 router.get('/actions', listCorrectiveActions); // List corrective actions
 router.post('/actions/:actionId/evidence', uploadMiddleware, uploadEvidence); // Upload evidence
+
+// Helpdesk cases (Phase 1D) — customer-scoped case APIs
+router.get('/cases', listPortalCases);
+router.post('/cases', createPortalCase);
+router.get('/cases/:id', getPortalCase);
+router.post('/cases/:id/reply', mailroomPortalIngestLimiter, replyPortalCase);
+
+// Mailroom connector (M5) — portal-originated messages into the Mailroom pipeline
+router.use('/mailroom', mailroomPortalIngestLimiter);
+router.post('/mailroom/ingest', ingestPortalMessage);
+router.post('/mailroom/cases/:caseId/reply', replyToCaseFromPortal);
+router.post('/mailroom/attachments', portalMailroomUploadMiddleware, uploadPortalAttachment);
+router.get('/mailroom/conversations/:conversationId/attachments', listPortalConversationAttachments);
+router.get('/mailroom/messages/:messageId/attachments', listPortalMessageAttachments);
+router.get('/mailroom/attachments/:id/download', downloadMailroomAttachmentForPortal);
 
 // Catch-all handler for unknown portal routes (return 404, not 403)
 // This prevents frontend routes like /portal/dashboard from being blocked by middleware

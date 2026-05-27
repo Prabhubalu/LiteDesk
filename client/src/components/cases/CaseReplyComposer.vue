@@ -6,7 +6,10 @@
     ]"
   >
     <div class="mb-1.5 flex shrink-0 flex-wrap items-center gap-2 text-[11px] sm:text-xs">
-      <label class="inline-flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+      <label
+        v-if="!hideChannelSelect && !fixedChannel"
+        class="inline-flex items-center gap-1.5 text-gray-600 dark:text-gray-400"
+      >
         <span class="font-medium">{{ t('cases.recordComposerVia') }}</span>
         <select
           v-model="viaChannel"
@@ -51,6 +54,7 @@
           'w-full resize-none border-0 bg-transparent px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-0 dark:text-white dark:placeholder:text-gray-500',
           fillHeight ? 'min-h-0 flex-1 rounded-t-xl' : 'rounded-t-xl'
         ]"
+        @input="onDraftInput"
         @keydown.meta.enter.prevent="submit"
         @keydown.ctrl.enter.prevent="submit"
       />
@@ -98,12 +102,16 @@ const props = defineProps({
   disabled: { type: Boolean, default: false },
   isClosed: { type: Boolean, default: false },
   showInternalToggle: { type: Boolean, default: true },
+  /** If set, forces the channel and hides the selector. */
+  fixedChannel: { type: String, default: '' },
+  /** Hide the "Via" channel selector. */
+  hideChannelSelect: { type: Boolean, default: false },
   placeholder: { type: String, default: '' },
   /** Fill parent height (used inside resizable pane). */
   fillHeight: { type: Boolean, default: false }
 });
 
-const emit = defineEmits(['send', 'reopen']);
+const emit = defineEmits(['send', 'reopen', 'typing']);
 
 const { t } = useI18n();
 const authStore = useAuthStore();
@@ -111,13 +119,21 @@ const authStore = useAuthStore();
 const draft = ref('');
 const viaChannel = ref('');
 const internalNote = ref(false);
+const typingTimer = ref(null);
+const lastTypingSentAt = ref(0);
 
 const channels = CASE_CHANNELS;
 
 watch(
-  () => props.caseRecord?.channel,
+  () => [props.fixedChannel, props.caseRecord?.channel],
   (ch) => {
-    if (ch) viaChannel.value = ch;
+    const fixed = String(props.fixedChannel || '').trim();
+    if (fixed) {
+      viaChannel.value = fixed;
+      return;
+    }
+    const recordChannel = Array.isArray(ch) ? ch[1] : ch;
+    if (recordChannel) viaChannel.value = recordChannel;
     else if (!viaChannel.value) viaChannel.value = channels[0];
   },
   { immediate: true }
@@ -144,6 +160,30 @@ function submit() {
   });
   draft.value = '';
   internalNote.value = false;
+}
+
+watch(
+  () => draft.value,
+  (val) => {
+    // Keep watcher for edge cases (programmatic changes), but main signal is onDraftInput.
+    if (val) onDraftInput();
+  }
+);
+
+function onDraftInput() {
+  const msg = String(draft.value || '').trim();
+  if (!msg) return;
+  const send = () => {
+    lastTypingSentAt.value = Date.now();
+    emit('typing', { channel: viaChannel.value, internal: internalNote.value });
+  };
+  const now = Date.now();
+  if (now - lastTypingSentAt.value > 900) {
+    send();
+    return;
+  }
+  if (typingTimer.value) clearTimeout(typingTimer.value);
+  typingTimer.value = setTimeout(send, 900);
 }
 
 defineExpose({ clear: () => { draft.value = ''; } });

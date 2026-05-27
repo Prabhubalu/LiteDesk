@@ -306,11 +306,66 @@ const organizationSettingsLimiter = rateLimit({
     }
 });
 
+const MAILROOM_PUBLIC_RATE_LIMIT_MAX = parsePositiveInteger(
+    process.env.MAILROOM_PUBLIC_RATE_LIMIT_MAX,
+    120
+);
+const MAILROOM_PORTAL_RATE_LIMIT_MAX = parsePositiveInteger(
+    process.env.MAILROOM_PORTAL_RATE_LIMIT_MAX,
+    180
+);
+const MAILROOM_CONNECTOR_WINDOW_MS = parsePositiveInteger(
+    process.env.MAILROOM_CONNECTOR_RATE_LIMIT_WINDOW_MS,
+    15 * 60 * 1000
+);
+
+const mailroomPublicIngestLimiter = rateLimit({
+    windowMs: MAILROOM_CONNECTOR_WINDOW_MS,
+    max: MAILROOM_PUBLIC_RATE_LIMIT_MAX,
+    ...rateLimitHeadersAndStore('mailroom-public', MAILROOM_CONNECTOR_WINDOW_MS, ROUTE_RATE_LIMIT_REDIS_FAILURE_MODE),
+    message: {
+        error: 'Too many Mailroom public API requests, please try again later.',
+        code: 'MAILROOM_PUBLIC_RATE_LIMIT_EXCEEDED'
+    },
+    keyGenerator: (req) => {
+        const orgId = req.headers['x-organization-id'] || req.headers['x-org-id'] || 'unknown-org';
+        return `mailroom-public:${orgId}:${getClientIp(req)}`;
+    },
+    handler: makeRateLimitHandler('mailroom-public', {
+        error: 'Too many Mailroom public API requests, please try again later.',
+        code: 'MAILROOM_PUBLIC_RATE_LIMIT_EXCEEDED'
+    }),
+    skip: (req) => SECURITY_DISABLED || shouldBypassRateLimit(req)
+});
+
+const mailroomPortalIngestLimiter = rateLimit({
+    windowMs: MAILROOM_CONNECTOR_WINDOW_MS,
+    max: MAILROOM_PORTAL_RATE_LIMIT_MAX,
+    ...rateLimitHeadersAndStore('mailroom-portal', MAILROOM_CONNECTOR_WINDOW_MS, ROUTE_RATE_LIMIT_REDIS_FAILURE_MODE),
+    message: {
+        error: 'Too many Mailroom portal requests, please try again later.',
+        code: 'MAILROOM_PORTAL_RATE_LIMIT_EXCEEDED'
+    },
+    keyGenerator: (req) => {
+        if (req.user?._id) {
+            return `mailroom-portal:user:${req.user._id}`;
+        }
+        return getRateLimitKey(req, 'mailroom-portal');
+    },
+    handler: makeRateLimitHandler('mailroom-portal', {
+        error: 'Too many Mailroom portal requests, please try again later.',
+        code: 'MAILROOM_PORTAL_RATE_LIMIT_EXCEEDED'
+    }),
+    skip: (req) => SECURITY_DISABLED || shouldBypassRateLimit(req)
+});
+
 module.exports = {
     apiLimiter,
     authLimiter,
     passwordResetLimiter,
     registrationLimiter,
     sensitiveOperationLimiter,
-    organizationSettingsLimiter
+    organizationSettingsLimiter,
+    mailroomPublicIngestLimiter,
+    mailroomPortalIngestLimiter
 };

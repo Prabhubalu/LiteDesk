@@ -2060,7 +2060,7 @@
     "description": "Invite last name placeholder"
   },
   "inviteEmailPh": {
-    "message": "john.doe@company.com",
+    "message": "john.doe{'@'}company.com",
     "description": "Invite email placeholder"
   },
   "groupFormNamePh": {
@@ -5316,7 +5316,7 @@
     "description": "Alert recipients label"
   },
   "modFieldsRecipientsPh": {
-    "message": "उदाहरण के लिए, earning-ops@company.com,manager@company.com",
+    "message": "उदाहरण के लिए, earning-ops{'@'}company.com,manager{'@'}company.com",
     "description": "Alert recipients placeholder"
   },
   "modFieldsAlertMessagePh": {

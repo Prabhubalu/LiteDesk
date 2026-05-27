@@ -60,6 +60,10 @@
             "
           >
             <p class="whitespace-pre-wrap break-words">{{ activity.message || '—' }}</p>
+            <CaseMailroomAttachments
+              v-if="mailroomAttachments(activity).length"
+              :attachments="mailroomAttachments(activity)"
+            />
           </div>
         </div>
       </div>
@@ -78,6 +82,7 @@ import {
   BuildingOfficeIcon
 } from '@heroicons/vue/24/outline';
 import Avatar from '@/components/common/Avatar.vue';
+import CaseMailroomAttachments from '@/components/cases/CaseMailroomAttachments.vue';
 import { formatRelativeTime } from '@/utils/relativeTime';
 import {
   isCaseSystemActivity,
@@ -115,6 +120,11 @@ function formatTime(date) {
 }
 function formatChannel(ch) {
   return formatCaseChannelLabel(ch);
+}
+
+function mailroomAttachments(activity) {
+  const list = activity?.metadata?.mailroomAttachments;
+  return Array.isArray(list) ? list : [];
 }
 
 function channelIcon(channel) {

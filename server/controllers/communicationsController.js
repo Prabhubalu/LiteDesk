@@ -12,6 +12,7 @@
 const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
+const objectStorage = require('../services/objectStorageService');
 const mongoose = require('mongoose');
 const Communication = require('../models/Communication');
 const Mailbox = require('../models/Mailbox');
@@ -2551,5 +2552,53 @@ exports.replayInboundDeadLetter = async (req, res) => {
       message: 'Failed to replay inbound dead-letter',
       error: error.message
     });
+  }
+};
+
+function resolveAttachmentContentDisposition(req, safeName) {
+  const mode = String(req.query.disposition || '').trim().toLowerCase();
+  const inline = mode === 'inline' || mode === '1' || mode === 'true';
+  if (inline) {
+    return `inline; filename="${safeName}"`;
+  }
+  return `attachment; filename="${safeName}"`;
+}
+
+exports.downloadCommunicationAttachment = async (req, res) => {
+  try {
+    const organizationId = req.user?.organizationId;
+    if (!organizationId) {
+      return res.status(400).json({ success: false, message: 'Organization context missing' });
+    }
+
+    const storagePath = String(req.query.storagePath || '').trim();
+    if (!storagePath.startsWith('oci:')) {
+      return res.status(400).json({ success: false, message: 'Invalid storage path' });
+    }
+
+    const key = storagePath.slice(4);
+    const safeOrgId = String(organizationId).replace(/[^a-zA-Z0-9_-]/g, '_');
+    const expectedPrefix = `attachments/${safeOrgId}/`;
+    if (!key.startsWith(expectedPrefix)) {
+      return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+
+    const fileName = String(req.query.fileName || path.basename(key) || 'attachment').replace(/[\r\n"]/g, '_');
+    const { stream } = await objectStorage.getObjectStream({ key });
+    const disposition = resolveAttachmentContentDisposition(req, fileName);
+
+    res.setHeader('Content-Type', req.query.contentType || 'application/octet-stream');
+    res.setHeader('Content-Disposition', disposition);
+    if (disposition.startsWith('inline')) {
+      res.setHeader('Cache-Control', 'private, max-age=300');
+    }
+    return stream.pipe(res);
+  } catch (error) {
+    const status = error.statusCode || 500;
+    if (status !== 500) {
+      return res.status(status).json({ success: false, message: error.message });
+    }
+    console.error('[communicationsController] downloadCommunicationAttachment', error);
+    return res.status(500).json({ success: false, message: 'Failed to download attachment' });
   }
 };

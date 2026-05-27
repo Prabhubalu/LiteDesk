@@ -5,7 +5,17 @@
       "destination": "https://api.arivusystems.com/api/$1"
     },
     {
-      "source": "/portal/(me|org|health|audits|actions)(.*)",
+      "source": "/portal/(me|org|health|mailroom)(.*)",
+      "destination": "https://api.arivusystems.com/portal/$1$2"
+    },
+    {
+      "source": "/portal/(audits|actions|cases)(.*)",
+      "has": [
+        {
+          "type": "header",
+          "key": "authorization"
+        }
+      ],
       "destination": "https://api.arivusystems.com/portal/$1$2"
     },
     { "source": "/(.*)", "destination": "/index.html" }

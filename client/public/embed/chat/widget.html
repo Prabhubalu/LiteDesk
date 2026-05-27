@@ -1,0 +1,325 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LiteDesk Chat</title>
+    <style>
+      :root {
+        --bg: #ffffff;
+        --fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --primary: #2563eb;
+        --bubble: #f1f5f9;
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--fg);
+      }
+      .wrap {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      header {
+        padding: 12px 12px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      header h1 {
+        font-size: 14px;
+        margin: 0;
+      }
+      header button {
+        border: 0;
+        background: transparent;
+        cursor: pointer;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      #messages {
+        flex: 1;
+        overflow: auto;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        background: #fff;
+      }
+      .msg {
+        max-width: 85%;
+        border-radius: 14px;
+        padding: 10px 10px;
+        font-size: 13px;
+        line-height: 1.35;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      .inbound {
+        align-self: flex-end;
+        background: var(--primary);
+        color: #fff;
+      }
+      .outbound {
+        align-self: flex-start;
+        background: var(--bubble);
+        color: var(--fg);
+      }
+      .meta {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .composeRow {
+        display: flex;
+        gap: 8px;
+      }
+      textarea {
+        flex: 1;
+        resize: none;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px;
+        font-size: 13px;
+        outline: none;
+      }
+      .send {
+        border: 0;
+        border-radius: 10px;
+        padding: 10px 12px;
+        background: var(--primary);
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .hint {
+        padding: 10px 12px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>Support chat</h1>
+        <button id="closeBtn" type="button">✕</button>
+      </header>
+      <div id="messages">
+        <div class="hint">Start a conversation. An agent will respond here.</div>
+      </div>
+      <footer>
+        <div id="typing" class="hint" style="padding: 0; min-height: 16px;"></div>
+        <div class="composeRow">
+          <textarea id="input" rows="2" placeholder="Type a message..."></textarea>
+          <button class="send" id="sendBtn" type="button">Send</button>
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      function parseHash() {
+        var raw = (location.hash || '').replace(/^#/, '')
+        var out = {}
+        raw.split('&').forEach(function (pair) {
+          if (!pair) return
+          var idx = pair.indexOf('=')
+          if (idx === -1) return
+          out[decodeURIComponent(pair.slice(0, idx))] = decodeURIComponent(pair.slice(idx + 1))
+        })
+        return out
+      }
+
+      var cfg = parseHash()
+      var instanceKey = cfg.instanceKey
+      if (!instanceKey) {
+        document.getElementById('messages').innerHTML =
+          '<div class="hint">Missing instanceKey.</div>'
+      }
+
+      var base = location.origin + '/embed/chat'
+      var sessionId = null
+      var sessionSecret = null
+      var es = null
+
+      function storageKey() {
+        return 'litedesk_chat_session:' + instanceKey
+      }
+
+      function appendMessage(m) {
+        var container = document.getElementById('messages')
+        var el = document.createElement('div')
+        el.className = 'msg ' + (m.direction === 'inbound' ? 'inbound' : 'outbound')
+        el.textContent = m.body || ''
+        var meta = document.createElement('div')
+        meta.className = 'meta'
+        meta.textContent = new Date(m.createdAt || Date.now()).toLocaleString()
+        var wrap = document.createElement('div')
+        wrap.style.display = 'flex'
+        wrap.style.flexDirection = 'column'
+        wrap.style.alignItems = m.direction === 'inbound' ? 'flex-end' : 'flex-start'
+        wrap.appendChild(el)
+        wrap.appendChild(meta)
+        container.appendChild(wrap)
+        container.scrollTop = container.scrollHeight
+      }
+
+      async function ensureSession() {
+        var cached = null
+        try {
+          cached = JSON.parse(localStorage.getItem(storageKey()) || 'null')
+        } catch (_) {}
+        if (cached && cached.sessionId && cached.sessionSecret) {
+          sessionId = cached.sessionId
+          sessionSecret = cached.sessionSecret
+          return
+        }
+        var res = await fetch(base + '/sessions?instanceKey=' + encodeURIComponent(instanceKey), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            instanceKey: instanceKey,
+            pageUrl: document.referrer || ''
+          })
+        })
+        var json = await res.json()
+        if (!json.success) throw new Error(json.message || 'Failed to start chat')
+        sessionId = json.data.sessionId
+        sessionSecret = json.data.sessionSecret
+        try {
+          localStorage.setItem(storageKey(), JSON.stringify({ sessionId: sessionId, sessionSecret: sessionSecret }))
+        } catch (_) {}
+      }
+
+      async function loadHistory() {
+        var res = await fetch(
+          base +
+            '/sessions/' +
+            encodeURIComponent(sessionId) +
+            '/messages?instanceKey=' +
+            encodeURIComponent(instanceKey),
+          {
+            headers: { 'X-Chat-Session-Secret': sessionSecret }
+          }
+        )
+        var json = await res.json()
+        if (!json.success) return
+        json.data.forEach(appendMessage)
+      }
+
+      function openStream() {
+        if (es) es.close()
+        var url =
+          base +
+          '/sessions/' +
+          encodeURIComponent(sessionId) +
+          '/stream?instanceKey=' +
+          encodeURIComponent(instanceKey) +
+          '&sessionSecret=' +
+          encodeURIComponent(sessionSecret)
+        es = new EventSource(url)
+        es.addEventListener('messages', function (e) {
+          try {
+            var rows = JSON.parse(e.data || '[]')
+            rows.forEach(appendMessage)
+          } catch (_) {}
+        })
+        es.addEventListener('typing', function (e) {
+          try {
+            var t = JSON.parse(e.data || '{}')
+            var el = document.getElementById('typing')
+            if (!el) return
+            var agent = t && t.agent ? t.agent : null
+            if (!agent || !agent.authorType) {
+              el.textContent = ''
+              return
+            }
+            // Only show agent typing to the visitor (not visitor typing to themselves).
+            if (agent.authorType !== 'agent') {
+              el.textContent = ''
+              return
+            }
+            var who = (agent.authorName || 'Agent') + ''
+            el.textContent = who ? who + ' is typing…' : ''
+          } catch (_) {}
+        })
+      }
+
+      async function send(body) {
+        var res = await fetch(
+          base +
+            '/sessions/' +
+            encodeURIComponent(sessionId) +
+            '/messages?instanceKey=' +
+            encodeURIComponent(instanceKey),
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Chat-Session-Secret': sessionSecret
+            },
+            body: JSON.stringify({ body: body })
+          }
+        )
+        var json = await res.json()
+        if (json.success) appendMessage(json.data)
+      }
+
+      document.getElementById('sendBtn').addEventListener('click', async function () {
+        var input = document.getElementById('input')
+        var text = (input.value || '').trim()
+        if (!text) return
+        input.value = ''
+        await send(text)
+      })
+
+      var typingTimer = null
+      function pingTyping() {
+        if (!sessionId || !sessionSecret) return
+        fetch(
+          base +
+            '/sessions/' +
+            encodeURIComponent(sessionId) +
+            '/typing?instanceKey=' +
+            encodeURIComponent(instanceKey),
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Chat-Session-Secret': sessionSecret
+            },
+            body: JSON.stringify({})
+          }
+        ).catch(function () {})
+      }
+      document.getElementById('input').addEventListener('input', function () {
+        if (typingTimer) clearTimeout(typingTimer)
+        typingTimer = setTimeout(pingTyping, 250)
+      })
+      document.getElementById('closeBtn').addEventListener('click', function () {
+        parent.postMessage('litedesk_chat_close', '*')
+      })
+
+      ;(async function init() {
+        if (!instanceKey) return
+        await ensureSession()
+        await loadHistory()
+        openStream()
+      })()
+    </script>
+  </body>
+</html>
+

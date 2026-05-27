@@ -2,10 +2,17 @@ const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
 const { organizationIsolation } = require('../middleware/organizationMiddleware');
-const { uploadSingle } = require('../middleware/uploadMiddleware');
 const controller = require('../controllers/communicationsController');
 const { streamInbox } = require('../controllers/inboxStreamController');
 const { handleSseCorsPreflight } = require('../utils/sseCors');
+const multer = require('multer');
+const { v4: uuidv4 } = require('uuid');
+const objectStorage = require('../services/objectStorageService');
+
+const memUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 25 * 1024 * 1024 }
+});
 
 // SSE — auth via query token (EventSource cannot send Authorization header)
 router.options('/inbox/stream', handleSseCorsPreflight);
@@ -42,25 +49,37 @@ router.patch('/threads/:threadId/tags', controller.updateThreadTags);
 router.post('/:communicationId/create-task', controller.createTaskFromEmail);
 router.post('/:communicationId/create-case', controller.createCaseFromEmail);
 
-router.post('/upload', uploadSingle('file'), (req, res) => {
+router.get('/attachments/download', controller.downloadCommunicationAttachment);
+
+async function handleCommunicationOciUpload(req, res) {
   try {
-    if (!req.file) {
+    if (!req.file?.buffer) {
       return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
-    const rawOrgId = req.user?.organizationId?.toString() || 'public';
-    const safeOrgId = String(rawOrgId).replace(/[^a-zA-Z0-9_-]/g, '_');
-    const storagePath = `${safeOrgId}/${req.file.filename}`;
-    res.json({
+    const orgId = req.user?.organizationId?.toString() || 'public';
+    const safeOrgId = String(orgId).replace(/[^a-zA-Z0-9_-]/g, '_');
+    const baseName = String(req.file.originalname || 'attachment').replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 120);
+    const key = `attachments/${safeOrgId}/outbound/${Date.now()}-${uuidv4()}-${baseName}`;
+    await objectStorage.putBuffer({
+      key,
+      buffer: req.file.buffer,
+      contentType: req.file.mimetype || 'application/octet-stream',
+      metadata: { originalname: baseName }
+    });
+    return res.json({
       success: true,
       fileName: req.file.originalname,
       fileType: req.file.mimetype,
       fileSize: req.file.size,
-      storagePath
+      storagePath: `oci:${key}`
     });
   } catch (err) {
-    console.error('[communications] upload error:', err);
-    res.status(500).json({ success: false, message: 'Upload failed', error: err.message });
+    console.error('[communications] upload-oci error:', err);
+    return res.status(500).json({ success: false, message: 'Upload failed', error: err.message });
   }
-});
+}
+
+router.post('/upload', memUpload.single('file'), handleCommunicationOciUpload);
+router.post('/upload-oci', memUpload.single('file'), handleCommunicationOciUpload);
 
 module.exports = router;

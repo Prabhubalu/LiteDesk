@@ -159,7 +159,7 @@ function toLower(value) {
   return String(value || '').trim().toLowerCase();
 }
 
-function listParticipantValues(participants, field) {
+function listParticipantValues(participants, field, message) {
   if (field === 'subject') return [toLower(participants?.subject)];
   const pick = (entry) => {
     if (!entry) return '';
@@ -178,6 +178,11 @@ function listParticipantValues(participants, field) {
   }
   if (field === 'mailbox_kind') {
     return [toLower(participants?.metadata?.mailboxKind)];
+  }
+  if (field === 'channel') {
+    const fromMessage = toLower(message?.channel);
+    const fromMeta = toLower(participants?.metadata?.channel);
+    return [fromMessage, fromMeta].filter(Boolean);
   }
   const arr = Array.isArray(participants?.[field]) ? participants[field] : [];
   return arr.map(pick).filter(Boolean);
@@ -215,7 +220,7 @@ function evaluateIngest(ingestPolicy, message) {
     const mode = String(rule.match || 'all').toLowerCase() === 'any' ? 'any' : 'all';
     const conditions = Array.isArray(rule.conditions) ? rule.conditions : [];
     const checks = conditions.map((cond) => {
-      const values = listParticipantValues(participants, cond.field);
+      const values = listParticipantValues(participants, cond.field, message);
       return {
         field: cond.field,
         operator: cond.operator,

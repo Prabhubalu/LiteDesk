@@ -29,7 +29,7 @@ const MAILROOM_CASE_LINK_ACTIONS = [
 ];
 
 const MAILROOM_INGEST_OPERATORS = ['contains', 'equals', 'ends_with', 'in'];
-const MAILROOM_INGEST_FIELDS = ['to', 'cc', 'bcc', 'from', 'from_domain', 'subject', 'mailbox_kind'];
+const MAILROOM_INGEST_FIELDS = ['to', 'cc', 'bcc', 'from', 'from_domain', 'subject', 'mailbox_kind', 'channel'];
 const MAILROOM_INGEST_ACTIONS = ['route_to_case_flow', 'workspace_only', 'manual_review', 'ignore'];
 
 const MAILROOM_TEMPLATE_IDS = [

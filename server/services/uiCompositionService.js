@@ -345,6 +345,38 @@ class UICompositionService {
         seenModuleKeys.add(moduleDef.moduleKey); // Mark as seen
       }
 
+      // Audit: ensure core workspace surfaces appear even when platform module seeds are missing
+      if (appKeyLower === 'audit') {
+        const auditNavDefaults = [
+          { moduleKey: 'audits', label: 'Audits', pluralLabel: 'Audits', routeBase: '/audit/audits', icon: 'document-text', sidebarOrder: 1 },
+          { moduleKey: 'cases', label: 'Findings', pluralLabel: 'Findings', routeBase: '/audit/findings', icon: 'magnifying-glass', sidebarOrder: 2 },
+          { moduleKey: 'responses', label: 'Responses', pluralLabel: 'Responses', routeBase: '/audit/responses', icon: 'responses', sidebarOrder: 3 },
+          { moduleKey: 'schedule', label: 'Schedule', pluralLabel: 'Schedule', routeBase: '/audit/schedule', icon: 'calendar', sidebarOrder: 4 }
+        ];
+        for (const def of auditNavDefaults) {
+          if (seenModuleKeys.has(def.moduleKey)) continue;
+          uiModules.push({
+            moduleKey: def.moduleKey,
+            appKey: 'AUDIT',
+            label: def.label,
+            pluralLabel: def.pluralLabel,
+            routeBase: def.routeBase,
+            icon: def.icon,
+            showInSidebar: true,
+            sidebarOrder: def.sidebarOrder,
+            createLabel: `Create ${def.label}`,
+            listLabel: `All ${def.pluralLabel}`,
+            navigationCore: false,
+            navigationEntity: false,
+            excludeFromApps: false,
+            system: false,
+            coreEntity: false
+          });
+          seenModuleKeys.add(def.moduleKey);
+        }
+        uiModules.sort((a, b) => (a.sidebarOrder ?? 999) - (b.sidebarOrder ?? 999));
+      }
+
       // For Sales app: include custom modules (organization-scoped) in sidebar and app nav
       if (appKeyLower === 'sales') {
         const customModules = await ModuleDefinition.find({
