@@ -6,6 +6,7 @@
       app-key="HELPDESK"
       :view-mode="currentView"
       @row-click="handleRowClick"
+      @bulk-action="handleBulkAction"
       @filters-changed="handleFiltersChanged"
       @search-changed="handleSearchChanged"
       @kanban-settings-changed="refreshKanbanSettings"
@@ -441,6 +442,51 @@ const fetchKanbanCases = async () => {
     kanbanLoading.value = false;
   }
 };
+
+const bulkStatusOptions = ['New', 'Assigned', 'In Progress', 'On Hold', 'Resolved', 'Closed'];
+const bulkPriorityOptions = ['Low', 'Medium', 'High', 'Critical'];
+
+async function handleBulkAction(action, rows) {
+  const ids = Array.isArray(rows)
+    ? rows.map((row) => row?._id).filter(Boolean)
+    : [];
+  if (ids.length === 0) return;
+
+  if (action === 'delete' || action === 'bulk-delete') {
+    await Promise.all(ids.map((id) => apiClient.delete(`/helpdesk/cases/${id}`)));
+    refreshList();
+    if (currentView.value === 'kanban') fetchKanbanCases();
+    return;
+  }
+
+  let updates = null;
+  if (action === 'bulk-update-status') {
+    const value = window.prompt(`Enter status (${bulkStatusOptions.join(', ')})`);
+    if (!value || !bulkStatusOptions.includes(String(value).trim())) return;
+    updates = { status: String(value).trim() };
+  } else if (action === 'bulk-update-priority') {
+    const value = window.prompt(`Enter priority (${bulkPriorityOptions.join(', ')})`);
+    if (!value || !bulkPriorityOptions.includes(String(value).trim())) return;
+    updates = { priority: String(value).trim() };
+  } else if (action === 'bulk-assign-owner') {
+    const value = window.prompt('Enter owner user ID');
+    if (!String(value || '').trim()) return;
+    updates = { caseOwnerId: String(value).trim() };
+  } else {
+    return;
+  }
+
+  try {
+    const response = await apiClient.patch('/helpdesk/cases/bulk/update', { ids, updates });
+    if (!response?.success) {
+      throw new Error(response?.message || 'Bulk update failed');
+    }
+    refreshList();
+    if (currentView.value === 'kanban') fetchKanbanCases();
+  } catch (err) {
+    alert(err?.response?.data?.message || err?.message || 'Bulk update failed');
+  }
+}
 
 const handleKanbanUpdate = async ({ item, newStage }) => {
   const id = item?._id != null ? (typeof item._id === 'string' ? item._id : String(item._id)) : null;

@@ -12,12 +12,14 @@ const {
   updateCase,
   deleteCase,
   updateCaseStatus,
+  bulkUpdateCases,
   reopenCase,
   addCaseActivity,
   getCaseAnalyticsSummary,
   getCaseAnalyticsTrends,
   getCaseAnalyticsOwners,
   getCaseAnalyticsDistribution,
+  getCaseAuditExport,
   ingestCaseChannelInteraction
 } = require('../controllers/caseController');
 
@@ -35,10 +37,12 @@ router.route('/')
   .get(filterByOwnership('cases'), checkPermission('cases', 'view'), getCases);
 
 router.post('/ingest/channel', checkPermission('cases', 'create'), ingestCaseChannelInteraction);
+router.patch('/bulk/update', checkPermission('cases', 'edit'), bulkUpdateCases);
 router.get('/analytics/summary', filterByOwnership('cases'), checkPermission('cases', 'view'), getCaseAnalyticsSummary);
 router.get('/analytics/trends', filterByOwnership('cases'), checkPermission('cases', 'view'), getCaseAnalyticsTrends);
 router.get('/analytics/owners', filterByOwnership('cases'), checkPermission('cases', 'view'), getCaseAnalyticsOwners);
 router.get('/analytics/distribution', filterByOwnership('cases'), checkPermission('cases', 'view'), getCaseAnalyticsDistribution);
+router.get('/analytics/audit-export', filterByOwnership('cases'), checkPermission('cases', 'view'), getCaseAuditExport);
 router.get('/:id', checkPermission('cases', 'view'), getCaseById);
 router.put('/:id', checkPermission('cases', 'edit'), updateCase);
 router.delete('/:id', checkPermission('cases', 'delete'), deleteCase);

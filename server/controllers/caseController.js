@@ -122,6 +122,22 @@ function toSafeObject(record) {
   return out;
 }
 
+const CASE_REFERENCE_POPULATE = [
+  { path: 'caseOwnerId', select: 'firstName lastName email username' },
+  { path: 'contactId', select: 'first_name last_name email' },
+  { path: 'organizationRefId', select: 'name' }
+];
+
+async function populateCaseReferences(row) {
+  if (!row) return;
+  await Case.populate(row, CASE_REFERENCE_POPULATE);
+}
+
+async function toPopulatedSafeObject(row) {
+  await populateCaseReferences(row);
+  return toSafeObject(row);
+}
+
 async function ensureOwnerInOrg(ownerId, organizationId) {
   if (!ownerId || !mongoose.Types.ObjectId.isValid(ownerId)) return false;
   const user = await User.findOne({ _id: ownerId, organizationId }).select('_id').lean();
@@ -779,7 +795,7 @@ exports.updateCase = async (req, res) => {
     });
     return res.json({
       success: true,
-      data: toSafeObject(row),
+      data: await toPopulatedSafeObject(row),
       meta: {
         operation: 'update_case',
         changedFields
@@ -904,7 +920,7 @@ exports.updateCaseStatus = async (req, res) => {
     });
     return res.json({
       success: true,
-      data: toSafeObject(row),
+      data: await toPopulatedSafeObject(row),
       meta: {
         operation: 'update_case_status',
         fromStatus,
@@ -916,6 +932,116 @@ exports.updateCaseStatus = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to update case status'
+    });
+  }
+};
+
+exports.bulkUpdateCases = async (req, res) => {
+  try {
+    const ids = Array.isArray(req.body?.ids) ? req.body.ids : [];
+    if (ids.length === 0) {
+      return res.status(400).json({ success: false, message: 'ids is required' });
+    }
+    const normalizedIds = [...new Set(ids.map((id) => String(id || '').trim()).filter(Boolean))];
+    if (normalizedIds.some((id) => !mongoose.Types.ObjectId.isValid(id))) {
+      return res.status(400).json({ success: false, message: 'All ids must be valid case ids' });
+    }
+
+    const allowedBulkFields = new Set(['caseOwnerId', 'priority', 'status']);
+    const incoming = req.body?.updates && typeof req.body.updates === 'object' ? req.body.updates : {};
+    const updateKeys = Object.keys(incoming).filter((key) => allowedBulkFields.has(key));
+    if (updateKeys.length === 0) {
+      return res.status(400).json({ success: false, message: 'updates must include one of: caseOwnerId, priority, status' });
+    }
+
+    if (updateKeys.includes('priority') && !isAllowedEnumValue(incoming.priority, CASE_PRIORITIES)) {
+      return res.status(400).json({ success: false, message: 'Invalid priority value' });
+    }
+    if (updateKeys.includes('status') && !isValidCaseStatus(incoming.status)) {
+      return res.status(400).json({ success: false, message: 'Invalid status value' });
+    }
+    if (updateKeys.includes('caseOwnerId')) {
+      const ownerExists = await ensureOwnerInOrg(incoming.caseOwnerId, req.user.organizationId);
+      if (!ownerExists) {
+        return res.status(400).json({
+          success: false,
+          message: 'caseOwnerId must be an active user in your organization'
+        });
+      }
+    }
+
+    const rows = await Case.find({
+      _id: { $in: normalizedIds },
+      organizationId: req.user.organizationId,
+      deletedAt: null
+    });
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'No cases found for provided ids' });
+    }
+
+    const results = {
+      updated: 0,
+      skipped: 0,
+      skippedIds: []
+    };
+    const actorName = getActorDisplayName(req.user);
+
+    for (const row of rows) {
+      if (row.status === 'Closed' && updateKeys.some((key) => key !== 'status')) {
+        results.skipped += 1;
+        results.skippedIds.push(String(row._id));
+        continue;
+      }
+      const fromStatus = row.status;
+      let changed = false;
+
+      if (updateKeys.includes('caseOwnerId') && String(row.caseOwnerId || '') !== String(incoming.caseOwnerId || '')) {
+        row.caseOwnerId = incoming.caseOwnerId;
+        changed = true;
+      }
+      if (updateKeys.includes('priority') && String(row.priority || '') !== String(incoming.priority || '')) {
+        row.priority = incoming.priority;
+        changed = true;
+      }
+      if (updateKeys.includes('status') && String(row.status || '') !== String(incoming.status || '')) {
+        if (!canTransitionCaseStatus(row.status, incoming.status)) {
+          results.skipped += 1;
+          results.skippedIds.push(String(row._id));
+          continue;
+        }
+        row.status = incoming.status;
+        row.currentSlaCycle = applyStatusToSlaCycle(row.currentSlaCycle?.toObject?.() || row.currentSlaCycle, incoming.status);
+        row.activities.push({
+          activityType: 'status_changed',
+          message: `Status changed from ${fromStatus} to ${incoming.status}`,
+          internal: true,
+          metadata: { fromStatus, toStatus: incoming.status, source: 'bulk_update' },
+          actorId: req.user._id,
+          actorName,
+          createdAt: new Date()
+        });
+        changed = true;
+      }
+
+      if (!changed) continue;
+      row.updatedBy = req.user._id;
+      await row.save();
+      results.updated += 1;
+    }
+
+    return res.json({
+      success: true,
+      data: results,
+      meta: {
+        operation: 'bulk_update_cases',
+        updatedFields: updateKeys
+      }
+    });
+  } catch (error) {
+    console.error('[caseController] bulkUpdateCases error', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to bulk update cases'
     });
   }
 };
@@ -944,6 +1070,20 @@ exports.reopenCase = async (req, res) => {
       });
     }
 
+    const reopenReasonValidation = normalizeOptionalText(req.body?.reopenReason, 1000);
+    if (!reopenReasonValidation.valid) {
+      return res.status(400).json({
+        success: false,
+        message: reopenReasonValidation.error
+      });
+    }
+    if (!String(reopenReasonValidation.value || '').trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'reopenReason is required to reopen a case'
+      });
+    }
+
     const { previousCycle, nextCycle } = createReopenedSlaState(row.currentSlaCycle?.toObject?.() || row.currentSlaCycle, new Date());
     row.slaCycles.push(previousCycle);
     row.currentSlaCycle = await applySlaTargetsToCycle({
@@ -953,13 +1093,19 @@ exports.reopenCase = async (req, res) => {
       startedAt: nextCycle.startedAt
     });
     row.status = 'In Progress';
+    row.reopenReason = reopenReasonValidation.value;
+    row.reopenCount = (Number(row.reopenCount) || 0) + 1;
     row.updatedBy = req.user._id;
 
     row.activities.push({
       activityType: 'case_reopened',
       message: 'Case reopened and moved to In Progress',
       internal: true,
-      metadata: { previousCycleNo: previousCycle.cycleNo, newCycleNo: row.currentSlaCycle.cycleNo },
+      metadata: {
+        previousCycleNo: previousCycle.cycleNo,
+        newCycleNo: row.currentSlaCycle.cycleNo,
+        reopenReason: reopenReasonValidation.value
+      },
       actorId: req.user._id,
       actorName: getActorDisplayName(req.user),
       createdAt: new Date()
@@ -974,7 +1120,7 @@ exports.reopenCase = async (req, res) => {
     });
     return res.json({
       success: true,
-      data: toSafeObject(row),
+      data: await toPopulatedSafeObject(row),
       meta: {
         operation: 'reopen_case'
       }
@@ -1030,7 +1176,7 @@ exports.addCaseActivity = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      data: toSafeObject(row),
+      data: await toPopulatedSafeObject(row),
       meta: {
         operation: 'add_case_activity',
         activityType: String(activityType).trim()
@@ -1307,6 +1453,79 @@ exports.getCaseAnalyticsDistribution = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to fetch case analytics distribution'
+    });
+  }
+};
+
+exports.getCaseAuditExport = async (req, res) => {
+  try {
+    const from = req.query.from ? new Date(req.query.from) : null;
+    const to = req.query.to ? new Date(req.query.to) : null;
+    if ((from && Number.isNaN(from.getTime())) || (to && Number.isNaN(to.getTime()))) {
+      return res.status(400).json({ success: false, message: 'Invalid from/to date filter' });
+    }
+    if (from && to && from > to) {
+      return res.status(400).json({ success: false, message: 'from must be earlier than to' });
+    }
+
+    const baseQuery = {
+      organizationId: req.user.organizationId,
+      deletedAt: null
+    };
+    if (from || to) {
+      baseQuery.updatedAt = {};
+      if (from) baseQuery.updatedAt.$gte = from;
+      if (to) baseQuery.updatedAt.$lte = to;
+    }
+
+    const rows = await Case.find(baseQuery)
+      .select('caseId title status priority caseOwnerId currentSlaCycle slaCycles activities updatedAt')
+      .lean();
+
+    const data = rows.map((row) => {
+      const activities = Array.isArray(row.activities) ? row.activities : [];
+      const assignmentEvents = activities.filter((a) => String(a?.activityType || '').startsWith('assignment_'));
+      const slaEvents = activities.filter((a) => String(a?.activityType || '').startsWith('sla_'));
+      const timeline = activities.map((a) => ({
+        type: a.activityType || null,
+        message: a.message || null,
+        internal: Boolean(a.internal),
+        createdAt: a.createdAt || null,
+        actorId: a.actorId || null,
+        actorName: a.actorName || null,
+        metadata: a.metadata || {}
+      }));
+      return {
+        caseId: row.caseId,
+        title: row.title,
+        status: row.status,
+        priority: row.priority,
+        ownerId: row.caseOwnerId || null,
+        updatedAt: row.updatedAt || null,
+        currentSlaCycle: row.currentSlaCycle || null,
+        historicalSlaCycles: Array.isArray(row.slaCycles) ? row.slaCycles : [],
+        assignmentEvents,
+        slaEvents,
+        timeline
+      };
+    });
+
+    return res.json({
+      success: true,
+      data,
+      meta: {
+        operation: 'case_audit_export',
+        exportedAt: new Date().toISOString(),
+        from: from ? from.toISOString() : null,
+        to: to ? to.toISOString() : null,
+        totalCases: data.length
+      }
+    });
+  } catch (error) {
+    console.error('[caseController] getCaseAuditExport error', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to export case audit data'
     });
   }
 };

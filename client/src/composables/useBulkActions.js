@@ -11,6 +11,14 @@ export function useBulkActions(module) {
 
   const bulkActions = computed(() => {
     const actions = [];
+
+    if (module === 'cases' && authStore.can(module, 'edit')) {
+      actions.push(
+        { label: 'Assign owner', icon: 'user', action: 'bulk-assign-owner', variant: 'secondary' },
+        { label: 'Update status', icon: 'refresh', action: 'bulk-update-status', variant: 'secondary' },
+        { label: 'Update priority', icon: 'flag', action: 'bulk-update-priority', variant: 'secondary' }
+      );
+    }
     
     // Delete action - requires delete permission
     if (authStore.can(module, 'delete')) {

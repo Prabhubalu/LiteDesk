@@ -1,6 +1,9 @@
 <template>
   <header class="shrink-0 border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
-    <div class="flex items-center gap-2 px-3 py-2 sm:px-4">
+    <div
+      class="flex items-center gap-2"
+      :class="embedToolbar ? 'px-6 py-2' : 'px-3 py-2 sm:px-4'"
+    >
       <div v-if="showNavigation" class="flex shrink-0 items-center gap-0.5">
         <button
           type="button"
@@ -24,7 +27,7 @@
         </button>
       </div>
 
-      <div class="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
+      <div v-if="!embedToolbar" class="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
         <span
           class="shrink-0 rounded bg-gray-100 px-1.5 py-0.5 font-mono text-[11px] font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300"
           :title="caseRecord.caseId"
@@ -32,6 +35,7 @@
           {{ caseRecord.caseId || caseRecord._id?.slice(-8) }}
         </span>
         <span
+          v-if="!previewMode"
           class="hidden min-w-0 truncate text-sm font-semibold text-gray-900 dark:text-white sm:inline"
           :title="caseRecord.title"
         >
@@ -54,7 +58,10 @@
         </span>
       </div>
 
-      <div class="flex shrink-0 items-center gap-2">
+      <div
+        class="flex shrink-0 items-center gap-2"
+        :class="embedToolbar ? 'ml-auto' : ''"
+      >
         <div
           class="hidden min-w-0 max-w-[9rem] items-center gap-1.5 border-r border-gray-200 pr-2 sm:flex sm:max-w-[11rem] dark:border-gray-700"
           :title="assigneeTitle"
@@ -158,6 +165,7 @@
     </div>
 
     <div
+      v-if="!previewMode"
       class="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-gray-100 px-3 pb-2 pt-1.5 text-[11px] sm:hidden dark:border-gray-800"
     >
       <h1 class="min-w-0 flex-1 truncate text-sm font-semibold text-gray-900 dark:text-white" :title="caseRecord.title">
@@ -219,7 +227,11 @@ const props = defineProps({
   canNext: { type: Boolean, default: false },
   canEmail: { type: Boolean, default: true },
   canDelete: { type: Boolean, default: false },
-  canEdit: { type: Boolean, default: true }
+  canEdit: { type: Boolean, default: true },
+  /** List quick-preview: hide duplicate title in the compact header row */
+  previewMode: { type: Boolean, default: false },
+  /** Embed quick-preview: toolbar only (title lives in RecordPageTitleRow) */
+  embedToolbar: { type: Boolean, default: false }
 });
 
 const emit = defineEmits([

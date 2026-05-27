@@ -1,5 +1,5 @@
 <template>
-  <div class="module-record-page-root flex-1 min-h-0 overflow-hidden flex flex-col">
+  <div class="module-record-page-root flex w-full min-w-0 flex-1 min-h-0 flex-col overflow-hidden">
     <!-- Deals and tasks use their full-featured pages; all other modules use the generic record page. -->
     <DealRecordPage
       v-if="adapterKey === 'deal'"

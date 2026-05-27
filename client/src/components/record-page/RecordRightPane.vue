@@ -1,8 +1,12 @@
 <template>
   <div 
     :class="[
-      'record-right-pane flex flex-col h-full bg-white dark:bg-gray-900 overflow-hidden transition-all duration-300',
-      layoutIsMobile ? 'w-full' : (activeTab ? 'w-full lg:w-[500px]' : 'w-20')
+      'record-right-pane flex min-w-0 flex-col h-full bg-white dark:bg-gray-900 overflow-hidden transition-all duration-300',
+      fullWidth || layoutIsMobile
+        ? 'w-full flex-1'
+        : activeTab
+          ? 'w-full lg:w-[500px]'
+          : 'w-20'
     ]"
   >
     <!-- Header: in embed/quick-preview mode (showHeader + showCloseButton) only show prefix and close to avoid duplicating the main page header -->
@@ -34,9 +38,12 @@
       <!-- Main Content Area - Always render for smooth transitions -->
       <div 
         ref="scrollContainer"
-        class="flex-1 overflow-y-auto overflow-x-hidden transition-all duration-300 min-h-0 flex flex-col"
+        class="flex-1 overflow-x-hidden transition-all duration-300 min-h-0 flex flex-col"
         :class="[
           { 'opacity-0': !activeTab, 'opacity-100': activeTab },
+          activeTab === 'summary' && props.summaryLayout === 'fill'
+            ? 'overflow-hidden'
+            : 'overflow-y-auto',
           layoutIsMobile && activeTab === 'summary'
             ? 'bg-white dark:bg-gray-900'
             : 'bg-gray-50 dark:bg-gray-900'
@@ -48,13 +55,33 @@
             <div v-if="activeTab === tab.id" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
               <!-- Summary tab: use teleport target for layout's left content on mobile -->
               <template v-if="tab.id === 'summary' && layoutIsMobile">
-                <div class="flex-1 overflow-y-auto overflow-x-hidden">
-                  <div id="record-summary-teleport-target" class="record-right-pane__summary-content max-w-4xl mx-auto w-full px-6 pt-0 pb-6">
+                <div
+                  :class="[
+                    'flex-1 min-h-0 h-full',
+                    props.summaryLayout === 'fill'
+                      ? 'flex flex-col overflow-hidden'
+                      : 'overflow-y-auto overflow-x-hidden'
+                  ]"
+                >
+                  <div
+                    id="record-summary-teleport-target"
+                    :class="[
+                      'record-right-pane__summary-content w-full',
+                      props.summaryLayout === 'fill'
+                        ? 'flex h-full min-h-0 flex-1 flex-col overflow-hidden max-w-none mx-0 px-0 pt-0 pb-0'
+                        : 'max-w-4xl mx-auto px-6 pt-0 pb-6'
+                    ]"
+                  >
                     <!-- Content will be teleported here from RecordPageLayout -->
                     <slot :name="`tab-${tab.id}`">
                       <!-- Fallback if no slot provided and teleport hasn't happened yet -->
                     </slot>
                   </div>
+                </div>
+              </template>
+              <template v-else-if="tab.id === 'summary' && props.summaryLayout === 'fill'">
+                <div class="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+                  <slot :name="`tab-${tab.id}`" />
                 </div>
               </template>
               <!-- Regular tabs -->
@@ -164,6 +191,17 @@ const props = defineProps({
   persistenceKey: {
     type: String,
     default: null
+  },
+  /** Quick preview / embed: span the drawer width instead of capping at 500px on large screens */
+  fullWidth: {
+    type: Boolean,
+    default: false
+  },
+  /** Summary tab (mobile/embed): scroll entire pane vs fill height and let child manage scroll */
+  summaryLayout: {
+    type: String,
+    default: 'scroll',
+    validator: (v) => v === 'scroll' || v === 'fill'
   }
 });
 

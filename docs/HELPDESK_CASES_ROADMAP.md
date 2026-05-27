@@ -12,9 +12,9 @@ This document maps the PRD requirements to what exists in LiteDesk today, identi
 
 | Phase | Status | Notes |
 |-------|--------|--------|
-| **0** — Alignment & baseline | 🟡 In progress | Helpdesk tests pass; Ticket→Case org check fixed; Closed edit lock enforced on API |
-| **1A** — Agent workspace UX | 🟡 In progress | List + Kanban; `CaseRecordPage` wired (timeline, email, tasks/related, details, nav, delete) |
-| **1B** — Lifecycle + data model | 🟡 Partial | `description`, `reopenCount`, expanded fields on model; `reopenReason` + max-reopen TBD |
+| **0** — Alignment & baseline | ✅ Done | `test:helpdesk` + `smoke:helpdesk` passed; Ticket→Case org check fixed; Closed edit lock enforced on API |
+| **1A** — Agent workspace UX | ✅ Done | Case record page UX, list preview, extra views (Team / SLA at risk / Recently updated), bulk assign/status/priority, improved header + closed banner + resizable reply |
+| **1B** — Lifecycle + data model | ✅ Done | `description`, `reopenCount`, `reopenReason` required on reopen and surfaced in Details; closed cases locked with reopen-only path in UI |
 | **1C** — Email hardening | ❌ Not started | |
 | **1D** — Portals | ❌ Not started | |
 | **1E** — Field service & warranty | ❌ Not started | |
@@ -24,7 +24,7 @@ This document maps the PRD requirements to what exists in LiteDesk today, identi
 ### Phase 0 checklist
 
 - [x] `npm run test:helpdesk` (from `server/`)
-- [ ] `npm run smoke:helpdesk` (requires `HELPDESK_AUTH_TOKEN` + running API)
+- [x] `npm run smoke:helpdesk` (requires `HELPDESK_AUTH_TOKEN` + running API)
 - [x] Fix stale `Ticket` reference → `Case` in `organizationV2Controller.js`
 - [x] Enforce **Closed** case edit lock on `PATCH /api/helpdesk/cases/:id`
 - [x] Lock MVP scope decisions (see [MVP scope decisions](#mvp-scope-decisions-locked))
@@ -88,9 +88,9 @@ Legend: ✅ Done · 🟡 Partial · ❌ Missing
 
 - ✅ Case creation, assignment, status lifecycle (New → Closed)
 - ✅ Reopen creates a new SLA cycle (preserves history)
-- 🟡 “Closed is locked from editing” — enforced on case `PATCH`; UI record page may still allow edits until Phase 1A
+- ✅ “Closed is locked from editing” — enforced on case `PATCH` and reflected in record UI (no reply composer / status edits when closed; reopen-only)
 - ✅ Canonical `description` on model + API; `caseNotes` retained for internal notes
-- ❌ Mandatory “reopen reason” and max-reopen escalation policy
+- ✅ Mandatory “reopen reason” enforced on reopen endpoint; `reopenCount` tracked (max-reopen escalation policy still TBD)
 
 ### SLA management
 
@@ -115,7 +115,7 @@ Legend: ✅ Done · 🟡 Partial · ❌ Missing
 
 ### Collaboration, attachments, audit
 
-- 🟡 Activities captured on the case; “enterprise immutable audit exports” not implemented
+- 🟡 Activities captured on the case; case-level audit export endpoint implemented (broader “enterprise immutable audit exports” still not fully productized)
 - ❌ Case-level attachments need platform-level upload support (module declares support but not end-to-end)
 - ❌ Watchers/followers, team mentions, case-specific collaboration features
 

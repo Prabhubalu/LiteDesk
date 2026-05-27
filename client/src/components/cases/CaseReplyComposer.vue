@@ -1,6 +1,11 @@
 <template>
-  <div class="shrink-0 border-t border-gray-200 bg-white px-3 py-2 dark:border-gray-700 dark:bg-gray-900 sm:px-4">
-    <div class="mb-1.5 flex flex-wrap items-center gap-2 text-[11px] sm:text-xs">
+  <div
+    :class="[
+      'case-reply-composer bg-white px-3 py-2 dark:bg-gray-900 sm:px-4',
+      fillHeight ? 'flex h-full min-h-0 flex-col' : 'shrink-0 border-t border-gray-200 dark:border-gray-700'
+    ]"
+  >
+    <div class="mb-1.5 flex shrink-0 flex-wrap items-center gap-2 text-[11px] sm:text-xs">
       <label class="inline-flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
         <span class="font-medium">{{ t('cases.recordComposerVia') }}</span>
         <select
@@ -31,17 +36,25 @@
       </label>
     </div>
 
-    <div class="rounded-xl border border-gray-200 bg-gray-50/80 dark:border-gray-600 dark:bg-gray-800/50">
+    <div
+      :class="[
+        'rounded-xl border border-gray-200 bg-gray-50/80 dark:border-gray-600 dark:bg-gray-800/50',
+        fillHeight ? 'flex min-h-0 flex-1 flex-col' : ''
+      ]"
+    >
       <textarea
         v-model="draft"
-        rows="3"
+        :rows="fillHeight ? undefined : 3"
         :disabled="disabled || sending"
         :placeholder="placeholder"
-        class="w-full resize-none rounded-t-xl border-0 bg-transparent px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-0 dark:text-white dark:placeholder:text-gray-500"
+        :class="[
+          'w-full resize-none border-0 bg-transparent px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-0 dark:text-white dark:placeholder:text-gray-500',
+          fillHeight ? 'min-h-0 flex-1 rounded-t-xl' : 'rounded-t-xl'
+        ]"
         @keydown.meta.enter.prevent="submit"
         @keydown.ctrl.enter.prevent="submit"
       />
-      <div class="flex flex-wrap items-center justify-between gap-2 border-t border-gray-200 px-3 py-2 dark:border-gray-600">
+      <div class="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-gray-200 px-3 py-2 dark:border-gray-600">
         <div class="flex items-center gap-1 text-gray-400">
           <button type="button" class="rounded p-1.5 hover:bg-gray-200 dark:hover:bg-gray-700" disabled :title="t('cases.recordMacrosSoon')">
             <BoltIcon class="h-4 w-4" />
@@ -85,7 +98,9 @@ const props = defineProps({
   disabled: { type: Boolean, default: false },
   isClosed: { type: Boolean, default: false },
   showInternalToggle: { type: Boolean, default: true },
-  placeholder: { type: String, default: '' }
+  placeholder: { type: String, default: '' },
+  /** Fill parent height (used inside resizable pane). */
+  fillHeight: { type: Boolean, default: false }
 });
 
 const emit = defineEmits(['send', 'reopen']);

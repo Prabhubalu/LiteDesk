@@ -79,6 +79,27 @@ export const CASE_FIELD_METADATA: Record<string, CaseFieldMetadata> = {
   visitStatus: { owner: 'core', intent: 'state', fieldScope: 'CORE', editable: true, allowOnCreate: false, filterable: true, filterType: 'select' },
   replacementRequired: { owner: 'core', intent: 'detail', fieldScope: 'CORE', editable: true, allowOnCreate: false, filterable: true, filterType: 'boolean' },
   customFields: { owner: 'core', intent: 'detail', fieldScope: 'CORE', editable: true, allowOnCreate: false },
+
+  reopenCount: {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isVisibleInConfig: false,
+    filterable: false,
+    filterType: 'number',
+  },
+  reopenReason: {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isVisibleInConfig: true,
+    filterable: true,
+    filterType: 'text',
+  },
 };
 
 function validateAllCaseMetadata(): void {
@@ -174,6 +195,7 @@ export const CASE_READONLY_RECORD_KEYS = [
   'slaBreached',
   'businessHoursCalendarId',
   'reopenCount',
+  'reopenReason',
   'lastSlaEventAt',
   'lastCustomerReplyAt',
   'lastAgentReplyAt',
