@@ -1,11 +1,29 @@
 <template>
   <div class="-mx-4 -my-2 sm:-mx-6 lg:-mx-8">
     <div class="w-full py-2 align-middle">
-      <div class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900 overflow-hidden" style="position: relative; z-index: 1;">
+      <div
+        class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900 overflow-hidden"
+        :class="showEmptyOverlay ? 'relative z-[1] flex min-h-[320px] flex-col' : 'relative z-[1]'"
+      >
+        <!-- Empty overlay: fixed in the body band; horizontal scroll stays on the container below -->
+        <div
+          v-if="showEmptyOverlay"
+          class="pointer-events-none absolute inset-x-0 z-[2] flex items-center justify-center px-6 py-10"
+          style="top: 52px; bottom: 20px;"
+        >
+          <div class="pointer-events-auto">
+            <slot name="empty">
+              <div class="flex flex-col items-center justify-center py-8 text-center">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ emptyTitle || t('common.listNoDataAvailable') }}</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ emptyMessage || t('common.listNoRecordsFound') }}</p>
+              </div>
+            </slot>
+          </div>
+        </div>
         <div
           ref="scrollContainerRef"
-          class="relative overflow-x-auto table-scroll-container rounded-xl"
-          :class="{ 'overflow-y-auto': enableInternalScroll }"
+          class="relative table-scroll-container rounded-xl"
+          :class="scrollContainerClass"
           :style="{ ...scrollContainerStyles, width: '100%', maxWidth: '100%', isolation: 'auto' }"
           @scroll="handleScroll"
         >
@@ -405,13 +423,12 @@
                 </template>
               </template>
               <tr v-else>
-                <td :colspan="tableBodyColspan" class="px-5 py-10 text-center">
-                  <slot name="empty">
-                    <div class="flex flex-col items-center justify-center py-8">
-                      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ emptyTitle || t('common.listNoDataAvailable') }}</h3>
-                      <p class="text-sm text-gray-600 dark:text-gray-400">{{ emptyMessage || t('common.listNoRecordsFound') }}</p>
-                    </div>
-                  </slot>
+                <td
+                  :colspan="tableBodyColspan"
+                  :class="showEmptyOverlay ? 'h-0 border-0 p-0' : 'px-5 py-10 text-center'"
+                  aria-hidden="true"
+                >
+                  <span class="sr-only">{{ emptyTitle || t('common.listNoDataAvailable') }}</span>
                 </td>
               </tr>
             </tbody>
@@ -529,6 +546,20 @@ const props = withDefaults(
     rowNumberOffset: 0
   }
 )
+
+const showEmptyOverlay = computed(() => {
+  if (props.loading) return false
+  // displayRows is the final rendered list (after sorting/paging); if it's empty,
+  // render the overlay instead of relying on an in-table empty row (which scrolls).
+  return Array.isArray(displayRows.value) && displayRows.value.length === 0
+})
+
+const scrollContainerClass = computed(() => ({
+  'flex-1 min-h-0': showEmptyOverlay.value,
+  'overflow-x-auto': true,
+  'overflow-y-auto': props.internalScroll && !showEmptyOverlay.value,
+  'overflow-y-hidden': showEmptyOverlay.value
+}))
 
 const storageKey = computed(() =>
   props.tableId ? `table-column-widths-${props.tableId}` : ''
@@ -1032,12 +1063,12 @@ const maxHeightStyle = computed(() => {
 
 const scrollContainerStyles = computed(() => {
   const styles: Record<string, string | undefined> = {}
-  
-  if (enableInternalScroll.value) {
+
+  if (enableInternalScroll.value && !showEmptyOverlay.value) {
     styles.maxHeight = maxHeightStyle.value
     styles.overflowY = 'auto'
   }
-  
+
   return styles
 })
 

@@ -1,6 +1,7 @@
 <template>
-  <TransitionRoot as="template" :show="isOpen">
-    <Dialog :initialFocus="closeButtonRef" class="relative z-[10000]" @close="handleDialogClose">
+  <Teleport to="body">
+    <TransitionRoot as="template" :show="isOpen">
+      <Dialog :initialFocus="closeButtonRef" class="relative z-[10000]" @close="handleDialogClose">
       <!-- Background overlay -->
       <TransitionChild
         as="template"
@@ -76,12 +77,15 @@
                             </div>
                           </div>
                           <!-- Loading when fetching Quick Create config from Settings -->
-                          <div v-if="effectiveQuickCreateMode && moduleOverrideLoading && !moduleOverrideFromSettings" class="flex justify-center py-12">
+                          <div
+                            v-if="moduleOverrideLoading && (effectiveQuickCreateMode || isEditing)"
+                            class="flex justify-center py-12"
+                          >
                             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
                           </div>
                           <!-- Dynamic Form: moduleOverride from Settings when drawer opens so Quick Create fields match Settings -->
                           <DynamicForm
-                            v-else
+                            v-else-if="!moduleOverrideLoading"
                             :moduleKey="moduleKey"
                             :moduleOverride="effectiveModuleOverrideForDrawer"
                             :formData="formData"
@@ -147,8 +151,9 @@
           </div>
         </div>
       </div>
-    </Dialog>
-  </TransitionRoot>
+      </Dialog>
+    </TransitionRoot>
+  </Teleport>
 </template>
 
 <script setup>
@@ -167,8 +172,14 @@ import { useAuthStore } from '@/stores/authRegistry';
 import { isAuditEventType } from '@/utils/eventUtils';
 import { getEventTypeByKey, getEventTypeByLabel, EVENT_TYPE_DEFINITIONS } from '@/metadata/eventTypes';
 import { useTabs } from '@/composables/useTabs';
+import { useRoute } from 'vue-router';
 import { getTaskSystemFields } from '@/platform/fields/taskFieldModel';
-import { getCaseSystemFields } from '@/platform/fields/caseFieldModel';
+import {
+  getCaseSystemFields,
+  stripCaseRecordForEditForm,
+  filterCaseEditSubmitPayload,
+  buildCaseEditSubmitPayload
+} from '@/platform/fields/caseFieldModel';
 import { getGlobalSystemFieldKeys, normalizeFieldKeyForSystemMatch } from '@/platform/fields/fieldCapabilityEngine';
 import { shouldFilterPayloadByQuickCreate } from '@/utils/quickCreatePayloadFilter';
 import { useCreationContext } from '@/utils/creationContext';
@@ -242,6 +253,7 @@ const props = defineProps({
 const emit = defineEmits(['close', 'saved']);
 
 const authStore = useAuthStore();
+const route = useRoute();
 const { openTab, activeTab } = useTabs();
 // Omit override = infer from route + activeApp on /people (null would mean explicit global-only)
 const { isSalesContext } = useCreationContext();
@@ -380,9 +392,17 @@ async function fetchModuleForDrawer() {
   moduleOverrideFromSettings.value = null;
   try {
     const data = await apiClient.get('/modules');
-    if (!data?.data || !Array.isArray(data.data)) return;
+    const modulesList = Array.isArray(data)
+      ? data
+      : (Array.isArray(data?.data) ? data.data : (Array.isArray(data?.modules) ? data.modules : []));
+    if (!modulesList.length) return;
     const keyLower = (props.moduleKey || '').toLowerCase().trim();
-    const currentPath = String(activeTab.value?.path || (typeof window !== 'undefined' ? window.location.pathname : '') || '').toLowerCase();
+    const currentPath = String(
+      route.path ||
+        activeTab.value?.path ||
+        (typeof window !== 'undefined' ? window.location.pathname : '') ||
+        ''
+    ).toLowerCase();
     const inferredAppKey =
       currentPath.startsWith('/helpdesk/') ? 'helpdesk'
       : currentPath.startsWith('/audit/') ? 'audit'
@@ -391,7 +411,7 @@ async function fetchModuleForDrawer() {
       : currentPath.startsWith('/sales/') ? 'sales'
       : '';
 
-    const candidates = data.data.filter((m) => (m.key || '').toLowerCase().trim() === keyLower);
+    const candidates = modulesList.filter((m) => (m.key || '').toLowerCase().trim() === keyLower);
     const mod = inferredAppKey
       ? (candidates.find((m) => String(m.appKey || '').toLowerCase().trim() === inferredAppKey) || candidates[0])
       : candidates[0];
@@ -755,7 +775,10 @@ const initializeForm = (module) => {
   
   // If editing, merge with existing record data
   if (props.record) {
-    const recordData = { ...props.record };
+    const recordData =
+      props.moduleKey === 'cases'
+        ? stripCaseRecordForEditForm(props.record)
+        : { ...props.record };
     
     // Handle populated relationships - convert objects to IDs
     Object.keys(recordData).forEach(key => {
@@ -834,11 +857,17 @@ const onFormReady = (module) => {
   // the user's pipeline selection.
   const isFirstLoad = !moduleDefinition.value;
   moduleDefinition.value = module;
-  if (isFirstLoad) {
+  if (isFirstLoad || isEditing.value) {
     initializeForm(module);
-    applySearchPrefill(module);
+    if (!isEditing.value) applySearchPrefill(module);
   }
 };
+
+watch(moduleOverrideFromSettings, (mod) => {
+  if (mod && props.isOpen && isEditing.value) {
+    initializeForm(mod);
+  }
+});
 
 // Watch for record changes to re-initialize form when editing
 watch(() => props.record, () => {
@@ -1241,6 +1270,9 @@ const handleSubmit = async () => {
         pruned[key] = value;
       }
       submitData = pruned;
+      if (isEditing.value) {
+        submitData = buildCaseEditSubmitPayload(formData.value, props.record);
+      }
     }
     
     // Handle nested object conflicts (e.g., 'settings' and 'settings.primaryColor')
@@ -1461,7 +1493,9 @@ const handleSubmit = async () => {
         if (Object.keys(submitData).length > 0) {
           putResult = await apiClient.put(`${endpoint}/${id}`, submitData);
         } else if (!statusChanged) {
-          throw new Error('No changes to save');
+          errors.value._general = 'No changes to save.';
+          saving.value = false;
+          return;
         }
 
         let patchResult = null;
@@ -1721,17 +1755,14 @@ watch(() => props.isOpen, (isOpen) => {
     userHasEdited.value = false;
     fullMode.value = false;
     errors.value = {};
-    // Re-initialize on every open so initialData/prefill are not stale across reopens.
-    if (moduleDefinition.value) {
-      initializeForm(moduleDefinition.value);
-      applySearchPrefill(moduleDefinition.value);
-    }
-    // Form will be initialized by onFormReady when module loads
+    moduleDefinition.value = null;
+    // Form seeds from record in onFormReady / moduleOverride watch after module loads
   } else {
-    // Reset when closed
+    // Reset when closed so the next open re-seeds from record via onFormReady
     setTimeout(() => {
       formData.value = {};
       errors.value = {};
+      moduleDefinition.value = null;
     }, 300);
   }
 });

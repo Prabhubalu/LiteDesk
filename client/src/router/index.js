@@ -399,7 +399,7 @@ const routes = [
   {
     path: '/helpdesk/cases',
     name: 'helpdesk-cases-list',
-    component: () => import('@/views/GenericModule.vue'),
+    component: () => import('@/views/helpdesk/Cases.vue'),
     meta: {
       requiresAuth: true,
       requiresPermission: { module: 'cases', action: 'view' },

@@ -13,6 +13,12 @@
       :task-id="effectiveRecordId"
       @close="$emit('close')"
     />
+    <CaseRecordPage
+      v-else-if="adapterKey === 'case'"
+      :embed="embed"
+      :case-id="effectiveRecordId"
+      @close="$emit('close')"
+    />
     <GenericRecordContent
       v-else
       :module-key="effectiveModuleKey"
@@ -32,6 +38,7 @@ import { getRecordAdapterKey } from '@/components/record-page/adapters/adapterRe
 /** One async chunk per adapter — avoids loading all three for every record route. */
 const DealRecordPage = defineAsyncComponent(() => import('@/pages/deals/DealRecordPage.vue'));
 const TaskRecordPage = defineAsyncComponent(() => import('@/pages/tasks/TaskRecordPage.vue'));
+const CaseRecordPage = defineAsyncComponent(() => import('@/pages/cases/CaseRecordPage.vue'));
 const GenericRecordContent = defineAsyncComponent(
   () => import('@/components/record-page/GenericRecordContent.vue')
 );
