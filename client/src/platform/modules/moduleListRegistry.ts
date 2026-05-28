@@ -688,41 +688,28 @@ function computeItemsStatistics(
   const stats = {
     totalItems: context?.totalRecords ?? data.length,
     activeItems: 0,
-    inactiveItems: 0,
+    draftItems: 0,
+    discontinuedItems: 0,
     products: 0,
     services: 0,
-    serializedProducts: 0,
-    nonStockProducts: 0,
-    lowStock: 0,
-    outOfStock: 0
   };
 
   data.forEach(item => {
-    // Status counts
-    if (item.status === 'Active') {
+    const lifecycle = item.lifecycle_state
+      || (item.status === 'Inactive' ? 'Discontinued' : 'Active');
+
+    if (lifecycle === 'Active') {
       stats.activeItems++;
-    } else if (item.status === 'Inactive') {
-      stats.inactiveItems++;
+    } else if (lifecycle === 'Draft') {
+      stats.draftItems++;
+    } else if (lifecycle === 'Discontinued') {
+      stats.discontinuedItems++;
     }
 
-    // Type counts
     if (item.item_type === 'Product') {
       stats.products++;
     } else if (item.item_type === 'Service') {
       stats.services++;
-    } else if (item.item_type === 'Serialized Product') {
-      stats.serializedProducts++;
-    } else if (item.item_type === 'Non-Stock Product') {
-      stats.nonStockProducts++;
-    }
-
-    // Stock status (only for products that track stock)
-    if (item.item_type === 'Product' || item.item_type === 'Serialized Product') {
-      if (item.stock_quantity === 0) {
-        stats.outOfStock++;
-      } else if (item.reorder_level > 0 && item.stock_quantity <= item.reorder_level) {
-        stats.lowStock++;
-      }
     }
   });
 
@@ -734,6 +721,11 @@ function computeItemsStatistics(
  */
 function normalizeItemsFilters(filters: Record<string, any>, _currentUserId?: string): Record<string, any> {
   const normalized = { ...filters };
+
+  // Normalize lifecycle_state filter
+  if ('lifecycle_state' in normalized && normalized.lifecycle_state === '') {
+    delete normalized.lifecycle_state;
+  }
 
   // Normalize status filter
   if ('status' in normalized && normalized.status === '') {
@@ -998,6 +990,24 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
     normalizeViewFilters: normalizeDealsViewFilters
   },
 
+  quotes: {
+    defaultColumns: {
+      defaultVisibleColumns: ['quoteNumber', 'quoteTitle', 'status', 'grandTotal', 'updatedAt'],
+      lockedColumn: 'quoteNumber',
+      excludedFromDefault: ['customFields', 'sourceRef']
+    },
+    systemViews: [
+      { id: 'all', name: 'All Quotes', filters: {}, isDefault: true },
+      { id: 'draft', name: 'Draft', filters: { status: 'Draft' } },
+      { id: 'pending-approval', name: 'Pending Approval', filters: { status: 'Pending Approval' } },
+      { id: 'approved', name: 'Approved', filters: { status: 'Approved' } },
+      { id: 'sent', name: 'Sent', filters: { status: 'Sent' } },
+      { id: 'accepted', name: 'Accepted', filters: { status: 'Accepted' } },
+      { id: 'converted', name: 'Converted', filters: { status: 'Converted' } }
+    ],
+    apiEndpoint: '/quotes'
+  },
+
   cases: {
     defaultColumns: {
       // Case ID, Subject, Status, Priority, Channel, Owner
@@ -1049,9 +1059,9 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
       // 3. item_type (SALES, state)
       // 4. category (SALES, detail)
       // 5. selling_price (SALES, tracking)
-      // 6. status (SALES, state)
-      // 7. stock_quantity (SALES, tracking)
-      defaultVisibleColumns: ['item_name', 'item_code', 'item_type', 'category', 'selling_price', 'status', 'stock_quantity'],
+      // 6. lifecycle_state (SALES, catalog state)
+      // 7. selling_price (SALES, tracking)
+      defaultVisibleColumns: ['item_name', 'item_code', 'item_type', 'category', 'selling_price', 'lifecycle_state'],
       lockedColumn: 'item_name',
       excludedFromDefault: []
     },
@@ -1059,10 +1069,10 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
       stats: [
         { name: 'Total Items', key: 'totalItems', formatter: 'number' },
         { name: 'Active', key: 'activeItems', formatter: 'number' },
+        { name: 'Draft', key: 'draftItems', formatter: 'number' },
+        { name: 'Discontinued', key: 'discontinuedItems', formatter: 'number' },
         { name: 'Products', key: 'products', formatter: 'number' },
-        { name: 'Services', key: 'services', formatter: 'number' },
-        { name: 'Low Stock', key: 'lowStock', formatter: 'number' },
-        { name: 'Out of Stock', key: 'outOfStock', formatter: 'number' }
+        { name: 'Services', key: 'services', formatter: 'number' }
       ],
       computeFunction: computeItemsStatistics
     },
@@ -1076,7 +1086,17 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
       {
         id: 'active',
         name: 'Active Items',
-        filters: { status: 'Active' }
+        filters: { lifecycle_state: 'Active' }
+      },
+      {
+        id: 'draft',
+        name: 'Draft Items',
+        filters: { lifecycle_state: 'Draft' }
+      },
+      {
+        id: 'discontinued',
+        name: 'Discontinued',
+        filters: { lifecycle_state: 'Discontinued' }
       },
       {
         id: 'products',
@@ -1087,16 +1107,6 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
         id: 'services',
         name: 'Services',
         filters: { item_type: 'Service' }
-      },
-      {
-        id: 'low-stock',
-        name: 'Low Stock',
-        filters: { low_stock: true }
-      },
-      {
-        id: 'out-of-stock',
-        name: 'Out of Stock',
-        filters: { out_of_stock: true }
       }
     ],
     apiEndpoint: '/items',

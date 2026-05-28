@@ -2925,6 +2925,35 @@
               </div>
             </div>
 
+            <!-- Catalog Lifecycle (system contract — read-only in C0) -->
+            <div class="mb-8">
+              <div class="mb-4">
+                <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">{{ t('settings.modFieldsCatalogLifecycleTitle') }}</h4>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsCatalogLifecycleDesc') }}</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+                <div class="space-y-3">
+                  <div
+                    v-for="row in catalogLifecycleStateRows"
+                    :key="row.state"
+                    class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
+                  >
+                    <div class="flex-1">
+                      <div class="text-sm font-medium text-gray-900 dark:text-white">{{ row.label }}</div>
+                      <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ row.description }}</div>
+                    </div>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
+                      {{ t('settings.modFieldsCatalogLifecycleSystemBadge') }}
+                    </span>
+                  </div>
+                </div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                  {{ t('settings.modFieldsCatalogLifecycleLockedBody') }}
+                </div>
+              </div>
+            </div>
+
             <!-- Save Button -->
             <div v-if="itemStatusTypesDirty" class="mt-8 flex justify-end">
               <button
@@ -5331,6 +5360,10 @@ import {
   groupItemFields,
   classifyItemField
 } from '@/platform/fields/itemFieldModel';
+import {
+  CATALOG_LIFECYCLE_STATES,
+  CATALOG_LIFECYCLE_LABEL_KEYS
+} from '@/constants/catalogLifecycle';
 import { isSystemField as isSystemFieldFromEngine } from '@/platform/fields/fieldCapabilityEngine';
 import {
   mergeFields,
@@ -5408,20 +5441,44 @@ const selectedFieldIdx = ref(0);
 function normalizeFieldsForConfig(moduleKey, fields) {
   if (!Array.isArray(fields)) return fields;
   const backendFields = fields.filter((f) => f?.key).map(stripLegacyDefaultPhoneValidations);
+  const mk = String(moduleKey || '').toLowerCase().trim();
 
   if (isModuleRegistered(moduleKey)) {
     const metadataMap = getFieldMetadataMap(moduleKey);
     if (metadataMap) {
       const getMetadata = (key) => getFieldMetadataFromRegistry(moduleKey, key);
-      return mergeFields(metadataMap, backendFields, {
+      const merged = mergeFields(metadataMap, backendFields, {
         moduleKey,
         getMetadata
       });
+      return mk === 'items' ? hydrateItemsPicklistDefaults(merged) : merged;
     }
   }
 
   // Forms and modules without metadata: filter by fallback
-  return filterToVisibleInConfig(backendFields, (key) => getFallbackMetadataForVisibleInConfig(key));
+  const filtered = filterToVisibleInConfig(backendFields, (key) => getFallbackMetadataForVisibleInConfig(key));
+  return mk === 'items' ? hydrateItemsPicklistDefaults(filtered) : filtered;
+}
+
+function hydrateItemsPicklistDefaults(fields) {
+  const UNIT_OF_MEASURE_DEFAULTS = ['pcs', 'liters', 'hours', 'boxes', 'kg', 'meters', 'units'];
+  const ITEM_TYPE_DEFAULTS = ['Product', 'Service', 'Serialized Product', 'Non-Stock Product', 'Bundle'];
+  const LIFECYCLE_DEFAULTS = ['Draft', 'Active', 'Discontinued', 'Archived'];
+  return (Array.isArray(fields) ? fields : []).map((f) => {
+    const key = String(f?.key || '').toLowerCase().trim();
+    if (!key) return f;
+    if ((key === 'unit_of_measure' || key === 'item_type' || key === 'lifecycle_state')
+      && (!Array.isArray(f.options) || f.options.length === 0)) {
+      const values = key === 'unit_of_measure'
+        ? UNIT_OF_MEASURE_DEFAULTS
+        : key === 'item_type'
+          ? ITEM_TYPE_DEFAULTS
+          : LIFECYCLE_DEFAULTS;
+      // Use object options so the Settings picklist editor can attach color/labels consistently.
+      return { ...f, options: values.map((v) => ({ value: v })) };
+    }
+    return f;
+  });
 }
 
 function isLegacyDefaultPhoneValidation(validation) {
@@ -12072,13 +12129,29 @@ const itemTypes = ref([
   { value: 'Product', label: 'Product', enabled: true, description: 'Physical product that can be sold' },
   { value: 'Service', label: 'Service', enabled: true, description: 'Service that can be provided' },
   { value: 'Serialized Product', label: 'Serialized Product', enabled: true, description: 'Product with unique serial numbers' },
-  { value: 'Non-Stock Product', label: 'Non-Stock Product', enabled: true, description: 'Product not tracked in inventory' }
+  { value: 'Non-Stock Product', label: 'Non-Stock Product', enabled: true, description: 'Product not tracked in inventory' },
+  { value: 'Bundle', label: 'Bundle', enabled: true, description: 'Kit or composite product made of other variants' }
 ]);
 
 const itemStatusPicklist = ref([
   { value: 'Active', label: 'Active', enabled: true, editing: false },
   { value: 'Inactive', label: 'Inactive', enabled: true, editing: false }
 ]);
+
+const catalogLifecycleDescriptionKeys = {
+  Draft: 'settings.modFieldsCatalogLifecycleDraftDesc',
+  Active: 'settings.modFieldsCatalogLifecycleActiveDesc',
+  Discontinued: 'settings.modFieldsCatalogLifecycleDiscontinuedDesc',
+  Archived: 'settings.modFieldsCatalogLifecycleArchivedDesc'
+};
+
+const catalogLifecycleStateRows = computed(() =>
+  CATALOG_LIFECYCLE_STATES.map((state) => ({
+    state,
+    label: t(CATALOG_LIFECYCLE_LABEL_KEYS[state] || state),
+    description: t(catalogLifecycleDescriptionKeys[state] || '')
+  }))
+);
 
 const savingItemStatusTypes = ref(false);
 const itemStatusTypesOriginalSnapshot = ref('');

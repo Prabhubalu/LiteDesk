@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { CLIENT_ROOT, isEnforcementPath, scanSourceFiles } from './shared.mjs';
 
-const ENGLISH_TEXT_RE = />\s*([A-Za-z][A-Za-z0-9\s,'’.!?\-]{2,})\s*</g;
+const ENGLISH_TEXT_RE = />\s*([A-Za-z][A-Za-z0-9\s,'’.!?-]{2,})\s*</g;
 const ATTR_TEXT_RE = /(?:title|label|placeholder|aria-label)=["']([A-Za-z][^"']{2,})["']/g;
 const TOAST_RE = /(?:toast|notify|showMessage|alert)\([^)]*["']([A-Za-z][^"']{3,})["']/g;
 
@@ -30,7 +30,7 @@ function isLikelyUiEnglish(text) {
   const trimmed = text.trim();
   if (!trimmed || trimmed.length < 3) return false;
   if (ALLOWLIST.has(trimmed)) return false;
-  if (/^\{/.test(trimmed)) return false;
+  if (trimmed.startsWith('{')) return false;
   if (/^[\d\s$%]+$/.test(trimmed)) return false;
   // Dynamic Vue bindings mistaken as static attribute strings
   if (/^t\s*\(/.test(trimmed) || /\bt\s*\(/.test(trimmed)) return false;

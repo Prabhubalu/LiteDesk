@@ -422,7 +422,7 @@ function hydrateFromProps() {
     };
   } else if (props.processType === 'action') {
     const actionType = c.actionType || '';
-    const savedParams = { ...(c.params || {}) };
+    const savedParams = { ...c.params };
     localConfig.value = {
       actionType,
       params:

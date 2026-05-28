@@ -17,7 +17,7 @@ export function flowToProcess(baseProcess, vfNodes, vfEdges) {
     id: n.id,
     type: n.data.processType,
     version: n.data.version ?? 1,
-    config: { ...(n.data.config || {}) },
+    config: { ...n.data.config },
     layout: {
       x: Math.round(n.position.x),
       y: Math.round(n.position.y)

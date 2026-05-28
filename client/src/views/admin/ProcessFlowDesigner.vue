@@ -467,7 +467,7 @@ function applyProcessSettings(settings) {
     const t = n.data.processType;
     if (!['field_rule', 'ownership_rule', 'status_guard'].includes(t)) continue;
     const cfg = {
-      ...(n.data.config || {}),
+      ...n.data.config,
       entityType
     };
     setDraft(n.id, t, cfg, n.data.sentence);

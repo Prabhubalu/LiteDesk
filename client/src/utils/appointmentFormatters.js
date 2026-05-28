@@ -78,5 +78,5 @@ export function buildBookingIframeSnippet(slug, { height = 720, origin } = {}) {
 
 export function buildBookingScriptSnippet(slug, { height = 720, origin } = {}) {
   const base = (origin || (typeof window !== 'undefined' ? window.location.origin : '')).replace(/\/$/, '');
-  return `<div id="litedesk-booking" data-slug="${slug}" data-height="${height}"></div>\n<script src="${base}/embed/booking.js" async><\/script>`;
+  return `<div id="litedesk-booking" data-slug="${slug}" data-height="${height}"></div>\n<script src="${base}/embed/booking.js" async></script>`;
 }

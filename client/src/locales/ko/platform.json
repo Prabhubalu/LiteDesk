@@ -454,5 +454,305 @@
   "platformHomeGreetingEveningWithName": {
     "message": "안녕하세요, {name}",
     "description": "Platform home greeting"
+  },
+  "listViewDraftItems": {
+    "message": "Draft Items",
+    "description": "Items list draft catalog view title"
+  },
+  "listViewDiscontinuedItems": {
+    "message": "Discontinued",
+    "description": "Items list discontinued catalog view title"
+  },
+  "listStatDraftItems": {
+    "message": "Draft",
+    "description": "Items list draft lifecycle statistics card"
+  },
+  "listStatDiscontinuedItems": {
+    "message": "Discontinued",
+    "description": "Items list discontinued lifecycle statistics card"
+  },
+  "catalogLifecycleDraft": {
+    "message": "Draft",
+    "description": "Catalog item lifecycle state label"
+  },
+  "catalogLifecycleActive": {
+    "message": "Active",
+    "description": "Catalog item lifecycle state label"
+  },
+  "catalogLifecycleDiscontinued": {
+    "message": "Discontinued",
+    "description": "Catalog item lifecycle state label"
+  },
+  "catalogLifecycleArchived": {
+    "message": "Archived",
+    "description": "Catalog item lifecycle state label"
+  },
+  "catalogMediaTitle": {
+    "message": "Media gallery",
+    "description": "Item catalog media section title"
+  },
+  "catalogMediaDesc": {
+    "message": "Product images and documents for this catalog entry.",
+    "description": "Item catalog media section description"
+  },
+  "catalogMediaUpload": {
+    "message": "Upload",
+    "description": "Upload catalog media button"
+  },
+  "catalogMediaEmpty": {
+    "message": "No media yet. Upload an image or document.",
+    "description": "Empty catalog media state"
+  },
+  "catalogMediaPrimary": {
+    "message": "Primary",
+    "description": "Primary catalog media badge"
+  },
+  "catalogMediaSetPrimary": {
+    "message": "Set primary",
+    "description": "Set primary catalog media action"
+  },
+  "catalogMediaDocument": {
+    "message": "Document",
+    "description": "Non-image catalog media label"
+  },
+  "catalogVariantTitle": {
+    "message": "SKU & barcode",
+    "description": "Item variant scaffold section title"
+  },
+  "catalogVariantDesc": {
+    "message": "Default sellable variant identity. Future quotes and orders will reference variants.",
+    "description": "Item variant scaffold section description"
+  },
+  "catalogVariantLoading": {
+    "message": "Loading variant…",
+    "description": "Variant scaffold loading state"
+  },
+  "catalogVariantCode": {
+    "message": "Variant code",
+    "description": "Variant code field label"
+  },
+  "catalogBarcode": {
+    "message": "Barcode",
+    "description": "Variant barcode field label"
+  },
+  "catalogBarcodePlaceholder": {
+    "message": "EAN, UPC, or internal code",
+    "description": "Variant barcode placeholder"
+  },
+  "catalogBarcodeType": {
+    "message": "Barcode type",
+    "description": "Variant barcode type field label"
+  },
+  "catalogBarcodeEan13": {
+    "message": "EAN-13",
+    "description": "Barcode type label"
+  },
+  "catalogBarcodeUpc": {
+    "message": "UPC",
+    "description": "Barcode type label"
+  },
+  "catalogBarcodeGtin": {
+    "message": "GTIN",
+    "description": "Barcode type label"
+  },
+  "catalogBarcodeCode128": {
+    "message": "Code 128",
+    "description": "Barcode type label"
+  },
+  "catalogBarcodeQr": {
+    "message": "QR",
+    "description": "Barcode type label"
+  },
+  "catalogBarcodeOther": {
+    "message": "Other",
+    "description": "Barcode type label"
+  },
+  "catalogQrPayload": {
+    "message": "QR payload",
+    "description": "Variant QR payload field label"
+  },
+  "catalogQrPayloadPlaceholder": {
+    "message": "Optional encoded QR content",
+    "description": "Variant QR payload placeholder"
+  },
+  "catalogCategoryTitle": {
+    "message": "Category & attributes",
+    "description": "Item catalog category section title"
+  },
+  "catalogCategoryDesc": {
+    "message": "Assign a catalog category and fill category-specific attributes.",
+    "description": "Item catalog category section description"
+  },
+  "catalogCategoryLabel": {
+    "message": "Category",
+    "description": "Item catalog category field label"
+  },
+  "catalogCategoryNone": {
+    "message": "No category",
+    "description": "Empty catalog category option"
+  },
+  "catalogAttributesTitle": {
+    "message": "Category attributes",
+    "description": "Item category attributes subsection title"
+  },
+  "catalogCategorySave": {
+    "message": "Save attributes",
+    "description": "Save item category attributes button"
+  },
+  "catalogCategorySaveFailed": {
+    "message": "Failed to save category or attributes.",
+    "description": "Item category save error"
+  },
+  "catalogMultiSelectHint": {
+    "message": "Comma-separated values",
+    "description": "Multi-select attribute input hint"
+  },
+  "catalogAttrTypeText": {
+    "message": "Text",
+    "description": "Catalog attribute type label"
+  },
+  "catalogAttrTypeNumber": {
+    "message": "Number",
+    "description": "Catalog attribute type label"
+  },
+  "catalogAttrTypeBoolean": {
+    "message": "Yes/No",
+    "description": "Catalog attribute type label"
+  },
+  "catalogAttrTypeSelect": {
+    "message": "Single select",
+    "description": "Catalog attribute type label"
+  },
+  "catalogAttrTypeMultiSelect": {
+    "message": "Multi select",
+    "description": "Catalog attribute type label"
+  },
+  "catalogAttrTypeDate": {
+    "message": "Date",
+    "description": "Catalog attribute type label"
+  },
+  "catalogVariantDefault": {
+    "message": "default",
+    "description": "Default variant badge label"
+  },
+  "catalogVariantCount": {
+    "message": "{count} variants",
+    "description": "Variant count badge"
+  },
+  "catalogVariantEmpty": {
+    "message": "No sellable variant yet. Save the item or refresh the page.",
+    "description": "Empty variant list on item record"
+  },
+  "catalogPriceBookDefaultBadge": {
+    "message": "default",
+    "description": "Default price book badge in forms"
+  },
+  "catalogPriceEntryMinQtyHint": {
+    "message": "Applies when order quantity is at least {qty}.",
+    "description": "Min quantity tier hint for price book entry"
+  },
+  "catalogConfirmDeletePriceEntry": {
+    "message": "Remove this price book entry?",
+    "description": "Confirm delete variant price entry"
+  },
+  "catalogConfirmDeleteMedia": {
+    "message": "Remove this media from the gallery?",
+    "description": "Confirm delete catalog media"
+  },
+  "catalogConfirmRemoveBundleComponent": {
+    "message": "Remove this component from the bundle?",
+    "description": "Confirm remove bundle component"
+  },
+  "catalogPriceEntriesTitle": {
+    "message": "Price book entries",
+    "description": "Variant price entries section title"
+  },
+  "catalogPriceEntriesDesc": {
+    "message": "List prices by book. Falls back to selling price above when no entry matches.",
+    "description": "Variant price entries section description"
+  },
+  "catalogAddPriceEntry": {
+    "message": "Add entry",
+    "description": "Add variant price entry button"
+  },
+  "catalogNoPriceEntries": {
+    "message": "No price book entries for this variant.",
+    "description": "Empty variant price entries"
+  },
+  "catalogPriceBookColumn": {
+    "message": "Price book",
+    "description": "Price book column header"
+  },
+  "catalogUnitPriceColumn": {
+    "message": "Unit price",
+    "description": "Unit price column header"
+  },
+  "catalogMinQtyColumn": {
+    "message": "Min qty",
+    "description": "Min quantity column header"
+  },
+  "catalogSelectPriceBook": {
+    "message": "Select price book",
+    "description": "Price book select placeholder"
+  },
+  "catalogBundleTitle": {
+    "message": "Bundle components",
+    "description": "Bundle builder section title"
+  },
+  "catalogBundleDesc": {
+    "message": "Component variants included when this bundle is sold. Inventory is not deducted at catalog level.",
+    "description": "Bundle builder section description"
+  },
+  "catalogBundleAddComponent": {
+    "message": "Add component",
+    "description": "Add bundle component button"
+  },
+  "catalogBundlePricingMode": {
+    "message": "Pricing mode",
+    "description": "Bundle pricing mode label"
+  },
+  "catalogBundlePricingFixed": {
+    "message": "Fixed (bundle list price)",
+    "description": "Fixed bundle pricing option"
+  },
+  "catalogBundlePricingRollup": {
+    "message": "Rollup (sum of components)",
+    "description": "Rollup bundle pricing option"
+  },
+  "catalogBundlePreview": {
+    "message": "Expand preview",
+    "description": "Bundle expand preview button"
+  },
+  "catalogBundleEmpty": {
+    "message": "No components yet. Add variants that make up this bundle.",
+    "description": "Empty bundle components state"
+  },
+  "catalogBundleComponent": {
+    "message": "Component",
+    "description": "Bundle component column"
+  },
+  "catalogBundleQty": {
+    "message": "Qty",
+    "description": "Bundle quantity column"
+  },
+  "catalogBundleOptional": {
+    "message": "Optional",
+    "description": "Bundle optional column"
+  },
+  "catalogBundlePreviewTotal": {
+    "message": "Bundle unit price",
+    "description": "Bundle preview total label"
+  },
+  "catalogBundlePickVariant": {
+    "message": "Pick a variant",
+    "description": "Bundle component picker title"
+  },
+  "catalogBundleSearchPlaceholder": {
+    "message": "Search by name, SKU, or barcode",
+    "description": "Bundle variant search placeholder"
+  },
+  "catalogBundleNoResults": {
+    "message": "No matching variants",
+    "description": "Bundle search empty state"
   }
 }

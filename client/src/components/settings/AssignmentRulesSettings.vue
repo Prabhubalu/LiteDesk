@@ -872,7 +872,7 @@ function normalizeRule(r, index) {
     enabled: r.enabled !== false,
     order: Number.isFinite(Number(r.order)) ? Number(r.order) : index,
     triggerType,
-    triggerConfig: { ...defaultTriggerConfig(triggerType), ...(r.triggerConfig || {}) },
+    triggerConfig: { ...defaultTriggerConfig(triggerType), ...r.triggerConfig },
     conditions: {
       combinator: r.conditions?.combinator || 'all',
       clauses: Array.isArray(r.conditions?.clauses)

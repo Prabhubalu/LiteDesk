@@ -557,13 +557,13 @@ watch(config, (c) => {
     scheduleSource: c.scheduleSource || 'legacy',
     businessHourSetId: c.businessHourSetId ? String(c.businessHourSetId) : null,
     availableDays: [...(c.availableDays || [1, 2, 3, 4, 5])],
-    workingHours: { ...form.workingHours, ...(c.workingHours || {}) },
+    workingHours: { ...form.workingHours, ...c.workingHours },
     slotDurationMinutes: c.slotDurationMinutes ?? 30,
     bufferMinutes: c.bufferMinutes ?? 10,
     meetingType: c.meetingType || 'offline',
     appointmentTypes: c.appointmentTypes || ['demo', 'consultation'],
     customFields: (c.customFields || []).map((f) => ({ ...f, options: [...(f.options || [])] })),
-    branding: { ...form.branding, ...(c.branding || {}) }
+    branding: { ...form.branding, ...c.branding }
   });
   if (c.googleCalendar) {
     calendarStatus.value.google = {

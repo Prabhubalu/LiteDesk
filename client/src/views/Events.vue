@@ -463,7 +463,7 @@ function toggleAppointmentsOnly() {
   if (currentView.value !== 'list') {
     switchView('list');
   }
-  const current = { ...(moduleListRef.value?.getFilters?.() ?? {}) };
+  const current = { ...moduleListRef.value?.getFilters?.() };
   if (showAppointmentsScope.value) {
     delete current.appointmentOnly;
   } else {

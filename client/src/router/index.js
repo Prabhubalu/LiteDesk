@@ -389,10 +389,46 @@ const routes = [
     meta: { requiresAuth: true, requiresPermission: { module: 'items', action: 'view' } }
   },
   {
+    path: '/quotes',
+    name: 'quotes',
+    component: () => import('@/views/Quotes.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'quotes', action: 'view' },
+      moduleKey: 'quotes',
+      appKey: 'SALES',
+      routeType: 'list'
+    }
+  },
+  {
+    path: '/quotes/new',
+    name: 'quotes-create',
+    component: () => import('@/views/Quotes.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'quotes', action: 'create' },
+      moduleKey: 'quotes',
+      appKey: 'SALES',
+      routeType: 'create'
+    }
+  },
+  {
+    path: '/quotes/:id',
+    name: 'quote-detail',
+    component: () => import('@/pages/ModuleRecordPage.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'quotes', action: 'view' },
+      moduleKey: 'quotes',
+      appKey: 'SALES',
+      routeType: 'detail'
+    }
+  },
+  {
     path: '/items/:id',
     name: 'item-detail',
-    component: () => import('@/views/ItemDetail.vue'),
-    meta: { requiresAuth: true, requiresPermission: { module: 'items', action: 'view' } }
+    component: () => import('@/pages/ModuleRecordPage.vue'),
+    meta: { requiresAuth: true, requiresPermission: { module: 'items', action: 'view' }, moduleKey: 'items' }
   },
   // Helpdesk cases: register statically so /helpdesk/* always resolves. Dynamic /api/ui/routes
   // also emits these (same names); addRoute will skip duplicates. Order: /new before /:id.
@@ -559,6 +595,12 @@ const routes = [
     name: 'public-form',
     component: () => import('@/views/PublicFormView.vue'),
     meta: { requiresAuth: false, hideShell: true } // Public route - render without app shell (sidebar/tabbar)
+  },
+  {
+    path: '/public/quotes/:token',
+    name: 'public-quote',
+    component: () => import('@/views/PublicQuoteView.vue'),
+    meta: { requiresAuth: false, hideShell: true }
   },
   {
     path: '/book/:slug',

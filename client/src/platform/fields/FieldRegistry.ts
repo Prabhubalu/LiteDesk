@@ -80,6 +80,9 @@ import type { ItemFieldMetadata } from './itemFieldModel';
 import { CASE_FIELD_METADATA } from './caseFieldModel';
 import type { CaseFieldMetadata } from './caseFieldModel';
 
+import { QUOTE_FIELD_METADATA } from './quoteFieldModel';
+import type { QuoteFieldMetadata } from './quoteFieldModel';
+
 // =============================================================================
 // MODULE KEY TYPE
 // =============================================================================
@@ -88,13 +91,13 @@ import type { CaseFieldMetadata } from './caseFieldModel';
  * Stable module key type.
  * Add new modules here as they are created.
  */
-export type ModuleKey = 'people' | 'tasks' | 'organization' | 'deal' | 'event' | 'item' | 'case';
+export type ModuleKey = 'people' | 'tasks' | 'organization' | 'deal' | 'event' | 'item' | 'case' | 'quote';
 
 /**
  * All registered module keys.
  * Used for iteration and validation.
  */
-export const MODULE_KEYS: readonly ModuleKey[] = ['people', 'tasks', 'organization', 'deal', 'event', 'item', 'case'] as const;
+export const MODULE_KEYS: readonly ModuleKey[] = ['people', 'tasks', 'organization', 'deal', 'event', 'item', 'case', 'quote'] as const;
 
 /**
  * Map UI module keys (plural) to registry keys (singular).
@@ -106,6 +109,7 @@ const MODULE_KEY_ALIASES: Record<string, ModuleKey> = {
   organizations: 'organization',
   events: 'event',
   items: 'item',
+  quotes: 'quote',
 };
 
 /**
@@ -126,7 +130,7 @@ export function normalizeModuleKeyForRegistry(moduleKey: string): ModuleKey | un
  * Union type for all module field metadata types.
  * Extends BaseFieldMetadata to ensure compatibility.
  */
-export type AnyFieldMetadata = PeopleFieldMetadata | TaskFieldMetadata | OrganizationFieldMetadata | DealFieldMetadata | EventFieldMetadata | ItemFieldMetadata | CaseFieldMetadata;
+export type AnyFieldMetadata = PeopleFieldMetadata | TaskFieldMetadata | OrganizationFieldMetadata | DealFieldMetadata | EventFieldMetadata | ItemFieldMetadata | CaseFieldMetadata | QuoteFieldMetadata;
 
 /**
  * Type for the field registry map.
@@ -139,6 +143,7 @@ type FieldRegistryMap = {
   readonly event: Record<string, EventFieldMetadata>;
   readonly item: Record<string, ItemFieldMetadata>;
   readonly case: Record<string, CaseFieldMetadata>;
+  readonly quote: Record<string, QuoteFieldMetadata>;
 };
 
 /**
@@ -155,6 +160,7 @@ const FIELD_REGISTRY: FieldRegistryMap = {
   event: EVENT_FIELD_METADATA,
   item: ITEM_FIELD_METADATA,
   case: CASE_FIELD_METADATA,
+  quote: QUOTE_FIELD_METADATA,
 } as const;
 
 // =============================================================================

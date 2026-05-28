@@ -1601,8 +1601,15 @@ const handleStatClick = (statItem) => {
         break; // newFilters stays empty
         
       case 'activeItems':
-        // Filter: status = 'Active'
-        newFilters.status = 'Active';
+        newFilters.lifecycle_state = 'Active';
+        break;
+
+      case 'draftItems':
+        newFilters.lifecycle_state = 'Draft';
+        break;
+
+      case 'discontinuedItems':
+        newFilters.lifecycle_state = 'Discontinued';
         break;
         
       case 'products':
@@ -1613,16 +1620,6 @@ const handleStatClick = (statItem) => {
       case 'services':
         // Filter: item_type = 'Service'
         newFilters.item_type = 'Service';
-        break;
-        
-      case 'lowStock':
-        // Filter: low_stock = true
-        newFilters.low_stock = true;
-        break;
-        
-      case 'outOfStock':
-        // Filter: out_of_stock = true
-        newFilters.out_of_stock = true;
         break;
     }
   } else if (props.moduleKey === 'events') {

@@ -561,11 +561,26 @@ const getFieldByKey = (key) => {
 };
 
 const layout = computed(() => moduleDefinition.value?.quickCreateLayout);
+
+function advancedLayoutHasVisibleFields() {
+  const lay = layout.value;
+  if (!lay?.rows?.length) return false;
+  for (const row of lay.rows) {
+    for (const col of row.cols || []) {
+      if (!col?.fieldKey) continue;
+      const field = getFieldByKey(col.fieldKey);
+      if (field && shouldShowField(field)) return true;
+    }
+  }
+  return false;
+}
+
 // When showAllFields is true (e.g. "Show all fields" in create drawer), bypass advanced layout
 // so we can render ALL fields - advanced layout only shows fields in layout rows
 const useAdvancedLayout = computed(() => {
   if (props.showAllFields) return false;
-  return layout.value && layout.value.rows && layout.value.rows.length > 0;
+  if (!layout.value?.rows?.length) return false;
+  return advancedLayoutHasVisibleFields();
 });
 
 const orderedFields = computed(() => {

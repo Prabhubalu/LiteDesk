@@ -33,6 +33,7 @@
         :record="record"
         :adapter="adapter"
         :context="getSectionContext(section)"
+        @updated="(payload) => props.context?.onSectionUpdated?.({ sectionKey: section.key, payload })"
       />
     </section>
   </div>

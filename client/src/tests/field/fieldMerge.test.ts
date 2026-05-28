@@ -5,8 +5,14 @@
 
 import { describe, it, expect } from 'vitest';
 import type { BaseFieldMetadata } from '../../platform/fields/BaseFieldModel';
-import { mergeFields, filterToVisibleInConfig, getFallbackMetadataForVisibleInConfig } from '../../platform/fields/fieldMerge';
+import {
+  mergeFields,
+  filterToVisibleInConfig,
+  getFallbackMetadataForVisibleInConfig,
+  normalizeModuleFieldsFromMetadata
+} from '../../platform/fields/fieldMerge';
 import { TASK_FIELD_METADATA } from '../../platform/fields/taskFieldModel';
+import { ITEM_FIELD_METADATA } from '../../platform/fields/itemFieldModel';
 import { getFieldMetadataFromRegistry } from '../../platform/fields/FieldRegistry';
 
 function meta(overrides: Partial<BaseFieldMetadata> = {}): BaseFieldMetadata {
@@ -208,6 +214,39 @@ describe('fieldMerge', () => {
       });
       const createdAtCount = result.filter((f) => f.key.toLowerCase() === 'createdat').length;
       expect(createdAtCount).toBe(1);
+    });
+  });
+
+  describe('normalizeModuleFieldsFromMetadata', () => {
+    it('merges item metadata when backend only has system fields', () => {
+      const backendFields = [{ key: 'item_id', label: 'Item ID', dataType: 'Text' }];
+      const result = normalizeModuleFieldsFromMetadata('items', backendFields);
+      const keys = result.map((f) => f.key.toLowerCase());
+      expect(keys).toContain('item_name');
+      expect(keys).toContain('item_type');
+    });
+  });
+
+  describe('Items module sparse backend', () => {
+    it('injects core and participation fields when backend only has system fields', () => {
+      const backendFields = [
+        { key: 'item_id', label: 'Item ID', dataType: 'Text' },
+        { key: 'createdBy', label: 'Created By', dataType: 'Lookup (Relationship)' },
+        { key: 'createdAt', label: 'Created At', dataType: 'Date-Time' },
+        { key: 'modifiedBy', label: 'Modified By', dataType: 'Lookup (Relationship)' },
+        { key: 'updatedAt', label: 'Updated At', dataType: 'Date-Time' },
+      ];
+      const getItemMetadata = (fieldKey: string) => getFieldMetadataFromRegistry('items', fieldKey);
+      const result = mergeFields(ITEM_FIELD_METADATA as Record<string, BaseFieldMetadata>, backendFields, {
+        moduleKey: 'items',
+        getMetadata: getItemMetadata,
+      });
+      const keys = result.map((f) => f.key.toLowerCase());
+      expect(keys).toContain('item_name');
+      expect(keys).toContain('item_code');
+      expect(keys).toContain('item_type');
+      expect(keys).toContain('lifecycle_state');
+      expect(keys).toContain('selling_price');
     });
   });
 

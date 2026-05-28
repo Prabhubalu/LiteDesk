@@ -67,7 +67,7 @@ function isLikelyUiEnglish(text) {
   const trimmed = text.trim();
   if (!trimmed || trimmed.length < 3) return false;
   if (ALLOWLIST.has(trimmed)) return false;
-  if (/^\{/.test(trimmed)) return false;
+  if (trimmed.startsWith('{')) return false;
   if (/^[\d\s$%•]+$/.test(trimmed)) return false;
   if (/^t\s*\(/.test(trimmed) || /\bt\s*\(/.test(trimmed)) return false;
   if (/^(get|is|has)[A-Z]\w*\(/.test(trimmed)) return false;
@@ -290,7 +290,7 @@ function main() {
     );
   }
 
-  let files = [...opts.files.map((f) => path.join(CLIENT_ROOT, f))];
+  let files = opts.files.map((f) => path.join(CLIENT_ROOT, f));
   for (const g of opts.globs) {
     files.push(...walkGlob(g));
   }

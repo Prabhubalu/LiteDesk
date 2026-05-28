@@ -262,13 +262,13 @@ async function loadTeam() {
         scheduleSource: res.data.scheduleSource || 'legacy',
         businessHourSetId: res.data.businessHourSetId ? String(res.data.businessHourSetId) : null,
         availableDays: [...(res.data.availableDays || [1, 2, 3, 4, 5])],
-        workingHours: { ...form.workingHours, ...(res.data.workingHours || {}) },
+        workingHours: { ...form.workingHours, ...res.data.workingHours },
         slotDurationMinutes: res.data.slotDurationMinutes ?? 30,
         bufferMinutes: res.data.bufferMinutes ?? 10,
         meetingType: res.data.meetingType || 'offline',
         appointmentTypes: res.data.appointmentTypes || ['demo', 'consultation'],
         customFields: (res.data.customFields || []).map((f) => ({ ...f, options: [...(f.options || [])] })),
-        branding: { ...form.branding, ...(res.data.branding || {}) }
+        branding: { ...form.branding, ...res.data.branding }
       });
     }
   } catch (e) {

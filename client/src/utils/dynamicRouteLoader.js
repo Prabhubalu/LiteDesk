@@ -61,7 +61,7 @@ function getViewComponentName(moduleKey, type) {
 
 /** Known module keys with dedicated list views. Custom/unknown modules use GenericModule for list. */
 const KNOWN_MODULE_KEYS = new Set([
-  'people', 'contacts', 'organizations', 'deals', 'tasks', 'events', 'items', 'forms',
+  'people', 'contacts', 'organizations', 'deals', 'quotes', 'tasks', 'events', 'items', 'forms',
   'imports', 'groups', 'responses'
 ]);
 
