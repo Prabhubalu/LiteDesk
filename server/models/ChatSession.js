@@ -16,6 +16,7 @@ const ChatSessionSchema = new mongoose.Schema({
   visitor: {
     name: { type: String, default: '' },
     email: { type: String, default: '' },
+    phone: { type: String, default: '' },
     externalId: { type: String, default: '' }
   },
 

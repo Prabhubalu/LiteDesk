@@ -1,9 +1,9 @@
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { buildRecordActivityUi } from '@/components/activity/useRecordActivityAdapter';
 
 export const createDealActivityUi = ({
   authStore,
-  expandedTaskEmailThreads,
+  expandedTaskEmailThreads = ref([]),
   editingNoteId,
   editingNoteText,
   editingNoteAttachments,

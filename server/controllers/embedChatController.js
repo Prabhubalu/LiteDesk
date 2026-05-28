@@ -32,6 +32,7 @@ async function createSession(req, res) {
       visitor: {
         name: String(visitor.name || '').trim(),
         email: String(visitor.email || '').trim(),
+        phone: String(visitor.phone || '').trim(),
         externalId: String(visitor.externalId || '').trim(),
       },
       pageUrl,
@@ -52,12 +53,74 @@ async function createSession(req, res) {
   }
 }
 
+async function getEmbedChatConfig(req, res) {
+  try {
+    const cfg = req.organization?.embed?.chat?.config || {};
+    const captureFields = Array.isArray(cfg.captureFields) ? cfg.captureFields : ['name', 'email'];
+    const welcomeMessage =
+      String(cfg.welcomeMessage || '').trim()
+      || "Hey! Let’s discuss how we can help you. Fill out the form to start chatting.";
+
+    return res.json({
+      success: true,
+      data: {
+        captureFields: captureFields.map((v) => String(v || '').trim()).filter(Boolean),
+        welcomeMessage
+      }
+    });
+  } catch (err) {
+    console.error('[embedChatController] getEmbedChatConfig', err);
+    return res.status(500).json({ success: false, message: 'Failed to load chat config' });
+  }
+}
+
 async function assertSessionSecret(req, session) {
   const provided = String(req.headers['x-chat-session-secret'] || req.query?.sessionSecret || '').trim();
   if (!provided || provided !== String(session.sessionSecret)) {
     const err = new Error('Invalid session secret');
     err.statusCode = 403;
     throw err;
+  }
+}
+
+async function getSession(req, res) {
+  try {
+    const sessionId = req.params.sessionId;
+    const session = await ChatSession.findById(sessionId).lean();
+    if (!session) return res.status(404).json({ success: false, message: 'Session not found' });
+    await assertSessionSecret(req, session);
+    return res.json({
+      success: true,
+      data: {
+        sessionId: session._id,
+        status: session.status || 'open',
+        createdAt: session.createdAt,
+        lastMessageAt: session.lastMessageAt || null,
+        visitor: session.visitor || {}
+      }
+    });
+  } catch (err) {
+    const status = err.statusCode || 500;
+    if (status !== 500) return res.status(status).json({ success: false, message: err.message });
+    console.error('[embedChatController] getSession', err);
+    return res.status(500).json({ success: false, message: 'Failed to load session' });
+  }
+}
+
+async function closeSession(req, res) {
+  try {
+    const sessionId = req.params.sessionId;
+    const session = await ChatSession.findById(sessionId).lean();
+    if (!session) return res.status(404).json({ success: false, message: 'Session not found' });
+    await assertSessionSecret(req, session);
+
+    await ChatSession.updateOne({ _id: session._id }, { $set: { status: 'closed', updatedAt: new Date() } });
+    return res.json({ success: true, data: { sessionId: session._id, status: 'closed' } });
+  } catch (err) {
+    const status = err.statusCode || 500;
+    if (status !== 500) return res.status(status).json({ success: false, message: err.message });
+    console.error('[embedChatController] closeSession', err);
+    return res.status(500).json({ success: false, message: 'Failed to close session' });
   }
 }
 
@@ -255,6 +318,9 @@ async function streamMessages(req, res) {
 }
 
 module.exports = {
+  getEmbedChatConfig,
+  getSession,
+  closeSession,
   createSession,
   postMessage,
   listMessages,

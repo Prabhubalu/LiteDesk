@@ -1,6 +1,9 @@
 const express = require('express');
 const { resolveEmbedChatInstance } = require('../middleware/embedChatContextMiddleware');
 const {
+  getEmbedChatConfig,
+  getSession,
+  closeSession,
   createSession,
   postMessage,
   listMessages,
@@ -29,7 +32,10 @@ router.use((req, res, next) => {
 // Resolve tenant context from instanceKey for all embed chat routes.
 router.use(resolveEmbedChatInstance);
 
+router.get('/config', getEmbedChatConfig);
 router.post('/sessions', createSession);
+router.get('/sessions/:sessionId', getSession);
+router.post('/sessions/:sessionId/close', closeSession);
 router.get('/sessions/:sessionId/messages', listMessages);
 router.post('/sessions/:sessionId/messages', postMessage);
 router.post('/sessions/:sessionId/typing', setSessionTyping);
