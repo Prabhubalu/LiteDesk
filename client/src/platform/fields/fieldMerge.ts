@@ -257,10 +257,16 @@ const INFRASTRUCTURE_KEYS = new Set([
  * Fallback getMetadata for modules without full metadata (e.g. Forms).
  * Returns minimal metadata for known infrastructure keys.
  */
-export function getFallbackMetadataForVisibleInConfig(fieldKey: string): Partial<BaseFieldMetadata> | undefined {
+export function getFallbackMetadataForVisibleInConfig(fieldKey: string): BaseFieldMetadata | undefined {
   const k = (fieldKey || '').toLowerCase();
   if (INFRASTRUCTURE_KEYS.has(k) || k.startsWith('_')) {
-    return { isVisibleInConfig: false };
+    return {
+      owner: 'system',
+      intent: 'system',
+      fieldScope: 'CORE',
+      editable: false,
+      isVisibleInConfig: false,
+    };
   }
   return undefined;
 }
