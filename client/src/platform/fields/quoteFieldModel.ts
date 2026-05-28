@@ -148,7 +148,7 @@ export const QUOTE_FIELD_METADATA: Record<string, QuoteFieldMetadata> = {
     editable: true,
     allowOnCreate: true,
     filterable: true,
-    filterType: 'lookup',
+    filterType: 'user',
     filterPriority: 5,
   },
   contactId: {
