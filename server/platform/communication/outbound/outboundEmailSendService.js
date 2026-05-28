@@ -24,6 +24,7 @@ const { isGmailIntegrationEnabled } = require('../../../config/emailFeatureFlags
 const emailProviderGateway = require('../providers/emailProviderGateway');
 const gmailSendProvider = require('../providers/gmailSendProvider');
 const { uploadsDir } = require('../../../middleware/uploadMiddleware');
+const objectStorage = require('../../../services/objectStorageService');
 
 function resolveSafeReplyToAddress(value) {
   const raw = String(value || '').trim();
@@ -57,9 +58,15 @@ async function loadAttachmentsFromDoc(doc) {
   for (const att of attachments) {
     const storagePath = att.storagePath;
     if (!storagePath) continue;
-    const fullPath = path.join(uploadsDir, storagePath);
     try {
-      const content = fs.readFileSync(fullPath);
+      let content;
+      if (String(storagePath).startsWith('oci:')) {
+        const key = String(storagePath).slice(4);
+        content = await objectStorage.getBuffer({ key });
+      } else {
+        const fullPath = path.join(uploadsDir, storagePath);
+        content = fs.readFileSync(fullPath);
+      }
       emailAttachments.push({
         filename: att.fileName || path.basename(storagePath),
         content

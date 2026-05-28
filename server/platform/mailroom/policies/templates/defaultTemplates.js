@@ -91,7 +91,10 @@ const TEMPLATES = {
     },
     connectors: {
       arivuParser: { enabled: true },
-      rawMimeWebhook: { enabled: true }
+      rawMimeWebhook: { enabled: true },
+      publicApi: { enabled: false, ingestKey: null },
+      portal: { enabled: false },
+      chat: { enabled: false }
     }
   },
   strict_one_email_one_case: {
@@ -114,7 +117,10 @@ const TEMPLATES = {
     },
     connectors: {
       arivuParser: { enabled: true },
-      rawMimeWebhook: { enabled: true }
+      rawMimeWebhook: { enabled: true },
+      publicApi: { enabled: false, ingestKey: null },
+      portal: { enabled: false },
+      chat: { enabled: false }
     }
   },
   append_only_threading: {
@@ -134,7 +140,10 @@ const TEMPLATES = {
     },
     connectors: {
       arivuParser: { enabled: true },
-      rawMimeWebhook: { enabled: true }
+      rawMimeWebhook: { enabled: true },
+      publicApi: { enabled: false, ingestKey: null },
+      portal: { enabled: false },
+      chat: { enabled: false }
     }
   }
 };

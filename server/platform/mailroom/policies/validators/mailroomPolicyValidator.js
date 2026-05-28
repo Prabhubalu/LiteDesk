@@ -9,6 +9,7 @@ const {
   MAILROOM_TEMPLATE_IDS,
   MAILROOM_SCHEMA_VERSION
 } = require('../../../../constants/mailroomPolicies');
+const { mergePortalConnector } = require('../../connectors/portal/portalConnectorDefaults');
 
 function isPlainObject(value) {
   return value && typeof value === 'object' && !Array.isArray(value);
@@ -140,7 +141,16 @@ function sanitizeMailroomConfig(input) {
     },
     connectors: {
       arivuParser: { enabled: connectors.arivuParser?.enabled !== false },
-      rawMimeWebhook: { enabled: connectors.rawMimeWebhook?.enabled !== false }
+      rawMimeWebhook: { enabled: connectors.rawMimeWebhook?.enabled !== false },
+      publicApi: {
+        enabled: connectors.publicApi?.enabled === true,
+        // If you need to rotate, update in Settings → Automation → Mailroom.
+        ingestKey: connectors.publicApi?.ingestKey ? String(connectors.publicApi.ingestKey).trim() : null
+      },
+      portal: mergePortalConnector(connectors.portal || {}),
+      chat: {
+        enabled: connectors.chat?.enabled === true
+      }
     }
   };
 }

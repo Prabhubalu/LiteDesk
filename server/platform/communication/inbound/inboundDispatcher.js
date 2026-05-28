@@ -13,8 +13,9 @@
  */
 
 const path = require('path');
-const fs = require('fs');
 const mongoose = require('mongoose');
+const { v4: uuidv4 } = require('uuid');
+const objectStorage = require('../../../services/objectStorageService');
 
 const Communication = require('../../../models/Communication');
 const People = require('../../../models/People');
@@ -22,7 +23,6 @@ const Organization = require('../../../models/Organization');
 const User = require('../../../models/User');
 const replyToTokenService = require('../../../services/replyToTokenService');
 const { handleInboundEmailForHelpdesk } = require('../../../services/helpdeskChannelIngestionService');
-const { uploadsDir } = require('../../../middleware/uploadMiddleware');
 const { MAX_ATTACHMENT_SIZE_BYTES } = require('../../../models/Communication');
 const { appendCommunicationEvent } = require('../../../services/communicationEventWriter');
 const { resolveMailboxIdForInbound } = require('../../../services/mailboxRoutingService');
@@ -202,41 +202,33 @@ async function resolveTargetRecord({ orgId, moduleKey, recordId, parsedMessage }
   throw new InboundDispatchError(`Unsupported moduleKey for inbound: ${moduleKey}`, { stage: 'route' });
 }
 
-function persistAttachments({ orgId, parsedMessage }) {
+async function persistAttachments({ orgId, parsedMessage }) {
   const inboundAttachments = [];
   if (!Array.isArray(parsedMessage.attachments) || parsedMessage.attachments.length === 0) {
     return inboundAttachments;
   }
   const safeOrgId = String(orgId).replace(/[^a-zA-Z0-9_-]/g, '_');
-  const orgDir = path.join(uploadsDir, safeOrgId);
-  try {
-    if (!fs.existsSync(orgDir)) {
-      fs.mkdirSync(orgDir, { recursive: true });
-    }
-  } catch (mkdirErr) {
-    console.error('[inboundDispatcher] mkdir failed:', mkdirErr.message);
-    return inboundAttachments;
-  }
 
   for (const att of parsedMessage.attachments) {
     if (!att.content || !Buffer.isBuffer(att.content)) continue;
     if (att.content.length > MAX_ATTACHMENT_SIZE_BYTES) continue;
-    const baseName = (att.filename || 'attachment').replace(/[^a-zA-Z0-9._-]/g, '_');
-    const ext = path.extname(baseName) || '';
-    const name = path.basename(baseName, ext) || 'attachment';
-    const storedName = `${name}-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
-    const storagePath = `${safeOrgId}/${storedName}`;
-    const fullPath = path.join(uploadsDir, storagePath);
+    const baseName = String(att.filename || 'attachment').replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 120);
+    const key = `attachments/${safeOrgId}/inbound/${Date.now()}-${uuidv4()}-${baseName}`;
     try {
-      fs.writeFileSync(fullPath, att.content);
+      await objectStorage.putBuffer({
+        key,
+        buffer: att.content,
+        contentType: att.contentType || 'application/octet-stream',
+        metadata: { originalname: baseName }
+      });
       inboundAttachments.push({
-        fileName: att.filename || storedName,
+        fileName: att.filename || baseName,
         fileType: att.contentType || 'application/octet-stream',
         fileSize: att.content.length,
-        storagePath
+        storagePath: `oci:${key}`
       });
     } catch (writeErr) {
-      console.error('[inboundDispatcher] attachment write failed:', writeErr.message);
+      console.error('[inboundDispatcher] attachment upload failed:', writeErr.message);
     }
   }
   return inboundAttachments;
@@ -403,7 +395,7 @@ async function processRawInbound({
     }
   });
 
-  const inboundAttachments = persistAttachments({ orgId, parsedMessage });
+  const inboundAttachments = await persistAttachments({ orgId, parsedMessage });
 
   let mailboxIdInbound = forcedWorkspaceInbox?.mailboxId
     ? (mongoose.Types.ObjectId.isValid(String(forcedWorkspaceInbox.mailboxId))

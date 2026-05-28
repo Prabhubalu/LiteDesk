@@ -207,6 +207,8 @@ const relationshipRoutes = require('./routes/relationshipRoutes');
 const responseRoutes = require('./routes/responseRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const inboxRoutes = require('./routes/inboxRoutes');
+const mailroomRoutes = require('./routes/mailroomRoutes');
+const embedChatRoutes = require('./routes/embedChatRoutes');
 const automationRuleRoutes = require('./routes/automationRuleRoutes');
 const processRoutes = require('./routes/processRoutes');
 const approvalRoutes = require('./routes/approvalRoutes');
@@ -272,6 +274,9 @@ app.use('/api/public/forms', formRoutes); // Public form routes
 app.use('/api/public/book', require('./routes/publicBookingRoutes'));
 app.use('/api/public/appointments/manage', require('./routes/publicAppointmentManageRoutes'));
 app.use('/api/public/quotes', require('./routes/publicQuoteRoutes'));
+app.use('/api/public/mailroom', require('./routes/publicMailroomRoutes'));
+// Public embeddable live chat widget APIs (M6)
+app.use('/embed/chat', embedChatRoutes);
 app.get(
   '/api/appointments/calendar/google/callback',
   require('./controllers/appointmentCalendarController').googleOAuthCallback
@@ -320,6 +325,7 @@ app.use('/api/responses', responseRoutes);
 
 // Settings Routes
 app.use('/api/settings', settingsRoutes);
+app.use('/api/mailroom', mailroomRoutes);
 
 // Targets & Quotas (platform performance)
 app.use('/api/targets', require('./routes/targetRoutes'));

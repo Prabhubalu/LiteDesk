@@ -50,6 +50,14 @@ router.get('/automation/mailroom/templates', mailroomSettingsController.listMail
 router.post('/automation/mailroom/evaluate', mailroomSettingsController.evaluateMailroomPolicies);
 router.get('/automation/mailroom/conversations', mailroomSettingsController.listMailroomConversations);
 router.get('/automation/mailroom/conversations/:id', mailroomSettingsController.getMailroomConversation);
+router.get(
+  '/automation/mailroom/conversations/:conversationId/attachments',
+  mailroomSettingsController.listMailroomConversationAttachments
+);
+router.get(
+  '/automation/mailroom/messages/:messageId/attachments',
+  mailroomSettingsController.listMailroomMessageAttachments
+);
 router.get('/automation/mailroom/threading-logs', mailroomSettingsController.listMailroomThreadingLogs);
 router.get('/automation/mailroom/failures', mailroomSettingsController.listMailroomProcessingFailures);
 router.post('/automation/mailroom/failures/:rawPayloadId/replay', mailroomSettingsController.replayMailroomProcessingFailure);

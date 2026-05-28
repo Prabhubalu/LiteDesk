@@ -29,6 +29,18 @@ const portalRoutes = [
         meta: { requiresAuth: true, requiresPortalApp: true }
       },
       {
+        path: 'cases',
+        name: 'portal-case-list',
+        component: () => import('@/views/portal/PortalCaseList.vue'),
+        meta: { requiresAuth: true, requiresPortalApp: true }
+      },
+      {
+        path: 'cases/:id',
+        name: 'portal-case-detail',
+        component: () => import('@/views/portal/PortalCaseDetail.vue'),
+        meta: { requiresAuth: true, requiresPortalApp: true }
+      },
+      {
         path: 'profile',
         name: 'portal-profile',
         component: () => import('@/views/portal/PortalProfile.vue'),

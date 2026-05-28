@@ -120,6 +120,17 @@ async function runMailroomEmailCore({
       linkedCaseId: caseResult?.caseId || legacyResult?.helpdesk?.caseId || null
     });
 
+    const linkedCaseId = caseResult?.caseId || legacyResult?.helpdesk?.caseId || null;
+    if (linkedCaseId && conversationResult?.message?._id) {
+      const { syncCaseActivityMailroomMetadata } = require('../services/caseActivityAttachmentService');
+      await syncCaseActivityMailroomMetadata({
+        organizationId,
+        caseId: linkedCaseId,
+        mailroomMessageId: conversationResult.message._id,
+        attachmentIds: conversationResult.message.attachmentIds || []
+      });
+    }
+
     const eventsResult = await publishMailroomProcessingEvents({
       organizationId,
       normalizedMessage,

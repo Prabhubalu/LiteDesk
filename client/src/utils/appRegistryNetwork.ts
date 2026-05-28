@@ -54,6 +54,17 @@ function mapRawModulesToRegistryModules(app: { appKey: string }, modulesData: an
     if (normalizedAppKey === 'AUDIT' && normalizedModuleKey === 'responses') {
       route = '/audit/responses';
     }
+    if (normalizedAppKey === 'PORTAL') {
+      if (normalizedModuleKey === 'portal_support' || normalizedModuleKey === 'support') {
+        route = '/portal/cases';
+      }
+      if (normalizedModuleKey === 'portal_audits') {
+        route = '/portal/audits';
+      }
+      if (normalizedModuleKey === 'portal_actions') {
+        route = '/portal/actions';
+      }
+    }
 
     return {
       moduleKey: module.moduleKey,
@@ -72,28 +83,79 @@ function mapRawModulesToRegistryModules(app: { appKey: string }, modulesData: an
     };
   });
 
-  if (
-    String(app.appKey || '').toUpperCase() === 'AUDIT' &&
-    !modules.some((m: any) => String(m.moduleKey || '').toLowerCase() === 'responses')
-  ) {
-    modules.push({
-      moduleKey: 'responses',
-      label: 'Responses',
-      route: '/audit/responses',
+  return modules;
+}
+
+/** Default Audit app nav when platform module metadata is missing or filtered out. */
+function ensureAuditAppNavigationModules(registry: AppRegistry): void {
+  const auditKey = Object.keys(registry).find((k) => String(k).toUpperCase() === 'AUDIT');
+  if (!auditKey) return;
+  const app = registry[auditKey];
+  if (!app) return;
+
+  const defaults = [
+    { moduleKey: 'audits', label: 'Audits', route: '/audit/audits', icon: 'document-text', order: 1 },
+    { moduleKey: 'cases', label: 'Findings', route: '/audit/findings', icon: 'magnifying-glass', order: 2 },
+    { moduleKey: 'responses', label: 'Responses', route: '/audit/responses', icon: 'responses', order: 3 },
+    { moduleKey: 'schedule', label: 'Schedule', route: '/audit/schedule', icon: 'calendar', order: 4 }
+  ];
+
+  app.modules = app.modules || [];
+  for (const mod of defaults) {
+    const idx = app.modules.findIndex(
+      (m) => String(m.moduleKey || '').toLowerCase() === mod.moduleKey
+    );
+    const navModule = {
+      ...mod,
       permission: undefined,
-      icon: 'responses',
-      order: 3,
-      appKey: 'AUDIT',
+      appKey: auditKey,
       navigationCore: false,
       navigationEntity: false,
       excludeFromApps: false,
       system: false,
-      coreEntity: false,
-      list: undefined
-    });
+      coreEntity: false
+    };
+    if (idx >= 0) {
+      app.modules[idx] = { ...app.modules[idx], ...navModule };
+    } else {
+      app.modules.push(navModule);
+    }
   }
+  app.modules.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+}
 
-  return modules;
+/**
+ * Portal app sidebar: only customer-native surfaces (not Audit/Helpdesk module clones).
+ * - Support cases live here (Helpdesk Phase 1D customer path at /portal/cases).
+ * - Audits and corrective actions stay on the portal dashboard + mobile nav (/portal/audits, /portal/actions).
+ */
+function injectPortalCustomerSupportModule(registry: AppRegistry): void {
+  const portalKey = Object.keys(registry).find((k) => String(k).toUpperCase() === 'PORTAL');
+  if (!portalKey) return;
+  const app = registry[portalKey];
+  if (!app) return;
+
+  const hasSupport = (app.modules || []).some((m) => {
+    const key = String(m.moduleKey || '').toLowerCase();
+    return key === 'portal_support' || key === 'support' || m.route === '/portal/cases';
+  });
+  if (hasSupport) return;
+
+  app.modules = app.modules || [];
+  app.modules.push({
+    moduleKey: 'portal_support',
+    label: 'Support',
+    route: '/portal/cases',
+    permission: undefined,
+    icon: 'lifebuoy',
+    order: 1,
+    appKey: portalKey,
+    navigationCore: false,
+    navigationEntity: false,
+    excludeFromApps: false,
+    system: false,
+    coreEntity: false
+  });
 }
 
 function addPlatformModulesToRegistry(registry: AppRegistry, entityModules: any[] | undefined): void {
@@ -204,6 +266,8 @@ function buildRegistryFromPayload(payload: {
   }
 
   addPlatformModulesToRegistry(registry, payload.entityModules);
+  ensureAuditAppNavigationModules(registry);
+  injectPortalCustomerSupportModule(registry);
   return registry;
 }
 

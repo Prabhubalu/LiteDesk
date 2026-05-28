@@ -23,6 +23,7 @@
         v-bind="$attrs"
         fill-height
         class="h-full min-h-0"
+        @typing="$emit('typing', $event)"
       />
     </div>
   </div>
@@ -34,6 +35,8 @@ import CaseReplyComposer from '@/components/cases/CaseReplyComposer.vue';
 import { useVerticalPaneResize } from '@/composables/useVerticalPaneResize';
 
 defineOptions({ inheritAttrs: false });
+
+defineEmits(['typing']);
 
 const props = defineProps({
   /** localStorage key suffix; full key is `case-reply-height-${paneKey}` */

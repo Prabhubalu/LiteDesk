@@ -481,10 +481,13 @@
 
               <!-- Attachments -->
               <div v-if="msg.attachments && msg.attachments.length > 0" class="mt-3 grid gap-2.5">
-                <a
+                <component
                   v-for="(att, ai) in msg.attachments"
                   :key="ai"
-                  :href="getEmailAttachmentUrl(att)"
+                  :is="getCommunicationAttachmentHref(att) ? 'a' : 'div'"
+                  :href="getCommunicationAttachmentHref(att) || undefined"
+                  :role="getCommunicationAttachmentHref(att) ? undefined : 'button'"
+                  :tabindex="getCommunicationAttachmentHref(att) ? undefined : 0"
                   target="_blank"
                   rel="noopener noreferrer"
                   :class="[
@@ -494,17 +497,26 @@
                       ? 'cursor-pointer'
                       : 'hover:-translate-y-px hover:border-indigo-300 hover:shadow-sm dark:hover:border-indigo-500'
                   ]"
+                  @click="!getCommunicationAttachmentHref(att) && handleEmailAttachmentClick($event, att)"
+                  @keydown.enter="!getCommunicationAttachmentHref(att) && handleEmailAttachmentClick($event, att)"
                 >
                   <div
                     v-if="isEmailImageAttachment(att)"
                     class="relative max-h-[240px] overflow-hidden bg-slate-50 dark:bg-gray-800"
                   >
                     <img
-                      :src="getEmailAttachmentUrl(att)"
+                      v-if="getEmailAttachmentDisplayUrl(att)"
+                      :src="getEmailAttachmentDisplayUrl(att)"
                       :alt="getEmailAttachmentName(att)"
                       class="block max-h-[240px] w-full object-contain"
                       loading="lazy"
                     />
+                    <div
+                      v-else
+                      class="flex h-32 items-center justify-center text-xs text-gray-500 dark:text-gray-400"
+                    >
+                      {{ t('inbox.emailThreadCardAttachment') }}
+                    </div>
                     <div class="flex items-center justify-between gap-2 border-t border-gray-100 bg-white px-3 py-2 dark:border-gray-700 dark:bg-gray-800">
                       <span class="truncate text-sm font-medium text-gray-800 dark:text-gray-200">{{ getEmailAttachmentName(att) }}</span>
                     </div>
@@ -518,7 +530,7 @@
                       <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('inbox.emailThreadCardAttachment') }}</span>
                     </div>
                   </div>
-                </a>
+                </component>
               </div>
             </div>
           </div>
@@ -530,11 +542,17 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n';
-import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
+import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
 import { EnvelopeIcon, ChevronRightIcon, PaperClipIcon, ArrowUturnLeftIcon, PlusIcon } from '@heroicons/vue/24/outline';
 import Avatar from '@/components/common/Avatar.vue';
 import RecordTagPopover from '@/components/record-page/RecordTagPopover.vue';
+import {
+  getCommunicationAttachmentHref,
+  downloadCommunicationAttachment,
+  fetchCommunicationAttachmentBlob,
+  isOciCommunicationStoragePath
+} from '@/utils/communicationAttachments';
 
 const props = defineProps({
   thread: {
@@ -823,9 +841,56 @@ onMounted(() => {
   document.addEventListener('keydown', handleDocumentKeyDown, true);
 });
 
+const ociImageUrls = ref({});
+
+async function ensureOciImagePreview(att) {
+  if (!isOciCommunicationStoragePath(att?.storagePath)) return;
+  if (!isEmailImageAttachment(att)) return;
+  if (ociImageUrls.value[att.storagePath]) return;
+  try {
+    const { blob } = await fetchCommunicationAttachmentBlob(att.storagePath, {
+      disposition: 'inline',
+      fileName: getEmailAttachmentName(att),
+      contentType: att.fileType || att.mimeType || att.mimetype
+    });
+    ociImageUrls.value = { ...ociImageUrls.value, [att.storagePath]: URL.createObjectURL(blob) };
+  } catch {
+    /* preview optional */
+  }
+}
+
+async function handleEmailAttachmentClick(event, att) {
+  if (getCommunicationAttachmentHref(att)) return;
+  event?.preventDefault?.();
+  if (isEmailImageAttachment(att)) {
+    await ensureOciImagePreview(att);
+    const url = ociImageUrls.value[att.storagePath];
+    if (url) window.open(url, '_blank', 'noopener,noreferrer');
+    return;
+  }
+  await downloadCommunicationAttachment(att);
+}
+
+function preloadVisibleOciImages() {
+  if (!props.expanded) return;
+  const messages = props.thread?.messages || [];
+  for (const msg of messages) {
+    for (const att of msg.attachments || []) {
+      void ensureOciImagePreview(att);
+    }
+  }
+}
+
+watch(() => props.expanded, (expanded) => {
+  if (expanded) preloadVisibleOciImages();
+}, { immediate: true });
+
 onBeforeUnmount(() => {
   document.removeEventListener('pointerdown', handleDocumentPointerDown, true);
   document.removeEventListener('keydown', handleDocumentKeyDown, true);
+  for (const url of Object.values(ociImageUrls.value)) {
+    if (url) URL.revokeObjectURL(url);
+  }
 });
 
 function shouldShowPriorityChip(threadLike) {
@@ -943,9 +1008,10 @@ function getMessageInitials(msg) {
   return email[0]?.toUpperCase() || '?';
 }
 
-function getEmailAttachmentUrl(att) {
-  if (!att?.storagePath) return '#';
-  return `/api/uploads/${att.storagePath}`;
+function getEmailAttachmentDisplayUrl(att) {
+  const href = getCommunicationAttachmentHref(att);
+  if (href) return href;
+  return ociImageUrls.value[att?.storagePath] || '';
 }
 
 function getEmailAttachmentName(att) {
@@ -954,7 +1020,7 @@ function getEmailAttachmentName(att) {
 
 function isEmailImageAttachment(att) {
   if (!att) return false;
-  const mime = (att.mimeType || att.mimetype || '').toLowerCase();
+  const mime = (att.mimeType || att.mimetype || att.fileType || '').toLowerCase();
   if (mime.startsWith('image/')) return true;
   const name = getEmailAttachmentName(att).toLowerCase();
   return /\.(png|jpe?g|gif|webp|bmp|svg)$/.test(name);

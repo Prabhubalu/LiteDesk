@@ -85,18 +85,38 @@
       v-if="activeTab === 'conversation'"
       class="flex min-h-0 flex-1 flex-col overflow-hidden"
     >
+      <CaseLiveChatPanel
+        v-if="isLiveChatCase"
+        ref="liveChatPanelRef"
+        :case-id="caseId"
+        :can-reply="canEdit"
+        @chat-updated="$emit('chat-updated')"
+        @typing-label="setLiveChatTypingLabel"
+      />
       <CaseTimelineFeed
+        v-else
         :activities="tabActivities"
         :case-record="caseRecord"
         :empty-title="emptyConversationTitle"
         :empty-message="emptyConversationMessage"
       />
+      <div
+        v-if="isLiveChatCase && liveChatTypingLabel"
+        class="shrink-0 bg-white px-4 py-2 text-xs text-indigo-600 dark:bg-gray-900 dark:text-indigo-300 sm:px-6"
+      >
+        {{ liveChatTypingLabel }}
+      </div>
       <CaseResizableReplyComposer
         v-if="!isClosed"
         pane-key="conversation"
         :case-record="caseRecord"
         :sending="sending"
+        :fixed-channel="isLiveChatCase ? 'Live Chat' : ''"
+        :hide-channel-select="isLiveChatCase"
+        :show-internal-toggle="!isLiveChatCase"
+        placeholder="Reply to visitor…"
         @send="$emit('send-message', $event)"
+        @typing="$emit('typing', $event)"
       />
     </div>
 
@@ -146,7 +166,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { TicketIcon } from '@heroicons/vue/24/outline';
 import Avatar from '@/components/common/Avatar.vue';
@@ -154,10 +174,11 @@ import RecordPageTitleRow from '@/components/record-page/RecordPageTitleRow.vue'
 import RecordClosedBanner from '@/components/record-page/RecordClosedBanner.vue';
 import CaseRecordHeader from '@/components/cases/CaseRecordHeader.vue';
 import CaseTimelineFeed from '@/components/cases/CaseTimelineFeed.vue';
+import CaseLiveChatPanel from '@/components/cases/CaseLiveChatPanel.vue';
 import CaseResizableReplyComposer from '@/components/cases/CaseResizableReplyComposer.vue';
 import CaseTasksTab from '@/components/cases/CaseTasksTab.vue';
 
-defineProps({
+const props = defineProps({
   embed: { type: Boolean, default: false },
   caseRecord: { type: Object, required: true },
   caseId: { type: String, required: true },
@@ -182,7 +203,24 @@ defineProps({
 });
 
 const { t } = useI18n();
+const liveChatPanelRef = ref(null);
+const liveChatTypingLabel = ref('');
 const caseModuleLabel = computed(() => t('navigation.moduleCases'));
+const isLiveChatCase = computed(() => String(props.caseRecord?.channel || '').toLowerCase() === 'live chat');
+
+function setLiveChatTypingLabel(label) {
+  liveChatTypingLabel.value = String(label || '');
+}
+
+function appendLiveChatMessage(msg) {
+  liveChatPanelRef.value?.appendMessage?.(msg);
+}
+
+function refreshLiveChatMessages() {
+  return liveChatPanelRef.value?.refreshMessages?.();
+}
+
+defineExpose({ appendLiveChatMessage, refreshLiveChatMessages });
 
 defineEmits([
   'update:activeTab',
@@ -193,6 +231,8 @@ defineEmits([
   'delete',
   'copy-url',
   'reopen',
+  'chat-updated',
+  'typing',
   'send-message',
   'send-note',
   'open-record',
