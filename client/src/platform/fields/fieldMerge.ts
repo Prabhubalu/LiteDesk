@@ -19,6 +19,8 @@
 
 import type { BaseFieldMetadata } from './BaseFieldModel';
 import { getIsVisibleInConfigBase, getIsEditableBase } from './BaseFieldModel';
+import { getFieldMetadataFromRegistry, getFieldMetadataMap, isModuleRegistered } from './FieldRegistry';
+import { CATALOG_LIFECYCLE_STATES } from '@/constants/catalogLifecycle';
 
 /**
  * Minimal field shape expected from backend or metadata.
@@ -45,30 +47,43 @@ export interface MergeFieldsOptions {
   buildFieldFromMetadata?: (fieldKey: string, metadata: BaseFieldMetadata) => MergeableField;
 }
 
-/**
- * Default field builder from metadata.
- * Creates a minimal field object for system fields not in backend.
- */
-function defaultBuildFieldFromMetadata(
-  fieldKey: string,
-  metadata: BaseFieldMetadata
-): MergeableField {
+const FILTER_TYPE_TO_DATA_TYPE: Record<string, string> = {
+  text: 'Text',
+  select: 'Picklist',
+  'multi-select': 'Multi-Picklist',
+  user: 'Lookup (Relationship)',
+  date: 'Date-Time',
+  entity: 'Lookup (Relationship)',
+  boolean: 'Checkbox',
+  number: 'Decimal',
+};
+
+const FIELD_KEY_DATA_TYPE: Record<string, string> = {
+  createdat: 'Date-Time',
+  updatedat: 'Date-Time',
+  createdby: 'Lookup (Relationship)',
+  modifiedby: 'Lookup (Relationship)',
+  assignedby: 'Lookup (Relationship)',
+  organizationid: 'Lookup (Relationship)',
+  derivedstatus: 'Text',
+  reminderdate: 'Date',
+  remindersent: 'Checkbox',
+  completeddate: 'Date',
+  completedat: 'Date-Time',
+  activitylogs: 'Text-Area',
+  item_id: 'Text',
+  selling_price: 'Currency',
+  cost_price: 'Currency',
+  stock_quantity: 'Integer',
+  reorder_level: 'Integer',
+  tax_percentage: 'Decimal',
+  commission_rate: 'Decimal',
+  description: 'Text-Area',
+  product_image: 'Image',
+};
+
+function metadataLabelFromKey(fieldKey: string): string {
   const keyLower = (fieldKey || '').toLowerCase();
-  const dataTypeMap: Record<string, string> = {
-    createdat: 'Date-Time',
-    updatedat: 'Date-Time',
-    createdby: 'Lookup (Relationship)',
-    modifiedby: 'Lookup (Relationship)',
-    assignedby: 'Lookup (Relationship)',
-    organizationid: 'Lookup (Relationship)',
-    derivedstatus: 'Text',
-    reminderdate: 'Date',
-    reminderSent: 'Checkbox',
-    completeddate: 'Date',
-    completedat: 'Date-Time',
-    activitylogs: 'Text-Area',
-    item_id: 'Text',
-  };
   const labelMap: Record<string, string> = {
     createdat: 'Created At',
     updatedat: 'Updated At',
@@ -82,17 +97,59 @@ function defaultBuildFieldFromMetadata(
     completedat: 'Completed At',
     activitylogs: 'Activity Logs',
     item_id: 'Item ID',
+    item_name: 'Item Name',
+    item_code: 'Item Code',
+    item_type: 'Item Type',
+    lifecycle_state: 'Lifecycle State',
+    category: 'Category (legacy)',
+    categoryid: 'Category',
+    subcategory: 'Subcategory (legacy)',
+    selling_price: 'Selling Price',
+    cost_price: 'Cost Price',
+    unit_of_measure: 'Unit of Measure',
+    tax_type: 'Tax Type',
+    tax_percentage: 'Tax Percentage',
+    commission_rate: 'Commission Rate',
+    stock_quantity: 'Stock Quantity',
+    reorder_level: 'Reorder Level',
   };
-  const label = labelMap[keyLower] || fieldKey.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase());
-  const dataType = dataTypeMap[keyLower] || 'Text';
+  if (labelMap[keyLower]) return labelMap[keyLower];
+  return fieldKey
+    .replace(/_/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/^./, (s) => s.toUpperCase());
+}
+
+function dataTypeFromMetadata(fieldKey: string, metadata: BaseFieldMetadata): string {
+  const keyLower = (fieldKey || '').toLowerCase();
+  if (FIELD_KEY_DATA_TYPE[keyLower]) return FIELD_KEY_DATA_TYPE[keyLower];
+  const filterType = String(metadata.filterType || '').toLowerCase();
+  if (filterType && FILTER_TYPE_TO_DATA_TYPE[filterType]) {
+    return FILTER_TYPE_TO_DATA_TYPE[filterType];
+  }
+  return 'Text';
+}
+
+/**
+ * Default field builder from metadata.
+ * Creates a minimal field object for platform fields not present in backend storage.
+ */
+function defaultBuildFieldFromMetadata(
+  fieldKey: string,
+  metadata: BaseFieldMetadata
+): MergeableField {
+  const isSystem = metadata.owner === 'system';
+  const listVisible = metadata.owner === 'core' || fieldKey === 'lifecycle_state';
   return {
     key: fieldKey,
-    label,
-    dataType,
+    label: metadataLabelFromKey(fieldKey),
+    dataType: dataTypeFromMetadata(fieldKey, metadata),
     order: 9999,
-    visibility: { list: false, detail: true },
-    isSystem: true,
-    editable: false,
+    visibility: { list: listVisible, detail: true },
+    isSystem,
+    editable: getIsEditableBase(metadata),
+    owner: metadata.owner === 'participation' ? 'platform' : metadata.owner,
+    context: 'global',
   };
 }
 
@@ -158,9 +215,10 @@ export function mergeFields(
     result.push(merged);
   }
 
-  // 2. Inject metadata system fields missing from backend
+  // 2. Inject platform fields (system, core, participation) missing from backend
+  const injectableOwners = new Set(['system', 'core', 'participation']);
   for (const [fieldKey, meta] of Object.entries(metadata)) {
-    if (!meta || meta.owner !== 'system') continue;
+    if (!meta || !injectableOwners.has(meta.owner)) continue;
     const k = canonicalKey(fieldKey);
     if (seenKeys.has(k)) continue;
     const visibleInConfig = getIsVisibleInConfigBase(meta, fieldKey);
@@ -199,10 +257,91 @@ const INFRASTRUCTURE_KEYS = new Set([
  * Fallback getMetadata for modules without full metadata (e.g. Forms).
  * Returns minimal metadata for known infrastructure keys.
  */
-export function getFallbackMetadataForVisibleInConfig(fieldKey: string): Partial<BaseFieldMetadata> | undefined {
+export function getFallbackMetadataForVisibleInConfig(fieldKey: string): BaseFieldMetadata | undefined {
   const k = (fieldKey || '').toLowerCase();
   if (INFRASTRUCTURE_KEYS.has(k) || k.startsWith('_')) {
-    return { isVisibleInConfig: false };
+    return {
+      owner: 'system',
+      intent: 'system',
+      fieldScope: 'CORE',
+      editable: false,
+      isVisibleInConfig: false,
+    };
   }
   return undefined;
+}
+
+/**
+ * Merge stored module.fields with platform metadata (Settings + create/edit drawers).
+ * Ensures core/participation fields exist when tenant config only persisted system fields.
+ */
+export function normalizeModuleFieldsFromMetadata(
+  moduleKey: string,
+  fields: MergeableField[] | undefined | null
+): MergeableField[] {
+  if (!Array.isArray(fields)) return [];
+  const backendFields = fields.filter((f) => f?.key);
+
+  if (isModuleRegistered(moduleKey)) {
+    const metadataMap = getFieldMetadataMap(moduleKey);
+    if (metadataMap) {
+      const merged = mergeFields(metadataMap, backendFields, {
+        moduleKey,
+        getMetadata: (key) => getFieldMetadataFromRegistry(moduleKey, key)
+      });
+      return hydrateRuntimeFieldConfig(moduleKey, merged);
+    }
+  }
+
+  return hydrateRuntimeFieldConfig(
+    moduleKey,
+    filterToVisibleInConfig(backendFields, (key) => getFallbackMetadataForVisibleInConfig(key))
+  );
+}
+
+function hydrateRuntimeFieldConfig(moduleKey: string, fields: MergeableField[]): MergeableField[] {
+  const mk = String(moduleKey || '').toLowerCase().trim();
+  if (mk !== 'items') return fields;
+
+  return (fields || []).map((f) => {
+    const keyLower = String(f?.key || '').toLowerCase().trim();
+    if (!keyLower) return f;
+
+    // Items: ensure critical picklists have options even if tenant config wiped them.
+    if (keyLower === 'item_type') {
+      const existing = Array.isArray((f as any).options) ? (f as any).options : [];
+      if (!existing.length) {
+        return {
+          ...f,
+          dataType: f.dataType || 'Picklist',
+          options: ['Product', 'Service', 'Serialized Product', 'Non-Stock Product', 'Bundle']
+        };
+      }
+    }
+
+    if (keyLower === 'lifecycle_state') {
+      const existing = Array.isArray((f as any).options) ? (f as any).options : [];
+      if (!existing.length) {
+        return {
+          ...f,
+          dataType: f.dataType || 'Picklist',
+          options: [...CATALOG_LIFECYCLE_STATES]
+        };
+      }
+    }
+
+    // Items: categoryId is a CatalogCategory lookup under /catalog/categories/tree (not a normal module list).
+    if (keyLower === 'categoryid') {
+      const ls = (f as any).lookupSettings && typeof (f as any).lookupSettings === 'object' ? (f as any).lookupSettings : null;
+      const targetModule = String(ls?.targetModule || '').trim();
+      if (!targetModule) {
+        return {
+          ...f,
+          lookupSettings: { targetModule: 'catalog/categories' }
+        };
+      }
+    }
+
+    return f;
+  });
 }

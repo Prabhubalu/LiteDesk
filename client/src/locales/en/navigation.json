@@ -287,6 +287,10 @@
     "message": "Deals",
     "description": "Deals module navigation label"
   },
+  "moduleQuotes": {
+    "message": "Quotes",
+    "description": "Quotes module navigation label"
+  },
   "moduleResponses": {
     "message": "Responses",
     "description": "Form responses module navigation label"

@@ -23,6 +23,7 @@ import { shouldHideDetailField, shouldHideRecordPaneDetailField } from '@/compon
 import { canEditField } from '@/platform/fields/fieldCapabilityEngine';
 import { isFieldVisibleInContext } from '@/utils/fieldContextFilter';
 import { normalizeModuleKeyForRegistry, classifyFieldForModule } from '@/platform/fields/FieldRegistry';
+import { getAllowedNextQuoteStatuses } from '@/constants/quoteLifecycle';
 
 const KEY_SECTION_EXCLUDED = new Set(['name', 'title', 'description']);
 const DETAIL_EXCLUDED = new Set([
@@ -31,6 +32,22 @@ const DETAIL_EXCLUDED = new Set([
   'deletedAt', 'deletedBy', 'deletionReason',
   'organizationId', // Infrastructure: tenant context, never show on record page
   'activityLogs', 'subtasks', 'stageHistory'
+]);
+
+/** Shown in Item catalog section stack, not the Details field list. */
+const ITEM_CATALOG_DETAIL_EXCLUDED = new Set([
+  'category',
+  'subcategory',
+  'categoryid',
+  'attributevalues',
+  'media',
+  'variants',
+  'defaultvariant',
+  'catalogvariantid',
+  'catalogcategory',
+  'attributetemplates',
+  'hasvariants',
+  'defaultvariantid'
 ]);
 
 /** Normalize field key for exclusion matching (lowercase, no spaces/dashes). */
@@ -182,6 +199,7 @@ function getDetailFieldKeys(moduleDefinition, moduleKey = '', fieldContext = 'pl
       const key = String(f?.key || '').trim();
       if (!key) return false;
       if (excluded.has(normKey(key))) return false;
+      if (normalizedModuleKey === 'items' && ITEM_CATALOG_DETAIL_EXCLUDED.has(normKey(key))) return false;
       if (shouldHideDetailField(f, normalizedModuleKey, { enforceRegistryKnown: true })) return false;
       const vis = f?.visibility;
       return vis?.detail !== false;
@@ -259,6 +277,7 @@ function getRecordPaneAllModuleFieldKeys(moduleDefinition, moduleKey = '', field
     .filter(({ f }) => {
       const key = String(f?.key || '').trim();
       if (!key) return false;
+      if (normalizedModuleKey === 'items' && ITEM_CATALOG_DETAIL_EXCLUDED.has(normKey(key))) return false;
       if (shouldHideRecordPaneDetailField(f, normalizedModuleKey)) return false;
       const vis = f?.visibility;
       return vis?.detail !== false;
@@ -363,9 +382,17 @@ export function createGenericRecordAdapter(opts = {}) {
         normalizedFieldKey === 'types'
       );
       const entityOpts = (fieldType === 'entity' || fieldType === 'user') ? entityOptionsFor(fieldKey) : [];
-      const options = fieldType === 'select'
+      let options = fieldType === 'select'
         ? normalizeSelectOptions(field?.options)
         : ((fieldType === 'entity' || fieldType === 'user') ? entityOpts : []);
+
+      // Quotes: restrict status options to valid next transitions (prevents 400 INVALID_TRANSITION).
+      if (moduleKeyStr === 'quotes' && normalizedFieldKey === 'status') {
+        const current = String(record?.status || rawValue || '').trim();
+        const allowed = getAllowedNextQuoteStatuses(current);
+        const scoped = [current, ...allowed].filter(Boolean);
+        options = scoped.map((s) => ({ value: s, label: s }));
+      }
       let displayValue = rawValue;
       if (fieldKey === 'tags' && Array.isArray(rawValue)) {
         displayValue = rawValue.length ? rawValue.join(', ') : '';

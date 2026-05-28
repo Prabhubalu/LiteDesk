@@ -127,6 +127,174 @@
     "message": "Configure omnichannel ingestion, threading, duplicate handling, and case linking policies—without hardcoded channel rules.",
     "description": "Mailroom option description"
   },
+  "automationCatalog": {
+    "message": "Catalog",
+    "description": "Automation hub catalog categories option"
+  },
+  "automationCatalogDesc": {
+    "message": "Manage categories, attribute templates, and price books for the product catalog.",
+    "description": "Catalog categories option description"
+  },
+  "catalogHubTitle": {
+    "message": "Catalog",
+    "description": "Catalog settings hub title"
+  },
+  "catalogHubDesc": {
+    "message": "Configure category trees, attribute templates, and named price lists.",
+    "description": "Catalog settings hub description"
+  },
+  "catalogTabCategories": {
+    "message": "Categories",
+    "description": "Catalog hub categories tab"
+  },
+  "catalogTabPriceBooks": {
+    "message": "Price books",
+    "description": "Catalog hub price books tab"
+  },
+  "catalogPriceBooksDesc": {
+    "message": "Named list prices used when quoting. The default book is used when no book is specified.",
+    "description": "Price books settings description"
+  },
+  "catalogAddPriceBook": {
+    "message": "Add price book",
+    "description": "Add price book button"
+  },
+  "catalogPriceBookList": {
+    "message": "Price books",
+    "description": "Price book list section title"
+  },
+  "catalogPriceBookDefault": {
+    "message": "default",
+    "description": "Default price book badge"
+  },
+  "catalogPriceBookEntries": {
+    "message": "Entries",
+    "description": "Price book entries section title"
+  },
+  "catalogAddPriceEntry": {
+    "message": "Add entry",
+    "description": "Add price book entry button"
+  },
+  "catalogSelectPriceBookHint": {
+    "message": "Select a price book to view or manage its variant prices.",
+    "description": "Hint when no price book selected"
+  },
+  "catalogNoPriceEntries": {
+    "message": "No price entries yet.",
+    "description": "Empty price book entries state"
+  },
+  "catalogNoPriceBooks": {
+    "message": "No price books found. Refresh the page or add a price book.",
+    "description": "Empty price books list in settings"
+  },
+  "catalogPriceBooksLoadFailed": {
+    "message": "Could not load price books.",
+    "description": "Price books list load error"
+  },
+  "catalogNewPriceBook": {
+    "message": "New price book",
+    "description": "New price book dialog title"
+  },
+  "catalogPriceBookNamePlaceholder": {
+    "message": "Price book name",
+    "description": "Price book name placeholder"
+  },
+  "catalogPriceBookSetDefault": {
+    "message": "Set as default",
+    "description": "Set default price book checkbox"
+  },
+  "catalogNewPriceEntry": {
+    "message": "New price entry",
+    "description": "New price entry dialog title"
+  },
+  "catalogVariantIdPlaceholder": {
+    "message": "Variant ID",
+    "description": "Variant ID placeholder for price entry"
+  },
+  "catalogPickVariantForEntry": {
+    "message": "Choose variant…",
+    "description": "Button to open variant picker when adding a price book entry"
+  },
+  "catalogNoVariantsFound": {
+    "message": "No variants match your search.",
+    "description": "Empty variant search in price entry picker"
+  },
+  "catalogUnitPricePlaceholder": {
+    "message": "Unit price",
+    "description": "Unit price placeholder"
+  },
+  "catalogMinQtyPlaceholder": {
+    "message": "Minimum quantity",
+    "description": "Min quantity placeholder"
+  },
+  "catalogConfirmDeleteCategory": {
+    "message": "Delete this category? Items must be reassigned first if any use it.",
+    "description": "Confirm delete catalog category"
+  },
+  "catalogConfirmDeleteAttribute": {
+    "message": "Delete this attribute from the category?",
+    "description": "Confirm delete category attribute template"
+  },
+  "catalogConfirmDeletePriceBook": {
+    "message": "Delete this price book and all its entries?",
+    "description": "Confirm delete price book"
+  },
+  "catalogCategoriesTitle": {
+    "message": "Catalog categories",
+    "description": "Catalog settings page title"
+  },
+  "catalogCategoriesDesc": {
+    "message": "Define category hierarchy and attribute templates used by items.",
+    "description": "Catalog settings page description"
+  },
+  "catalogAddRootCategory": {
+    "message": "Add root category",
+    "description": "Add root catalog category button"
+  },
+  "catalogCategoryTree": {
+    "message": "Categories",
+    "description": "Catalog category tree section title"
+  },
+  "catalogAttributeTemplates": {
+    "message": "Attribute templates",
+    "description": "Catalog attribute templates section title"
+  },
+  "catalogAddAttribute": {
+    "message": "Add attribute",
+    "description": "Add catalog attribute button"
+  },
+  "catalogSelectCategoryHint": {
+    "message": "Select a category to manage its attribute templates.",
+    "description": "Catalog settings hint when no category selected"
+  },
+  "catalogRequired": {
+    "message": "Required",
+    "description": "Catalog attribute required checkbox label"
+  },
+  "catalogOptionsPlaceholder": {
+    "message": "Options (comma-separated)",
+    "description": "Catalog select options placeholder"
+  },
+  "catalogUnitPlaceholder": {
+    "message": "Unit (optional, e.g. W, kg)",
+    "description": "Catalog attribute unit placeholder"
+  },
+  "catalogNewCategory": {
+    "message": "New category",
+    "description": "New catalog category dialog title"
+  },
+  "catalogCategoryNamePlaceholder": {
+    "message": "Category name",
+    "description": "Catalog category name placeholder"
+  },
+  "catalogNewAttributeDefault": {
+    "message": "New attribute",
+    "description": "Default label for new catalog attribute"
+  },
+  "catalogAddAttributeFailed": {
+    "message": "Could not add attribute. Please try again.",
+    "description": "Error when creating catalog attribute template"
+  },
   "mailroomBackTitle": {
     "message": "Back to Automation",
     "description": "Mailroom settings back button"
@@ -6324,7 +6492,7 @@
     "description": "Other tabs section"
   },
   "modFieldsItemsStatusTypesDesc": {
-    "message": "Configure item types and status picklists. These control how items are classified and their lifecycle states.",
+    "message": "Configure item types and catalog lifecycle. Lifecycle states control sellability for future Quotes and Orders.",
     "description": "Other tabs section"
   },
   "modFieldsItemTypesTitle": {
@@ -6364,8 +6532,40 @@
     "description": "Other tabs section"
   },
   "modFieldsItemStatusFootnote": {
-    "message": "Status values control item lifecycle. At least one status value must remain enabled.",
+    "message": "Legacy status (Active/Inactive) is synced automatically from catalog lifecycle. Prefer lifecycle_state on items.",
     "description": "Other tabs section"
+  },
+  "modFieldsCatalogLifecycleTitle": {
+    "message": "Catalog Lifecycle",
+    "description": "Items settings catalog lifecycle section title"
+  },
+  "modFieldsCatalogLifecycleDesc": {
+    "message": "System-defined lifecycle states for catalog items. These control visibility in pickers and future quote line eligibility.",
+    "description": "Items settings catalog lifecycle section description"
+  },
+  "modFieldsCatalogLifecycleLockedBody": {
+    "message": "Draft, Active, Discontinued, and Archived are platform catalog states. They cannot be renamed or removed in this release.",
+    "description": "Items settings catalog lifecycle locked note"
+  },
+  "modFieldsCatalogLifecycleDraftDesc": {
+    "message": "Work in progress — hidden from pickers, not sellable.",
+    "description": "Catalog lifecycle Draft state description"
+  },
+  "modFieldsCatalogLifecycleActiveDesc": {
+    "message": "Published catalog entry — selectable on future quotes and orders.",
+    "description": "Catalog lifecycle Active state description"
+  },
+  "modFieldsCatalogLifecycleDiscontinuedDesc": {
+    "message": "No new lines — existing documents may retain references.",
+    "description": "Catalog lifecycle Discontinued state description"
+  },
+  "modFieldsCatalogLifecycleArchivedDesc": {
+    "message": "Retained for history — hidden from pickers.",
+    "description": "Catalog lifecycle Archived state description"
+  },
+  "modFieldsCatalogLifecycleSystemBadge": {
+    "message": "System",
+    "description": "Catalog lifecycle system-owned badge"
   },
   "modFieldsEventStatusTitle": {
     "message": "Event Status",

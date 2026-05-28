@@ -536,6 +536,7 @@
 
         <!-- Details Tab -->
         <div v-else-if="activeTab === 'details'" class="space-y-6">
+          <slot name="details-prefix" />
                         <!-- Top Bar: Search, Toggle, and Manage Button -->
                         <div class="flex items-center justify-between mb-4">
               <!-- Search Field -->

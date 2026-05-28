@@ -185,6 +185,13 @@ import { shouldFilterPayloadByQuickCreate } from '@/utils/quickCreatePayloadFilt
 import { useCreationContext } from '@/utils/creationContext';
 import { getParticipationFields, getCoreIdentityFields, mergePeopleVirtualFieldDefinitions } from '@/platform/fields/peopleFieldModel';
 import { getFormFieldValue, syncPeopleVirtualFieldKeys, applyVirtualFieldDefault } from '@/utils/getFieldValue';
+import {
+  getItemQuickCreateFields,
+  getItemCatalogScaffoldFieldKeys,
+  getItemLegacyCategoryFieldKeys
+} from '@/platform/fields/itemFieldModel';
+import { getQuoteQuickCreateFields } from '@/platform/fields/quoteFieldModel';
+import { normalizeModuleFieldsFromMetadata } from '@/platform/fields/fieldMerge';
 
 const _c = globalThis.console;
 function drawerDbg(...args) {
@@ -292,7 +299,8 @@ const effectiveQuickCreateMode = computed(() => {
 const strictQuickCreateForForm = computed(() => {
   if (!effectiveQuickCreateMode.value) return false;
   if (props.quickCreateMode) return true;
-  const qc = moduleOverrideFromSettings.value?.quickCreate;
+  const qc = effectiveModuleOverrideForDrawer.value?.quickCreate
+    ?? moduleOverrideFromSettings.value?.quickCreate;
   return Array.isArray(qc) && qc.length > 0;
 });
 
@@ -367,6 +375,12 @@ const effectiveExcludeFields = computed(() => {
     ['relatedToType', 'relatedToId', ...taskSystemFields].forEach((k) => excluded.add(k));
     return Array.from(excluded);
   }
+  if (props.moduleKey === 'items') {
+    getItemCatalogScaffoldFieldKeys().forEach((k) => excluded.add(k));
+    getItemLegacyCategoryFieldKeys().forEach((k) => excluded.add(k));
+    ['status', 'product_image', 'stock_quantity', 'reorder_level', 'serial_numbers'].forEach((k) => excluded.add(k));
+    return Array.from(excluded);
+  }
   if (props.moduleKey === 'cases') {
     const caseSystemFields = (getCaseSystemFields() || []).map((k) => String(k).toLowerCase());
     const caseSystemPrefixes = ['assignmentcontrol', 'currentslacycle', 'slacycles', 'activities', 'source'];
@@ -409,6 +423,9 @@ async function fetchModuleForDrawer() {
       : currentPath.startsWith('/portal/') ? 'portal'
       : currentPath.startsWith('/projects/') ? 'projects'
       : currentPath.startsWith('/sales/') ? 'sales'
+      // Sales CRM routes are not always nested under /sales/*
+      : currentPath.startsWith('/deals') ? 'sales'
+      : currentPath.startsWith('/quotes') ? 'sales'
       : '';
 
     const candidates = modulesList.filter((m) => (m.key || '').toLowerCase().trim() === keyLower);
@@ -418,8 +435,33 @@ async function fetchModuleForDrawer() {
     if (mod) {
       if (!mod.quickCreate) mod.quickCreate = [];
       if (!mod.quickCreateLayout) mod.quickCreateLayout = { version: 1, rows: [] };
+      mod.fields = normalizeModuleFieldsFromMetadata(mod.key, mod.fields || []);
       if ((mod.key || '').toLowerCase() === 'people' && Array.isArray(mod.fields)) {
         mod.fields = mergePeopleVirtualFieldDefinitions(mod.fields);
+      }
+      if ((mod.key || '').toLowerCase() === 'items') {
+        const fieldKeys = new Set(
+          (mod.fields || []).map((f) => String(f?.key || '').toLowerCase()).filter(Boolean)
+        );
+        const resolveQc = (keys) => keys.filter((k) => fieldKeys.has(String(k).toLowerCase()));
+        let quickCreate = resolveQc(Array.isArray(mod.quickCreate) ? mod.quickCreate : []);
+        if (!quickCreate.length) {
+          quickCreate = resolveQc(getItemQuickCreateFields());
+        }
+        mod.quickCreate = quickCreate;
+        mod.quickCreateLayout = { version: 1, rows: [] };
+      }
+      if ((mod.key || '').toLowerCase() === 'quotes') {
+        const fieldKeys = new Set(
+          (mod.fields || []).map((f) => String(f?.key || '').toLowerCase()).filter(Boolean)
+        );
+        const resolveQc = (keys) => keys.filter((k) => fieldKeys.has(String(k).toLowerCase()));
+        let quickCreate = resolveQc(Array.isArray(mod.quickCreate) ? mod.quickCreate : []);
+        if (!quickCreate.length) {
+          quickCreate = resolveQc(getQuoteQuickCreateFields());
+        }
+        mod.quickCreate = quickCreate;
+        mod.quickCreateLayout = { version: 1, rows: [] };
       }
       moduleOverrideFromSettings.value = mod;
     }
@@ -459,6 +501,53 @@ const effectiveModuleOverrideForDrawer = computed(() => {
     if (!quickMode) return mod;
     return {
       ...mod,
+      quickCreateLayout: { version: 1, rows: [] }
+    };
+  }
+
+  // Items: layout rows with missing/stale keys render an empty drawer; use list-based quick create.
+  if (moduleKeyLower === 'items') {
+    const quickMode = effectiveQuickCreateMode.value && !fullMode.value;
+    const fieldKeys = new Set(
+      (mod.fields || []).map((f) => String(f?.key || '').toLowerCase()).filter(Boolean)
+    );
+    const resolveQuickCreateKeys = (keys) =>
+      keys.filter((k) => fieldKeys.has(String(k).toLowerCase()));
+
+    let quickCreate = Array.isArray(mod.quickCreate) ? [...mod.quickCreate] : [];
+    quickCreate = resolveQuickCreateKeys(quickCreate);
+    if (!quickCreate.length && quickMode) {
+      quickCreate = resolveQuickCreateKeys(getItemQuickCreateFields());
+    }
+    if (!quickMode) {
+      return { ...mod, quickCreate };
+    }
+    return {
+      ...mod,
+      quickCreate,
+      quickCreateLayout: { version: 1, rows: [] }
+    };
+  }
+
+  if (moduleKeyLower === 'quotes') {
+    const quickMode = effectiveQuickCreateMode.value && !fullMode.value;
+    const fieldKeys = new Set(
+      (mod.fields || []).map((f) => String(f?.key || '').toLowerCase()).filter(Boolean)
+    );
+    const resolveQuickCreateKeys = (keys) =>
+      keys.filter((k) => fieldKeys.has(String(k).toLowerCase()));
+
+    let quickCreate = Array.isArray(mod.quickCreate) ? [...mod.quickCreate] : [];
+    quickCreate = resolveQuickCreateKeys(quickCreate);
+    if (!quickCreate.length && quickMode) {
+      quickCreate = resolveQuickCreateKeys(getQuoteQuickCreateFields());
+    }
+    if (!quickMode) {
+      return { ...mod, quickCreate };
+    }
+    return {
+      ...mod,
+      quickCreate,
       quickCreateLayout: { version: 1, rows: [] }
     };
   }
@@ -1564,6 +1653,7 @@ const handleSubmit = async () => {
             'tasks': () => savedRecord.title || 'Task',
             'events': () => savedRecord.eventName || savedRecord.title || 'Event',
             'cases': () => savedRecord.caseId || savedRecord.title || 'Case',
+            'quotes': () => savedRecord.quoteNumber || savedRecord.quoteTitle || 'Quote',
             'users': () => savedRecord.firstName && savedRecord.lastName 
               ? `${savedRecord.firstName} ${savedRecord.lastName}`.trim()
               : savedRecord.email || savedRecord.username || 'User'
@@ -1584,6 +1674,7 @@ const handleSubmit = async () => {
             'tasks': `/tasks/${recordId}`,
             'events': `/events/${recordId}`,
             'cases': `/helpdesk/cases/${recordId}`,
+            'quotes': `/quotes/${recordId}`,
             'users': `/users/${recordId}`
           };
           
@@ -1597,6 +1688,7 @@ const handleSubmit = async () => {
             'tasks': 'check',
             'events': '📅',
             'cases': 'ticket',
+            'quotes': 'document-text',
             'users': 'user'
           };
           

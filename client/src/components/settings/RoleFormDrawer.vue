@@ -814,7 +814,7 @@ const loadRoleIntoForm = () => {
   const basePerms = initializePermissions();
   const existingPerms = JSON.parse(JSON.stringify(props.role.permissions || {}));
   Object.keys(basePerms).forEach((m) => {
-    basePerms[m] = { ...basePerms[m], ...(existingPerms[m] || {}) };
+    basePerms[m] = { ...basePerms[m], ...existingPerms[m] };
   });
   form.value = {
     name: props.role.name || '',

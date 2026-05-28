@@ -15,8 +15,8 @@
       <!-- Custom Item Name Cell -->
       <template #cell-item_name="{ row }">
         <div class="flex items-center gap-3">
-          <div v-if="row.product_image" class="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
-            <img :src="row.product_image" :alt="row.item_name" class="w-full h-full object-cover" />
+          <div v-if="itemListThumbnail(row)" class="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
+            <img :src="itemListThumbnail(row)" :alt="row.item_name" class="w-full h-full object-cover" />
           </div>
           <div v-else class="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0">
             <span class="text-white font-semibold text-sm">{{ getInitials(row.item_name) }}</span>
@@ -40,12 +40,21 @@
             'Product': 'primary',
             'Service': 'info',
             'Serialized Product': 'warning',
-            'Non-Stock Product': 'default'
+            'Non-Stock Product': 'default',
+            'Bundle': 'success'
           }"
         />
       </template>
 
-      <!-- Custom Status Cell with Badge -->
+      <!-- Custom Lifecycle State Cell with Badge -->
+      <template #cell-lifecycle_state="{ value, row }">
+        <BadgeCell
+          :value="resolveLifecycleLabel(value, row)"
+          :variant="resolveLifecycleVariant(value, row)"
+        />
+      </template>
+
+      <!-- Legacy status cell (hidden from default columns; kept for saved views) -->
       <template #cell-status="{ value }">
         <BadgeCell 
           :value="value" 
@@ -60,39 +69,6 @@
       <template #cell-category="{ value }">
         <span v-if="value" class="text-sm text-gray-700 dark:text-gray-300">{{ value }}</span>
         <span v-else class="text-sm text-gray-500 dark:text-gray-400">-</span>
-      </template>
-
-      <!-- Custom Stock Quantity Cell with low stock warning -->
-      <template #cell-stock_quantity="{ row }">
-        <div v-if="row.item_type === 'Service' || row.item_type === 'Non-Stock Product'" class="text-sm text-gray-500 dark:text-gray-400">{{ t('forms.rbpMetricNa') }}</div>
-        <div v-else class="flex items-center gap-2">
-          <span :class="[
-            'text-sm font-medium',
-            row.stock_quantity === 0 ? 'text-red-600 dark:text-red-400' :
-            (row.reorder_level > 0 && row.stock_quantity <= row.reorder_level) ? 'text-yellow-600 dark:text-yellow-400' :
-            'text-gray-700 dark:text-gray-300'
-          ]">
-            {{ row.stock_quantity || 0 }} {{ row.unit_of_measure || 'pcs' }}
-          </span>
-          <svg 
-            v-if="row.stock_quantity === 0" 
-            class="w-4 h-4 text-red-600 dark:text-red-400" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
-          <svg 
-            v-else-if="row.reorder_level > 0 && row.stock_quantity <= row.reorder_level" 
-            class="w-4 h-4 text-yellow-600 dark:text-yellow-400" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
-        </div>
       </template>
 
       <!-- Custom Selling Price Cell -->
@@ -169,6 +145,10 @@ import DateCell from '@/components/common/table/DateCell.vue';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import CSVImportModal from '@/components/import/CSVImportModal.vue';
 import { DEFAULT_CURRENCY_CODE, formatCurrencyValue } from '@/utils/currencyOptions';
+import {
+  CATALOG_LIFECYCLE_LABEL_KEYS,
+  inferLifecycleStateFromLegacyStatus
+} from '@/constants/catalogLifecycle';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -256,14 +236,13 @@ const exportItems = async () => {
 
 const exportItemsToCSV = (itemsToExport) => {
   const csv = [
-    ['Item Name', 'Item Code', 'Item Type', 'Category', 'Status', 'Stock Quantity', 'Selling Price', 'Cost Price', 'Vendor'].join(','),
+    ['Item Name', 'Item Code', 'Item Type', 'Category', 'Lifecycle', 'Selling Price', 'Cost Price', 'Vendor'].join(','),
     ...itemsToExport.map(item => [
       `"${item.item_name || ''}"`,
       item.item_code || '',
       item.item_type || '',
       item.category || '',
-      item.status || '',
-      item.stock_quantity || 0,
+      item.lifecycle_state || item.status || '',
       item.selling_price || 0,
       item.cost_price || 0,
       typeof item.vendor === 'object' ? item.vendor?.name || '' : item.vendor || ''
@@ -313,6 +292,32 @@ const getInitials = (name) => {
     return (words[0][0] + words[1][0]).toUpperCase();
   }
   return name.substring(0, 2).toUpperCase();
+};
+
+/** List thumbnail: legacy product_image or primary gallery entry. */
+function itemListThumbnail(row) {
+  if (!row) return '';
+  if (row.product_image) return row.product_image;
+  const media = Array.isArray(row.media) ? row.media : [];
+  const primary = media.find((m) => m.isPrimary && m.kind === 'image') || media.find((m) => m.kind === 'image');
+  return primary?.url || '';
+}
+
+const resolveLifecycleLabel = (value, row) => {
+  const state = value || inferLifecycleStateFromLegacyStatus(row?.status, row?.lifecycle_state);
+  const labelKey = CATALOG_LIFECYCLE_LABEL_KEYS[state];
+  return labelKey ? t(labelKey) : state;
+};
+
+const resolveLifecycleVariant = (value, row) => {
+  const state = value || inferLifecycleStateFromLegacyStatus(row?.status, row?.lifecycle_state);
+  const variants = {
+    Draft: 'default',
+    Active: 'success',
+    Discontinued: 'warning',
+    Archived: 'default'
+  };
+  return variants[state] || 'default';
 };
 </script>
 

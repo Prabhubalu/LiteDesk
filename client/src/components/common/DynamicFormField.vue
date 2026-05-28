@@ -2064,6 +2064,27 @@ const fetchLookupOptions = async () => {
     console.warn('Lookup field missing targetModule:', props.field.key, props.field);
     return;
   }
+
+  const flattenCatalogCategoryTree = (tree) => {
+    const out = [];
+    const walk = (node, parentPath = '') => {
+      if (!node || typeof node !== 'object') return;
+      const id = node._id || node.id;
+      const name = node.name || node.label;
+      const path = node.path || (parentPath && name ? `${parentPath} / ${name}` : name) || name || '';
+      if (id) {
+        out.push({ ...node, _id: id, name, path });
+      }
+      const children = Array.isArray(node.children) ? node.children : [];
+      for (const child of children) walk(child, path || parentPath);
+    };
+    if (Array.isArray(tree)) {
+      for (const root of tree) walk(root, '');
+    } else if (tree) {
+      walk(tree, '');
+    }
+    return out;
+  };
   
   try {
     const moduleKey = targetModule;
@@ -2074,6 +2095,9 @@ const fetchLookupOptions = async () => {
     if (moduleKey === 'organization' || moduleKey === 'organizations') {
       // Try v2 endpoint first, fallback to v1
       endpoint = '/v2/organization';
+    }
+    if (String(moduleKey).toLowerCase() === 'catalog/categories') {
+      endpoint = '/catalog/categories/tree';
     }
     const depParams =
       props.dependencyState?.lookupQuery && typeof props.dependencyState.lookupQuery === 'object'
@@ -2089,7 +2113,10 @@ const fetchLookupOptions = async () => {
     fieldDbg('Lookup response for', moduleKey, ':', response);
     
     if (response.success) {
-      if (Array.isArray(response.data)) {
+      if (String(moduleKey).toLowerCase() === 'catalog/categories') {
+        const payload = response.data?.data ?? response.data;
+        lookupOptions.value = flattenCatalogCategoryTree(payload);
+      } else if (Array.isArray(response.data)) {
         lookupOptions.value = response.data;
       } else if (response.data?.data && Array.isArray(response.data.data)) {
         lookupOptions.value = response.data.data;
@@ -2126,15 +2153,30 @@ const fetchLookupOptionById = async (id) => {
     let endpoint;
     if (mk === 'organizations') {
       endpoint = `/v2/organization/${id}`;
+    } else if (String(mk).toLowerCase() === 'catalog/categories') {
+      // No direct GET by id for categories; reload tree and pick from it.
+      endpoint = '/catalog/categories/tree';
     } else {
       endpoint = `/${mk}/${id}`;
     }
     const response = await apiClient.get(endpoint);
     if (response?.success) {
-      const record = response.data?.data || response.data;
-      if (record && record._id) {
-        const exists = lookupOptions.value.some((opt) => String(opt?._id) === String(record._id));
-        if (!exists) lookupOptions.value = [record, ...lookupOptions.value];
+      if (String(mk).toLowerCase() === 'catalog/categories') {
+        const payload = response.data?.data ?? response.data;
+        const all = flattenCatalogCategoryTree(payload);
+        const picked = all.find((c) => String(c?._id) === String(id));
+        if (picked) {
+          const exists = lookupOptions.value.some((opt) => String(opt?._id) === String(picked._id));
+          if (!exists) lookupOptions.value = [picked, ...lookupOptions.value];
+        } else if (all.length) {
+          lookupOptions.value = all;
+        }
+      } else {
+        const record = response.data?.data || response.data;
+        if (record && record._id) {
+          const exists = lookupOptions.value.some((opt) => String(opt?._id) === String(record._id));
+          if (!exists) lookupOptions.value = [record, ...lookupOptions.value];
+        }
       }
     }
   } catch {
@@ -2210,6 +2252,7 @@ const closeLookupModal = () => {
 // Fetch data for lookup modal
 const fetchLookupModalData = async () => {
   lookupModalLoading.value = true;
+  let lookupTargetModule = '';
   try {
     let endpoint = '';
     let params = {
@@ -2227,15 +2270,19 @@ const fetchLookupModalData = async () => {
     }
     
     if (props.field.lookupSettings?.targetModule === 'users') {
+      lookupTargetModule = 'users';
       endpoint = '/users/list';
       if (props.dependencyState?.lookupQuery && typeof props.dependencyState.lookupQuery === 'object') {
         params = { ...params, ...props.dependencyState.lookupQuery };
       }
     } else if (props.field.lookupSettings?.targetModule) {
-      const moduleKey = props.field.lookupSettings.targetModule;
+      lookupTargetModule = props.field.lookupSettings.targetModule;
+      const moduleKey = lookupTargetModule;
       // Handle special module key mappings
       if (moduleKey === 'organization' || moduleKey === 'organizations') {
         endpoint = '/v2/organization';
+      } else if (String(moduleKey).toLowerCase() === 'catalog/categories') {
+        endpoint = '/catalog/categories/tree';
       } else {
         endpoint = `/${moduleKey}`;
       }
@@ -2256,7 +2303,11 @@ const fetchLookupModalData = async () => {
     
     if (response.success) {
       let data = [];
-      if (Array.isArray(response.data)) {
+      if (String(lookupTargetModule).toLowerCase() === 'catalog/categories') {
+        const payload = response.data?.data ?? response.data;
+        data = flattenCatalogCategoryTree(payload);
+        lookupModalTotal.value = data.length;
+      } else if (Array.isArray(response.data)) {
         data = response.data;
         lookupModalTotal.value = response.data.length;
       } else if (response.data?.data && Array.isArray(response.data.data)) {

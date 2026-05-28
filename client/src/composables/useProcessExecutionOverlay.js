@@ -57,7 +57,7 @@ export function applyGraphStateToFlow(flowNodes, flowEdges, graphState) {
 }
 
 function stripExecution(n) {
-  const data = { ...(n.data || {}) };
+  const data = { ...n.data };
   delete data.executionStatus;
   delete data.executionMessage;
   delete data.executionDurationMs;

@@ -75,7 +75,7 @@ function isLikelyUiEnglish(text) {
 }
 
 async function countHardcodedScoped(pathPrefixes) {
-  const ENGLISH_TEXT_RE = />\s*([A-Za-z][A-Za-z0-9\s,'’.!?\-]{2,})\s*</g;
+  const ENGLISH_TEXT_RE = />\s*([A-Za-z][A-Za-z0-9\s,'’.!?-]{2,})\s*</g;
   const ATTR_TEXT_RE = /(?:title|label|placeholder|aria-label)=["']([A-Za-z][^"'{][^"']{2,})["']/g;
   let count = 0;
   for (const file of scanSourceFiles()) {

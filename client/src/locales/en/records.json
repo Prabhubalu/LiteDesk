@@ -79,6 +79,114 @@
     "message": "System",
     "description": "System actor label in activity feed"
   },
+  "linesTitle": {
+    "message": "Lines",
+    "description": "Quote record section title for quote lines"
+  },
+  "linesRecalculate": {
+    "message": "Recalculate",
+    "description": "Recalculate quote totals button label"
+  },
+  "linesSku": {
+    "message": "SKU",
+    "description": "Quote lines table column header for SKU snapshot"
+  },
+  "linesName": {
+    "message": "Name",
+    "description": "Quote lines table column header for item name snapshot"
+  },
+  "linesQty": {
+    "message": "Qty",
+    "description": "Quote lines table column header for quantity"
+  },
+  "linesUnitPrice": {
+    "message": "Unit price",
+    "description": "Quote lines table column header for unit price snapshot"
+  },
+  "linesTotal": {
+    "message": "Total",
+    "description": "Quote lines table column header for line total"
+  },
+  "linesEmpty": {
+    "message": "No lines yet.",
+    "description": "Empty state for quote lines section"
+  },
+  "linesAddOne": {
+    "message": "Add a line",
+    "description": "Heading for add-line mini form"
+  },
+  "linesVariantIdPlaceholder": {
+    "message": "Variant ID",
+    "description": "Placeholder for variant id input when adding a quote line"
+  },
+  "linesPickVariant": {
+    "message": "Pick a variant",
+    "description": "Button label to open variant picker for quote line add"
+  },
+  "linesPickVariantTitle": {
+    "message": "Pick variant",
+    "description": "Modal title for quote line variant picker"
+  },
+  "linesVariantSearchPlaceholder": {
+    "message": "Search variants…",
+    "description": "Search input placeholder in quote line variant picker"
+  },
+  "linesNoVariantsFound": {
+    "message": "No variants found.",
+    "description": "Empty state in quote line variant picker"
+  },
+  "linesDefaultPriceBook": {
+    "message": "Default price book",
+    "description": "Select option for using default price book when resolving quote line price"
+  },
+  "linesPriceBook": {
+    "message": "Price book",
+    "description": "Quote lines table column header for price book snapshot"
+  },
+  "linesPriceSource": {
+    "message": "Price source",
+    "description": "Quote lines table column header for pricing source snapshot"
+  },
+  "linesPriceSourcePriceBook": {
+    "message": "Price book",
+    "description": "Label for pricingSourceSnapshot=price_book"
+  },
+  "linesPriceSourceVariantFallback": {
+    "message": "Variant fallback",
+    "description": "Label for pricingSourceSnapshot=variant_fallback"
+  },
+  "linesPriceProvenanceTooltip": {
+    "message": "Source: {source}\nPrice book: {book}\nEntry: {entry}\nAs of: {asOf}\nEffective: {effectiveFrom} → {effectiveTo}\nMin qty: {minQty}",
+    "description": "Tooltip for price provenance on quote line. Values are snapshot metadata."
+  },
+  "linesOverrideLock": {
+    "message": "Override lock",
+    "description": "Toggle label for allowing admin override on commercially locked quotes"
+  },
+  "linesAdd": {
+    "message": "Add",
+    "description": "Add quote line button label"
+  },
+  "linesAddFailed": {
+    "message": "Failed to add line",
+    "description": "Toast fallback when adding a line fails"
+  },
+  "linesUpdateFailed": {
+    "message": "Failed to update line",
+    "description": "Toast fallback when updating a line fails"
+  },
+  "linesDeleteFailed": {
+    "message": "Failed to delete line",
+    "description": "Toast fallback when deleting a line fails"
+  },
+  "linesRecalculateFailed": {
+    "message": "Failed to recalculate totals",
+    "description": "Toast fallback when recalculating totals fails"
+  },
+  "linesConfirmDelete": {
+    "message": "Delete this line?",
+    "description": "Confirmation prompt before deleting a quote line"
+  },
   "activitySystemFieldFallback": {
     "message": "field",
     "description": "Fallback when system event field label is unknown"
@@ -226,6 +334,10 @@
   "descriptionTitle": {
     "message": "Description",
     "description": "Description section default title"
+  },
+  "catalogSectionTitle": {
+    "message": "Catalog",
+    "description": "Items record page — media, category, and SKU section title"
   },
   "descriptionEmpty": {
     "message": "No description",

@@ -605,12 +605,12 @@ const displayColumns = computed(() => {
 
 const displayRows = computed(() => providedRows.value)
 
-/** Full skeleton body: awaiting columns, or parent loading (hide stale rows to avoid numbered gutter flash). */
+/** Full skeleton body: awaiting columns while parent loading, or parent loading (hide stale rows). */
 const isLoading = computed(() => {
   const awaitingColumns =
     Boolean(props.tableId) &&
     displayColumns.value.length === 0 &&
-    (Boolean(props.loading) || displayRows.value.length > 0)
+    Boolean(props.loading)
   if (awaitingColumns) return true
   return Boolean(props.loading)
 })

@@ -365,7 +365,7 @@ const handleSave = () => {
   if (draft.value.dataType === 'Currency') {
     const nextCurrencyCode = String(currencyCode || DEFAULT_CURRENCY_CODE).toUpperCase();
     nextField.numberSettings = {
-      ...(nextField.numberSettings || {}),
+      ...nextField.numberSettings,
       decimalPlaces: 2,
       currencyCode: nextCurrencyCode,
       currencySymbol: getCurrencySymbolFromCode(nextCurrencyCode),

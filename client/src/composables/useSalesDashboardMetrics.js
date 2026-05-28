@@ -82,36 +82,36 @@ const normalizeDashboardMetrics = (raw) => {
     pipelines: asArray(source.pipelines).filter(Boolean),
     kpis: {
       ...EMPTY_METRICS.kpis,
-      ...(source.kpis || {})
+      ...source.kpis
     },
     executiveSnapshot: {
-      ...(source.executiveSnapshot || {})
+      ...source.executiveSnapshot
     },
     pipelineHealth: {
       ...EMPTY_METRICS.pipelineHealth,
-      ...(source.pipelineHealth || {}),
+      ...source.pipelineHealth,
       stages: asArray(source?.pipelineHealth?.stages),
       stuckDeals: asArray(source?.pipelineHealth?.stuckDeals),
       biggestDropoff: {
         ...EMPTY_METRICS.pipelineHealth.biggestDropoff,
-        ...(source?.pipelineHealth?.biggestDropoff || {})
+        ...source?.pipelineHealth?.biggestDropoff
       }
     },
     forecasting: {
       ...EMPTY_METRICS.forecasting,
-      ...(source.forecasting || {}),
+      ...source.forecasting,
       byRep: asArray(source?.forecasting?.byRep),
       byClosingMonth: asArray(source?.forecasting?.byClosingMonth),
       accuracyLast3Months: asArray(source?.forecasting?.accuracyLast3Months),
       vsTarget: {
         ...EMPTY_METRICS.forecasting.vsTarget,
-        ...(source?.forecasting?.vsTarget || {})
+        ...source?.forecasting?.vsTarget
       }
     },
     repPerformance: asArray(source.repPerformance),
     activityPipeline: {
       ...EMPTY_METRICS.activityPipeline,
-      ...(source.activityPipeline || {}),
+      ...source.activityPipeline,
       activityOverTime: asArray(source?.activityPipeline?.activityOverTime),
       newPipelinePerWeek: asArray(source?.activityPipeline?.newPipelinePerWeek),
       efficiencyFlags: asArray(source?.activityPipeline?.efficiencyFlags),

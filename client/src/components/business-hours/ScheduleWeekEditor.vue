@@ -100,7 +100,7 @@ const localWeek = computed({
 });
 
 function copyMondayToWeekdays() {
-  const week = [...props.modelValue.map((d) => ({ ...d, windows: [...d.windows], breaks: [...d.breaks] }))];
+  const week = props.modelValue.map((d) => ({ ...d, windows: [...d.windows], breaks: [...d.breaks] }));
   const mon = week.find((d) => d.day === 1);
   if (!mon) return;
   for (const d of week) {

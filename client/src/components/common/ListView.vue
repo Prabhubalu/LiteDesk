@@ -2024,6 +2024,42 @@ function ensureDefaultColumnsInMap(moduleKey, defaultVisibleColumns, columnMap) 
     }
   });
 }
+
+/** Recover from stale saved column prefs (e.g. after catalog column renames). */
+async function applyRegistryDefaultVisibleColumns() {
+  const { getModuleListConfig, buildDefaultColumns } = await import('@/platform/modules/moduleListRegistry').catch(() => ({
+    getModuleListConfig: () => null,
+    buildDefaultColumns: () => []
+  }));
+  const moduleListConfig = getModuleListConfig(props.moduleKey);
+  if (!moduleListConfig?.defaultColumns || !Array.isArray(props.columns) || props.columns.length === 0) {
+    return false;
+  }
+
+  const allAvailableColumnsMap = new Map();
+  props.columns.forEach((col) => {
+    allAvailableColumnsMap.set(col.key, {
+      key: col.key,
+      label: col.label || col.key,
+      dataType: col.dataType,
+      sortable: col.sortable !== false,
+      showInTable: col.showInTable !== false
+    });
+  });
+  ensureDefaultColumnsInMap(
+    props.moduleKey,
+    moduleListConfig.defaultColumns.defaultVisibleColumns,
+    allAvailableColumnsMap
+  );
+  const defaultColumns = buildDefaultColumns(
+    Array.from(allAvailableColumnsMap.values()),
+    moduleListConfig.defaultColumns
+  );
+  visibleColumns.value = normalizeColumnOrder(defaultColumns);
+  saveColumnSettings();
+  return true;
+}
+
 function buildDealsDefaultKanbanColumns(sourceColumns) {
   const byKey = new Map(sourceColumns.map(c => [c.key, c]));
   const ordered = [];
@@ -2322,6 +2358,19 @@ const initializeColumns = async () => {
     const savedMap = new Map(savedSettings.map(s => [s.key, s]));
     const backendFieldsMap = new Map(backendFields.map(f => [f.key, f]));
     const propsColumnsMap = new Map(props.columns.map(c => [c.key, c]));
+
+    if (moduleListConfig?.defaultColumns?.defaultVisibleColumns) {
+      ensureDefaultColumnsInMap(
+        props.moduleKey,
+        moduleListConfig.defaultColumns.defaultVisibleColumns,
+        propsColumnsMap
+      );
+      moduleListConfig.defaultColumns.defaultVisibleColumns.forEach((key) => {
+        if (!backendFieldsMap.has(key) && propsColumnsMap.has(key)) {
+          backendFieldsMap.set(key, { key, label: propsColumnsMap.get(key)?.label || key });
+        }
+      });
+    }
     
     const orderedColumns = [];
     const processedKeys = new Set();
@@ -2378,6 +2427,21 @@ const initializeColumns = async () => {
     });
     
     visibleColumns.value = normalizeColumnOrder(orderedColumns);
+
+    if (!visibleColumns.value.some((col) => col.visible)) {
+      const recovered = await applyRegistryDefaultVisibleColumns();
+      if (!recovered && visibleColumns.value.length > 0) {
+        const lockedKey = moduleListConfig?.defaultColumns?.lockedColumn;
+        visibleColumns.value = visibleColumns.value.map((col) => ({
+          ...col,
+          visible: col.key === lockedKey || col.visible
+        }));
+        if (!visibleColumns.value.some((col) => col.visible)) {
+          visibleColumns.value[0].visible = true;
+        }
+        saveColumnSettings();
+      }
+    }
   } else {
     // No saved settings - fetch backend configuration and/or use props.columns
     const moduleConfig = await fetchFieldConfiguration();
@@ -2464,6 +2528,10 @@ const initializeColumns = async () => {
       visibleColumns.value = normalizeColumnOrder(mappedColumns);
       saveColumnSettings();
     }
+  }
+
+  if (!visibleColumns.value.some((col) => col.visible)) {
+    await applyRegistryDefaultVisibleColumns();
   }
 };
 

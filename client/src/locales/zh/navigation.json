@@ -418,5 +418,9 @@
   "tabPage": {
     "message": "页",
     "description": "Generic fallback tab title"
+  },
+  "moduleQuotes": {
+    "message": "Quotes",
+    "description": "Quotes module navigation label"
   }
 }

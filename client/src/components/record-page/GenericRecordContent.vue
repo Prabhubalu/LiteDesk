@@ -435,7 +435,7 @@
 
         <!-- Section stack: show when collapsed, or when expanded to details/related (adapter returns only that section) -->
         <section
-          v-if="record && genericSections.length && (!expandedLeftSection || expandedLeftSection === 'details' || expandedLeftSection === 'related')"
+          v-if="record && genericSections.length && (!expandedLeftSection || ['description', 'catalog', 'details', 'related'].includes(expandedLeftSection))"
           :class="[expandedLeftSection ? 'mt-8' : 'mt-4']"
         >
           <SectionStack
@@ -971,6 +971,8 @@ import EmailComposeDrawer from '@/components/communications/EmailComposeDrawer.v
 import AutomationContext from '@/components/automation/AutomationContext.vue';
 import LinkRecordsDrawer from '@/components/common/LinkRecordsDrawer.vue';
 import { createGenericRecordAdapter } from '@/components/record-page/adapters/genericRecordAdapter';
+import { createItemsRecordAdapter } from '@/components/record-page/adapters/itemsRecordAdapter';
+import { createQuotesRecordAdapter } from '@/components/record-page/adapters/quotesRecordAdapter';
 import { createRecordSectionLabels } from '@/utils/recordSectionLabels';
 import { useRecordTags, getDefaultTagChipClass } from '@/components/record-page/composables/useRecordTags';
 import {
@@ -1185,6 +1187,10 @@ const peopleOrganizationList = ref([]);
 /** People + org lists for helpdesk case contact / organization ref fields (Details inline edit). */
 const caseContactLookupList = ref([]);
 const caseOrganizationLookupList = ref([]);
+/** Quotes: contact/org/deal lists for Details inline edit. */
+const quoteContactLookupList = ref([]);
+const quoteOrganizationLookupList = ref([]);
+const quoteDealLookupList = ref([]);
 
 /** CRM org id on a person row from /people list (populated or id). */
 function casePersonRowOrgId(p) {
@@ -1375,7 +1381,8 @@ const recordContextAppKey = computed(() => {
   const metaApp = String(route.meta?.appKey || '').toUpperCase();
   if (metaApp) return metaApp;
   const key = moduleKeyLower.value;
-  if (key === 'people' || key === 'organizations' || key === 'deals') return 'SALES';
+  // Core Sales domain entities share relationship definitions under SALES
+  if (key === 'people' || key === 'organizations' || key === 'deals' || key === 'items') return 'SALES';
   const p = String(route.path || '').toLowerCase();
   if (p.startsWith('/helpdesk/')) return 'HELPDESK';
   if (p.startsWith('/audit/')) return 'AUDIT';
@@ -1555,7 +1562,8 @@ const recordTitle = computed(() => {
   const namePart = [first, last].filter(Boolean).join(' ').trim() || null;
   const primaryByModule = {
     events: r.eventName,
-    items: r.item_name
+    items: r.item_name,
+    quotes: r.quoteNumber || r.quoteTitle
   };
   return (
     primaryByModule[moduleKey] ??
@@ -1858,7 +1866,12 @@ function appendRawActivityEvent(event) {
 
 const genericAdapter = computed(() => {
   if (!record.value || !moduleDefinition.value) return null;
-  return createGenericRecordAdapter({
+  const adapterFactory = moduleKeyLower.value === 'items'
+    ? createItemsRecordAdapter
+    : moduleKeyLower.value === 'quotes'
+      ? createQuotesRecordAdapter
+      : createGenericRecordAdapter;
+  return adapterFactory({
     sectionLabels: createRecordSectionLabels(t),
     formatDate: (d) => (d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'),
     moduleDefinition: moduleDefinition.value,
@@ -1944,7 +1957,7 @@ const genericAdapter = computed(() => {
         Object.assign(payload, extra);
       }
       const response = await apiClient.put(`${recordCrudPathBase.value}/${props.recordId}`, payload);
-      const updatedRecord = response?.data?.data ?? response?.data ?? null;
+      const updatedRecord = response?.data ?? null;
       if (record.value) {
         if (moduleKeyLower === 'cases' && caseCanonical && caseCanonical !== fieldKey) {
           try {
@@ -1998,6 +2011,15 @@ const genericAdapter = computed(() => {
       if ((props.moduleKey || '').toLowerCase() === 'cases' && (key === 'organizationrefid' || key === 'accountid')) {
         return caseOrganizationLookupList.value;
       }
+      if ((props.moduleKey || '').toLowerCase() === 'quotes' && key === 'contactid') {
+        return quoteContactLookupList.value;
+      }
+      if ((props.moduleKey || '').toLowerCase() === 'quotes' && key === 'organizationrefid') {
+        return quoteOrganizationLookupList.value;
+      }
+      if ((props.moduleKey || '').toLowerCase() === 'quotes' && key === 'dealid') {
+        return quoteDealLookupList.value;
+      }
       const fieldDef = (moduleDefinition.value?.fields || []).find(
         (f) => String(f?.key || '').toLowerCase().trim() === key
       );
@@ -2028,11 +2050,16 @@ const sectionContext = computed(() => {
     module: 'generic',
     moduleKey: props.moduleKey,
     openTab,
-    fieldContext: recordFieldContext.value
+    fieldContext: recordFieldContext.value,
+    onSectionUpdated: () => fetchRecord()
   };
   if (supportsTags.value) {
     base.openTagsEditor = (event) => openTagPopoverFromField(event);
     base.getTagChipClass = typeof getPeopleTagChipClass.value === 'function' ? getPeopleTagChipClass.value : getDefaultTagChipClass;
+  }
+  if (moduleKeyLower.value === 'items') {
+    base.onCatalogUpdated = () => fetchRecord();
+    base.canEditCatalog = canEditRecord.value;
   }
   return base;
 });
@@ -2689,6 +2716,7 @@ async function loadDeferredRecordData(runId, loadedRecord) {
     loadEmailThreadsForRecord(loadedRecord, isCurrentRun),
     loadPeopleOrganizationLookup(lowerModuleKey, isCurrentRun),
     loadCaseLookups(lowerModuleKey, isCurrentRun),
+    loadQuoteLookups(lowerModuleKey, isCurrentRun),
     loadUserLookup(isCurrentRun)
   ];
 
@@ -2788,6 +2816,70 @@ async function loadCaseLookups(lowerModuleKey, isCurrentRun) {
     if (isCurrentRun()) {
       caseContactLookupList.value = [];
       caseOrganizationLookupList.value = [];
+    }
+  }
+}
+
+async function loadQuoteLookups(lowerModuleKey, isCurrentRun) {
+  if (lowerModuleKey !== 'quotes') {
+    if (isCurrentRun()) {
+      quoteContactLookupList.value = [];
+      quoteOrganizationLookupList.value = [];
+      quoteDealLookupList.value = [];
+    }
+    return;
+  }
+
+  try {
+    const [contactRes, orgRes, dealRes] = await Promise.all([
+      apiClient.get('/people', { params: { limit: 200, sortBy: 'firstName', sortOrder: 'asc' } }),
+      apiClient.get('/v2/organization', { params: { limit: 200 } }),
+      apiClient.get('/deals', { params: { limit: 200 } }),
+    ]);
+    if (!isCurrentRun()) return;
+
+    const contactRows = Array.isArray(contactRes?.data)
+      ? contactRes.data
+      : (contactRes?.data?.data && Array.isArray(contactRes.data.data) ? contactRes.data.data : []);
+    quoteContactLookupList.value = contactRows
+      .map((p) => {
+        const id = p?._id ?? p?.id;
+        const name =
+          [p?.first_name, p?.last_name].filter(Boolean).join(' ').trim() ||
+          p?.name ||
+          p?.email ||
+          (id != null ? String(id) : '—');
+        return { _id: id, name, ...p };
+      })
+      .filter((p) => Boolean(p._id));
+
+    const orgData = orgRes?.data ?? orgRes;
+    const orgRows = Array.isArray(orgData)
+      ? orgData
+      : (orgData?.data && Array.isArray(orgData.data) ? orgData.data : []);
+    quoteOrganizationLookupList.value = orgRows
+      .map((o) => {
+        const id = o?._id ?? o?.id;
+        return { _id: id, name: o?.name ?? (id != null ? String(id) : '—'), ...o };
+      })
+      .filter((o) => Boolean(o._id));
+
+    const dealData = dealRes?.data ?? dealRes;
+    const dealRows = Array.isArray(dealData)
+      ? dealData
+      : (dealData?.data && Array.isArray(dealData.data) ? dealData.data : []);
+    quoteDealLookupList.value = dealRows
+      .map((d) => {
+        const id = d?._id ?? d?.id;
+        return { _id: id, name: d?.name ?? (id != null ? String(id) : '—'), ...d };
+      })
+      .filter((d) => Boolean(d._id));
+  } catch (e) {
+    console.error('Fetch quote lookup lists error:', e);
+    if (isCurrentRun()) {
+      quoteContactLookupList.value = [];
+      quoteOrganizationLookupList.value = [];
+      quoteDealLookupList.value = [];
     }
   }
 }
@@ -3449,9 +3541,19 @@ watch(
     if (!tabId || !props.recordId) return;
     const tab = findTabById(tabId);
     if (!tab?.path) return;
-    const pathBase = tab.path.split('?')[0].replace(/\/$/, '');
+    const tabPathBase = tab.path.split('?')[0].replace(/\/$/, '');
+    const currentPathBase = String(route.fullPath || route.path || '').split('?')[0].replace(/\/$/, '');
     const idSuffix = `/${props.recordId}`;
-    if (!pathBase.toLowerCase().endsWith(idSuffix.toLowerCase())) return;
+
+    // If the tab was originally opened on the list (e.g. /quotes) and then navigated
+    // to the record detail via router.push, the tab path may still be the list path.
+    // Keep the tab in sync with the actual route so title updates work everywhere.
+    if (currentPathBase && tabPathBase && tabPathBase.toLowerCase() !== currentPathBase.toLowerCase()) {
+      replaceActiveTab(route.fullPath || route.path || tab.path, { title: displayName });
+      return;
+    }
+
+    if (!tabPathBase.toLowerCase().endsWith(idSuffix.toLowerCase())) return;
     updateTabTitle(tabId, displayName);
   },
   { immediate: true }

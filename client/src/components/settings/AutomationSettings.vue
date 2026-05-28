@@ -44,6 +44,7 @@
 
     <AssignmentRulesSettings v-else-if="currentView === 'assignment-rules'" />
     <MailroomSettings v-else-if="currentView === 'mailroom'" />
+    <CatalogSettingsHub v-else-if="currentView === 'catalog'" @back="navigateToOverview" />
   </div>
 </template>
 
@@ -55,6 +56,7 @@ import { useRoute, useRouter } from 'vue-router';
 const { t } = useI18n();
 import AssignmentRulesSettings from '@/components/settings/AssignmentRulesSettings.vue';
 import MailroomSettings from '@/components/settings/MailroomSettings.vue';
+import CatalogSettingsHub from '@/components/settings/CatalogSettingsHub.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -129,6 +131,20 @@ const BusinessFlowsIcon = () => h('svg', {
   }),
 ]);
 
+const CatalogIcon = () => h('svg', {
+  fill: 'none',
+  stroke: 'currentColor',
+  viewBox: '0 0 24 24',
+  xmlns: 'http://www.w3.org/2000/svg',
+}, [
+  h('path', {
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    'stroke-width': '2',
+    d: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
+  }),
+]);
+
 const automationOptions = [
   {
     id: 'assignment-rules',
@@ -144,6 +160,14 @@ const automationOptions = [
     descriptionKey: 'settings.automationMailroomDesc',
     icon: MailroomIcon,
     iconBg: 'bg-gradient-to-br from-sky-500 to-sky-600',
+    inShell: true,
+  },
+  {
+    id: 'catalog',
+    nameKey: 'settings.automationCatalog',
+    descriptionKey: 'settings.automationCatalogDesc',
+    icon: CatalogIcon,
+    iconBg: 'bg-gradient-to-br from-amber-500 to-amber-600',
     inShell: true,
   },
   {
@@ -176,9 +200,16 @@ const currentView = computed(() => {
   const view = route.query.automationView;
   if (view === 'assignment-rules') return 'assignment-rules';
   if (view === 'mailroom') return 'mailroom';
+  if (view === 'catalog') return 'catalog';
   if (route.query.assignmentApp) return 'assignment-rules';
   return 'overview';
 });
+
+function navigateToOverview() {
+  const query = { ...route.query, tab: 'automation' };
+  delete query.automationView;
+  router.push({ path: '/settings', query });
+}
 
 function navigateToOption(option) {
   if (option.inShell) {

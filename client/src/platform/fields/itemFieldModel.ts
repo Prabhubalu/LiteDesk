@@ -254,25 +254,50 @@ export const ITEM_FIELD_METADATA: Record<string, ItemFieldMetadata> = {
     requiredFor: ['SALES'],
   },
   
+  /** @deprecated Denormalized label — use categoryId. Kept for list/filter compat. */
   category: {
     owner: 'participation',
     intent: 'detail',
     fieldScope: 'SALES',
-    editable: true,
-    isProtected: false,
+    editable: false,
+    isProtected: true,
     filterable: true,
     filterType: 'select',
     filterPriority: 2,
+    isVisibleInConfig: false,
   },
-  
-  subcategory: {
+
+  categoryId: {
     owner: 'participation',
     intent: 'detail',
     fieldScope: 'SALES',
     editable: true,
     isProtected: false,
     filterable: true,
+    filterType: 'entity',
+    filterPriority: 2,
+  },
+
+  attributeValues: {
+    owner: 'participation',
+    intent: 'detail',
+    fieldScope: 'SALES',
+    editable: true,
+    isProtected: false,
+    filterable: false,
+    isVisibleInConfig: false,
+  },
+  
+  /** @deprecated Denormalized sub-label when category has a parent — synced from categoryId. */
+  subcategory: {
+    owner: 'participation',
+    intent: 'detail',
+    fieldScope: 'SALES',
+    editable: false,
+    isProtected: true,
+    filterable: true,
     filterType: 'select',
+    isVisibleInConfig: false,
   },
   
   tags: {
@@ -314,6 +339,17 @@ export const ITEM_FIELD_METADATA: Record<string, ItemFieldMetadata> = {
   },
   
   status: {
+    owner: 'participation',
+    intent: 'state',
+    fieldScope: 'SALES',
+    editable: true,
+    isProtected: false,
+    filterable: true,
+    filterType: 'select',
+    filterPriority: 2,
+  },
+
+  lifecycle_state: {
     owner: 'participation',
     intent: 'state',
     fieldScope: 'SALES',
@@ -389,17 +425,19 @@ export const ITEM_FIELD_METADATA: Record<string, ItemFieldMetadata> = {
     fieldScope: 'SALES',
     editable: true,
     isProtected: false,
-    filterable: true,
+    filterable: false,
     filterType: 'number',
+    isVisibleInConfig: false,
   },
-  
+
   reorder_level: {
     owner: 'participation',
     intent: 'tracking',
     fieldScope: 'SALES',
-    editable: true,
+    editable: false,
     isProtected: false,
     filterable: false,
+    isVisibleInConfig: false,
   },
   
   serial_numbers: {
@@ -629,11 +667,32 @@ export function isItemProtectedField(fieldKey: string): boolean {
  */
 export function getItemQuickCreateFields(): string[] {
   return [
-    'item_name',      // Required
-    'item_type',      // Required
-    'category',       // Optional but common
-    'selling_price',  // Optional but common
+    'item_name',
+    'item_code',
+    'item_type',
+    'lifecycle_state',
+    'categoryId',
+    'selling_price'
   ];
+}
+
+/** Catalog scaffold fields — not shown on flat item create/edit drawer (catalog section on record). */
+export function getItemCatalogScaffoldFieldKeys(): string[] {
+  return [
+    'hasVariants',
+    'defaultVariantId',
+    'variants',
+    'media',
+    'catalogVariantId',
+    'attributeValues',
+    'attributeTemplates',
+    'defaultVariant'
+  ];
+}
+
+/** Legacy flat category labels — hidden from settings/create; use categoryId. */
+export function getItemLegacyCategoryFieldKeys(): string[] {
+  return ['category', 'subcategory'];
 }
 
 /**

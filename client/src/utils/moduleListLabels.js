@@ -51,10 +51,10 @@ const SYSTEM_VIEW_KEYS = {
   items: {
     all: 'platform.listViewAllItems',
     active: 'platform.listViewActiveItems',
+    draft: 'platform.listViewDraftItems',
+    discontinued: 'platform.listViewDiscontinuedItems',
     products: 'platform.listViewProducts',
     services: 'platform.listViewServices',
-    'low-stock': 'platform.listViewLowStock',
-    'out-of-stock': 'platform.listViewOutOfStock',
   },
 };
 
@@ -98,10 +98,10 @@ const MODULE_STAT_KEYS = {
   items: {
     totalItems: 'platform.listStatTotalItems',
     activeItems: 'platform.listStatActiveItems',
+    draftItems: 'platform.listStatDraftItems',
+    discontinuedItems: 'platform.listStatDiscontinuedItems',
     products: 'platform.listStatProducts',
     services: 'platform.listStatServices',
-    lowStock: 'platform.listStatLowStock',
-    outOfStock: 'platform.listStatOutOfStock',
   },
 };
 

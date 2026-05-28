@@ -8,9 +8,9 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "run-p type-check \"build-only {@}\" --",
+    "build": "run-s type-check \"build-only {@}\" --",
     "preview": "vite preview",
-    "build-only": "vite build",
+    "build-only": "NODE_OPTIONS=--max-old-space-size=4096 vite build",
     "build:chunks": "vite build && du -h dist/assets/*.js | sort -hr",
     "type-check": "NODE_OPTIONS=--max-old-space-size=4096 vue-tsc --build",
     "test": "vitest run",
