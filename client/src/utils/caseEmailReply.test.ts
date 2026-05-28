@@ -4,7 +4,7 @@ import {
   htmlBodyHasText,
   isEmailChannelCase,
   resolveCaseReplyToEmail
-} from './caseEmailReply.js';
+} from './caseEmailReply';
 
 describe('caseEmailReply', () => {
   it('detects email channel case-insensitively', () => {

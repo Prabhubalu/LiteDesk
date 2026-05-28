@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { buildCaseEmailConversationItems, isCaseEmailMessageActivity } from './caseEmailConversation.js';
+import {
+  buildCaseEmailConversationItems,
+  isCaseEmailMessageActivity,
+  type CaseEmailConversationItem
+} from './caseEmailConversation';
 
 describe('caseEmailConversation', () => {
   it('detects mailroom-backed email activities', () => {
@@ -37,9 +41,9 @@ describe('caseEmailConversation', () => {
         }
       ]
     });
-    expect(items.some((i) => i.kind === 'system')).toBe(true);
-    expect(items.some((i) => i.kind === 'message')).toBe(true);
-    expect(items.filter((i) => i.kind === 'message')).toHaveLength(1);
+    expect(items.some((i: CaseEmailConversationItem) => i.kind === 'system')).toBe(true);
+    expect(items.some((i: CaseEmailConversationItem) => i.kind === 'message')).toBe(true);
+    expect(items.filter((i: CaseEmailConversationItem) => i.kind === 'message')).toHaveLength(1);
   });
 
   it('includes internal comments in the conversation feed', () => {
@@ -56,6 +60,6 @@ describe('caseEmailConversation', () => {
       ]
     });
     expect(items).toHaveLength(1);
-    expect(items[0].kind).toBe('internal_comment');
+    expect(items[0]?.kind).toBe('internal_comment');
   });
 });
