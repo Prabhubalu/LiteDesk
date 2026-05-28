@@ -5,6 +5,25 @@ const { checkRedis } = require('../lib/redisHealth');
 /**
  * Liveness: process is up (no dependency checks). Use for cheap probes.
  */
+/**
+ * Prometheus text metrics for Mailroom (optional token via MAILROOM_METRICS_TOKEN).
+ */
+router.get('/mailroom-metrics', (req, res) => {
+  const token = process.env.MAILROOM_METRICS_TOKEN || '';
+  if (token) {
+    const provided = req.get('Authorization')?.replace(/^Bearer\s+/i, '')
+      || req.get('X-Metrics-Token')
+      || '';
+    if (provided !== token) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+  }
+
+  const { renderPrometheus } = require('../platform/mailroom/observability/mailroomMetrics');
+  res.set('Content-Type', 'text/plain; version=0.0.4; charset=utf-8');
+  return res.status(200).send(renderPrometheus());
+});
+
 router.get('/live', (req, res) => {
     res.status(200).json({
         status: 'ok',

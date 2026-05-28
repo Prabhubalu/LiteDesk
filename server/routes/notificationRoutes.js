@@ -9,6 +9,7 @@ const {
   markAllRead
 } = require('../controllers/notificationController');
 const { streamNotifications } = require('../controllers/notificationStreamController');
+const notificationDevController = require('../controllers/notificationDevController');
 
 // SSE stream route - handles its own auth (EventSource can't send Authorization header)
 router.get('/stream', streamNotifications);
@@ -23,6 +24,10 @@ router.use(organizationIsolation);
 router.get('/', listNotifications);
 router.post('/:id/read', markRead);
 router.post('/read-all', markAllRead);
+
+// Dev-only helpdesk notification simulation (see notificationDevSimulator.js)
+router.get('/dev/simulate/meta', notificationDevController.simulateHelpdeskMeta);
+router.post('/dev/simulate', notificationDevController.simulateHelpdesk);
 
 module.exports = router;
 

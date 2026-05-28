@@ -143,6 +143,23 @@ This changelog summarizes the Helpdesk implementation from Assignment Rules thro
 
 ---
 
+## Helpdesk realtime alerts (agent workspace)
+
+**Doc:** [HELPDESK_NOTIFICATION_SIMULATION.md](./HELPDESK_NOTIFICATION_SIMULATION.md)
+
+### Delivered
+
+- HELPDESK notification stream, rules, and persistence (`CASE_EMAIL_RECEIVED`, `CASE_CHAT_MESSAGE_RECEIVED`, existing case lifecycle events).
+- Client: bell badge, SSE reconnect on `/helpdesk/` routes, toast, Web Audio chime.
+- Internal browser tabs (TabBar): stacked title prefixes, amber highlight, icon animation (email wiggle / chat pulse); clear on tab focus.
+- Dev simulation: CLI `npm run simulate:helpdesk-notification`, HTTP `POST /api/notifications/dev/simulate`, Vite dev panel.
+
+### Follow-ups (not in this slice)
+
+- Sound toggle in Settings UI; toast click → open case; alerts while on Sales app; list-tab highlighting for `CASE_CREATED`.
+
+---
+
 ## Validation Commands Used
 
 From `server/`:

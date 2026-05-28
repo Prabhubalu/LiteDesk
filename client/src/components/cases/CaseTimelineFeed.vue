@@ -14,6 +14,10 @@
         </p>
       </div>
 
+      <div v-else-if="isInternalComment(activity)" class="py-1">
+        <CaseInternalCommentTimelineCard :activity="activity" :created-at="activity.createdAt" />
+      </div>
+
       <!-- Message bubble -->
       <div
         v-else
@@ -48,7 +52,7 @@
               v-if="activity.internal"
               class="rounded-full bg-amber-100 px-2 py-0.5 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
             >
-              {{ t('cases.recordInternal') }}
+              {{ t('cases.recordInternalComment') }}
             </span>
           </div>
           <div
@@ -83,9 +87,11 @@ import {
 } from '@heroicons/vue/24/outline';
 import Avatar from '@/components/common/Avatar.vue';
 import CaseMailroomAttachments from '@/components/cases/CaseMailroomAttachments.vue';
+import CaseInternalCommentTimelineCard from '@/components/cases/CaseInternalCommentTimelineCard.vue';
 import { formatRelativeTime } from '@/utils/relativeTime';
 import {
   isCaseSystemActivity,
+  isCaseInternalComment,
   isCaseInboundMessage,
   getCaseActivityDisplayName,
   getCaseActivityAvatarUser,
@@ -108,6 +114,9 @@ function isSystem(activity) {
 }
 function isInbound(activity) {
   return isCaseInboundMessage(activity);
+}
+function isInternalComment(activity) {
+  return isCaseInternalComment(activity);
 }
 function displayName(activity) {
   return getCaseActivityDisplayName(activity, props.caseRecord);

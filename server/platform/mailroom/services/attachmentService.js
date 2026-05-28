@@ -2,6 +2,11 @@ const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const MailroomAttachment = require('../../../models/MailroomAttachment');
 const objectStorage = require('../../../services/objectStorageService');
+const {
+  enqueueAttachmentScan,
+  assertAttachmentsSafeForLink,
+  isScanEnabledForOrganization
+} = require('../security/attachmentScanService');
 
 function safeFileName(name) {
   const raw = String(name || 'file').trim() || 'file';
@@ -58,9 +63,10 @@ async function createUploadedAttachment({
     }
   });
 
+  const scanEnabled = await isScanEnabledForOrganization(organizationId);
   const row = await MailroomAttachment.create({
     organizationId,
-    status: 'uploaded',
+    status: scanEnabled ? 'scan_pending' : 'uploaded',
     storageDriver: 'oci',
     bucket,
     objectKey,
@@ -70,6 +76,14 @@ async function createUploadedAttachment({
     sha256: hash,
     uploadedByUserId,
     source
+  });
+
+  await enqueueAttachmentScan({
+    organizationId,
+    attachmentId: row._id,
+    buffer: file.buffer,
+    mimeType: file.mimetype,
+    fileName: file.originalname
   });
 
   return row;
@@ -89,10 +103,16 @@ async function resolveAndLinkAttachments({
 
   if (!attachmentIds.length) return [];
 
+  await assertAttachmentsSafeForLink(organizationId, attachmentIds);
+
   const rows = await MailroomAttachment.find({
     organizationId,
     _id: { $in: attachmentIds },
-    status: { $in: ['uploaded', 'linked'] }
+    status: {
+      $in: (await isScanEnabledForOrganization(organizationId))
+        ? ['scan_clean', 'uploaded', 'linked']
+        : ['uploaded', 'linked']
+    }
   });
 
   // Move draft objects into final key (best-effort).

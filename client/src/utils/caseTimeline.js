@@ -48,15 +48,154 @@ export function isCaseOutboundMessage(activity) {
   return !activity?.internal && type === 'message';
 }
 
+/** Team-only comment on a case (not visible to the customer). */
+export function isCaseInternalComment(activity) {
+  if (!activity?.internal) return false;
+  const type = String(activity.activityType || '').trim();
+  return type === 'comment' || type === 'note';
+}
+
+function splitPersonName(full) {
+  const parts = String(full || '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (!parts.length) return { firstName: '', lastName: '' };
+  if (parts.length === 1) return { firstName: parts[0], lastName: '' };
+  return { firstName: parts[0], lastName: parts.slice(1).join(' ') };
+}
+
+function nameFromEmailLocal(email) {
+  const local = String(email || '').split('@')[0] || '';
+  if (!local) return { firstName: '', lastName: '' };
+  return splitPersonName(local.replace(/[._+-]/g, ' '));
+}
+
+function parseAddressWithName(raw) {
+  const text = String(raw || '').trim();
+  const angle = text.match(/^(.+?)\s*<([^>]+)>$/);
+  if (!angle) return null;
+  const email = angle[2].trim();
+  const name = splitPersonName(angle[1].trim());
+  if (!name.firstName && !name.lastName) {
+    return { firstName: email.split('@')[0], lastName: '', email };
+  }
+  return { ...name, email };
+}
+
+/** Derive 1–2 letter initials from any person-shaped record (no hardcoded placeholders). */
+export function getPersonInitials(person = {}) {
+  const first = String(person.firstName || person.first_name || '').trim();
+  const last = String(person.lastName || person.last_name || '').trim();
+  if (first && last) return `${first[0]}${last[0]}`.toUpperCase();
+  if (first.length >= 2) return first.slice(0, 2).toUpperCase();
+  if (first) return first[0].toUpperCase();
+  if (last.length >= 2) return last.slice(0, 2).toUpperCase();
+  if (last) return last[0].toUpperCase();
+
+  const full = String(person.name || '').trim();
+  if (full) {
+    const parts = full.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    if (parts[0].length >= 2) return parts[0].slice(0, 2).toUpperCase();
+    return parts[0][0].toUpperCase();
+  }
+
+  const email = String(person.email || '').trim();
+  if (email) {
+    const local = email.split('@')[0] || '';
+    const parts = local.replace(/[._+-]/g, ' ').split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    if (local.length >= 2) return local.slice(0, 2).toUpperCase();
+    if (local) return local[0].toUpperCase();
+  }
+
+  return '';
+}
+
+export function enrichPersonForAvatar(person = {}) {
+  const first = String(person.firstName || person.first_name || '').trim();
+  const last = String(person.lastName || person.last_name || '').trim();
+  const email = person.email || '';
+  const name = person.name;
+  const initials =
+    String(person.initials || '').trim() || getPersonInitials({ firstName: first, lastName: last, email, name });
+  return {
+    ...person,
+    firstName: first,
+    lastName: last,
+    email: email || person.email,
+    initials
+  };
+}
+
+/** Resolved customer profile for avatars / labels (contact, from address, requester email). */
+export function resolveCaseContactProfile(caseRecord, message = null) {
+  const contact = caseRecord?.contactId;
+  if (contact && typeof contact === 'object') {
+    const first = String(contact.first_name || contact.firstName || '').trim();
+    const last = String(contact.last_name || contact.lastName || '').trim();
+    if (first || last) {
+      return enrichPersonForAvatar({
+        firstName: first,
+        lastName: last,
+        email: contact.email,
+        avatar: contact.avatar
+      });
+    }
+    const full = String(contact.name || '').trim();
+    if (full) {
+      const split = splitPersonName(full);
+      return enrichPersonForAvatar({ ...split, email: contact.email, avatar: contact.avatar });
+    }
+    if (contact.email) {
+      const split = nameFromEmailLocal(contact.email);
+      return enrichPersonForAvatar({
+        firstName: split.firstName || contact.email.split('@')[0],
+        lastName: split.lastName,
+        email: contact.email,
+        avatar: contact.avatar
+      });
+    }
+  }
+
+  const fromParsed = parseAddressWithName(message?.fromAddress);
+  if (fromParsed?.firstName || fromParsed?.lastName || fromParsed?.email) {
+    return enrichPersonForAvatar(fromParsed);
+  }
+
+  const requester = String(caseRecord?.requesterEmail || '').trim();
+  if (requester) {
+    const split = nameFromEmailLocal(requester);
+    return enrichPersonForAvatar({
+      firstName: split.firstName || requester.split('@')[0],
+      lastName: split.lastName,
+      email: requester
+    });
+  }
+
+  const fromRaw = String(message?.fromAddress || '').trim();
+  if (fromRaw.includes('@')) {
+    const split = nameFromEmailLocal(fromRaw);
+    return enrichPersonForAvatar({
+      firstName: split.firstName || fromRaw.split('@')[0],
+      lastName: split.lastName,
+      email: fromRaw
+    });
+  }
+
+  return enrichPersonForAvatar({ email: caseRecord?.requesterEmail || '' });
+}
+
+export function formatCaseContactDisplayName(profile, fallback = 'Customer') {
+  const name = [profile?.firstName, profile?.lastName].filter(Boolean).join(' ').trim();
+  return name || profile?.email || fallback;
+}
+
 export function getCaseActivityDisplayName(activity, caseRecord) {
   if (activity?.actorName) return activity.actorName;
   if (isCaseInboundMessage(activity)) {
-    const contact = caseRecord?.contactId;
-    if (contact && typeof contact === 'object') {
-      const name = [contact.first_name, contact.last_name].filter(Boolean).join(' ').trim();
-      return name || contact.email || 'Customer';
-    }
-    return caseRecord?.requesterEmail || 'Customer';
+    return formatCaseContactDisplayName(resolveCaseContactProfile(caseRecord));
   }
   const owner = caseRecord?.caseOwnerId;
   if (owner && typeof owner === 'object') {
@@ -68,23 +207,14 @@ export function getCaseActivityDisplayName(activity, caseRecord) {
 
 export function getCaseActivityAvatarUser(activity, caseRecord) {
   if (isCaseInboundMessage(activity)) {
-    const contact = caseRecord?.contactId;
-    if (contact && typeof contact === 'object') {
-      return {
-        firstName: contact.first_name || contact.name || 'C',
-        lastName: contact.last_name || '',
-        email: contact.email
-      };
-    }
-    return { firstName: 'C', lastName: '', email: caseRecord?.requesterEmail };
+    return resolveCaseContactProfile(caseRecord);
   }
   if (activity?.actorId && caseRecord?.caseOwnerId && typeof caseRecord.caseOwnerId === 'object') {
-    return caseRecord.caseOwnerId;
+    return enrichPersonForAvatar(caseRecord.caseOwnerId);
   }
-  return {
-    firstName: activity?.actorName?.split(' ')?.[0] || 'A',
-    lastName: activity?.actorName?.split(' ')?.slice(1).join(' ') || ''
-  };
+  const parts = splitPersonName(activity?.actorName);
+  if (parts.firstName || parts.lastName) return enrichPersonForAvatar(parts);
+  return enrichPersonForAvatar({ email: caseRecord?.caseOwnerId?.email });
 }
 
 export function formatCaseChannelLabel(channel) {

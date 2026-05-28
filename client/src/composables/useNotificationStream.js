@@ -33,7 +33,8 @@ function getCurrentAppKey() {
   const path = window.location.pathname || '';
   if (path.startsWith('/audit/')) return 'AUDIT';
   if (path.startsWith('/portal/')) return 'PORTAL';
-  return 'CRM';
+  if (path.startsWith('/helpdesk/')) return 'HELPDESK';
+  return 'SALES';
 }
 
 /**

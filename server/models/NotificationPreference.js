@@ -35,7 +35,7 @@ const notificationPreferenceSchema = new Schema({
   appKey: {
     type: String,
     required: true,
-    enum: ['SALES', 'AUDIT', 'PORTAL']
+    enum: ['SALES', 'AUDIT', 'PORTAL', 'HELPDESK']
   },
   events: {
     type: Map,

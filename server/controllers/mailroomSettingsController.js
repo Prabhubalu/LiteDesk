@@ -146,6 +146,7 @@ async function updateMailroomSettings(req, res) {
         schemaVersion: row.schemaVersion,
         policies: row.policies,
         connectors: row.connectors,
+        security: row.security,
         updatedAt: row.updatedAt
       },
       meta: { chatEmbed }
@@ -300,6 +301,51 @@ async function listMailroomMessageAttachments(req, res) {
   }
 }
 
+async function getMailroomMetrics(req, res) {
+  try {
+    const { buildOperationalMetrics } = require('../platform/mailroom/observability/mailroomMetrics');
+    const data = await buildOperationalMetrics(req.user.organizationId);
+    return res.json({ success: true, data });
+  } catch (error) {
+    console.error('[mailroomSettingsController] getMailroomMetrics', error);
+    return res.status(500).json({ success: false, message: 'Failed to load Mailroom metrics' });
+  }
+}
+
+async function searchMailroom(req, res) {
+  try {
+    const { searchMailroom: search } = require('../platform/mailroom/services/mailroomSearchService');
+    const data = await search(req.user.organizationId, {
+      q: req.query.q,
+      limit: req.query.limit,
+      channel: req.query.channel || null,
+      caseId: req.query.caseId || null
+    });
+    return res.json({ success: true, data });
+  } catch (error) {
+    const status = error.statusCode || 500;
+    if (status !== 500) {
+      return res.status(status).json({ success: false, message: error.message });
+    }
+    console.error('[mailroomSettingsController] searchMailroom', error);
+    return res.status(500).json({ success: false, message: 'Mailroom search failed' });
+  }
+}
+
+async function listMailroomRoutingLogs(req, res) {
+  try {
+    const { listRoutingLogs } = require('../platform/mailroom/services/routingLogService');
+    const rows = await listRoutingLogs(req.user.organizationId, {
+      limit: req.query.limit,
+      caseId: req.query.caseId || null
+    });
+    return res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error('[mailroomSettingsController] listMailroomRoutingLogs', error);
+    return res.status(500).json({ success: false, message: 'Failed to list routing logs' });
+  }
+}
+
 async function replayMailroomProcessingFailure(req, res) {
   try {
     const rawPayloadId = req.params.rawPayloadId;
@@ -330,5 +376,8 @@ module.exports = {
   listMailroomProcessingFailures,
   listMailroomConversationAttachments,
   listMailroomMessageAttachments,
-  replayMailroomProcessingFailure
+  replayMailroomProcessingFailure,
+  getMailroomMetrics,
+  searchMailroom,
+  listMailroomRoutingLogs
 };

@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
 import { getAllowedCaseStatusTransitions, CASE_PRIORITIES } from '@/constants/caseLifecycle';
+import { resolveCaseReplyToEmail } from '@/utils/caseEmailReply';
 
 const CASE_REF_KEYS = ['caseOwnerId', 'contactId', 'organizationRefId'];
 
@@ -243,11 +244,12 @@ export function useCaseRecord(caseIdRef) {
     { immediate: true }
   );
 
-  const contactEmail = computed(() => {
-    const c = caseRecord.value?.contactId;
-    if (c && typeof c === 'object' && c.email) return String(c.email).trim();
-    return String(caseRecord.value?.requesterEmail || '').trim();
-  });
+  const contactEmail = computed(() =>
+    resolveCaseReplyToEmail({
+      caseRecord: caseRecord.value,
+      emailThreads: emailThreads.value
+    })
+  );
 
   return {
     loading,

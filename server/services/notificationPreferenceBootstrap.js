@@ -1,7 +1,7 @@
 const NotificationPreference = require('../models/NotificationPreference');
 const domainEvents = require('../constants/domainEvents');
 
-const APP_KEYS = ['SALES', 'AUDIT', 'PORTAL'];
+const APP_KEYS = ['SALES', 'AUDIT', 'PORTAL', 'HELPDESK'];
 const ALL_EVENTS = Object.values(domainEvents);
 
 /**
@@ -72,6 +72,23 @@ function buildDefaultMap(appKey) {
   if (appKey === 'PORTAL') {
     defaults[domainEvents.DIGEST_DAILY] = createEventPref(false, false, false, false, false, false, false, false);
     defaults[domainEvents.DIGEST_WEEKLY] = createEventPref(false, false, false, false, false, false, false, false);
+  }
+
+  if (appKey === 'HELPDESK') {
+    const helpdeskEvents = [
+      domainEvents.CASE_CREATED,
+      domainEvents.CASE_ASSIGNED,
+      domainEvents.CASE_STATUS_CHANGED,
+      domainEvents.CASE_REOPENED,
+      domainEvents.CASE_ESCALATED,
+      domainEvents.CASE_SLA_WARNING,
+      domainEvents.CASE_SLA_BREACHED,
+      domainEvents.CASE_EMAIL_RECEIVED,
+      domainEvents.CASE_CHAT_MESSAGE_RECEIVED
+    ];
+    helpdeskEvents.forEach((evt) => {
+      defaults[evt] = createEventPref(true, false, true, true, false, false, false, false);
+    });
   }
 
   return defaults;

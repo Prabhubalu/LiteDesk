@@ -29,6 +29,7 @@ const {
   setCaseChatTyping,
   streamCaseChatMessages
 } = require('../controllers/caseChatController');
+const { listCaseCannedResponses } = require('../controllers/caseCannedResponseController');
 
 const router = express.Router();
 
@@ -50,6 +51,7 @@ router.get('/analytics/trends', filterByOwnership('cases'), checkPermission('cas
 router.get('/analytics/owners', filterByOwnership('cases'), checkPermission('cases', 'view'), getCaseAnalyticsOwners);
 router.get('/analytics/distribution', filterByOwnership('cases'), checkPermission('cases', 'view'), getCaseAnalyticsDistribution);
 router.get('/analytics/audit-export', filterByOwnership('cases'), checkPermission('cases', 'view'), getCaseAuditExport);
+router.get('/canned-responses', checkPermission('cases', 'view'), listCaseCannedResponses);
 router.get('/:id', checkPermission('cases', 'view'), getCaseById);
 router.put('/:id', checkPermission('cases', 'edit'), updateCase);
 router.delete('/:id', checkPermission('cases', 'delete'), deleteCase);

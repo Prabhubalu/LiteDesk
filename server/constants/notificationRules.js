@@ -233,14 +233,28 @@ module.exports = {
   },
   [domainEvents.CASE_CREATED]: {
     appKey: 'HELPDESK',
-    recipients: ['CASE_OWNER'],
-    priority: 'NORMAL',
+    recipients: ['CASE_NOTIFY_TARGETS'],
+    priority: 'HIGH',
     defaultChannels: ['IN_APP', 'EMAIL'],
-    channels: { inApp: true, email: true, push: false, whatsapp: false, sms: false }
+    channels: { inApp: true, email: true, push: true, whatsapp: false, sms: false }
+  },
+  [domainEvents.CASE_EMAIL_RECEIVED]: {
+    appKey: 'HELPDESK',
+    recipients: ['CASE_NOTIFY_TARGETS'],
+    priority: 'HIGH',
+    defaultChannels: ['IN_APP'],
+    channels: { inApp: true, email: false, push: true, whatsapp: false, sms: false }
+  },
+  [domainEvents.CASE_CHAT_MESSAGE_RECEIVED]: {
+    appKey: 'HELPDESK',
+    recipients: ['CASE_NOTIFY_TARGETS'],
+    priority: 'HIGH',
+    defaultChannels: ['IN_APP'],
+    channels: { inApp: true, email: false, push: true, whatsapp: false, sms: false }
   },
   [domainEvents.CASE_ASSIGNED]: {
     appKey: 'HELPDESK',
-    recipients: ['CASE_OWNER'],
+    recipients: ['CASE_NOTIFY_TARGETS'],
     priority: 'HIGH',
     defaultChannels: ['IN_APP', 'EMAIL'],
     channels: { inApp: true, email: true, push: true, whatsapp: false, sms: false }

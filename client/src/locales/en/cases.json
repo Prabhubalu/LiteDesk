@@ -88,8 +88,8 @@
     "description": "Case record activity tab"
   },
   "recordTabNotes": {
-    "message": "Notes",
-    "description": "Case record internal notes tab"
+    "message": "Internal Comments",
+    "description": "Case record internal comments tab"
   },
   "recordEmptyConversationTitle": {
     "message": "No messages yet",
@@ -108,12 +108,12 @@
     "description": "Empty activity log description"
   },
   "recordEmptyNotesTitle": {
-    "message": "No internal notes",
-    "description": "Empty notes tab title"
+    "message": "No internal comments yet",
+    "description": "Empty internal comments tab title"
   },
   "recordEmptyNotesMessage": {
-    "message": "Add a private note visible only to your team.",
-    "description": "Empty notes tab description"
+    "message": "Add a private comment visible only to your team.",
+    "description": "Empty internal comments tab description"
   },
   "recordComposerVia": {
     "message": "Via",
@@ -124,20 +124,176 @@
     "description": "Reply composer sender label"
   },
   "recordComposerPlaceholder": {
-    "message": "Reply to customer or type an internal note…",
+    "message": "Reply to customer or add an internal comment…",
     "description": "Reply composer placeholder"
+  },
+  "recordEmailComposerFrom": {
+    "message": "From",
+    "description": "Email reply composer from address label"
+  },
+  "recordEmailComposerSubject": {
+    "message": "Subject",
+    "description": "Email reply composer subject label"
+  },
+  "recordEmailComposerToPlaceholder": {
+    "message": "customer{'@'}example.com",
+    "description": "Email reply composer to field placeholder"
+  },
+  "recordEmailComposerBodyPlaceholder": {
+    "message": "Write your reply…",
+    "description": "Email reply composer rich text placeholder"
+  },
+  "recordEmailComposerAttach": {
+    "message": "Attach",
+    "description": "Email reply composer attach files button"
+  },
+  "recordEmailComposerUploading": {
+    "message": "Uploading…",
+    "description": "Email reply composer attachment upload in progress"
+  },
+  "recordEmailComposerSendEmail": {
+    "message": "Send email",
+    "description": "Email reply composer send button"
+  },
+  "recordEmailComposerHeadersToggle": {
+    "message": "Show email headers",
+    "description": "Expand collapsed To/Subject/From fields"
+  },
+  "recordEmailComposerHeadersToggleHide": {
+    "message": "Hide email headers",
+    "description": "Collapse To/Subject/From fields"
+  },
+  "recordEmailComposerHeadersSummaryTo": {
+    "message": "To",
+    "description": "Collapsed header summary label for recipients"
+  },
+  "recordEmailComposerHeadersSummarySubject": {
+    "message": "Subject",
+    "description": "Collapsed header summary label for subject"
+  },
+  "recordActivityTitle": {
+    "message": "Activity",
+    "description": "Email case conversation feed title"
+  },
+  "recordActivityRoleCustomer": {
+    "message": "Customer",
+    "description": "Role badge on inbound email activity"
+  },
+  "recordActivityRoleAgent": {
+    "message": "Agent",
+    "description": "Role badge on outbound email activity"
+  },
+  "recordActivitySentEmail": {
+    "message": "sent email",
+    "description": "Action label after role on email activity row"
+  },
+  "recordActivityAttachments": {
+    "message": "Attachments ({count})",
+    "description": "Collapsible attachments section title"
+  },
+  "recordEmailExpand": {
+    "message": "Expand email",
+    "description": "Expand collapsed email in case timeline"
+  },
+  "recordEmailCollapse": {
+    "message": "Collapse email",
+    "description": "Collapse expanded email in case timeline"
+  },
+  "recordEmailTimelineTitle": {
+    "message": "Email Timeline",
+    "description": "Deprecated: use recordActivityTitle"
+  },
+  "recordEmailTimelineAllChannels": {
+    "message": "All Channels",
+    "description": "Timeline filter showing all item types"
+  },
+  "recordEmailTimelineEmailOnly": {
+    "message": "Email only",
+    "description": "Timeline filter for email messages"
+  },
+  "recordEmailTimelineUpdatesOnly": {
+    "message": "Updates only",
+    "description": "Timeline filter for system status updates"
+  },
+  "recordEmailTimelineFilter": {
+    "message": "Filter",
+    "description": "Timeline filter button label"
+  },
+  "recordEmailTimelineToday": {
+    "message": "Today",
+    "description": "Timeline timestamp day label"
+  },
+  "recordEmailTimelineYesterday": {
+    "message": "Yesterday",
+    "description": "Timeline timestamp day label"
+  },
+  "recordEmailTimelineCustomerReplied": {
+    "message": "Customer Replied",
+    "description": "Inbound follow-up email badge"
+  },
+  "recordEmailTimelineAgentReply": {
+    "message": "Agent Reply",
+    "description": "Outbound agent email badge"
+  },
+  "recordEmailTimelineIncomingEmail": {
+    "message": "Incoming Email",
+    "description": "First inbound email badge"
+  },
+  "recordEmailTimelineNew": {
+    "message": "New",
+    "description": "Badge on newest unread inbound message"
+  },
+  "recordEmailTimelineForward": {
+    "message": "Forward",
+    "description": "Forward email action tooltip"
+  },
+  "recordEmailTimelineStatusUpdated": {
+    "message": "Status updated → {status}",
+    "description": "System pill when case status changes"
+  },
+  "recordEmailComposerTabReply": {
+    "message": "Reply",
+    "description": "Email composer mode tab"
+  },
+  "recordEmailComposerTabReplyAll": {
+    "message": "Reply All",
+    "description": "Email composer mode tab"
+  },
+  "recordEmailComposerTabForward": {
+    "message": "Forward",
+    "description": "Email composer mode tab"
+  },
+  "recordEmailComposerTabInternalNote": {
+    "message": "Internal Note",
+    "description": "Deprecated: use recordEmailComposerTabInternalComment"
+  },
+  "recordEmailComposerTabInternalComment": {
+    "message": "Internal Comment",
+    "description": "Email composer internal comment tab"
+  },
+  "recordEmailComposerAiDraft": {
+    "message": "AI Draft",
+    "description": "AI-assisted email draft button (placeholder)"
   },
   "recordComposerResize": {
     "message": "Drag to resize reply area",
     "description": "Aria label for reply composer resize handle"
   },
   "recordNotesPlaceholder": {
-    "message": "Add an internal note…",
-    "description": "Notes tab composer placeholder"
+    "message": "Add an internal comment…",
+    "description": "Deprecated: use recordInternalCommentPlaceholder"
+  },
+  "recordInternalCommentPlaceholder": {
+    "message": "Add an internal comment…",
+    "description": "Internal comment composer placeholder"
   },
   "recordInternalNote": {
     "message": "Internal note",
-    "description": "Toggle to mark reply as internal"
+    "description": "Deprecated: use recordInternalComment"
+  },
+  "recordInternalComment": {
+    "message": "Internal Comment",
+    "description": "Label for team-only comments on a case"
   },
   "recordInternal": {
     "message": "Internal",
@@ -203,9 +359,49 @@
     "message": "Download",
     "description": "Download mailroom attachment from case timeline"
   },
+  "recordAttachmentPreviewUnavailable": {
+    "message": "Preview is not available for this file type. Download to open it.",
+    "description": "Fallback when attachment cannot be previewed in modal"
+  },
+  "recordAttachmentPreviewFailed": {
+    "message": "Could not load this attachment. Try downloading it instead.",
+    "description": "Error when attachment fetch fails in preview modal"
+  },
+  "recordAttachmentPreviewLoading": {
+    "message": "Loading attachment…",
+    "description": "Loading state in attachment preview modal"
+  },
   "recordMacrosSoon": {
     "message": "Macros (soon)",
-    "description": "Macros placeholder in composer"
+    "description": "Deprecated: use recordMacros"
+  },
+  "recordMacros": {
+    "message": "Macros",
+    "description": "Canned responses menu in case composer"
+  },
+  "recordMacrosLoading": {
+    "message": "Loading macros…",
+    "description": "Canned responses menu loading state"
+  },
+  "recordMacrosEmpty": {
+    "message": "No macros configured. Add them in Settings → Helpdesk.",
+    "description": "Empty canned responses list in composer"
+  },
+  "recordMacrosInternalOnly": {
+    "message": "Enable Internal Comment for macros",
+    "description": "Hint when macros are only available for internal comments"
+  },
+  "recordMacroChannelEmail": {
+    "message": "Email",
+    "description": "Macro badge for customer email replies"
+  },
+  "recordMacroChannelInternal": {
+    "message": "Internal",
+    "description": "Macro badge for internal comments"
+  },
+  "recordMacroChannelAll": {
+    "message": "Both",
+    "description": "Macro badge for email and internal"
   },
   "recordResolutionPrompt": {
     "message": "Resolution summary (required to resolve or close):",
@@ -396,8 +592,8 @@
     "description": "Details field label"
   },
   "recordDetailsInternalNotes": {
-    "message": "Internal notes",
-    "description": "Details field label"
+    "message": "Internal comments",
+    "description": "Details field label for team-only comments"
   },
   "recordDetailsResolution": {
     "message": "Resolution",

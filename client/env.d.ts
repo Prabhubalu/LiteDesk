@@ -8,6 +8,8 @@ interface ImportMetaEnv {
   readonly VITE_POSTHOG_KEY?: string
   readonly VITE_POSTHOG_HOST?: string
   readonly VITE_API_URL?: string
+  /** Set to "true" in .env.local to show the helpdesk alert test floater in dev */
+  readonly VITE_ENABLE_HELPDESK_NOTIFICATION_DEV_PANEL?: string
 }
 
 interface ImportMeta {

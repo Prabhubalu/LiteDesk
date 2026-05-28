@@ -20,6 +20,7 @@ async function getOrCreateConfig(organizationId) {
       schemaVersion: row.schemaVersion,
       policies,
       connectors: row.connectors || resolveConnectorsForRow(row),
+      security: row.security || resolveSecurityForRow(row),
       updatedAt: row.updatedAt,
       createdAt: row.createdAt
     };
@@ -48,6 +49,14 @@ function resolveConnectorsForRow(row) {
 
   const template = getTemplate(row?.activeTemplateId || 'helpdesk_standard_email');
   return template?.connectors || getDefaultMailroomConfig().connectors;
+}
+
+function resolveSecurityForRow(row) {
+  const stored = row?.security || {};
+  if (Object.keys(stored).length > 0) return stored;
+
+  const template = getTemplate(row?.activeTemplateId || 'helpdesk_standard_email');
+  return template?.security || getDefaultMailroomConfig().security;
 }
 
 function hasConfiguredPolicies(policies) {
@@ -81,6 +90,7 @@ async function upsertConfig(organizationId, userId, body) {
     sanitized.activeTemplateId = template.id;
     sanitized.policies = template.policies;
     sanitized.connectors = template.connectors;
+    sanitized.security = template.security || sanitized.security;
   }
 
   const row = await TenantMailroomConfig.findOneAndUpdate(
@@ -93,6 +103,7 @@ async function upsertConfig(organizationId, userId, body) {
         schemaVersion: sanitized.schemaVersion,
         policies: sanitized.policies,
         connectors: sanitized.connectors,
+        security: sanitized.security,
         updatedBy: userId || null
       }
     },

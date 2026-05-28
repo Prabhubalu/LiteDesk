@@ -19,10 +19,41 @@
       />
     </div>
     <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <CaseReplyComposer
-        v-bind="$attrs"
+      <CaseEmailReplyComposer
+        v-if="caseId && useEmailComposer"
+        :key="composerMountKey"
+        ref="composerRef"
+        :case-id="caseId"
+        :case-record="caseRecord"
+        :contact-email="contactEmail"
+        :email-threads="emailThreads"
+        :sending="sending"
+        :disabled="disabled"
+        :is-closed="isClosed"
+        :show-internal-toggle="showInternalToggle"
         fill-height
         class="h-full min-h-0"
+        @send-email="$emit('send-email', $event)"
+        @send="$emit('send', $event)"
+        @reopen="$emit('reopen', $event)"
+      />
+      <CaseReplyComposer
+        v-else-if="caseId"
+        :key="composerMountKey"
+        ref="composerRef"
+        :case-record="caseRecord"
+        :sending="sending"
+        :disabled="disabled"
+        :is-closed="isClosed"
+        :show-internal-toggle="showInternalToggle"
+        :fixed-channel="fixedChannel"
+        :hide-channel-select="hideChannelSelect"
+        :placeholder="placeholder"
+        :internal-comment-mode="paneKey === 'notes'"
+        fill-height
+        class="h-full min-h-0"
+        @send="$emit('send', $event)"
+        @reopen="$emit('reopen', $event)"
         @typing="$emit('typing', $event)"
       />
     </div>
@@ -30,27 +61,65 @@
 </template>
 
 <script setup>
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CaseReplyComposer from '@/components/cases/CaseReplyComposer.vue';
+import CaseEmailReplyComposer from '@/components/cases/CaseEmailReplyComposer.vue';
 import { useVerticalPaneResize } from '@/composables/useVerticalPaneResize';
+import { isEmailChannelCase } from '@/utils/caseEmailReply';
 
 defineOptions({ inheritAttrs: false });
-
-defineEmits(['typing']);
 
 const props = defineProps({
   /** localStorage key suffix; full key is `case-reply-height-${paneKey}` */
   paneKey: { type: String, default: 'conversation' },
-  defaultHeight: { type: Number, default: 180 }
+  defaultHeight: { type: Number, default: 180 },
+  caseRecord: { type: Object, default: null },
+  caseId: { type: String, default: '' },
+  contactEmail: { type: String, default: '' },
+  emailThreads: { type: Array, default: () => [] },
+  sending: { type: Boolean, default: false },
+  disabled: { type: Boolean, default: false },
+  isClosed: { type: Boolean, default: false },
+  showInternalToggle: { type: Boolean, default: true },
+  fixedChannel: { type: String, default: '' },
+  hideChannelSelect: { type: Boolean, default: false },
+  placeholder: { type: String, default: '' }
 });
 
+defineEmits(['send', 'send-email', 'reopen', 'typing']);
+
 const { t } = useI18n();
+const composerRef = ref(null);
+
+const useEmailComposer = computed(
+  () => props.paneKey === 'conversation' && isEmailChannelCase(props.caseRecord)
+);
+
+/** Force a clean mount when switching cases or composer type (avoids TipTap / v-if patch errors). */
+const composerMountKey = computed(() => {
+  const kind = useEmailComposer.value ? 'email' : 'plain';
+  return `${props.caseId || 'none'}-${props.paneKey}-${kind}`;
+});
+
+const resizeDefaultHeight = computed(() =>
+  useEmailComposer.value ? Math.max(props.defaultHeight, 340) : props.defaultHeight
+);
 
 const { height, isResizing, paneRef, startResize } = useVerticalPaneResize({
   storageKey: `case-reply-height-${props.paneKey}`,
-  defaultHeight: props.defaultHeight,
-  minHeight: 120,
+  defaultHeight: resizeDefaultHeight.value,
+  minHeight: useEmailComposer.value ? 200 : 120,
   maxHeightRatio: 0.65,
   absoluteMaxHeight: 520
+});
+
+function applyReplyTarget(message, options) {
+  composerRef.value?.applyReplyTarget?.(message, options);
+}
+
+defineExpose({
+  clear: () => composerRef.value?.clear?.(),
+  applyReplyTarget
 });
 </script>

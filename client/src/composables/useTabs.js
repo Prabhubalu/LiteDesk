@@ -29,6 +29,7 @@ import {
 import { enrichTabWithTitleKey, getTabTitleMetaForPath } from '@/utils/navigationLabels';
 import { resolveModuleDisplayName } from '@/utils/configurableLabelResolver';
 import { i18n } from '@/i18n/index';
+import { createHelpdeskTabAlertController } from '@/utils/helpdeskTabAlerts';
 
 const tabsDebugEnabled = () => {
   if (!import.meta.env.DEV) return false;
@@ -62,6 +63,24 @@ const console = {
 // Tab state management
 const tabs = ref([]);
 const activeTabId = ref(null);
+
+const helpdeskTabAlertController = createHelpdeskTabAlertController(tabs, activeTabId);
+
+function i18nTabHelpers() {
+  return {
+    t: i18n.global.t.bind(i18n.global),
+    te: i18n.global.te.bind(i18n.global)
+  };
+}
+
+/** Mark an open case tab when inbound email/chat arrives (background tabs only). */
+export function markHelpdeskTabAlertForCase(caseId, kind) {
+  return helpdeskTabAlertController.markTabAlertForCase(caseId, kind, i18nTabHelpers());
+}
+
+export function tabShowsHelpdeskAlert(tab, activeId = activeTabId.value) {
+  return helpdeskTabAlertController.tabShowsAlertHighlight(tab, activeId);
+}
 // Storage key is computed per instance+user to prevent tab leakage across instances/users.
 // Design invariant: Persistent UI state must be scoped at the same granularity as access control.
 // Tabs are therefore scoped strictly by instanceId + userId.
@@ -1786,6 +1805,7 @@ export function useTabs() {
     console.log('🔄 switchToTab called:', tabId);
     const tab = findTabById(tabId);
     if (tab) {
+      helpdeskTabAlertController.clearTabAlert(tab);
       console.log('📍 Switching to tab:', tab.title, 'path:', tab.path);
       
       // Mark as programmatic navigation FIRST, before any navigation
@@ -1822,6 +1842,9 @@ export function useTabs() {
     const tab = findTabById(tabId);
     if (tab) {
       tab.title = newTitle;
+      if (tab.alertBaseTitle) {
+        tab.alertBaseTitle = newTitle;
+      }
     }
   };
 
@@ -1900,7 +1923,10 @@ export function useTabs() {
     replaceActiveTab,
     reorderTabs,
     findTabById,
-    findTabByPath
+    findTabByPath,
+    markHelpdeskTabAlertForCase,
+    tabShowsHelpdeskAlert,
+    clearHelpdeskTabAlert: helpdeskTabAlertController.clearTabAlertById
   };
 }
 

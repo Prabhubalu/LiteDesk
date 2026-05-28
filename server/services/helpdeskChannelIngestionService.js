@@ -105,11 +105,12 @@ async function createCaseFromInboundEmail({
     organizationId,
     caseId: buildCaseId(),
     title,
-    caseType: defaults.defaultCaseType || 'Support Ticket',
-    priority: defaults.defaultPriority || 'Medium',
+    caseType: defaults.defaultCaseType || defaults.caseType || 'Support Ticket',
+    priority: defaults.defaultPriority || defaults.priority || 'Medium',
     status,
     caseOwnerId: ownerId,
-    channel: 'Email',
+    channel: defaults.defaultChannel || defaults.channel || 'Email',
+    queue: defaults.defaultQueue || defaults.queue || null,
     caseNotes: String(body || '').trim() || '',
     currentSlaCycle: targetAwareCycle,
     activities: [
@@ -120,7 +121,9 @@ async function createCaseFromInboundEmail({
         metadata: {
           communicationId: communicationId ? toIdString(communicationId) : null,
           fromAddress: fromAddress || null,
-          parentCaseId: parentCaseId || null
+          parentCaseId: parentCaseId || null,
+          mailroomClassification: defaults.classificationSuggestions || null,
+          mailroomClassificationRuleIds: defaults.classificationMatchedRuleIds || null
         },
         actorId: actorId || null,
         actorName: 'Inbound Email',
@@ -252,6 +255,13 @@ async function appendInboundEmailActivity({
     actorId: null,
     activityType: 'email_received'
   });
+
+  const { notifyCaseEmailReceived } = require('./caseNotificationService');
+  await notifyCaseEmailReceived(caseRecord, {
+    fromAddress,
+    subject,
+    preview: String(body || '').slice(0, 200)
+  });
 }
 
 async function appendChannelActivity({
@@ -284,6 +294,16 @@ async function appendChannelActivity({
     actorId,
     activityType: 'channel_message_received'
   });
+
+  const channelLabel = String(channel || '').toLowerCase();
+  if (channelLabel.includes('live chat') || channelLabel.includes('chat')) {
+    const { notifyCaseChatMessageReceived } = require('./caseNotificationService');
+    await notifyCaseChatMessageReceived(caseRecord, {
+      authorName: metadata?.visitorName || metadata?.authorName || 'Visitor',
+      preview: String(message || '').slice(0, 200),
+      chatSessionId: metadata?.chatSessionId || null
+    });
+  }
 }
 
 async function resolveExistingOpenCaseByEmailContext({

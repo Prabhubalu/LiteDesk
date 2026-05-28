@@ -47,6 +47,8 @@ async function resolveKey(key, context) {
       return resolveSalesOrganizationAssignee(context);
     case 'CASE_OWNER':
       return resolveCaseOwner(context);
+    case 'CASE_NOTIFY_TARGETS':
+      return resolveCaseNotifyTargets(context);
     case 'INBOX_SNOOZE_USER':
       return resolveInboxSnoozeWake(context);
     default:
@@ -151,38 +153,98 @@ async function resolveInboxSnoozeWake({ entity, organizationId, eventType }) {
   ];
 }
 
+function caseNotificationCopy(eventType, caseLabel, entity = {}) {
+  const titles = {
+    [domainEvents.CASE_CREATED]: 'New case',
+    [domainEvents.CASE_ASSIGNED]: 'Case assigned',
+    [domainEvents.CASE_STATUS_CHANGED]: 'Case status updated',
+    [domainEvents.CASE_REOPENED]: 'Case reopened',
+    [domainEvents.CASE_ESCALATED]: 'Case escalated',
+    [domainEvents.CASE_SLA_WARNING]: 'SLA warning',
+    [domainEvents.CASE_SLA_BREACHED]: 'SLA breached',
+    [domainEvents.CASE_EMAIL_RECEIVED]: 'Customer email',
+    [domainEvents.CASE_CHAT_MESSAGE_RECEIVED]: 'Live chat message'
+  };
+
+  const from = String(entity.fromAddress || '').trim();
+  const author = String(entity.authorName || 'Visitor').trim();
+  const preview = String(entity.preview || '').trim();
+  const subject = String(entity.subject || '').trim();
+
+  const bodies = {
+    [domainEvents.CASE_CREATED]: `${caseLabel} was created.`,
+    [domainEvents.CASE_ASSIGNED]: `${caseLabel} was assigned to you.`,
+    [domainEvents.CASE_STATUS_CHANGED]: `${caseLabel} status has changed.`,
+    [domainEvents.CASE_REOPENED]: `${caseLabel} was reopened.`,
+    [domainEvents.CASE_ESCALATED]: `${caseLabel} was escalated.`,
+    [domainEvents.CASE_SLA_WARNING]: `${caseLabel} is nearing SLA breach.`,
+    [domainEvents.CASE_SLA_BREACHED]: `${caseLabel} has breached SLA.`,
+    [domainEvents.CASE_EMAIL_RECEIVED]: from
+      ? `New email on ${caseLabel} from ${from}${subject ? `: ${subject}` : ''}${preview ? ` — ${preview}` : ''}`
+      : `New email on ${caseLabel}${preview ? ` — ${preview}` : ''}`,
+    [domainEvents.CASE_CHAT_MESSAGE_RECEIVED]: `New chat on ${caseLabel} from ${author}${preview ? `: ${preview}` : ''}`
+  };
+
+  return {
+    title: titles[eventType] || 'Case notification',
+    body: bodies[eventType] || `Update on ${caseLabel}.`
+  };
+}
+
 async function resolveCaseOwner({ entity, organizationId, eventType }) {
   if (!entity || entity.type !== 'Case' || !entity.id) return [];
   const row = await Case.findOne({ _id: entity.id, organizationId })
     .select('caseOwnerId caseId title');
   if (!row || !row.caseOwnerId) return [];
 
-  const titles = {
-    [domainEvents.CASE_CREATED]: 'Case Created',
-    [domainEvents.CASE_ASSIGNED]: 'Case Assigned',
-    [domainEvents.CASE_STATUS_CHANGED]: 'Case Status Updated',
-    [domainEvents.CASE_REOPENED]: 'Case Reopened',
-    [domainEvents.CASE_ESCALATED]: 'Case Escalated',
-    [domainEvents.CASE_SLA_WARNING]: 'SLA Warning',
-    [domainEvents.CASE_SLA_BREACHED]: 'SLA Breached'
-  };
-
   const caseLabel = row.caseId || row.title || 'Case';
-  const bodies = {
-    [domainEvents.CASE_CREATED]: `${caseLabel} has been created and assigned to you.`,
-    [domainEvents.CASE_ASSIGNED]: `${caseLabel} has been assigned to you.`,
-    [domainEvents.CASE_STATUS_CHANGED]: `${caseLabel} status has changed.`,
-    [domainEvents.CASE_REOPENED]: `${caseLabel} has been reopened.`,
-    [domainEvents.CASE_ESCALATED]: `${caseLabel} has been escalated.`,
-    [domainEvents.CASE_SLA_WARNING]: `${caseLabel} is nearing SLA breach.`,
-    [domainEvents.CASE_SLA_BREACHED]: `${caseLabel} has breached SLA.`
-  };
+  const copy = caseNotificationCopy(eventType, caseLabel, entity);
 
   return [{
     userId: row.caseOwnerId,
-    title: titles[eventType] || 'Case Notification',
-    body: bodies[eventType] || `Update on ${caseLabel}.`
+    title: copy.title,
+    body: copy.body
   }];
+}
+
+async function resolveCaseNotifyTargets({ entity, organizationId, eventType }) {
+  if (!entity || entity.type !== 'Case' || !entity.id || !organizationId) return [];
+
+  const row = await Case.findOne({ _id: entity.id, organizationId })
+    .select('caseOwnerId caseId title');
+  if (!row) return [];
+
+  const caseLabel = row.caseId || row.title || 'Case';
+  const copy = caseNotificationCopy(eventType, caseLabel, entity);
+
+  if (row.caseOwnerId) {
+    return [{
+      userId: row.caseOwnerId,
+      title: copy.title,
+      body: copy.body
+    }];
+  }
+
+  const agents = await User.find({
+    organizationId,
+    $or: [{ status: 'active' }, { status: { $exists: false } }, { status: null }],
+    allowedApps: { $in: ['HELPDESK'] }
+  })
+    .select('_id')
+    .limit(40)
+    .lean();
+
+  if (!agents.length) {
+    return resolveOrgAdmins({ organizationId }).then((admins) =>
+      admins.map((a) => ({ ...a, title: copy.title, body: copy.body }))
+    );
+  }
+
+  return agents.map((u) => ({
+    userId: u._id,
+    title: copy.title,
+    body: copy.body
+  }));
 }
 
 async function resolveEventAuditor({ entity, organizationId }) {

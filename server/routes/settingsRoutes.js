@@ -60,6 +60,9 @@ router.get(
 );
 router.get('/automation/mailroom/threading-logs', mailroomSettingsController.listMailroomThreadingLogs);
 router.get('/automation/mailroom/failures', mailroomSettingsController.listMailroomProcessingFailures);
+router.get('/automation/mailroom/metrics', mailroomSettingsController.getMailroomMetrics);
+router.get('/automation/mailroom/routing-logs', mailroomSettingsController.listMailroomRoutingLogs);
+router.get('/automation/mailroom/search', mailroomSettingsController.searchMailroom);
 router.post('/automation/mailroom/failures/:rawPayloadId/replay', mailroomSettingsController.replayMailroomProcessingFailure);
 
 // Subscriptions endpoints
