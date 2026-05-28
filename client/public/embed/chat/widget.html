@@ -150,7 +150,13 @@
           '<div class="hint">Missing instanceKey.</div>'
       }
 
-      var base = location.origin + '/embed/chat'
+      function getBases() {
+        // Primary (historical): APIs mounted at /embed/chat (same origin as widget iframe).
+        // Fallback: some deployments only proxy /api/* to the Node server.
+        return [location.origin + '/embed/chat', location.origin + '/api/embed/chat']
+      }
+
+      var base = getBases()[0]
       var sessionId = null
       var sessionSecret = null
       var es = null
@@ -177,6 +183,40 @@
         container.scrollTop = container.scrollHeight
       }
 
+      async function readJsonSafe(res) {
+        var ct = (res && res.headers && res.headers.get && res.headers.get('content-type')) || ''
+        if (ct && ct.indexOf('application/json') !== -1) return await res.json()
+        // If server returns HTML/plaintext (common for 404/405), surface it for debugging.
+        var text = ''
+        try {
+          text = await res.text()
+        } catch (_) {}
+        return {
+          success: false,
+          message:
+            'Non-JSON response (' +
+            (res ? res.status : 'unknown') +
+            '). ' +
+            (text ? String(text).slice(0, 300) : '')
+        }
+      }
+
+      async function tryCreateSession(apiBase) {
+        var res = await fetch(
+          apiBase + '/sessions?instanceKey=' + encodeURIComponent(instanceKey),
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              instanceKey: instanceKey,
+              pageUrl: document.referrer || ''
+            })
+          }
+        )
+        var json = await readJsonSafe(res)
+        return { res: res, json: json }
+      }
+
       async function ensureSession() {
         var cached = null
         try {
@@ -187,18 +227,22 @@
           sessionSecret = cached.sessionSecret
           return
         }
-        var res = await fetch(base + '/sessions?instanceKey=' + encodeURIComponent(instanceKey), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            instanceKey: instanceKey,
-            pageUrl: document.referrer || ''
-          })
-        })
-        var json = await res.json()
-        if (!json.success) throw new Error(json.message || 'Failed to start chat')
-        sessionId = json.data.sessionId
-        sessionSecret = json.data.sessionSecret
+
+        var bases = getBases()
+        var first = await tryCreateSession(bases[0])
+        // If /embed/chat isn't routed to the API server (common in prod), retry /api/embed/chat.
+        if (first.res && (first.res.status === 404 || first.res.status === 405)) {
+          var second = await tryCreateSession(bases[1])
+          if (second.json && second.json.success) base = bases[1]
+          var json2 = second.json
+          if (!json2.success) throw new Error(json2.message || 'Failed to start chat')
+          sessionId = json2.data.sessionId
+          sessionSecret = json2.data.sessionSecret
+        } else {
+          if (!first.json.success) throw new Error(first.json.message || 'Failed to start chat')
+          sessionId = first.json.data.sessionId
+          sessionSecret = first.json.data.sessionSecret
+        }
         try {
           localStorage.setItem(storageKey(), JSON.stringify({ sessionId: sessionId, sessionSecret: sessionSecret }))
         } catch (_) {}
@@ -215,7 +259,7 @@
             headers: { 'X-Chat-Session-Secret': sessionSecret }
           }
         )
-        var json = await res.json()
+        var json = await readJsonSafe(res)
         if (!json.success) return
         json.data.forEach(appendMessage)
       }
@@ -274,7 +318,7 @@
             body: JSON.stringify({ body: body })
           }
         )
-        var json = await res.json()
+        var json = await readJsonSafe(res)
         if (json.success) appendMessage(json.data)
       }
 
