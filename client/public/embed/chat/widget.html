@@ -150,10 +150,17 @@
           '<div class="hint">Missing instanceKey.</div>'
       }
 
+      function getApiOrigin() {
+        var fromHash = (cfg && cfg.apiOrigin) ? String(cfg.apiOrigin).trim() : ''
+        // Default: same-origin as the widget iframe (works when /embed/chat routes to API server).
+        return fromHash || location.origin
+      }
+
       function getBases() {
         // Primary (historical): APIs mounted at /embed/chat (same origin as widget iframe).
         // Fallback: some deployments only proxy /api/* to the Node server.
-        return [location.origin + '/embed/chat', location.origin + '/api/embed/chat']
+        var origin = getApiOrigin()
+        return [origin + '/embed/chat', origin + '/api/embed/chat']
       }
 
       var base = getBases()[0]
