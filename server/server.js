@@ -62,7 +62,9 @@ console.log(`🌐 Allowed CORS Origins: ${allowedOrigins.join(', ')}`);
 
 // 🚨 CRUCIAL: Configure Express to serve static files (like your CSS)
 // Assuming your final CSS is in a folder named 'public'
-// app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public')));
+// Also serve public assets under /api so Vite proxy can fetch them.
+app.use('/api', express.static(path.join(__dirname, 'public')));
 
 // ============================================
 // SECURITY MIDDLEWARE (Applied First)
@@ -216,6 +218,7 @@ const automationContextRoutes = require('./routes/automationContextRoutes');
 const trashRoutes = require('./routes/trashRoutes');
 const moduleRecordRoutes = require('./routes/moduleRecordRoutes');
 const caseRoutes = require('./routes/caseRoutes');
+const quoteRoutes = require('./routes/quoteRoutes');
 
 // Route Linking
 app.use('/api/auth', authRoutes);
@@ -247,6 +250,7 @@ app.use('/api/notification-preferences', notificationPreferenceRoutes);
 app.use('/api/notification-rules', notificationRuleRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/helpdesk/cases', caseRoutes);
+app.use('/api/quotes', quoteRoutes);
 app.use('/api/push', pushRoutes);
 app.use('/internal/notifications', notificationHealthRoutes); // Internal notification health endpoint
 app.use('/health', healthRoutes); // Public health check endpoint
@@ -269,6 +273,7 @@ app.use('/api/business-hours', require('./routes/businessHoursRoutes'));
 app.use('/api/public/forms', formRoutes); // Public form routes
 app.use('/api/public/book', require('./routes/publicBookingRoutes'));
 app.use('/api/public/appointments/manage', require('./routes/publicAppointmentManageRoutes'));
+app.use('/api/public/quotes', require('./routes/publicQuoteRoutes'));
 app.use('/api/public/mailroom', require('./routes/publicMailroomRoutes'));
 // Public embeddable live chat widget APIs (M6)
 app.use('/embed/chat', embedChatRoutes);
@@ -284,6 +289,7 @@ app.use('/api/appointments', require('./routes/appointmentRoutes'));
 app.use('/api/forms', formRoutes.protected); // Protected form routes
 app.use('/api/reports', reportRoutes);
 app.use('/api/items', itemRoutes);
+app.use('/api/catalog', require('./routes/catalogRoutes'));
 app.use('/api/trash', trashRoutes);
 app.use('/api/upload', uploadRoutes);
 

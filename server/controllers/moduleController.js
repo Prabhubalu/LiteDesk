@@ -17,6 +17,7 @@ const MODULE_APP_KEY_BY_KEY = Object.freeze({
     people: 'sales',
     organizations: 'sales',
     deals: 'sales',
+    quotes: 'sales',
     tasks: 'platform',
     events: 'platform',
     forms: 'platform',
@@ -635,9 +636,11 @@ function getFieldDataType(key, fieldName, path) {
         'item_code': 'Text',
         'item_type': 'Picklist',
         'category': 'Picklist',
+        'categoryId': 'Lookup (Relationship)',
         'subcategory': 'Picklist',
         'unit_of_measure': 'Picklist',
         'status': 'Picklist',
+        'lifecycle_state': 'Picklist',
         'description': 'Text-Area',
         'cost_price': 'Currency',
         'selling_price': 'Currency',
@@ -783,6 +786,7 @@ function getBaseFieldsForKey(key) {
             people: require('../models/People'),
             organizations: require('../models/Organization'),
             deals: require('../models/Deal'),
+            quotes: require('../models/Quote'),
             tasks: require('../models/Task'),
             cases: require('../models/Case'),
             events: require('../models/Event'),
@@ -858,6 +862,35 @@ function getBaseFieldsForKey(key) {
                     for (const excludedField of casesSchemaExcluded) {
                         if (name.startsWith(`${excludedField}.`)) return false;
                     }
+                }
+                if (key === 'quotes') {
+                    const quotesSchemaExcluded = new Set([
+                        'revisionNumber',
+                        'activeRevision',
+                        'sourceQuoteId',
+                        'quoteNumber',
+                        'sourceContext',
+                        'sourceRef',
+                        'subtotal',
+                        'lineDiscountTotal',
+                        'globalDiscountTotal',
+                        'taxTotal',
+                        'adjustmentTotal',
+                        'grandTotal',
+                        'approvalRequired',
+                        'approvalStatus',
+                        'approvalLocked',
+                        'sentToCustomer',
+                        'sentAt',
+                        'publicShareToken',
+                        'portalAccessEnabled',
+                        'converted',
+                        'conversionStatus',
+                        'customerId',
+                        'caseId',
+                        'customRecordId'
+                    ]);
+                    if (quotesSchemaExcluded.has(name)) return false;
                 }
                 // Exclude nested paths (e.g., "kpiMetrics.compliancePercentage" should be excluded if "kpiMetrics" is excluded)
                 for (const excludedField of excluded) {
@@ -963,6 +996,8 @@ function getBaseFieldsForKey(key) {
                             'Contact': 'people',
                             'Organization': 'organizations',
                             'Deal': 'deals',
+                            'Quote': 'quotes',
+                            'Case': 'cases',
                             'Task': 'tasks',
                             'Event': 'events',
                             'Form': 'forms',
@@ -988,6 +1023,8 @@ function getBaseFieldsForKey(key) {
                             'Contact': 'people',
                             'Organization': 'organizations',
                             'Deal': 'deals',
+                            'Quote': 'quotes',
+                            'Case': 'cases',
                             'Task': 'tasks',
                             'Event': 'events',
                             'Form': 'forms',
@@ -1261,14 +1298,15 @@ function getBaseFieldsForKey(key) {
                 
                 // Special handling for Items module - add dependencies based on item_type
                 if (key === 'items') {
-                    // Stock fields: Show for Product and Serialized Product, hide for Service and Non-Stock Product
+                    // Stock fields: legacy placeholders — hidden from catalog UI (C0)
                     if (name === 'stock_quantity' || name === 'reorder_level') {
+                        fieldVisibility = { list: false, detail: false };
                         dependencies = [{
-                            name: 'Show for stock-managed items',
+                            name: 'Legacy inventory placeholder (deprecated)',
                             type: 'visibility',
                             fieldKey: 'item_type',
-                            operator: 'in',
-                            value: ['Product', 'Serialized Product'],
+                            operator: 'equals',
+                            value: '__never__',
                             logic: 'AND'
                         }];
                     }
@@ -2113,6 +2151,7 @@ exports.listModules = async (req, res) => {
             { key: 'people', name: 'People' },
             { key: 'organizations', name: 'Organizations' },
             { key: 'deals', name: 'Deals' },
+            { key: 'quotes', name: 'Quotes' },
             { key: 'cases', name: 'Cases' },
             { key: 'tasks', name: 'Tasks' },
             { key: 'events', name: 'Events' },
@@ -2282,7 +2321,7 @@ exports.listModules = async (req, res) => {
         // Mongoose .lean() + select('+quickCreate') can still omit quickCreate on some documents; when undefined,
         // merge falls back to [] and listModules applies canonical defaults — Settings "saves" but reload shows defaults.
         // Overlay from native driver (same reliability as People raw merge above).
-        const orgQuickCreateRawKeys = new Set(['tasks', 'organizations', 'events', 'items', 'deals', 'cases', 'forms']);
+        const orgQuickCreateRawKeys = new Set(['tasks', 'organizations', 'events', 'items', 'deals', 'quotes', 'cases', 'forms']);
         for (const module of custom) {
             if (!module.organizationId) continue;
             const moduleKey = String(module.key || module.moduleKey || '').toLowerCase();
@@ -3011,7 +3050,7 @@ exports.listModules = async (req, res) => {
                 // If Items quickCreate is empty, apply canonical default
                 // See: client/src/platform/fields/itemFieldModel.ts getItemQuickCreateFields()
                 if (sys.key === 'items' && (!finalQuickCreate || finalQuickCreate.length === 0)) {
-                    finalQuickCreate = ['item_name', 'item_type', 'category', 'selling_price'];
+                    finalQuickCreate = ['item_name', 'item_type', 'categoryId', 'selling_price'];
                     console.log('📋 Items: Applying canonical default Quick Create:', finalQuickCreate);
                 }
                 // ARCHITECTURE NOTE: Deals Quick Create default: name, amount, stage, expectedCloseDate, ownerId
@@ -3340,12 +3379,24 @@ exports.listModules = async (req, res) => {
                 // Essential fields for fast item creation. Other fields (inventory, tax, relationships) excluded.
                 // See: client/src/platform/fields/itemFieldModel.ts getItemQuickCreateFields()
                 if (sys.key === 'items') {
-                    defaultQuickCreate = ['item_name', 'item_type', 'category', 'selling_price'];
+                    defaultQuickCreate = ['item_name', 'item_type', 'categoryId', 'selling_price'];
                 }
                 // ARCHITECTURE NOTE: Deals Quick Create default: name, amount, stage, expectedCloseDate, ownerId
                 // See: client/src/platform/fields/dealFieldModel.ts getDealQuickCreateFields()
                 if (sys.key === 'deals') {
                     defaultQuickCreate = ['name', 'amount', 'stage', 'expectedCloseDate', 'ownerId'];
+                }
+                if (sys.key === 'quotes') {
+                    defaultQuickCreate = [
+                        'quoteTitle',
+                        'quoteDate',
+                        'validUntil',
+                        'currency',
+                        'contactId',
+                        'organizationRefId',
+                        'dealId',
+                        'ownerId'
+                    ];
                 }
 
                 let taskFields = withOrder;
@@ -3417,6 +3468,7 @@ exports.listModules = async (req, res) => {
                 people: People,
                 organizations: Organization,
                 deals: Deal,
+                quotes: require('../models/Quote'),
                 cases: require('../models/Case'),
                 tasks: Task,
                 events: Event,

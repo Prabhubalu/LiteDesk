@@ -12,6 +12,15 @@ const {
     linkDeal,
     unlinkDeal
 } = require('../controllers/itemController');
+const {
+    getItemMedia,
+    addItemMedia,
+    patchItemMedia,
+    deleteItemMedia,
+    getItemVariants,
+    createItemVariant,
+    updateItemVariant
+} = require('../controllers/itemCatalogController');
 const { protect } = require('../middleware/authMiddleware');
 const { organizationIsolation, checkTrialStatus, checkFeatureAccess } = require('../middleware/organizationMiddleware');
 const { checkPermission, filterByOwnership } = require('../middleware/permissionMiddleware');
@@ -19,6 +28,7 @@ const { resolveAppContext } = require('../middleware/resolveAppContextMiddleware
 const { requireAppEntitlement } = require('../middleware/requireAppEntitlementMiddleware');
 const { lazySalesInitialization } = require('../middleware/lazySalesInitializationMiddleware');
 const { requireSalesApp } = require('../middleware/requireSalesAppMiddleware');
+const { uploadSingle } = require('../middleware/uploadMiddleware');
 
 const router = express.Router();
 
@@ -40,6 +50,17 @@ router.get('/low-stock', checkPermission('items', 'view'), getLowStockItems);
 
 // Items by type route (must come before /:id routes)
 router.get('/type/:type', checkPermission('items', 'view'), getItemsByType);
+
+// Catalog media (C1 — before /:id)
+router.get('/:id/media', checkPermission('items', 'view'), getItemMedia);
+router.post('/:id/media', checkPermission('items', 'edit'), uploadSingle('file'), addItemMedia);
+router.patch('/:id/media/:mediaId', checkPermission('items', 'edit'), patchItemMedia);
+router.delete('/:id/media/:mediaId', checkPermission('items', 'edit'), deleteItemMedia);
+
+// Catalog variants scaffold (C1)
+router.get('/:id/variants', checkPermission('items', 'view'), getItemVariants);
+router.post('/:id/variants', checkPermission('items', 'edit'), createItemVariant);
+router.put('/:id/variants/:variantId', checkPermission('items', 'edit'), updateItemVariant);
 
 // Routes that handle collections (GET all, POST new)
 router.route('/')

@@ -13,8 +13,9 @@ export default defineConfig(({ mode }) => {
   const posthogEnabled = Boolean(env.VITE_POSTHOG_KEY)
 
   // Prefer explicit origin. Fall back to legacy VITE_API_URL and normalize trailing /api.
-  // Default API port matches server default (PORT || 5000). Override with VITE_API_ORIGIN or VITE_API_URL.
-  const apiOriginRaw = env.VITE_API_ORIGIN || env.VITE_API_URL || 'http://localhost:5000'
+  // Default API port should match current server default.
+  // Override with VITE_API_ORIGIN or VITE_API_URL.
+  const apiOriginRaw = env.VITE_API_ORIGIN || env.VITE_API_URL || 'http://localhost:3000'
   const apiProxyTarget = apiOriginRaw.replace(/\/api\/?$/, '')
 
   return {

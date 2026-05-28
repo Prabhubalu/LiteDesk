@@ -222,6 +222,34 @@ const MODULE_DEFINITIONS = [
     }
   },
   {
+    moduleKey: 'quotes',
+    appKey: 'sales',
+    label: 'Quote',
+    pluralLabel: 'Quotes',
+    entityType: 'TRANSACTION',
+    primaryField: 'quoteTitle',
+    peopleConstraints: { allowedTypes: ['Contact'], required: false },
+    organizationConstraints: { required: false },
+    lifecycle: {
+      statusField: 'status',
+      allowedStatuses: [
+        'Draft',
+        'Pending Approval',
+        'Approved',
+        'Sent',
+        'Viewed',
+        'Accepted',
+        'Partially Accepted',
+        'Rejected',
+        'Expired',
+        'Cancelled',
+        'Converted'
+      ]
+    },
+    supports: { ownership: true, assignment: true, comments: true, attachments: true, automation: true },
+    permissions: { create: true, edit: true, delete: false, view: true }
+  },
+  {
     moduleKey: 'tasks',
     appKey: 'sales',
     label: 'Task',
