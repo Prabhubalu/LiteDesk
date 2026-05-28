@@ -266,15 +266,41 @@
 
       function openStream() {
         if (es) es.close()
-        var url =
-          base +
-          '/sessions/' +
-          encodeURIComponent(sessionId) +
-          '/stream?instanceKey=' +
-          encodeURIComponent(instanceKey) +
-          '&sessionSecret=' +
-          encodeURIComponent(sessionSecret)
-        es = new EventSource(url)
+        var bases = getBases()
+
+        function buildUrl(apiBase) {
+          return (
+            apiBase +
+            '/sessions/' +
+            encodeURIComponent(sessionId) +
+            '/stream?instanceKey=' +
+            encodeURIComponent(instanceKey) +
+            '&sessionSecret=' +
+            encodeURIComponent(sessionSecret)
+          )
+        }
+
+        var triedFallback = false
+        function connect(apiBase) {
+          var url = buildUrl(apiBase)
+          es = new EventSource(url)
+
+          // If the server returns HTML/404/etc, browsers fire `error` and abort the stream.
+          // Try the /api/embed/chat mount once as a fallback for deployments that only proxy /api/* to Node.
+          es.onerror = function () {
+            if (triedFallback) return
+            triedFallback = true
+            try {
+              es.close()
+            } catch (_) {}
+            var fallbackBase = apiBase === bases[0] ? bases[1] : bases[0]
+            base = fallbackBase
+            connect(fallbackBase)
+          }
+        }
+
+        // Prefer current `base`, but allow fallback if it fails.
+        connect(base || bases[0])
         es.addEventListener('messages', function (e) {
           try {
             var rows = JSON.parse(e.data || '[]')
