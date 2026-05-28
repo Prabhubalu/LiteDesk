@@ -642,7 +642,102 @@
           </div>
         </MailroomSection>
 
-        <MailroomSection :title="t('settings.mailroomCaseLinkTitle')" :description="t('settings.mailroomCaseLinkHelp')" step="3">
+        <MailroomSection :title="t('settings.mailroomClassificationTitle')" :description="t('settings.mailroomClassificationHelp')" step="3">
+          <div class="grid gap-4 sm:grid-cols-2 max-w-3xl mb-4">
+            <label class="block text-sm">
+              <span class="text-gray-700 dark:text-gray-300">{{ t('settings.mailroomClassificationApplyMode') }}</span>
+              <select
+                v-model="classificationForm.applyMode"
+                class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                @change="syncClassificationPolicy"
+              >
+                <option v-for="mode in MAILROOM_CLASSIFICATION_APPLY_MODES" :key="mode" :value="mode">
+                  {{ classificationApplyModeLabel(mode) }}
+                </option>
+              </select>
+            </label>
+            <label class="block text-sm">
+              <span class="text-gray-700 dark:text-gray-300">{{ t('settings.mailroomClassificationOnSpam') }}</span>
+              <select
+                v-model="classificationForm.onSpam"
+                class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                @change="syncClassificationPolicy"
+              >
+                <option v-for="action in MAILROOM_CLASSIFICATION_ON_SPAM" :key="action" :value="action">
+                  {{ classificationOnSpamLabel(action) }}
+                </option>
+              </select>
+            </label>
+            <label class="block text-sm sm:col-span-2">
+              <span class="text-gray-700 dark:text-gray-300">{{ t('settings.mailroomClassificationDefaultQueue') }}</span>
+              <input
+                v-model="classificationForm.defaultQueue"
+                type="text"
+                class="mt-1 w-full max-w-md rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                :placeholder="t('settings.mailroomClassificationDefaultQueuePlaceholder')"
+                @change="syncClassificationPolicy"
+              />
+            </label>
+          </div>
+
+          <p v-if="!classificationRules.length" class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+            {{ t('settings.mailroomClassificationEmpty') }}
+          </p>
+          <ul v-else class="space-y-3">
+            <li
+              v-for="(rule, index) in classificationRules"
+              :key="rule.id || index"
+              class="rounded-lg border border-gray-200 p-3 dark:border-gray-600 space-y-2"
+            >
+              <div class="flex flex-wrap items-center gap-2">
+                <input v-model="rule.enabled" type="checkbox" class="rounded border-gray-300 text-indigo-600" @change="syncClassificationPolicy" />
+                <input
+                  v-model="rule.name"
+                  type="text"
+                  class="flex-1 min-w-[8rem] rounded border border-gray-300 px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  :placeholder="t('settings.mailroomClassificationRuleNamePlaceholder')"
+                  @change="syncClassificationPolicy"
+                />
+                <button type="button" class="text-xs text-red-600 hover:underline" @click="removeClassificationRule(index)">
+                  {{ t('actions.delete') }}
+                </button>
+              </div>
+              <div class="grid gap-2 sm:grid-cols-3">
+                <select v-model="rule.field" class="rounded border border-gray-300 px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white" @change="syncClassificationPolicy">
+                  <option v-for="field in MAILROOM_CLASSIFICATION_FIELDS" :key="field" :value="field">{{ classificationFieldLabel(field) }}</option>
+                </select>
+                <select v-model="rule.operator" class="rounded border border-gray-300 px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white" @change="syncClassificationPolicy">
+                  <option v-for="op in MAILROOM_CLASSIFICATION_OPERATORS" :key="op" :value="op">{{ ingestOperatorLabel(op) }}</option>
+                </select>
+                <input v-model="rule.value" type="text" class="rounded border border-gray-300 px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white" @change="syncClassificationPolicy" />
+              </div>
+              <div class="grid gap-2 sm:grid-cols-3 text-sm">
+                <select v-model="rule.suggestCaseType" class="rounded border border-gray-300 px-2 py-1 dark:border-gray-600 dark:bg-gray-700 dark:text-white" @change="syncClassificationPolicy">
+                  <option value="">{{ t('settings.mailroomClassificationNoSuggestion') }}</option>
+                  <option v-for="ct in CASE_TYPES" :key="ct" :value="ct">{{ ct }}</option>
+                </select>
+                <select v-model="rule.suggestPriority" class="rounded border border-gray-300 px-2 py-1 dark:border-gray-600 dark:bg-gray-700 dark:text-white" @change="syncClassificationPolicy">
+                  <option value="">{{ t('settings.mailroomClassificationNoSuggestion') }}</option>
+                  <option v-for="p in CASE_PRIORITIES" :key="p" :value="p">{{ p }}</option>
+                </select>
+                <input v-model="rule.suggestQueue" type="text" :placeholder="t('settings.mailroomClassificationQueuePlaceholder')" class="rounded border border-gray-300 px-2 py-1 dark:border-gray-600 dark:bg-gray-700 dark:text-white" @change="syncClassificationPolicy" />
+              </div>
+              <label class="flex items-center gap-2 text-sm">
+                <input v-model="rule.markSpam" type="checkbox" class="rounded border-gray-300 text-indigo-600" @change="syncClassificationPolicy" />
+                {{ t('settings.mailroomClassificationMarkSpam') }}
+              </label>
+            </li>
+          </ul>
+          <button
+            type="button"
+            class="mt-3 rounded-lg border border-dashed border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700/50"
+            @click="addClassificationRule"
+          >
+            {{ t('settings.mailroomClassificationAddRule') }}
+          </button>
+        </MailroomSection>
+
+        <MailroomSection :title="t('settings.mailroomCaseLinkTitle')" :description="t('settings.mailroomCaseLinkHelp')" step="4">
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.mailroomCaseLinkOpenMatch') }}</label>
@@ -701,6 +796,62 @@
 
       <!-- Monitoring -->
       <template v-else-if="activeTab === 'monitoring'">
+        <MailroomSection :title="t('settings.mailroomMetricsTitle')" :description="t('settings.mailroomMetricsHelp')">
+          <div v-if="mailroomMetrics" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-sm">
+            <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+              <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.mailroomMetricMessages24h') }}</p>
+              <p class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">{{ mailroomMetrics.tenant?.messagesLast24h ?? 0 }}</p>
+            </div>
+            <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+              <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.mailroomMetricOpenFailures') }}</p>
+              <p class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">{{ mailroomMetrics.tenant?.openProcessingFailures ?? 0 }}</p>
+            </div>
+            <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+              <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.mailroomMetricDuplicateRate') }}</p>
+              <p class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">{{ mailroomMetrics.runtime?.duplicateRatePercent ?? 0 }}%</p>
+            </div>
+            <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+              <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.mailroomMetricQueueFailed') }}</p>
+              <p class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">{{ mailroomMetrics.queue?.inboundEmail?.failed ?? 0 }}</p>
+            </div>
+          </div>
+          <p v-else class="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">{{ t('settings.mailroomMetricsEmpty') }}</p>
+        </MailroomSection>
+
+        <MailroomSection :title="t('settings.mailroomSecurityTitle')" :description="t('settings.mailroomSecurityHelp')">
+          <div class="grid gap-4 sm:grid-cols-2 text-sm">
+            <label class="block">
+              <span class="text-gray-700 dark:text-gray-300">{{ t('settings.mailroomSecurityEmailOnFailure') }}</span>
+              <select
+                v-model="form.security.email.onFailure"
+                class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+              >
+                <option value="monitor">{{ t('settings.mailroomSecurityModeMonitor') }}</option>
+                <option value="quarantine">{{ t('settings.mailroomSecurityModeQuarantine') }}</option>
+                <option value="reject">{{ t('settings.mailroomSecurityModeReject') }}</option>
+              </select>
+            </label>
+            <div class="space-y-2">
+              <label class="flex items-center gap-2">
+                <input v-model="form.security.email.requireSpf" type="checkbox" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                <span>{{ t('settings.mailroomSecurityRequireSpf') }}</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input v-model="form.security.email.requireDkim" type="checkbox" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                <span>{{ t('settings.mailroomSecurityRequireDkim') }}</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input v-model="form.security.email.requireDmarc" type="checkbox" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                <span>{{ t('settings.mailroomSecurityRequireDmarc') }}</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input v-model="form.security.attachments.scanEnabled" type="checkbox" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                <span>{{ t('settings.mailroomSecurityAttachmentScan') }}</span>
+              </label>
+            </div>
+          </div>
+        </MailroomSection>
+
         <MailroomSection :title="t('settings.mailroomFailuresTitle')" :description="t('settings.mailroomFailuresHelp')">
           <p v-if="!processingFailures.length" class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center">
             {{ t('settings.mailroomFailuresEmpty') }}
@@ -748,6 +899,22 @@
               <p class="text-xs text-gray-500 dark:text-gray-400">
                 {{ formatLogTime(log.createdAt) }}
                 <span v-if="log.conversationId"> · conv {{ String(log.conversationId).slice(-6) }}</span>
+              </p>
+            </li>
+          </ul>
+        </MailroomSection>
+
+        <MailroomSection :title="t('settings.mailroomRoutingLogsTitle')" :description="t('settings.mailroomRoutingLogsHelp')">
+          <p v-if="!routingLogs.length" class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center">
+            {{ t('settings.mailroomRoutingLogsEmpty') }}
+          </p>
+          <ul v-else class="divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+            <li v-for="log in routingLogs" :key="log._id" class="py-3 space-y-1">
+              <p class="font-medium text-gray-900 dark:text-white">{{ log.adapterAction || '—' }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                {{ formatLogTime(log.createdAt) }}
+                <span v-if="log.channel"> · {{ log.channel }}</span>
+                <span v-if="log.durationMs"> · {{ log.durationMs }}ms</span>
               </p>
             </li>
           </ul>
@@ -815,7 +982,14 @@ import {
   MAILROOM_INGEST_FIELDS,
   MAILROOM_INGEST_FIELD_LABEL_KEYS,
   MAILROOM_INGEST_OPERATORS,
-  MAILROOM_INGEST_OPERATOR_LABEL_KEYS
+  MAILROOM_INGEST_OPERATOR_LABEL_KEYS,
+  MAILROOM_CLASSIFICATION_FIELDS,
+  MAILROOM_CLASSIFICATION_OPERATORS,
+  MAILROOM_CLASSIFICATION_APPLY_MODES,
+  MAILROOM_CLASSIFICATION_ON_SPAM,
+  MAILROOM_CLASSIFICATION_FIELD_LABEL_KEYS,
+  MAILROOM_CLASSIFICATION_APPLY_MODE_LABEL_KEYS,
+  MAILROOM_CLASSIFICATION_ON_SPAM_LABEL_KEYS
 } from '@/constants/mailroomPolicies';
 
 const MAILROOM_TAB_KEY = 'arivu-mailroom-settings-tab';
@@ -862,6 +1036,8 @@ const loadError = ref('');
 const templates = ref([]);
 const threadingLogs = ref([]);
 const processingFailures = ref([]);
+const routingLogs = ref([]);
+const mailroomMetrics = ref(null);
 const replayingId = ref('');
 const activeTab = ref(localStorage.getItem(MAILROOM_TAB_KEY) || 'overview');
 const chatEmbedKey = ref('');
@@ -873,8 +1049,34 @@ const form = ref({
   enabled: false,
   activeTemplateId: 'helpdesk_standard_email',
   policies: {},
-  connectors: {}
+  connectors: {},
+  security: defaultSecurity()
 });
+
+function defaultSecurity() {
+  return {
+    email: {
+      enabled: true,
+      requireSpf: false,
+      requireDkim: false,
+      requireDmarc: false,
+      onFailure: 'monitor'
+    },
+    attachments: {
+      scanEnabled: false,
+      onInfected: 'block'
+    }
+  };
+}
+
+function mergeSecurityFromApi(raw) {
+  const base = defaultSecurity();
+  if (!raw || typeof raw !== 'object') return base;
+  return {
+    email: { ...base.email, ...(raw.email || {}) },
+    attachments: { ...base.attachments, ...(raw.attachments || {}) }
+  };
+}
 const selectedTemplateId = ref('helpdesk_standard_email');
 const evaluateResult = ref('');
 const threadingStrategies = ref([]);
@@ -982,6 +1184,12 @@ const portalPartnerMimeText = computed({
 });
 
 const dedupForm = reactive({ onDuplicate: 'append_to_existing_open_case' });
+const classificationForm = reactive({
+  applyMode: 'auto_apply',
+  onSpam: 'ignore',
+  defaultQueue: ''
+});
+const classificationRules = ref([]);
 const caseLinkForm = reactive({
   onOpenCaseMatch: { action: 'append' },
   onResolvedWithinDays: { enabled: true, days: 7, action: 'reopen' },
@@ -1059,6 +1267,21 @@ function ingestOperatorLabel(operator) {
   return key ? t(key) : operator;
 }
 
+function classificationFieldLabel(field) {
+  const key = MAILROOM_CLASSIFICATION_FIELD_LABEL_KEYS[field];
+  return key ? t(key) : field;
+}
+
+function classificationApplyModeLabel(mode) {
+  const key = MAILROOM_CLASSIFICATION_APPLY_MODE_LABEL_KEYS[mode];
+  return key ? t(key) : mode;
+}
+
+function classificationOnSpamLabel(action) {
+  const key = MAILROOM_CLASSIFICATION_ON_SPAM_LABEL_KEYS[action];
+  return key ? t(key) : action;
+}
+
 function signalLabel(signal) {
   const key = SIGNAL_LABEL_KEYS[signal];
   return key ? t(key) : signal || '—';
@@ -1082,6 +1305,70 @@ function hydrateThreadingStrategies() {
   threadingStrategies.value = Array.isArray(strategies)
     ? strategies.map((s) => ({ ...s, enabled: s.enabled !== false }))
     : [];
+}
+
+function hydrateClassificationPolicy() {
+  const cls = form.value.policies?.classification || {};
+  classificationForm.applyMode = cls.applyMode || 'auto_apply';
+  classificationForm.onSpam = cls.onSpam || 'ignore';
+  classificationForm.defaultQueue = cls.defaultQueue || '';
+  const rules = Array.isArray(cls.rules) ? cls.rules : [];
+  classificationRules.value = rules.map((rule, index) => ({
+    id: rule.id || `cls-${index + 1}`,
+    name: rule.name || '',
+    enabled: rule.enabled !== false,
+    field: rule.field || 'subject',
+    operator: rule.operator || 'contains',
+    value: rule.value || '',
+    suggestCaseType: rule.suggestCaseType || '',
+    suggestPriority: rule.suggestPriority || '',
+    suggestQueue: rule.suggestQueue || '',
+    markSpam: rule.markSpam === true
+  }));
+}
+
+function syncClassificationPolicy() {
+  if (!form.value.policies) form.value.policies = {};
+  form.value.policies.classification = {
+    rules: classificationRules.value
+      .filter((rule) => String(rule.value || '').trim() || rule.markSpam)
+      .map((rule, index) => ({
+        id: rule.id || `cls-${index + 1}`,
+        name: String(rule.name || '').trim(),
+        enabled: rule.enabled !== false,
+        field: rule.field || 'subject',
+        operator: rule.operator || 'contains',
+        value: String(rule.value || '').trim(),
+        suggestCaseType: rule.suggestCaseType || null,
+        suggestPriority: rule.suggestPriority || null,
+        suggestQueue: rule.suggestQueue ? String(rule.suggestQueue).trim() : null,
+        markSpam: rule.markSpam === true
+      })),
+    defaultQueue: String(classificationForm.defaultQueue || '').trim() || null,
+    applyMode: classificationForm.applyMode || 'auto_apply',
+    onSpam: classificationForm.onSpam || 'ignore',
+    stopOnFirstMatch: true
+  };
+}
+
+function addClassificationRule() {
+  classificationRules.value.push({
+    id: `cls-${Date.now()}`,
+    name: '',
+    enabled: true,
+    field: 'subject',
+    operator: 'contains',
+    value: '',
+    suggestCaseType: '',
+    suggestPriority: '',
+    suggestQueue: '',
+    markSpam: false
+  });
+}
+
+function removeClassificationRule(index) {
+  classificationRules.value.splice(index, 1);
+  syncClassificationPolicy();
 }
 
 function hydrateDedupAndCaseLink() {
@@ -1170,6 +1457,7 @@ function syncAllPolicies() {
   syncIngestPolicy();
   syncThreadingStrategies();
   syncDedupPolicy();
+  syncClassificationPolicy();
   syncCaseLinkPolicy();
 }
 
@@ -1233,6 +1521,24 @@ async function loadThreadingLogs() {
   }
 }
 
+async function loadMailroomMetrics() {
+  try {
+    const res = await apiClient.get('/settings/automation/mailroom/metrics');
+    if (res.success) mailroomMetrics.value = res.data;
+  } catch {
+    mailroomMetrics.value = null;
+  }
+}
+
+async function loadRoutingLogs() {
+  try {
+    const res = await apiClient.get('/settings/automation/mailroom/routing-logs?limit=20');
+    if (res.success) routingLogs.value = Array.isArray(res.data) ? res.data : [];
+  } catch {
+    routingLogs.value = [];
+  }
+}
+
 async function loadProcessingFailures() {
   try {
     const res = await apiClient.get('/settings/automation/mailroom/failures?limit=15&status=open');
@@ -1289,14 +1595,21 @@ async function load() {
         },
         portal: mergePortalConnectorFromApi(res.data?.connectors?.portal),
         chat: { enabled: res.data?.connectors?.chat?.enabled === true }
-      }
+      },
+      security: mergeSecurityFromApi(res.data?.security)
     };
     ensurePortalConnector();
     selectedTemplateId.value = form.value.activeTemplateId;
     hydrateThreadingStrategies();
     hydrateIngestPolicy();
     hydrateDedupAndCaseLink();
-    await Promise.all([loadThreadingLogs(), loadProcessingFailures()]);
+    hydrateClassificationPolicy();
+    await Promise.all([
+      loadThreadingLogs(),
+      loadProcessingFailures(),
+      loadRoutingLogs(),
+      loadMailroomMetrics()
+    ]);
   } catch (e) {
     loadError.value = e.message || t('settings.mailroomLoadFailed');
   } finally {
@@ -1334,6 +1647,7 @@ async function save() {
       activeTemplateId: selectedTemplateId.value,
       policies: form.value.policies,
       connectors: form.value.connectors,
+      security: form.value.security,
       embedChatConfig: embedChatConfig.value
     };
     if (selectedTemplateId.value !== form.value.activeTemplateId) {
@@ -1357,6 +1671,16 @@ async function save() {
     hydrateThreadingStrategies();
     hydrateIngestPolicy();
     hydrateDedupAndCaseLink();
+    hydrateClassificationPolicy();
+    if (res.data?.security) {
+      form.value.security = mergeSecurityFromApi(res.data.security);
+    }
+    await Promise.all([
+      loadThreadingLogs(),
+      loadProcessingFailures(),
+      loadRoutingLogs(),
+      loadMailroomMetrics()
+    ]);
     notifications.success(t('settings.mailroomSaved'));
   } catch (e) {
     notifications.error(e.message || t('settings.mailroomSaveFailed'));

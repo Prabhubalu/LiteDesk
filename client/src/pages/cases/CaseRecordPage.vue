@@ -108,7 +108,10 @@
               :empty-activity-message="t('cases.recordEmptyActivityMessage')"
               :empty-notes-title="t('cases.recordEmptyNotesTitle')"
               :empty-notes-message="t('cases.recordEmptyNotesMessage')"
-              :notes-placeholder="t('cases.recordNotesPlaceholder')"
+              :notes-placeholder="t('cases.recordInternalCommentPlaceholder')"
+              :contact-email="contactEmail"
+              :email-threads="emailThreads"
+              :email-threads-loading="emailThreadsLoading"
               @status-change="onStatusSelect"
               @priority-change="updatePriority"
               @edit-record="openEditDrawer"
@@ -119,6 +122,7 @@
               @chat-updated="fetchCase"
               @typing="onTyping"
               @send-message="onSendMessage"
+              @send-email="onSendEmail"
               @send-note="onSendNote"
               @open-record="openRelatedRecord"
               @link-task="openLinkTaskDrawer"
@@ -226,7 +230,10 @@
             :empty-activity-message="t('cases.recordEmptyActivityMessage')"
             :empty-notes-title="t('cases.recordEmptyNotesTitle')"
             :empty-notes-message="t('cases.recordEmptyNotesMessage')"
-            :notes-placeholder="t('cases.recordNotesPlaceholder')"
+            :notes-placeholder="t('cases.recordInternalCommentPlaceholder')"
+            :contact-email="contactEmail"
+            :email-threads="emailThreads"
+            :email-threads-loading="emailThreadsLoading"
             @status-change="onStatusSelect"
             @priority-change="updatePriority"
             @edit-record="openEditDrawer"
@@ -237,6 +244,7 @@
             @chat-updated="fetchCase"
             @typing="onTyping"
             @send-message="onSendMessage"
+            @send-email="onSendEmail"
             @send-note="onSendNote"
             @open-record="openRelatedRecord"
             @link-task="openLinkTaskDrawer"
@@ -482,11 +490,14 @@ const {
   isClosed,
   priorities,
   fetchCase,
+  loadEmailThreads,
   updateStatus,
   updatePriority,
   postActivity,
   reopenCase,
-  deleteCase
+  deleteCase,
+  emailThreads,
+  emailThreadsLoading
 } = useCaseRecord(effectiveCaseId);
 
 const {
@@ -577,9 +588,43 @@ async function onStatusSelect(status) {
   await changeCaseStatus(status);
 }
 
+async function onSendEmail(payload) {
+  if (!payload?.relatedTo?.recordId) return;
+  sending.value = true;
+  try {
+    const res = await apiClient.post('/communications/email', payload);
+    if (res?.success) {
+      notifications.success(t('records.genericEmailSent'));
+      await fetchCase();
+      await loadEmailThreads();
+      mainWorkspaceRef.value?.clearReplyComposer?.();
+    } else {
+      notifications.error(res?.message || t('records.genericEmailSendFailed'));
+    }
+  } catch (err) {
+    const msg = err.response?.data?.error || err.response?.data?.message || err.message;
+    notifications.error(msg || t('records.genericEmailSendFailed'));
+  } finally {
+    sending.value = false;
+  }
+}
+
 async function onSendMessage(payload) {
   const channel = String(caseRecord.value?.channel || '').toLowerCase();
   const isLiveChat = channel === 'live chat';
+  const isEmail = channel === 'email';
+  if (isEmail && payload.internal) {
+    const ok = await postActivity({
+      ...payload,
+      activityType: 'comment',
+      internal: true
+    });
+    if (ok) mainWorkspaceRef.value?.clearReplyComposer?.();
+    return;
+  }
+  if (isEmail && !payload.internal) {
+    return;
+  }
   if (isLiveChat && !payload.internal) {
     // For live chat cases, replies go to the chat stream (and are mirrored into the case timeline server-side).
     const body = String(payload.message || '').trim();
@@ -619,12 +664,13 @@ async function onTyping(payload) {
 }
 
 async function onSendNote(payload) {
-  await postActivity({
+  const ok = await postActivity({
     message: payload.message,
     channel: payload.channel,
     internal: true,
     activityType: 'comment'
   });
+  if (ok) mainWorkspaceRef.value?.clearReplyComposer?.();
 }
 
 async function handleReopenCase() {

@@ -46,6 +46,18 @@ const MailroomMessageSchema = new Schema(
 );
 
 MailroomMessageSchema.index({ organizationId: 1, externalMessageId: 1 });
+MailroomMessageSchema.index({ organizationId: 1, linkedCaseId: 1, receivedAt: 1 });
+MailroomMessageSchema.index(
+  {
+    subject: 'text',
+    body: 'text',
+    externalMessageId: 'text'
+  },
+  {
+    name: 'mailroom_message_text',
+    weights: { subject: 5, externalMessageId: 3, body: 1 }
+  }
+);
 
 module.exports = wrapTenantModel(
   mongoose.models.MailroomMessage

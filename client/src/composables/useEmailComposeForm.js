@@ -77,9 +77,19 @@ export function useEmailComposeForm(props, emit) {
 
   const isReply = computed(() => Boolean(props.initialDraft?.parentCommunicationId));
 
-  watch(() => props.initialTo, (val) => {
-    form.value.to = val || '';
-  }, { immediate: true });
+  watch(
+    () => props.initialTo,
+    (val) => {
+      const next = String(val || '').trim();
+      if (!next) return;
+      if (props.alwaysActive) {
+        if (!String(form.value.to || '').trim()) form.value.to = next;
+        return;
+      }
+      form.value.to = next;
+    },
+    { immediate: true }
+  );
 
   async function loadTemplates() {
     try {
@@ -179,20 +189,59 @@ export function useEmailComposeForm(props, emit) {
     replyToNote.value = '';
   }
 
-  watch(() => props.isOpen, (open) => {
-    if (open) {
-      resetFormFromProps();
-      loadTemplates();
-      void loadComposePreview();
-    } else {
+  const isComposeActive = computed(() => Boolean(props.alwaysActive || props.isOpen));
+
+  function activateComposeForm() {
+    resetFormFromProps();
+    loadTemplates();
+    void loadComposePreview();
+  }
+
+  watch(isComposeActive, (active) => {
+    if (active) {
+      activateComposeForm();
+    } else if (!props.alwaysActive) {
       clearPreviewFields();
     }
   }, { immediate: true });
 
+  /** Inline composers: merge addressing fields only — never wipe body while TipTap is mounted. */
+  function mergeDraftFromProps() {
+    const draft = props.initialDraft || {};
+    form.value.to = draft.to || props.initialTo || form.value.to || '';
+    form.value.cc = draft.cc ?? form.value.cc ?? '';
+    form.value.bcc = draft.bcc ?? form.value.bcc ?? '';
+    if (draft.subject) form.value.subject = draft.subject;
+    if ((draft.cc || '').trim()) showCc.value = true;
+    if ((draft.bcc || '').trim()) showBcc.value = true;
+  }
+
+  watch(
+    () => props.relatedTo?.recordId,
+    (recordId, prevId) => {
+      if (!isComposeActive.value || !recordId || recordId === prevId) return;
+      resetFormFromProps();
+      void loadComposePreview();
+    }
+  );
+
+  watch(
+    () => props.initialTo,
+    (to) => {
+      if (!isComposeActive.value || props.alwaysActive) return;
+      if (to) form.value.to = to;
+    }
+  );
+
   watch(
     () => props.initialDraft,
     () => {
-      if (props.isOpen) resetFormFromProps();
+      if (!isComposeActive.value) return;
+      if (props.alwaysActive) {
+        mergeDraftFromProps();
+        return;
+      }
+      resetFormFromProps();
     },
     { deep: true }
   );
@@ -238,6 +287,13 @@ export function useEmailComposeForm(props, emit) {
 
   function removeAttachment(idx) {
     attachments.value.splice(idx, 1);
+  }
+
+  function clearAfterSend() {
+    form.value.body = '';
+    attachments.value = [];
+    selectedTemplateId.value = '';
+    error.value = null;
   }
 
   function handleSend() {
@@ -316,6 +372,8 @@ export function useEmailComposeForm(props, emit) {
     close,
     handleFileSelect,
     removeAttachment,
-    handleSend
+    handleSend,
+    clearAfterSend,
+    activateComposeForm
   };
 }

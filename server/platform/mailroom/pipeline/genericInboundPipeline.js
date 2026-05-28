@@ -10,6 +10,8 @@ const {
   publishMailroomProcessingEvents,
   publishProcessingFailedEvent
 } = require('../events/publisher');
+const { runInstrumentedPipeline } = require('./pipelineInstrumentation');
+const { resolveMailroomIngestActionType } = require('./ingestActionResolver');
 
 async function runMailroomGenericCore({
   organizationId,
@@ -23,7 +25,15 @@ async function runMailroomGenericCore({
       message: normalizedMessage,
       policies: policies || {}
     });
-    const ingestActionType = ingestEvaluation?.action?.type || 'route_to_case_flow';
+    const classificationPreview = evaluate('classification', {
+      message: normalizedMessage,
+      policies: policies || {}
+    });
+    const ingestActionType = resolveMailroomIngestActionType(
+      ingestEvaluation,
+      classificationPreview,
+      policies?.classification || {}
+    );
 
     if (ingestActionType === 'ignore') {
       return {
@@ -37,8 +47,10 @@ async function runMailroomGenericCore({
         },
         caseResult: {
           executed: false,
-          action: 'ignored_by_ingest_policy',
-          reason: 'ingest_ignore',
+          action: classificationPreview?.suggestions?.spam
+            ? 'ignored_by_classification_spam'
+            : 'ignored_by_ingest_policy',
+          reason: classificationPreview?.suggestions?.spam ? 'classification_spam' : 'ingest_ignore',
           caseId: null
         },
         conversationResult: null,
@@ -53,7 +65,8 @@ async function runMailroomGenericCore({
     const policyEvaluation = evaluatePipeline({
       message: normalizedMessage,
       candidates,
-      policies: policies || {}
+      policies: policies || {},
+      ingestEvaluation
     });
     policyEvaluation.ingest = ingestEvaluation;
 
@@ -209,12 +222,20 @@ async function processNormalizedInboundThroughMailroom({
       }
     });
 
-    const result = await runMailroomGenericCore({
+    const result = await runInstrumentedPipeline({
       organizationId,
-      normalizedMessage,
+      channel: normalizedMessage.channel || connectorType,
+      connectorType,
       rawPayloadId,
-      policies: config.policies || {},
-      connectorType
+      normalizedMessage,
+      runCore: () =>
+        runMailroomGenericCore({
+          organizationId,
+          normalizedMessage,
+          rawPayloadId,
+          policies: config.policies || {},
+          connectorType
+        })
     });
 
     if (rawPayloadId) {

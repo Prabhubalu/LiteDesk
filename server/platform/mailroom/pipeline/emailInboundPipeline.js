@@ -18,6 +18,9 @@ const {
   recordProcessingFailure,
   markFailureResolved
 } = require('../services/processingFailureService');
+const { applyInboundEmailSecurity } = require('../security/emailAuthValidator');
+const { runInstrumentedPipeline } = require('./pipelineInstrumentation');
+const { resolveMailroomIngestActionType } = require('./ingestActionResolver');
 
 async function linkCommunicationToCaseActivities(organizationId, caseId, communicationId) {
   if (!caseId || !communicationId) return;
@@ -43,14 +46,29 @@ async function runMailroomEmailCore({
   normalizedMessage,
   rawPayloadId,
   policies,
-  legacyHandler
+  legacyHandler,
+  forceIngestAction = null
 }) {
   const runStages = async () => {
-    const ingestEvaluation = evaluate('ingest', {
+    const ingestEvaluation = forceIngestAction
+      ? {
+        matched: true,
+        action: { type: forceIngestAction },
+        trace: ['forced_by_email_auth_policy']
+      }
+      : evaluate('ingest', {
+        message: normalizedMessage,
+        policies: policies || {}
+      });
+    const classificationPreview = evaluate('classification', {
       message: normalizedMessage,
       policies: policies || {}
     });
-    const ingestActionType = ingestEvaluation?.action?.type || 'route_to_case_flow';
+    let ingestActionType = resolveMailroomIngestActionType(
+      ingestEvaluation,
+      classificationPreview,
+      policies?.classification || {}
+    );
 
     if (ingestActionType === 'ignore') {
       return {
@@ -64,8 +82,10 @@ async function runMailroomEmailCore({
         },
         caseResult: {
           executed: false,
-          action: 'ignored_by_ingest_policy',
-          reason: 'ingest_ignore',
+          action: classificationPreview?.suggestions?.spam
+            ? 'ignored_by_classification_spam'
+            : 'ignored_by_ingest_policy',
+          reason: classificationPreview?.suggestions?.spam ? 'classification_spam' : 'ingest_ignore',
           caseId: null
         },
         legacyResult: null,
@@ -78,7 +98,8 @@ async function runMailroomEmailCore({
     const policyEvaluation = evaluatePipeline({
       message: normalizedMessage,
       candidates,
-      policies: policies || {}
+      policies: policies || {},
+      ingestEvaluation
     });
     policyEvaluation.ingest = ingestEvaluation;
 
@@ -279,19 +300,35 @@ async function processRawMimeThroughMailroom({
 
     const config = await getOrCreateConfig(organizationId);
     policies = config.policies || {};
-    const core = await runMailroomEmailCore({
-      organizationId,
+    const secured = applyInboundEmailSecurity({
+      rawMime: rawBuffer,
       normalizedMessage: normalized,
+      securityConfig: config.security || {}
+    });
+    normalized = secured.normalizedMessage;
+
+    const core = await runInstrumentedPipeline({
+      organizationId,
+      channel: 'email',
+      connectorType: 'raw_mime_webhook',
       rawPayloadId: rawPayload._id,
-      policies,
-      legacyHandler: (caseResult) =>
-        processRawInbound({
-          rawMime: rawBuffer,
-          headerOrganizationId: organizationId,
-          source,
-          mailroomPrelinkedCase: caseResult?.caseId
-            ? { caseId: caseResult.caseId, action: caseResult.action }
-            : null
+      normalizedMessage: normalized,
+      runCore: () =>
+        runMailroomEmailCore({
+          organizationId,
+          normalizedMessage: normalized,
+          rawPayloadId: rawPayload._id,
+          policies,
+          forceIngestAction: secured.forceIngestAction,
+          legacyHandler: (caseResult) =>
+            processRawInbound({
+              rawMime: rawBuffer,
+              headerOrganizationId: organizationId,
+              source,
+              mailroomPrelinkedCase: caseResult?.caseId
+                ? { caseId: caseResult.caseId, action: caseResult.action }
+                : null
+            })
         })
     });
 
@@ -391,12 +428,20 @@ async function processParserEventThroughMailroom(eventDoc, {
 
     const config = await getOrCreateConfig(organizationId);
     policies = config.policies || {};
-    const core = await runMailroomEmailCore({
+    const core = await runInstrumentedPipeline({
       organizationId,
-      normalizedMessage: normalized,
+      channel: 'email',
+      connectorType: 'arivu_parser',
       rawPayloadId: rawPayload._id,
-      policies,
-      legacyHandler: (caseResult, executionHints = {}) => processLegacy(caseResult, executionHints)
+      normalizedMessage: normalized,
+      runCore: () =>
+        runMailroomEmailCore({
+          organizationId,
+          normalizedMessage: normalized,
+          rawPayloadId: rawPayload._id,
+          policies,
+          legacyHandler: (caseResult, executionHints = {}) => processLegacy(caseResult, executionHints)
+        })
     });
 
     await markRawPayloadProcessed(rawPayload._id, {

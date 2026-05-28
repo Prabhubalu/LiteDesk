@@ -171,6 +171,7 @@ async function replayRawPayload(organizationId, rawPayloadId) {
       }
     }
 
+    await markFailureResolved(rawPayloadId);
     return { success: true, result };
   } catch (error) {
     await recordProcessingFailure({

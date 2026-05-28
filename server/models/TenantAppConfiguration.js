@@ -53,7 +53,18 @@ const TenantAppConfigurationSchema = new mongoose.Schema({
     featureToggles: {
       type: mongoose.Schema.Types.Mixed, // Object with key-value pairs
       default: null
-    }
+    },
+    /** Helpdesk SLA, channel rules, canned responses/macros, etc. */
+    helpdeskExecution: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null
+    },
+    // Backward-compatible flat mirrors (legacy readers)
+    slaPriorityTargets: { type: mongoose.Schema.Types.Mixed, default: null },
+    businessHours: { type: mongoose.Schema.Types.Mixed, default: null },
+    slaPolicies: { type: mongoose.Schema.Types.Mixed, default: null },
+    defaultSlaPolicyKey: { type: String, default: null },
+    channelRules: { type: mongoose.Schema.Types.Mixed, default: null }
   },
 
   createdAt: {

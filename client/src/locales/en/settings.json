@@ -536,7 +536,7 @@
     "description": "Processing tab banner title"
   },
   "mailroomProcessingOrderHelp": {
-    "message": "Threading, duplicate detection, and case linking run in sequence after ingest routing decides the message should enter the case flow.",
+    "message": "After ingest routing: threading → duplicate detection → classification → case linking. Classification can auto-set type, priority, queue, or drop spam.",
     "description": "Processing tab banner help"
   },
   "mailroomSaveBarHint": {
@@ -651,6 +651,86 @@
     "message": "No match",
     "description": "Threading log no match label"
   },
+  "mailroomMetricsTitle": {
+    "message": "Pipeline metrics",
+    "description": "Mailroom M7 metrics section title"
+  },
+  "mailroomMetricsHelp": {
+    "message": "24-hour ingest volume, open failures, duplicate rate, and inbound email queue depth.",
+    "description": "Mailroom metrics section help"
+  },
+  "mailroomMetricsEmpty": {
+    "message": "Metrics unavailable.",
+    "description": "Empty mailroom metrics state"
+  },
+  "mailroomMetricMessages24h": {
+    "message": "Messages (24h)",
+    "description": "Mailroom metric label"
+  },
+  "mailroomMetricOpenFailures": {
+    "message": "Open failures",
+    "description": "Mailroom metric label"
+  },
+  "mailroomMetricDuplicateRate": {
+    "message": "Duplicate rate",
+    "description": "Mailroom metric label"
+  },
+  "mailroomMetricQueueFailed": {
+    "message": "Inbound queue failed",
+    "description": "Mailroom metric label"
+  },
+  "mailroomSecurityTitle": {
+    "message": "Inbound security",
+    "description": "Mailroom security section title"
+  },
+  "mailroomSecurityHelp": {
+    "message": "SPF/DKIM/DMARC from Authentication-Results headers. Malware scan uses a webhook when enabled.",
+    "description": "Mailroom security section help"
+  },
+  "mailroomSecurityEmailOnFailure": {
+    "message": "When authentication fails",
+    "description": "Email auth failure policy label"
+  },
+  "mailroomSecurityModeMonitor": {
+    "message": "Monitor only",
+    "description": "Security mode monitor"
+  },
+  "mailroomSecurityModeQuarantine": {
+    "message": "Quarantine (manual review)",
+    "description": "Security mode quarantine"
+  },
+  "mailroomSecurityModeReject": {
+    "message": "Reject message",
+    "description": "Security mode reject"
+  },
+  "mailroomSecurityRequireSpf": {
+    "message": "Require SPF pass",
+    "description": "Require SPF checkbox"
+  },
+  "mailroomSecurityRequireDkim": {
+    "message": "Require DKIM pass",
+    "description": "Require DKIM checkbox"
+  },
+  "mailroomSecurityRequireDmarc": {
+    "message": "Require DMARC pass",
+    "description": "Require DMARC checkbox"
+  },
+  "mailroomSecurityAttachmentScan": {
+    "message": "Scan attachments on upload",
+    "description": "Attachment scan toggle"
+  },
+  "mailroomRoutingLogsTitle": {
+    "message": "Routing decisions",
+    "description": "Mailroom routing logs title"
+  },
+  "mailroomRoutingLogsHelp": {
+    "message": "Case adapter outcomes from recent inbound processing.",
+    "description": "Mailroom routing logs help"
+  },
+  "mailroomRoutingLogsEmpty": {
+    "message": "No routing logs yet.",
+    "description": "Empty routing logs"
+  },
   "mailroomFailuresTitle": {
     "message": "Processing failures",
     "description": "Mailroom failures section title"
@@ -682,6 +762,94 @@
   "mailroomFailureRetries": {
     "message": "{count} retries",
     "description": "Failure retry count"
+  },
+  "mailroomClassificationTitle": {
+    "message": "Classification",
+    "description": "Mailroom classification section title"
+  },
+  "mailroomClassificationHelp": {
+    "message": "Label inbound messages by subject, sender, or body. Suggestions can auto-apply to new cases or route spam.",
+    "description": "Classification section help"
+  },
+  "mailroomClassificationApplyMode": {
+    "message": "When rules match",
+    "description": "Classification apply mode label"
+  },
+  "mailroomClassificationOnSpam": {
+    "message": "When marked as spam",
+    "description": "Classification on spam label"
+  },
+  "mailroomClassificationDefaultQueue": {
+    "message": "Default queue (optional)",
+    "description": "Default queue label"
+  },
+  "mailroomClassificationDefaultQueuePlaceholder": {
+    "message": "e.g. tier1-support",
+    "description": "Default queue placeholder"
+  },
+  "mailroomClassificationEmpty": {
+    "message": "No classification rules yet. Add a rule to suggest case type, priority, or queue.",
+    "description": "Empty classification rules"
+  },
+  "mailroomClassificationAddRule": {
+    "message": "Add classification rule",
+    "description": "Add classification rule button"
+  },
+  "mailroomClassificationRuleNamePlaceholder": {
+    "message": "Rule name",
+    "description": "Classification rule name placeholder"
+  },
+  "mailroomClassificationNoSuggestion": {
+    "message": "— No change —",
+    "description": "No classification suggestion option"
+  },
+  "mailroomClassificationQueuePlaceholder": {
+    "message": "Queue tag",
+    "description": "Suggest queue placeholder"
+  },
+  "mailroomClassificationMarkSpam": {
+    "message": "Mark as spam",
+    "description": "Mark spam checkbox"
+  },
+  "mailroomClassificationApplySuggest": {
+    "message": "Suggest only (audit on case)",
+    "description": "Suggest only mode"
+  },
+  "mailroomClassificationApplyAuto": {
+    "message": "Auto-apply to new cases",
+    "description": "Auto apply mode"
+  },
+  "mailroomClassificationSpamIgnore": {
+    "message": "Ignore message",
+    "description": "Spam ignore"
+  },
+  "mailroomClassificationSpamManualReview": {
+    "message": "Send to manual review",
+    "description": "Spam manual review"
+  },
+  "mailroomClassificationSpamRoute": {
+    "message": "Continue to case flow",
+    "description": "Spam route to case"
+  },
+  "mailroomClassificationFieldSubject": {
+    "message": "Subject",
+    "description": "Classification field subject"
+  },
+  "mailroomClassificationFieldFrom": {
+    "message": "From address",
+    "description": "Classification field from"
+  },
+  "mailroomClassificationFieldFromDomain": {
+    "message": "From domain",
+    "description": "Classification field from domain"
+  },
+  "mailroomClassificationFieldBody": {
+    "message": "Body",
+    "description": "Classification field body"
+  },
+  "mailroomClassificationFieldChannel": {
+    "message": "Channel",
+    "description": "Classification field channel"
   },
   "mailroomDedupTitle": {
     "message": "Duplicate detection",
@@ -3006,6 +3174,50 @@
   "helpdeskExecSaveSuccess": {
     "message": "Helpdesk execution settings saved.",
     "description": "Save success message"
+  },
+  "helpdeskExecCannedResponsesTitle": {
+    "message": "Canned responses & macros",
+    "description": "Helpdesk settings section for case email/internal macros"
+  },
+  "helpdeskExecCannedResponsesHint": {
+    "message": "Agents insert these from the bolt icon in the case composer. In macro bodies, wrap placeholders in double braces — e.g. case.caseId, case.title, contact.firstName, contact.name, agent.name.",
+    "description": "Hint for canned response token placeholders (no literal braces; vue-i18n reserves curly braces)"
+  },
+  "helpdeskExecCannedName": {
+    "message": "Name",
+    "description": "Canned response display name"
+  },
+  "helpdeskExecCannedChannel": {
+    "message": "Use in",
+    "description": "Canned response channel filter label"
+  },
+  "helpdeskExecCannedChannelEmail": {
+    "message": "Customer email",
+    "description": "Canned response for email replies"
+  },
+  "helpdeskExecCannedChannelInternal": {
+    "message": "Internal comments",
+    "description": "Canned response for internal comments only"
+  },
+  "helpdeskExecCannedChannelAll": {
+    "message": "Email and internal",
+    "description": "Canned response for both composer types"
+  },
+  "helpdeskExecCannedSubject": {
+    "message": "Subject (email only)",
+    "description": "Canned response email subject template"
+  },
+  "helpdeskExecCannedBody": {
+    "message": "Body",
+    "description": "Canned response body template"
+  },
+  "helpdeskExecCannedAdd": {
+    "message": "Add macro",
+    "description": "Add canned response button"
+  },
+  "helpdeskExecCannedIncomplete": {
+    "message": "Each macro needs a name and body before saving.",
+    "description": "Validation when a macro row is incomplete"
   },
   "helpdeskExecReset": {
     "message": "Reset",

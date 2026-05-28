@@ -19,7 +19,7 @@ This document maps the PRD requirements to what exists in LiteDesk today, identi
 | **0** — Alignment & baseline | ✅ Done | `test:helpdesk` + `smoke:helpdesk` passed (2026-05-27); Ticket→Case org check fixed; Closed edit lock on API |
 | **1A** — Agent workspace UX | ✅ Done | `CaseRecordPage`, list quick-preview, system views, bulk actions, timeline + reply UX (pinned + resizable) |
 | **1B** — Lifecycle + data model | ✅ Done | `reopenReason` required; `CaseResolutionDialog`; closed lock in API + UI; `reopenCount` on model |
-| **1C** — Email hardening | 🟡 Partial | Mailroom pipeline + **case timeline adapter** (`mailroom_messages` merged in `GET /api/helpdesk/cases/:id`). Remaining: agent templates/macros |
+| **1C** — Email hardening | 🟡 Partial | Mailroom pipeline + case timeline + **canned responses/macros** (tenant settings + case composer). Remaining: production pilot verification |
 | **1D** — Portals | 🟡 Partial | Portal UI + APIs; Mailroom reply; requester scoping; partner/customer channels + rules shipped; smoke test pending |
 | **1E** — Field service & warranty | ❌ Not started | |
 | **1F** — Reporting, roles, audit exports | 🟡 Partial | Analytics + `GET /api/helpdesk/cases/analytics/audit-export`; role presets / CSAT / full enterprise audit TBD |
@@ -126,11 +126,12 @@ Legend: ✅ Done · 🟡 Partial · ❌ Missing
 
 ### Communication & timeline
 
-- 🟡 Email: Mailroom-enabled path uses policy-driven create/append/reopen (`casesAdapter`); legacy `helpdeskChannelIngestionService` when Mailroom off. **Settings → Automation → Mailroom** for routing + processing policies. Remaining 1C: **agent templates/macros**
+- 🟡 Email: Mailroom-enabled path uses policy-driven create/append/reopen (`casesAdapter`); legacy `helpdeskChannelIngestionService` when Mailroom off. **Settings → Automation → Mailroom** for routing + processing policies. Remaining 1C: **production email pilot** (macros/canned responses ✅)
 - ✅ Live Chat and chat-to-case conversion (embed widget → chat session/messages → auto-case on first inbound; realtime handling inside the Case record)
+- ✅ **Agent realtime alerts** (2026-05): HELPDESK SSE, bell/toast/sound on `CASE_CREATED` / inbound email / live chat; Gmail-style **internal tab** title stack + highlight + icon animation on background case tabs — see [HELPDESK_NOTIFICATION_SIMULATION.md](./HELPDESK_NOTIFICATION_SIMULATION.md)
 - ❌ Customer portal + partner portal case flows
 - 🟡 Unified timeline in `CaseTimelineFeed` on record + preview; polish and full comms threading still ongoing
-- ❌ Canned responses/macros/templates for cases (beyond basic compose)
+- [x] Canned responses/macros for cases (tenant-configurable; `GET /api/helpdesk/cases/canned-responses`)
 
 ### Collaboration, attachments, audit
 
@@ -236,7 +237,7 @@ The phases below are designed to reduce ambiguity and maximize reuse of existing
 
 **Still Phase 1C (Cases / agent UX):**
 
-- [ ] Case email templates + canned responses/macros
+- [x] Case email templates + canned responses/macros (Settings → Helpdesk execution; bolt menu in case composers)
 - [x] Case record timeline reads from Mailroom conversation messages (`caseTimelineAdapter.js`)
 - [ ] Verify inbound → case append produces correct timeline/audit events end-to-end in production pilot
 

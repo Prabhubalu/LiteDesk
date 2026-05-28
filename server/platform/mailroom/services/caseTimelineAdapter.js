@@ -1,6 +1,7 @@
 'use strict';
 
 const MailroomMessage = require('../../../models/MailroomMessage');
+const MailroomConversation = require('../../../models/MailroomConversation');
 const { getFromAddress } = require('./conversationPersistenceService');
 const { loadAttachmentSummaries } = require('./caseActivityAttachmentService');
 const { messageBodyText } = require('./caseTimelineText');
@@ -68,10 +69,21 @@ async function buildCaseTimelineActivities(organizationId, caseId, embeddedActiv
     return Array.isArray(embeddedActivities) ? embeddedActivities : [];
   }
 
-  const messages = await MailroomMessage.find({
+  const conversationIds = await MailroomConversation.find({
     organizationId,
-    linkedCaseId: caseId
+    primaryCaseId: caseId
   })
+    .distinct('_id');
+
+  const messageQuery = {
+    organizationId,
+    $or: [{ linkedCaseId: caseId }]
+  };
+  if (conversationIds.length) {
+    messageQuery.$or.push({ conversationId: { $in: conversationIds } });
+  }
+
+  const messages = await MailroomMessage.find(messageQuery)
     .sort({ receivedAt: 1, createdAt: 1 })
     .lean();
 

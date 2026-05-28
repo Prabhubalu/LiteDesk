@@ -40,13 +40,15 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onBeforeUnmount, ref } from 'vue';
+import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 import { useNotificationStore } from '@/stores/notifications';
-import { useNotificationStream } from '@/composables/useNotificationStream';
+import { connectNotificationStream } from '@/composables/useNotificationStream';
+import { useAuthStore } from '@/stores/authRegistry';
 import { useOffline } from '@/composables/useOffline';
+import { resolveNotificationAppKeyFromPath } from '@/utils/notificationAppKey';
 
 const props = defineProps({
   showCountOnDesktop: {
@@ -63,19 +65,14 @@ const props = defineProps({
 const emit = defineEmits(['toggle']);
 
 const store = useNotificationStore();
+const authStore = useAuthStore();
 const { isOnline } = useOffline();
 
 // Ring animation when new notification arrives via SSE
 const justReceived = ref(false);
 let justReceivedTimer = null;
 
-// Get current app key for SSE connection
-const currentAppKey = () => {
-  const path = window.location.pathname || '';
-  if (path.startsWith('/audit/')) return 'AUDIT';
-  if (path.startsWith('/portal/')) return 'PORTAL';
-  return 'SALES';
-};
+const currentAppKey = () => resolveNotificationAppKeyFromPath();
 
 const hasUnread = computed(() => store.hasUnread);
 const displayCount = computed(() => {
@@ -98,25 +95,41 @@ const tooltipText = computed(() => {
 
 let streamDisconnect = null;
 
-onMounted(() => {
-  store.primeUnreadPreviewFromCache();
-  store.fetchUnreadPreview();
-
-  if (props.connectStream && isOnline.value) {
-    const appKey = currentAppKey();
-    const stream = useNotificationStream(appKey, (notification) => {
+function connectStreamForCurrentRoute() {
+  if (streamDisconnect) {
+    streamDisconnect();
+    streamDisconnect = null;
+  }
+  if (!props.connectStream || !isOnline.value) return;
+  const appKey = currentAppKey();
+  streamDisconnect = connectNotificationStream(
+    appKey,
+    (notification) => {
       store.handleIncomingNotification(notification);
-      // Trigger ring animation
       justReceived.value = true;
       if (justReceivedTimer) clearTimeout(justReceivedTimer);
       justReceivedTimer = setTimeout(() => {
         justReceived.value = false;
         justReceivedTimer = null;
       }, 800);
-    });
-    streamDisconnect = stream.disconnect;
-  }
+    },
+    { isOnline: isOnline.value, authStore }
+  );
+}
+
+onMounted(() => {
+  store.primeUnreadPreviewFromCache();
+  store.fetchUnreadPreview();
+  connectStreamForCurrentRoute();
 });
+
+watch(
+  () => (typeof window !== 'undefined' ? window.location.pathname : ''),
+  () => {
+    store.fetchUnreadPreview();
+    connectStreamForCurrentRoute();
+  }
+);
 
 onBeforeUnmount(() => {
   if (streamDisconnect) streamDisconnect();

@@ -103,6 +103,14 @@
     "message": "Close tab",
     "description": "Close tab button aria-label"
   },
+  "tabNewEmail": {
+    "message": "New email",
+    "description": "Internal tab title prefix when a case receives inbound email while tab is in background"
+  },
+  "tabNewMessage": {
+    "message": "New message",
+    "description": "Internal tab title prefix when a case receives a live chat message while tab is in background"
+  },
   "globalSearchPlaceholder": {
     "message": "Search or run a command…",
     "description": "Global search modal input placeholder"

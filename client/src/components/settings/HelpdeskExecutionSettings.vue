@@ -138,6 +138,76 @@
         </div>
       </div>
 
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-4">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+            {{ t('settings.helpdeskExecCannedResponsesTitle') }}
+          </h3>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            {{ t('settings.helpdeskExecCannedResponsesHint') }}
+          </p>
+        </div>
+        <div
+          v-for="(item, idx) in form.cannedResponses"
+          :key="item.id || `canned-${idx}`"
+          class="rounded-lg border border-gray-200 dark:border-gray-700 p-4 space-y-3"
+        >
+          <div class="flex flex-wrap items-start justify-between gap-2">
+            <div class="grid flex-1 grid-cols-1 md:grid-cols-2 gap-3 min-w-0">
+              <div>
+                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.helpdeskExecCannedName') }}</label>
+                <input
+                  v-model.trim="item.name"
+                  type="text"
+                  class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                />
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.helpdeskExecCannedChannel') }}</label>
+                <select
+                  v-model="item.channel"
+                  class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                >
+                  <option value="email">{{ t('settings.helpdeskExecCannedChannelEmail') }}</option>
+                  <option value="internal">{{ t('settings.helpdeskExecCannedChannelInternal') }}</option>
+                  <option value="all">{{ t('settings.helpdeskExecCannedChannelAll') }}</option>
+                </select>
+              </div>
+            </div>
+            <button
+              type="button"
+              class="text-sm text-red-600 hover:text-red-700 dark:text-red-400"
+              @click="removeCannedResponse(idx)"
+            >
+              {{ t('actions.remove') }}
+            </button>
+          </div>
+          <div>
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.helpdeskExecCannedSubject') }}</label>
+            <input
+              v-model="item.subject"
+              type="text"
+              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm font-mono"
+            />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.helpdeskExecCannedBody') }}</label>
+            <textarea
+              v-model="item.body"
+              rows="4"
+              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm font-mono"
+            />
+          </div>
+        </div>
+        <button
+          type="button"
+          class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+          @click="addCannedResponse"
+        >
+          {{ t('settings.helpdeskExecCannedAdd') }}
+        </button>
+      </div>
+
       <div v-if="saveError" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
         <p class="text-sm text-red-700 dark:text-red-300">{{ saveError }}</p>
       </div>
@@ -247,7 +317,8 @@ const form = ref({
     notifyOnSlaWarning: true,
     notifyOnSlaBreach: true
   },
-  defaultSlaPolicyKey: ''
+  defaultSlaPolicyKey: '',
+  cannedResponses: []
 });
 
 const jsonEditors = ref({
@@ -283,6 +354,9 @@ function applySettingsToForm(settings) {
   };
   form.value.notifications = settings.notifications || form.value.notifications;
   form.value.defaultSlaPolicyKey = settings.defaultSlaPolicyKey || '';
+  form.value.cannedResponses = Array.isArray(settings.cannedResponses)
+    ? settings.cannedResponses.map((item) => ({ ...item }))
+    : [];
   jsonEditors.value = {
     slaPolicies: JSON.stringify(settings.slaPolicies || [], null, 2),
     escalationRules: JSON.stringify(settings.escalationRules || [], null, 2),
@@ -335,9 +409,31 @@ function buildPayload() {
       defaultSlaPolicyKey: form.value.defaultSlaPolicyKey || null,
       slaPolicies: parseJsonEditor(jsonEditors.value.slaPolicies, t('settings.helpdeskExecSlaPolicies')),
       escalationRules: parseJsonEditor(jsonEditors.value.escalationRules, t('settings.helpdeskExecEscalationRules')),
-      channelRules: parseJsonEditor(jsonEditors.value.channelRules, t('settings.helpdeskExecChannelRules'))
+      channelRules: parseJsonEditor(jsonEditors.value.channelRules, t('settings.helpdeskExecChannelRules')),
+      cannedResponses: (form.value.cannedResponses || []).map((item, idx) => ({
+        id: String(item.id || `macro-${idx + 1}`).trim(),
+        name: String(item.name || '').trim(),
+        channel: String(item.channel || 'email').trim(),
+        subject: String(item.subject || '').trim(),
+        body: String(item.body || '').trim()
+      }))
     }
   };
+}
+
+function addCannedResponse() {
+  if (!Array.isArray(form.value.cannedResponses)) form.value.cannedResponses = [];
+  form.value.cannedResponses.push({
+    id: `macro-${Date.now()}`,
+    name: '',
+    channel: 'email',
+    subject: 'Re: {{case.title}}',
+    body: '<p>Hi {{contact.firstName}},</p><p></p><p>Best regards,<br/>{{agent.name}}</p>'
+  });
+}
+
+function removeCannedResponse(index) {
+  form.value.cannedResponses.splice(index, 1);
 }
 
 async function runSlaRecalculate() {
@@ -366,6 +462,15 @@ async function runSlaRecalculate() {
 async function saveSettings() {
   saveError.value = '';
   saveSuccess.value = false;
+
+  const incompleteMacro = (form.value.cannedResponses || []).find(
+    (item) => !String(item.name || '').trim() || !String(item.body || '').trim()
+  );
+  if (incompleteMacro) {
+    saveError.value = t('settings.helpdeskExecCannedIncomplete');
+    return;
+  }
+
   saving.value = true;
   try {
     const prev = originalSnapshot.value ? JSON.parse(originalSnapshot.value) : null;

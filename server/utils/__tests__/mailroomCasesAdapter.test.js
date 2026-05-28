@@ -24,6 +24,20 @@ describe('mailroom cases adapter', () => {
     assert.equal(plan.reason, 'dedup_append');
   });
 
+  it('honors dedup create_child_case with threading parent', () => {
+    const plan = resolveCaseExecutionPlan({
+      threading: {
+        matched: true,
+        target: { caseId: 'parent-case', conversationId: 'conv1' }
+      },
+      dedup: { isDuplicate: true, behavior: 'create_child_case' },
+      caseLink: { action: 'append', caseId: null }
+    });
+    assert.equal(plan.action, 'create_child_case');
+    assert.equal(plan.caseId, 'parent-case');
+    assert.equal(plan.reason, 'dedup_create_child_case');
+  });
+
   it('honors dedup ignore', () => {
     const plan = resolveCaseExecutionPlan({
       dedup: { isDuplicate: true, behavior: 'ignore' },

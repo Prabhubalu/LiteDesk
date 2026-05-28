@@ -225,7 +225,7 @@
 
             <div
               class="email-body px-4 py-4 text-sm leading-relaxed text-neutral-800 dark:text-gray-200 sm:px-5 sm:text-[15px]"
-              v-html="renderMessageBody(msg.body)"
+              v-html="renderEmailMessageBody(msg.body)"
             />
 
             <div
@@ -318,6 +318,7 @@
 import { useI18n } from 'vue-i18n';
 import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import apiClient from '@/utils/apiClient';
+import { renderEmailMessageBody } from '@/utils/emailMessageBody';
 import EmailDockedReply from '@/components/inbox/EmailDockedReply.vue';
 import {
   ArrowLeftIcon,
@@ -670,47 +671,6 @@ function avatarColorClass(msg) {
   return palette[hash % palette.length];
 }
 
-function escapeHtml(s) {
-  return String(s || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function sanitizeHtml(html) {
-  const raw = String(html || '');
-  if (!raw.trim()) return '<p class="text-gray-400">(no content)</p>';
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(raw, 'text/html');
-  doc.querySelectorAll('script,style,iframe,object,embed,link,meta').forEach((el) => el.remove());
-  doc.querySelectorAll('*').forEach((el) => {
-    [...el.attributes].forEach((attr) => {
-      const name = attr.name.toLowerCase();
-      const value = String(attr.value || '');
-      if (name.startsWith('on')) {
-        el.removeAttribute(attr.name);
-        return;
-      }
-      if ((name === 'href' || name === 'src') && /^\s*javascript:/i.test(value)) {
-        el.removeAttribute(attr.name);
-      }
-    });
-    if (el.tagName === 'A') {
-      el.setAttribute('target', '_blank');
-      el.setAttribute('rel', 'noopener noreferrer');
-    }
-  });
-  return doc.body.innerHTML || '<p class="text-gray-400">(no content)</p>';
-}
-
-function renderMessageBody(body) {
-  const raw = String(body || '').trim();
-  if (!raw) return '<p class="text-gray-400">(no content)</p>';
-  if (/<[^>]+>/.test(raw)) return sanitizeHtml(raw);
-  return `<p>${escapeHtml(raw).replace(/\n/g, '<br>')}</p>`;
-}
 </script>
 
 <style scoped>
