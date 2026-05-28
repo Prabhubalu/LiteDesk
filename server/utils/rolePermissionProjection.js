@@ -276,6 +276,14 @@ function ensurePermissionEnvelopeDefaults(merged) {
     viewAll: false,
     exportData: false
   });
+  ensureModule('quotes', {
+    view: false,
+    create: false,
+    edit: false,
+    delete: false,
+    viewAll: false,
+    exportData: false
+  });
   ensureModule('tasks', { view: false, create: false, edit: false, delete: false, viewAll: false });
   ensureModule('events', { view: false, create: false, edit: false, delete: false, viewAll: false });
   ensureModule('forms', {

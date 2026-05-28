@@ -1,6 +1,12 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const { RECORD_SOURCE_VALUES, DEFAULT_RECORD_SOURCE } = require('../constants/recordSource');
+const {
+    CATALOG_LIFECYCLE_STATES,
+    CATALOG_LIFECYCLE_DEFAULT,
+    syncLegacyItemStatusFromLifecycle,
+    inferLifecycleStateFromLegacyStatus
+} = require('../constants/catalogLifecycle');
 const { wrapTenantModel } = require('../utils/tenantModelProxy');
 
 // Item Schema Definition
@@ -31,23 +37,48 @@ const ItemSchema = new Schema({
         trim: true,
         index: true
     },
+    /** True when more than one variant exists for this parent item. */
+    hasVariants: {
+        type: Boolean,
+        default: false,
+        index: true
+    },
+    /** Fast path to default sellable SKU (C3). */
+    defaultVariantId: {
+        type: Schema.Types.ObjectId,
+        ref: 'ItemVariant',
+        default: null,
+        index: true
+    },
     item_type: {
         type: String,
-        enum: ['Product', 'Service', 'Serialized Product', 'Non-Stock Product'],
+        enum: ['Product', 'Service', 'Serialized Product', 'Non-Stock Product', 'Bundle'],
         required: true,
         default: 'Product',
         index: true
     },
 
     // 📂 CATEGORIZATION
+    /** @deprecated Denormalized label — prefer categoryId. Synced from catalog category tree. */
     category: {
         type: String,
         trim: true,
         index: true
     },
+    /** @deprecated Denormalized sub-label — synced when category has a parent. */
     subcategory: {
         type: String,
         trim: true
+    },
+    categoryId: {
+        type: Schema.Types.ObjectId,
+        ref: 'CatalogCategory',
+        default: null,
+        index: true
+    },
+    attributeValues: {
+        type: Schema.Types.Mixed,
+        default: {}
     },
     tags: [{
         type: String,
@@ -60,10 +91,19 @@ const ItemSchema = new Schema({
         enum: ['pcs', 'liters', 'hours', 'boxes', 'kg', 'meters', 'units'],
         default: 'pcs'
     },
+    /** @deprecated Legacy alias — synced from lifecycle_state. Prefer lifecycle_state for catalog semantics. */
     status: {
         type: String,
         enum: ['Active', 'Inactive'],
         default: 'Active',
+        index: true
+    },
+
+    /** Catalog lifecycle (canonical). See docs/CATALOG_ROADMAP.md */
+    lifecycle_state: {
+        type: String,
+        enum: CATALOG_LIFECYCLE_STATES,
+        default: CATALOG_LIFECYCLE_DEFAULT,
         index: true
     },
 
@@ -77,12 +117,27 @@ const ItemSchema = new Schema({
         createdAt: { type: Date, default: Date.now, required: true },
         createdBy: { type: Schema.Types.ObjectId, ref: 'User' }
     }],
+    /** @deprecated Use media[] gallery — kept for list thumbnail compat (synced from primary media). */
     product_image: {
         type: String, // File path or URL
         trim: true
     },
 
-    // 💰 PRICING
+    /** Ordered catalog media gallery (C1). Primary entry syncs to product_image. */
+    media: [{
+        url: { type: String, required: true, trim: true },
+        kind: { type: String, enum: ['image', 'document'], default: 'image' },
+        isPrimary: { type: Boolean, default: false },
+        altText: { type: String, trim: true, default: '' },
+        sortOrder: { type: Number, default: 0 },
+        fileName: { type: String, trim: true },
+        fileType: { type: String, trim: true },
+        fileSize: { type: Number, min: 0 },
+        uploadedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+        uploadedAt: { type: Date, default: Date.now }
+    }],
+
+    // 💰 PRICING (deprecated on parent — canonical values live on ItemVariant; synced for API compat)
     cost_price: {
         type: Number,
         min: 0,
@@ -118,7 +173,7 @@ const ItemSchema = new Schema({
         default: 0
     },
 
-    // 🏭 INVENTORY MANAGEMENT (for Product & Serialized Product)
+    // 🏭 LEGACY INVENTORY PLACEHOLDERS (frozen — not catalog scope until Orders/ledger exist)
     stock_quantity: {
         type: Number,
         min: 0,
@@ -204,18 +259,31 @@ const ItemSchema = new Schema({
 
 // Indexes
 ItemSchema.index({ organizationId: 1, status: 1 });
+ItemSchema.index({ organizationId: 1, categoryId: 1 });
+ItemSchema.index({ organizationId: 1, lifecycle_state: 1 });
 ItemSchema.index({ organizationId: 1, item_type: 1 });
 ItemSchema.index({ organizationId: 1, category: 1 });
 ItemSchema.index({ organizationId: 1, vendor: 1 });
 ItemSchema.index({ organizationId: 1, item_code: 1 }, { unique: true, sparse: true });
 ItemSchema.index({ organizationId: 1, deletedAt: 1 });
 
-// Pre-save middleware to auto-generate item_id
+// Pre-save: lifecycle_state is canonical; keep legacy status in sync
 ItemSchema.pre('save', async function(next) {
+    if (!this.lifecycle_state) {
+        this.lifecycle_state = inferLifecycleStateFromLegacyStatus(this.status, this.lifecycle_state);
+    }
+    this.status = syncLegacyItemStatusFromLifecycle(this.lifecycle_state);
+
     if (!this.item_id) {
-        // Generate item_id: ITM-001, ITM-002, etc.
-        const count = await mongoose.model('Item').countDocuments({ organizationId: this.organizationId });
-        this.item_id = `ITM-${String(count + 1).padStart(6, '0')}`;
+        /**
+         * NOTE:
+         * Historically this used countDocuments() which can generate duplicates under concurrency,
+         * and legacy data may contain missing item_id values. Since item_id is indexed unique
+         * (legacy global index), we must generate a value that is guaranteed unique.
+         *
+         * Use the MongoDB ObjectId (stable) as the unique suffix.
+         */
+        this.item_id = `ITM-${this._id.toString()}`;
     }
     
     // Set modifiedBy on update
@@ -241,7 +309,7 @@ ItemSchema.virtual('totalPrice').get(function() {
 
 // Virtual for stock status
 ItemSchema.virtual('stockStatus').get(function() {
-    if (this.item_type === 'Service' || this.item_type === 'Non-Stock Product') {
+    if (this.item_type === 'Service' || this.item_type === 'Non-Stock Product' || this.item_type === 'Bundle') {
         return 'N/A';
     }
     if (this.stock_quantity === 0) {
@@ -255,7 +323,7 @@ ItemSchema.virtual('stockStatus').get(function() {
 
 // Method to check if stock is low
 ItemSchema.methods.isLowStock = function() {
-    if (this.item_type === 'Service' || this.item_type === 'Non-Stock Product') {
+    if (this.item_type === 'Service' || this.item_type === 'Non-Stock Product' || this.item_type === 'Bundle') {
         return false;
     }
     return this.reorder_level > 0 && this.stock_quantity <= this.reorder_level;
@@ -263,7 +331,7 @@ ItemSchema.methods.isLowStock = function() {
 
 // Method to check if out of stock
 ItemSchema.methods.isOutOfStock = function() {
-    if (this.item_type === 'Service' || this.item_type === 'Non-Stock Product') {
+    if (this.item_type === 'Service' || this.item_type === 'Non-Stock Product' || this.item_type === 'Bundle') {
         return false;
     }
     return this.stock_quantity === 0;
@@ -304,10 +372,19 @@ ItemSchema.statics.getItemStatistics = async function(organizationId) {
                 _id: null,
                 totalItems: { $sum: 1 },
                 activeItems: {
-                    $sum: { $cond: [{ $eq: ['$status', 'Active'] }, 1, 0] }
+                    $sum: { $cond: [{ $eq: ['$lifecycle_state', 'Active'] }, 1, 0] }
+                },
+                draftItems: {
+                    $sum: { $cond: [{ $eq: ['$lifecycle_state', 'Draft'] }, 1, 0] }
+                },
+                discontinuedItems: {
+                    $sum: { $cond: [{ $eq: ['$lifecycle_state', 'Discontinued'] }, 1, 0] }
+                },
+                archivedItems: {
+                    $sum: { $cond: [{ $eq: ['$lifecycle_state', 'Archived'] }, 1, 0] }
                 },
                 inactiveItems: {
-                    $sum: { $cond: [{ $eq: ['$status', 'Inactive'] }, 1, 0] }
+                    $sum: { $cond: [{ $ne: ['$lifecycle_state', 'Active'] }, 1, 0] }
                 },
                 products: {
                     $sum: { $cond: [{ $eq: ['$item_type', 'Product'] }, 1, 0] }

@@ -69,6 +69,100 @@ function cloneCasesLinkableDefaultRelationships() {
   return JSON.parse(JSON.stringify(CASES_LINKABLE_DEFAULT_RELATIONSHIPS));
 }
 
+const ITEMS_LINKABLE_DEFAULT_RELATIONSHIPS = Object.freeze([
+  { name: 'Vendor', type: 'many_to_one', isLookup: true, targetModuleKey: 'organizations', relationshipKey: 'item_vendor' },
+  { name: 'Linked Deals', type: 'many_to_many', isLookup: false, targetModuleKey: 'deals', relationshipKey: 'item_deals' },
+  { name: 'Linked Contacts', type: 'many_to_many', isLookup: false, targetModuleKey: 'people', relationshipKey: 'item_people' },
+  { name: 'Linked Forms', type: 'many_to_many', isLookup: false, targetModuleKey: 'forms', relationshipKey: 'item_forms' }
+]);
+
+function cloneItemsLinkableDefaultRelationships() {
+  return JSON.parse(JSON.stringify(ITEMS_LINKABLE_DEFAULT_RELATIONSHIPS));
+}
+
+async function ensureItemsRelationshipDefinitions() {
+  // Create minimal RelationshipDefinition rows if missing, so Items can use Link Record drawer.
+  // This is safe + idempotent; records are only created when absent.
+  const defs = [
+    {
+      relationshipKey: 'item_vendor',
+      source: { appKey: 'sales', moduleKey: 'items' },
+      target: { appKey: 'sales', moduleKey: 'organizations' },
+      cardinality: 'MANY_TO_ONE',
+      ownership: 'TARGET',
+      required: false,
+      cascade: { onDelete: 'DETACH' },
+      ui: {
+        source: { showAs: 'TAB', label: 'Vendor' },
+        target: { showAs: 'TAB', label: 'Items (as Vendor)' },
+        picker: { enabled: true, searchable: true }
+      },
+      automation: { allowed: true },
+      enabled: true
+    },
+    {
+      relationshipKey: 'item_deals',
+      source: { appKey: 'sales', moduleKey: 'items' },
+      target: { appKey: 'sales', moduleKey: 'deals' },
+      cardinality: 'MANY_TO_MANY',
+      ownership: 'SOURCE',
+      required: false,
+      cascade: { onDelete: 'DETACH' },
+      ui: {
+        source: { showAs: 'TAB', label: 'Linked Deals' },
+        target: { showAs: 'TAB', label: 'Linked Items' },
+        picker: { enabled: true, searchable: true }
+      },
+      automation: { allowed: true },
+      enabled: true
+    },
+    {
+      relationshipKey: 'item_people',
+      source: { appKey: 'sales', moduleKey: 'items' },
+      target: { appKey: 'sales', moduleKey: 'people' },
+      cardinality: 'MANY_TO_MANY',
+      ownership: 'SOURCE',
+      required: false,
+      cascade: { onDelete: 'DETACH' },
+      ui: {
+        source: { showAs: 'TAB', label: 'Linked Contacts' },
+        target: { showAs: 'TAB', label: 'Linked Items' },
+        picker: { enabled: true, searchable: true }
+      },
+      automation: { allowed: true },
+      enabled: true
+    },
+    {
+      relationshipKey: 'item_forms',
+      source: { appKey: 'sales', moduleKey: 'items' },
+      target: { appKey: 'platform', moduleKey: 'forms' },
+      cardinality: 'MANY_TO_MANY',
+      ownership: 'SOURCE',
+      required: false,
+      cascade: { onDelete: 'DETACH' },
+      ui: {
+        source: { showAs: 'TAB', label: 'Linked Forms' },
+        target: { showAs: 'TAB', label: 'Linked Items' },
+        picker: { enabled: true, searchable: true }
+      },
+      automation: { allowed: true },
+      enabled: true
+    }
+  ];
+
+  // eslint-disable-next-line no-await-in-loop
+  for (const def of defs) {
+    const key = String(def.relationshipKey || '').toLowerCase();
+    if (!key) continue;
+    // eslint-disable-next-line no-await-in-loop
+    const exists = await RelationshipDefinition.exists({ relationshipKey: key });
+    if (!exists) {
+      // eslint-disable-next-line no-await-in-loop
+      await RelationshipDefinition.create({ ...def, relationshipKey: key });
+    }
+  }
+}
+
 async function syncPeopleOrganizationLink({ organizationId, relationshipKey, source, target }) {
   if (relationshipKey !== 'people_organizations') return;
   if (!source?.recordId || !target?.recordId) return;
@@ -122,6 +216,12 @@ exports.getLinkableTargets = async (req, res) => {
     const normalizedAppKey = String(appKey).toLowerCase();
     const normalizedModuleKey = String(moduleKey).toLowerCase();
 
+    if (normalizedModuleKey === 'items') {
+      await ensureItemsRelationshipDefinitions();
+      // Refresh cache so relationshipRegistry.has() recognizes new keys
+      await relationshipRegistry.refreshRelationshipKeyCache();
+    }
+
     // Load module: tenant override first (organizationId + key or moduleKey), then platform (organizationId null + appKey + moduleKey).
     // If the tenant module exists, use its relationships as-is (even if empty) so clearing relationships in Settings
     // actually hides link targets. Only fall back to platform when no tenant module exists.
@@ -151,6 +251,9 @@ exports.getLinkableTargets = async (req, res) => {
     }
     if (normalizedModuleKey === 'cases' && relationships.length === 0) {
       relationships = cloneCasesLinkableDefaultRelationships();
+    }
+    if (normalizedModuleKey === 'items' && relationships.length === 0) {
+      relationships = cloneItemsLinkableDefaultRelationships();
     }
     // Resolve missing relationshipKey from platform (so Settings relationships show even if saved before relationshipKey was set)
     const outgoing = await getOutgoingRelationships(normalizedAppKey, normalizedModuleKey);

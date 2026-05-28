@@ -1,5 +1,54 @@
 const Item = require('../models/Item');
+const ItemVariant = require('../models/ItemVariant');
 const mongoose = require('mongoose');
+const {
+    CATALOG_LIFECYCLE_DEFAULT,
+    CATALOG_LIFECYCLE_STATES,
+    canTransitionCatalogLifecycle,
+    inferLifecycleStateFromLegacyStatus,
+    isCatalogLifecycleState,
+    syncLegacyItemStatusFromLifecycle
+} = require('../constants/catalogLifecycle');
+const {
+  sortMediaEntries,
+  seedMediaFromProductImage
+} = require('../services/itemMediaService');
+const {
+  ensureDefaultVariant,
+  listItemVariants
+} = require('../services/itemVariantService');
+const { applyCatalogFieldsToPayload } = require('../services/catalogItemIntegration');
+const { listAttributeTemplates } = require('../services/catalogAttributeTemplateService');
+const { getCategoryById } = require('../services/catalogCategoryService');
+const { applyFlatCompatShimForList, applyFlatCompatShimForDetail } = require('../constants/catalogFieldOwnership');
+const {
+  applyVariantWriteAfterItemSave,
+  applyVariantWriteOnItemUpdate,
+  setCatalogApiVersionHeader
+} = require('../services/catalogVariantWriteService');
+const { syncDefaultVariantLifecycleFromItem } = require('../services/itemVariantService');
+
+async function enrichItemCatalogPayload(item, userId) {
+  if (!item) return null;
+  await seedMediaFromProductImage(item, userId);
+  await ensureDefaultVariant(item, userId);
+  const variants = await listItemVariants(item._id, item.organizationId);
+  const { flattenCustomFieldsForResponse } = require('../utils/customFieldsExtractor');
+  const data = flattenCustomFieldsForResponse(item);
+  data.media = sortMediaEntries(item.media || []);
+  data.variants = variants;
+  data.defaultVariant = variants.find((v) => v.is_default) || variants[0] || null;
+
+  if (data.categoryId) {
+    data.catalogCategory = await getCategoryById(data.categoryId, item.organizationId);
+    data.attributeTemplates = await listAttributeTemplates(data.categoryId, item.organizationId);
+  } else {
+    data.catalogCategory = null;
+    data.attributeTemplates = [];
+  }
+
+  return applyFlatCompatShimForDetail(data, data.defaultVariant);
+}
 
 // @desc    Create new item
 // @route   POST /api/items
@@ -29,6 +78,18 @@ exports.createItem = async (req, res) => {
         }
 
         // Set defaults
+        if (!payload.lifecycle_state) {
+            payload.lifecycle_state = payload.status === 'Inactive'
+                ? inferLifecycleStateFromLegacyStatus('Inactive', null)
+                : CATALOG_LIFECYCLE_DEFAULT;
+        }
+        if (!isCatalogLifecycleState(payload.lifecycle_state)) {
+            return res.status(400).json({
+                success: false,
+                message: `Invalid lifecycle_state. Allowed: ${CATALOG_LIFECYCLE_STATES.join(', ')}`
+            });
+        }
+        payload.status = syncLegacyItemStatusFromLifecycle(payload.lifecycle_state);
         if (!payload.status) {
             payload.status = 'Active';
         }
@@ -36,16 +97,40 @@ exports.createItem = async (req, res) => {
             payload.item_type = 'Product';
         }
 
+        const catalogResult = await applyCatalogFieldsToPayload(payload, req.user.organizationId);
+        if (catalogResult.error) {
+            return res.status(catalogResult.error.status).json({
+                success: false,
+                message: catalogResult.error.message,
+                details: catalogResult.error.details
+            });
+        }
+        Object.assign(payload, catalogResult.payload);
+
         const newItem = await Item.create(payload);
         
         const item = await Item.findById(newItem._id)
             .populate('vendor', 'name')
             .populate('createdBy', 'firstName lastName email')
             .populate('modifiedBy', 'firstName lastName email');
+
+        await applyVariantWriteAfterItemSave({
+            item,
+            userId: req.user._id,
+            rawPayload: standardPayload
+        });
+
+        const refreshed = await Item.findById(newItem._id)
+            .populate('vendor', 'name')
+            .populate('createdBy', 'firstName lastName email')
+            .populate('modifiedBy', 'firstName lastName email');
+
+        const data = await enrichItemCatalogPayload(refreshed, req.user._id);
+        setCatalogApiVersionHeader(res);
         
         res.status(201).json({
             success: true,
-            data: flattenCustomFieldsForResponse(item)
+            data
         });
     } catch (error) {
         console.error('Create item error:', error);
@@ -65,6 +150,9 @@ exports.getItems = async (req, res) => {
         const query = { organizationId: req.user.organizationId, deletedAt: null };
         
         // Filters
+        if (req.query.lifecycle_state) {
+            query.lifecycle_state = req.query.lifecycle_state;
+        }
         if (req.query.status) {
             query.status = req.query.status;
         }
@@ -73,6 +161,11 @@ exports.getItems = async (req, res) => {
         }
         if (req.query.category) {
             query.category = req.query.category;
+        }
+        if (req.query.categoryId) {
+            if (mongoose.Types.ObjectId.isValid(req.query.categoryId)) {
+                query.categoryId = new mongoose.Types.ObjectId(req.query.categoryId);
+            }
         }
         if (req.query.vendor) {
             if (mongoose.Types.ObjectId.isValid(req.query.vendor)) {
@@ -85,15 +178,17 @@ exports.getItems = async (req, res) => {
         
         // Search functionality
         if (req.query.search) {
-            const searchRegex = new RegExp(req.query.search, 'i');
+            const term = String(req.query.search).trim();
+            const searchRegex = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
             query.$or = [
                 { item_name: searchRegex },
                 { item_code: searchRegex },
+                { item_id: searchRegex },
                 { description: searchRegex }
             ];
         }
         
-        // Low stock filter
+        // Low stock filter (deprecated — API compat only; hidden from catalog UI)
         if (req.query.low_stock === 'true') {
             query.item_type = { $in: ['Product', 'Serialized Product'] };
             query.status = 'Active';
@@ -102,7 +197,7 @@ exports.getItems = async (req, res) => {
             };
         }
         
-        // Out of stock filter
+        // Out of stock filter (deprecated — API compat only)
         if (req.query.out_of_stock === 'true') {
             query.item_type = { $in: ['Product', 'Serialized Product'] };
             query.stock_quantity = 0;
@@ -131,10 +226,29 @@ exports.getItems = async (req, res) => {
         
         // Get statistics
         const stats = await Item.getItemStatistics(req.user.organizationId);
+
+        const itemIds = items.map((item) => item._id);
+        const defaultVariants = itemIds.length
+            ? await ItemVariant.find({
+                organizationId: req.user.organizationId,
+                itemId: { $in: itemIds },
+                is_default: true
+            }).lean()
+            : [];
+        const variantByItemId = new Map(defaultVariants.map((v) => [String(v.itemId), v]));
+
+        const { flattenCustomFieldsForResponse } = require('../utils/customFieldsExtractor');
+        const enrichedItems = items.map((item) => {
+            const flat = flattenCustomFieldsForResponse(item);
+            const defaultVariant = variantByItemId.get(String(item._id)) || null;
+            return applyFlatCompatShimForList(flat, defaultVariant);
+        });
+
+        setCatalogApiVersionHeader(res);
         
         res.status(200).json({
             success: true,
-            data: items,
+            data: enrichedItems,
             pagination: {
                 currentPage: page,
                 limit,
@@ -144,6 +258,9 @@ exports.getItems = async (req, res) => {
             statistics: stats[0] || {
                 totalItems: 0,
                 activeItems: 0,
+                draftItems: 0,
+                discontinuedItems: 0,
+                archivedItems: 0,
                 inactiveItems: 0,
                 products: 0,
                 services: 0,
@@ -187,9 +304,11 @@ exports.getItemById = async (req, res) => {
         }
         
         const { flattenCustomFieldsForResponse } = require('../utils/customFieldsExtractor');
+        const data = await enrichItemCatalogPayload(item, req.user._id);
+        setCatalogApiVersionHeader(res);
         res.status(200).json({
             success: true,
-            data: flattenCustomFieldsForResponse(item)
+            data
         });
     } catch (error) {
         console.error('Get item error:', error);
@@ -209,13 +328,48 @@ exports.updateItem = async (req, res) => {
         // Prevent changing organizationId
         delete req.body.organizationId;
         delete req.body.source;
-        req.body.modifiedBy = req.user._id;
-        
+
         const previous = await Item.findOne({
             _id: req.params.id,
             organizationId: req.user.organizationId,
             deletedAt: null
         }).lean();
+
+        const previousLifecycle = previous?.lifecycle_state
+            || inferLifecycleStateFromLegacyStatus(previous?.status, previous?.lifecycle_state);
+
+        if (Object.prototype.hasOwnProperty.call(req.body || {}, 'lifecycle_state')) {
+            const nextLifecycle = req.body.lifecycle_state;
+            if (!isCatalogLifecycleState(nextLifecycle)) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Invalid lifecycle_state. Allowed: ${CATALOG_LIFECYCLE_STATES.join(', ')}`
+                });
+            }
+            if (!canTransitionCatalogLifecycle(previousLifecycle, nextLifecycle)) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Cannot transition lifecycle from ${previousLifecycle} to ${nextLifecycle}`
+                });
+            }
+            req.body.status = syncLegacyItemStatusFromLifecycle(nextLifecycle);
+        } else if (Object.prototype.hasOwnProperty.call(req.body || {}, 'status')) {
+            // Legacy status-only updates map to lifecycle for catalog consistency
+            req.body.lifecycle_state = inferLifecycleStateFromLegacyStatus(req.body.status, previousLifecycle);
+            req.body.status = syncLegacyItemStatusFromLifecycle(req.body.lifecycle_state);
+        }
+
+        req.body.modifiedBy = req.user._id;
+
+        const catalogResult = await applyCatalogFieldsToPayload(req.body, req.user.organizationId);
+        if (catalogResult.error) {
+            return res.status(catalogResult.error.status).json({
+                success: false,
+                message: catalogResult.error.message,
+                details: catalogResult.error.details
+            });
+        }
+        Object.assign(req.body, catalogResult.payload);
 
         // Generic description versioning: store previous description before update.
         if (Object.prototype.hasOwnProperty.call(req.body || {}, 'description')) {
@@ -241,8 +395,11 @@ exports.updateItem = async (req, res) => {
             }
         }
 
-        const { buildUpdateWithCustomFields, flattenCustomFieldsForResponse } = require('../utils/customFieldsExtractor');
-        const $set = buildUpdateWithCustomFields(req.body, Item);
+        const { splitItemPayload } = require('../constants/catalogFieldOwnership');
+        const { parentPayload } = splitItemPayload(req.body);
+
+        const { buildUpdateWithCustomFields } = require('../utils/customFieldsExtractor');
+        const $set = buildUpdateWithCustomFields(parentPayload, Item);
         
         const updatedItem = await Item.findOneAndUpdate(
             { 
@@ -284,10 +441,31 @@ exports.updateItem = async (req, res) => {
         } catch (logErr) {
             console.warn('Record activity log (item update) failed:', logErr?.message || logErr);
         }
+
+        await applyVariantWriteOnItemUpdate({
+            itemId: req.params.id,
+            organizationId: req.user.organizationId,
+            userId: req.user._id,
+            rawPayload: req.body
+        });
+
+        await syncDefaultVariantLifecycleFromItem(updatedItem, req.user._id);
+
+        const refreshedItem = await Item.findOne({
+            _id: req.params.id,
+            organizationId: req.user.organizationId,
+            deletedAt: null
+        })
+        .populate('vendor', 'name')
+        .populate('createdBy', 'firstName lastName email')
+        .populate('modifiedBy', 'firstName lastName email');
+
+        const data = await enrichItemCatalogPayload(refreshedItem, req.user._id);
+        setCatalogApiVersionHeader(res);
         
         res.status(200).json({
             success: true,
-            data: flattenCustomFieldsForResponse(updatedItem)
+            data
         });
     } catch (error) {
         console.error('Update item error:', error);
@@ -372,10 +550,10 @@ exports.updateStock = async (req, res) => {
             });
         }
         
-        if (item.item_type === 'Service' || item.item_type === 'Non-Stock Product') {
+        if (item.item_type === 'Service' || item.item_type === 'Non-Stock Product' || item.item_type === 'Bundle') {
             return res.status(400).json({
                 success: false,
-                message: 'Stock cannot be updated for Service or Non-Stock Product items'
+                message: 'Stock cannot be updated for Service, Non-Stock Product, or Bundle items'
             });
         }
         
@@ -478,6 +656,9 @@ exports.getItemStatistics = async (req, res) => {
             data: stats[0] || {
                 totalItems: 0,
                 activeItems: 0,
+                draftItems: 0,
+                discontinuedItems: 0,
+                archivedItems: 0,
                 inactiveItems: 0,
                 products: 0,
                 services: 0,
