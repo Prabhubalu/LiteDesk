@@ -28,6 +28,17 @@ const csrfProtection = (req, res, next) => {
     const originalUrl = req.originalUrl || req.url || '';
     const path = req.path || '';
     const fullPath = originalUrl || path;
+
+    // Public embed chat widget endpoints must work on arbitrary customer websites.
+    // These routes do not use cookies for auth; they rely on instanceKey + sessionSecret.
+    if (
+        fullPath === '/embed/chat'
+        || fullPath.startsWith('/embed/chat/')
+        || fullPath === '/api/embed/chat'
+        || fullPath.startsWith('/api/embed/chat/')
+    ) {
+        return next();
+    }
     
     // Debug: log path for troubleshooting (remove in production)
     if (process.env.NODE_ENV === 'development' && req.method !== 'GET') {
