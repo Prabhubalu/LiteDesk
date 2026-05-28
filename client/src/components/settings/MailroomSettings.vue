@@ -734,6 +734,7 @@ import { computed, defineComponent, h, onMounted, reactive, ref, watch } from 'v
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import apiClient from '@/utils/apiClient';
+import { getApiOrigin } from '@/config/apiBase';
 import { useNotifications } from '@/composables/useNotifications';
 import { CASE_TYPES, CASE_PRIORITIES, CASE_CHANNELS } from '@/constants/caseLifecycle';
 import {
@@ -1226,10 +1227,12 @@ async function load() {
 const chatEmbedSnippet = computed(() => {
   if (!chatEmbedKey.value) return '';
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const apiOrigin = getApiOrigin();
+  const apiOriginAttr = apiOrigin ? `\\n  data-api-origin=\\"${apiOrigin}\\"` : '';
   // IMPORTANT: never embed a literal script-close tag inside a Vue SFC <script> block.
   // Browsers terminate the SFC script element early, breaking the component.
   const closeTag = '</scr' + 'ipt>';
-  return `<script\\n  src=\"${origin}/embed/chat.js\"\\n  data-instance=\"${chatEmbedKey.value}\"\\n  data-position=\"right\"\\n  data-theme=\"light\"\\n>${closeTag}`;
+  return `<script\\n  src=\\"${origin}/embed/chat.js\\"\\n  data-instance=\\"${chatEmbedKey.value}\\"\\n  data-position=\\"right\\"\\n  data-theme=\\"light\\"${apiOriginAttr}\\n>${closeTag}`;
 });
 
 async function copyChatSnippet() {

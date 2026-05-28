@@ -92,7 +92,8 @@ if (isProduction) {
 }
 
 // CORS Configuration
-app.use(cors({
+// NOTE: embed chat is public and must work on arbitrary customer websites.
+const defaultCors = cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
@@ -108,7 +109,25 @@ app.use(cors({
     }
   },
   credentials: true
-}));
+});
+
+const publicEmbedCors = cors({
+  origin: true,
+  credentials: false,
+});
+
+app.use((req, res, next) => {
+  const url = String(req.originalUrl || '');
+  if (
+    url === '/embed/chat'
+    || url.startsWith('/embed/chat/')
+    || url === '/api/embed/chat'
+    || url.startsWith('/api/embed/chat/')
+  ) {
+    return publicEmbedCors(req, res, next);
+  }
+  return defaultCors(req, res, next);
+});
 
 app.use((req, res, next) => {
   const origin = req.get('Origin');
@@ -277,6 +296,9 @@ app.use('/api/public/quotes', require('./routes/publicQuoteRoutes'));
 app.use('/api/public/mailroom', require('./routes/publicMailroomRoutes'));
 // Public embeddable live chat widget APIs (M6)
 app.use('/embed/chat', embedChatRoutes);
+// Some deployments only proxy /api/* to the Node server (frontend serves all other paths).
+// Mount the embed chat APIs under /api as well so the widget can work in those setups.
+app.use('/api/embed/chat', embedChatRoutes);
 app.get(
   '/api/appointments/calendar/google/callback',
   require('./controllers/appointmentCalendarController').googleOAuthCallback

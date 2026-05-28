@@ -18,15 +18,21 @@
 
   var position = getAttr(currentScript, 'data-position', 'right')
   var theme = getAttr(currentScript, 'data-theme', 'light')
+  // Optional: when the API is hosted on a different origin (e.g. api.example.com),
+  // specify data-api-origin="https://api.example.com" on the script tag.
+  var apiOrigin = getAttr(currentScript, 'data-api-origin', '')
 
   var hostOrigin = currentScript.src.split('/embed/chat.js')[0]
+  var effectiveApiOrigin = apiOrigin || hostOrigin
   var widgetUrl =
     hostOrigin +
     '/embed/chat/widget.html' +
     '#instanceKey=' +
     encodeURIComponent(instanceKey) +
     '&theme=' +
-    encodeURIComponent(theme)
+    encodeURIComponent(theme) +
+    '&apiOrigin=' +
+    encodeURIComponent(effectiveApiOrigin)
 
   var btn = document.createElement('button')
   btn.type = 'button'
