@@ -277,6 +277,9 @@ app.use('/api/public/quotes', require('./routes/publicQuoteRoutes'));
 app.use('/api/public/mailroom', require('./routes/publicMailroomRoutes'));
 // Public embeddable live chat widget APIs (M6)
 app.use('/embed/chat', embedChatRoutes);
+// Some deployments only proxy /api/* to the Node server (frontend serves all other paths).
+// Mount the embed chat APIs under /api as well so the widget can work in those setups.
+app.use('/api/embed/chat', embedChatRoutes);
 app.get(
   '/api/appointments/calendar/google/callback',
   require('./controllers/appointmentCalendarController').googleOAuthCallback
