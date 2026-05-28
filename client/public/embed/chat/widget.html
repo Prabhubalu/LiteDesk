@@ -12,6 +12,7 @@
         --border: #e2e8f0;
         --primary: #2563eb;
         --bubble: #f1f5f9;
+        --shadow: 0 20px 40px rgba(2, 6, 23, 0.22);
       }
       body {
         margin: 0;
@@ -23,18 +24,49 @@
         height: 100vh;
         display: flex;
         flex-direction: column;
+        background: radial-gradient(1200px 600px at 90% -20%, rgba(37, 99, 235, 0.12), transparent 45%),
+          radial-gradient(900px 500px at 10% 10%, rgba(127, 86, 217, 0.10), transparent 55%),
+          var(--bg);
       }
       header {
         padding: 12px 12px;
-        border-bottom: 1px solid var(--border);
+        border-bottom: 1px solid rgba(226,232,240,0.8);
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 8px;
+        background: linear-gradient(135deg, rgba(37,99,235,0.14), rgba(127,86,217,0.10));
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+      .logo {
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #2563eb, #7f56d9);
+        box-shadow: 0 10px 20px rgba(37,99,235,0.25);
+        flex: none;
       }
       header h1 {
-        font-size: 14px;
+        font-size: 13px;
         margin: 0;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .sub {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 1px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       header button {
         border: 0;
@@ -50,7 +82,7 @@
         display: flex;
         flex-direction: column;
         gap: 10px;
-        background: #fff;
+        background: transparent;
       }
       .msg {
         max-width: 85%;
@@ -77,11 +109,13 @@
         margin-top: 4px;
       }
       footer {
-        border-top: 1px solid var(--border);
+        border-top: 1px solid rgba(226,232,240,0.85);
         padding: 10px;
         display: flex;
         flex-direction: column;
         gap: 8px;
+        background: rgba(255,255,255,0.7);
+        backdrop-filter: blur(10px);
       }
       .composeRow {
         display: flex;
@@ -95,6 +129,7 @@
         padding: 10px;
         font-size: 13px;
         outline: none;
+        background: rgba(255,255,255,0.9);
       }
       .send {
         border: 0;
@@ -104,28 +139,343 @@
         color: #fff;
         font-weight: 600;
         cursor: pointer;
+        box-shadow: 0 12px 24px rgba(37,99,235,0.28);
       }
       .hint {
         padding: 10px 12px;
         font-size: 12px;
         color: var(--muted);
       }
+      .card {
+        border: 1px solid rgba(226,232,240,0.9);
+        background: rgba(255,255,255,0.85);
+        backdrop-filter: blur(12px);
+        border-radius: 16px;
+        padding: 12px;
+        box-shadow: var(--shadow);
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .label {
+        font-size: 12px;
+        font-weight: 600;
+        color: rgba(15,23,42,0.88);
+      }
+      .input {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px 10px;
+        font-size: 13px;
+        outline: none;
+        background: rgba(255,255,255,0.95);
+      }
+      .btnPrimary {
+        border: 0;
+        border-radius: 12px;
+        padding: 10px 12px;
+        background: linear-gradient(135deg, #2563eb, #7f56d9);
+        color: #fff;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 14px 26px rgba(37,99,235,0.28);
+      }
+      .btnGhost {
+        border: 1px solid rgba(226,232,240,0.95);
+        border-radius: 12px;
+        padding: 10px 12px;
+        background: rgba(255,255,255,0.7);
+        color: rgba(15,23,42,0.86);
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+      }
+      .prechatBubble {
+        max-width: 92%;
+        border-radius: 16px;
+        padding: 12px 12px;
+        font-size: 13px;
+        line-height: 1.35;
+        white-space: pre-wrap;
+        word-break: break-word;
+        border: 1px solid rgba(226,232,240,0.95);
+        background: rgba(255,255,255,0.9);
+      }
+      .prechatMeta {
+        margin-top: 6px;
+        font-size: 11px;
+        color: rgba(100,116,139,0.9);
+      }
+      .prechatStack {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .agentRow {
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+      }
+      .agentAvatar {
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(37,99,235,0.22), rgba(127,86,217,0.18));
+        box-shadow: 0 10px 20px rgba(37,99,235,0.18);
+        flex: none;
+      }
+      .agentBubble {
+        border-radius: 16px;
+        padding: 12px 12px;
+        font-size: 13px;
+        line-height: 1.4;
+        color: rgba(15,23,42,0.92);
+        background: rgba(255,255,255,0.92);
+        border: 1px solid rgba(226,232,240,0.95);
+        box-shadow: 0 10px 22px rgba(2,6,23,0.06);
+        max-width: 92%;
+      }
+      .formCard {
+        border-radius: 16px;
+        padding: 12px;
+        background: rgba(255,255,255,0.92);
+        border: 1px solid rgba(226,232,240,0.95);
+        box-shadow: 0 12px 26px rgba(2,6,23,0.07);
+      }
+      .formTitle {
+        font-weight: 900;
+        font-size: 13px;
+        color: rgba(15,23,42,0.9);
+        margin-bottom: 10px;
+      }
+      .consent {
+        font-size: 11.5px;
+        color: rgba(15,23,42,0.64);
+        line-height: 1.35;
+      }
+      .consent a {
+        color: rgba(37,99,235,0.95);
+        text-decoration: underline;
+        font-weight: 800;
+      }
+      .btnLink {
+        border: 0;
+        background: transparent;
+        color: rgba(37,99,235,0.95);
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 12px;
+        padding: 8px 10px;
+      }
+      .listItem {
+        border: 1px solid rgba(226,232,240,0.95);
+        background: rgba(255,255,255,0.75);
+        border-radius: 14px;
+        padding: 10px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        cursor: pointer;
+      }
+      .listTop {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .pill {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(226,232,240,0.95);
+        color: rgba(15,23,42,0.78);
+        background: rgba(255,255,255,0.6);
+      }
+      .pillOpen {
+        border-color: rgba(37,99,235,0.25);
+        color: rgba(37,99,235,0.95);
+        background: rgba(37,99,235,0.08);
+      }
+      .preview {
+        font-size: 12px;
+        color: rgba(15,23,42,0.7);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .inboxWrap {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      .inboxHeader {
+        padding: 12px 14px;
+        font-size: 12px;
+        font-weight: 800;
+        color: rgba(15,23,42,0.78);
+      }
+      .inboxList {
+        flex: 1;
+        overflow: auto;
+        border-top: 1px solid rgba(226,232,240,0.85);
+        border-bottom: 1px solid rgba(226,232,240,0.85);
+        background: rgba(255,255,255,0.55);
+      }
+      .inboxRow {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 12px 14px;
+        cursor: pointer;
+        border-bottom: 1px solid rgba(226,232,240,0.75);
+      }
+      .inboxRow:last-child { border-bottom: 0; }
+      .avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        background: rgba(148,163,184,0.35);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(15,23,42,0.55);
+        flex: none;
+        font-weight: 800;
+        font-size: 12px;
+      }
+      .rowMain { min-width: 0; flex: 1; }
+      .rowTitle {
+        font-weight: 900;
+        font-size: 13px;
+        color: rgba(15,23,42,0.92);
+        line-height: 1.2;
+      }
+      .rowSub {
+        margin-top: 2px;
+        font-size: 12px;
+        color: rgba(15,23,42,0.64);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .rowMeta {
+        margin-top: 6px;
+        font-size: 11px;
+        color: rgba(100,116,139,0.9);
+      }
+      .inboxBottom {
+        padding: 14px;
+        background: rgba(255,255,255,0.7);
+        backdrop-filter: blur(10px);
+      }
+      .btnBottomPrimary {
+        width: 100%;
+        border: 0;
+        border-radius: 999px;
+        padding: 12px 14px;
+        background: linear-gradient(135deg, #2563eb, #7f56d9);
+        color: #fff;
+        font-weight: 800;
+        cursor: pointer;
+        box-shadow: 0 14px 26px rgba(37,99,235,0.28);
+      }
+      .poweredBy {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 11px;
+        color: rgba(100,116,139,0.95);
+      }
+      .poweredLogo {
+        height: 24px;
+        width: auto;
+        display: block;
+        flex: none;
+        opacity: 0.92;
+      }
     </style>
   </head>
   <body>
     <div class="wrap">
       <header>
-        <h1>Support chat</h1>
-        <button id="closeBtn" type="button">✕</button>
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <div style="min-width:0;">
+            <h1 id="title">Support chat</h1>
+            <div id="subtitle" class="sub">We typically reply quickly</div>
+            <div id="headerNotice" class="sub" style="display:none;"></div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button id="endChatTopBtn" class="btnLink" type="button" style="display:none;color:rgba(185,28,28,0.95);">End chat</button>
+          <button id="closeBtn" type="button">✕</button>
+        </div>
       </header>
       <div id="messages">
-        <div class="hint">Start a conversation. An agent will respond here.</div>
+        <div id="inbox" class="card inboxWrap" style="margin-top: 6px; display:none; padding: 0;">
+          <div class="inboxHeader">Your conversations</div>
+          <div id="sessionsList" class="inboxList"></div>
+          <div class="inboxBottom">
+            <button id="newChatBtn" class="btnBottomPrimary" type="button">New message</button>
+            <div id="inboxError" class="hint" style="padding: 10px 0 0 0; color: #b91c1c; display:none;"></div>
+            <div class="poweredBy">
+              <span>Powered by</span>
+              <img class="poweredLogo" src="/assets/logo/Logo_word_dark.svg" alt="Arivu" />
+            </div>
+          </div>
+        </div>
+        <div id="prechat" class="card" style="margin-top: 6px;">
+          <div class="prechatStack">
+            <div class="agentRow">
+              <div class="agentAvatar" aria-hidden="true"></div>
+              <div id="welcome" class="agentBubble">
+                Hey! Let’s discuss how we can help you. Fill out the form to start chatting.
+              </div>
+            </div>
+
+            <div class="formCard">
+              <div class="formTitle">Fill out the form to continue.</div>
+              <div id="prechatFields" style="display:flex; flex-direction:column; gap: 10px;"></div>
+              <div class="consent" style="margin-top: 10px;">
+                By submitting this form, you consent to the processing of your data in accordance with our
+                <a href="#" target="_blank" rel="noreferrer">Terms &amp; Use</a>
+                and
+                <a href="#" target="_blank" rel="noreferrer">Privacy Policy</a>.
+              </div>
+            </div>
+
+            <div class="hint" style="padding: 0;">
+              We’ll save this so next time you don’t have to re-enter it.
+            </div>
+          </div>
+          <div class="row" style="margin-top: 12px;">
+            <button id="startBtn" class="btnPrimary" type="button" style="flex: 1;">Start chat</button>
+            <button id="editBtn" class="btnGhost" type="button" style="display:none;">Edit</button>
+          </div>
+          <div id="prechatError" class="hint" style="padding: 10px 0 0 0; color: #b91c1c; display:none;"></div>
+          <div class="poweredBy">
+            <span>Powered by</span>
+            <img class="poweredLogo" src="/assets/logo/Logo_word_dark.svg" alt="Arivu" />
+          </div>
+        </div>
       </div>
-      <footer>
+      <footer id="composer">
         <div id="typing" class="hint" style="padding: 0; min-height: 16px;"></div>
         <div class="composeRow">
           <textarea id="input" rows="2" placeholder="Type a message..."></textarea>
           <button class="send" id="sendBtn" type="button">Send</button>
+        </div>
+        <div class="poweredBy">
+          <span>Powered by</span>
+          <img class="poweredLogo" src="/assets/logo/Logo_word_dark.svg" alt="Arivu" />
         </div>
       </footer>
     </div>
@@ -167,13 +517,368 @@
       var sessionId = null
       var sessionSecret = null
       var es = null
+      var widgetConfig = { captureFields: ['name', 'email'], welcomeMessage: '' }
+      var visitorProfile = null
+      var seenMessageKeys = {}
+      var view = 'prechat' // prechat | inbox | chatOpen | chatClosed
+      var sessionCache = [] // [{sessionId, sessionSecret, createdAt, lastMessageAt, status, lastPreview}]
+      var activeSessionStatus = 'open'
+      var activeSessionHasMessages = false
 
       function storageKey() {
         return 'litedesk_chat_session:' + instanceKey
       }
+      function visitorStorageKey() {
+        return 'litedesk_chat_visitor:' + instanceKey
+      }
+      function sessionsStorageKey() {
+        return 'litedesk_chat_sessions:' + instanceKey
+      }
+
+      function safeJsonParse(raw) {
+        try {
+          return JSON.parse(raw)
+        } catch (_) {
+          return null
+        }
+      }
+
+      function setPrechatError(msg) {
+        var el = document.getElementById('prechatError')
+        if (!el) return
+        el.textContent = msg || ''
+        el.style.display = msg ? 'block' : 'none'
+      }
+      function setInboxError(msg) {
+        var el = document.getElementById('inboxError')
+        if (!el) return
+        el.textContent = msg || ''
+        el.style.display = msg ? 'block' : 'none'
+      }
+
+      function setComposerEnabled(enabled) {
+        var input = document.getElementById('input')
+        var sendBtn = document.getElementById('sendBtn')
+        if (input) input.disabled = !enabled
+        if (sendBtn) sendBtn.disabled = !enabled
+        if (sendBtn) sendBtn.style.opacity = enabled ? '1' : '0.6'
+      }
+
+      function setHeaderNotice(msg, isError) {
+        var el = document.getElementById('headerNotice')
+        if (!el) return
+        el.textContent = msg || ''
+        el.style.display = msg ? 'block' : 'none'
+        el.style.color = isError ? 'rgba(185,28,28,0.95)' : 'rgba(100,116,139,0.95)'
+      }
+
+      function setView(next) {
+        view = next
+        var inbox = document.getElementById('inbox')
+        var prechat = document.getElementById('prechat')
+        if (inbox) inbox.style.display = next === 'inbox' ? 'block' : 'none'
+        if (prechat) prechat.style.display = next === 'prechat' ? 'block' : 'none'
+        var composer = document.getElementById('composer')
+        if (composer) composer.style.display = next === 'chatOpen' ? 'flex' : 'none'
+        // chat view is "messages list + composer"; prechat/inbox are cards at top
+        setComposerEnabled(next === 'chatOpen')
+        var endBtn = document.getElementById('endChatTopBtn')
+        if (endBtn) endBtn.style.display = next === 'chatOpen' ? 'inline-block' : 'none'
+        if (next !== 'chatOpen') setHeaderNotice('', false)
+      }
+
+      function loadStoredSessions() {
+        var rows = safeJsonParse(localStorage.getItem(sessionsStorageKey()) || '[]')
+        if (!Array.isArray(rows)) return []
+        return rows.filter(function (r) {
+          return r && r.sessionId && r.sessionSecret
+        })
+      }
+
+      function saveStoredSessions(rows) {
+        try {
+          localStorage.setItem(sessionsStorageKey(), JSON.stringify(rows || []))
+        } catch (_) {}
+      }
+
+      function upsertSessionMeta(meta) {
+        if (!meta || !meta.sessionId || !meta.sessionSecret) return
+        var next = (sessionCache || []).slice()
+        var idx = -1
+        for (var i = 0; i < next.length; i++) {
+          if (String(next[i].sessionId) === String(meta.sessionId)) { idx = i; break }
+        }
+        if (idx === -1) next.unshift(meta)
+        else next[idx] = Object.assign({}, next[idx], meta)
+        sessionCache = next
+        saveStoredSessions(sessionCache)
+      }
+
+      function removeSessionFromHistory(id) {
+        if (!id) return
+        var next = (sessionCache || []).filter(function (s) {
+          return s && String(s.sessionId) !== String(id)
+        })
+        sessionCache = next
+        saveStoredSessions(sessionCache)
+      }
+
+      function formatShort(dt) {
+        try {
+          return new Date(dt || Date.now()).toLocaleString()
+        } catch (_) {
+          return ''
+        }
+      }
+
+      function clearChatSurface() {
+        // Clear rendered bubbles but keep prechat/inbox cards.
+        var container = document.getElementById('messages')
+        if (!container) return
+        // remove all message wrappers except the cards (inbox + prechat)
+        var children = Array.prototype.slice.call(container.children || [])
+        children.forEach(function (c) {
+          if (!c || !c.id) return
+        })
+        // brute: reset to only cards by recreating known nodes is too risky; instead remove non-card nodes:
+        children.forEach(function (c) {
+          if (!c) return
+          if (c.id === 'inbox' || c.id === 'prechat') return
+          container.removeChild(c)
+        })
+        seenMessageKeys = {}
+      }
+
+      async function fetchSessionMeta(id, secret) {
+        var res = await fetch(
+          base + '/sessions/' + encodeURIComponent(id) + '?instanceKey=' + encodeURIComponent(instanceKey) + '&sessionSecret=' + encodeURIComponent(secret)
+        )
+        var json = await readJsonSafe(res)
+        if (!json.success) throw new Error(json.message || 'Failed to load session')
+        return json.data || {}
+      }
+
+      async function closeCurrentSession() {
+        if (!sessionId || !sessionSecret) throw new Error('No active session')
+        var res = await fetch(
+          base
+            + '/sessions/'
+            + encodeURIComponent(sessionId)
+            + '/close?instanceKey='
+            + encodeURIComponent(instanceKey)
+            + '&sessionSecret='
+            + encodeURIComponent(sessionSecret),
+          { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) }
+        )
+        var json = await readJsonSafe(res)
+        if (!json.success) throw new Error(json.message || 'Failed to end chat')
+        return json.data || { status: 'closed' }
+      }
+
+      function anyOpenSession() {
+        for (var i = 0; i < (sessionCache || []).length; i++) {
+          if ((sessionCache[i] && sessionCache[i].status) === 'open') return true
+        }
+        // If we don't know, treat current cached as open to be safe.
+        var cached = safeJsonParse(localStorage.getItem(storageKey()) || 'null')
+        if (cached && cached.sessionId && cached.sessionSecret) return true
+        return false
+      }
+
+      function renderInbox() {
+        var list = document.getElementById('sessionsList')
+        if (!list) return
+        list.innerHTML = ''
+        ;(sessionCache || []).forEach(function (s) {
+          var item = document.createElement('div')
+          item.className = 'inboxRow'
+
+          var av = document.createElement('div')
+          av.className = 'avatar'
+          av.textContent = '•'
+
+          var main = document.createElement('div')
+          main.className = 'rowMain'
+
+          var title = document.createElement('div')
+          title.className = 'rowTitle'
+          title.textContent = 'Conversation'
+
+          var sub = document.createElement('div')
+          sub.className = 'rowSub'
+          sub.textContent = String(s.lastPreview || '').trim() || 'No messages yet'
+
+          var meta = document.createElement('div')
+          meta.className = 'rowMeta'
+          meta.textContent = formatShort(s.lastMessageAt || s.createdAt)
+
+          main.appendChild(title)
+          main.appendChild(sub)
+          main.appendChild(meta)
+
+          var status = document.createElement('div')
+          status.className = 'pill' + (s.status === 'open' ? ' pillOpen' : '')
+          status.textContent = s.status === 'open' ? 'Open' : 'Closed'
+          status.style.marginTop = '2px'
+
+          item.appendChild(av)
+          item.appendChild(main)
+          item.appendChild(status)
+          item.addEventListener('click', async function () {
+            try {
+              setInboxError('')
+              sessionId = String(s.sessionId)
+              sessionSecret = String(s.sessionSecret)
+              // refresh status
+              var metaRes = await fetchSessionMeta(sessionId, sessionSecret)
+              activeSessionStatus = String(metaRes.status || s.status || 'open')
+              upsertSessionMeta(Object.assign({}, s, metaRes, {
+                sessionId: sessionId,
+                sessionSecret: sessionSecret
+              }))
+              try { localStorage.setItem(storageKey(), JSON.stringify({ sessionId: sessionId, sessionSecret: sessionSecret })) } catch (_) {}
+              clearChatSurface()
+              setView(activeSessionStatus === 'closed' ? 'chatClosed' : 'chatOpen')
+              await loadHistory()
+              if (activeSessionStatus !== 'closed') openStream()
+              else setHeaderNotice('This conversation is closed.', false)
+            } catch (e) {
+              setInboxError(e && e.message ? e.message : 'Failed to open conversation')
+            }
+          })
+          list.appendChild(item)
+        })
+      }
+
+      function loadStoredVisitor() {
+        var v = safeJsonParse(localStorage.getItem(visitorStorageKey()) || 'null')
+        if (!v || typeof v !== 'object') return null
+        var out = {
+          name: String(v.name || '').trim(),
+          email: String(v.email || '').trim(),
+          phone: String(v.phone || '').trim(),
+          externalId: String(v.externalId || '').trim()
+        }
+        return out
+      }
+
+      function saveStoredVisitor(v) {
+        try {
+          localStorage.setItem(visitorStorageKey(), JSON.stringify(v || {}))
+        } catch (_) {}
+      }
+
+      function labelForField(key) {
+        if (key === 'name') return 'Full name'
+        if (key === 'email') return 'Email'
+        if (key === 'phone') return 'Phone'
+        if (key === 'externalId') return 'Customer ID'
+        return key
+      }
+
+      function placeholderForField(key) {
+        if (key === 'name') return 'Full name'
+        if (key === 'email') return 'Email address'
+        if (key === 'phone') return 'Phone (optional)'
+        if (key === 'externalId') return 'Customer ID (optional)'
+        return ''
+      }
+
+      function requiredForField(key) {
+        // If admin configured it, treat it as required (except phone/externalId).
+        if (key === 'phone' || key === 'externalId') return false
+        return true
+      }
+
+      function renderPrechat(fields, initial) {
+        var container = document.getElementById('prechatFields')
+        if (!container) return
+        container.innerHTML = ''
+        ;(fields || []).forEach(function (key) {
+          var wrap = document.createElement('div')
+          wrap.className = 'field'
+          var label = document.createElement('div')
+          label.className = 'label'
+          label.textContent = labelForField(key)
+          var input = document.createElement('input')
+          input.className = 'input'
+          input.type = key === 'email' ? 'email' : 'text'
+          input.autocomplete = key === 'email' ? 'email' : key === 'name' ? 'name' : 'off'
+          input.placeholder = placeholderForField(key)
+          input.id = 'prechat_' + key
+          input.value = initial && initial[key] ? String(initial[key]) : ''
+          wrap.appendChild(label)
+          wrap.appendChild(input)
+          container.appendChild(wrap)
+        })
+      }
+
+      function readPrechat(fields) {
+        var v = { name: '', email: '', phone: '', externalId: '' }
+        ;(fields || []).forEach(function (key) {
+          var el = document.getElementById('prechat_' + key)
+          if (!el) return
+          v[key] = String(el.value || '').trim()
+        })
+        return v
+      }
+
+      function validatePrechat(fields, v) {
+        for (var i = 0; i < (fields || []).length; i++) {
+          var key = fields[i]
+          if (!requiredForField(key)) continue
+          if (!String(v[key] || '').trim()) return labelForField(key) + ' is required.'
+        }
+        if (fields && fields.indexOf('email') !== -1) {
+          var email = String(v.email || '').trim()
+          if (email && email.indexOf('@') === -1) return 'Please enter a valid email.'
+        }
+        return ''
+      }
+
+      async function loadConfig() {
+        try {
+          var bases = getBases()
+          var firstRes = await fetch(bases[0] + '/config?instanceKey=' + encodeURIComponent(instanceKey))
+          var firstJson = await readJsonSafe(firstRes)
+          if (firstJson && firstJson.success && firstJson.data) {
+            base = bases[0]
+            widgetConfig.captureFields = Array.isArray(firstJson.data.captureFields) ? firstJson.data.captureFields : ['name', 'email']
+            widgetConfig.welcomeMessage = String(firstJson.data.welcomeMessage || '').trim()
+            return
+          }
+
+          // Fallback to /api/embed/chat mount if /embed/chat isn't routed to API server.
+          var secondRes = await fetch(bases[1] + '/config?instanceKey=' + encodeURIComponent(instanceKey))
+          var secondJson = await readJsonSafe(secondRes)
+          if (secondJson && secondJson.success && secondJson.data) {
+            base = bases[1]
+            widgetConfig.captureFields = Array.isArray(secondJson.data.captureFields) ? secondJson.data.captureFields : ['name', 'email']
+            widgetConfig.welcomeMessage = String(secondJson.data.welcomeMessage || '').trim()
+            return
+          }
+        } catch (_) {}
+      }
+
+      function messageKey(m) {
+        if (!m) return ''
+        // Prefer stable DB id when available.
+        if (m._id) return String(m._id)
+        // Fallback: directional + timestamp + body (best-effort).
+        var dir = String(m.direction || '')
+        var ts = String(m.createdAt || '')
+        var body = String(m.body || '')
+        return dir + '|' + ts + '|' + body
+      }
 
       function appendMessage(m) {
+        var key = messageKey(m)
+        if (key && seenMessageKeys[key]) return
+        if (key) seenMessageKeys[key] = true
+
         var container = document.getElementById('messages')
+        var prechat = document.getElementById('prechat')
+        if (prechat) prechat.style.display = 'none'
         var el = document.createElement('div')
         el.className = 'msg ' + (m.direction === 'inbound' ? 'inbound' : 'outbound')
         el.textContent = m.body || ''
@@ -188,6 +893,22 @@
         wrap.appendChild(meta)
         container.appendChild(wrap)
         container.scrollTop = container.scrollHeight
+
+        // Update local session preview + timestamps for inbox list.
+        try {
+          if (sessionId && sessionSecret) {
+            activeSessionHasMessages = true
+            var body = String(m.body || '').trim()
+            upsertSessionMeta({
+              sessionId: String(sessionId),
+              sessionSecret: String(sessionSecret),
+              createdAt: m.createdAt || Date.now(),
+              lastMessageAt: m.createdAt || Date.now(),
+              status: 'open',
+              lastPreview: body ? body.slice(0, 140) : ''
+            })
+          }
+        } catch (_) {}
       }
 
       async function readJsonSafe(res) {
@@ -216,7 +937,8 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               instanceKey: instanceKey,
-              pageUrl: document.referrer || ''
+              pageUrl: document.referrer || '',
+              visitor: visitorProfile || {}
             })
           }
         )
@@ -225,6 +947,9 @@
       }
 
       async function ensureSession() {
+        if (!visitorProfile && widgetConfig && widgetConfig.captureFields && widgetConfig.captureFields.length) {
+          throw new Error('Visitor info required')
+        }
         var cached = null
         try {
           cached = JSON.parse(localStorage.getItem(storageKey()) || 'null')
@@ -253,6 +978,8 @@
         try {
           localStorage.setItem(storageKey(), JSON.stringify({ sessionId: sessionId, sessionSecret: sessionSecret }))
         } catch (_) {}
+        // Don't add to conversation history until at least one message exists.
+        activeSessionHasMessages = false
       }
 
       async function loadHistory() {
@@ -268,7 +995,10 @@
         )
         var json = await readJsonSafe(res)
         if (!json.success) return
-        json.data.forEach(appendMessage)
+        if (Array.isArray(json.data) && json.data.length) {
+          activeSessionHasMessages = true
+          json.data.forEach(appendMessage)
+        }
       }
 
       function openStream() {
@@ -336,6 +1066,9 @@
       }
 
       async function send(body) {
+        if (activeSessionStatus === 'closed') {
+          throw new Error('Conversation is closed')
+        }
         var res = await fetch(
           base +
             '/sessions/' +
@@ -392,9 +1125,228 @@
 
       ;(async function init() {
         if (!instanceKey) return
-        await ensureSession()
-        await loadHistory()
-        openStream()
+        setView('prechat')
+        visitorProfile = loadStoredVisitor()
+        sessionCache = loadStoredSessions()
+
+        // Bind end-chat early (some flows return before reaching bottom).
+        var endChatTopBtn = document.getElementById('endChatTopBtn')
+        if (endChatTopBtn && !endChatTopBtn.__bound) {
+          endChatTopBtn.__bound = true
+          endChatTopBtn.addEventListener('click', async function () {
+            setHeaderNotice('', false)
+            endChatTopBtn.disabled = true
+            endChatTopBtn.style.opacity = '0.7'
+            setHeaderNotice('Ending chat…', false)
+            try {
+              await closeCurrentSession()
+              try { closeStream() } catch (_) {}
+
+              // If no messages were ever sent, don't store this conversation in history.
+              if (!activeSessionHasMessages) {
+                removeSessionFromHistory(String(sessionId))
+              } else {
+                upsertSessionMeta({
+                  sessionId: String(sessionId),
+                  sessionSecret: String(sessionSecret),
+                  status: 'closed',
+                  lastMessageAt: Date.now()
+                })
+              }
+
+              try { localStorage.removeItem(storageKey()) } catch (_) {}
+              sessionId = null
+              sessionSecret = null
+              activeSessionHasMessages = false
+
+              sessionCache = loadStoredSessions()
+              renderInbox()
+              clearChatSurface()
+              setView('inbox')
+            } catch (e) {
+              setHeaderNotice((e && e.message) ? e.message : 'Failed to end chat', true)
+            } finally {
+              endChatTopBtn.disabled = false
+              endChatTopBtn.style.opacity = '1'
+            }
+          })
+        }
+
+        await loadConfig()
+        var welcome = document.getElementById('welcome')
+        if (welcome && widgetConfig.welcomeMessage) welcome.textContent = widgetConfig.welcomeMessage
+        var subtitle = document.getElementById('subtitle')
+        if (subtitle && visitorProfile && (visitorProfile.name || visitorProfile.email)) {
+          var who = visitorProfile.name || visitorProfile.email
+          subtitle.textContent = 'Welcome back, ' + who
+        }
+
+        var fields = (widgetConfig && widgetConfig.captureFields && widgetConfig.captureFields.length)
+          ? widgetConfig.captureFields
+          : []
+
+        // Always render/bind prechat controls so "New message" can switch to it.
+        renderPrechat(fields, visitorProfile || {})
+        var editBtn = document.getElementById('editBtn')
+        var startBtn = document.getElementById('startBtn')
+
+        function showEditButtonIfReturning() {
+          if (!editBtn) return
+          if (visitorProfile && (visitorProfile.name || visitorProfile.email)) {
+            editBtn.style.display = 'inline-block'
+          } else {
+            editBtn.style.display = 'none'
+          }
+        }
+        showEditButtonIfReturning()
+
+        if (editBtn && !editBtn.__bound) {
+          editBtn.__bound = true
+          editBtn.addEventListener('click', function () {
+            visitorProfile = null
+            showEditButtonIfReturning()
+            renderPrechat(fields, loadStoredVisitor() || {})
+          })
+        }
+
+        if (startBtn && !startBtn.__bound) {
+          startBtn.__bound = true
+          startBtn.addEventListener('click', async function () {
+            setPrechatError('')
+            var v = readPrechat(fields)
+            var err = validatePrechat(fields, v)
+            if (err) return setPrechatError(err)
+            visitorProfile = v
+            saveStoredVisitor(visitorProfile)
+            try {
+              // Prevent new chat if any open session exists.
+              sessionCache = loadStoredSessions()
+              renderInbox()
+              if (anyOpenSession()) {
+                setPrechatError('You already have an open conversation.')
+                return
+              }
+              await ensureSession()
+              await loadHistory()
+              openStream()
+              activeSessionStatus = 'open'
+              setView('chatOpen')
+            } catch (e) {
+              setPrechatError((e && e.message) ? e.message : 'Failed to start chat')
+            }
+          })
+        }
+
+        // Resume active session if present (prevents creating a new chat on refresh).
+        var active = safeJsonParse(localStorage.getItem(storageKey()) || 'null')
+        if (active && active.sessionId && active.sessionSecret) {
+          sessionId = String(active.sessionId)
+          sessionSecret = String(active.sessionSecret)
+          try {
+            var metaActive = await fetchSessionMeta(sessionId, sessionSecret)
+            activeSessionStatus = String(metaActive.status || 'open')
+            upsertSessionMeta(Object.assign({}, metaActive, { sessionId: sessionId, sessionSecret: sessionSecret }))
+            clearChatSurface()
+            setView(activeSessionStatus === 'closed' ? 'chatClosed' : 'chatOpen')
+            await loadHistory()
+            if (activeSessionStatus !== 'closed') openStream()
+            else setHeaderNotice('This conversation is closed.', false)
+            return
+          } catch (_) {
+            // If session is invalid/expired, drop active pointer and fall back to inbox.
+            try { localStorage.removeItem(storageKey()) } catch (_) {}
+            sessionId = null
+            sessionSecret = null
+          }
+        }
+
+        // If there are previous conversations, show inbox first.
+        if (sessionCache && sessionCache.length) {
+          // Refresh "active" session status best-effort.
+          try {
+            for (var i = 0; i < sessionCache.length; i++) {
+              var s = sessionCache[i]
+              if (!s || !s.sessionId || !s.sessionSecret) continue
+              try {
+                var meta = await fetchSessionMeta(String(s.sessionId), String(s.sessionSecret))
+                sessionCache[i] = Object.assign({}, s, meta, { sessionId: String(s.sessionId), sessionSecret: String(s.sessionSecret) })
+              } catch (_) {}
+            }
+            saveStoredSessions(sessionCache)
+          } catch (_) {}
+
+          renderInbox()
+          setView('inbox')
+          var newChatBtn = document.getElementById('newChatBtn')
+          if (newChatBtn && !newChatBtn.__bound) {
+            newChatBtn.__bound = true
+            newChatBtn.addEventListener('click', function () {
+              setInboxError('')
+              sessionCache = loadStoredSessions()
+              renderInbox()
+              if (anyOpenSession()) {
+                setInboxError('You already have an open conversation.')
+                return
+              }
+              // Start new chat flow.
+              try { localStorage.removeItem(storageKey()) } catch (_) {}
+              sessionId = null
+              sessionSecret = null
+              activeSessionStatus = 'open'
+              clearChatSurface()
+              // If we already have required visitor info, skip the form.
+              var stored = loadStoredVisitor()
+              if (stored && !validatePrechat(fields, stored)) {
+                visitorProfile = stored
+                ;(async function () {
+                  try {
+                    await ensureSession()
+                    await loadHistory()
+                    openStream()
+                    activeSessionStatus = 'open'
+                    setView('chatOpen')
+                  } catch (e) {
+                    setInboxError((e && e.message) ? e.message : 'Failed to start chat')
+                    setView('prechat')
+                  }
+                })()
+                return
+              }
+              setView('prechat')
+            })
+          }
+          return
+        }
+
+        if (!fields.length) {
+          // No pre-chat required; start immediately.
+          visitorProfile = visitorProfile || {}
+          try {
+            await ensureSession()
+            await loadHistory()
+            openStream()
+            activeSessionStatus = 'open'
+            setView('chatOpen')
+          } catch (e) {
+            setPrechatError((e && e.message) ? e.message : 'Failed to start chat')
+          }
+          return
+        }
+
+        if (visitorProfile && !validatePrechat(fields, visitorProfile)) {
+          // Returning visitor with required info — start chat right away.
+          try {
+            await ensureSession()
+            await loadHistory()
+            openStream()
+            activeSessionStatus = 'open'
+            setView('chatOpen')
+          } catch (e) {
+            setPrechatError((e && e.message) ? e.message : 'Failed to start chat')
+          }
+          return
+        }
+
       })()
     </script>
   </body>

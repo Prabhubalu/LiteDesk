@@ -447,6 +447,30 @@
     "message": "Enable the Chat connector to generate an embed key and snippet.",
     "description": "Embed hint when chat connector disabled"
   },
+  "chatWidgetPrechatTitle": {
+    "message": "Pre-chat visitor form",
+    "description": "Chat widget settings section title"
+  },
+  "chatWidgetFieldName": {
+    "message": "Full name",
+    "description": "Chat widget pre-chat field label"
+  },
+  "chatWidgetFieldEmail": {
+    "message": "Email",
+    "description": "Chat widget pre-chat field label"
+  },
+  "chatWidgetFieldPhone": {
+    "message": "Phone",
+    "description": "Chat widget pre-chat field label"
+  },
+  "chatWidgetFieldExternalId": {
+    "message": "Customer ID",
+    "description": "Chat widget pre-chat field label"
+  },
+  "chatWidgetWelcomeMessage": {
+    "message": "Welcome message",
+    "description": "Chat widget welcome message label"
+  },
   "mailroomConnectorsEmailGroupTitle": {
     "message": "Email ingestion",
     "description": "Email-related connectors group title"

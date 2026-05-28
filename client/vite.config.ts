@@ -52,7 +52,15 @@ export default defineConfig(({ mode }) => {
           // rewrite: (path) => path.replace(/^\/api/, '') // Removes /api prefix when sending to backend
         },
         // Embed chat API (widget static files stay under /embed/chat.js and /embed/chat/widget.html).
-        '^/embed/chat/sessions': {
+        '^/embed/chat/(config|sessions)(/|\\?|$)': {
+          target: apiProxyTarget,
+          changeOrigin: true,
+        },
+        '^/embed/chat/sessions/[^/]+(/|\\?|$)': {
+          target: apiProxyTarget,
+          changeOrigin: true,
+        },
+        '^/embed/chat/sessions/[^/]+/(messages|typing|stream|close)(/|\\?|$)': {
           target: apiProxyTarget,
           changeOrigin: true,
         },

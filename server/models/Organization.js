@@ -196,7 +196,17 @@ const OrganizationSchema = new mongoose.Schema({
     embed: {
         chat: {
             enabled: { type: Boolean, default: false },
-            publicKey: { type: String, default: null, index: true }
+            publicKey: { type: String, default: null, index: true },
+            config: {
+                captureFields: {
+                    type: [String],
+                    default: ['name', 'email']
+                },
+                welcomeMessage: {
+                    type: String,
+                    default: "Hey! Let’s discuss how we can help you. Fill out the form to start chatting."
+                }
+            }
         }
     },
     

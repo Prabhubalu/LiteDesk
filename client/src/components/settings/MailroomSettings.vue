@@ -368,6 +368,75 @@
 
                 <div v-else class="space-y-3">
                   <p class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.mailroomConnectorChatEmbedTitle') }}</p>
+                  <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-800 space-y-3">
+                    <p class="text-xs font-medium text-gray-700 dark:text-gray-200">{{ t('settings.chatWidgetPrechatTitle') }}</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-200">
+                        <input
+                          type="checkbox"
+                          :checked="embedChatConfig.captureFields.includes('name')"
+                          class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          @change="($event) => {
+                            const checked = $event?.target?.checked === true;
+                            const set = new Set(embedChatConfig.captureFields || []);
+                            if (checked) set.add('name'); else set.delete('name');
+                            embedChatConfig.captureFields = Array.from(set);
+                          }"
+                        />
+                        {{ t('settings.chatWidgetFieldName') }}
+                      </label>
+                      <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-200">
+                        <input
+                          type="checkbox"
+                          :checked="embedChatConfig.captureFields.includes('email')"
+                          class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          @change="($event) => {
+                            const checked = $event?.target?.checked === true;
+                            const set = new Set(embedChatConfig.captureFields || []);
+                            if (checked) set.add('email'); else set.delete('email');
+                            embedChatConfig.captureFields = Array.from(set);
+                          }"
+                        />
+                        {{ t('settings.chatWidgetFieldEmail') }}
+                      </label>
+                      <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-200">
+                        <input
+                          type="checkbox"
+                          :checked="embedChatConfig.captureFields.includes('phone')"
+                          class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          @change="($event) => {
+                            const checked = $event?.target?.checked === true;
+                            const set = new Set(embedChatConfig.captureFields || []);
+                            if (checked) set.add('phone'); else set.delete('phone');
+                            embedChatConfig.captureFields = Array.from(set);
+                          }"
+                        />
+                        {{ t('settings.chatWidgetFieldPhone') }}
+                      </label>
+                      <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-200">
+                        <input
+                          type="checkbox"
+                          :checked="embedChatConfig.captureFields.includes('externalId')"
+                          class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          @change="($event) => {
+                            const checked = $event?.target?.checked === true;
+                            const set = new Set(embedChatConfig.captureFields || []);
+                            if (checked) set.add('externalId'); else set.delete('externalId');
+                            embedChatConfig.captureFields = Array.from(set);
+                          }"
+                        />
+                        {{ t('settings.chatWidgetFieldExternalId') }}
+                      </label>
+                    </div>
+                    <label class="block text-xs text-gray-600 dark:text-gray-300">
+                      {{ t('settings.chatWidgetWelcomeMessage') }}
+                      <textarea
+                        v-model.trim="embedChatConfig.welcomeMessage"
+                        rows="3"
+                        class="mt-1 w-full rounded border border-gray-300 bg-white px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                      />
+                    </label>
+                  </div>
                   <div>
                     <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">
                       {{ t('settings.mailroomConnectorChatEmbedKeyLabel') }}
@@ -796,6 +865,10 @@ const processingFailures = ref([]);
 const replayingId = ref('');
 const activeTab = ref(localStorage.getItem(MAILROOM_TAB_KEY) || 'overview');
 const chatEmbedKey = ref('');
+const embedChatConfig = ref({
+  captureFields: ['name', 'email'],
+  welcomeMessage: "Hey! Let’s discuss how we can help you. Fill out the form to start chatting."
+});
 const form = ref({
   enabled: false,
   activeTemplateId: 'helpdesk_standard_email',
@@ -1196,6 +1269,13 @@ async function load() {
     if (!res.success) throw new Error(res.message || 'Load failed');
     templates.value = res.meta?.templates || [];
     chatEmbedKey.value = res.meta?.chatEmbed?.publicKey || '';
+    embedChatConfig.value = {
+      captureFields: Array.isArray(res.meta?.chatEmbed?.config?.captureFields)
+        ? res.meta.chatEmbed.config.captureFields
+        : ['name', 'email'],
+      welcomeMessage: String(res.meta?.chatEmbed?.config?.welcomeMessage || '').trim()
+        || "Hey! Let’s discuss how we can help you. Fill out the form to start chatting."
+    };
     form.value = {
       enabled: res.data?.enabled === true,
       activeTemplateId: res.data?.activeTemplateId || 'helpdesk_standard_email',
@@ -1253,7 +1333,8 @@ async function save() {
       enabled: form.value.enabled,
       activeTemplateId: selectedTemplateId.value,
       policies: form.value.policies,
-      connectors: form.value.connectors
+      connectors: form.value.connectors,
+      embedChatConfig: embedChatConfig.value
     };
     if (selectedTemplateId.value !== form.value.activeTemplateId) {
       payload.applyTemplateId = selectedTemplateId.value;
@@ -1263,6 +1344,15 @@ async function save() {
     form.value = { ...form.value, ...res.data };
     if (res.meta?.chatEmbed?.publicKey) {
       chatEmbedKey.value = res.meta.chatEmbed.publicKey;
+    }
+    if (res.meta?.chatEmbed?.config) {
+      embedChatConfig.value = {
+        captureFields: Array.isArray(res.meta.chatEmbed.config.captureFields)
+          ? res.meta.chatEmbed.config.captureFields
+          : ['name', 'email'],
+        welcomeMessage: String(res.meta.chatEmbed.config.welcomeMessage || '').trim()
+          || "Hey! Let’s discuss how we can help you. Fill out the form to start chatting."
+      };
     }
     hydrateThreadingStrategies();
     hydrateIngestPolicy();
