@@ -5,21 +5,46 @@ export const HELPDESK_TAB_ALERT_KINDS = ['email', 'chat', 'case'];
 /**
  * @param {'email'|'chat'|'case'} kind
  * @param {number} count
- * @param {(key: string) => string} t
+ * @param {(key: string, params?: object) => string} t
  */
 export function formatHelpdeskTabAlertLabel(kind, count, t) {
-  const key =
-    kind === 'chat'
-      ? 'navigation.tabNewMessage'
-      : kind === 'case'
-        ? 'navigation.tabNewCase'
-        : 'navigation.tabNewEmail';
-  const label = t(key);
-  return count > 1 ? `${label} (${count})` : label;
+  const n = Math.max(1, Number(count) || 1);
+  if (kind === 'chat') {
+    return n > 1
+      ? t('navigation.tabNewMessages', { count: n })
+      : t('navigation.tabNewMessage');
+  }
+  if (kind === 'case') {
+    return n > 1
+      ? t('navigation.tabNewCases', { count: n })
+      : t('navigation.tabNewCase');
+  }
+  return n > 1
+    ? t('navigation.tabNewEmails', { count: n })
+    : t('navigation.tabNewEmail');
 }
 
 /**
- * Gmail-style stacked prefix segments before the case title.
+ * Sum unread chat segments across all tabs (for browser title).
+ * @param {Array} tabs
+ */
+export function sumHelpdeskChatAlertCount(tabs) {
+  if (!Array.isArray(tabs)) return 0;
+  let total = 0;
+  for (const tab of tabs) {
+    const segments = tab?.alertSegments;
+    if (!Array.isArray(segments)) continue;
+    for (const seg of segments) {
+      if (seg.kind === 'chat') {
+        total += Math.max(0, Number(seg.count) || 0);
+      }
+    }
+  }
+  return total;
+}
+
+/**
+ * Gmail-style prefix before the case title: "3 New messages · Case #123"
  * @param {{ alertSegments?: { kind: string, count: number }[], alertBaseTitle?: string, title?: string, titleKey?: string, path?: string }} tab
  */
 export function resolveTabTitleWithHelpdeskAlerts(tab, t, te = () => false) {
@@ -32,16 +57,12 @@ export function resolveTabTitleWithHelpdeskAlerts(tab, t, te = () => false) {
     return resolveTabTitle(tab, t, te);
   }
 
-  const prefixes = [];
-  for (const seg of segments) {
+  const prefixes = segments.map((seg) => {
     const kind =
       seg.kind === 'chat' ? 'chat' : seg.kind === 'case' ? 'case' : 'email';
     const count = Math.max(1, Number(seg.count) || 1);
-    const single = formatHelpdeskTabAlertLabel(kind, 1, t);
-    for (let i = 0; i < count; i += 1) {
-      prefixes.push(single);
-    }
-  }
+    return formatHelpdeskTabAlertLabel(kind, count, t);
+  });
 
   return [...prefixes, base].join(' · ');
 }
@@ -96,6 +117,18 @@ export function createHelpdeskTabAlertController(tabsRef, activeTabIdRef) {
     delete tab.alertBaseTitle;
   }
 
+  function clearTabAlertKind(tab, kind) {
+    if (!tab || !kind) return;
+    if (!Array.isArray(tab.alertSegments)) return;
+    tab.alertSegments = tab.alertSegments.filter((s) => s.kind !== kind);
+    if (!tab.alertSegments.length) {
+      clearTabAlert(tab);
+    } else {
+      tab.alertKind = tab.alertSegments[tab.alertSegments.length - 1]?.kind || null;
+      tab.hasAlert = true;
+    }
+  }
+
   function findHelpdeskCasesListTab() {
     return (
       tabsRef.value.find((tab) => {
@@ -133,6 +166,13 @@ export function createHelpdeskTabAlertController(tabsRef, activeTabIdRef) {
     clearTabAlert(tab);
   }
 
+  function clearTabAlertForCase(caseId, kind) {
+    const tab = findTabByCaseId(caseId);
+    if (!tab) return;
+    if (kind) clearTabAlertKind(tab, kind);
+    else clearTabAlert(tab);
+  }
+
   function tabShowsAlertHighlight(tab, activeTabId) {
     if (!tab?.alertSegments?.length) return false;
     return tab.id !== activeTabId;
@@ -142,9 +182,11 @@ export function createHelpdeskTabAlertController(tabsRef, activeTabIdRef) {
     findTabByCaseId,
     markTabAlert,
     clearTabAlert,
+    clearTabAlertKind,
     markTabAlertForCase,
     markTabAlertForNewCase,
     clearTabAlertById,
+    clearTabAlertForCase,
     tabShowsAlertHighlight
   };
 }

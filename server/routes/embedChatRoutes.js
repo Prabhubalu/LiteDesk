@@ -6,6 +6,7 @@ const {
   closeSession,
   createSession,
   postMessage,
+  postMessageReceipts,
   listMessages,
   setSessionTyping,
   streamMessages
@@ -38,6 +39,7 @@ router.get('/sessions/:sessionId', getSession);
 router.post('/sessions/:sessionId/close', closeSession);
 router.get('/sessions/:sessionId/messages', listMessages);
 router.post('/sessions/:sessionId/messages', postMessage);
+router.post('/sessions/:sessionId/messages/receipts', postMessageReceipts);
 router.post('/sessions/:sessionId/typing', setSessionTyping);
 router.get('/sessions/:sessionId/stream', streamMessages);
 

@@ -50,7 +50,16 @@ const notificationSchema = new Schema({
     },
     id: {
       type: Schema.Types.ObjectId
-    }
+    },
+    title: { type: String },
+    caseId: { type: String },
+    authorName: { type: String },
+    preview: { type: String },
+    subject: { type: String },
+    fromAddress: { type: String },
+    chatSessionId: { type: String },
+    status: { type: String },
+    priority: { type: String }
   },
 
   channel: {

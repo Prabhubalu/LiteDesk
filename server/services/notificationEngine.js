@@ -6,6 +6,7 @@ const { ensureDefaultPreferences } = require('./notificationPreferenceBootstrap'
 const NotificationPreference = require('../models/NotificationPreference');
 const { evaluateRules: evaluateUserRules } = require('./notificationRuleEngine');
 const crypto = require('crypto');
+const { pickEntityForStorage } = require('../utils/notificationEntityDisplay');
 
 const NOTIFICATION_DEBUG = process.env.NOTIFICATION_DEBUG === 'true';
 const DEDUPLICATION_WINDOW_MS = 60000; // 60 seconds
@@ -214,7 +215,7 @@ async function emitNotification({ eventType, entity, organizationId, triggeredBy
         eventType,
         title: recipient.title || rule.title || eventType.replace(/_/g, ' '),
         body: recipient.body || rule.body || '',
-        entity: entity ? { type: entity.type, id: entity.id } : undefined,
+        entity: pickEntityForStorage(entity),
         channel,
         priority: rule.priority || 'NORMAL'
       };

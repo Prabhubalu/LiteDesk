@@ -11,7 +11,18 @@ const ChatMessageSchema = new mongoose.Schema({
 
   body: { type: String, default: '' },
 
-  createdAt: { type: Date, default: Date.now, index: true }
+  /** Recipient received the message (visitor for outbound, agent for inbound). */
+  deliveredAt: { type: Date, default: null },
+  /** Recipient read the message in the chat UI. */
+  readAt: { type: Date, default: null },
+
+  createdAt: { type: Date, default: Date.now, index: true },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+ChatMessageSchema.pre('save', function setUpdatedAt(next) {
+  this.updatedAt = new Date();
+  next();
 });
 
 module.exports = wrapTenantModel(mongoose.model('ChatMessage', ChatMessageSchema));

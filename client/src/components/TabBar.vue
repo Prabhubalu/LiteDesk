@@ -10,8 +10,10 @@ import UserMenu from '@/components/UserMenu.vue';
 import { useUserStatus } from '@/composables/useUserStatus';
 import { XMarkIcon } from '@heroicons/vue/20/solid';
 import { resolveTabTitleWithHelpdeskAlerts } from '@/utils/helpdeskTabAlerts';
+import { useHelpdeskBrowserTitle } from '@/composables/useHelpdeskBrowserTitle';
 
 const { t, te } = useI18n();
+useHelpdeskBrowserTitle();
 const route = useRoute();
 const authStore = useAuthStore();
 const { tabs, activeTabId, switchToTab, closeTab, closeOtherTabs, closeAllTabs } = useTabs();

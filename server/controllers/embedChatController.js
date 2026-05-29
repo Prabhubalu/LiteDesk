@@ -3,6 +3,11 @@ const ChatSession = require('../models/ChatSession');
 const ChatMessage = require('../models/ChatMessage');
 const { handleChannelInteractionForHelpdesk } = require('../services/helpdeskChannelIngestionService');
 const { setTyping, getTypingState } = require('../services/chatTypingService');
+const {
+  markRead,
+  markOutboundDeliveredToVisitor,
+  listReceiptUpdates
+} = require('../services/chatMessageReceiptService');
 
 function secret() {
   return crypto.randomBytes(24).toString('hex');
@@ -229,6 +234,41 @@ async function listMessages(req, res) {
   }
 }
 
+async function postMessageReceipts(req, res) {
+  try {
+    const sessionId = req.params.sessionId;
+    const session = await ChatSession.findById(sessionId).lean();
+    if (!session) return res.status(404).json({ success: false, message: 'Session not found' });
+    await assertSessionSecret(req, session);
+
+    const deliveredIds = Array.isArray(req.body?.deliveredIds) ? req.body.deliveredIds : [];
+    const readIds = Array.isArray(req.body?.readIds) ? req.body.readIds : [];
+
+    let delivered = { modified: 0 };
+    let read = { modified: 0 };
+    if (deliveredIds.length) {
+      delivered = await markOutboundDeliveredToVisitor(session._id, deliveredIds);
+    }
+    if (readIds.length) {
+      read = await markRead({
+        sessionId: session._id,
+        messageIds: readIds,
+        direction: 'outbound'
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: { delivered, read }
+    });
+  } catch (err) {
+    const status = err.statusCode || 500;
+    if (status !== 500) return res.status(status).json({ success: false, message: err.message });
+    console.error('[embedChatController] postMessageReceipts', err);
+    return res.status(500).json({ success: false, message: 'Failed to update receipts' });
+  }
+}
+
 async function setSessionTyping(req, res) {
   try {
     const sessionId = req.params.sessionId;
@@ -268,6 +308,7 @@ async function streamMessages(req, res) {
 
     const startedAt = Date.now();
     let after = Number(req.query.after) || startedAt;
+    let receiptAfter = startedAt;
     let lastTypingHash = '';
     const timer = setInterval(async () => {
       try {
@@ -281,8 +322,27 @@ async function streamMessages(req, res) {
 
         if (rows.length) {
           after = rows[rows.length - 1].createdAt.getTime();
+          const outboundIds = rows
+            .filter((r) => r.direction === 'outbound')
+            .map((r) => String(r._id));
+          if (outboundIds.length) {
+            await markOutboundDeliveredToVisitor(session._id, outboundIds);
+          }
           res.write(`event: messages\n`);
           res.write(`data: ${JSON.stringify(rows)}\n\n`);
+        }
+
+        const receiptRows = await listReceiptUpdates(session._id, receiptAfter);
+        if (receiptRows.length) {
+          const lastAt = Math.max(
+            ...receiptRows.flatMap((r) => [
+              r.deliveredAt ? new Date(r.deliveredAt).getTime() : 0,
+              r.readAt ? new Date(r.readAt).getTime() : 0
+            ])
+          );
+          if (lastAt > receiptAfter) receiptAfter = lastAt;
+          res.write(`event: receipts\n`);
+          res.write(`data: ${JSON.stringify(receiptRows)}\n\n`);
         }
 
         const typing = getTypingState(session._id);
@@ -325,6 +385,7 @@ module.exports = {
   closeSession,
   createSession,
   postMessage,
+  postMessageReceipts,
   listMessages,
   setSessionTyping,
   streamMessages

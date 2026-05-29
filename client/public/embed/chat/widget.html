@@ -107,6 +107,35 @@
         font-size: 11px;
         color: var(--muted);
         margin-top: 4px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .receipt {
+        display: inline-flex;
+        align-items: center;
+        letter-spacing: -0.2em;
+        font-size: 12px;
+        line-height: 1;
+        color: rgba(255, 255, 255, 0.75);
+      }
+      .receipt.delivered,
+      .receipt.read {
+        letter-spacing: -0.35em;
+      }
+      .receipt.read {
+        color: #93c5fd;
+      }
+      .msg-row {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .msg-row.visitor {
+        align-items: flex-end;
+      }
+      .msg-row.agent {
+        align-items: flex-start;
       }
       footer {
         border-top: 1px solid rgba(226,232,240,0.85);
@@ -860,6 +889,8 @@
         } catch (_) {}
       }
 
+      var messageDomById = {}
+
       function messageKey(m) {
         if (!m) return ''
         // Prefer stable DB id when available.
@@ -871,9 +902,71 @@
         return dir + '|' + ts + '|' + body
       }
 
+      function receiptStatusFromMessage(m) {
+        if (!m) return 'sent'
+        if (m.readAt) return 'read'
+        if (m.deliveredAt) return 'delivered'
+        return 'sent'
+      }
+
+      function renderReceiptEl(status) {
+        var span = document.createElement('span')
+        span.className = 'receipt ' + (status || 'sent')
+        span.setAttribute('aria-label', status || 'sent')
+        span.textContent = status === 'sent' ? '✓' : '✓✓'
+        return span
+      }
+
+      function updateReceiptDom(messageId, patch) {
+        var row = messageDomById[String(messageId)]
+        if (!row || !row.receiptEl) return
+        var merged = Object.assign({}, row.message || {}, patch || {})
+        row.message = merged
+        var status = receiptStatusFromMessage(merged)
+        row.receiptEl.className = 'receipt ' + status
+        row.receiptEl.setAttribute('aria-label', status)
+        row.receiptEl.textContent = status === 'sent' ? '✓' : '✓✓'
+      }
+
+      async function postReceipts(payload) {
+        if (!sessionId || !sessionSecret) return
+        try {
+          await fetch(
+            base +
+              '/sessions/' +
+              encodeURIComponent(sessionId) +
+              '/messages/receipts?instanceKey=' +
+              encodeURIComponent(instanceKey),
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Chat-Session-Secret': sessionSecret
+              },
+              body: JSON.stringify(payload || {})
+            }
+          )
+        } catch (_) {}
+      }
+
+      function markOutboundDeliveredAndRead(rows) {
+        var deliveredIds = []
+        var readIds = []
+        ;(rows || []).forEach(function (m) {
+          if (!m || m.direction !== 'outbound' || !m._id) return
+          deliveredIds.push(String(m._id))
+          if (document.visibilityState === 'visible') readIds.push(String(m._id))
+        })
+        if (deliveredIds.length) postReceipts({ deliveredIds: deliveredIds })
+        if (readIds.length) postReceipts({ readIds: readIds })
+      }
+
       function appendMessage(m) {
         var key = messageKey(m)
-        if (key && seenMessageKeys[key]) return
+        if (key && seenMessageKeys[key]) {
+          if (m && m._id) updateReceiptDom(m._id, m)
+          return
+        }
         if (key) seenMessageKeys[key] = true
 
         var container = document.getElementById('messages')
@@ -884,15 +977,27 @@
         el.textContent = m.body || ''
         var meta = document.createElement('div')
         meta.className = 'meta'
-        meta.textContent = new Date(m.createdAt || Date.now()).toLocaleString()
+        var time = document.createElement('span')
+        time.textContent = new Date(m.createdAt || Date.now()).toLocaleString()
+        meta.appendChild(time)
+        var receiptEl = null
+        if (m.direction === 'inbound') {
+          receiptEl = renderReceiptEl(receiptStatusFromMessage(m))
+          meta.appendChild(receiptEl)
+        }
         var wrap = document.createElement('div')
-        wrap.style.display = 'flex'
-        wrap.style.flexDirection = 'column'
-        wrap.style.alignItems = m.direction === 'inbound' ? 'flex-end' : 'flex-start'
+        wrap.className = 'msg-row ' + (m.direction === 'inbound' ? 'visitor' : 'agent')
         wrap.appendChild(el)
         wrap.appendChild(meta)
         container.appendChild(wrap)
+        if (m && m._id) {
+          messageDomById[String(m._id)] = { wrap: wrap, receiptEl: receiptEl, message: m }
+        }
         container.scrollTop = container.scrollHeight
+
+        if (m.direction === 'outbound') {
+          markOutboundDeliveredAndRead([m])
+        }
 
         // Update local session preview + timestamps for inbox list.
         try {
@@ -1042,6 +1147,15 @@
           try {
             var rows = JSON.parse(e.data || '[]')
             rows.forEach(appendMessage)
+            markOutboundDeliveredAndRead(rows)
+          } catch (_) {}
+        })
+        es.addEventListener('receipts', function (e) {
+          try {
+            var rows = JSON.parse(e.data || '[]')
+            rows.forEach(function (patch) {
+              if (patch && patch._id) updateReceiptDom(patch._id, patch)
+            })
           } catch (_) {}
         })
         es.addEventListener('typing', function (e) {

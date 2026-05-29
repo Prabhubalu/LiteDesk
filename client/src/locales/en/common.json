@@ -2107,6 +2107,10 @@
     "message": "Enable Push Notifications",
     "description": "Toast from NotificationPreferences.vue"
   },
+  "notificationPreferencesToastPushPermissionRequired": {
+    "message": "Push notification permission is \"{permission}\". Enable push notifications first.",
+    "description": "Toast from NotificationPreferences.vue when testing push without granted permission"
+  },
   "notificationPreferencesToastNotificationsAreNotSupportedIn": {
     "message": "Notifications are not supported in this browser.",
     "description": "Toast from NotificationPreferences.vue"

@@ -126,18 +126,34 @@ function buildSampleNotification(eventType) {
   const samples = {
     CASE_CREATED: {
       title: 'New case',
-      body: 'SIM-TEST-001 was created (client simulation).'
+      body: 'SIM-TEST-001 was created (client simulation).',
+      entity: { type: 'Case', id: caseEntityId, caseId: 'SIM-TEST-001', title: 'Simulated support case' }
     },
     CASE_EMAIL_RECEIVED: {
       title: 'Customer email',
-      body: 'New email on SIM-TEST-001 from customer@example.com: [Simulated] Support request'
+      body: 'New email on SIM-TEST-001 from customer@example.com: [Simulated] Support request',
+      entity: {
+        type: 'Case',
+        id: caseEntityId,
+        caseId: 'SIM-TEST-001',
+        fromAddress: 'customer@example.com',
+        subject: '[Simulated] Support request',
+        preview: 'Thanks — I still need help with my order.'
+      }
     },
     CASE_CHAT_MESSAGE_RECEIVED: {
       title: 'Live chat message',
-      body: 'New chat on SIM-TEST-001 from Simulated Visitor: Hello, I need help.'
+      body: 'New chat on SIM-TEST-001 from Simulated Visitor: Hello, I need help.',
+      entity: {
+        type: 'Case',
+        id: caseEntityId,
+        caseId: 'SIM-TEST-001',
+        authorName: 'Simulated Visitor',
+        preview: 'Hello, I need help with my order.'
+      }
     }
   };
-  const copy = samples[eventType] || { title: 'Helpdesk', body: 'Simulated notification' };
+  const copy = samples[eventType] || { title: 'Helpdesk', body: 'Simulated notification', entity: { type: 'Case', id: caseEntityId } };
   return {
     id,
     appKey: 'HELPDESK',
@@ -145,7 +161,7 @@ function buildSampleNotification(eventType) {
     title: copy.title,
     body: copy.body,
     priority: 'HIGH',
-    entity: { type: 'Case', id: caseEntityId, caseId: 'SIM-TEST-001' },
+    entity: copy.entity,
     createdAt: new Date().toISOString()
   };
 }

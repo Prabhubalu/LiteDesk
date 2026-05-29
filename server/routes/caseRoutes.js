@@ -26,6 +26,7 @@ const {
   getCaseChatSession,
   listCaseChatMessages,
   sendCaseChatMessage,
+  markCaseChatRead,
   setCaseChatTyping,
   streamCaseChatMessages
 } = require('../controllers/caseChatController');
@@ -64,6 +65,7 @@ router.get('/:id/chat/session', checkPermission('cases', 'view'), getCaseChatSes
 router.get('/:id/chat/messages', checkPermission('cases', 'view'), listCaseChatMessages);
 router.get('/:id/chat/stream', checkPermission('cases', 'view'), streamCaseChatMessages);
 router.post('/:id/chat/messages', checkPermission('cases', 'edit'), sendCaseChatMessage);
+router.post('/:id/chat/read', checkPermission('cases', 'view'), markCaseChatRead);
 router.post('/:id/chat/typing', checkPermission('cases', 'edit'), setCaseChatTyping);
 
 module.exports = router;

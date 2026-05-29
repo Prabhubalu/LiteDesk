@@ -3,6 +3,7 @@ const Notification = require('../models/Notification');
 const domainEvents = require('../constants/domainEvents');
 const Case = require('../models/Case');
 const { emitNotification } = require('./notificationEngine');
+const { pickEntityForStorage } = require('../utils/notificationEntityDisplay');
 const {
   notifyCaseEmailReceived,
   notifyCaseChatMessageReceived
@@ -86,7 +87,7 @@ async function simulateSelfDelivery({ userId, organizationId, eventType, caseRec
     eventType,
     title: copy.title,
     body: copy.body,
-    entity: { type: entity.type, id: entity.id },
+    entity: pickEntityForStorage(entity),
     channel: 'IN_APP',
     priority: 'HIGH',
     readAt: null

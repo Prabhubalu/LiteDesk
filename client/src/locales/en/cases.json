@@ -35,6 +35,54 @@
     "message": "Conversation",
     "description": "Case record main tab"
   },
+  "recordLiveChatHeading": {
+    "message": "Live chat",
+    "description": "Live chat panel heading on case record"
+  },
+  "chatLoading": {
+    "message": "Loading chat…",
+    "description": "Live chat messages loading state"
+  },
+  "chatEmpty": {
+    "message": "No messages yet.",
+    "description": "Live chat empty state"
+  },
+  "chatVisitor": {
+    "message": "Visitor",
+    "description": "Fallback author label for visitor chat messages"
+  },
+  "chatAgent": {
+    "message": "Agent",
+    "description": "Fallback author label for agent chat messages"
+  },
+  "chatStatusLabel": {
+    "message": "Status: {status}",
+    "description": "Live chat session status label"
+  },
+  "chatTyping": {
+    "message": "{name} is typing…",
+    "description": "Visitor typing indicator in live chat"
+  },
+  "chatSessionLoadFailed": {
+    "message": "Failed to load chat session",
+    "description": "Error when chat session cannot be loaded"
+  },
+  "chatLoadFailed": {
+    "message": "Failed to load chat",
+    "description": "Generic live chat load error"
+  },
+  "chatReceiptSent": {
+    "message": "Sent",
+    "description": "WhatsApp-style receipt: message sent"
+  },
+  "chatReceiptDelivered": {
+    "message": "Delivered",
+    "description": "WhatsApp-style receipt: message delivered"
+  },
+  "chatReceiptRead": {
+    "message": "Read",
+    "description": "WhatsApp-style receipt: message read"
+  },
   "recordTabDetails": {
     "message": "Details",
     "description": "Case record right pane details tab"

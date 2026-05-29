@@ -4,6 +4,11 @@ const ChatSession = require('../models/ChatSession');
 const ChatMessage = require('../models/ChatMessage');
 const caseExecutionService = require('../services/caseExecutionService');
 const { setTyping, getTypingState } = require('../services/chatTypingService');
+const {
+  markAllInboundReadForAgent,
+  markInboundDeliveredToAgent,
+  listReceiptUpdates
+} = require('../services/chatMessageReceiptService');
 
 function requireObjectId(id) {
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -128,6 +133,23 @@ exports.sendCaseChatMessage = async (req, res) => {
   }
 };
 
+exports.markCaseChatRead = async (req, res) => {
+  try {
+    const caseRecordId = requireObjectId(req.params.id);
+    const session = await loadSessionByCaseRecordId(caseRecordId);
+    if (!session) {
+      return res.status(404).json({ success: false, message: 'No chat session linked to this case' });
+    }
+    const result = await markAllInboundReadForAgent(session._id);
+    return res.json({ success: true, data: result });
+  } catch (err) {
+    const status = err.statusCode || 500;
+    if (status !== 500) return res.status(status).json({ success: false, message: err.message });
+    console.error('[caseChatController] markCaseChatRead', err);
+    return res.status(500).json({ success: false, message: 'Failed to mark chat read' });
+  }
+};
+
 exports.setCaseChatTyping = async (req, res) => {
   try {
     const caseRecordId = requireObjectId(req.params.id);
@@ -174,6 +196,7 @@ exports.streamCaseChatMessages = async (req, res) => {
 
     const startedAt = Date.now();
     let after = Number(req.query.after) || startedAt;
+    let receiptAfter = startedAt;
     let lastTypingHash = '';
     const timer = setInterval(async () => {
       try {
@@ -187,8 +210,27 @@ exports.streamCaseChatMessages = async (req, res) => {
 
         if (rows.length) {
           after = rows[rows.length - 1].createdAt.getTime();
+          const inboundIds = rows
+            .filter((r) => r.direction === 'inbound')
+            .map((r) => String(r._id));
+          if (inboundIds.length) {
+            await markInboundDeliveredToAgent(session._id, inboundIds);
+          }
           res.write(`event: messages\n`);
           res.write(`data: ${JSON.stringify(rows)}\n\n`);
+        }
+
+        const receiptRows = await listReceiptUpdates(session._id, receiptAfter);
+        if (receiptRows.length) {
+          const lastAt = Math.max(
+            ...receiptRows.flatMap((r) => [
+              r.deliveredAt ? new Date(r.deliveredAt).getTime() : 0,
+              r.readAt ? new Date(r.readAt).getTime() : 0
+            ])
+          );
+          if (lastAt > receiptAfter) receiptAfter = lastAt;
+          res.write(`event: receipts\n`);
+          res.write(`data: ${JSON.stringify(receiptRows)}\n\n`);
         }
 
         const typing = getTypingState(session._id);

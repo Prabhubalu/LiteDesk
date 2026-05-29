@@ -4,6 +4,7 @@ const Task = require('../models/Task');
 const Event = require('../models/Event');
 
 const APP_KEYS = ['SALES', 'AUDIT', 'PORTAL', 'HELPDESK'];
+const { serializeEntityForClient } = require('../utils/notificationEntityDisplay');
 
 /**
  * Enrich notification items with entity titles (Task title, Event eventName, etc.)
@@ -119,10 +120,7 @@ exports.listNotifications = async (req, res) => {
       title: n.title,
       body: n.body,
       priority: n.priority,
-      entity: n.entity ? {
-        type: n.entity.type,
-        id: n.entity.id ? String(n.entity.id) : null
-      } : null,
+      entity: serializeEntityForClient(n.entity),
       readAt: n.readAt,
       createdAt: n.createdAt
     }));
