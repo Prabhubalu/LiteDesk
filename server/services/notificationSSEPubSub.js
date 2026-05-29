@@ -71,6 +71,8 @@ async function startNotificationSSESubscriber() {
     try {
       const envelope = JSON.parse(message);
       if (!envelope?.userId || !envelope?.payload) return;
+      // Same replica already delivered via notificationSSEHub.publish in deliverNotificationSSE.
+      if (envelope.originInstanceId === INSTANCE_ID) return;
       notificationSSEHub.publish({
         userId: envelope.userId,
         organizationId: envelope.organizationId,

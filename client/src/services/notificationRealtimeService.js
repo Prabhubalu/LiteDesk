@@ -10,8 +10,11 @@ import { connectNotificationStream, disconnectAllStreams } from '@/composables/u
 import { getNotificationStreamAppKeysForUser } from '@/utils/notificationStreamAppKeys';
 import { resolveNotificationAppKeyFromPath } from '@/utils/notificationAppKey';
 
-const POLL_INTERVAL_MS = 8_000;
-const HELPDESK_POLL_INTERVAL_MS = 5_000;
+/** Fallback poll only when SSE is down — keep well under general API rate limits. */
+const POLL_INTERVAL_MS = 60_000;
+const HELPDESK_POLL_INTERVAL_MS = 45_000;
+const SSE_HEALTH_MS = 45_000;
+const SYNC_ON_CONNECT_MIN_GAP_MS = 60_000;
 
 export const notificationStreamConnected = ref(false);
 let started = false;
@@ -20,15 +23,28 @@ let visibilityHandler = null;
 let onlineHandler = null;
 let lastPollAt = 0;
 let lastSseActivityAt = 0;
+let lastSyncOnConnectAt = 0;
+let pollInFlight = null;
 const disconnectByAppKey = new Map();
+const connectedAppKeys = new Set();
 
-function markSseActivity() {
-  lastSseActivityAt = Date.now();
-  notificationStreamConnected.value = true;
+function refreshStreamConnectedFlag() {
+  notificationStreamConnected.value = connectedAppKeys.size > 0;
 }
 
-function markSseDisconnected() {
-  notificationStreamConnected.value = false;
+function markSseActivity(appKey) {
+  lastSseActivityAt = Date.now();
+  if (appKey) connectedAppKeys.add(appKey);
+  refreshStreamConnectedFlag();
+}
+
+function markSseDisconnected(appKey) {
+  if (appKey) connectedAppKeys.delete(appKey);
+  refreshStreamConnectedFlag();
+}
+
+function isSseHealthy() {
+  return lastSseActivityAt > 0 && Date.now() - lastSseActivityAt < SSE_HEALTH_MS;
 }
 
 function syncConnections(appKeys, onNotification, authStore, store) {
@@ -37,6 +53,7 @@ function syncConnections(appKeys, onNotification, authStore, store) {
     if (!desired.has(appKey)) {
       disconnect();
       disconnectByAppKey.delete(appKey);
+      markSseDisconnected(appKey);
     }
   }
   for (const appKey of desired) {
@@ -45,13 +62,19 @@ function syncConnections(appKeys, onNotification, authStore, store) {
       authStore,
       isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
       onConnected: () => {
-        markSseActivity();
-        const sinceMs = lastPollAt || Date.now() - 5000;
-        store.syncIncomingNotificationsFromServer({ sinceMs, appKeys: [appKey] });
-        lastPollAt = Date.now();
+        markSseActivity(appKey);
+        const now = Date.now();
+        if (now - lastSyncOnConnectAt >= SYNC_ON_CONNECT_MIN_GAP_MS) {
+          lastSyncOnConnectAt = now;
+          store.syncIncomingNotificationsFromServer({
+            sinceMs: now - 15_000,
+            appKeys: [appKey]
+          });
+          lastPollAt = now;
+        }
       },
-      onHeartbeat: markSseActivity,
-      onDisconnected: markSseDisconnected
+      onHeartbeat: () => markSseActivity(appKey),
+      onDisconnected: () => markSseDisconnected(appKey)
     });
     disconnectByAppKey.set(appKey, disconnect);
   }
@@ -61,10 +84,27 @@ async function pollForNewNotifications(store) {
   if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
     return;
   }
-  const sinceMs = lastPollAt || Date.now() - 3000;
+  if (store.isNotificationApiBackedOff?.()) {
+    return;
+  }
+  if (isSseHealthy()) {
+    return;
+  }
+  if (pollInFlight) {
+    return pollInFlight;
+  }
+
+  const appKey = resolveNotificationAppKeyFromPath();
+  const sinceMs = (lastPollAt || Date.now()) - 15_000;
   lastPollAt = Date.now();
-  await store.syncIncomingNotificationsFromServer({ sinceMs });
-  await store.fetchUnreadPreview({ force: true });
+
+  pollInFlight = store
+    .syncIncomingNotificationsFromServer({ sinceMs, appKeys: [appKey] })
+    .finally(() => {
+      pollInFlight = null;
+    });
+
+  return pollInFlight;
 }
 
 function getPollIntervalMs() {
@@ -92,17 +132,20 @@ export function startNotificationRealtime() {
 
   if (started) {
     refreshNotificationRealtimeConnections();
-    pollForNewNotifications(store);
     return;
   }
 
   started = true;
+  store.beginRealtimeAlertSession();
   lastPollAt = Date.now();
   lastSseActivityAt = 0;
+  lastSyncOnConnectAt = 0;
+  connectedAppKeys.clear();
   notificationStreamConnected.value = false;
 
   const onNotification = (notification) => {
-    markSseActivity();
+    const appKey = notification?.appKey || 'HELPDESK';
+    markSseActivity(appKey);
     store.handleIncomingNotification(notification);
     lastPollAt = Date.now();
     window.dispatchEvent(
@@ -117,16 +160,19 @@ export function startNotificationRealtime() {
   };
 
   store.primeUnreadPreviewFromCache();
-  store.fetchUnreadPreview({ force: true });
+  store.fetchUnreadPreview();
   refreshStreams();
-  pollForNewNotifications(store);
+  if (!isSseHealthy()) {
+    pollForNewNotifications(store);
+  }
   schedulePoll(store);
 
   visibilityHandler = () => {
     if (document.visibilityState !== 'visible') return;
-    lastPollAt = Date.now() - 3000;
     refreshStreams();
-    pollForNewNotifications(store);
+    if (!isSseHealthy()) {
+      pollForNewNotifications(store);
+    }
   };
   document.addEventListener('visibilitychange', visibilityHandler);
 
@@ -140,9 +186,12 @@ export function startNotificationRealtime() {
 export function stopNotificationRealtime() {
   if (!started && disconnectByAppKey.size === 0) return;
   started = false;
+  connectedAppKeys.clear();
   notificationStreamConnected.value = false;
   lastPollAt = 0;
   lastSseActivityAt = 0;
+  lastSyncOnConnectAt = 0;
+  pollInFlight = null;
 
   if (pollTimer) {
     clearInterval(pollTimer);
@@ -179,7 +228,8 @@ export function refreshNotificationRealtimeConnections() {
   }
   const store = useNotificationStore();
   const onNotification = (notification) => {
-    markSseActivity();
+    const appKey = notification?.appKey || 'HELPDESK';
+    markSseActivity(appKey);
     store.handleIncomingNotification(notification);
     lastPollAt = Date.now();
     window.dispatchEvent(
@@ -194,12 +244,9 @@ export function refreshNotificationRealtimeConnections() {
   );
 }
 
-/** Re-run when route changes app context (helpdesk vs sales poll interval). */
+/** Reconcile poll interval when route changes (helpdesk vs sales). */
 export function onNotificationRouteChange() {
   if (!started) return;
   const store = useNotificationStore();
   schedulePoll(store);
-  if (resolveNotificationAppKeyFromPath() === 'HELPDESK') {
-    pollForNewNotifications(store);
-  }
 }

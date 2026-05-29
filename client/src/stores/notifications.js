@@ -25,8 +25,17 @@ export const useNotificationStore = defineStore('notifications', () => {
   let unreadPreviewInFlight = null;
   let lastUnreadPreviewAppKey = '';
   let lastUnreadPreviewAt = 0;
-  const UNREAD_PREVIEW_COALESCE_MS = 2000;
+  const UNREAD_PREVIEW_COALESCE_MS = 10_000;
   const UNREAD_PREVIEW_FRESH_MS = 60 * 1000;
+  /** Avoid poll/SSE races resetting the badge to 0 right after a realtime increment. */
+  const UNREAD_COUNT_ANTICLOBBER_MS = 8000;
+  const RATE_LIMIT_BACKOFF_MS = 90_000;
+  let lastIncomingNotificationAt = 0;
+  let notificationApiBackoffUntil = 0;
+  let syncIncomingInFlight = null;
+  /** Only notifications arriving after this timestamp get toasts/sounds (SSE realtime). */
+  let realtimeAlertsStartedAt = 0;
+  const seenNotificationIds = ref(new Set());
 
   const hasUnread = computed(() => unreadCount.value > 0);
 
@@ -70,6 +79,44 @@ export const useNotificationStore = defineStore('notifications', () => {
     return `notification_unread_preview_v1:${userId}:${appKey}`;
   }
 
+  function seenNotificationIdsStorageKey() {
+    const userId = authStore.user?._id || authStore.user?.id || 'anon';
+    return `notification_seen_ids_v1:${userId}`;
+  }
+
+  function loadSeenNotificationIds() {
+    try {
+      const raw = sessionStorage.getItem(seenNotificationIdsStorageKey());
+      const parsed = raw ? JSON.parse(raw) : [];
+      seenNotificationIds.value = new Set(
+        Array.isArray(parsed) ? parsed.map((id) => String(id)) : []
+      );
+    } catch {
+      seenNotificationIds.value = new Set();
+    }
+  }
+
+  function persistSeenNotificationIds() {
+    try {
+      const ids = [...seenNotificationIds.value].slice(-500);
+      sessionStorage.setItem(seenNotificationIdsStorageKey(), JSON.stringify(ids));
+    } catch {
+      // ignore
+    }
+  }
+
+  function markNotificationSeen(id) {
+    if (!id) return;
+    seenNotificationIds.value.add(String(id));
+    persistSeenNotificationIds();
+  }
+
+  /** Call when the realtime layer starts (login / refresh). */
+  function beginRealtimeAlertSession() {
+    realtimeAlertsStartedAt = Date.now();
+    loadSeenNotificationIds();
+  }
+
   function readCachedUnreadPreview(appKey = currentAppKey()) {
     try {
       const raw = localStorage.getItem(unreadPreviewStorageKey(appKey));
@@ -80,6 +127,21 @@ export const useNotificationStore = defineStore('notifications', () => {
     } catch {
       return null;
     }
+  }
+
+  function applyUnreadCountFromServer(appKey, serverCount) {
+    if (appKey !== currentAppKey()) return;
+    const snoozedUnread = Object.values(getSnoozeMap(appKey)).filter((e) => e?.wasUnread).length;
+    const next = Math.max(0, Number(serverCount || 0) - snoozedUnread);
+    const now = Date.now();
+    if (
+      now - lastIncomingNotificationAt < UNREAD_COUNT_ANTICLOBBER_MS &&
+      next < unreadCount.value
+    ) {
+      return;
+    }
+    unreadCount.value = next;
+    writeCachedUnreadPreview(appKey, next);
   }
 
   function writeCachedUnreadPreview(appKey, count) {
@@ -312,10 +374,27 @@ export const useNotificationStore = defineStore('notifications', () => {
   };
 
   function getAppKeysToSync() {
-    const keys = new Set([currentAppKey()]);
-    const allowed = (authStore.user?.allowedApps || []).map((a) => String(a).toUpperCase());
-    if (allowed.includes('HELPDESK')) keys.add('HELPDESK');
-    return [...keys];
+    return [currentAppKey()];
+  }
+
+  function isNotificationApiBackedOff() {
+    return Date.now() < notificationApiBackoffUntil;
+  }
+
+  function registerNotificationRateLimit() {
+    notificationApiBackoffUntil = Date.now() + RATE_LIMIT_BACKOFF_MS;
+  }
+
+  async function notificationFetch(url, headers) {
+    if (isNotificationApiBackedOff()) {
+      return null;
+    }
+    const res = await fetch(url, { headers });
+    if (res.status === 429) {
+      registerNotificationRateLimit();
+      return null;
+    }
+    return res;
   }
 
   function mapApiItemToIncomingPayload(item, appKey) {
@@ -336,49 +415,55 @@ export const useNotificationStore = defineStore('notifications', () => {
    */
   async function syncIncomingNotificationsFromServer(options = {}) {
     if (!authStore.isAuthenticated) return { ingested: 0 };
+    if (isNotificationApiBackedOff()) return { ingested: 0 };
 
-    const appKeys = options.appKeys || getAppKeysToSync();
-    if (!Object.keys(snoozesByApp.value || {}).length) loadSnoozesFromStorage();
-    if (!Object.keys(dismissedByApp.value || {}).length) loadDismissedFromStorage();
-
-    let ingested = 0;
-    const knownIds = new Set(items.value.map((n) => String(n.id)));
-
-    for (const appKey of appKeys) {
-      try {
-        const res = await fetch(
-          buildQuery({ unreadOnly: true, limit: 15 }, appKey),
-          { headers: buildHeaders() }
-        );
-        if (!res.ok) continue;
-        const data = await res.json();
-        const list = data.items || [];
-        const sinceMs = typeof options.sinceMs === 'number' ? options.sinceMs : Date.now() - 3000;
-
-        for (const item of list) {
-          const id = String(item.id);
-          if (!id || knownIds.has(id) || isDismissed(id, appKey)) continue;
-          const createdMs = item.createdAt ? new Date(item.createdAt).getTime() : 0;
-          if (createdMs && createdMs < sinceMs) continue;
-          knownIds.add(id);
-          handleIncomingNotification(mapApiItemToIncomingPayload(item, appKey));
-          ingested += 1;
-        }
-
-        if (data.unreadCount !== undefined && data.unreadCount !== null) {
-          const snoozedUnread = Object.values(getSnoozeMap(appKey)).filter((e) => e?.wasUnread).length;
-          const serverCount = Math.max(0, Number(data.unreadCount) - snoozedUnread);
-          if (appKey === currentAppKey()) {
-            unreadCount.value = serverCount;
-            writeCachedUnreadPreview(appKey, serverCount);
-          }
-        }
-      } catch (err) {
-        console.error('[notifications] syncIncomingNotificationsFromServer error:', err);
-      }
+    if (syncIncomingInFlight) {
+      return syncIncomingInFlight;
     }
 
-    return { ingested };
+    syncIncomingInFlight = (async () => {
+      const appKeys = options.appKeys || getAppKeysToSync();
+      if (!Object.keys(snoozesByApp.value || {}).length) loadSnoozesFromStorage();
+      if (!Object.keys(dismissedByApp.value || {}).length) loadDismissedFromStorage();
+
+      let ingested = 0;
+      const knownIds = new Set(items.value.map((n) => String(n.id)));
+
+      for (const appKey of appKeys) {
+        try {
+          const res = await notificationFetch(
+            buildQuery({ unreadOnly: true, limit: 15 }, appKey),
+            buildHeaders()
+          );
+          if (!res?.ok) continue;
+          const data = await res.json();
+          const list = data.items || [];
+          const sinceMs = typeof options.sinceMs === 'number' ? options.sinceMs : Date.now() - 3000;
+
+          for (const item of list) {
+            const id = String(item.id);
+            if (!id || knownIds.has(id) || isDismissed(id, appKey)) continue;
+            const createdMs = item.createdAt ? new Date(item.createdAt).getTime() : 0;
+            if (createdMs && createdMs < sinceMs) continue;
+            knownIds.add(id);
+            mergeSyncedNotification(mapApiItemToIncomingPayload(item, appKey));
+            ingested += 1;
+          }
+
+          if (data.unreadCount !== undefined && data.unreadCount !== null) {
+            applyUnreadCountFromServer(appKey, data.unreadCount);
+          }
+        } catch (err) {
+          console.error('[notifications] syncIncomingNotificationsFromServer error:', err);
+        }
+      }
+
+      return { ingested };
+    })().finally(() => {
+      syncIncomingInFlight = null;
+    });
+
+    return syncIncomingInFlight;
   }
 
   const buildHeaders = (extra = {}) => {
@@ -395,6 +480,7 @@ export const useNotificationStore = defineStore('notifications', () => {
 
   async function fetchUnreadPreview(options = {}) {
     if (!authStore.isAuthenticated) return;
+    if (isNotificationApiBackedOff()) return;
 
     const appKeyAtStart = currentAppKey();
     const now = Date.now();
@@ -426,23 +512,19 @@ export const useNotificationStore = defineStore('notifications', () => {
         loadDismissedFromStorage();
       }
       try {
-        const res = await fetch(buildQuery({ unreadOnly: true, limit: 1 }), {
-          headers: buildHeaders()
-        });
-        if (!res.ok) return;
+        const res = await notificationFetch(buildQuery({ unreadOnly: true, limit: 1 }), buildHeaders());
+        if (!res?.ok) return;
         const data = await res.json();
 
         if (currentAppKey() !== appKeyAtStart) return;
 
         if (data.unreadCount !== undefined && data.unreadCount !== null) {
-          const appKey = currentAppKey();
-          const snoozedUnread = Object.values(getSnoozeMap(appKey)).filter(e => e?.wasUnread).length;
-          unreadCount.value = Math.max(0, data.unreadCount - snoozedUnread);
-          writeCachedUnreadPreview(appKey, unreadCount.value);
+          applyUnreadCountFromServer(currentAppKey(), data.unreadCount);
         } else {
-          const fullRes = await fetch(buildQuery({ unreadOnly: true, limit: 100 }), {
-            headers: buildHeaders()
-          });
+          const fullRes = await notificationFetch(
+            buildQuery({ unreadOnly: true, limit: 100 }),
+            buildHeaders()
+          );
           if (currentAppKey() !== appKeyAtStart) return;
           if (fullRes.ok) {
             const fullData = await fullRes.json();
@@ -488,10 +570,8 @@ export const useNotificationStore = defineStore('notifications', () => {
     };
 
     try {
-      const res = await fetch(buildQuery(params), {
-        headers: buildHeaders()
-      });
-      if (!res.ok) throw new Error('Failed to load notifications');
+      const res = await notificationFetch(buildQuery(params), buildHeaders());
+      if (!res?.ok) throw new Error('Failed to load notifications');
       const data = await res.json();
       const incoming = data.items || [];
 
@@ -578,16 +658,53 @@ export const useNotificationStore = defineStore('notifications', () => {
     unreadCount.value = 0;
     nextCursor.value = null;
     error.value = null;
+    lastIncomingNotificationAt = 0;
+    notificationApiBackoffUntil = 0;
+    syncIncomingInFlight = null;
+    realtimeAlertsStartedAt = 0;
+    seenNotificationIds.value = new Set();
+    try {
+      sessionStorage.removeItem(seenNotificationIdsStorageKey());
+    } catch {
+      // ignore
+    }
   }
 
   function formatRelative(date) {
     return dateUtils.fromNow(date);
   }
 
+  function prependNotificationItem(notification) {
+    items.value.unshift({
+      id: notification.id,
+      eventType: notification.eventType,
+      title: notification.title,
+      body: notification.body,
+      priority: notification.priority,
+      entity: notification.entity,
+      readAt: null,
+      createdAt: notification.createdAt
+    });
+  }
+
   /**
-   * Handle incoming notification from SSE stream.
-   * Deduplicates by id, prepends to list, updates unread count.
-   * 
+   * Merge unread history from API poll/SSE reconnect — badge + list only, no toasts.
+   */
+  function mergeSyncedNotification(notification) {
+    if (!notification?.id) return;
+    const appKey = resolveIncomingNotificationAppKey(notification);
+    if (isDismissed(notification.id, appKey)) return;
+    if (items.value.some((n) => n.id === notification.id)) {
+      markNotificationSeen(notification.id);
+      return;
+    }
+    prependNotificationItem(notification);
+    markNotificationSeen(notification.id);
+  }
+
+  /**
+   * Live notification (SSE). Toasts only for items created after this session started.
+   *
    * @param {Object} notification - Notification payload from SSE
    */
   function handleIncomingNotification(notification) {
@@ -596,44 +713,47 @@ export const useNotificationStore = defineStore('notifications', () => {
       return;
     }
 
-    // Deduplicate - check if already exists
-    const existingIndex = items.value.findIndex(n => n.id === notification.id);
-    if (existingIndex >= 0) {
-      // Already exists, skip
+    const id = String(notification.id);
+    if (seenNotificationIds.value.has(id)) {
       return;
     }
 
-    // Prepend to list (newest first)
-    items.value.unshift({
-      id: notification.id,
-      eventType: notification.eventType,
-      title: notification.title,
-      body: notification.body,
-      priority: notification.priority,
-      entity: notification.entity,
-      readAt: null, // New notifications are unread
-      createdAt: notification.createdAt
-    });
+    lastIncomingNotificationAt = Date.now();
 
-  const appKey = resolveIncomingNotificationAppKey(notification);
-  if (!isSnoozed(notification.id, appKey)) {
-    unreadCount.value = Math.max(0, Number(unreadCount.value || 0) + 1);
-    writeCachedUnreadPreview(appKey, unreadCount.value);
-  }
-
-  alertForHelpdeskNotification(notification, { appKey });
-
-  const alertKind = helpdeskAlertKindFromNotification(notification);
-  const caseId = caseIdFromHelpdeskNotification(notification);
-  if (alertKind && caseId) {
-    if (alertKind === 'case') {
-      markHelpdeskTabAlertForNewCase(caseId, alertKind);
-    } else {
-      markHelpdeskTabAlertForCase(caseId, alertKind);
+    const existingIndex = items.value.findIndex((n) => n.id === notification.id);
+    if (existingIndex < 0) {
+      prependNotificationItem(notification);
     }
-  }
 
-  console.log(`[notifications] Incoming notification: ${notification.id} (${notification.title})`);
+    const appKey = resolveIncomingNotificationAppKey(notification);
+    const createdMs = notification.createdAt ? new Date(notification.createdAt).getTime() : 0;
+    const sessionStart = realtimeAlertsStartedAt || Date.now();
+    const isLive =
+      !createdMs || createdMs >= sessionStart - 10_000;
+
+    if (!isLive) {
+      markNotificationSeen(id);
+      return;
+    }
+
+    if (!isSnoozed(notification.id, appKey)) {
+      unreadCount.value = Math.max(0, Number(unreadCount.value || 0) + 1);
+      writeCachedUnreadPreview(appKey, unreadCount.value);
+    }
+
+    alertForHelpdeskNotification(notification, { appKey });
+
+    const alertKind = helpdeskAlertKindFromNotification(notification);
+    const caseId = caseIdFromHelpdeskNotification(notification);
+    if (alertKind && caseId) {
+      if (alertKind === 'case') {
+        markHelpdeskTabAlertForNewCase(caseId, alertKind);
+      } else {
+        markHelpdeskTabAlertForCase(caseId, alertKind);
+      }
+    }
+
+    markNotificationSeen(id);
   }
 
   return {
@@ -645,6 +765,8 @@ export const useNotificationStore = defineStore('notifications', () => {
     nextCursor,
     fetchUnreadPreview,
     syncIncomingNotificationsFromServer,
+    isNotificationApiBackedOff,
+    beginRealtimeAlertSession,
     primeUnreadPreviewFromCache,
     fetchNotifications,
     markRead,

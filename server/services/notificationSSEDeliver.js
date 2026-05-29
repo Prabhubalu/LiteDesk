@@ -12,14 +12,13 @@ async function deliverNotificationSSE(envelope) {
     return;
   }
 
+  const notificationSSEHub = require('./notificationSSEHub');
+  notificationSSEHub.publish(envelope);
+
   if (isRedisConfigured()) {
     const { publishNotificationToCluster } = require('./notificationSSEPubSub');
     await publishNotificationToCluster(envelope);
-    return;
   }
-
-  const notificationSSEHub = require('./notificationSSEHub');
-  notificationSSEHub.publish(envelope);
 }
 
 module.exports = {

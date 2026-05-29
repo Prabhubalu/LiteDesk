@@ -74,6 +74,18 @@ const isOrganizationSettingsReadPath = (req) => {
     return req.method === 'GET' && originalUrl === '/api/settings/organization';
 };
 
+/** In-app notification list + SSE are user-scoped and polled infrequently; exclude from the general API bucket. */
+const isNotificationReadPath = (req) => {
+    const pathOnly = (req.originalUrl || req.path || '').split('?')[0];
+    if (req.method === 'GET' && pathOnly === '/api/notifications/stream') {
+        return true;
+    }
+    if (req.method === 'GET' && pathOnly === '/api/notifications') {
+        return true;
+    }
+    return false;
+};
+
 const getBearerToken = (req) => {
     const authorization = req.headers.authorization || '';
     if (!authorization.startsWith('Bearer ')) {
@@ -172,7 +184,12 @@ const apiLimiter = rateLimit({
         // Auth routes have dedicated, stricter limiters mounted on authRoutes.
         // Organization settings are read during normal settings navigation and
         // have a dedicated relaxed limiter after authentication.
-        return isHealthCheckPath(req) || isAuthPath(req) || isOrganizationSettingsReadPath(req);
+        return (
+            isHealthCheckPath(req) ||
+            isAuthPath(req) ||
+            isOrganizationSettingsReadPath(req) ||
+            isNotificationReadPath(req)
+        );
     }
 });
 

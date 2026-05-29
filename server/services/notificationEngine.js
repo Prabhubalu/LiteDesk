@@ -26,9 +26,23 @@ function debugLog(event, data) {
 /**
  * Generate deduplication key for a notification.
  */
+/** Inbound customer messages must notify on every message, not once per case per minute. */
+const SKIP_DEDUPLICATION_EVENT_TYPES = new Set([
+  domainEvents.CASE_CHAT_MESSAGE_RECEIVED,
+  domainEvents.CASE_EMAIL_RECEIVED
+]);
+
 function getDeduplicationKey(eventType, entity, userId) {
   const entityKey = entity ? `${entity.type}_${entity.id}` : 'no_entity';
-  const hashInput = `${eventType}_${entityKey}_${userId}`;
+  let hashInput = `${eventType}_${entityKey}_${userId}`;
+  if (eventType === domainEvents.CASE_CHAT_MESSAGE_RECEIVED) {
+    const preview = String(entity?.preview || entity?.chatSessionId || '').trim();
+    hashInput += `_${preview || Date.now()}`;
+  } else if (eventType === domainEvents.CASE_EMAIL_RECEIVED) {
+    const subject = String(entity?.subject || '').trim();
+    const preview = String(entity?.preview || '').trim();
+    hashInput += `_${subject}_${preview}`;
+  }
   return crypto.createHash('sha256').update(hashInput).digest('hex');
 }
 
@@ -177,7 +191,7 @@ async function emitNotification({ eventType, entity, organizationId, triggeredBy
     
     // Phase 10G: Deduplication guard - prevent spam from rapid state changes
     const dedupKey = getDeduplicationKey(eventType, entity, recipient.userId);
-    if (isDuplicate(dedupKey)) {
+    if (!SKIP_DEDUPLICATION_EVENT_TYPES.has(eventType) && isDuplicate(dedupKey)) {
       debugLog('NotificationDedupe', {
         eventType,
         userId: String(recipient.userId),

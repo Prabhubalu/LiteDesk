@@ -406,9 +406,9 @@ watch(
 
 watch(
   () => authStore.user?.token,
-  (token) => {
-    if (token && authStore.isAuthenticated) {
-      startNotificationRealtime();
+  (token, prev) => {
+    if (token && token !== prev && authStore.isAuthenticated) {
+      refreshNotificationRealtimeConnections();
     }
   }
 );
