@@ -94,8 +94,87 @@ function resolveOwner(entityType, current) {
   if (entityType === 'people') ref = current.assignedTo || current.lead_owner || null;
   else if (entityType === 'organization') ref = current.assignedTo || null;
   else if (entityType === 'deal') ref = current.ownerId || null;
+  else if (entityType === 'quote') ref = current.ownerId || null;
   if (!ref) return null;
   return toId(ref && ref._id ? ref._id : ref);
+}
+
+function quoteSnapshot(quote) {
+  if (!quote) return null;
+  return {
+    status: quote.status,
+    grandTotal: Number(quote.grandTotal) || 0,
+    subtotal: Number(quote.subtotal) || 0,
+    globalDiscountTotal: Number(quote.globalDiscountTotal) || 0,
+    ownerId: toId(quote.ownerId),
+    approvalRequired: quote.approvalRequired === true,
+    approvalStatus: quote.approvalStatus || null
+  };
+}
+
+const QUOTE_SNAPSHOT_KEYS = [
+  'status',
+  'grandTotal',
+  'subtotal',
+  'globalDiscountTotal',
+  'ownerId',
+  'approvalRequired',
+  'approvalStatus'
+];
+
+/**
+ * Emit Quote domain events for Process Designer / automation.
+ *
+ * @param {Object} opts
+ * @param {Object|null} opts.previous - Quote before change (plain object or null on create)
+ * @param {Object} opts.current - Quote after change
+ * @param {string} [opts.appKey]
+ * @param {string|Object|null} [opts.triggeredBy]
+ * @param {string|Object|null} [opts.organizationId]
+ * @param {boolean} [opts.submittedForApproval] - Also emit quote.submitted_for_approval
+ */
+function emitQuoteEvents({
+  previous,
+  current,
+  appKey = 'SALES',
+  triggeredBy = null,
+  organizationId = null,
+  submittedForApproval = false
+}) {
+  if (!current) return;
+
+  const entityId = toId(current._id);
+  const orgId = organizationId ? toId(organizationId) : toId(current.organizationId);
+  const ownerId = resolveOwner('quote', current);
+  const prevSnap = previous ? quoteSnapshot(previous) : null;
+  const currSnap = quoteSnapshot(current);
+
+  emitRecordLifecycle({
+    entityType: 'quote',
+    entityId,
+    previous: prevSnap,
+    current: currSnap,
+    snapshotKeys: QUOTE_SNAPSHOT_KEYS,
+    appKey,
+    triggeredBy,
+    organizationId: orgId,
+    ownerId
+  });
+
+  if (submittedForApproval) {
+    emit({
+      entityType: 'quote',
+      entityId,
+      eventType: 'quote.submitted_for_approval',
+      previousState: prevSnap,
+      currentState: currSnap,
+      changedFields: ['status', 'approvalRequired', 'approvalStatus'],
+      appKey,
+      triggeredBy,
+      organizationId: orgId,
+      ownerId
+    });
+  }
 }
 
 /**
@@ -411,5 +490,6 @@ module.exports = {
   emitPeopleEvents,
   emitOrganizationEvents,
   emitDealEvents,
+  emitQuoteEvents,
   resolveDealWonLost
 };

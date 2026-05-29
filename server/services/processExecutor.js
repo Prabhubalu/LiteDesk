@@ -417,6 +417,9 @@ async function executeByEvent(event) {
 
   const results = [];
   for (const process of matchingProcesses) {
+    if (process.entityType && event.entityType && process.entityType !== event.entityType) {
+      continue;
+    }
     if (!matchesUpdateWatch(process.trigger, event)) {
       continue;
     }

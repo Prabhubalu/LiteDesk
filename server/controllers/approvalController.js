@@ -15,6 +15,7 @@ const ProcessExecution = require('../models/ProcessExecution');
 const { resumeProcess } = require('../services/processInvocation');
 const { createLogger } = require('../services/automationLogger');
 const { emit: emitDomainEvent } = require('../services/domainEvents');
+const { applyProcessDecisionToQuote } = require('../services/quoteApprovalProcessService');
 
 const log = createLogger('approvalController');
 const Process = require('../models/Process');
@@ -155,6 +156,22 @@ async function getEntitySnapshot(entityType, entityId) {
       const Organization = require('../models/Organization');
       const org = await Organization.findById(entityId).select('name').lean();
       return org ? { type: 'organization', name: org.name } : null;
+    } else if (entityType === 'quote') {
+      const Quote = require('../models/Quote');
+      const quote = await Quote.findById(entityId)
+        .select('quoteNumber quoteTitle status grandTotal currency revisionNumber')
+        .lean();
+      return quote
+        ? {
+            type: 'quote',
+            name: quote.quoteTitle || quote.quoteNumber || 'Quote',
+            quoteNumber: quote.quoteNumber,
+            status: quote.status,
+            grandTotal: quote.grandTotal,
+            currency: quote.currency,
+            revisionNumber: quote.revisionNumber
+          }
+        : null;
     }
     return null;
   } catch {
@@ -286,9 +303,27 @@ exports.approve = async (req, res) => {
       });
     }
 
+    let quoteSync = null;
+    if (approval.entityType === 'quote') {
+      try {
+        quoteSync = await applyProcessDecisionToQuote({
+          approval,
+          decision: 'approved',
+          userId
+        });
+      } catch (syncErr) {
+        log.error('quote_approval_sync_error', { approvalId: approval.approvalId, error: syncErr.message });
+      }
+    }
+
     return res.json({
       success: true,
-      data: { approvalId: approval.approvalId, executionId: resume.executionId, resumed: !resume.paused },
+      data: {
+        approvalId: approval.approvalId,
+        executionId: resume.executionId,
+        resumed: !resume.paused,
+        quoteUpdated: quoteSync?.applied === true
+      },
       message: 'Approved and process resumed'
     });
   } catch (error) {
@@ -371,9 +406,23 @@ exports.reject = async (req, res) => {
       triggeredBy: userId
     });
 
+    let quoteSync = null;
+    if (approval.entityType === 'quote') {
+      try {
+        quoteSync = await applyProcessDecisionToQuote({
+          approval,
+          decision: 'rejected',
+          userId,
+          comment: reason || null
+        });
+      } catch (syncErr) {
+        log.error('quote_approval_sync_error', { approvalId: approval.approvalId, error: syncErr.message });
+      }
+    }
+
     return res.json({
       success: true,
-      data: { approvalId: approval.approvalId },
+      data: { approvalId: approval.approvalId, quoteUpdated: quoteSync?.applied === true },
       message: 'Rejected and process failed'
     });
   } catch (error) {

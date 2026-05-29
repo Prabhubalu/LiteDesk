@@ -93,7 +93,7 @@ const ProcessSchema = new mongoose.Schema({
     required: true,
     index: true
   },
-  /** Target module: people | organization | deal */
+  /** Target module: people | organization | deal | quote */
   entityType: {
     type: String,
     trim: true,

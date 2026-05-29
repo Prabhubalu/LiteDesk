@@ -68,6 +68,7 @@ function emit(event) {
     eventType: event.eventType,
     previousState: event.previousState ?? null,
     currentState: event.currentState ?? null,
+    changedFields: Array.isArray(event.changedFields) ? event.changedFields : [],
     appKey: event.appKey || null,
     triggeredBy: event.triggeredBy ?? null,
     organizationId: event.organizationId ? (event.organizationId.toString ? event.organizationId.toString() : String(event.organizationId)) : null,

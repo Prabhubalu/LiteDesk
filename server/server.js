@@ -442,6 +442,15 @@ connectMasterWithRetry(masterUri)
       console.warn('⚠️  Failed to register default Task relationships:', relError.message);
     }
 
+    // 1.65. Ensure platform quote relationship definitions exist (idempotent)
+    try {
+      const { ensureQuoteRelationshipDefinitions } = require('./constants/defaultQuoteRelationships');
+      await ensureQuoteRelationshipDefinitions();
+      console.log('✅ Quote relationship defaults ensured');
+    } catch (quoteRelError) {
+      console.warn('⚠️  Failed to ensure quote relationship defaults:', quoteRelError.message);
+    }
+
     // 1.7. Refresh relationship key cache (registry.has) for validation without DB hits
     try {
       const relationshipRegistry = require('./utils/relationshipRegistry');

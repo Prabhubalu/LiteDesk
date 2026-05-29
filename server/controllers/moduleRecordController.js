@@ -407,7 +407,12 @@ exports.getActivity = async (req, res) => {
         .lean();
       for (const entry of generic) {
         const author = entry.author;
-        const actorDisplay = author ? `${(author.firstName || '').trim()} ${(author.lastName || '').trim()}`.trim() || author.username || author.email : 'Unknown';
+        const actorLabel = entry.details?.actorLabel;
+        const actorDisplay = actorLabel === 'customer'
+          ? 'Customer'
+          : author
+            ? `${(author.firstName || '').trim()} ${(author.lastName || '').trim()}`.trim() || author.username || author.email
+            : 'Unknown';
         const actorProfile = author ? {
           _id: author._id?.toString(),
           firstName: author.firstName,
@@ -689,6 +694,11 @@ exports.createComment = async (req, res) => {
       if (parent) validatedParentId = parent._id;
     }
 
+    const commentDetails =
+      moduleKey === 'quotes'
+        ? { portalThread: req.body?.internalOnly !== true }
+        : {};
+
     const comment = await RecordActivity.create({
       organizationId,
       moduleKey,
@@ -697,6 +707,7 @@ exports.createComment = async (req, res) => {
       content: normalizedContent || 'Attached file(s)',
       parentCommentId: validatedParentId,
       attachments: validAttachments,
+      details: commentDetails,
       author: req.user._id
     });
 

@@ -11,6 +11,7 @@ const { tickAppointmentReminders } = require('./appointmentReminderSchedulerServ
 const { processDueDeferredAutomationActions } = require('./deferredAutomationSchedulerService');
 const { tickBusinessHoursKpiAggregation } = require('./businessHoursKpiSchedulerService');
 const { tickProcessWaitResume } = require('./processWaitResumeSchedulerService');
+const { tickQuoteExpiry } = require('./quoteExpirySchedulerService');
 
 const NOTIFICATION_DEBUG = process.env.NOTIFICATION_DEBUG === 'true';
 const ENABLE_DIGEST_SCHEDULER = process.env.ENABLE_DIGEST_SCHEDULER !== 'false'; // Default: enabled
@@ -32,6 +33,8 @@ const ENABLE_PROCESS_WAIT_RESUME_SCHEDULER =
   process.env.ENABLE_PROCESS_WAIT_RESUME_SCHEDULER !== 'false';
 const ENABLE_TARGET_RECALC_SCHEDULER =
   process.env.ENABLE_TARGET_RECALC_SCHEDULER !== 'false';
+const ENABLE_QUOTE_EXPIRY_SCHEDULER =
+  process.env.ENABLE_QUOTE_EXPIRY_SCHEDULER !== 'false';
 
 let dailyDigestJob = null;
 let weeklyDigestJob = null;
@@ -46,6 +49,7 @@ let deferredAutomationJob = null;
 let businessHoursKpiJob = null;
 let processWaitResumeJob = null;
 let targetRecalcJob = null;
+let quoteExpiryJob = null;
 
 /**
  * Initialize and start scheduled jobs (node-cron).
@@ -359,6 +363,30 @@ function startScheduledJobs() {
     );
   }
 
+  if (ENABLE_QUOTE_EXPIRY_SCHEDULER) {
+    const quoteExpiryCron = String(process.env.QUOTE_EXPIRY_CRON || '15 * * * *').trim();
+    if (!cron.validate(quoteExpiryCron)) {
+      console.error(
+        `[scheduledJobs] Invalid QUOTE_EXPIRY_CRON="${quoteExpiryCron}" — quote expiry scheduler not started`
+      );
+    } else {
+      quoteExpiryJob = cron.schedule(
+        quoteExpiryCron,
+        async () => {
+          try {
+            await tickQuoteExpiry();
+          } catch (err) {
+            console.error('[scheduledJobs] Quote expiry tick failed:', err.message);
+          }
+        },
+        { scheduled: true, timezone: process.env.DIGEST_TIMEZONE || 'UTC' }
+      );
+      console.log(`[scheduledJobs]   - Quote expiry: cron "${quoteExpiryCron}"`);
+    }
+  } else {
+    console.log('[scheduledJobs] Quote expiry scheduler disabled (ENABLE_QUOTE_EXPIRY_SCHEDULER=false)');
+  }
+
   console.log(`[scheduledJobs]   - Timezone: ${process.env.DIGEST_TIMEZONE || 'UTC'}`);
   if (NOTIFICATION_DEBUG) {
     console.log('[scheduledJobs]   - Debug mode: enabled');
@@ -445,6 +473,12 @@ function stopScheduledJobs() {
     targetRecalcJob.stop();
     targetRecalcJob = null;
     console.log('[scheduledJobs] Target recalc job stopped');
+  }
+
+  if (quoteExpiryJob) {
+    quoteExpiryJob.stop();
+    quoteExpiryJob = null;
+    console.log('[scheduledJobs] Quote expiry job stopped');
   }
 }
 

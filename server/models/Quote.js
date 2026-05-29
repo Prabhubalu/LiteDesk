@@ -93,6 +93,11 @@ const QuoteSchema = new Schema(
       // e.g. { moduleKey, recordId }
     },
 
+    // Quote-level discount (applied after line discounts)
+    globalDiscountType: { type: String, trim: true, default: null },
+    globalDiscountValue: { type: Number, default: 0 },
+    globalDiscountAmount: { type: Number, default: 0 },
+
     // Totals snapshots (authoritative, computed by quoteTotalsService later)
     subtotal: { type: Number, default: 0 },
     lineDiscountTotal: { type: Number, default: 0 },
@@ -110,6 +115,25 @@ const QuoteSchema = new Schema(
     sentAt: { type: Date, default: null },
     publicShareToken: { type: String, default: null, index: true },
     portalAccessEnabled: { type: Boolean, default: false },
+    /** null | draft (provisional) | formal (binding customer release) */
+    customerShareMode: { type: String, trim: true, default: null, index: true },
+    draftSharedAt: { type: Date, default: null },
+
+    /** Customer portal response (accept full/partial, reject) */
+    customerResponse: {
+      responseType: { type: String, trim: true, default: null },
+      acceptedLineIds: { type: [String], default: [] },
+      acceptedSubtotal: { type: Number, default: null },
+      acceptedTaxTotal: { type: Number, default: null },
+      acceptedGrandTotal: { type: Number, default: null },
+      comment: { type: String, trim: true, default: null, maxlength: 2000 },
+      signerName: { type: String, trim: true, default: null, maxlength: 200 },
+      signatureText: { type: String, trim: true, default: null, maxlength: 200 },
+      signatureSignedAt: { type: Date, default: null },
+      agreedToTerms: { type: Boolean, default: null },
+      agreedToTermsAt: { type: Date, default: null },
+      respondedAt: { type: Date, default: null }
+    },
 
     converted: { type: Boolean, default: false, index: true },
     conversionStatus: { type: String, trim: true, default: 'Not Converted', index: true },

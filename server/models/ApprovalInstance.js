@@ -39,7 +39,7 @@ const ApprovalInstanceSchema = new mongoose.Schema({
   entityType: {
     type: String,
     trim: true,
-    enum: ['people', 'organization', 'deal'],
+    enum: ['people', 'organization', 'deal', 'quote'],
     default: null
   },
   entityId: {

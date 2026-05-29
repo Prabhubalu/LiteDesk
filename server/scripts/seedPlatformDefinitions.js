@@ -223,7 +223,7 @@ const MODULE_DEFINITIONS = [
   },
   {
     moduleKey: 'quotes',
-    appKey: 'sales',
+    appKey: 'platform',
     label: 'Quote',
     pluralLabel: 'Quotes',
     entityType: 'TRANSACTION',

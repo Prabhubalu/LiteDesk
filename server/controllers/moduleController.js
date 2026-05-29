@@ -12,12 +12,17 @@ const {
     getDefaultEmailValidations,
     ensurePhoneFieldDefaultValidations,
 } = require('../utils/defaultFieldValidations');
+const {
+    INITIAL_QUOTE_QUICK_CREATE,
+    isInitialQuoteRequiredField,
+} = require('../constants/quoteModuleDefaults');
+const { cloneQuoteDefaultRelationships } = require('../constants/defaultQuoteRelationships');
 
 const MODULE_APP_KEY_BY_KEY = Object.freeze({
     people: 'sales',
     organizations: 'sales',
     deals: 'sales',
-    quotes: 'sales',
+    quotes: 'platform',
     tasks: 'platform',
     events: 'platform',
     forms: 'platform',
@@ -1354,7 +1359,11 @@ function getBaseFieldsForKey(key) {
                     keyField: (key === 'tasks' && taskDefaultKeyFields.has(name)) || (key === 'people' && peopleDefaultKeyFields.has(name)),
                     // IMPORTANT: Some schema fields are conditionally required (function-based required).
                     // For dependency-driven required fields (like events.reviewerId), the module definition must NOT mark them required globally.
-                    required: (key === 'events' && name === 'reviewerId') ? false : !!path.isRequired,
+                    required: (key === 'events' && name === 'reviewerId')
+                        ? false
+                        : (key === 'quotes' && isInitialQuoteRequiredField(name))
+                            ? true
+                            : !!path.isRequired,
                     options: eventTypeOptions,
                     defaultValue: eventTypeDefaultValue,
                     // Use placeholder as helper text for Lookup fields (shown under label in UI); never show technical IDs.
@@ -2042,25 +2051,29 @@ const DEAL_DEFAULT_RELATIONSHIPS = Object.freeze([
     { name: 'Related Contacts', type: 'many_to_many', isLookup: false, targetModuleKey: 'people', relationshipKey: 'deal_contacts' },
     { name: 'Related Tasks', type: 'one_to_many', isLookup: false, targetModuleKey: 'tasks', relationshipKey: 'deal_tasks' },
     { name: 'Related Events', type: 'one_to_many', isLookup: false, targetModuleKey: 'events', relationshipKey: 'deal_events' },
-    { name: 'Related Forms', type: 'one_to_many', isLookup: false, targetModuleKey: 'forms', relationshipKey: 'deal_forms' }
+    { name: 'Related Forms', type: 'one_to_many', isLookup: false, targetModuleKey: 'forms', relationshipKey: 'deal_forms' },
+    { name: 'Related Quotes', type: 'one_to_many', isLookup: false, targetModuleKey: 'quotes', relationshipKey: 'quote_deals' }
 ]);
 
 const PEOPLE_DEFAULT_RELATIONSHIPS = Object.freeze([
     { name: 'Related Organization', type: 'many_to_one', isLookup: true, targetModuleKey: 'organizations', relationshipKey: 'people_organizations' },
     { name: 'Related Deals', type: 'many_to_many', isLookup: false, targetModuleKey: 'deals', relationshipKey: 'people_deals' },
     { name: 'Related Tasks', type: 'many_to_many', isLookup: false, targetModuleKey: 'tasks', relationshipKey: 'people_tasks' },
-    { name: 'Related Events', type: 'many_to_many', isLookup: false, targetModuleKey: 'events', relationshipKey: 'people_events' }
+    { name: 'Related Events', type: 'many_to_many', isLookup: false, targetModuleKey: 'events', relationshipKey: 'people_events' },
+    { name: 'Related Quotes', type: 'one_to_many', isLookup: false, targetModuleKey: 'quotes', relationshipKey: 'quote_people' }
 ]);
 
 const ORGANIZATIONS_DEFAULT_RELATIONSHIPS = Object.freeze([
     { name: 'Related Contacts', type: 'one_to_many', isLookup: false, targetModuleKey: 'people', relationshipKey: 'people_organizations' },
-    { name: 'Related Deals', type: 'one_to_many', isLookup: false, targetModuleKey: 'deals', relationshipKey: 'deal_organizations' }
+    { name: 'Related Deals', type: 'one_to_many', isLookup: false, targetModuleKey: 'deals', relationshipKey: 'deal_organizations' },
+    { name: 'Related Quotes', type: 'one_to_many', isLookup: false, targetModuleKey: 'quotes', relationshipKey: 'quote_organizations' }
 ]);
 
 const CASES_DEFAULT_RELATIONSHIPS = Object.freeze([
     { name: 'Related Contact', type: 'many_to_one', isLookup: true, targetModuleKey: 'people', relationshipKey: 'case_people' },
     { name: 'Related Organization', type: 'many_to_one', isLookup: true, targetModuleKey: 'organizations', relationshipKey: 'case_organizations' },
-    { name: 'Related Tasks', type: 'many_to_many', isLookup: false, targetModuleKey: 'tasks', relationshipKey: 'task_cases' }
+    { name: 'Related Tasks', type: 'many_to_many', isLookup: false, targetModuleKey: 'tasks', relationshipKey: 'task_cases' },
+    { name: 'Related Quotes', type: 'one_to_many', isLookup: false, targetModuleKey: 'quotes', relationshipKey: 'quote_cases' }
 ]);
 
 const EVENTS_DEFAULT_RELATIONSHIPS = Object.freeze([
@@ -2124,6 +2137,10 @@ function shouldUseOverrideRelationships(override, sys) {
     }
 
     if (moduleKey === 'cases' && Array.isArray(override.relationships) && override.relationships.length === 0) {
+        return false;
+    }
+
+    if (moduleKey === 'quotes' && Array.isArray(override.relationships) && override.relationships.length === 0) {
         return false;
     }
 
@@ -2234,7 +2251,7 @@ exports.listModules = async (req, res) => {
                     label: 'Linked Contacts',
                     description: 'Contacts linked to this item (end users, product testers, etc.)'
                 }
-            ] : [],
+            ] : m.key === 'quotes' ? cloneQuoteDefaultRelationships() : [],
             // Phase 17: Add default notification metadata
             notifications: getDefaultNotificationMetadata(m.key)
         };
@@ -2249,7 +2266,7 @@ exports.listModules = async (req, res) => {
         const custom = await ModuleDefinition.find({ 
             $or: [
                 { organizationId: req.user.organizationId, key: { $ne: 'groups' } }, // Org-specific overrides
-                { appKey: 'platform', organizationId: null, moduleKey: { $in: ['people', 'organizations', 'tasks', 'events', 'items', 'forms'] } } // Platform core entities
+                { appKey: 'platform', organizationId: null, moduleKey: { $in: ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes'] } } // Platform core entities
             ]
         })
         .select('+quickCreate +quickCreateLayout')
@@ -2339,6 +2356,30 @@ exports.listModules = async (req, res) => {
                 console.log(`✅ ${moduleKey} quickCreate from org doc (raw Mongo):`, module.quickCreate.length, 'fields');
             } catch (e) {
                 console.warn(`⚠️ Raw quickCreate overlay failed for ${moduleKey}:`, e.message);
+            }
+        }
+
+        // Platform core modules: overlay quickCreate from raw Mongo (Settings saves to platform doc for quotes, etc.)
+        const platformQuickCreateRawKeys = new Set(['tasks', 'organizations', 'events', 'items', 'forms', 'quotes']);
+        for (const module of custom) {
+            if (module.organizationId) continue;
+            if (String(module.appKey || '').toLowerCase() !== 'platform') continue;
+            const moduleKey = String(module.key || module.moduleKey || '').toLowerCase();
+            if (!platformQuickCreateRawKeys.has(moduleKey)) continue;
+            try {
+                const raw = await collection.findOne({
+                    appKey: 'platform',
+                    moduleKey,
+                    organizationId: null
+                });
+                if (!raw || !Array.isArray(raw.quickCreate)) continue;
+                module.quickCreate = raw.quickCreate;
+                if (raw.quickCreateLayout && typeof raw.quickCreateLayout === 'object') {
+                    module.quickCreateLayout = raw.quickCreateLayout;
+                }
+                console.log(`✅ platform.${moduleKey} quickCreate from raw Mongo:`, module.quickCreate.length, 'fields');
+            } catch (e) {
+                console.warn(`⚠️ Raw platform quickCreate overlay failed for ${moduleKey}:`, e.message);
             }
         }
         
@@ -3059,6 +3100,10 @@ exports.listModules = async (req, res) => {
                     finalQuickCreate = ['name', 'amount', 'stage', 'expectedCloseDate', 'ownerId'];
                     console.log('📋 Deals: Applying canonical default Quick Create:', finalQuickCreate);
                 }
+                if (sys.key === 'quotes' && (!finalQuickCreate || finalQuickCreate.length === 0)) {
+                    finalQuickCreate = [...INITIAL_QUOTE_QUICK_CREATE];
+                    console.log('📋 Quotes: Applying canonical default Quick Create:', finalQuickCreate);
+                }
 
                 // Organizations: trust persisted quickCreate when non-empty (see empty-array default above).
                 // Previously we re-injected name/industry/website on every GET, which defeated Settings
@@ -3318,9 +3363,12 @@ exports.listModules = async (req, res) => {
                 if (sys.key === 'cases') {
                     finalFields = enrichCasesModuleFields(finalFields);
                 }
-                const resolvedRelationships = shouldUseOverrideRelationships(override, sys)
+                let resolvedRelationships = shouldUseOverrideRelationships(override, sys)
                     ? override.relationships
                     : (sys.relationships || []);
+                if (sys.key === 'quotes' && (!Array.isArray(resolvedRelationships) || resolvedRelationships.length === 0)) {
+                    resolvedRelationships = cloneQuoteDefaultRelationships();
+                }
                 merged.push({ 
                     ...sys, 
                     fields: finalFields,
@@ -3387,18 +3435,8 @@ exports.listModules = async (req, res) => {
                     defaultQuickCreate = ['name', 'amount', 'stage', 'expectedCloseDate', 'ownerId'];
                 }
                 if (sys.key === 'quotes') {
-                    defaultQuickCreate = [
-                        'quoteTitle',
-                        'quoteDate',
-                        'validUntil',
-                        'currency',
-                        'contactId',
-                        'organizationRefId',
-                        'dealId',
-                        'ownerId'
-                    ];
+                    defaultQuickCreate = [...INITIAL_QUOTE_QUICK_CREATE];
                 }
-
                 let taskFields = withOrder;
                 if (sys.key === 'tasks') {
                     taskFields = normalizeTasksModuleFields(taskFields);
@@ -3425,12 +3463,15 @@ exports.listModules = async (req, res) => {
                 if (sys.key === 'events') {
                     fieldsToPush = (Array.isArray(fieldsToPush) ? fieldsToPush : []).map(normalizeEventFieldConfig);
                 }
+                const defaultRelationships = sys.key === 'quotes'
+                    ? cloneQuoteDefaultRelationships()
+                    : (sys.relationships || []);
                 merged.push({ 
                     ...sys, 
                     fields: fieldsToPush,
                     quickCreate: defaultQuickCreate,
                     quickCreateLayout: { version: 1, rows: [] },
-                    relationships: sys.relationships || [],
+                    relationships: defaultRelationships,
                     // Phase 17: Include default notification metadata
                     notifications: sys.notifications || getDefaultNotificationMetadata(sys.key),
                     pipelineSettings: sys.key === 'deals'
@@ -4023,7 +4064,10 @@ exports.updateSystemModule = async (req, res) => {
             organizationId: orgObjectId,
             $or: [{ key: keyLower }, { moduleKey: keyLower }]
         };
-        const systemKeys = new Set(['people','organizations','deals','cases','tasks','events','forms','items','imports','reports']);
+        const systemKeys = new Set([
+            'people', 'organizations', 'deals', 'cases', 'tasks', 'events', 'forms', 'items', 'quotes',
+            'imports', 'reports'
+        ]);
         if (!systemKeys.has(keyLower)) return res.status(400).json({ success: false, message: 'Invalid system module key' });
         const { fields, enabled, name, relationships, quickCreate, quickCreateLayout, pipelineSettings } = req.body;
         const deprecatedEventAliasKeys = new Set(['relatedorg', 'relatedorgid', 'relatedorganization']);

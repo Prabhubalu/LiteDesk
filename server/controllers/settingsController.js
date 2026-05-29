@@ -35,6 +35,14 @@ const {
     upsertCommunicationConfigForOrganization,
     getGmailOAuthAppCredentialsForServer
 } = require('../platform/communication/config/communicationConfigService');
+const {
+    INITIAL_QUOTE_QUICK_CREATE,
+    applyQuoteModuleFieldDefaults
+} = require('../constants/quoteModuleDefaults');
+const {
+    cloneQuoteDefaultRelationships,
+    ensureQuoteRelationshipDefinitions
+} = require('../constants/defaultQuoteRelationships');
 
 function maskSecret(value) {
     if (!value) return '';
@@ -204,6 +212,8 @@ async function writeIntegrationAuditLog(organization, req, event, details) {
  */
 exports.getCoreModules = async (req, res) => {
     try {
+        await ensurePlatformQuotesModuleDefinition();
+
         const organization = await Organization.findById(req.user.organizationId);
         if (!organization) {
             return res.status(404).json({
@@ -224,7 +234,7 @@ exports.getCoreModules = async (req, res) => {
 
         // Core platform modules with explicit ordering
         // Order: People, Organization, Task, Event, Item, Form (new modules added at the bottom)
-        const coreModuleOrder = ['people', 'organizations', 'tasks', 'events', 'items', 'forms'];
+        const coreModuleOrder = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes'];
         const coreModuleKeys = [...coreModuleOrder, 'reports']; // reports and any future modules go at the end
 
         // Get all platform-owned modules (appKey: 'platform')
@@ -356,6 +366,10 @@ exports.getCoreModules = async (req, res) => {
 exports.getCoreModule = async (req, res) => {
     try {
         const { moduleKey } = req.params;
+        if (String(moduleKey || '').toLowerCase() === 'quotes') {
+            await ensurePlatformQuotesModuleDefinition();
+        }
+
         const organization = await Organization.findById(req.user.organizationId);
         
         if (!organization) {
@@ -427,7 +441,7 @@ exports.getCoreModule = async (req, res) => {
         }
 
         // Core module order: People, Organization, Task, Event, Item, Form (new modules at the end)
-        const coreModuleOrder = ['people', 'organizations', 'tasks', 'events', 'items', 'forms'];
+        const coreModuleOrder = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes'];
         const orderIndex = coreModuleOrder.indexOf(module.moduleKey);
         const order = orderIndex === -1 ? 999 : orderIndex;
 
@@ -487,6 +501,59 @@ function capitalizeFirst(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+/** Ensures platform.quotes exists after promoting Quotes from Sales to core module. */
+async function ensurePlatformQuotesModuleDefinition() {
+    await ensureQuoteRelationshipDefinitions();
+
+    const existing = await ModuleDefinition.findOne({
+        appKey: 'platform',
+        moduleKey: 'quotes',
+        organizationId: null
+    })
+        .select('relationships quickCreate')
+        .lean();
+
+    if (existing) {
+        const patch = {};
+        if (!Array.isArray(existing.relationships) || existing.relationships.length === 0) {
+            patch.relationships = cloneQuoteDefaultRelationships();
+        }
+        if (!Array.isArray(existing.quickCreate) || existing.quickCreate.length === 0) {
+            patch.quickCreate = [...INITIAL_QUOTE_QUICK_CREATE];
+            patch.quickCreateLayout = { version: 1, rows: [] };
+        }
+        if (Object.keys(patch).length) {
+            await ModuleDefinition.updateOne({ _id: existing._id }, { $set: patch });
+        }
+        return;
+    }
+
+    await ModuleDefinition.create({
+        appKey: 'platform',
+        moduleKey: 'quotes',
+        organizationId: null,
+        label: 'Quote',
+        pluralLabel: 'Quotes',
+        entityType: 'TRANSACTION',
+        primaryField: 'quoteTitle',
+        type: 'system',
+        enabled: true,
+        quickCreate: [...INITIAL_QUOTE_QUICK_CREATE],
+        quickCreateLayout: { version: 1, rows: [] },
+        relationships: cloneQuoteDefaultRelationships(),
+        ui: {
+            routeBase: '/quotes',
+            icon: '🧾',
+            showInSidebar: true,
+            sidebarOrder: 8,
+            createLabel: 'Create Quote',
+            listLabel: 'All Quotes',
+            navigationEntity: true,
+            excludeFromApps: true
+        }
+    });
+}
+
 // Helper function to get module usage description
 function getModuleUsage(moduleKey, appKey) {
     const usageMap = {
@@ -520,6 +587,12 @@ function getModuleUsage(moduleKey, appKey) {
         'items': {
             'sales': 'Used for product catalog',
             'projects': 'Used for project resources'
+        },
+        'quotes': {
+            'sales': 'Used for proposals and price quotes',
+            'helpdesk': 'Used for service quotes',
+            'projects': 'Used for project estimates',
+            'portal': 'Used for customer-facing quotes'
         },
         'reports': {
             'sales': 'Used for sales analytics',
@@ -870,7 +943,7 @@ exports.getApplication = async (req, res) => {
         });
 
         // Get optional modules (modules that this app can use but doesn't require)
-        const allCoreModules = ['people', 'organizations', 'events', 'tasks', 'forms', 'items', 'reports'];
+        const allCoreModules = ['people', 'organizations', 'events', 'tasks', 'forms', 'items', 'quotes', 'reports'];
         const optionalModules = allCoreModules
             .filter(moduleKey => !requiredModules.includes(moduleKey))
             .map(moduleKey => {

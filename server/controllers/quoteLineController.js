@@ -7,7 +7,7 @@ const catalogBundleService = require('../services/catalogBundleService');
 const quoteTotalsService = require('../services/quoteTotalsService');
 const { writeQuoteActivity } = require('../services/quoteActivityService');
 const { isCatalogItemSellable } = require('../constants/catalogLifecycle');
-const { isCommerciallyLockedStatus } = require('../constants/quoteLifecycle');
+const { isCommerciallyLockedStatus, assertQuoteRecordEditable } = require('../constants/quoteLifecycle');
 
 function asNumber(value, { defaultValue = NaN } = {}) {
   const n = Number(value);
@@ -23,6 +23,7 @@ function userCanOverridePricing(req) {
 }
 
 function assertQuoteCommerciallyEditableForLineWrite({ quoteStatus, overridePricing, req }) {
+  assertQuoteRecordEditable({ status: quoteStatus });
   if (!isCommerciallyLockedStatus(quoteStatus)) return;
   if (overridePricing === true && userCanOverridePricing(req)) return;
   const err = new Error('Quote is commercially locked after Sent. Create a revision or use override permission.');
@@ -38,24 +39,26 @@ function assertVariantSellable(variantLifecycleState) {
 }
 
 async function recomputeQuoteSimpleTotals({ organizationId, quoteId }) {
-  const lines = await QuoteLine.find({ organizationId, quoteId, hiddenLine: { $ne: true } })
-    .select('_id lineType parentBundleLineId bundleSnapshot hiddenLine lineSubtotal lineTaxTotal lineTotal')
+  const quote = await Quote.findOne({ _id: quoteId, organizationId })
+    .select('globalDiscountType globalDiscountValue globalDiscountAmount adjustmentTotal')
     .lean();
 
-  const { subtotal, taxTotal, grandTotal } = quoteTotalsService.computeQuoteTotalsFromLines(lines);
+  const lines = await QuoteLine.find({ organizationId, quoteId, hiddenLine: { $ne: true } })
+    .select(
+      '_id quoteLineId lineType parentBundleLineId bundleSnapshot hiddenLine quantity unitPriceSnapshot lineSubtotal lineTaxTotal lineTotal discountType discountValue discountAmount'
+    )
+    .lean();
 
-  await Quote.updateOne(
-    { _id: quoteId, organizationId },
-    {
-      $set: {
-        subtotal,
-        taxTotal,
-        grandTotal
-      }
-    }
-  );
+  const totals = quoteTotalsService.computeQuoteTotalsFromLines(lines, {
+    globalDiscountType: quote?.globalDiscountType,
+    globalDiscountValue: quote?.globalDiscountValue,
+    globalDiscountAmount: quote?.globalDiscountAmount,
+    adjustmentTotal: quote?.adjustmentTotal
+  });
 
-  return { subtotal, taxTotal, grandTotal };
+  await Quote.updateOne({ _id: quoteId, organizationId }, { $set: totals });
+
+  return totals;
 }
 
 async function getNextLineOrder({ organizationId, quoteId }) {
@@ -493,6 +496,120 @@ async function addQuoteBundle(req, res) {
 }
 
 /**
+ * PATCH /api/quotes/:id/bundles/:parentLineId/optionals
+ * Body: { includedComponentVariantIds: string[], overridePricing? }
+ */
+async function patchBundleOptionalComponents(req, res) {
+  try {
+    const organizationId = req.user.organizationId;
+    const quoteId = req.params.id;
+    const parentQuoteLineId = req.params.parentLineId;
+
+    const quote = await Quote.findOne({ _id: quoteId, organizationId }).lean();
+    if (!quote) {
+      return res.status(404).json({ success: false, message: 'Quote not found', code: 'NOT_FOUND' });
+    }
+
+    if (quote.approvalLocked === true) {
+      return res.status(400).json({ success: false, message: 'Quote is approval-locked', code: 'APPROVAL_LOCKED' });
+    }
+
+    const override = req.body?.overridePricing === true;
+    assertQuoteCommerciallyEditableForLineWrite({
+      quoteStatus: quote.status,
+      overridePricing: override,
+      req
+    });
+
+    const parent = await QuoteLine.findOne({
+      organizationId,
+      quoteId,
+      quoteLineId: parentQuoteLineId,
+      lineType: 'bundle_parent'
+    });
+    if (!parent) {
+      return res.status(404).json({ success: false, message: 'Bundle line not found', code: 'NOT_FOUND' });
+    }
+
+    const included = new Set(
+      (Array.isArray(req.body?.includedComponentVariantIds) ? req.body.includedComponentVariantIds : [])
+        .map((id) => String(id))
+        .filter(Boolean)
+    );
+
+    const optionalChildren = await QuoteLine.find({
+      organizationId,
+      quoteId,
+      parentBundleLineId: parent._id,
+      lineType: 'bundle_component',
+      optionalLine: true
+    });
+
+    if (!optionalChildren.length) {
+      return res.status(400).json({
+        success: false,
+        code: 'VALIDATION',
+        message: 'This bundle has no optional components on the quote'
+      });
+    }
+
+    const updated = [];
+    for (const child of optionalChildren) {
+      const variantKey = String(child.variantId || '');
+      const shouldInclude = included.has(variantKey);
+      const nextHidden = !shouldInclude;
+
+      if (child.hiddenLine === nextHidden) continue;
+
+      child.hiddenLine = nextHidden;
+      if (child.bundleSnapshot && typeof child.bundleSnapshot === 'object') {
+        child.bundleSnapshot = { ...child.bundleSnapshot, included: shouldInclude };
+      }
+
+      const computed = quoteTotalsService.computeLineTotals(child);
+      child.lineSubtotal = computed.lineSubtotal;
+      child.lineTaxTotal = computed.lineTaxTotal;
+      child.lineTotal = computed.lineTotal;
+      child.lockedSnapshot = child.lockedSnapshot || isCommerciallyLockedStatus(quote.status);
+
+      await child.save();
+      updated.push(child);
+    }
+
+    const totals = await recomputeQuoteSimpleTotals({ organizationId, quoteId });
+    const lines = await QuoteLine.find({ organizationId, quoteId })
+      .sort({ lineOrder: 1, createdAt: 1 })
+      .lean();
+
+    await writeQuoteActivity({
+      organizationId,
+      quoteId,
+      userId: req.user._id,
+      action: 'quote_bundle_optionals_updated',
+      message: 'Bundle optional components updated',
+      details: {
+        parentQuoteLineId,
+        updatedCount: updated.length,
+        totals
+      }
+    });
+
+    return res.json({
+      success: true,
+      data: { parent, lines, totals, updatedLines: updated }
+    });
+  } catch (err) {
+    const status = err?.code === 'VALIDATION' || err?.code === 'QUOTE_COMMERCIALLY_LOCKED' ? 400 : 500;
+    return res.status(status).json({
+      success: false,
+      message: err.message || 'Failed to update bundle optional components',
+      code: err?.code || 'UNKNOWN',
+      details: err?.details || null
+    });
+  }
+}
+
+/**
  * PATCH /api/quotes/:id/lines/:lineId
  * Body: { quantity?, discountType?, discountValue?, discountAmount?, hiddenLine?, optionalLine?, lineGroupKey?, overridePricing? }
  *
@@ -545,6 +662,12 @@ async function patchQuoteLine(req, res) {
       }
       line.discountValue = v;
     }
+    if (
+      (req.body?.discountType !== undefined || req.body?.discountValue !== undefined) &&
+      req.body?.discountAmount === undefined
+    ) {
+      line.discountAmount = 0;
+    }
     if (req.body?.discountAmount !== undefined) {
       const a = asNumber(req.body.discountAmount, { defaultValue: NaN });
       if (!Number.isFinite(a) || a < 0) {
@@ -555,6 +678,12 @@ async function patchQuoteLine(req, res) {
 
     if (req.body?.hiddenLine !== undefined) {
       line.hiddenLine = req.body.hiddenLine === true;
+      if (String(line.lineType || '') === 'bundle_component' && line.bundleSnapshot && typeof line.bundleSnapshot === 'object') {
+        line.bundleSnapshot = {
+          ...line.bundleSnapshot,
+          included: line.hiddenLine !== true
+        };
+      }
     }
     if (req.body?.optionalLine !== undefined) {
       line.optionalLine = req.body.optionalLine === true;
@@ -721,6 +850,8 @@ async function reorderQuoteLines(req, res) {
 module.exports = {
   addQuoteLine,
   addQuoteBundle,
+  patchBundleOptionalComponents,
+  recomputeQuoteSimpleTotals,
   // exported for unit tests (pure guards; no DB)
   userCanOverridePricing,
   assertQuoteCommerciallyEditableForLineWrite,

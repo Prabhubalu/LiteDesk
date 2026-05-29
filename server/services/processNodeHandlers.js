@@ -121,6 +121,12 @@ async function executeCondition(node, context, edges) {
         case 'exists':
           result = fieldValue != null;
           break;
+        case 'greater_than':
+          result = Number(fieldValue) > Number(value);
+          break;
+        case 'less_than':
+          result = Number(fieldValue) < Number(value);
+          break;
         default:
           result = false;
       }

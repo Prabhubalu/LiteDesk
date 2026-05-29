@@ -69,6 +69,17 @@ function cloneCasesLinkableDefaultRelationships() {
   return JSON.parse(JSON.stringify(CASES_LINKABLE_DEFAULT_RELATIONSHIPS));
 }
 
+const QUOTES_LINKABLE_DEFAULT_RELATIONSHIPS = Object.freeze([
+  { name: 'Related Contact', type: 'many_to_one', isLookup: true, targetModuleKey: 'people', relationshipKey: 'quote_people' },
+  { name: 'Related Organization', type: 'many_to_one', isLookup: true, targetModuleKey: 'organizations', relationshipKey: 'quote_organizations' },
+  { name: 'Related Deal', type: 'many_to_one', isLookup: true, targetModuleKey: 'deals', relationshipKey: 'quote_deals' },
+  { name: 'Related Case', type: 'many_to_one', isLookup: true, targetModuleKey: 'cases', relationshipKey: 'quote_cases' }
+]);
+
+function cloneQuotesLinkableDefaultRelationships() {
+  return JSON.parse(JSON.stringify(QUOTES_LINKABLE_DEFAULT_RELATIONSHIPS));
+}
+
 const ITEMS_LINKABLE_DEFAULT_RELATIONSHIPS = Object.freeze([
   { name: 'Vendor', type: 'many_to_one', isLookup: true, targetModuleKey: 'organizations', relationshipKey: 'item_vendor' },
   { name: 'Linked Deals', type: 'many_to_many', isLookup: false, targetModuleKey: 'deals', relationshipKey: 'item_deals' },
@@ -79,6 +90,8 @@ const ITEMS_LINKABLE_DEFAULT_RELATIONSHIPS = Object.freeze([
 function cloneItemsLinkableDefaultRelationships() {
   return JSON.parse(JSON.stringify(ITEMS_LINKABLE_DEFAULT_RELATIONSHIPS));
 }
+
+const { ensureQuoteRelationshipDefinitions } = require('../constants/defaultQuoteRelationships');
 
 async function ensureItemsRelationshipDefinitions() {
   // Create minimal RelationshipDefinition rows if missing, so Items can use Link Record drawer.
@@ -221,6 +234,10 @@ exports.getLinkableTargets = async (req, res) => {
       // Refresh cache so relationshipRegistry.has() recognizes new keys
       await relationshipRegistry.refreshRelationshipKeyCache();
     }
+    if (normalizedModuleKey === 'quotes') {
+      await ensureQuoteRelationshipDefinitions();
+      await relationshipRegistry.refreshRelationshipKeyCache();
+    }
 
     // Load module: tenant override first (organizationId + key or moduleKey), then platform (organizationId null + appKey + moduleKey).
     // If the tenant module exists, use its relationships as-is (even if empty) so clearing relationships in Settings
@@ -254,6 +271,9 @@ exports.getLinkableTargets = async (req, res) => {
     }
     if (normalizedModuleKey === 'items' && relationships.length === 0) {
       relationships = cloneItemsLinkableDefaultRelationships();
+    }
+    if (normalizedModuleKey === 'quotes' && relationships.length === 0) {
+      relationships = cloneQuotesLinkableDefaultRelationships();
     }
     // Resolve missing relationshipKey from platform (so Settings relationships show even if saved before relationshipKey was set)
     const outgoing = await getOutgoingRelationships(normalizedAppKey, normalizedModuleKey);
