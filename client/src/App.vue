@@ -14,9 +14,7 @@ const PlatformShell = defineAsyncComponent(() => import('@/components/PlatformSh
 const NotificationSheet = defineAsyncComponent(() =>
   import('@/components/notifications/NotificationSheet.vue')
 );
-const NotificationContainer = defineAsyncComponent(() =>
-  import('@/components/NotificationContainer.vue')
-);
+import NotificationContainer from '@/components/NotificationContainer.vue';
 const GlobalSurfacesProvider = defineAsyncComponent(() =>
   import('@/components/global/GlobalSurfacesProvider.vue')
 );
@@ -32,7 +30,8 @@ import { identifyProductUser } from '@/config/posthogUser';
 import {
   startNotificationRealtime,
   stopNotificationRealtime,
-  refreshNotificationRealtimeConnections
+  refreshNotificationRealtimeConnections,
+  onNotificationRouteChange
 } from '@/services/notificationRealtimeService';
 
 const appDebugEnabled = () => {
@@ -403,6 +402,22 @@ watch(
     refreshNotificationRealtimeConnections();
   },
   { deep: true }
+);
+
+watch(
+  () => authStore.user?.token,
+  (token) => {
+    if (token && authStore.isAuthenticated) {
+      startNotificationRealtime();
+    }
+  }
+);
+
+watch(
+  () => route.path,
+  () => {
+    onNotificationRouteChange();
+  }
 );
 </script>
 
