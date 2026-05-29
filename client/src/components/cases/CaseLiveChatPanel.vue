@@ -49,7 +49,16 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import {
+  computed,
+  nextTick,
+  onActivated,
+  onBeforeUnmount,
+  onDeactivated,
+  onMounted,
+  ref,
+  watch
+} from 'vue';
 import apiClient from '@/utils/apiClient';
 import { withApiOrigin } from '@/config/apiBase';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -154,7 +163,7 @@ function openStream() {
     try {
       const rows = JSON.parse(evt.data || '[]');
       mergeMessages(rows);
-      emit('chat-updated');
+      scheduleChatUpdatedEmit();
     } catch (_) {}
   });
   es.addEventListener('typing', (evt) => {
@@ -173,16 +182,33 @@ function openStream() {
   });
 }
 
-async function load() {
-  loading.value = true;
-  error.value = '';
-  messages.value = [];
-  sessionId.value = null;
-  visitor.value = null;
-  sessionStatus.value = '';
-  typingLabel.value = '';
-  emit('typing-label', '');
-  closeStream();
+let chatUpdatedEmitTimer = null;
+
+function scheduleChatUpdatedEmit() {
+  if (chatUpdatedEmitTimer) clearTimeout(chatUpdatedEmitTimer);
+  chatUpdatedEmitTimer = setTimeout(() => {
+    chatUpdatedEmitTimer = null;
+    emit('chat-updated');
+  }, 600);
+}
+
+async function load(options = {}) {
+  const soft = options.soft === true;
+  const hasCachedSession = soft && sessionId.value && messages.value.length > 0;
+
+  if (!hasCachedSession) {
+    loading.value = !messages.value.length;
+    error.value = '';
+    if (!soft) {
+      messages.value = [];
+      sessionId.value = null;
+      visitor.value = null;
+      sessionStatus.value = '';
+      typingLabel.value = '';
+      emit('typing-label', '');
+    }
+    closeStream();
+  }
 
   try {
     const sessionRes = await apiClient.get(`/helpdesk/cases/${props.caseId}/chat/session`);
@@ -209,12 +235,28 @@ async function load() {
   }
 }
 
-onMounted(load);
-onBeforeUnmount(closeStream);
+onMounted(() => load());
+onBeforeUnmount(() => {
+  closeStream();
+  if (chatUpdatedEmitTimer) clearTimeout(chatUpdatedEmitTimer);
+});
+
+onDeactivated(closeStream);
+
+onActivated(() => {
+  if (sessionId.value) {
+    openStream();
+    refreshMessages();
+    return;
+  }
+  if (props.caseId) load({ soft: true });
+});
 
 watch(
   () => props.caseId,
-  () => load()
+  (newId, oldId) => {
+    if (newId && newId !== oldId) load();
+  }
 );
 
 defineExpose({ appendMessage, refreshMessages });

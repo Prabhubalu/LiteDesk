@@ -119,7 +119,7 @@
               @delete="showDeleteModal = true"
               @copy-url="copyUrl"
               @reopen="handleReopenCase"
-              @chat-updated="fetchCase"
+              @chat-updated="onChatUpdated"
               @typing="onTyping"
               @send-message="onSendMessage"
               @send-email="onSendEmail"
@@ -241,7 +241,7 @@
             @delete="showDeleteModal = true"
             @copy-url="copyUrl"
             @reopen="handleReopenCase"
-            @chat-updated="fetchCase"
+            @chat-updated="onChatUpdated"
             @typing="onTyping"
             @send-message="onSendMessage"
             @send-email="onSendEmail"
@@ -401,7 +401,7 @@
 </template>
 
 <script setup>
-import { computed, inject, provide, ref } from 'vue';
+import { computed, inject, onActivated, onBeforeUnmount, provide, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import {
@@ -490,6 +490,7 @@ const {
   isClosed,
   priorities,
   fetchCase,
+  refreshCaseSilently,
   loadEmailThreads,
   updateStatus,
   updatePriority,
@@ -511,6 +512,27 @@ const {
 } = useCaseStatusResolution({ caseRecord, updateStatus, notifications, t });
 
 provide(CASE_STATUS_RESOLUTION_KEY, { changeStatus: changeCaseStatus });
+
+let chatRefreshTimer = null;
+
+function onChatUpdated() {
+  if (chatRefreshTimer) clearTimeout(chatRefreshTimer);
+  chatRefreshTimer = setTimeout(() => {
+    chatRefreshTimer = null;
+    refreshCaseSilently();
+  }, 600);
+}
+
+onActivated(() => {
+  if (effectiveCaseId.value && caseRecord.value) {
+    refreshCaseSilently();
+    mainWorkspaceRef.value?.refreshLiveChatMessages?.();
+  }
+});
+
+onBeforeUnmount(() => {
+  if (chatRefreshTimer) clearTimeout(chatRefreshTimer);
+});
 
 const activeTab = ref('conversation');
 const showEditDrawer = ref(false);
@@ -595,7 +617,7 @@ async function onSendEmail(payload) {
     const res = await apiClient.post('/communications/email', payload);
     if (res?.success) {
       notifications.success(t('records.genericEmailSent'));
-      await fetchCase();
+      await refreshCaseSilently();
       await loadEmailThreads();
       mainWorkspaceRef.value?.clearReplyComposer?.();
     } else {
@@ -636,7 +658,7 @@ async function onSendMessage(payload) {
       } else {
         await mainWorkspaceRef.value?.refreshLiveChatMessages?.();
       }
-      await fetchCase();
+      await refreshCaseSilently();
     } catch (err) {
       const msg = err?.response?.data?.message || err?.message || 'Failed to send message';
       notifications.error(msg);

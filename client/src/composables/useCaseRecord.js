@@ -28,6 +28,7 @@ export function useCaseRecord(caseIdRef) {
   const loading = ref(false);
   const error = ref(null);
   const caseRecord = ref(null);
+  const loadedCaseId = ref(null);
 
   function applyCaseRecordUpdate(previous, next) {
     caseRecord.value = mergeCaseRecordFromApi(previous, next);
@@ -45,13 +46,17 @@ export function useCaseRecord(caseIdRef) {
 
   const isClosed = computed(() => caseRecord.value?.status === 'Closed');
 
-  async function fetchCase() {
+  async function fetchCase(options = {}) {
+    const silent = options.silent === true;
     const id = caseIdRef.value;
     if (!id) {
       error.value = 'Missing case id';
       return;
     }
-    loading.value = true;
+    const isSameCase = loadedCaseId.value === id && caseRecord.value;
+    if (!silent && !isSameCase) {
+      loading.value = !caseRecord.value;
+    }
     error.value = null;
     try {
       const res = await apiClient.get(`/helpdesk/cases/${id}`, {
@@ -60,14 +65,22 @@ export function useCaseRecord(caseIdRef) {
       if (!res?.success) {
         throw new Error(res?.message || 'Failed to load case');
       }
-      caseRecord.value = res.data;
+      applyCaseRecordUpdate(caseRecord.value, res.data);
+      loadedCaseId.value = id;
       await Promise.all([loadNeighbors(), loadEmailThreads()]);
     } catch (err) {
-      error.value = err?.message || 'Failed to load case';
-      caseRecord.value = null;
+      if (!silent) {
+        error.value = err?.message || 'Failed to load case';
+        caseRecord.value = null;
+        loadedCaseId.value = null;
+      }
     } finally {
       loading.value = false;
     }
+  }
+
+  function refreshCaseSilently() {
+    return fetchCase({ silent: true });
   }
 
   async function loadNeighbors() {
@@ -237,7 +250,11 @@ export function useCaseRecord(caseIdRef) {
 
   watch(
     caseIdRef,
-    () => {
+    (newId, oldId) => {
+      if (newId && newId !== oldId && loadedCaseId.value && loadedCaseId.value !== newId) {
+        caseRecord.value = null;
+        loadedCaseId.value = null;
+      }
       fetchCase();
       loadUsers();
     },
@@ -266,6 +283,7 @@ export function useCaseRecord(caseIdRef) {
     isClosed,
     priorities: CASE_PRIORITIES,
     fetchCase,
+    refreshCaseSilently,
     loadEmailThreads,
     loadNeighbors,
     updateStatus,
