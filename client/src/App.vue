@@ -29,6 +29,11 @@ const showHelpdeskNotificationDevPanel =
   import.meta.env.VITE_ENABLE_HELPDESK_NOTIFICATION_DEV_PANEL === 'true';
 import { useSidebarState } from '@/composables/useSidebarState';
 import { identifyProductUser } from '@/config/posthogUser';
+import {
+  startNotificationRealtime,
+  stopNotificationRealtime,
+  refreshNotificationRealtimeConnections
+} from '@/services/notificationRealtimeService';
 
 const appDebugEnabled = () => {
   if (!import.meta.env.DEV) return false;
@@ -317,6 +322,7 @@ watch(
   () => authStore.isAuthenticated,
   async (isAuthed, wasAuthed) => {
     if (wasAuthed && !isAuthed) {
+      stopNotificationRealtime();
       resetTabsStateFromModule();
       // Cleanup route watcher when logging out
       if (typeof cleanupRouteWatcher === 'function') {
@@ -378,6 +384,26 @@ watch(
 
 // Enable automatic permission sync every 2 minutes for real-time updates
 usePermissionSync(2);
+
+watch(
+  () => authStore.isAuthenticated,
+  (isAuthed) => {
+    if (isAuthed) {
+      startNotificationRealtime();
+    } else {
+      stopNotificationRealtime();
+    }
+  },
+  { immediate: true }
+);
+
+watch(
+  () => authStore.user?.allowedApps,
+  () => {
+    refreshNotificationRealtimeConnections();
+  },
+  { deep: true }
+);
 </script>
 
 <template>

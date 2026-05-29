@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const Notification = require('../models/Notification');
-const notificationSSEHub = require('./notificationSSEHub');
 const domainEvents = require('../constants/domainEvents');
 const Case = require('../models/Case');
 const { emitNotification } = require('./notificationEngine');
@@ -93,7 +92,8 @@ async function simulateSelfDelivery({ userId, organizationId, eventType, caseRec
     readAt: null
   });
 
-  notificationSSEHub.publish({
+  const { deliverNotificationSSE } = require('./notificationSSEDeliver');
+  await deliverNotificationSSE({
     userId,
     organizationId,
     appKey: 'HELPDESK',

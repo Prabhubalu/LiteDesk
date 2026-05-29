@@ -517,6 +517,13 @@ connectMasterWithRetry(masterUri)
     } else {
       console.log('⏭️  Email queue consumer disabled in web (ENABLE_BULL_IN_WEB=false); use worker process for Bull.');
     }
+
+    try {
+      const { startNotificationSSESubscriber } = require('./services/notificationSSEPubSub');
+      await startNotificationSSESubscriber();
+    } catch (sseSubErr) {
+      console.warn('⚠️  Notification SSE cluster subscriber not started:', sseSubErr.message);
+    }
     
     // 4. Start Server after successful DB connection
     server = app.listen(PORT, () => {
@@ -560,6 +567,12 @@ const gracefulShutdown = async (signal) => {
   
   // Shutdown SSE hub
   try {
+    try {
+      const { stopNotificationSSESubscriber } = require('./services/notificationSSEPubSub');
+      await stopNotificationSSESubscriber();
+    } catch (_err) {
+      // ignore
+    }
     const notificationSSEHub = require('./services/notificationSSEHub');
     console.log('[server] Shutting down notification SSE hub...');
     notificationSSEHub.shutdown();

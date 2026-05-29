@@ -66,12 +66,6 @@ const closeProfileDropdown = () => {
   showProfileDropdown.value = false;
 };
 
-/** Audit layout has no Nav “keeper” bell — TabBar owns SSE there. Platform shell uses Nav’s hidden bell. */
-const tabBarNotificationConnectStream = computed(() => {
-  const p = route.path || '';
-  return p.startsWith('/audit/');
-});
-
 function openNotificationsPanel() {
   window.dispatchEvent(new CustomEvent('arivu:open-notifications-panel'));
 }
@@ -459,7 +453,6 @@ onUnmounted(() => {
         class="hidden lg:flex relative flex-shrink-0 items-center gap-3 pr-3"
       >
         <NotificationBell
-          :connect-stream="tabBarNotificationConnectStream"
           :show-count-on-desktop="true"
           class="!min-h-9 !min-w-9 !p-1.5 rounded-md !border-0 !bg-transparent shadow-none hover:!bg-gray-100 dark:hover:!bg-gray-700 [&_svg]:!w-6 [&_svg]:!h-6"
           @toggle="openNotificationsPanel"
