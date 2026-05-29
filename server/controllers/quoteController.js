@@ -10,9 +10,14 @@ const {
 const quoteTotalsService = require('../services/quoteTotalsService');
 const { writeQuoteActivity } = require('../services/quoteActivityService');
 const {
-  recomputeQuoteSimpleTotals,
   assertQuoteCommerciallyEditableForLineWrite
 } = require('./quoteLineController');
+const {
+  ensureDefaultSection,
+  listQuoteSections,
+  recomputeQuoteAndSectionTotals,
+  cloneSectionsForRevision
+} = require('../services/quoteSectionService');
 const crypto = require('node:crypto');
 const { sendQuoteEmail: sendQuoteEmailService } = require('../services/quoteEmailService');
 const { emitQuoteEvents } = require('../services/domainEventHelpers');
@@ -21,7 +26,8 @@ const {
   findPendingProcessApprovalsForQuote
 } = require('../services/quoteApprovalProcessService');
 const { getQuoteOrgSettings } = require('../services/quoteOrgSettingsService');
-const { assertCanShareQuotePublicly } = require('../constants/quoteLifecycle');
+const { assertCanShareQuotePublicly, assertCanSendQuoteToCustomer } = require('../constants/quoteLifecycle');
+const { buildPublicQuoteUrl } = require('../utils/quotePublicUrl');
 const { expireQuoteIfDue } = require('../services/quoteExpiryService');
 const {
   getQuoteConversionEligibility,
@@ -81,6 +87,12 @@ async function createQuote(req, res) {
       action: 'quote_created',
       message: 'Quote created',
       details: { quoteNumber: quote.quoteNumber }
+    });
+
+    await ensureDefaultSection({
+      organizationId,
+      quoteId: quote._id,
+      lockedSnapshot: false
     });
 
     try {
@@ -174,7 +186,9 @@ async function getQuoteById(req, res) {
       .sort({ lineOrder: 1, createdAt: 1 })
       .lean();
 
-    return res.json({ success: true, data: { ...quote, lines } });
+    const sections = await listQuoteSections({ organizationId, quoteId: quote._id });
+
+    return res.json({ success: true, data: { ...quote, sections, lines } });
   } catch (err) {
     return res.status(500).json({
       success: false,
@@ -580,33 +594,53 @@ async function shareQuote(req, res) {
     }
 
     const orgQuoteSettings = await getQuoteOrgSettings(organizationId);
-    assertCanShareQuotePublicly(quote, orgQuoteSettings);
-
-    // Ensure status is Sent or later when sharing; transition through lifecycle validator.
-    const fromStatus = quote.status;
-    if (String(fromStatus) !== 'Sent') {
-      assertCanTransitionQuoteStatus(fromStatus, 'Sent');
-      quote.status = 'Sent';
-    }
-
+    const mode = String(req.body?.mode || 'formal').toLowerCase() === 'draft' ? 'draft' : 'formal';
     const rotate = req.body?.rotateToken === true || !quote.publicShareToken;
-    if (rotate) {
-      quote.publicShareToken = generatePublicToken();
+
+    if (mode === 'draft') {
+      assertCanSendQuoteToCustomer(quote, orgQuoteSettings);
+      if (rotate) {
+        quote.publicShareToken = generatePublicToken();
+      }
+      quote.portalAccessEnabled = true;
+      quote.customerShareMode = 'draft';
+      quote.draftSharedAt = quote.draftSharedAt || new Date();
+    } else {
+      assertCanShareQuotePublicly(quote, orgQuoteSettings);
+
+      const fromStatus = quote.status;
+      if (String(fromStatus) !== 'Sent') {
+        assertCanTransitionQuoteStatus(fromStatus, 'Sent');
+        quote.status = 'Sent';
+      }
+
+      if (rotate) {
+        quote.publicShareToken = generatePublicToken();
+      }
+      quote.sentToCustomer = true;
+      if (!quote.sentAt) quote.sentAt = new Date();
+      quote.portalAccessEnabled = true;
+      quote.customerShareMode = 'formal';
     }
-    quote.sentToCustomer = true;
-    if (!quote.sentAt) quote.sentAt = new Date();
-    quote.portalAccessEnabled = true;
-    quote.customerShareMode = 'formal';
 
     await quote.save();
+
+    const publicUrl = buildPublicQuoteUrl(quote.publicShareToken, req);
 
     await writeQuoteActivity({
       organizationId,
       quoteId: quote._id,
       userId: req.user._id,
       action: rotate ? 'quote_share_token_rotated' : 'quote_shared',
-      message: rotate ? 'Public share link generated' : 'Public share link reused',
-      details: { status: quote.status }
+      message:
+        mode === 'draft'
+          ? rotate
+            ? 'Draft share link generated'
+            : 'Draft share link reused'
+          : rotate
+            ? 'Public share link generated'
+            : 'Public share link reused',
+      details: { status: quote.status, customerShareMode: quote.customerShareMode }
     });
 
     return res.json({
@@ -614,13 +648,20 @@ async function shareQuote(req, res) {
       data: {
         quoteId: quote._id,
         status: quote.status,
-        publicShareToken: quote.publicShareToken
+        publicShareToken: quote.publicShareToken,
+        customerShareMode: quote.customerShareMode,
+        publicUrl
       }
     });
   } catch (err) {
     const code = err?.code;
     const status =
-      code === 'VALIDATION' || code === 'INVALID_TRANSITION' || code === 'QUOTE_SHARE_NOT_ALLOWED' ? 400 : 500;
+      code === 'VALIDATION' ||
+      code === 'INVALID_TRANSITION' ||
+      code === 'QUOTE_SHARE_NOT_ALLOWED' ||
+      code === 'QUOTE_SEND_NOT_ALLOWED'
+        ? 400
+        : 500;
     return res.status(status).json({
       success: false,
       message: err.message || 'Failed to share quote',
@@ -942,7 +983,7 @@ async function patchQuoteDiscounts(req, res) {
 
     await quote.save();
 
-    const totals = await recomputeQuoteSimpleTotals({ organizationId, quoteId: quote._id });
+    const { totals, sections } = await recomputeQuoteAndSectionTotals({ organizationId, quoteId: quote._id });
     const lines = await QuoteLine.find({ organizationId, quoteId: quote._id })
       .sort({ lineOrder: 1, createdAt: 1 })
       .lean();
@@ -962,6 +1003,7 @@ async function patchQuoteDiscounts(req, res) {
       success: true,
       data: {
         quote: refreshed,
+        sections,
         lines,
         totals
       }
@@ -989,18 +1031,10 @@ async function recalculateQuote(req, res) {
 
     const lines = await QuoteLine.find({ organizationId, quoteId }).lean();
     if (!lines.length) {
-      const emptyTotals = {
-        subtotal: 0,
-        lineDiscountTotal: 0,
-        taxTotal: 0,
-        globalDiscountTotal: 0,
-        adjustmentTotal: Number(quote.adjustmentTotal) || 0,
-        grandTotal: Math.max(0, Number(quote.adjustmentTotal) || 0)
-      };
-      await Quote.updateOne({ _id: quoteId, organizationId }, { $set: emptyTotals });
+      const { totals, sections } = await recomputeQuoteAndSectionTotals({ organizationId, quoteId });
       return res.json({
         success: true,
-        data: { quoteId, totals: emptyTotals, lines: [], updatedLines: 0 }
+        data: { quoteId, totals, sections, lines: [], updatedLines: 0 }
       });
     }
 
@@ -1025,14 +1059,7 @@ async function recalculateQuote(req, res) {
 
     const refreshedLines = await QuoteLine.find({ organizationId, quoteId }).lean();
 
-    const totals = quoteTotalsService.computeQuoteTotalsFromLines(refreshedLines, {
-      globalDiscountType: quote.globalDiscountType,
-      globalDiscountValue: quote.globalDiscountValue,
-      globalDiscountAmount: quote.globalDiscountAmount,
-      adjustmentTotal: quote.adjustmentTotal
-    });
-
-    await Quote.updateOne({ _id: quoteId, organizationId }, { $set: totals });
+    const { totals, sections } = await recomputeQuoteAndSectionTotals({ organizationId, quoteId });
 
     await writeQuoteActivity({
       organizationId,
@@ -1048,6 +1075,7 @@ async function recalculateQuote(req, res) {
       data: {
         quoteId,
         totals,
+        sections,
         lines: refreshedLines,
         updatedLines: bulk.modifiedCount ?? refreshedLines.length
       }
@@ -1292,6 +1320,12 @@ async function reviseQuote(req, res) {
       customFields: quote.customFields ?? {}
     });
 
+    const { oldToNewSectionId } = await cloneSectionsForRevision({
+      organizationId,
+      sourceQuoteId: quote._id,
+      targetQuoteId: next._id
+    });
+
     const prevLines = await QuoteLine.find({ organizationId, quoteId: quote._id })
       .sort({ lineOrder: 1, createdAt: 1 })
       .lean();
@@ -1311,6 +1345,10 @@ async function reviseQuote(req, res) {
       payload.quoteId = next._id;
       payload.parentBundleLineId = null;
       payload.lockedSnapshot = false;
+      if (payload.quoteSectionId) {
+        const mappedSection = oldToNewSectionId.get(String(payload.quoteSectionId));
+        payload.quoteSectionId = mappedSection || null;
+      }
       inserted.push(payload);
     }
 
@@ -1328,6 +1366,11 @@ async function reviseQuote(req, res) {
       delete payload.updatedAt;
       payload.quoteId = next._id;
       payload.lockedSnapshot = false;
+
+      if (payload.quoteSectionId) {
+        const mappedSection = oldToNewSectionId.get(String(payload.quoteSectionId));
+        payload.quoteSectionId = mappedSection || null;
+      }
 
       if (payload.parentBundleLineId) {
         const mapped = oldToNewParentId.get(String(payload.parentBundleLineId));
@@ -1349,15 +1392,7 @@ async function reviseQuote(req, res) {
       await QuoteLine.insertMany(insertedChildren, { ordered: true });
     }
 
-    const newLines = await QuoteLine.find({ organizationId, quoteId: next._id })
-      .select('_id lineType parentBundleLineId bundleSnapshot hiddenLine lineSubtotal lineTaxTotal lineTotal')
-      .lean();
-    const totals = quoteTotalsService.computeQuoteTotalsFromLines(newLines);
-
-    await Quote.updateOne(
-      { _id: next._id, organizationId },
-      { $set: { subtotal: totals.subtotal, taxTotal: totals.taxTotal, grandTotal: totals.grandTotal } }
-    );
+    await recomputeQuoteAndSectionTotals({ organizationId, quoteId: next._id });
 
     await writeQuoteActivity({
       organizationId,

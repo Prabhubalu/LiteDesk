@@ -8,7 +8,49 @@ function applyQuoteTotalsToRecord(record, totals) {
   if (totals.adjustmentTotal != null) record.adjustmentTotal = totals.adjustmentTotal;
 }
 
-export function applyQuoteDiscountsToRecord(record, { quote, lines, totals } = {}) {
+function normalizeQuoteSection(section) {
+  if (!section || typeof section !== 'object') return null;
+  return { ...section };
+}
+
+export function applyQuoteSectionsToRecord(record, sections) {
+  if (!record || !Array.isArray(sections)) return false;
+  record.sections = sections.map(normalizeQuoteSection).filter(Boolean);
+  return true;
+}
+
+function mergeSectionsById(existing, incoming) {
+  const byKey = new Map(
+    (Array.isArray(existing) ? existing : []).map((s) => [String(s?.quoteSectionId || s?._id || ''), s])
+  );
+  for (const section of incoming || []) {
+    const key = String(section?.quoteSectionId || section?._id || '');
+    if (!key) continue;
+    const prev = byKey.get(key);
+    byKey.set(key, prev ? { ...prev, ...section } : { ...section });
+  }
+  return [...byKey.values()].sort(
+    (a, b) => (Number(a?.sectionOrder) || 0) - (Number(b?.sectionOrder) || 0)
+  );
+}
+
+export function applyQuoteLinesMutationToRecord(
+  record,
+  { lines, line, totals, sections } = {}
+) {
+  if (!record) return false;
+  let changed = false;
+  if (applyQuoteLinesUpdateToRecord(record, { lines, line, totals })) {
+    changed = true;
+  }
+  if (Array.isArray(sections)) {
+    record.sections = mergeSectionsById(record.sections, sections);
+    changed = true;
+  }
+  return changed;
+}
+
+export function applyQuoteDiscountsToRecord(record, { quote, lines, totals, sections } = {}) {
   if (!record) return false;
   let changed = false;
   if (quote && typeof quote === 'object') {
@@ -31,6 +73,9 @@ export function applyQuoteDiscountsToRecord(record, { quote, lines, totals } = {
   }
   if (totals) {
     applyQuoteTotalsToRecord(record, totals);
+    changed = true;
+  }
+  if (applyQuoteSectionsToRecord(record, sections)) {
     changed = true;
   }
   return changed;
@@ -83,26 +128,29 @@ export function applyQuoteLinesUpdateToRecord(record, { lines, line, totals } = 
 /**
  * Replace all lines + totals after recalculate.
  */
-export function applyQuoteLinesRecalculateToRecord(record, { lines, totals } = {}) {
+export function applyQuoteLinesRecalculateToRecord(record, { lines, totals, sections } = {}) {
   if (!record) return false;
   if (Array.isArray(lines)) {
     record.lines = lines.map(normalizeQuoteLine).filter(Boolean);
   }
   applyQuoteTotalsToRecord(record, totals);
-  return Boolean(Array.isArray(lines) || totals);
+  if (Array.isArray(sections)) {
+    applyQuoteSectionsToRecord(record, sections);
+  }
+  return Boolean(Array.isArray(lines) || totals || Array.isArray(sections));
 }
 
 /**
  * Append quote lines from API response without refetching the record.
  */
-export function applyQuoteLinesAddToRecord(record, { lines, totals } = {}) {
+export function applyQuoteLinesAddToRecord(record, { lines, totals, sections } = {}) {
   if (!record) return false;
 
   const incoming = (Array.isArray(lines) ? lines : [])
     .map(normalizeQuoteLine)
     .filter(Boolean);
 
-  if (!incoming.length) return false;
+  if (!incoming.length && !sections) return false;
 
   const current = Array.isArray(record.lines) ? [...record.lines] : [];
   const existingIds = new Set(
@@ -119,13 +167,16 @@ export function applyQuoteLinesAddToRecord(record, { lines, totals } = {}) {
   current.sort((a, b) => (Number(a?.lineOrder) || 0) - (Number(b?.lineOrder) || 0));
   record.lines = current;
   applyQuoteTotalsToRecord(record, totals);
+  if (Array.isArray(sections)) {
+    applyQuoteSectionsToRecord(record, sections);
+  }
   return true;
 }
 
 /**
  * Apply quote line delete response to an in-memory record without refetching.
  */
-export function applyQuoteLineDeleteToRecord(record, { deletedLine, totals } = {}) {
+export function applyQuoteLineDeleteToRecord(record, { deletedLine, totals, sections } = {}) {
   if (!record || !deletedLine) return false;
 
   const deletedLineId = String(deletedLine.quoteLineId || '').trim();
@@ -149,6 +200,9 @@ export function applyQuoteLineDeleteToRecord(record, { deletedLine, totals } = {
   });
 
   applyQuoteTotalsToRecord(record, totals);
+  if (Array.isArray(sections)) {
+    applyQuoteSectionsToRecord(record, sections);
+  }
   return true;
 }
 

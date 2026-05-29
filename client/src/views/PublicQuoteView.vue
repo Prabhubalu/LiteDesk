@@ -221,48 +221,100 @@
                   <th class="px-4 py-2 text-right font-normal">Total</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-100">
-                <tr v-if="!lines.length" class="text-gray-500">
-                  <td class="px-4 py-3" :colspan="canCustomerAct && allowPartialAccept ? 6 : 5">No lines</td>
-                </tr>
-                <tr
-                  v-for="l in lines"
-                  :key="l.quoteLineId"
-                  :class="{
-                    'bg-emerald-50/60': isLineAccepted(l),
-                    'opacity-60': canCustomerAct && allowPartialAccept && l.selectable && !isLineSelected(l)
-                  }"
-                >
-                  <td v-if="canCustomerAct && allowPartialAccept" class="px-3 py-2 text-center">
-                    <input
-                      v-if="l.selectable"
-                      type="checkbox"
-                      class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-                      :checked="isLineSelected(l)"
-                      @change="toggleLine(l)"
-                    />
-                  </td>
-                  <td class="px-4 py-2 font-mono text-xs text-gray-600">{{ l.skuSnapshot || '—' }}</td>
-                  <td class="px-4 py-2">
-                    <div class="min-w-0">
-                      <div
-                        class="truncate"
-                        :class="{
-                          'font-semibold': l.lineType === 'bundle_parent',
-                          'pl-4 text-gray-800': l.lineType === 'bundle_component'
-                        }"
+              <template v-if="!lines.length">
+                <tbody>
+                  <tr class="text-gray-500">
+                    <td class="px-4 py-3" :colspan="lineTableColspan">No lines</td>
+                  </tr>
+                </tbody>
+              </template>
+              <template v-for="block in sectionBlocks" v-else :key="block.key">
+                <tbody v-if="block.section" class="border-t border-gray-200">
+                  <tr class="bg-gray-50/90">
+                    <td :colspan="lineTableColspan" class="px-4 py-2.5">
+                      <span class="font-semibold text-gray-900">{{ block.section.sectionTitle }}</span>
+                      <span
+                        v-if="sectionBadgeLabel(block.section)"
+                        class="ml-2 inline-flex items-center rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-700"
                       >
-                        <span v-if="l.lineType === 'bundle_component'" class="text-gray-400 mr-1">↳</span>
-                        <span v-if="l.isOptional" class="text-xs text-gray-500 mr-1">[Optional]</span>
-                        {{ l.itemNameSnapshot || '—' }}
+                        {{ sectionBadgeLabel(block.section) }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+                <tbody class="divide-y divide-gray-100">
+                  <tr
+                    v-for="l in block.lines"
+                    :key="l.quoteLineId"
+                    :class="{
+                      'bg-emerald-50/60': isLineAccepted(l),
+                      'opacity-60': canCustomerAct && allowPartialAccept && l.selectable && !isLineSelected(l)
+                    }"
+                  >
+                    <td v-if="canCustomerAct && allowPartialAccept" class="px-3 py-2 text-center">
+                      <input
+                        v-if="l.selectable"
+                        type="checkbox"
+                        class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                        :checked="isLineSelected(l)"
+                        @change="toggleLine(l)"
+                      />
+                    </td>
+                    <td class="px-4 py-2 font-mono text-xs text-gray-600">{{ l.skuSnapshot || '—' }}</td>
+                    <td class="px-4 py-2">
+                      <div class="min-w-0">
+                        <div
+                          class="truncate"
+                          :class="{
+                            'font-semibold': l.lineType === 'bundle_parent',
+                            'pl-4 text-gray-800': l.lineType === 'bundle_component'
+                          }"
+                        >
+                          <span v-if="l.lineType === 'bundle_component'" class="text-gray-400 mr-1">↳</span>
+                          <span v-if="l.isOptional" class="text-xs text-gray-500 mr-1">[Optional]</span>
+                          {{ l.itemNameSnapshot || '—' }}
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td class="px-4 py-2 text-right">{{ l.quantity ?? '—' }}</td>
-                  <td class="px-4 py-2 text-right">{{ fmtMoney(l.unitPriceSnapshot) }}</td>
-                  <td class="px-4 py-2 text-right font-medium">{{ fmtMoney(l.lineTotal) }}</td>
-                </tr>
-              </tbody>
+                    </td>
+                    <td class="px-4 py-2 text-right">{{ l.quantity ?? '—' }}</td>
+                    <td class="px-4 py-2 text-right">{{ fmtMoney(l.unitPriceSnapshot) }}</td>
+                    <td class="px-4 py-2 text-right font-medium">{{ fmtMoney(l.lineTotal) }}</td>
+                  </tr>
+                  <tr
+                    v-if="shouldShowSectionTotal(block.section)"
+                    class="bg-gray-50/80 border-t border-gray-100"
+                  >
+                    <td :colspan="lineTableColspan" class="px-4 py-2.5">
+                      <div class="flex flex-col items-end gap-0.5 text-xs text-gray-600">
+                        <div
+                          v-if="Number(block.section.sectionDiscountTotal) > 0"
+                          class="flex items-center justify-end gap-6 w-full max-w-xs"
+                        >
+                          <span>Section subtotal</span>
+                          <span class="font-medium text-gray-900 tabular-nums">
+                            {{ fmtMoney(block.section.sectionSubtotal) }}
+                          </span>
+                        </div>
+                        <div
+                          v-if="Number(block.section.sectionDiscountTotal) > 0"
+                          class="flex items-center justify-end gap-6 w-full max-w-xs"
+                        >
+                          <span>Section discount</span>
+                          <span class="font-medium text-gray-900 tabular-nums">
+                            -{{ fmtMoney(block.section.sectionDiscountTotal) }}
+                          </span>
+                        </div>
+                        <div class="flex items-center justify-end gap-6 w-full max-w-xs font-medium text-gray-900">
+                          <span>Section total</span>
+                          <span class="tabular-nums">
+                            {{ fmtMoney(block.section.sectionTotal ?? block.section.sectionSubtotal) }}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </template>
             </table>
           </div>
         </div>
@@ -401,6 +453,11 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import apiClient from '@/utils/apiClient';
 import { formatQuoteMoney } from '@/utils/quoteMoney';
+import { buildPublicQuoteUrl, copyTextToClipboardWithinGesture } from '@/utils/copyToClipboard';
+import {
+  groupLinesByQuoteSection,
+  sectionTypeBadgeKey
+} from '@/utils/quoteSectionDisplay';
 
 const route = useRoute();
 const token = computed(() => String(route.params.token || '').trim());
@@ -410,6 +467,7 @@ const busy = ref(false);
 const error = ref('');
 const quote = ref(null);
 const lines = ref([]);
+const sections = ref([]);
 const portal = ref(null);
 
 const selectedLineIds = ref(new Set());
@@ -426,6 +484,21 @@ const commentDraft = ref('');
 const commentSignerName = ref('');
 
 const currency = computed(() => String(quote.value?.currency || '').trim());
+
+const sectionBlocks = computed(() =>
+  groupLinesByQuoteSection({ lines: lines.value, sections: sections.value })
+);
+
+function sectionBadgeLabel(section) {
+  const key = sectionTypeBadgeKey(section?.sectionType);
+  if (key === 'optional') return 'Optional';
+  if (key === 'future') return 'Future';
+  return null;
+}
+
+function shouldShowSectionTotal(section) {
+  return section && section.showSectionTotal !== false;
+}
 
 const headerTitle = computed(() => {
   const q = quote.value || {};
@@ -448,6 +521,8 @@ const commentsEnabled = computed(() => portal.value?.commentsEnabled === true);
 const portalExpired = computed(() => portal.value?.isExpired === true);
 
 const allowPartialAccept = computed(() => portal.value?.allowPartialAccept === true);
+
+const lineTableColspan = computed(() => (canCustomerAct.value && allowPartialAccept.value ? 6 : 5));
 
 const requireCustomerAgreement = computed(() => portal.value?.requireCustomerAgreement === true);
 
@@ -654,6 +729,7 @@ async function load() {
     }
     quote.value = res?.data?.quote || null;
     portal.value = res?.data?.portal || null;
+    sections.value = Array.isArray(res?.data?.sections) ? res.data.sections : [];
     const raw = Array.isArray(res?.data?.lines) ? res.data.lines : [];
     lines.value = raw.map((l) => ({
       ...l,
@@ -677,12 +753,9 @@ function downloadPdf() {
 }
 
 async function copyLink() {
-  const url = `${window.location.origin}/public/quotes/${token.value}`;
-  try {
-    await navigator.clipboard.writeText(url);
-  } catch {
-    // ignore
-  }
+  if (!token.value) return;
+  const url = buildPublicQuoteUrl(token.value);
+  if (!copyTextToClipboardWithinGesture(url)) return;
 }
 
 async function submitAcceptance() {
@@ -756,10 +829,10 @@ onMounted(load);
   font-size: clamp(4rem, 18vw, 10rem);
   font-weight: 700;
   color: rgb(220 38 38);
-  opacity: 0.07;
+  opacity: 0.12;
   transform: rotate(-28deg);
   pointer-events: none;
-  z-index: 0;
+  z-index: 40;
   user-select: none;
 }
 

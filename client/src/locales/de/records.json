@@ -1966,5 +1966,85 @@
   "conversionConfirmOverride": {
     "message": "Record a {type} conversion for this expired quote? This uses admin override and does not create a sales order.",
     "description": "Confirm dialog before convert with expired override"
+  },
+  "quoteSectionAdd": {
+    "message": "Add section",
+    "description": "Button to create a new quote section"
+  },
+  "quoteSectionAddTitle": {
+    "message": "New section",
+    "description": "Modal title when creating a quote section"
+  },
+  "quoteSectionEditTitle": {
+    "message": "Edit section",
+    "description": "Modal title when editing a quote section"
+  },
+  "quoteSectionTitleLabel": {
+    "message": "Section title",
+    "description": "Label for quote section title input"
+  },
+  "quoteSectionTypeLabel": {
+    "message": "Section type",
+    "description": "Label for quote section type selector"
+  },
+  "quoteSectionTypeStandard": {
+    "message": "Standard",
+    "description": "Quote section type: always included in totals"
+  },
+  "quoteSectionTypeOptional": {
+    "message": "Optional",
+    "description": "Quote section type: customer opt-in group"
+  },
+  "quoteSectionTypeFuture": {
+    "message": "Future expansion",
+    "description": "Quote section type: narrative only, excluded from totals"
+  },
+  "quoteSectionIncludeInTotal": {
+    "message": "Include in quote total",
+    "description": "Checkbox for optional sections priced into quote total"
+  },
+  "quoteSectionUncategorized": {
+    "message": "Uncategorized",
+    "description": "Fallback section title for lines without a section"
+  },
+  "quoteSectionBadgeOptional": {
+    "message": "Optional",
+    "description": "Badge on optional quote sections"
+  },
+  "quoteSectionBadgeFuture": {
+    "message": "Future",
+    "description": "Badge on future quote sections"
+  },
+  "quoteSectionSubtotal": {
+    "message": "Section total",
+    "description": "Label for persisted section total on quote record"
+  },
+  "quoteSectionDiscount": {
+    "message": "Section discount",
+    "description": "Label for section-level discount controls"
+  },
+  "quoteSectionAddTarget": {
+    "message": "Add to section",
+    "description": "Label for section selector when adding lines"
+  },
+  "quoteSectionMoveLine": {
+    "message": "Move to",
+    "description": "Label for move-line-to-section dropdown"
+  },
+  "quoteSectionCreateFailed": {
+    "message": "Could not create section.",
+    "description": "Error when POST quote section fails"
+  },
+  "quoteSectionUpdateFailed": {
+    "message": "Could not update section.",
+    "description": "Error when PATCH quote section fails"
+  },
+  "quoteSectionDeleteFailed": {
+    "message": "Could not delete section.",
+    "description": "Error when DELETE quote section fails"
+  },
+  "quoteSectionDiscountUpdateFailed": {
+    "message": "Could not update section discount.",
+    "description": "Error when PATCH section discount fails"
   }
 }

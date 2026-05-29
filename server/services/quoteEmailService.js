@@ -3,30 +3,17 @@ const QuoteLine = require('../models/QuoteLine');
 const People = require('../models/People');
 const emailService = require('./emailService');
 const { renderQuotePdf, safeFilePart } = require('../controllers/quoteDocumentController');
+const { listQuoteSections } = require('./quoteSectionService');
 const {
   assertCanTransitionQuoteStatus,
   assertCanSendQuoteToCustomer,
   resolveCustomerSendMode
 } = require('../constants/quoteLifecycle');
 const crypto = require('node:crypto');
+const { buildPublicQuoteUrl } = require('../utils/quotePublicUrl');
 
 function generatePublicToken() {
   return crypto.randomBytes(32).toString('base64url');
-}
-
-function resolveClientBaseUrl(req) {
-  const origin = req?.get?.('origin');
-  if (origin && /^https?:\/\//i.test(origin)) {
-    return String(origin).replace(/\/$/, '');
-  }
-  return String(process.env.CLIENT_URL || 'http://localhost:5173').replace(/\/$/, '');
-}
-
-function buildPublicQuoteUrl(quote, req) {
-  const base = resolveClientBaseUrl(req);
-  const token = quote?.publicShareToken;
-  if (!base || !token) return null;
-  return `${base}/public/quotes/${token}`;
 }
 
 function normalizeEmail(value) {
@@ -199,7 +186,7 @@ async function sendQuoteEmail({ organizationId, quoteId, userId, body = {}, req 
     }
   }
 
-  const publicUrl = includeLink ? buildPublicQuoteUrl(quote, req) : null;
+  const publicUrl = includeLink ? buildPublicQuoteUrl(quote.publicShareToken, req) : null;
   const subject = String(body.subject || '').trim() || buildDefaultSubject(quote, sendMode);
   const html = buildEmailHtml({ quote, message: body.message, publicUrl, sendMode, branding });
   const defaultText =
@@ -213,10 +200,12 @@ async function sendQuoteEmail({ organizationId, quoteId, userId, body = {}, req 
     const lines = await QuoteLine.find({ organizationId, quoteId: quote._id })
       .sort({ lineOrder: 1, createdAt: 1 })
       .lean();
+    const sections = await listQuoteSections({ organizationId, quoteId: quote._id });
     const orgQuote = quote.toObject ? quote.toObject() : quote;
     const pdf = await renderQuotePdf({
       quote: orgQuote,
       lines,
+      sections,
       watermark: sendMode === 'draft' ? 'DRAFT' : null,
       branding
     });
@@ -258,7 +247,7 @@ async function sendQuoteEmail({ organizationId, quoteId, userId, body = {}, req 
 
 module.exports = {
   sendQuoteEmail,
-  buildPublicQuoteUrl,
+  buildPublicQuoteUrl: (quote, req) => buildPublicQuoteUrl(quote?.publicShareToken, req),
   resolveRecipientEmail,
   resolveCustomerSendMode
 };

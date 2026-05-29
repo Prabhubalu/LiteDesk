@@ -105,9 +105,125 @@ function computeQuoteTotalsFromLines(lines, quoteDiscount = {}) {
   return { subtotal, lineDiscountTotal, taxTotal, globalDiscountTotal, adjustmentTotal, grandTotal };
 }
 
+function isSectionIncludedInQuoteTotal(section) {
+  if (!section || section.hiddenSection === true) return false;
+  if (String(section.sectionType || '') === 'future') return false;
+  if (String(section.sectionType || '') === 'optional' && section.includeInQuoteTotal !== true) return false;
+  return true;
+}
+
+function groupLinesBySectionId(lines) {
+  const map = new Map();
+  for (const line of lines || []) {
+    if (!line) continue;
+    const key = line.quoteSectionId ? String(line.quoteSectionId) : '__none__';
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(line);
+  }
+  return map;
+}
+
+function computeSectionTotals(section, lines) {
+  const included = filterIncludedLines(lines);
+
+  let sectionLineDiscountTotal = 0;
+  for (const l of included) {
+    const qty = Number(l.quantity) || 0;
+    const unit = Number(l.unitPriceSnapshot) || 0;
+    const gross = qty * unit;
+    const net = Number(l.lineSubtotal) || 0;
+    sectionLineDiscountTotal += Math.max(0, gross - net);
+  }
+
+  const sectionSubtotal = included.reduce((sum, l) => sum + (Number(l.lineSubtotal) || 0), 0);
+  const sectionTaxTotal = included.reduce((sum, l) => sum + (Number(l.lineTaxTotal) || 0), 0);
+
+  const sectionDiscountTotal = computeDiscountAmount({
+    lineSubtotal: sectionSubtotal,
+    discountType: section?.sectionDiscountType,
+    discountValue: section?.sectionDiscountValue,
+    discountAmount: section?.sectionDiscountAmount
+  });
+
+  const sectionNet = Math.max(0, sectionSubtotal - sectionDiscountTotal);
+  const sectionTotal = sectionNet + sectionTaxTotal;
+
+  return {
+    sectionSubtotal,
+    sectionLineDiscountTotal,
+    sectionDiscountTotal,
+    sectionTaxTotal,
+    sectionTotal,
+    sectionNet
+  };
+}
+
+/**
+ * Quote totals when sections exist: section discounts apply before global discount.
+ * Returns persisted section total fields plus quote-level totals.
+ */
+function computeQuoteTotalsWithSections(sections, lines, quoteDiscount = {}) {
+  const linesBySection = groupLinesBySectionId(lines);
+  const sectionResults = [];
+
+  let subtotal = 0;
+  let lineDiscountTotal = 0;
+  let taxTotal = 0;
+
+  for (const section of sections || []) {
+    const sectionLines = linesBySection.get(String(section._id || section.id)) || [];
+    const computed = computeSectionTotals(section, sectionLines);
+    sectionResults.push({
+      sectionId: section._id || section.id,
+      quoteSectionId: section.quoteSectionId,
+      ...computed
+    });
+
+    if (isSectionIncludedInQuoteTotal(section)) {
+      subtotal += computed.sectionNet;
+      lineDiscountTotal += computed.sectionLineDiscountTotal;
+      taxTotal += computed.sectionTaxTotal;
+    }
+  }
+
+  const orphanLines = linesBySection.get('__none__') || [];
+  if (orphanLines.length) {
+    const orphanTotals = computeQuoteTotalsFromLines(orphanLines, {});
+    subtotal += orphanTotals.subtotal;
+    lineDiscountTotal += orphanTotals.lineDiscountTotal;
+    taxTotal += orphanTotals.taxTotal;
+  }
+
+  const globalDiscountTotal = computeDiscountAmount({
+    lineSubtotal: subtotal,
+    discountType: quoteDiscount.globalDiscountType,
+    discountValue: quoteDiscount.globalDiscountValue,
+    discountAmount: quoteDiscount.globalDiscountAmount
+  });
+
+  const adjustmentTotal = Number(quoteDiscount.adjustmentTotal) || 0;
+  const grandTotal = Math.max(0, subtotal - globalDiscountTotal + taxTotal + adjustmentTotal);
+
+  return {
+    quoteTotals: {
+      subtotal,
+      lineDiscountTotal,
+      taxTotal,
+      globalDiscountTotal,
+      adjustmentTotal,
+      grandTotal
+    },
+    sectionResults
+  };
+}
+
 module.exports = {
   computeDiscountAmount,
   computeLineTotals,
   computeQuoteTotalsFromLines,
-  filterIncludedLines
+  computeSectionTotals,
+  computeQuoteTotalsWithSections,
+  filterIncludedLines,
+  groupLinesBySectionId,
+  isSectionIncludedInQuoteTotal
 };

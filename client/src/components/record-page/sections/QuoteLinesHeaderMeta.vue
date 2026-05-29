@@ -1,17 +1,19 @@
 <template>
-  <span
-    v-if="quoteStatus"
-    class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-    :class="statusBadgeClass"
-  >
-    {{ quoteStatus }}
-  </span>
-  <span
-    v-if="record?.revisionNumber"
-    class="text-xs text-gray-500 dark:text-gray-400"
-  >
-    {{ t('records.quoteRevisionLabel', { n: record.revisionNumber }) }}
-  </span>
+  <div class="inline-flex flex-wrap items-center gap-2">
+    <span
+      v-if="quoteStatus"
+      class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+      :class="statusBadgeClass"
+    >
+      {{ quoteStatus }}
+    </span>
+    <span
+      v-if="record?.revisionNumber"
+      class="text-xs text-gray-500 dark:text-gray-400"
+    >
+      {{ t('records.quoteRevisionLabel', { n: record.revisionNumber }) }}
+    </span>
+  </div>
 </template>
 
 <script setup>
@@ -19,7 +21,8 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
-  record: { type: Object, default: null }
+  record: { type: Object, default: null },
+  context: { type: Object, default: () => ({}) }
 });
 
 const { t } = useI18n();
