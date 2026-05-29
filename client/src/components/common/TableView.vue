@@ -700,18 +700,21 @@ const isLoading = computed(() => {
 const showDataRows = computed(() => displayRows.value.length > 0 && !isLoading.value)
 
 /** Fixed row heights (px) for virtual scroll — matches py-* + single-line cell */
-const ROW_HEIGHT_PX: Record<string, number> = {
+const ROW_HEIGHT_PX = {
   small: 41,
   medium: 57,
   large: 73,
   huge: 89
-}
+} as const satisfies Record<string, number>
+
+const DEFAULT_ROW_HEIGHT_PX = ROW_HEIGHT_PX.small
 
 const VIRTUAL_SCROLL_ROW_THRESHOLD = 30
 
-const rowHeightPx = computed(
-  () => ROW_HEIGHT_PX[props.rowHeight] ?? ROW_HEIGHT_PX.small
-)
+const rowHeightPx = computed((): number => {
+  const h = ROW_HEIGHT_PX[props.rowHeight as keyof typeof ROW_HEIGHT_PX]
+  return h ?? DEFAULT_ROW_HEIGHT_PX
+})
 
 const useVirtualScroll = computed(
   () =>
@@ -736,7 +739,7 @@ const virtualItems = computed(() =>
 const virtualPaddingTop = computed(() => {
   const items = virtualItems.value
   if (!useVirtualScroll.value || items.length === 0) return 0
-  return items[0].start
+  return items[0]?.start ?? 0
 })
 
 const virtualPaddingBottom = computed(() => {
@@ -744,6 +747,7 @@ const virtualPaddingBottom = computed(() => {
   if (!useVirtualScroll.value || items.length === 0) return 0
   const total = rowVirtualizer.value.getTotalSize()
   const last = items[items.length - 1]
+  if (!last) return 0
   return Math.max(0, total - last.end)
 })
 
@@ -1200,13 +1204,13 @@ const clearSort = (column: ColumnDef) => {
 
 const rowKey = computed(() => props.rowKey)
 
-const rowIdentifier = (row: RowData, rowIndex: number) => {
+const rowIdentifier = (row: RowData, rowIndex: number): string => {
   const key = rowKey.value
   const value = key ? row?.[key] : undefined
   if (typeof value === 'string' || typeof value === 'number' || typeof value === 'symbol') {
-    return value
+    return String(value)
   }
-  return rowIndex
+  return String(rowIndex)
 }
 
 const parseOffsetToCss = (offset: string | number | undefined): string => {
@@ -1592,7 +1596,11 @@ const renderedRows = computed((): RenderedRow[] => {
 
   const virtual = virtualItems.value
   if (virtual.length > 0) {
-    return virtual.map((vi) => build(rows[vi.index], vi.index))
+    return virtual.flatMap((vi) => {
+      const row = rows[vi.index]
+      if (!row) return []
+      return [build(row, vi.index)]
+    })
   }
 
   // After keep-alive, scroll root may have zero height until layout — avoid an empty tbody.
