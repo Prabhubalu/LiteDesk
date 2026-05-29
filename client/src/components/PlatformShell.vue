@@ -41,7 +41,7 @@
         >
           <RouterView v-slot="{ Component }">
             <!-- Cap cached route trees: each slot can hold a large list/record page. -->
-            <keep-alive :max="5">
+            <keep-alive :max="10">
               <component
                 :is="Component"
                 :key="routerViewKey"
@@ -82,6 +82,16 @@ const appShellStore = useAppShellStore();
 const routerViewKey = computed(() => {
   const name = typeof route.name === 'string' ? route.name : '';
   if (name === 'inbox') return route.path;
+  const recordId = route.params?.id ?? route.params?.recordId;
+  if (recordId && typeof recordId === 'string') {
+    if (
+      name === 'helpdesk-cases-detail' ||
+      name === 'deal-detail' ||
+      name === 'task-detail'
+    ) {
+      return `${name}:${recordId}`;
+    }
+  }
   return route.fullPath;
 });
 
