@@ -259,15 +259,14 @@ async function emitNotification({ eventType, entity, organizationId, triggeredBy
  */
 async function publishToSSE(notifications) {
   try {
-    const notificationSSEHub = require('./notificationSSEHub');
-    
+    const { deliverNotificationSSE } = require('./notificationSSEDeliver');
+
     for (const notification of notifications) {
       // Only publish IN_APP notifications via SSE
       if (notification.channel !== 'IN_APP') continue;
-      
-      // FAILURE ISOLATION: Individual publish failures don't affect others
+
       try {
-        notificationSSEHub.publish({
+        await deliverNotificationSSE({
           userId: notification.userId,
           organizationId: notification.organizationId,
           appKey: notification.appKey,
@@ -283,12 +282,10 @@ async function publishToSSE(notifications) {
           }
         });
       } catch (publishErr) {
-        // Log but continue with next notification
         console.error(`[notificationEngine] SSE publish failed for notification ${notification._id}:`, publishErr);
       }
     }
   } catch (err) {
-    // Never throw - SSE is best-effort only, business flows continue
     console.error('[notificationEngine] SSE publish failed:', err);
   }
 }

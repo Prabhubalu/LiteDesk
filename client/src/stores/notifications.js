@@ -548,6 +548,7 @@ export const useNotificationStore = defineStore('notifications', () => {
   const appKey = resolveIncomingNotificationAppKey(notification);
   if (!isSnoozed(notification.id, appKey)) {
     unreadCount.value = Math.max(0, Number(unreadCount.value || 0) + 1);
+    writeCachedUnreadPreview(appKey, unreadCount.value);
   }
 
   alertForHelpdeskNotification(notification, { appKey });

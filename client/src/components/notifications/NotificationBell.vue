@@ -21,14 +21,12 @@
       />
     </svg>
 
-    <!-- Dot badge (mobile / fallback) — nudged onto the bell -->
     <span
       v-if="hasUnread"
       class="absolute top-0.5 right-0.5 block w-2 h-2 rounded-full bg-danger-500 ring-2 ring-white dark:ring-gray-900 notification-bell-badge md:hidden z-10"
       aria-hidden="true"
     ></span>
 
-    <!-- Numeric badge (desktop) — overlaps upper-right of the bell -->
     <span
       v-if="hasUnread && showCountOnDesktop"
       class="hidden md:flex items-center justify-center absolute top-0 right-0 min-w-[18px] h-[18px] rounded-full bg-danger-500 text-[10px] font-semibold text-white px-1 notification-bell-badge ring-2 ring-white dark:ring-gray-900 z-10 translate-x-px -translate-y-px"
@@ -40,39 +38,31 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 import { useNotificationStore } from '@/stores/notifications';
-import { connectNotificationStream } from '@/composables/useNotificationStream';
-import { useAuthStore } from '@/stores/authRegistry';
-import { useOffline } from '@/composables/useOffline';
-import { resolveNotificationAppKeyFromPath } from '@/utils/notificationAppKey';
 
-const props = defineProps({
+defineProps({
   showCountOnDesktop: {
     type: Boolean,
     default: true
   },
-  /** When false, only reads the store (another instance should own the SSE connection). */
+  /** @deprecated SSE is owned by notificationRealtimeService in App.vue */
   connectStream: {
     type: Boolean,
-    default: true
+    default: false
   }
 });
 
 const emit = defineEmits(['toggle']);
 
 const store = useNotificationStore();
-const authStore = useAuthStore();
-const { isOnline } = useOffline();
 
-// Ring animation when new notification arrives via SSE
 const justReceived = ref(false);
 let justReceivedTimer = null;
-
-const currentAppKey = () => resolveNotificationAppKeyFromPath();
+let receivedHandler = null;
 
 const hasUnread = computed(() => store.hasUnread);
 const displayCount = computed(() => {
@@ -93,46 +83,25 @@ const tooltipText = computed(() => {
   return t(key, { count });
 });
 
-let streamDisconnect = null;
-
-function connectStreamForCurrentRoute() {
-  if (streamDisconnect) {
-    streamDisconnect();
-    streamDisconnect = null;
-  }
-  if (!props.connectStream || !isOnline.value) return;
-  const appKey = currentAppKey();
-  streamDisconnect = connectNotificationStream(
-    appKey,
-    (notification) => {
-      store.handleIncomingNotification(notification);
-      justReceived.value = true;
-      if (justReceivedTimer) clearTimeout(justReceivedTimer);
-      justReceivedTimer = setTimeout(() => {
-        justReceived.value = false;
-        justReceivedTimer = null;
-      }, 800);
-    },
-    { isOnline: isOnline.value, authStore }
-  );
+function pulseBell() {
+  justReceived.value = true;
+  if (justReceivedTimer) clearTimeout(justReceivedTimer);
+  justReceivedTimer = setTimeout(() => {
+    justReceived.value = false;
+    justReceivedTimer = null;
+  }, 800);
 }
 
 onMounted(() => {
   store.primeUnreadPreviewFromCache();
-  store.fetchUnreadPreview();
-  connectStreamForCurrentRoute();
+  receivedHandler = () => pulseBell();
+  window.addEventListener('arivu:notification-received', receivedHandler);
 });
 
-watch(
-  () => (typeof window !== 'undefined' ? window.location.pathname : ''),
-  () => {
-    store.fetchUnreadPreview();
-    connectStreamForCurrentRoute();
-  }
-);
-
 onBeforeUnmount(() => {
-  if (streamDisconnect) streamDisconnect();
+  if (receivedHandler) {
+    window.removeEventListener('arivu:notification-received', receivedHandler);
+  }
   if (justReceivedTimer) clearTimeout(justReceivedTimer);
 });
 
@@ -178,4 +147,3 @@ function handleClick(e) {
   }
 }
 </style>
-

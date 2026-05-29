@@ -2,7 +2,6 @@ const NotificationRule = require('../models/NotificationRule');
 const Notification = require('../models/Notification');
 const NotificationPreference = require('../models/NotificationPreference');
 const { ensureDefaultPreferences } = require('./notificationPreferenceBootstrap');
-const notificationSSEHub = require('./notificationSSEHub');
 const {
   getModuleMetadata,
   loadEntity,
@@ -452,16 +451,17 @@ async function evaluateRules({ eventType, entity, organizationId, triggeredBy, s
             console.log(`   📬 Notification ${n._id}: ${n.title} (${n.channel})`);
           });
 
-          // Publish to SSE (fire-and-forget)
+          const { deliverNotificationSSE } = require('./notificationSSEDeliver');
           for (const notification of saved) {
             if (notification.channel === 'IN_APP') {
               try {
-                notificationSSEHub.publish({
+                await deliverNotificationSSE({
                   userId: notification.userId,
                   organizationId: notification.organizationId,
                   appKey: notification.appKey,
                   payload: {
                     id: String(notification._id),
+                    appKey: notification.appKey,
                     eventType: notification.eventType,
                     title: notification.title,
                     body: notification.body,
@@ -470,9 +470,8 @@ async function evaluateRules({ eventType, entity, organizationId, triggeredBy, s
                     createdAt: notification.createdAt
                   }
                 });
-                console.log(`[notificationRuleEngine] 📡 Published to SSE for user ${notification.userId} - notification ${notification._id}`);
               } catch (sseErr) {
-                console.error(`[notificationRuleEngine] ❌ SSE publish failed for notification ${notification._id}:`, sseErr);
+                console.error(`[notificationRuleEngine] SSE publish failed for notification ${notification._id}:`, sseErr);
               }
             }
           }

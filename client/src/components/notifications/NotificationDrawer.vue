@@ -255,11 +255,10 @@ See `docs/architecture/notifications-hardening.md`.
 </template>
 
 <script setup>
-import { computed, watch, onBeforeUnmount, ref } from 'vue';
+import { computed, watch, ref } from 'vue';
 import { TransitionGroup } from 'vue';
 import { useNotificationStore } from '@/stores/notifications';
 import { useOffline } from '@/composables/useOffline';
-import { connectNotificationStream } from '@/composables/useNotificationStream';
 import { useAuthStore } from '@/stores/authRegistry';
 import NotificationItem from './NotificationItem.vue';
 import { useI18n } from 'vue-i18n';
@@ -305,9 +304,6 @@ const showOfflineBanner = computed(() => props.appKey === 'AUDIT' && isOffline.v
 // Track when drawer opened to show "New" divider
 const openedAt = ref(null);
 const openEntityGroups = ref(new Set()); // non-persistent, resets when drawer closes
-
-// SSE stream connection
-let streamDisconnect = null;
 
 function formatRelative(date) {
   return store.formatRelative(date);
@@ -473,37 +469,12 @@ watch(
       openedAt.value = new Date();
       openEntityGroups.value = new Set(); // reset (non-persistent)
       await loadInitial();
-      
-      // Connect SSE stream when drawer opens
-      if (!isOffline.value) {
-        streamDisconnect = connectNotificationStream(
-          props.appKey,
-          (notification) => {
-            store.handleIncomingNotification(notification);
-          },
-          {
-            isOnline: isOnline.value,
-            authStore
-          }
-        );
-      }
     } else {
-      // Disconnect SSE stream when drawer closes
-      if (streamDisconnect) {
-        streamDisconnect();
-        streamDisconnect = null;
-      }
       openedAt.value = null;
       openEntityGroups.value = new Set(); // reset (non-persistent)
     }
   }
 );
-
-onBeforeUnmount(() => {
-  if (streamDisconnect) {
-    streamDisconnect();
-  }
-});
 </script>
 
 <style>

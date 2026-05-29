@@ -203,11 +203,10 @@
 </template>
 
 <script setup>
-import { computed, watch, onBeforeUnmount, ref, defineAsyncComponent } from 'vue';
+import { computed, watch, ref, defineAsyncComponent } from 'vue';
 import { TransitionGroup } from 'vue';
 import { useNotificationStore } from '@/stores/notifications';
 import { useOffline } from '@/composables/useOffline';
-import { connectNotificationStream } from '@/composables/useNotificationStream';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useI18n } from 'vue-i18n';
 
@@ -248,9 +247,6 @@ const showOfflineBanner = computed(() => props.appKey === 'AUDIT' && isOffline.v
 // Track when sheet opened to show "New" divider
 const openedAt = ref(null);
 const openEventGroups = ref(new Set());
-
-// SSE stream connection
-let streamDisconnect = null;
 
 function formatRelative(date) {
   return store.formatRelative(date);
@@ -426,37 +422,12 @@ watch(
       openedAt.value = new Date();
       openEventGroups.value = new Set();
       await loadInitial();
-      
-      // Connect SSE stream when sheet opens
-      if (!isOffline.value) {
-        streamDisconnect = connectNotificationStream(
-          props.appKey,
-          (notification) => {
-            store.handleIncomingNotification(notification);
-          },
-          {
-            isOnline: isOnline.value,
-            authStore
-          }
-        );
-      }
     } else {
-      // Disconnect SSE stream when sheet closes
-      if (streamDisconnect) {
-        streamDisconnect();
-        streamDisconnect = null;
-      }
       openedAt.value = null;
       openEventGroups.value = new Set();
     }
   }
 );
-
-onBeforeUnmount(() => {
-  if (streamDisconnect) {
-    streamDisconnect();
-  }
-});
 </script>
 
 <style>

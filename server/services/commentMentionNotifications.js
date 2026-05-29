@@ -7,8 +7,6 @@
 const mongoose = require('mongoose');
 const Notification = require('../models/Notification');
 const Group = require('../models/Group');
-const notificationSSEHub = require('./notificationSSEHub');
-
 // Same format as CommentContent.vue and CommentInput.vue
 const MENTION_REGEX = /@\[([^\]]+)\]\((user|group):([^)]+)\)/g;
 
@@ -133,14 +131,16 @@ async function notifyMentionedUsers(opts) {
 
   try {
     const saved = await Notification.insertMany(docs, { ordered: false });
+    const { deliverNotificationSSE } = require('./notificationSSEDeliver');
     for (const n of saved) {
       try {
-        notificationSSEHub.publish({
+        await deliverNotificationSSE({
           userId: n.userId,
           organizationId: n.organizationId,
           appKey: n.appKey,
           payload: {
             id: String(n._id),
+            appKey: n.appKey,
             eventType: n.eventType,
             title: n.title,
             body: n.body,

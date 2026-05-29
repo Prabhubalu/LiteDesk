@@ -8,7 +8,11 @@ const PRODUCTION_API_ORIGIN = 'https://api.arivusystems.com'
 function inferProductionApiOrigin(): string {
   if (!import.meta.env.PROD || typeof window === 'undefined') return ''
   const host = window.location.hostname.toLowerCase()
-  if (host === 'app.arivusystems.com' || host.endsWith('.app.arivusystems.com')) {
+  if (
+    host === 'app.arivusystems.com' ||
+    host.endsWith('.app.arivusystems.com') ||
+    host.endsWith('.arivusystems.com')
+  ) {
     return PRODUCTION_API_ORIGIN
   }
   return ''
