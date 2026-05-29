@@ -821,8 +821,8 @@ onActivated(() => {
   initializeView();
   if (currentView.value === 'calendar') {
     fetchCalendarEvents();
-  } else if (moduleListRef.value?.refresh) {
-    moduleListRef.value.refresh();
+  } else {
+    moduleListRef.value?.reactivate?.();
   }
   nextTick(() => {
     setTimeout(() => {

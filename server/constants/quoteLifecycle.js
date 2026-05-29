@@ -27,8 +27,8 @@ const QUOTE_ALLOWED_TRANSITIONS = {
   Draft: ['Pending Approval', 'Approved', 'Cancelled'],
   'Pending Approval': ['Approved', 'Rejected'],
   Approved: ['Sent', 'Cancelled'],
-  Sent: ['Viewed', 'Accepted', 'Rejected', 'Expired'],
-  Viewed: ['Accepted', 'Rejected', 'Expired'],
+  Sent: ['Viewed', 'Accepted', 'Partially Accepted', 'Rejected', 'Expired'],
+  Viewed: ['Accepted', 'Partially Accepted', 'Rejected', 'Expired'],
   Accepted: ['Converted'],
   'Partially Accepted': ['Converted'],
   Rejected: [],
@@ -76,6 +76,142 @@ function isCommerciallyLockedStatus(status) {
   return ['Sent', 'Viewed', 'Accepted', 'Partially Accepted', 'Converted'].includes(status);
 }
 
+const QUOTE_CUSTOMER_SENT_STATUSES = ['Sent', 'Viewed', 'Accepted', 'Partially Accepted', 'Converted'];
+
+const { quoteRequiresApprovalBeforeSend } = require('../services/quoteOrgSettingsService');
+
+/**
+ * Whether the quote may be emailed to the customer (PDF and/or portal link).
+ * - Approved or already sent to customer: allowed
+ * - Draft: only when approval is not required (per quote or org policy)
+ * - Pending Approval / Rejected / Cancelled / Expired: blocked
+ *
+ * @param {Object} quote
+ * @param {{ requireApprovalBeforeSend?: boolean }|null} [orgQuoteSettings]
+ */
+function getSendQuoteToCustomerEligibility(quote, orgQuoteSettings = null) {
+  const status = String(quote?.status || '').trim();
+  if (['Rejected', 'Cancelled', 'Pending Approval', 'Expired'].includes(status)) {
+    return { allowed: false, reason: status === 'Pending Approval' ? 'pending_approval' : status.toLowerCase().replace(' ', '_') };
+  }
+  if (QUOTE_CUSTOMER_SENT_STATUSES.includes(status)) {
+    return { allowed: true, reason: null };
+  }
+  if (status === 'Approved') {
+    return { allowed: true, reason: null };
+  }
+  if (status === 'Draft') {
+    if (quoteRequiresApprovalBeforeSend(quote, orgQuoteSettings)) {
+      return { allowed: false, reason: 'draft_needs_approval' };
+    }
+    return { allowed: true, reason: null };
+  }
+  return { allowed: false, reason: 'invalid_status' };
+}
+
+/**
+ * Formal public share link (copy link / portal) — same gate as binding customer send, except resend.
+ */
+function getFormalShareQuoteEligibility(quote, orgQuoteSettings = null) {
+  const status = String(quote?.status || '').trim();
+  if (QUOTE_CUSTOMER_SENT_STATUSES.includes(status)) {
+    return { allowed: true, reason: null };
+  }
+  if (status === 'Approved') {
+    return { allowed: true, reason: null };
+  }
+  if (status === 'Pending Approval') {
+    return { allowed: false, reason: 'pending_approval' };
+  }
+  if (status === 'Draft') {
+    if (quoteRequiresApprovalBeforeSend(quote, orgQuoteSettings)) {
+      return { allowed: false, reason: 'draft_needs_approval' };
+    }
+    return { allowed: false, reason: 'draft_formal_share_blocked' };
+  }
+  if (['Rejected', 'Cancelled', 'Expired'].includes(status)) {
+    return { allowed: false, reason: status.toLowerCase().replace(' ', '_') };
+  }
+  return { allowed: false, reason: 'invalid_status' };
+}
+
+function assertCanShareQuotePublicly(quote, orgQuoteSettings = null) {
+  const { allowed, reason } = getFormalShareQuoteEligibility(quote, orgQuoteSettings);
+  if (allowed) return;
+  const status = String(quote?.status || '').trim();
+  const messages = {
+    pending_approval: 'Approve this quote before sharing a public link.',
+    draft_needs_approval: 'Submit and approve this quote before sharing a public link.',
+    draft_formal_share_blocked: 'Approve or send this quote before sharing a binding public link. Use Send draft for review for provisional sharing.',
+    rejected: 'Rejected quotes cannot be shared.',
+    cancelled: 'Cancelled quotes cannot be shared.',
+    expired: 'Expired quotes cannot be shared. Create a new revision first.',
+    invalid_status: `Quotes in status "${status}" cannot be shared.`
+  };
+  const err = new Error(messages[reason] || messages.invalid_status);
+  err.code = 'QUOTE_SHARE_NOT_ALLOWED';
+  err.details = { reason, status };
+  throw err;
+}
+
+function isDraftCustomerShare(quote) {
+  return String(quote?.customerShareMode || '').trim().toLowerCase() === 'draft';
+}
+
+function isFormalCustomerShare(quote) {
+  const mode = String(quote?.customerShareMode || '').trim().toLowerCase();
+  if (mode === 'formal') return true;
+  if (mode === 'draft') return false;
+  return QUOTE_CUSTOMER_SENT_STATUSES.includes(String(quote?.status || '').trim());
+}
+
+/** Header/line edits blocked; use revise flow or dedicated status endpoints. */
+const QUOTE_RECORD_READ_ONLY_STATUSES = ['Expired', 'Cancelled', 'Converted', 'Rejected'];
+
+function isQuoteRecordReadOnly(status) {
+  return QUOTE_RECORD_READ_ONLY_STATUSES.includes(String(status || '').trim());
+}
+
+/**
+ * @param {{ status?: string }} quote
+ */
+function assertQuoteRecordEditable(quote) {
+  const status = String(quote?.status || '').trim();
+  if (!isQuoteRecordReadOnly(status)) return;
+  const err = new Error(
+    `Quotes in status "${status}" cannot be edited. Create a new revision to continue.`
+  );
+  err.code = 'QUOTE_RECORD_LOCKED';
+  err.details = { status };
+  throw err;
+}
+
+function resolveCustomerSendMode(quote) {
+  const status = String(quote?.status || '').trim();
+  if (status === 'Draft' && !isDraftCustomerShare(quote)) {
+    return 'draft';
+  }
+  return 'formal';
+}
+
+function assertCanSendQuoteToCustomer(quote, orgQuoteSettings = null) {
+  const { allowed, reason } = getSendQuoteToCustomerEligibility(quote, orgQuoteSettings);
+  if (allowed) return;
+  const status = String(quote?.status || '').trim();
+  const messages = {
+    pending_approval: 'Approve this quote before sending it to the customer.',
+    draft_needs_approval: 'Submit for approval and wait for approval before sending to the customer.',
+    rejected: 'Rejected quotes cannot be sent to the customer.',
+    cancelled: 'Cancelled quotes cannot be sent to the customer.',
+    expired: 'Expired quotes cannot be sent. Create a new revision first.',
+    invalid_status: `Quotes in status "${status}" cannot be sent to the customer.`
+  };
+  const err = new Error(messages[reason] || messages.invalid_status);
+  err.code = 'QUOTE_SEND_NOT_ALLOWED';
+  err.details = { reason, status };
+  throw err;
+}
+
 module.exports = {
   QUOTE_STATUSES,
   QUOTE_STATUS_DEFAULT,
@@ -84,6 +220,17 @@ module.exports = {
   assertValidStatus,
   canTransitionQuoteStatus,
   assertCanTransitionQuoteStatus,
-  isCommerciallyLockedStatus
+  isCommerciallyLockedStatus,
+  QUOTE_RECORD_READ_ONLY_STATUSES,
+  isQuoteRecordReadOnly,
+  assertQuoteRecordEditable,
+  QUOTE_CUSTOMER_SENT_STATUSES,
+  getSendQuoteToCustomerEligibility,
+  getFormalShareQuoteEligibility,
+  assertCanShareQuotePublicly,
+  assertCanSendQuoteToCustomer,
+  isDraftCustomerShare,
+  isFormalCustomerShare,
+  resolveCustomerSendMode
 };
 

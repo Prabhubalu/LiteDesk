@@ -34,7 +34,8 @@ export const WIZARD_SELECT_BUTTON_CLASS =
 export const ENTITY_TYPE_TO_MODULE_KEY = {
   people: 'people',
   organization: 'organizations',
-  deal: 'deals'
+  deal: 'deals',
+  quote: 'quotes'
 };
 
 const CORE_TRIGGER_VALUES = ['record_created', 'record_updated', 'schedule', 'webhook', 'manual'];
@@ -50,7 +51,8 @@ const CORE_TRIGGER_DESC_KEYS = {
 const MODULE_SINGULAR_KEYS = {
   people: 'process.designerModulePerson',
   organization: 'process.designerModuleOrganization',
-  deal: 'process.designerModuleDeal'
+  deal: 'process.designerModuleDeal',
+  quote: 'process.designerModuleQuote'
 };
 
 export function getAppOptions(t) {
@@ -65,7 +67,8 @@ export function getModuleOptions(t) {
   return [
     { value: 'people', label: t('process.designerModulePeople') },
     { value: 'organization', label: t('process.designerModuleOrganization') },
-    { value: 'deal', label: t('process.designerModuleDeal') }
+    { value: 'deal', label: t('process.designerModuleDeal') },
+    { value: 'quote', label: t('process.designerModuleQuote') }
   ];
 }
 
@@ -122,6 +125,13 @@ function watchFieldsForModule(t, entityType) {
       { value: 'stage', label: t('process.designerWatchStage') },
       { value: 'pipeline', label: t('process.designerWatchPipeline') },
       { value: 'amount', label: t('process.designerWatchAmount') },
+      { value: 'ownerId', label: t('process.designerWatchOwner') }
+    ],
+    quote: [
+      any,
+      { value: 'status', label: t('process.designerWatchQuoteStatus') },
+      { value: 'grandTotal', label: t('process.designerWatchGrandTotal') },
+      { value: 'globalDiscountTotal', label: t('process.designerWatchGlobalDiscount') },
       { value: 'ownerId', label: t('process.designerWatchOwner') }
     ]
   };
@@ -180,6 +190,13 @@ export function getConditionFieldsByModule(t, entityType) {
       { value: 'pipeline', label: t('process.designerWatchPipeline') },
       { value: 'ownerId', label: t('process.designerWatchOwner') },
       { value: 'status', label: t('process.designerCondStatus') }
+    ],
+    quote: [
+      { value: 'status', label: t('process.designerWatchQuoteStatus') },
+      { value: 'grandTotal', label: t('process.designerWatchGrandTotal') },
+      { value: 'globalDiscountTotal', label: t('process.designerWatchGlobalDiscount') },
+      { value: 'subtotal', label: t('process.designerWatchSubtotal') },
+      { value: 'ownerId', label: t('process.designerWatchOwner') }
     ]
   };
   return byModule[entityType] || [];

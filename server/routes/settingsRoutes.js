@@ -6,6 +6,7 @@ const controller = require('../controllers/settingsController');
 const helpdeskSettingsController = require('../controllers/helpdeskSettingsController');
 const assignmentRulesController = require('../controllers/assignmentRulesController');
 const mailroomSettingsController = require('../controllers/mailroomSettingsController');
+const quoteSettingsController = require('../controllers/quoteSettingsController');
 const { organizationSettingsLimiter } = require('../middleware/rateLimitMiddleware');
 const { uploadSingle } = require('../middleware/uploadMiddleware');
 const {
@@ -36,6 +37,8 @@ router.get('/applications', cacheJsonResponse({ namespace: 'settings:application
 router.get('/applications/helpdesk/execution-settings', helpdeskSettingsController.getHelpdeskExecutionSettings);
 router.put('/applications/helpdesk/execution-settings', helpdeskSettingsController.updateHelpdeskExecutionSettings);
 router.post('/applications/helpdesk/recalculate-slas', helpdeskSettingsController.recalculateOpenCaseSlas);
+router.get('/quotes', quoteSettingsController.getQuoteSettings);
+router.put('/quotes', quoteSettingsController.updateQuoteSettings);
 router.get('/applications/:appKey', controller.getApplication);
 
 // Assignment Rules (Step 7A simulation foundation)

@@ -390,6 +390,14 @@ async function getRecordContext(organizationId, appKey, moduleKey, recordId, opt
             effectiveLookupKeys = ['contactId'];
           } else if (srcMod === 'cases' && tgtMod === 'organizations') {
             effectiveLookupKeys = ['organizationRefId'];
+          } else if (srcMod === 'quotes' && tgtMod === 'people') {
+            effectiveLookupKeys = ['contactId'];
+          } else if (srcMod === 'quotes' && tgtMod === 'organizations') {
+            effectiveLookupKeys = ['organizationRefId'];
+          } else if (srcMod === 'quotes' && tgtMod === 'deals') {
+            effectiveLookupKeys = ['dealId'];
+          } else if (srcMod === 'quotes' && tgtMod === 'cases') {
+            effectiveLookupKeys = ['caseId'];
           }
         }
         const lookupRefs = await getRecordLookupLinks(
@@ -419,6 +427,14 @@ async function getRecordContext(organizationId, appKey, moduleKey, recordId, opt
             effectiveSourceLookupKeys = ['contactId'];
           } else if (srcModRev === 'cases' && curMod === 'organizations') {
             effectiveSourceLookupKeys = ['organizationRefId'];
+          } else if (srcModRev === 'quotes' && curMod === 'people') {
+            effectiveSourceLookupKeys = ['contactId'];
+          } else if (srcModRev === 'quotes' && curMod === 'organizations') {
+            effectiveSourceLookupKeys = ['organizationRefId'];
+          } else if (srcModRev === 'quotes' && curMod === 'deals') {
+            effectiveSourceLookupKeys = ['dealId'];
+          } else if (srcModRev === 'quotes' && curMod === 'cases') {
+            effectiveSourceLookupKeys = ['caseId'];
           }
         }
         const reverseRefs = await getReverseLookupLinks(

@@ -38,14 +38,9 @@ jobs:
         working-directory: ./server
         run: npm run lint || true  # Continue even if linting fails
       
-      - name: Run backend tests
+      - name: Run quotes unit tests
         working-directory: ./server
-        env:
-          MONGO_URI: mongodb://test:testpass@localhost:27017/arivu_test?authSource=admin
-          JWT_SECRET: test-jwt-secret
-          REFRESH_TOKEN_SECRET: test-refresh-secret
-          NODE_ENV: test
-        run: npm test || echo "⚠️  No tests configured yet"
+        run: npm run test:quotes
   
   lint-and-test-frontend:
     runs-on: ubuntu-latest

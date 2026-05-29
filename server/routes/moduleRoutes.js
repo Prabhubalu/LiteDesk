@@ -10,7 +10,7 @@ const { requireSalesApp } = require('../middleware/requireSalesAppMiddleware');
 const controller = require('../controllers/moduleController');
 
 // Core entities that are platform-owned (don't require Sales app)
-const CORE_ENTITIES = ['people', 'organizations', 'events', 'forms', 'tasks', 'items', 'reports'];
+const CORE_ENTITIES = ['people', 'organizations', 'events', 'forms', 'tasks', 'items', 'quotes', 'reports'];
 
 // Helper to check if a module is a core entity
 function isCoreEntity(moduleKey) {

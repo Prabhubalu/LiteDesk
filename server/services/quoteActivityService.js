@@ -10,7 +10,11 @@ async function writeQuoteActivity({
 }) {
   // Never allow audit logging to break core transactions.
   try {
-    if (!organizationId || !quoteId || !userId) return;
+    if (!organizationId || !quoteId) return;
+    const mergedDetails = { ...(details || {}) };
+    if (!userId && !mergedDetails.actorLabel) {
+      mergedDetails.actorLabel = 'customer';
+    }
     await RecordActivity.create({
       organizationId,
       moduleKey: 'quotes',
@@ -18,8 +22,8 @@ async function writeQuoteActivity({
       type: 'activity',
       action: action || 'updated',
       message: message || '',
-      details: details || {},
-      author: userId
+      details: mergedDetails,
+      author: userId || null
     });
   } catch (e) {
     // Swallow logging errors to keep quote writes safe.

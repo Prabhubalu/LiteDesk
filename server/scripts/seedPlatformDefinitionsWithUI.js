@@ -275,7 +275,7 @@ const MODULE_DEFINITIONS = [
   },
   {
     moduleKey: 'quotes',
-    appKey: 'sales',
+    appKey: 'platform', // Core entity - shared across apps
     label: 'Quote',
     pluralLabel: 'Quotes',
     entityType: 'TRANSACTION',
@@ -321,9 +321,12 @@ const MODULE_DEFINITIONS = [
       routeBase: '/quotes',
       icon: '🧾',
       showInSidebar: true,
-      sidebarOrder: 3.5,
+      sidebarOrder: 8,
       createLabel: 'Create Quote',
-      listLabel: 'All Quotes'
+      listLabel: 'All Quotes',
+      // Navigation intent: Core Modules section (shared platform capability)
+      navigationEntity: true,
+      excludeFromApps: true
     }
   },
   {

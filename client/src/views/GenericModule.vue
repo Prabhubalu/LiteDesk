@@ -83,6 +83,7 @@ const resolvedAppKey = computed(() => {
   if (currentPath.startsWith('/audit/')) return 'AUDIT';
   if (currentPath.startsWith('/portal/')) return 'PORTAL';
   if (currentPath.startsWith('/projects/')) return 'PROJECTS';
+  if (currentPath.startsWith('/quotes')) return 'PLATFORM';
 
   return 'SALES';
 });
@@ -126,10 +127,11 @@ async function handleBulkAction(actionId, selectedRows) {
   if (actionId !== 'delete' && actionId !== 'bulk-delete') {
     return;
   }
-  if (!Array.isArray(selectedRows) || selectedRows.length === 0) {
+  const rows = Array.isArray(selectedRows) ? selectedRows : [];
+  if (rows.length === 0) {
     return;
   }
-  const ids = selectedRows
+  const ids = rows
     .map((row) => row?._id || row?.id)
     .filter((id) => id != null && id !== '');
   if (ids.length === 0) {

@@ -26,7 +26,13 @@ import {
   LifebuoyIcon,
   TicketIcon
 } from '@heroicons/vue/24/outline';
-import { enrichTabWithTitleKey, getTabTitleMetaForPath } from '@/utils/navigationLabels';
+import {
+  getPersistedRecordTabName,
+  getTabTitleMetaForPath,
+  hydrateTabFromStorage,
+  isRecordDetailTabPath,
+  shouldPreserveRecordTabTitle
+} from '@/utils/navigationLabels';
 import { resolveModuleDisplayName } from '@/utils/configurableLabelResolver';
 import { i18n } from '@/i18n/index';
 import { createHelpdeskTabAlertController } from '@/utils/helpdeskTabAlerts';
@@ -87,7 +93,7 @@ export function tabShowsHelpdeskAlert(tab, activeId = activeTabId.value) {
 let storageKey = null;
 let storageConfigured = false;
 let tabsInitialized = false;
-const TABS_SCHEMA_VERSION = 2;
+const TABS_SCHEMA_VERSION = 3;
 
 // Flag to track programmatic navigation (to avoid circular loops)
 let isProgrammaticNavigation = false;
@@ -299,7 +305,7 @@ const loadTabsFromStorage = () => {
         }));
       }
 
-      tabs.value = loadedTabs.map((tab) => enrichTabWithTitleKey(tab));
+      tabs.value = loadedTabs.map((tab) => hydrateTabFromStorage(tab));
       activeTabId.value = loadedActiveTabId;
       
       // Convert icon identifiers back to components
@@ -367,7 +373,7 @@ const loadTabsFromStorage = () => {
       }
 
       // Persist migrated shape once so legacy cleanup is one-time.
-      if (hasLegacySchema) {
+      if (hasLegacySchema || Number(parsed.schemaVersion || 1) < TABS_SCHEMA_VERSION) {
         saveTabsToStorage();
       }
     } else {
@@ -391,18 +397,63 @@ const getIconId = (iconComponent) => {
   return 'document'; // fallback
 };
 
+/** Apply a record display name to a tab (persisted as recordTitle + title). */
+function applyRecordTabTitle(tab, name) {
+  const trimmed = String(name || '').trim();
+  if (!tab || !trimmed) return;
+  tab.recordTitle = trimmed;
+  tab.title = trimmed;
+  tab.params = { ...(tab.params || {}), name: trimmed };
+  if (isRecordDetailTabPath(tab.path)) {
+    const moduleRoute = String(tab.path).split('?')[0].split('/').filter(Boolean)[0];
+    tab.titleKey = 'navigation.tabRecordNamed';
+    tab.titleParams = {
+      ...(tab.titleParams || {}),
+      moduleRoute,
+      name: trimmed
+    };
+  }
+}
+
+function serializeTabForStorage(tab) {
+  const recordName = getPersistedRecordTabName(tab);
+  const serialized = {
+    id: tab.id,
+    path: tab.path,
+    closable: tab.closable,
+    params: tab.params,
+    icon: typeof tab.icon === 'string' ? tab.icon : getIconId(tab.icon)
+  };
+  if (recordName) {
+    serialized.recordTitle = recordName;
+    serialized.title = recordName;
+    if (isRecordDetailTabPath(tab.path)) {
+      serialized.titleKey = 'navigation.tabRecordNamed';
+      const moduleRoute = String(tab.path).split('?')[0].split('/').filter(Boolean)[0];
+      serialized.titleParams = {
+        ...(tab.titleParams || {}),
+        moduleRoute,
+        name: recordName
+      };
+    }
+  } else if (tab.titleKey) {
+    serialized.titleKey = tab.titleKey;
+    serialized.titleParams = tab.titleParams;
+    if (tab.title) serialized.title = tab.title;
+  } else if (tab.title) {
+    serialized.title = tab.title;
+  }
+  return serialized;
+}
+
 // Save tabs to localStorage
 const saveTabsToStorage = () => {
   try {
     if (!storageConfigured || !storageKey) {
       throw new Error('[Tabs] saveTabsToStorage called before storage was configured.');
     }
-    // Convert icon components to identifiers for serialization
-    const tabsToSave = tabs.value.map(tab => ({
-      ...tab,
-      icon: typeof tab.icon === 'string' ? tab.icon : getIconId(tab.icon)
-    }));
-    
+    const tabsToSave = tabs.value.map(serializeTabForStorage);
+
     localStorage.setItem(storageKey, JSON.stringify({
       schemaVersion: TABS_SCHEMA_VERSION,
       tabs: tabsToSave,
@@ -779,21 +830,7 @@ export function useTabs() {
 
   // Heuristic: path looks like a record detail (e.g. /deals/123, /people/456) so new tab should open adjacent.
   // Used when insertAdjacent is not explicitly set — so new modules get correct behavior by default.
-  const looksLikeRecordPath = (path) => {
-    const pathOnly = (path || '').split('?')[0];
-    const segments = pathOnly.split('/').filter(Boolean);
-    if (segments.length < 2) return false;
-    const first = segments[0];
-    const second = segments[1];
-    if (['settings', 'platform', 'audit', 'login', 'portal'].includes(first)) return false;
-    if (first === 'forms' && second === 'create') return false;
-    if (first === 'forms' && segments.length === 1) return false;
-    // Second segment looks like an ID: Mongo 24-char hex, UUID, or numeric
-    if (/^[a-fA-F0-9]{24}$/.test(second)) return true;
-    if (/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/i.test(second)) return true;
-    if (/^\d+$/.test(second)) return true;
-    return false;
-  };
+  const looksLikeRecordPath = (path) => isRecordDetailTabPath(path);
 
   // Find tab by path (exact match or path without query params)
   const findTabByPath = (path) => {
@@ -863,9 +900,8 @@ export function useTabs() {
         logTabsDebug('✅ Already on correct tab, no sync needed');
       }
 
-      // Keep titles fresh for routes with dynamic IDs (e.g. form response details)
       const newTitle = getTitleForPath(path, existingTab.params || {});
-      if (newTitle && existingTab.title !== newTitle) {
+      if (newTitle && existingTab.title !== newTitle && !shouldPreserveRecordTabTitle(existingTab, path)) {
         existingTab.title = newTitle;
       }
     } else {
@@ -959,7 +995,13 @@ export function useTabs() {
     
     // Mark as initialized
     tabsInitialized = true;
-    
+
+    if (typeof window !== 'undefined' && !window.__arivuTabsBeforeUnloadHook) {
+      window.__arivuTabsBeforeUnloadHook = true;
+      window.addEventListener('beforeunload', () => saveTabsToStorage());
+      window.addEventListener('pagehide', () => saveTabsToStorage());
+    }
+
     // Log final state for debugging
     console.log('✅ [initTabs] Tab initialization complete:', {
       tabsCount: tabs.value.length,
@@ -1578,10 +1620,13 @@ export function useTabs() {
     if (existingTab) {
       console.log('📍 Tab already exists:', existingTab.id);
 
-      // Update title for dynamic routes if the title is outdated
-      const newTitle = options.title || getTitleForPath(path, options.params);
-      if (newTitle && existingTab.title !== newTitle) {
-        existingTab.title = newTitle;
+      if (options.title && isRecordDetailTabPath(path)) {
+        applyRecordTabTitle(existingTab, options.title);
+      } else {
+        const newTitle = options.title || getTitleForPath(path, options.params);
+        if (newTitle && existingTab.title !== newTitle && !shouldPreserveRecordTabTitle(existingTab, path)) {
+          existingTab.title = newTitle;
+        }
       }
 
       if (isHelpdeskCasesTab) {
@@ -1633,7 +1678,13 @@ export function useTabs() {
       closable: options.closable !== false, // Default to closable
       params: options.params || {}
     };
-    
+
+    if (options.title && isRecordDetailTabPath(pathOnly)) {
+      applyRecordTabTitle(newTab, options.title);
+    } else if (options.params?.name && isRecordDetailTabPath(pathOnly)) {
+      applyRecordTabTitle(newTab, options.params.name);
+    }
+
     console.log('✨ Creating new tab:', newTab.id, newTab.title);
     // Record opens: next to current tab. Section/sidebar: at end. Explicit option wins; else infer from path for new modules.
     const insertAdjacent = options.insertAdjacent === true
@@ -1840,12 +1891,13 @@ export function useTabs() {
   // Update tab title
   const updateTabTitle = (tabId, newTitle) => {
     const tab = findTabById(tabId);
-    if (tab) {
-      tab.title = newTitle;
-      if (tab.alertBaseTitle) {
-        tab.alertBaseTitle = newTitle;
-      }
+    if (!tab || newTitle == null) return;
+    applyRecordTabTitle(tab, newTitle);
+    const trimmed = getPersistedRecordTabName(tab);
+    if (tab.alertBaseTitle && trimmed) {
+      tab.alertBaseTitle = trimmed;
     }
+    saveTabsToStorage();
   };
 
   /**
@@ -1875,9 +1927,15 @@ export function useTabs() {
       });
       return;
     }
-    const newTitle = options.title || getTitleForPath(path.split('?')[0], options.params || {});
     currentActiveTab.path = path;
-    currentActiveTab.title = newTitle;
+    if (options.title && isRecordDetailTabPath(path)) {
+      applyRecordTabTitle(currentActiveTab, options.title);
+    } else {
+      const newTitle = options.title || getTitleForPath(path.split('?')[0], options.params || {});
+      if (!shouldPreserveRecordTabTitle(currentActiveTab, path)) {
+        currentActiveTab.title = newTitle;
+      }
+    }
     if (options.params) {
       currentActiveTab.params = { ...currentActiveTab.params, ...options.params };
     }

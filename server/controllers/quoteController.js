@@ -1,12 +1,36 @@
 const Quote = require('../models/Quote');
 const QuoteLine = require('../models/QuoteLine');
-const QuoteApproval = require('../models/QuoteApproval');
 const QuoteConversionLink = require('../models/QuoteConversionLink');
-const { assertValidStatus, assertCanTransitionQuoteStatus } = require('../constants/quoteLifecycle');
-const { isCommerciallyLockedStatus } = require('../constants/quoteLifecycle');
+const {
+  assertValidStatus,
+  assertCanTransitionQuoteStatus,
+  assertQuoteRecordEditable,
+  isCommerciallyLockedStatus
+} = require('../constants/quoteLifecycle');
 const quoteTotalsService = require('../services/quoteTotalsService');
 const { writeQuoteActivity } = require('../services/quoteActivityService');
+const {
+  recomputeQuoteSimpleTotals,
+  assertQuoteCommerciallyEditableForLineWrite
+} = require('./quoteLineController');
 const crypto = require('node:crypto');
+const { sendQuoteEmail: sendQuoteEmailService } = require('../services/quoteEmailService');
+const { emitQuoteEvents } = require('../services/domainEventHelpers');
+const {
+  appendQuoteApprovalEvent,
+  findPendingProcessApprovalsForQuote
+} = require('../services/quoteApprovalProcessService');
+const { getQuoteOrgSettings } = require('../services/quoteOrgSettingsService');
+const { assertCanShareQuotePublicly } = require('../constants/quoteLifecycle');
+const { expireQuoteIfDue } = require('../services/quoteExpiryService');
+const {
+  getQuoteConversionEligibility,
+  userCanOverrideExpiredQuotes,
+  resolveConversionTypeForQuote,
+  assertCanConvertQuote,
+  buildConversionMetadata,
+  assertConvertStatusTransition
+} = require('../services/quoteConversionService');
 
 function normalizeNumber(value, { defaultValue = 0 } = {}) {
   const n = Number(value);
@@ -20,6 +44,10 @@ async function createQuote(req, res) {
 
     const status = req.body?.status ?? undefined;
     if (status !== undefined) assertValidStatus(status);
+
+    const orgQuoteSettings = await getQuoteOrgSettings(organizationId);
+    const approvalRequiredDefault =
+      req.body?.approvalRequired === true || orgQuoteSettings.requireApprovalBeforeSend === true;
 
     const quote = await Quote.create({
       organizationId,
@@ -41,6 +69,8 @@ async function createQuote(req, res) {
       sourceContext: req.body?.sourceContext ?? 'manual',
       sourceRef: req.body?.sourceRef ?? null,
 
+      approvalRequired: approvalRequiredDefault,
+
       customFields: req.body?.customFields ?? {}
     });
 
@@ -52,6 +82,17 @@ async function createQuote(req, res) {
       message: 'Quote created',
       details: { quoteNumber: quote.quoteNumber }
     });
+
+    try {
+      emitQuoteEvents({
+        previous: null,
+        current: quote.toObject ? quote.toObject() : quote,
+        organizationId,
+        triggeredBy: req.user._id
+      });
+    } catch (emitErr) {
+      console.warn('[quotes] emitQuoteEvents on create failed:', emitErr?.message || emitErr);
+    }
 
     return res.status(201).json({ success: true, data: quote });
   } catch (err) {
@@ -91,7 +132,13 @@ async function getQuotes(req, res) {
     return res.json({
       success: true,
       data: rows,
-      pagination: { page, limit, total }
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit) || 1,
+        totalRecords: total,
+        limit
+      },
+      meta: { page, limit, total }
     });
   } catch (err) {
     const code = err?.code;
@@ -110,16 +157,18 @@ async function getQuoteById(req, res) {
     const organizationId = req.user.organizationId;
     const quoteId = req.params.id;
 
-    const quote = await Quote.findOne({ _id: quoteId, organizationId, deletedAt: null })
+    const quoteDoc = await Quote.findOne({ _id: quoteId, organizationId, deletedAt: null })
       .populate({ path: 'ownerId', select: 'firstName lastName email username' })
       .populate({ path: 'organizationRefId', select: 'name' })
       .populate({ path: 'contactId', select: 'first_name last_name email phone mobile' })
       .populate({ path: 'dealId', select: 'name stage pipeline amount value currency' })
-      .populate({ path: 'caseId', select: 'caseId title status priority' })
-      .lean();
-    if (!quote) {
+      .populate({ path: 'caseId', select: 'caseId title status priority' });
+    if (!quoteDoc) {
       return res.status(404).json({ success: false, message: 'Quote not found', code: 'NOT_FOUND' });
     }
+
+    await expireQuoteIfDue(quoteDoc, { userId: req.user._id, trigger: 'read' });
+    const quote = quoteDoc.toObject();
 
     const lines = await QuoteLine.find({ organizationId, quoteId: quote._id })
       .sort({ lineOrder: 1, createdAt: 1 })
@@ -185,26 +234,16 @@ async function updateQuote(req, res) {
       return res.status(404).json({ success: false, message: 'Quote not found', code: 'NOT_FOUND' });
     }
 
+    const previousSnapshot = quote.toObject ? quote.toObject() : { ...quote };
+
+    await expireQuoteIfDue(quote, { userId: req.user._id, trigger: 'read' });
+
     if (quote.approvalLocked === true) {
       return res.status(400).json({
         success: false,
         message: 'Quote is approval-locked. Approve/reject before editing.',
         code: 'APPROVAL_LOCKED'
       });
-    }
-
-    // Status updates from the generic record page currently use PUT /quotes/:id.
-    // When status is present, enforce transitions (same as PATCH /:id/status).
-    const nextStatus = req.body?.status;
-    const fromStatus = quote.status;
-    let statusChanged = false;
-    if (nextStatus !== undefined && nextStatus !== null && String(nextStatus).trim() !== '') {
-      assertValidStatus(nextStatus);
-      if (String(nextStatus) !== String(fromStatus)) {
-        assertCanTransitionQuoteStatus(fromStatus, nextStatus);
-        quote.status = nextStatus;
-        statusChanged = true;
-      }
     }
 
     const editable = [
@@ -224,6 +263,27 @@ async function updateQuote(req, res) {
       'sourceRef',
       'customFields'
     ];
+    const hasNonStatusEdits = editable.some((key) =>
+      Object.prototype.hasOwnProperty.call(req.body || {}, key)
+    );
+    if (hasNonStatusEdits) {
+      assertQuoteRecordEditable(quote);
+    }
+
+    // Status updates from the generic record page currently use PUT /quotes/:id.
+    // When status is present, enforce transitions (same as PATCH /:id/status).
+    const nextStatus = req.body?.status;
+    const fromStatus = quote.status;
+    let statusChanged = false;
+    if (nextStatus !== undefined && nextStatus !== null && String(nextStatus).trim() !== '') {
+      assertValidStatus(nextStatus);
+      if (String(nextStatus) !== String(fromStatus)) {
+        assertCanTransitionQuoteStatus(fromStatus, nextStatus);
+        quote.status = nextStatus;
+        statusChanged = true;
+      }
+    }
+
     for (const key of editable) {
       if (Object.prototype.hasOwnProperty.call(req.body || {}, key)) {
         quote[key] = req.body[key];
@@ -252,10 +312,26 @@ async function updateQuote(req, res) {
       });
     }
 
+    try {
+      emitQuoteEvents({
+        previous: previousSnapshot,
+        current: quote.toObject ? quote.toObject() : quote,
+        organizationId,
+        triggeredBy: req.user._id
+      });
+    } catch (emitErr) {
+      console.warn('[quotes] emitQuoteEvents on update failed:', emitErr?.message || emitErr);
+    }
+
     return res.json({ success: true, data: quote });
   } catch (err) {
     const code = err?.code;
-    const status = code === 'VALIDATION' || code === 'INVALID_TRANSITION' ? 400 : 500;
+    const status =
+      code === 'VALIDATION' ||
+      code === 'INVALID_TRANSITION' ||
+      code === 'QUOTE_RECORD_LOCKED'
+        ? 400
+        : 500;
     return res.status(status).json({
       success: false,
       message: err.message || 'Failed to update quote',
@@ -269,25 +345,6 @@ function userCanActOnApprovals(req) {
   if (req.user?.isOwner) return true;
   const role = String(req.user?.role || '').toLowerCase();
   return role === 'owner' || role === 'admin';
-}
-
-async function appendQuoteApprovalEvent({ organizationId, quote, userId, action, fromStatus, toStatus, comment = null, metadata = {} }) {
-  try {
-    await QuoteApproval.create({
-      organizationId,
-      quoteId: quote._id,
-      revisionNumber: Number(quote.revisionNumber) || 1,
-      action,
-      fromStatus: fromStatus ?? null,
-      toStatus: toStatus ?? null,
-      actorUserId: userId,
-      comment,
-      metadata: metadata || {}
-    });
-  } catch (e) {
-    // Approval history is best-effort; do not block business flow on audit insert failures.
-    console.warn('[quotes] failed to write QuoteApproval:', e?.message || e);
-  }
 }
 
 /**
@@ -304,6 +361,7 @@ async function submitQuoteForApproval(req, res) {
       return res.status(404).json({ success: false, message: 'Quote not found', code: 'NOT_FOUND' });
     }
 
+    const previousSnapshot = quote.toObject ? quote.toObject() : { ...quote };
     const fromStatus = quote.status;
     if (String(fromStatus) !== 'Draft') {
       return res.status(400).json({
@@ -340,6 +398,18 @@ async function submitQuoteForApproval(req, res) {
       message: 'Submitted for approval',
       details: { fromStatus, toStatus }
     });
+
+    try {
+      emitQuoteEvents({
+        previous: previousSnapshot,
+        current: quote.toObject ? quote.toObject() : quote,
+        organizationId,
+        triggeredBy: req.user._id,
+        submittedForApproval: true
+      });
+    } catch (emitErr) {
+      console.warn('[quotes] emitQuoteEvents on submit failed:', emitErr?.message || emitErr);
+    }
 
     return res.json({ success: true, data: quote });
   } catch (err) {
@@ -509,6 +579,9 @@ async function shareQuote(req, res) {
       return res.status(404).json({ success: false, message: 'Quote not found', code: 'NOT_FOUND' });
     }
 
+    const orgQuoteSettings = await getQuoteOrgSettings(organizationId);
+    assertCanShareQuotePublicly(quote, orgQuoteSettings);
+
     // Ensure status is Sent or later when sharing; transition through lifecycle validator.
     const fromStatus = quote.status;
     if (String(fromStatus) !== 'Sent') {
@@ -523,6 +596,7 @@ async function shareQuote(req, res) {
     quote.sentToCustomer = true;
     if (!quote.sentAt) quote.sentAt = new Date();
     quote.portalAccessEnabled = true;
+    quote.customerShareMode = 'formal';
 
     await quote.save();
 
@@ -545,7 +619,8 @@ async function shareQuote(req, res) {
     });
   } catch (err) {
     const code = err?.code;
-    const status = code === 'VALIDATION' || code === 'INVALID_TRANSITION' ? 400 : 500;
+    const status =
+      code === 'VALIDATION' || code === 'INVALID_TRANSITION' || code === 'QUOTE_SHARE_NOT_ALLOWED' ? 400 : 500;
     return res.status(status).json({
       success: false,
       message: err.message || 'Failed to share quote',
@@ -610,8 +685,9 @@ async function convertQuote(req, res) {
     }
 
     const fromStatus = String(quote.status || '');
-    const toStatus = 'Converted';
-    assertCanTransitionQuoteStatus(fromStatus, toStatus);
+    const overrideExpired = userCanOverrideExpiredQuotes(req);
+    const convertEligibility = assertConvertStatusTransition(quote, fromStatus, { overrideExpired });
+    const conversionType = String(req.body?.conversionType || resolveConversionTypeForQuote(quote));
 
     const existing = await QuoteConversionLink.findOne({
       organizationId,
@@ -630,20 +706,26 @@ async function convertQuote(req, res) {
       });
     }
 
+    const targetExternalRef = req.body?.targetExternalRef ?? req.body?.externalRef ?? null;
+
     const link = await QuoteConversionLink.create({
       organizationId,
       quoteId: quote._id,
       quoteNumber: quote.quoteNumber,
       revisionNumber: Number(quote.revisionNumber) || 1,
-      conversionType: String(req.body?.conversionType || 'full'),
+      conversionType,
       targetModuleKey: String(req.body?.targetModuleKey || 'sales_orders'),
       targetRecordId: req.body?.targetRecordId ? String(req.body.targetRecordId) : null,
-      targetExternalRef: req.body?.targetExternalRef ?? null,
+      targetExternalRef: targetExternalRef ? String(targetExternalRef).trim().slice(0, 200) : null,
       status: 'created',
       createdBy: req.user._id,
-      metadata: req.body?.metadata ?? {}
+      metadata: {
+        ...buildConversionMetadata(quote, req.body),
+        ...(req.body?.metadata && typeof req.body.metadata === 'object' ? req.body.metadata : {})
+      }
     });
 
+    const toStatus = 'Converted';
     quote.status = toStatus;
     quote.converted = true;
     quote.conversionStatus = 'Converted';
@@ -659,7 +741,8 @@ async function convertQuote(req, res) {
         fromStatus,
         toStatus,
         conversionType: link.conversionType,
-        targetModuleKey: link.targetModuleKey
+        targetModuleKey: link.targetModuleKey,
+        ...(convertEligibility?.usedExpiredOverride ? { usedExpiredOverride: true } : {})
       }
     });
 
@@ -673,7 +756,14 @@ async function convertQuote(req, res) {
     });
   } catch (err) {
     const code = err?.code;
-    const status = code === 'VALIDATION' || code === 'INVALID_TRANSITION' ? 400 : 500;
+    const status =
+      code === 'VALIDATION' ||
+      code === 'INVALID_TRANSITION' ||
+      code === 'ALREADY_CONVERTED' ||
+      code === 'CONVERSION_NOT_ALLOWED' ||
+      code === 'QUOTE_EXPIRED'
+        ? 400
+        : 500;
     return res.status(status).json({
       success: false,
       message: err.message || 'Failed to convert quote',
@@ -693,8 +783,10 @@ async function getQuoteConversion(req, res) {
     const organizationId = req.user.organizationId;
     const quoteId = req.params.id;
 
-    const quote = await Quote.findOne({ _id: quoteId, organizationId })
-      .select('_id quoteNumber revisionNumber status converted conversionStatus')
+    const quote = await Quote.findOne({ _id: quoteId, organizationId, deletedAt: null })
+      .select(
+        '_id quoteNumber revisionNumber status converted conversionStatus validUntil customerResponse grandTotal currency'
+      )
       .lean();
     if (!quote) {
       return res.status(404).json({ success: false, message: 'Quote not found', code: 'NOT_FOUND' });
@@ -705,6 +797,12 @@ async function getQuoteConversion(req, res) {
       .sort({ createdAt: -1 })
       .lean();
 
+    const canOverrideExpired = userCanOverrideExpiredQuotes(req);
+    const eligibility = {
+      ...getQuoteConversionEligibility(quote, { overrideExpired: canOverrideExpired }),
+      canOverrideExpired
+    };
+
     return res.json({
       success: true,
       data: {
@@ -714,9 +812,11 @@ async function getQuoteConversion(req, res) {
           revisionNumber,
           status: quote.status,
           converted: quote.converted === true,
-          conversionStatus: quote.conversionStatus
+          conversionStatus: quote.conversionStatus,
+          validUntil: quote.validUntil ?? null
         },
-        conversion: link || null
+        conversion: link || null,
+        eligibility
       }
     });
   } catch (err) {
@@ -741,7 +841,7 @@ async function deleteQuote(req, res) {
       recordId: req.params.id,
       organizationId: req.user.organizationId,
       userId: req.user._id,
-      appKey: 'SALES',
+      appKey: 'platform',
       reason: req.body?.reason,
       cascadeConfirmed: !!req.body?.cascadeConfirmed
     });
@@ -791,6 +891,92 @@ async function deleteQuote(req, res) {
  * Recomputes line totals + quote totals deterministically from snapshots.
  * Does NOT re-resolve catalog pricing.
  */
+/**
+ * PATCH /api/quotes/:id/discounts
+ * Body: { globalDiscountType?, globalDiscountValue?, globalDiscountAmount?, overridePricing? }
+ */
+async function patchQuoteDiscounts(req, res) {
+  try {
+    const organizationId = req.user.organizationId;
+    const quoteId = req.params.id;
+
+    const quote = await Quote.findOne({ _id: quoteId, organizationId });
+    if (!quote) {
+      return res.status(404).json({ success: false, message: 'Quote not found', code: 'NOT_FOUND' });
+    }
+
+    if (quote.approvalLocked === true) {
+      return res.status(400).json({ success: false, message: 'Quote is approval-locked', code: 'APPROVAL_LOCKED' });
+    }
+
+    const override = req.body?.overridePricing === true;
+    assertQuoteCommerciallyEditableForLineWrite({
+      quoteStatus: quote.status,
+      overridePricing: override,
+      req
+    });
+
+    if (Object.prototype.hasOwnProperty.call(req.body || {}, 'globalDiscountType')) {
+      const raw = req.body.globalDiscountType;
+      quote.globalDiscountType = raw === null || raw === '' ? null : String(raw).trim();
+    }
+    if (Object.prototype.hasOwnProperty.call(req.body || {}, 'globalDiscountValue')) {
+      const v = normalizeNumber(req.body.globalDiscountValue, { defaultValue: NaN });
+      if (!Number.isFinite(v) || v < 0) {
+        return res.status(400).json({ success: false, code: 'VALIDATION', message: 'globalDiscountValue must be >= 0' });
+      }
+      quote.globalDiscountValue = v;
+    }
+    if (Object.prototype.hasOwnProperty.call(req.body || {}, 'globalDiscountAmount')) {
+      const a = normalizeNumber(req.body.globalDiscountAmount, { defaultValue: NaN });
+      if (!Number.isFinite(a) || a < 0) {
+        return res.status(400).json({ success: false, code: 'VALIDATION', message: 'globalDiscountAmount must be >= 0' });
+      }
+      quote.globalDiscountAmount = a;
+    } else if (
+      Object.prototype.hasOwnProperty.call(req.body || {}, 'globalDiscountType') ||
+      Object.prototype.hasOwnProperty.call(req.body || {}, 'globalDiscountValue')
+    ) {
+      quote.globalDiscountAmount = 0;
+    }
+
+    await quote.save();
+
+    const totals = await recomputeQuoteSimpleTotals({ organizationId, quoteId: quote._id });
+    const lines = await QuoteLine.find({ organizationId, quoteId: quote._id })
+      .sort({ lineOrder: 1, createdAt: 1 })
+      .lean();
+
+    await writeQuoteActivity({
+      organizationId,
+      quoteId: quote._id,
+      userId: req.user._id,
+      action: 'quote_discounts_updated',
+      message: 'Quote discounts updated',
+      details: { totals }
+    });
+
+    const refreshed = await Quote.findOne({ _id: quoteId, organizationId }).lean();
+
+    return res.json({
+      success: true,
+      data: {
+        quote: refreshed,
+        lines,
+        totals
+      }
+    });
+  } catch (err) {
+    const status = err?.code === 'VALIDATION' || err?.code === 'QUOTE_COMMERCIALLY_LOCKED' ? 400 : 500;
+    return res.status(status).json({
+      success: false,
+      message: err.message || 'Failed to update quote discounts',
+      code: err?.code || 'UNKNOWN',
+      details: err?.details || null
+    });
+  }
+}
+
 async function recalculateQuote(req, res) {
   try {
     const organizationId = req.user.organizationId;
@@ -803,11 +989,19 @@ async function recalculateQuote(req, res) {
 
     const lines = await QuoteLine.find({ organizationId, quoteId }).lean();
     if (!lines.length) {
-      await Quote.updateOne(
-        { _id: quoteId, organizationId },
-        { $set: { subtotal: 0, taxTotal: 0, grandTotal: 0 } }
-      );
-      return res.json({ success: true, data: { quoteId, totals: { subtotal: 0, taxTotal: 0, grandTotal: 0 }, updatedLines: 0 } });
+      const emptyTotals = {
+        subtotal: 0,
+        lineDiscountTotal: 0,
+        taxTotal: 0,
+        globalDiscountTotal: 0,
+        adjustmentTotal: Number(quote.adjustmentTotal) || 0,
+        grandTotal: Math.max(0, Number(quote.adjustmentTotal) || 0)
+      };
+      await Quote.updateOne({ _id: quoteId, organizationId }, { $set: emptyTotals });
+      return res.json({
+        success: true,
+        data: { quoteId, totals: emptyTotals, lines: [], updatedLines: 0 }
+      });
     }
 
     const bulkOps = [];
@@ -829,16 +1023,16 @@ async function recalculateQuote(req, res) {
 
     const bulk = await QuoteLine.bulkWrite(bulkOps, { ordered: false });
 
-    const updatedLines = await QuoteLine.find({ organizationId, quoteId })
-      .select('hiddenLine lineSubtotal lineTaxTotal lineTotal')
-      .lean();
+    const refreshedLines = await QuoteLine.find({ organizationId, quoteId }).lean();
 
-    const totals = quoteTotalsService.computeQuoteTotalsFromLines(updatedLines);
+    const totals = quoteTotalsService.computeQuoteTotalsFromLines(refreshedLines, {
+      globalDiscountType: quote.globalDiscountType,
+      globalDiscountValue: quote.globalDiscountValue,
+      globalDiscountAmount: quote.globalDiscountAmount,
+      adjustmentTotal: quote.adjustmentTotal
+    });
 
-    await Quote.updateOne(
-      { _id: quoteId, organizationId },
-      { $set: { subtotal: totals.subtotal, taxTotal: totals.taxTotal, grandTotal: totals.grandTotal } }
-    );
+    await Quote.updateOne({ _id: quoteId, organizationId }, { $set: totals });
 
     await writeQuoteActivity({
       organizationId,
@@ -846,7 +1040,7 @@ async function recalculateQuote(req, res) {
       userId: req.user._id,
       action: 'quote_recalculated',
       message: 'Totals recalculated',
-      details: { totals, updatedLines: bulk.modifiedCount ?? updatedLines.length }
+      details: { totals, updatedLines: bulk.modifiedCount ?? refreshedLines.length }
     });
 
     return res.json({
@@ -854,7 +1048,8 @@ async function recalculateQuote(req, res) {
       data: {
         quoteId,
         totals,
-        updatedLines: bulk.modifiedCount ?? updatedLines.length
+        lines: refreshedLines,
+        updatedLines: bulk.modifiedCount ?? refreshedLines.length
       }
     });
   } catch (err) {
@@ -884,6 +1079,149 @@ function assertCanReviseQuote(quote) {
  * - Increments `revisionNumber`
  * - Deactivates the current active revision
  */
+/**
+ * POST /api/quotes/:id/send-email
+ * Body: { to?, subject?, message?, attachPdf?: boolean, includeLink?: boolean }
+ */
+async function sendQuoteEmail(req, res) {
+  try {
+    const organizationId = req.user.organizationId;
+    const quoteId = req.params.id;
+
+    const data = await sendQuoteEmailService({
+      organizationId,
+      quoteId,
+      userId: req.user._id,
+      body: req.body || {},
+      req
+    });
+
+    const isDraftSend = data.sendMode === 'draft';
+    await writeQuoteActivity({
+      organizationId,
+      quoteId,
+      userId: req.user._id,
+      action: isDraftSend ? 'quote_draft_shared' : 'quote_email_sent',
+      message: isDraftSend
+        ? `Draft quote shared with ${data.email.to}`
+        : `Quote emailed to ${data.email.to}`,
+      details: {
+        to: data.email.to,
+        subject: data.email.subject,
+        sendMode: data.sendMode,
+        includeLink: Boolean(data.email.publicUrl),
+        messageId: data.email.messageId
+      }
+    });
+
+    return res.json({ success: true, data });
+  } catch (err) {
+    const code = err?.code;
+    const status =
+      code === 'NOT_FOUND'
+        ? 404
+        : code === 'EMAIL_NOT_CONFIGURED' ||
+            code === 'MISSING_RECIPIENT' ||
+            code === 'QUOTE_SEND_NOT_ALLOWED' ||
+            code === 'INVALID_TRANSITION'
+          ? 400
+          : code === 'EMAIL_SEND_FAILED'
+            ? 502
+            : 500;
+    return res.status(status).json({
+      success: false,
+      message: err.message || 'Failed to send quote email',
+      code: code || 'UNKNOWN',
+      details: err.details || null
+    });
+  }
+}
+
+/**
+ * GET /api/quotes/:id/process-approvals
+ * Pending Process Designer approval gates for this quote.
+ */
+async function getQuoteProcessApprovals(req, res) {
+  try {
+    const organizationId = req.user.organizationId;
+    const quoteId = req.params.id;
+
+    const quote = await Quote.findOne({ _id: quoteId, organizationId }).select('_id').lean();
+    if (!quote) {
+      return res.status(404).json({ success: false, message: 'Quote not found', code: 'NOT_FOUND' });
+    }
+
+    const pending = await findPendingProcessApprovalsForQuote({ organizationId, quoteId });
+
+    return res.json({
+      success: true,
+      data: pending,
+      count: pending.length
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err.message || 'Failed to load process approvals',
+      code: 'UNKNOWN'
+    });
+  }
+}
+
+/**
+ * GET /api/quotes/:id/revisions
+ * Lists all revisions sharing the same quoteNumber (newest first).
+ */
+async function getQuoteRevisions(req, res) {
+  try {
+    const organizationId = req.user.organizationId;
+    const quoteId = req.params.id;
+
+    const quote = await Quote.findOne({ _id: quoteId, organizationId })
+      .select('_id quoteNumber revisionNumber activeRevision status quoteDate validUntil grandTotal currency createdAt updatedAt')
+      .lean();
+
+    if (!quote) {
+      return res.status(404).json({ success: false, message: 'Quote not found', code: 'NOT_FOUND' });
+    }
+
+    if (!quote.quoteNumber) {
+      return res.json({
+        success: true,
+        data: {
+          quoteNumber: null,
+          currentQuoteId: String(quoteId),
+          revisions: [quote]
+        }
+      });
+    }
+
+    const revisions = await Quote.find({
+      organizationId,
+      quoteNumber: quote.quoteNumber
+    })
+      .sort({ revisionNumber: -1, createdAt: -1 })
+      .select(
+        '_id quoteNumber revisionNumber activeRevision status quoteDate validUntil grandTotal currency sentAt converted conversionStatus createdAt updatedAt'
+      )
+      .lean();
+
+    return res.json({
+      success: true,
+      data: {
+        quoteNumber: quote.quoteNumber,
+        currentQuoteId: String(quoteId),
+        revisions
+      }
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err.message || 'Failed to fetch quote revisions',
+      code: err?.code || 'UNKNOWN'
+    });
+  }
+}
+
 async function reviseQuote(req, res) {
   try {
     const organizationId = req.user.organizationId;
@@ -1056,6 +1394,8 @@ module.exports = {
   createQuote,
   getQuotes,
   getQuoteById,
+  getQuoteRevisions,
+  getQuoteProcessApprovals,
   updateQuote,
   transitionQuoteStatus,
   submitQuoteForApproval,
@@ -1067,6 +1407,8 @@ module.exports = {
   getQuoteConversion,
   deleteQuote,
   recalculateQuote,
-  reviseQuote
+  reviseQuote,
+  sendQuoteEmail,
+  patchQuoteDiscounts
 };
 

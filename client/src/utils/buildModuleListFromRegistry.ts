@@ -31,6 +31,7 @@ import type { PermissionSnapshot } from '@/types/permission-snapshot.types';
 import { hasPermission as checkPermission } from '@/types/permission-snapshot.types';
 import { memoizeBuilder } from '@/utils/builderCache';
 import { PEOPLE_FIELD_METADATA } from '@/platform/fields/peopleFieldModel';
+import { hasModuleListConfig } from '@/platform/modules/moduleListRegistry';
 
 /**
  * Get fallback columns for common modules when list config is missing
@@ -510,8 +511,50 @@ export function buildModuleListFromRegistry(
       const listConfig = moduleWithList.list;
       
       if (!listConfig) {
-        // Module exists but has no list configuration
-        // Provide fallback columns based on moduleKey for common modules
+        // Modules in moduleListRegistry use ModuleDefinition fields + Customize View (see ModuleList).
+        if (hasModuleListConfig(moduleKey)) {
+          const fallbackActions = getFallbackActions(moduleKey, appKey);
+          const displayName = getModuleDisplayName(moduleKey);
+          const createActionLabel =
+            moduleKey === 'people'
+              ? 'Add your first person'
+              : moduleKey === 'deals'
+                ? 'Create your first deal'
+                : moduleKey === 'tasks'
+                  ? 'Create a task'
+                  : moduleKey === 'tickets'
+                    ? 'Create a ticket'
+                    : moduleKey === 'organizations'
+                      ? 'Add an organization'
+                      : moduleKey === 'items'
+                        ? 'Add an item'
+                        : moduleKey === 'forms'
+                          ? 'Create a form'
+                          : `Create ${displayName.toLowerCase()}`;
+
+          return {
+            version: 1,
+            moduleKey,
+            appKey,
+            title: module.label,
+            layout: 'TABLE',
+            columns: [],
+            primaryActions: buildPrimaryActions(fallbackActions, snapshot, moduleKey, appKey),
+            emptyState: {
+              type: EmptyStateType.NO_DATA,
+              title: `No ${displayName.toLowerCase()} yet`,
+              description: `${displayName} will appear here as you add them. Get started by creating your first one.`,
+              primaryAction: fallbackActions.find((a) => a.type === 'create')
+                ? {
+                    label: createActionLabel,
+                    route: getCreateRoute(moduleKey, appKey)
+                  }
+                : undefined
+            }
+          };
+        }
+
+        // Legacy modules without registry config: minimal fallback columns
         const fallbackColumns = getFallbackColumns(moduleKey);
         const fallbackActions = getFallbackActions(moduleKey, appKey);
         

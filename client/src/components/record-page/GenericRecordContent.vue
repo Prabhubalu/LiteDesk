@@ -302,6 +302,12 @@
               </span>
             </div>
           </div>
+          <template v-if="moduleKeyLower === 'quotes'" #below>
+            <div class="space-y-2">
+              <QuoteRecordStatusBanner :record="record" />
+              <QuoteCustomerResponseBanner :record="record" />
+            </div>
+          </template>
         </RecordPageTitleRow>
 
         <div
@@ -435,7 +441,7 @@
 
         <!-- Section stack: show when collapsed, or when expanded to details/related (adapter returns only that section) -->
         <section
-          v-if="record && genericSections.length && (!expandedLeftSection || ['description', 'catalog', 'details', 'related'].includes(expandedLeftSection))"
+          v-if="record && genericSections.length && (!expandedLeftSection || ['description', 'catalog', 'details', 'related', 'lines', 'revisions', 'conversion'].includes(expandedLeftSection))"
           :class="[expandedLeftSection ? 'mt-8' : 'mt-4']"
         >
           <SectionStack
@@ -935,6 +941,7 @@ import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
 import { getProcessActivityMessage } from '@/utils/processActivityMessages';
+import { getQuoteActivityMessage, getQuoteActivityActorLabel } from '@/components/activity/adapters/quoteActivityUiAdapter';
 import { resolveModuleDisplayName } from '@/utils/configurableLabelResolver';
 import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
 import {
@@ -950,6 +957,8 @@ import { useStickyTitleRow } from '@/components/record-page/composables/useStick
 import SectionStack from '@/components/record-page/sections/SectionStack.vue';
 import AppointmentDetailCard from '@/components/appointments/AppointmentDetailCard.vue';
 import CaseSlaContextBanner from '@/components/helpdesk/CaseSlaContextBanner.vue';
+import QuoteRecordStatusBanner from '@/components/record-page/sections/QuoteRecordStatusBanner.vue';
+import QuoteCustomerResponseBanner from '@/components/record-page/sections/QuoteCustomerResponseBanner.vue';
 import RelatedSection from '@/components/record-page/sections/RelatedSection.vue';
 import DetailsSection from '@/components/record-page/sections/DetailsSection.vue';
 import RecordRightPane from '@/components/record-page/RecordRightPane.vue';
@@ -974,6 +983,14 @@ import { createGenericRecordAdapter } from '@/components/record-page/adapters/ge
 import { createItemsRecordAdapter } from '@/components/record-page/adapters/itemsRecordAdapter';
 import { createQuotesRecordAdapter } from '@/components/record-page/adapters/quotesRecordAdapter';
 import { createRecordSectionLabels } from '@/utils/recordSectionLabels';
+import {
+  applyQuoteLineDeleteToRecord,
+  applyQuoteLinesAddToRecord,
+  applyQuoteLinesUpdateToRecord,
+  applyQuoteLinesRecalculateToRecord,
+  applyQuoteHeaderPatchToRecord,
+  applyQuoteDiscountsToRecord
+} from '@/utils/quoteRecordPatch';
 import { useRecordTags, getDefaultTagChipClass } from '@/components/record-page/composables/useRecordTags';
 import {
   normalizeSystemActivityEvent,
@@ -2051,7 +2068,7 @@ const sectionContext = computed(() => {
     moduleKey: props.moduleKey,
     openTab,
     fieldContext: recordFieldContext.value,
-    onSectionUpdated: () => fetchRecord()
+    onSectionUpdated: handleSectionUpdated
   };
   if (supportsTags.value) {
     base.openTagsEditor = (event) => openTagPopoverFromField(event);
@@ -2273,6 +2290,10 @@ const activityUi = computed(() => {
     },
     getSystemEventActorLabel: (event) => {
       if (!event) return 'System';
+      if (moduleKeyLower.value === 'quotes') {
+        const customer = getQuoteActivityActorLabel(event);
+        if (customer) return customer;
+      }
       const author = event.author ?? event.actor;
       if (author && typeof author === 'object') {
         const name = [author.firstName, author.lastName].filter(Boolean).join(' ').trim() || author.username || author.email;
@@ -2300,6 +2321,10 @@ const activityUi = computed(() => {
       const action = String(event?.action || event?.payload?.action || 'updated').trim();
       const processMsg = getProcessActivityMessage(event);
       if (processMsg) return processMsg;
+      if (moduleKeyLower.value === 'quotes') {
+        const quoteMsg = getQuoteActivityMessage(event);
+        if (quoteMsg) return quoteMsg;
+      }
       const mod = (props.moduleKey || '').toLowerCase();
       if (action === 'record_created') {
         return mod === 'people' ? 'Created this person' : 'Created this record';
@@ -2659,18 +2684,106 @@ async function onAppointmentRescheduled() {
   await fetchRecord();
 }
 
-async function fetchRecord() {
+function getRecordLeftPaneScrollEl() {
+  return genericRecordContentRootRef.value?.querySelector('.record-page-layout__left') ?? null;
+}
+
+function handleSectionUpdated(event) {
+  const payload = event?.payload;
+  if (moduleKeyLower.value !== 'quotes' || !record.value) {
+    fetchRecord();
+    return;
+  }
+
+  if (payload?.type === 'soft-refresh') {
+    fetchRecord({ preserveScroll: true, soft: true });
+    return;
+  }
+
+  if (
+    payload?.type === 'line-deleted' &&
+    applyQuoteLineDeleteToRecord(record.value, {
+      deletedLine: payload.deletedLine,
+      totals: payload.totals
+    })
+  ) {
+    return;
+  }
+
+  if (
+    payload?.type === 'lines-added' &&
+    applyQuoteLinesAddToRecord(record.value, {
+      lines: payload.lines,
+      totals: payload.totals
+    })
+  ) {
+    return;
+  }
+
+  if (
+    payload?.type === 'line-updated' &&
+    applyQuoteLinesUpdateToRecord(record.value, {
+      line: payload.line,
+      totals: payload.totals
+    })
+  ) {
+    return;
+  }
+
+  if (
+    payload?.type === 'lines-recalculated' &&
+    applyQuoteLinesRecalculateToRecord(record.value, {
+      lines: payload.lines,
+      totals: payload.totals
+    })
+  ) {
+    return;
+  }
+
+  if (
+    payload?.type === 'quote-updated' &&
+    applyQuoteHeaderPatchToRecord(record.value, payload.quote)
+  ) {
+    return;
+  }
+
+  if (
+    payload?.type === 'quote-discounts-updated' &&
+    applyQuoteDiscountsToRecord(record.value, {
+      quote: payload.quote,
+      lines: payload.lines,
+      totals: payload.totals
+    })
+  ) {
+    return;
+  }
+
+  fetchRecord({ preserveScroll: true, soft: true });
+}
+
+async function fetchRecord(options = {}) {
+  const preserveScroll = options.preserveScroll === true;
+  const soft = options.soft === true;
+
   if (!props.recordId || props.recordId === 'new') {
     loading.value = false;
     error.value = 'Invalid record';
     return;
   }
+
+  const scrollEl = preserveScroll ? getRecordLeftPaneScrollEl() : null;
+  const savedScrollTop = scrollEl?.scrollTop ?? 0;
+
   const runId = ++fetchRecordRunId;
-  loading.value = true;
-  error.value = null;
-  activityRaw.value = [];
-  emailThreads.value = [];
-  neighbors.value = { previousId: null, nextId: null };
+  if (!soft) {
+    loading.value = true;
+  }
+  if (!soft) {
+    error.value = null;
+    activityRaw.value = [];
+    emailThreads.value = [];
+    neighbors.value = { previousId: null, nextId: null };
+  }
   try {
     const [recordRes, modulesRes] = await Promise.all([
       apiClient.get(`${recordCrudPathBase.value}/${props.recordId}`),
@@ -2697,10 +2810,17 @@ async function fetchRecord() {
     record.value = null;
   } finally {
     if (runId === fetchRecordRunId) {
-      loading.value = false;
+      if (!soft) {
+        loading.value = false;
+      }
       if (record.value?._id) {
         loadDeferredRecordData(runId, record.value).catch((deferredErr) => {
           console.warn('Deferred record data load failed:', deferredErr);
+        });
+      }
+      if (preserveScroll && scrollEl) {
+        nextTick(() => {
+          scrollEl.scrollTop = savedScrollTop;
         });
       }
     }

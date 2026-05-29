@@ -14,7 +14,7 @@
  * @property {string} executionId - Unique, deterministic execution ID
  * @property {string} processId - Process ID
  * @property {string} appKey - App context (e.g. 'SALES')
- * @property {string|null} entityType - Entity type ('people' | 'organization' | 'deal')
+ * @property {string|null} entityType - Entity type ('people' | 'organization' | 'deal' | 'quote')
  * @property {string|null} entityId - Entity ID
  * @property {string|null} organizationId - Tenant organization ID
  * @property {string|null} triggeredBy - User ID or 'system'

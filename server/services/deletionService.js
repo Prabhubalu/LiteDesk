@@ -36,7 +36,7 @@ const APP_KEY_BY_MODULE = {
   people: 'SALES',
   organizations: 'SALES',
   deals: 'SALES',
-  quotes: 'SALES',
+  quotes: 'platform',
   tasks: 'platform',
   events: 'platform',
   items: 'platform',

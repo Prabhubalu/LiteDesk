@@ -87,6 +87,34 @@
     "message": "Recalculate",
     "description": "Recalculate quote totals button label"
   },
+  "linesTotalsSubtotal": {
+    "message": "Subtotal",
+    "description": "Quote lines totals summary row for subtotal"
+  },
+  "linesTotalsLineDiscount": {
+    "message": "Line discounts",
+    "description": "Quote lines totals summary row for line-level discounts"
+  },
+  "linesTotalsGlobalDiscount": {
+    "message": "Global discount",
+    "description": "Quote lines totals summary row for quote-level discount"
+  },
+  "linesTotalsTax": {
+    "message": "Tax",
+    "description": "Quote lines totals summary row for tax"
+  },
+  "linesTotalsAdjustment": {
+    "message": "Adjustments",
+    "description": "Quote lines totals summary row for manual adjustments"
+  },
+  "linesTotalsGrandTotal": {
+    "message": "Grand total",
+    "description": "Quote lines totals summary row for grand total"
+  },
+  "linesTotalsCurrency": {
+    "message": "Currency: {currency}",
+    "description": "Quote lines totals currency label"
+  },
   "linesSku": {
     "message": "SKU",
     "description": "Quote lines table column header for SKU snapshot"
@@ -102,6 +130,30 @@
   "linesUnitPrice": {
     "message": "Unit price",
     "description": "Quote lines table column header for unit price snapshot"
+  },
+  "linesDiscount": {
+    "message": "Discount",
+    "description": "Quote lines table column header for line discount"
+  },
+  "linesDiscountNone": {
+    "message": "—",
+    "description": "No discount option in quote line/global discount selectors"
+  },
+  "linesDiscountPercent": {
+    "message": "%",
+    "description": "Percent discount option in quote discount selectors"
+  },
+  "linesDiscountAmount": {
+    "message": "$",
+    "description": "Fixed amount discount option in quote discount selectors"
+  },
+  "linesDiscountUpdateFailed": {
+    "message": "Could not update line discount.",
+    "description": "Error when PATCH quote line discount fails"
+  },
+  "linesGlobalDiscountUpdateFailed": {
+    "message": "Could not update global discount.",
+    "description": "Error when PATCH quote global discount fails"
   },
   "linesTotal": {
     "message": "Total",
@@ -183,9 +235,585 @@
     "message": "Failed to recalculate totals",
     "description": "Toast fallback when recalculating totals fails"
   },
+  "linesReorderColumn": {
+    "message": "Reorder",
+    "description": "Screen reader label for quote line drag-reorder column"
+  },
+  "linesDragHandleAria": {
+    "message": "Drag to reorder line",
+    "description": "Aria label for quote line drag handle"
+  },
+  "linesReorderFailed": {
+    "message": "Failed to reorder lines",
+    "description": "Toast when quote line reorder fails"
+  },
   "linesConfirmDelete": {
     "message": "Delete this line?",
     "description": "Confirmation prompt before deleting a quote line"
+  },
+  "linesMoreActions": {
+    "message": "More actions",
+    "description": "Quote lines toolbar overflow menu label"
+  },
+  "linesTotalsStaleHint": {
+    "message": "Totals may be out of date.",
+    "description": "Hint when quote header totals differ from line rollups"
+  },
+  "linesShowPricingDetails": {
+    "message": "Show pricing details",
+    "description": "Toggle to show price book and price source columns"
+  },
+  "linesOptional": {
+    "message": "Optional",
+    "description": "Badge for optional bundle component lines"
+  },
+  "linesAddBundle": {
+    "message": "Add bundle",
+    "description": "Button to add a product bundle as quote lines"
+  },
+  "linesAddBundleFailed": {
+    "message": "Failed to add bundle",
+    "description": "Toast when bundle add fails"
+  },
+  "linesAddBundleSuccess": {
+    "message": "Bundle added",
+    "description": "Toast when bundle add succeeds"
+  },
+  "linesBundleOptionalTitle": {
+    "message": "Optional bundle components",
+    "description": "Modal title when choosing optional bundle components"
+  },
+  "linesBundleOptionalHint": {
+    "message": "Select optional components to include on this quote.",
+    "description": "Generic hint for optional bundle component picker"
+  },
+  "linesBundleOptionalAddHint": {
+    "message": "Choose optional items to include for {name}.",
+    "description": "Hint when adding a bundle with optional components"
+  },
+  "linesBundleOptionalConfigureHint": {
+    "message": "Update optional items included for {name}.",
+    "description": "Hint when configuring optional components on an existing bundle line"
+  },
+  "linesBundleOptionalConfigure": {
+    "message": "Optional items",
+    "description": "Link to open optional component picker for a bundle parent line"
+  },
+  "linesBundleOptionalNone": {
+    "message": "No optional components defined for this bundle.",
+    "description": "Empty state in optional bundle component picker"
+  },
+  "linesBundleOptionalQty": {
+    "message": "Qty per bundle: {qty}",
+    "description": "Quantity label for an optional bundle component row"
+  },
+  "linesBundleOptionalUpdateFailed": {
+    "message": "Could not update optional bundle components.",
+    "description": "Error when PATCH bundle optional components fails"
+  },
+  "linesBundleOptionalUpdateSuccess": {
+    "message": "Optional bundle components updated.",
+    "description": "Success toast after updating optional bundle components"
+  },
+  "linesPickBundleTitle": {
+    "message": "Pick bundle",
+    "description": "Modal title for bundle picker"
+  },
+  "linesBundleSearchPlaceholder": {
+    "message": "Search bundles…",
+    "description": "Bundle picker search placeholder"
+  },
+  "linesNoBundlesFound": {
+    "message": "No bundles found.",
+    "description": "Empty state in bundle picker"
+  },
+  "quoteRevisionLabel": {
+    "message": "Rev. {n}",
+    "description": "Quote revision number label in lines toolbar"
+  },
+  "quoteActionSubmitApproval": {
+    "message": "Submit for approval",
+    "description": "Quote lines toolbar action"
+  },
+  "quoteActionApprove": {
+    "message": "Approve",
+    "description": "Quote lines toolbar action"
+  },
+  "quoteActionReject": {
+    "message": "Reject",
+    "description": "Quote lines toolbar action"
+  },
+  "quoteActionCreateRevision": {
+    "message": "New revision",
+    "description": "Quote lines toolbar action"
+  },
+  "quoteActionSendEmail": {
+    "message": "Send quote",
+    "description": "Primary action to email quote to customer"
+  },
+  "quoteActionSendDraftEmail": {
+    "message": "Send draft for review",
+    "description": "Email draft quote to customer before formal release"
+  },
+  "quoteActionResendEmail": {
+    "message": "Resend quote",
+    "description": "Primary action to email quote again after it was already sent"
+  },
+  "quoteSendEmailTitle": {
+    "message": "Send quote by email",
+    "description": "Drawer title for quote email compose"
+  },
+  "quoteSendEmailSubtitle": {
+    "message": "Email the quote PDF and an optional customer portal link.",
+    "description": "Drawer subtitle for quote email compose"
+  },
+  "quoteSendEmailTo": {
+    "message": "To",
+    "description": "Recipient field label"
+  },
+  "quoteSendEmailToPlaceholder": {
+    "message": "Enter recipient email",
+    "description": "Recipient email placeholder"
+  },
+  "quoteSendEmailSubject": {
+    "message": "Subject",
+    "description": "Email subject field label"
+  },
+  "quoteSendEmailMessage": {
+    "message": "Message",
+    "description": "Email body field label"
+  },
+  "quoteSendEmailAttachPdf": {
+    "message": "Attach quote PDF",
+    "description": "Checkbox to attach generated PDF"
+  },
+  "quoteSendEmailIncludeLink": {
+    "message": "Include online quote link (marks quote as sent)",
+    "description": "Checkbox to include public portal link"
+  },
+  "quoteSendEmailSubmit": {
+    "message": "Send email",
+    "description": "Submit button for quote email drawer"
+  },
+  "quoteSendEmailSending": {
+    "message": "Sending…",
+    "description": "Submit button label while sending"
+  },
+  "quoteSendEmailDefaultSubject": {
+    "message": "Quote {number}{title}",
+    "description": "Default email subject; title may be empty"
+  },
+  "quoteSendEmailDefaultMessage": {
+    "message": "Please find your quote attached. You can review it online using the link in this email.",
+    "description": "Default email body text"
+  },
+  "quoteSendEmailSuccess": {
+    "message": "Quote sent by email",
+    "description": "Toast after successful quote email"
+  },
+  "quoteSendEmailFailed": {
+    "message": "Failed to send quote email",
+    "description": "Error when quote email send fails"
+  },
+  "quoteSendDraftEmailTitle": {
+    "message": "Send draft for review",
+    "description": "Drawer title for draft quote email"
+  },
+  "quoteSendDraftEmailSubtitle": {
+    "message": "Customer receives a watermarked draft. Quote stays in Draft; acceptance is disabled.",
+    "description": "Drawer subtitle for draft quote email"
+  },
+  "quoteSendDraftEmailNotice": {
+    "message": "PDF and online link will show a DRAFT watermark. This is not a binding offer.",
+    "description": "Notice in draft send drawer"
+  },
+  "quoteSendDraftEmailIncludeLink": {
+    "message": "Include draft online link (quote stays Draft)",
+    "description": "Checkbox for draft portal link"
+  },
+  "quoteSendDraftEmailSubmit": {
+    "message": "Send draft",
+    "description": "Submit button for draft email"
+  },
+  "quoteSendDraftEmailDefaultSubject": {
+    "message": "Draft quote {number}{title} (for review)",
+    "description": "Default subject for draft quote email"
+  },
+  "quoteSendDraftEmailDefaultMessage": {
+    "message": "Please review the attached draft quote. This is for discussion only and is not a final offer.",
+    "description": "Default body for draft quote email"
+  },
+  "quoteSendDraftEmailSuccess": {
+    "message": "Draft quote sent for review",
+    "description": "Toast after draft quote email sent"
+  },
+  "quoteActionGeneratePdf": {
+    "message": "Generate PDF",
+    "description": "Quote lines more-actions menu item"
+  },
+  "quoteActionCopyLink": {
+    "message": "Copy share link",
+    "description": "Quote lines more-actions menu item"
+  },
+  "quoteActionRevokeLink": {
+    "message": "Revoke share link",
+    "description": "Quote lines more-actions menu item"
+  },
+  "quoteShareDisabledTooltip": {
+    "message": "Share link is available after the quote is sent or accepted.",
+    "description": "Tooltip when copy share link is disabled"
+  },
+  "quoteShareBlockedPendingApproval": {
+    "message": "Approve this quote before copying a public link.",
+    "description": "Tooltip when share blocked in pending approval"
+  },
+  "quoteShareBlockedDraftNeedsApproval": {
+    "message": "Submit and approve this quote before copying a binding public link.",
+    "description": "Tooltip when share blocked on draft needing approval"
+  },
+  "quoteShareBlockedDraftFormal": {
+    "message": "Use Send draft for review for provisional sharing, or approve the quote for a binding link.",
+    "description": "Tooltip when formal share blocked on draft without approval path"
+  },
+  "quoteShareBlockedRejected": {
+    "message": "Rejected quotes cannot be shared.",
+    "description": "Tooltip when share blocked for rejected"
+  },
+  "quoteShareBlockedCancelled": {
+    "message": "Cancelled quotes cannot be shared.",
+    "description": "Tooltip when share blocked for cancelled"
+  },
+  "quoteShareBlockedExpired": {
+    "message": "Expired quotes cannot be shared. Create a revision first.",
+    "description": "Tooltip when share blocked for expired"
+  },
+  "quoteShareBlockedInvalidStatus": {
+    "message": "This quote cannot be shared in its current status.",
+    "description": "Tooltip when share blocked for other statuses"
+  },
+  "quoteRevisionCreated": {
+    "message": "New revision created",
+    "description": "Toast after creating quote revision"
+  },
+  "quoteRevisionFailed": {
+    "message": "Failed to create revision",
+    "description": "Toast when revision creation fails"
+  },
+  "quoteSubmittedApproval": {
+    "message": "Submitted for approval",
+    "description": "Toast after submit for approval"
+  },
+  "quoteSubmitApprovalFailed": {
+    "message": "Failed to submit for approval",
+    "description": "Toast when submit for approval fails"
+  },
+  "quoteApproved": {
+    "message": "Quote approved",
+    "description": "Toast after approval"
+  },
+  "quoteApproveFailed": {
+    "message": "Failed to approve quote",
+    "description": "Toast when approval fails"
+  },
+  "quoteRejected": {
+    "message": "Quote rejected",
+    "description": "Toast after rejection"
+  },
+  "quoteRejectFailed": {
+    "message": "Failed to reject quote",
+    "description": "Toast when rejection fails"
+  },
+  "quotePdfGenerated": {
+    "message": "PDF generated",
+    "description": "Toast after PDF generation"
+  },
+  "quotePdfFailed": {
+    "message": "Failed to generate PDF",
+    "description": "Toast when PDF generation fails"
+  },
+  "quoteShareFailed": {
+    "message": "Failed to create share link",
+    "description": "Toast when share link fails"
+  },
+  "quoteLinkCopied": {
+    "message": "Share link copied",
+    "description": "Toast after copying share link"
+  },
+  "quoteLinkRevoked": {
+    "message": "Share link revoked",
+    "description": "Toast after revoking share link"
+  },
+  "quoteRevokeFailed": {
+    "message": "Failed to revoke share link",
+    "description": "Toast when revoke fails"
+  },
+  "quoteBannerLockedTitle": {
+    "message": "This quote is locked",
+    "description": "Status banner when quote is commercially locked"
+  },
+  "quoteBannerLockedDetail": {
+    "message": "Line pricing and quantities cannot be changed unless an admin enables override lock.",
+    "description": "Detail text for commercially locked quote banner"
+  },
+  "quoteBannerExpiredTitle": {
+    "message": "Quote expired",
+    "description": "Status banner when quote status is Expired"
+  },
+  "quoteBannerExpiredDetail": {
+    "message": "This quote is no longer valid for customer acceptance. Create a new revision to re-issue.",
+    "description": "Detail for expired quote banner"
+  },
+  "quoteBannerValidityPastTitle": {
+    "message": "Validity date has passed",
+    "description": "Banner when validUntil passed but status not yet Expired"
+  },
+  "quoteBannerValidityPastDetail": {
+    "message": "Open this quote to refresh status, or wait for the hourly expiry job.",
+    "description": "Detail when validUntil passed"
+  },
+  "quoteBannerExpiringSoonTitle": {
+    "message": "Expiring soon",
+    "description": "Banner when quote validUntil is within 7 days"
+  },
+  "quoteBannerExpiringSoonDetail": {
+    "message": "Valid for {days} more day(s). Send a reminder or revise before expiry.",
+    "description": "Detail for expiring soon banner"
+  },
+  "quoteBannerPendingApproval": {
+    "message": "Pending approval",
+    "description": "Status banner when quote awaits approval"
+  },
+  "quoteBannerApprovalLocked": {
+    "message": "Approval in progress",
+    "description": "Status banner when approvalLocked is true"
+  },
+  "quoteBannerDraft": {
+    "message": "Draft quote",
+    "description": "Status banner for draft quotes"
+  },
+  "quoteBannerDraftDetail": {
+    "message": "Submit for approval, then send to the customer once approved. Quotes without approval can be sent from draft.",
+    "description": "Detail text for draft quote banner"
+  },
+  "quoteProcessApprovalTitle": {
+    "message": "Process approval required",
+    "description": "Banner section when a Process Designer approval gate is pending on this quote"
+  },
+  "quoteProcessApprovalUnnamed": {
+    "message": "Approval process",
+    "description": "Fallback process name on quote approval banner"
+  },
+  "quoteProcessApprovalApprovers": {
+    "message": "Approvers: {names}",
+    "description": "Approver list on quote process approval banner"
+  },
+  "quoteProcessApprovalOpen": {
+    "message": "Review in inbox",
+    "description": "Link to open process approval from quote record"
+  },
+  "quoteProcessApprovalBannerDetail": {
+    "message": "A configured approval process must complete before this quote can be approved.",
+    "description": "Detail when quote is pending and process approvals exist"
+  },
+  "quoteCustomerResponseAccepted": {
+    "message": "Customer accepted this quote",
+    "description": "Banner when customer fully accepted via portal"
+  },
+  "quoteCustomerResponsePartial": {
+    "message": "Customer partially accepted this quote",
+    "description": "Banner when customer partially accepted via portal"
+  },
+  "quoteCustomerResponseRejected": {
+    "message": "Customer rejected this quote",
+    "description": "Banner when customer rejected via portal"
+  },
+  "quoteCustomerResponseAt": {
+    "message": "Responded {date}",
+    "description": "Customer response timestamp on quote record"
+  },
+  "quoteCustomerResponseLines": {
+    "message": "{count} line(s) accepted",
+    "description": "Count of lines customer accepted"
+  },
+  "quoteCustomerResponseSigner": {
+    "message": "Acknowledged by {name}",
+    "description": "Customer signer name on portal response"
+  },
+  "quoteCustomerResponseAgreed": {
+    "message": "Customer agreed to terms",
+    "description": "Shown when customer checked agreement on portal accept"
+  },
+  "quoteCustomerResponseSignedAt": {
+    "message": "Signed {date}",
+    "description": "Timestamp for typed customer signature"
+  },
+  "quoteSendEmailBlockedPendingApproval": {
+    "message": "Approve this quote before sending it to the customer.",
+    "description": "Tooltip when Send quote is disabled in Pending Approval"
+  },
+  "quoteSendEmailBlockedDraftNeedsApproval": {
+    "message": "Submit for approval and wait for approval before sending to the customer.",
+    "description": "Tooltip when Send quote is disabled on draft with approval required"
+  },
+  "quoteSendEmailBlockedRejected": {
+    "message": "Rejected quotes cannot be sent to the customer.",
+    "description": "Tooltip when Send quote is disabled for rejected quotes"
+  },
+  "quoteSendEmailBlockedCancelled": {
+    "message": "Cancelled quotes cannot be sent to the customer.",
+    "description": "Tooltip when Send quote is disabled for cancelled quotes"
+  },
+  "quoteSendEmailBlockedExpired": {
+    "message": "Create a new revision before sending this quote again.",
+    "description": "Tooltip when Send quote is disabled for expired quotes"
+  },
+  "quoteSendEmailBlockedInvalidStatus": {
+    "message": "This quote cannot be sent to the customer in its current status.",
+    "description": "Fallback tooltip when Send quote is disabled"
+  },
+  "revisionsTitle": {
+    "message": "Revisions",
+    "description": "Quote record section title for revision timeline"
+  },
+  "revisionsQuoteNumber": {
+    "message": "Quote {number}",
+    "description": "Subtitle showing quote number above revision list"
+  },
+  "revisionsCurrentBadge": {
+    "message": "Current",
+    "description": "Badge when viewing the active revision"
+  },
+  "revisionsEmpty": {
+    "message": "No revisions found for this quote.",
+    "description": "Empty state for quote revisions timeline"
+  },
+  "revisionsActiveBadge": {
+    "message": "Active",
+    "description": "Badge on the active quote revision in timeline"
+  },
+  "revisionsViewingBadge": {
+    "message": "Viewing",
+    "description": "Badge on the revision currently open in the record page"
+  },
+  "revisionsOpen": {
+    "message": "Open",
+    "description": "Button to navigate to another quote revision"
+  },
+  "revisionsHistoricalHint": {
+    "message": "Historical revisions are read-only snapshots.",
+    "description": "Hint under inactive revision rows in timeline"
+  },
+  "revisionsLoadFailed": {
+    "message": "Could not load revisions.",
+    "description": "Error when GET quote revisions fails"
+  },
+  "conversionTitle": {
+    "message": "Conversion",
+    "description": "Quote conversion section title"
+  },
+  "conversionConvert": {
+    "message": "Record conversion",
+    "description": "Primary conversion stub action button"
+  },
+  "conversionStubTitle": {
+    "message": "Conversion traceability (stub)",
+    "description": "Info banner in conversion section"
+  },
+  "conversionStubDetail": {
+    "message": "Records a conversion link for audit. Sales Orders and Invoices are not created yet — use an external reference if you fulfilled this quote elsewhere.",
+    "description": "Stub conversion section explanation"
+  },
+  "conversionExternalRef": {
+    "message": "External reference",
+    "description": "Label for manual SO/ERP reference on conversion link"
+  },
+  "conversionExternalRefPlaceholder": {
+    "message": "SO #, ERP id, etc. (optional)",
+    "description": "Placeholder for external reference input"
+  },
+  "conversionConfirm": {
+    "message": "Record a {type} conversion for this quote? No sales order will be created yet.",
+    "description": "Confirm dialog before stub convert"
+  },
+  "conversionTypeFull": {
+    "message": "full",
+    "description": "Conversion type label full"
+  },
+  "conversionTypePartial": {
+    "message": "partial",
+    "description": "Conversion type label partial"
+  },
+  "conversionTargetSalesOrder": {
+    "message": "Sales order (future)",
+    "description": "Display label for sales_orders target module"
+  },
+  "conversionTargetPending": {
+    "message": "Pending — link when Sales Orders module ships",
+    "description": "Placeholder when no target record id"
+  },
+  "conversionPartialSummary": {
+    "message": "Customer partially accepted {count} line(s) · {total}",
+    "description": "Hint before converting partial acceptance"
+  },
+  "conversionHintExpired": {
+    "message": "This quote has expired. Revise and re-issue before converting.",
+    "description": "Conversion hint when quote expired"
+  },
+  "conversionHintExpiredAdmin": {
+    "message": "This quote has expired. Owners and admins can still record conversion when the customer has accepted.",
+    "description": "Conversion hint when expired but override is available"
+  },
+  "conversionConfirmOverride": {
+    "message": "Record a {type} conversion for this expired quote? This uses admin override and does not create a sales order.",
+    "description": "Confirm dialog before convert with expired override"
+  },
+  "conversionHintAlreadyConverted": {
+    "message": "This revision is already converted.",
+    "description": "Conversion hint when already converted"
+  },
+  "conversionNotYet": {
+    "message": "This quote has not been converted yet.",
+    "description": "Empty state when no conversion record exists"
+  },
+  "conversionStatus": {
+    "message": "Status",
+    "description": "Conversion detail label"
+  },
+  "conversionConvertedAt": {
+    "message": "Converted at",
+    "description": "Conversion detail label"
+  },
+  "conversionType": {
+    "message": "Type",
+    "description": "Conversion detail label"
+  },
+  "conversionTargetModule": {
+    "message": "Target module",
+    "description": "Conversion detail label"
+  },
+  "conversionTargetRecord": {
+    "message": "Target record",
+    "description": "Conversion detail label"
+  },
+  "conversionHintReady": {
+    "message": "Use Convert to deal when you are ready.",
+    "description": "Hint when quote is accepted but not converted"
+  },
+  "conversionHintAcceptFirst": {
+    "message": "Customer must accept the quote before you can record conversion.",
+    "description": "Hint when quote is not yet accepted"
+  },
+  "conversionLoadFailed": {
+    "message": "Failed to load conversion details",
+    "description": "Error when conversion API fails"
+  },
+  "conversionSuccess": {
+    "message": "Conversion recorded",
+    "description": "Toast after successful conversion stub"
+  },
+  "conversionFailed": {
+    "message": "Conversion failed",
+    "description": "Toast when conversion fails"
   },
   "activitySystemFieldFallback": {
     "message": "field",

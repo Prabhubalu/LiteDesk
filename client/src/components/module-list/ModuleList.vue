@@ -1,5 +1,5 @@
 <template>
-  <div v-if="loading">
+  <div v-if="showListShellSkeleton">
     <ListPageSkeleton :body-rows="12" />
   </div>
 
@@ -50,6 +50,7 @@
       :external-filters="filters"
       :boost-visible-column-keys="boostVisibleColumnKeys"
       :table-id="`${listDefinition.moduleKey}-table`"
+      :scroll-session-key="listSessionKey"
       row-key="_id"
       :empty-title="listEmptyTitle"
       :empty-message="listEmptyMessage"
@@ -91,7 +92,16 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, useAttrs } from 'vue';
+import {
+  ref,
+  computed,
+  watch,
+  nextTick,
+  useAttrs,
+  onActivated,
+  onDeactivated,
+  provide
+} from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   resolveListColumnLabel,
@@ -119,6 +129,15 @@ import { getParticipation } from '@/utils/getParticipation';
 import { isPeopleSalesRoleFieldKey } from '@/utils/peopleParticipationUi';
 import { getModuleListConfig, hasModuleListConfig, getSystemViews } from '@/platform/modules/moduleListRegistry';
 import { getFiltersForModule } from '@/platform/filters/filterResolver';
+import { buildListColumnsFromModuleFields } from '@/utils/buildListColumnsFromModuleFields';
+import { normalizeListPagination } from '@/utils/normalizeListPagination';
+import {
+  clearListSession,
+  getListSession,
+  getListSessionKey,
+  LIST_SESSION_RESTORE_KEY,
+  patchListSession
+} from '@/utils/listScrollSession';
 
 /**
  * Check if a person participates in an app.
@@ -171,6 +190,141 @@ const emit = defineEmits(['create', 'import', 'export', 'row-click', 'edit', 'de
 
 const route = useRoute();
 const router = useRouter();
+
+const listSessionScope = computed(() => {
+  if (props.moduleKey === 'people' && props.peopleContext) {
+    return String(props.peopleContext);
+  }
+  return '';
+});
+
+const listSessionKey = computed(() =>
+  getListSessionKey(props.moduleKey, props.appKey, route.path, listSessionScope.value)
+);
+
+/** Only block the whole page on first load — not when returning from another tab */
+const showListShellSkeleton = computed(
+  () => loading.value && !listDefinition.value
+);
+
+const pendingListSessionRestore = ref(null);
+const sessionRestoreTick = ref(0);
+provide(LIST_SESSION_RESTORE_KEY, sessionRestoreTick);
+
+function bumpSessionRestoreTick() {
+  sessionRestoreTick.value += 1;
+}
+
+function clearListSessionState() {
+  clearListSession(listSessionKey.value);
+  pendingListSessionRestore.value = null;
+}
+
+async function restoreListSessionPages() {
+  const session = pendingListSessionRestore.value;
+  if (!session) return;
+
+  const targetPage = Math.max(1, Number(session.currentPage) || 1);
+  let guard = 0;
+  const maxSteps = Math.min(targetPage, 200);
+
+  while (
+    guard < maxSteps &&
+    normalizeListPagination(pagination.value).currentPage < targetPage &&
+    normalizeListPagination(pagination.value).hasMore
+  ) {
+    guard += 1;
+    await fetchListAppend();
+  }
+
+  pendingListSessionRestore.value = null;
+  bumpSessionRestoreTick();
+}
+
+async function applyListSessionOnActivate() {
+  const session = getListSession(listSessionKey.value);
+  if (!session) return;
+
+  const targetPage = Math.max(1, Number(session.currentPage) || 1);
+  const currentPage = normalizeListPagination(pagination.value).currentPage;
+
+  if (data.value.length > 0 && currentPage >= targetPage) {
+    bumpSessionRestoreTick();
+    return;
+  }
+
+  pendingListSessionRestore.value = session;
+
+  if (data.value.length === 0) {
+    return;
+  }
+
+  await restoreListSessionPages();
+}
+
+onDeactivated(() => {
+  patchListSession(listSessionKey.value, {
+    currentPage: normalizeListPagination(pagination.value).currentPage
+  });
+});
+
+async function restoreListSessionAfterFetch() {
+  const session = getListSession(listSessionKey.value);
+  if (!session) return;
+
+  const targetPage = Math.max(1, Number(session.currentPage) || 1);
+  if (normalizeListPagination(pagination.value).currentPage < targetPage) {
+    pendingListSessionRestore.value = session;
+    await restoreListSessionPages();
+  } else {
+    bumpSessionRestoreTick();
+  }
+}
+
+async function initialListFetch() {
+  if (replaceInFlight) {
+    await replaceInFlight;
+    return;
+  }
+
+  const session = getListSession(listSessionKey.value);
+  if (!session) {
+    await fetchListReplace();
+    return;
+  }
+  pagination.value.currentPage = 1;
+  await fetchListReplace({ preserveSession: true, soft: true });
+  await restoreListSessionAfterFetch();
+}
+
+onActivated(async () => {
+  // Aborted in-flight fetch when the tab was hidden can leave dataLoading stuck true.
+  if (data.value.length > 0) {
+    dataLoading.value = false;
+  }
+
+  if (data.value.length > 0 && listDefinition.value) {
+    await applyListSessionOnActivate();
+    bumpSessionRestoreTick();
+    return;
+  }
+
+  if (listDefinition.value) {
+    await initialListFetch();
+    return;
+  }
+
+  // Stats from a prior visit but rows were cleared (aborted replace / keep-alive eviction).
+  const statsTotal = Number(
+    statistics.value?.totalPeople ??
+      statistics.value?.totalRecords ??
+      pagination.value?.totalRecords ??
+      0
+  );
+  if (statsTotal > 0 && data.value.length === 0) {
+    await initialListFetch();
+  }
+});
 const attrs = useAttrs();
 const authStore = useAuthStore();
 const { openTab } = useTabs();
@@ -204,6 +358,8 @@ let replaceSeq = 0;
 let appendSeq = 0;
 let replaceAbortController = null;
 let appendAbortController = null;
+/** Dedupe concurrent replace fetches (buildList + onActivated racing on remount). */
+let replaceInFlight = null;
 
 const filters = ref({});
 const searchQuery = ref('');
@@ -259,7 +415,10 @@ const buildList = async () => {
     return;
   }
 
-  loading.value = true;
+  const isFirstShellLoad = !listDefinition.value;
+  if (isFirstShellLoad) {
+    loading.value = true;
+  }
   try {
     // Fetch app registry
     const registry = await getAppRegistry();
@@ -284,8 +443,19 @@ const buildList = async () => {
     );
 
     if (authStore.user && authStore.isAuthenticated) {
-      listDefinition.value = definition;
-      
+      const fieldColumns = buildListColumnsFromModuleFields(
+        moduleFieldDefinitions.value,
+        props.moduleKey
+      );
+      if (fieldColumns.length > 0) {
+        listDefinition.value = {
+          ...definition,
+          columns: fieldColumns
+        };
+      } else {
+        listDefinition.value = definition;
+      }
+
       // Initialize sort from definition
       if (definition?.defaultSort) {
         sortField.value = normalizePeopleListSortField(definition.defaultSort.column);
@@ -388,7 +558,7 @@ const buildList = async () => {
       loading.value = false;
 
       if (definition && definition.emptyState?.type !== 'NOT_CONFIGURED') {
-        fetchData().catch((error) => {
+        initialListFetch().catch((error) => {
           console.error('[ModuleList] Initial data fetch failed:', error);
         });
       }
@@ -986,8 +1156,10 @@ function mergeAppendRowsById(existing, incoming) {
 
 /** Shared GET params + endpoint for both replace and append (requestedPage differs). */
 function buildListFetchContext(requestedPage) {
+  const page =
+    requestedPage ?? normalizeListPagination(pagination.value).currentPage;
   const params = {
-    page: requestedPage,
+    page,
     limit: pagination.value.limit,
     sortBy: normalizePeopleListSortField(sortField.value) || 'createdAt',
     sortOrder: sortField.value ? (sortOrder.value || 'desc') : 'desc'
@@ -1144,122 +1316,203 @@ function applyClientSideListTransforms(rawRows, ctx) {
   return fetchedData;
 }
 
-function applyPaginationFromResponse(response, fetchedRowCountForTotal) {
+function applyPaginationFromResponse(response, fetchedRowCountForTotal, requestedPage) {
+  const fallback = {
+    ...pagination.value,
+    currentPage: requestedPage ?? pagination.value.currentPage,
+    page: requestedPage ?? pagination.value.page
+  };
+  const peopleTotalOverride =
+    props.moduleKey === 'people' && filters.value.participationApp
+      ? fetchedRowCountForTotal
+      : undefined;
+  const moduleTotalKey = `total${props.moduleKey.charAt(0).toUpperCase() + props.moduleKey.slice(1)}`;
+
   if (response.pagination) {
-    pagination.value = {
-      currentPage: response.pagination.currentPage || pagination.value.currentPage,
-      totalPages: response.pagination.totalPages || 1,
-      totalRecords:
-        props.moduleKey === 'people' && filters.value.participationApp
-          ? fetchedRowCountForTotal
-          : response.pagination.totalRecords ||
-            response.pagination[`total${props.moduleKey.charAt(0).toUpperCase() + props.moduleKey.slice(1)}`] ||
-            0,
-      limit: pagination.value.limit
-    };
+    const pag = { ...response.pagination };
+    if (peopleTotalOverride != null) {
+      pag.total = peopleTotalOverride;
+      pag.totalRecords = peopleTotalOverride;
+    }
+    pagination.value = normalizeListPagination(
+      {
+        ...pag,
+        totalRecords:
+          peopleTotalOverride ?? pag.totalRecords ?? pag.total ?? pag[moduleTotalKey]
+      },
+      fallback,
+      { totalRecordsOverride: peopleTotalOverride }
+    );
   } else if (response.meta) {
-    pagination.value = {
-      currentPage: response.meta.page || pagination.value.currentPage,
-      totalPages: Math.ceil((response.meta.total || 0) / (response.meta.limit || pagination.value.limit)),
-      totalRecords: response.meta.total || 0,
-      limit: response.meta.limit || pagination.value.limit
-    };
+    pagination.value = normalizeListPagination(response.meta, fallback, {
+      totalRecordsOverride: peopleTotalOverride
+    });
   }
 }
 
-async function fetchListReplace() {
+async function fetchListReplace(opts = {}) {
   if (!listDefinition.value) return;
 
-  listDataEpoch.value += 1;
-  const epochForThisReplace = listDataEpoch.value;
+  if (replaceInFlight) {
+    return replaceInFlight;
+  }
 
-  const myReplaceSeq = ++replaceSeq;
-  replaceAbortController?.abort();
-  appendAbortController?.abort();
-  appendAbortController = null;
+  const soft = Boolean(opts.soft);
+  const hardClear = Boolean(opts.hardClear);
+  const preserveSession = Boolean(opts.preserveSession);
 
-  replaceAbortController = new AbortController();
-  const signal = replaceAbortController.signal;
+  const run = async () => {
+    listDataEpoch.value += 1;
+    const epochForThisReplace = listDataEpoch.value;
 
-  dataLoading.value = true;
-  data.value = [];
+    const myReplaceSeq = ++replaceSeq;
+    replaceAbortController?.abort();
+    appendAbortController?.abort();
+    appendAbortController = null;
 
-  try {
-    const ctx = buildListFetchContext(pagination.value.currentPage);
-    const response = await apiClient.get(ctx.endpoint, {
-      params: ctx.params,
-      signal
-    });
+    replaceAbortController = new AbortController();
+    const signal = replaceAbortController.signal;
 
-    if (listDataEpoch.value !== epochForThisReplace) return;
-    if (signal.aborted) return;
-
-    if (response.success) {
-      let fetchedData = applyClientSideListTransforms(response.data || [], ctx);
-      data.value = [...fetchedData];
-
-      applyPaginationFromResponse(response, fetchedData.length);
-
-      const totalRecords = Number(
-        response.pagination?.totalRecords ?? response.meta?.total ?? pagination.value.totalRecords ?? 0
-      ) || 0;
-
-      await nextTick();
-      if (listDataEpoch.value !== epochForThisReplace) return;
-
-      // Prefer server aggregates when present (correct for full result set + paged/infinite scroll)
-      if (response.listStatistics && typeof response.listStatistics === 'object') {
-        statistics.value = {
-          ...response.listStatistics,
-          totalPeople: response.listStatistics.totalPeople ?? totalRecords
-        };
-      } else if (ctx.moduleConfig?.statistics?.computeFunction) {
-        statistics.value = ctx.moduleConfig.statistics.computeFunction(data.value, authStore.user?._id, {
-          totalRecords
-        });
-      } else if (response.statistics) {
-        statistics.value = response.statistics;
-      }
-    } else {
-      console.warn('[ModuleList] API response not successful:', {
-        success: response.success,
-        response: response
-      });
+    dataLoading.value = true;
+    if (hardClear) {
       data.value = [];
-      const mc = getModuleListConfig(props.moduleKey);
-      if (mc?.statistics?.computeFunction) {
-        statistics.value = mc.statistics.computeFunction([], authStore.user?._id, { totalRecords: 0 });
-      } else {
-        statistics.value = {};
-      }
-    }
-  } catch (error) {
-    if (signal.aborted) return;
-    if (listDataEpoch.value !== epochForThisReplace) return;
-    console.error('[ModuleList] Error fetching data:', error);
-    data.value = [];
-    const moduleConfigErr = getModuleListConfig(props.moduleKey);
-    if (moduleConfigErr?.statistics?.computeFunction) {
-      statistics.value = moduleConfigErr.statistics.computeFunction([], authStore.user?._id, {
-        totalRecords: 0
-      });
-    } else {
       statistics.value = {};
     }
-  } finally {
-    if (myReplaceSeq === replaceSeq) {
-      dataLoading.value = false;
+
+    try {
+      const ctx = buildListFetchContext(
+        normalizeListPagination(pagination.value).currentPage
+      );
+      const response = await apiClient.get(ctx.endpoint, {
+        params: ctx.params,
+        signal
+      });
+
+      if (listDataEpoch.value !== epochForThisReplace) return;
+      if (signal.aborted) return;
+
+      if (response.success) {
+        let fetchedData = applyClientSideListTransforms(response.data || [], ctx);
+        data.value = [...fetchedData];
+
+        applyPaginationFromResponse(response, fetchedData.length, ctx.params.page);
+
+        const totalRecords = Number(
+          response.pagination?.totalRecords ?? response.meta?.total ?? pagination.value.totalRecords ?? 0
+        ) || 0;
+
+        await nextTick();
+        if (listDataEpoch.value !== epochForThisReplace) return;
+
+        // Prefer server aggregates when present (correct for full result set + paged/infinite scroll)
+        if (response.listStatistics && typeof response.listStatistics === 'object') {
+          statistics.value = {
+            ...response.listStatistics,
+            totalPeople: response.listStatistics.totalPeople ?? totalRecords
+          };
+        } else if (ctx.moduleConfig?.statistics?.computeFunction) {
+          statistics.value = ctx.moduleConfig.statistics.computeFunction(data.value, authStore.user?._id, {
+            totalRecords
+          });
+        } else if (response.statistics) {
+          statistics.value = response.statistics;
+        }
+      } else {
+        console.warn('[ModuleList] API response not successful:', {
+          success: response.success,
+          response: response
+        });
+        if (!soft) {
+          data.value = [];
+          const mc = getModuleListConfig(props.moduleKey);
+          if (mc?.statistics?.computeFunction) {
+            statistics.value = mc.statistics.computeFunction([], authStore.user?._id, { totalRecords: 0 });
+          } else {
+            statistics.value = {};
+          }
+        }
+      }
+    } catch (error) {
+      if (signal.aborted) return;
+      if (listDataEpoch.value !== epochForThisReplace) return;
+      console.error('[ModuleList] Error fetching data:', error);
+      if (!soft) {
+        data.value = [];
+        const moduleConfigErr = getModuleListConfig(props.moduleKey);
+        if (moduleConfigErr?.statistics?.computeFunction) {
+          statistics.value = moduleConfigErr.statistics.computeFunction([], authStore.user?._id, {
+            totalRecords: 0
+          });
+        } else {
+          statistics.value = {};
+        }
+      }
+    } finally {
+      if (myReplaceSeq === replaceSeq) {
+        dataLoading.value = false;
+        if (preserveSession) {
+          bumpSessionRestoreTick();
+        }
+      }
     }
+  };
+
+  replaceInFlight = run();
+  try {
+    await replaceInFlight;
+  } finally {
+    replaceInFlight = null;
   }
+}
+
+async function fetchAllMatchingIds(excludedIds = []) {
+  const excluded = new Set((excludedIds || []).map(String));
+  const ids = [];
+  const norm = normalizeListPagination(pagination.value);
+  const total = norm.totalRecords;
+  if (total <= 0) return ids;
+
+  const pageSize = Math.min(100, Math.max(norm.limit, 25));
+  let page = 1;
+  const maxPages = Math.min(500, Math.ceil(total / pageSize) + 2);
+
+  while (ids.length < total && page <= maxPages) {
+    const ctx = buildListFetchContext(page);
+    const response = await apiClient.get(ctx.endpoint, {
+      params: { ...ctx.params, limit: pageSize }
+    });
+    if (!response?.success) break;
+
+    const rows = applyClientSideListTransforms(response.data || [], ctx);
+    for (const row of rows) {
+      const id = row?._id ?? row?.id;
+      if (id == null) continue;
+      const sid = String(id);
+      if (!excluded.has(sid)) ids.push(sid);
+    }
+
+    if (rows.length < pageSize) break;
+    page += 1;
+  }
+
+  return ids;
+}
+
+function resolveBulkSelectionIds(payload) {
+  if (!payload || typeof payload !== 'object') return [];
+  if (payload.mode === 'all') {
+    return fetchAllMatchingIds(payload.excludedIds);
+  }
+  return Promise.resolve(payload.selectedIds || []);
 }
 
 async function fetchListAppend() {
   if (!listDefinition.value) return;
 
   if (loadingMore.value || dataLoading.value) return;
-  if (pagination.value.currentPage >= pagination.value.totalPages && pagination.value.totalPages >= 1) {
-    return;
-  }
+
+  const listPage = normalizeListPagination(pagination.value);
+  if (!listPage.hasMore) return;
 
   const parentEpoch = listDataEpoch.value;
   const myAppendSeq = ++appendSeq;
@@ -1270,7 +1523,7 @@ async function fetchListAppend() {
 
   loadingMore.value = true;
 
-  const requestedPage = pagination.value.currentPage + 1;
+  const requestedPage = listPage.currentPage + 1;
 
   try {
     const ctx = buildListFetchContext(requestedPage);
@@ -1286,7 +1539,7 @@ async function fetchListAppend() {
       const fetchedData = applyClientSideListTransforms(response.data || [], ctx);
       data.value = mergeAppendRowsById(data.value, fetchedData);
 
-      applyPaginationFromResponse(response, fetchedData.length);
+      applyPaginationFromResponse(response, fetchedData.length, requestedPage);
 
       // Do not replace card statistics here: API `statistics` uses different keys than ListView
       // (e.g. totalContacts vs totalPeople), which zeroed the UI. Counts are for the full query
@@ -1303,11 +1556,27 @@ async function fetchListAppend() {
   }
 }
 
+/**
+ * @param {object} [opts]
+ * @param {boolean} [opts.append] - load next page
+ * @param {boolean} [opts.preserveSession] - keep scroll/page session (no clear)
+ * @param {boolean} [opts.soft] - do not empty rows before replace fetch
+ * @param {boolean} [opts.reactivate] - tab return: restore pages/scroll only, no refetch
+ */
 const fetchData = async (opts = {}) => {
   if (opts.append === true) {
     return fetchListAppend();
   }
-  return fetchListReplace();
+  if (opts.reactivate) {
+    await applyListSessionOnActivate();
+    bumpSessionRestoreTick();
+    return;
+  }
+  if (!opts.preserveSession) {
+    clearListSessionState();
+  }
+  const hardClear = !opts.soft && !opts.preserveSession && !opts.reactivate;
+  return fetchListReplace({ ...opts, hardClear });
 };
 
 const handleLoadMore = () => {
@@ -1359,6 +1628,7 @@ const handleAction = (route) => {
 const handleSearchQueryUpdate = (query) => {
   searchQuery.value = query;
   pagination.value.currentPage = 1;
+  clearListSessionState();
   emit('search-changed', query);
   fetchData();
 };
@@ -1452,7 +1722,8 @@ const handleFiltersUpdate = async (newFilters) => {
   // Create a new object to ensure reactivity
   filters.value = { ...newFilters };
   pagination.value.currentPage = 1;
-  
+  clearListSessionState();
+
   emit('filters-changed', filters.value);
   
   // Wait for next tick to ensure filters are properly set before checking saved views
@@ -1761,8 +2032,22 @@ const handleSortUpdate = ({ sortField: key, sortOrder: order }) => {
   sortField.value = normalizePeopleListSortField(key);
   sortOrder.value = order;
   pagination.value.currentPage = 1;
+  clearListSessionState();
   fetchData();
 };
+
+watch(
+  () => data.value.length,
+  async (len, prevLen) => {
+    if (len > 0 && pendingListSessionRestore.value) {
+      await restoreListSessionPages();
+      return;
+    }
+    if (len > 0 && prevLen === 0 && getListSession(listSessionKey.value)) {
+      await restoreListSessionAfterFetch();
+    }
+  }
+);
 
 const handlePaginationUpdate = (p) => {
   pagination.value.currentPage = p.currentPage;
@@ -1834,19 +2119,28 @@ const handleDelete = async (row) => {
   }
 };
 
-const handleBulkAction = (action, rows) => {
+const handleBulkAction = async (action, payloadOrRows) => {
   if (attrs.onBulkAction) {
-    emit('bulk-action', action, rows);
+    if (payloadOrRows && typeof payloadOrRows === 'object' && 'mode' in payloadOrRows) {
+      const ids = await resolveBulkSelectionIds(payloadOrRows);
+      emit(
+        'bulk-action',
+        action,
+        ids.map((id) => ({ _id: id }))
+      );
+    } else {
+      emit('bulk-action', action, payloadOrRows);
+    }
     return;
   }
 
-  // Default bulk actions (when parent doesn't override)
   if (action === 'bulk-delete') {
-    const ids = Array.isArray(rows)
-      ? rows
-        .map((r) => r?._id || r?.id || r)
-        .filter(Boolean)
-      : [];
+    let ids = [];
+    if (payloadOrRows && typeof payloadOrRows === 'object' && 'mode' in payloadOrRows) {
+      ids = await resolveBulkSelectionIds(payloadOrRows);
+    } else if (Array.isArray(payloadOrRows)) {
+      ids = payloadOrRows.map((r) => r?._id || r?.id || r).filter(Boolean);
+    }
     if (ids.length === 0 || !props.moduleKey) return;
 
     const isHelpdeskCasesModule =
@@ -1854,19 +2148,18 @@ const handleBulkAction = (action, rows) => {
       String(props.appKey || '').toUpperCase() === 'HELPDESK';
     const deleteBase = isHelpdeskCasesModule ? '/helpdesk/cases' : `/${props.moduleKey}`;
 
-    Promise
-      .all(ids.map((id) => apiClient.delete(`${deleteBase}/${id}`)))
-      .then(() => fetchData())
-      .catch((error) => {
-        console.error(`[ModuleList] Failed bulk delete for ${props.moduleKey}:`, error);
-        const errorMessage = error?.response?.data?.message || error?.message || 'Bulk delete failed';
-        alert(errorMessage);
-      });
+    try {
+      await Promise.all(ids.map((id) => apiClient.delete(`${deleteBase}/${id}`)));
+      await fetchData();
+    } catch (error) {
+      console.error(`[ModuleList] Failed bulk delete for ${props.moduleKey}:`, error);
+      const errorMessage = error?.response?.data?.message || error?.message || 'Bulk delete failed';
+      alert(errorMessage);
+    }
     return;
   }
 
-  // Unknown/unsupported bulk actions must be implemented by parent.
-  emit('bulk-action', action, rows);
+  emit('bulk-action', action, payloadOrRows);
 };
 
 // Only rebuild when login state or user identity changes — not on every reactive touch of authStore.user
@@ -1904,6 +2197,8 @@ watch(() => activeSavedViewId.value, (newValue) => {
 // Expose methods and data for parent components
 defineExpose({
   refresh: fetchData,
+  /** Tab return via keep-alive: restore lazy-loaded pages + scroll without refetching page 1 */
+  reactivate: () => fetchData({ reactivate: true }),
   filters: filters,
   searchQuery: searchQuery,
   getFilters: () => filters.value,

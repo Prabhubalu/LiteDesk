@@ -2378,5 +2378,17 @@
   "phraseDefaultInParens": {
     "message": "(Predefinito)",
     "description": "Suffix for default pipeline or option"
+  },
+  "listSelectAllMatching": {
+    "message": "Select all {count} {module}",
+    "description": "Link to select every record matching the list query, not only loaded rows"
+  },
+  "listAllMatchingSelected": {
+    "message": "All {count} {module} selected",
+    "description": "Bulk bar label when all matching records are selected"
+  },
+  "listPerformanceCap": {
+    "message": "Showing {loaded} of {total} {module} in the table for performance. Scroll loading pauses here — use \"Select all\" in the bulk bar to act on every matching record.",
+    "description": "Footer when list DOM row cap is reached"
   }
 }

@@ -2,7 +2,31 @@ const Quote = require('../models/Quote');
 const QuoteLine = require('../models/QuoteLine');
 const QuoteDocument = require('../models/QuoteDocument');
 const { writeQuoteActivity } = require('../services/quoteActivityService');
-const { assertCanTransitionQuoteStatus } = require('../constants/quoteLifecycle');
+const { assertCanTransitionQuoteStatus, isDraftCustomerShare } = require('../constants/quoteLifecycle');
+const { renderQuotePdf } = require('./quoteDocumentController');
+const {
+  getSelectableLines,
+  resolveCustomerAcceptance,
+  applyCustomerAcceptanceToQuote,
+  applyCustomerRejectionToQuote
+} = require('../services/quotePublicAcceptanceService');
+const {
+  getQuoteOrgSettings,
+  getPortalCustomerAgreementText,
+  assertCustomerAgreementAccepted,
+  assertTypedSignatureProvided,
+  normalizeSignatureText
+} = require('../services/quoteOrgSettingsService');
+const {
+  listPortalComments,
+  createCustomerPortalComment
+} = require('../services/quotePortalCommentService');
+const {
+  expireQuoteIfDue,
+  assertQuoteOpenForCustomerAction,
+  isQuoteValidityExpired
+} = require('../services/quoteExpiryService');
+const { getQuoteBranding } = require('../services/quoteBrandingService');
 
 async function resolveQuoteByToken(token) {
   const t = String(token || '').trim();
@@ -53,9 +77,14 @@ exports.view = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Quote link not found', code: 'NOT_FOUND' });
     }
 
-    // Best-effort: mark as viewed on first public render (Sent -> Viewed)
+    const draftPreview = isDraftCustomerShare(quoteDoc);
+
+    await expireQuoteIfDue(quoteDoc, { trigger: 'public_view' });
+    quote.status = quoteDoc.status;
+
+    // Best-effort: mark as viewed on first public render (Sent -> Viewed); not for draft previews
     try {
-      if (String(quoteDoc.status) === 'Sent') {
+      if (!draftPreview && String(quoteDoc.status) === 'Sent') {
         assertCanTransitionQuoteStatus('Sent', 'Viewed');
         quoteDoc.status = 'Viewed';
         await quoteDoc.save();
@@ -68,6 +97,11 @@ exports.view = async (req, res) => {
     const lines = await QuoteLine.find({ organizationId: quote.organizationId, quoteId: quote._id })
       .sort({ lineOrder: 1, createdAt: 1 })
       .lean();
+
+    const lineByMongoId = new Map((lines || []).map((l) => [String(l._id), l]));
+
+    const orgQuoteSettings = await getQuoteOrgSettings(quote.organizationId);
+    const customerAgreementText = getPortalCustomerAgreementText(orgQuoteSettings);
 
     await logPublicEvent({
       req,
@@ -95,17 +129,41 @@ exports.view = async (req, res) => {
           grandTotal: quote.grandTotal,
           organization: quote.organizationRefId,
           contact: quote.contactId,
+          customerShareMode: quote.customerShareMode || null,
+          isDraftPreview: draftPreview
         },
-        lines: (lines || []).filter((l) => l && l.hiddenLine !== true).map((l) => ({
+        lines: (lines || []).filter((l) => l && l.hiddenLine !== true).map((l) => {
+          const parentLine =
+            l.parentBundleLineId != null ? lineByMongoId.get(String(l.parentBundleLineId)) : null;
+          return {
           quoteLineId: l.quoteLineId,
           lineType: l.lineType,
+          parentBundleLineId: l.parentBundleLineId ? String(l.parentBundleLineId) : null,
+          parentQuoteLineId: parentLine?.quoteLineId || null,
           skuSnapshot: l.skuSnapshot,
           itemNameSnapshot: l.itemNameSnapshot,
           quantity: l.quantity,
           unitPriceSnapshot: l.unitPriceSnapshot,
+          lineSubtotal: l.lineSubtotal,
+          lineTaxTotal: l.lineTaxTotal,
           lineTotal: l.lineTotal,
           bundleOptional: !!(l.bundleSnapshot && l.bundleSnapshot.optional === true),
-        }))
+          selectable: l.lineType === 'standard' || l.lineType === 'bundle_parent'
+        };
+        }),
+        portal: {
+          canRespond:
+            !draftPreview &&
+            !isQuoteValidityExpired(quote) &&
+            ['Sent', 'Viewed'].includes(String(quote.status || '')),
+          isExpired: String(quote.status || '') === 'Expired' || isQuoteValidityExpired(quote),
+          allowPartialAccept: !draftPreview && getSelectableLines(lines).length > 1,
+          requireCustomerAgreement: !!customerAgreementText,
+          customerAgreementText,
+          requireTypedSignature: orgQuoteSettings.requireTypedSignature === true,
+          commentsEnabled: !draftPreview,
+          customerResponse: quote.customerResponse || null
+        }
       }
     });
   } catch (e) {
@@ -121,26 +179,98 @@ exports.accept = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Quote link not found', code: 'NOT_FOUND' });
     }
 
-    const fromStatus = String(quote.status || '');
-    const toStatus = 'Accepted';
-    assertCanTransitionQuoteStatus(fromStatus, toStatus);
+    if (isDraftCustomerShare(quote)) {
+      return res.status(400).json({
+        success: false,
+        message: 'This is a draft quote for review only. Acceptance is not available until a final quote is issued.',
+        code: 'DRAFT_PREVIEW'
+      });
+    }
 
-    quote.status = toStatus;
+    await expireQuoteIfDue(quote, { trigger: 'public_accept' });
+    try {
+      assertQuoteOpenForCustomerAction(quote);
+    } catch (e) {
+      if (e?.code === 'QUOTE_EXPIRED') {
+        return res.status(400).json({ success: false, message: e.message, code: 'QUOTE_EXPIRED' });
+      }
+      throw e;
+    }
+
+    const fromStatus = String(quote.status || '');
+    if (!['Sent', 'Viewed'].includes(fromStatus)) {
+      return res.status(400).json({
+        success: false,
+        message: `Quote cannot be accepted in status "${fromStatus}".`,
+        code: 'INVALID_STATUS'
+      });
+    }
+
+    const lines = await QuoteLine.find({ organizationId: quote.organizationId, quoteId: quote._id })
+      .sort({ lineOrder: 1, createdAt: 1 })
+      .lean();
+
+    const orgQuoteSettings = await getQuoteOrgSettings(quote.organizationId);
+    assertCustomerAgreementAccepted(orgQuoteSettings, req.body);
+    const signatureText =
+      assertTypedSignatureProvided(orgQuoteSettings, req.body) ||
+      normalizeSignatureText(req.body) ||
+      null;
+
+    const lineIds = Array.isArray(req.body?.lineIds) ? req.body.lineIds : null;
+    const resolution = resolveCustomerAcceptance(lines, lineIds);
+
+    applyCustomerAcceptanceToQuote(quote, resolution, {
+      comment: req.body?.comment ?? null,
+      signerName: req.body?.signerName ?? null,
+      signatureText,
+      agreedToTerms: req.body?.agreedToTerms === true
+    });
     await quote.save();
+
+    const action =
+      resolution.responseType === 'partial' ? 'quote_public_partially_accepted' : 'quote_public_accepted';
+    const message =
+      resolution.responseType === 'partial'
+        ? 'Quote partially accepted (public link)'
+        : 'Quote accepted (public link)';
 
     await logPublicEvent({
       req,
       quote,
       token,
-      action: 'quote_public_accepted',
-      message: 'Quote accepted (public link)',
-      details: { fromStatus, toStatus }
+      action,
+      message,
+      details: {
+        fromStatus,
+        toStatus: quote.status,
+        acceptedLineIds: resolution.selectedIds,
+        acceptedGrandTotal: resolution.acceptedGrandTotal
+      }
     });
 
-    return res.json({ success: true, data: { quoteId: quote._id, status: quote.status } });
+    return res.json({
+      success: true,
+      data: {
+        quoteId: quote._id,
+        status: quote.status,
+        responseType: resolution.responseType,
+        customerResponse: quote.customerResponse
+      }
+    });
   } catch (e) {
     const code = e?.code;
-    const status = code === 'INVALID_TRANSITION' || code === 'VALIDATION' ? 400 : 500;
+    const status =
+      code === 'INVALID_TRANSITION' ||
+      code === 'VALIDATION' ||
+      code === 'INVALID_LINE_SELECTION' ||
+      code === 'EMPTY_LINE_SELECTION' ||
+      code === 'NO_SELECTABLE_LINES' ||
+      code === 'TERMS_REQUIRED' ||
+      code === 'QUOTE_EXPIRED' ||
+      code === 'SIGNATURE_REQUIRED'
+        ? 400
+        : 500;
     return res.status(status).json({
       success: false,
       message: e.message || 'Failed to accept quote',
@@ -158,11 +288,37 @@ exports.reject = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Quote link not found', code: 'NOT_FOUND' });
     }
 
-    const fromStatus = String(quote.status || '');
-    const toStatus = 'Rejected';
-    assertCanTransitionQuoteStatus(fromStatus, toStatus);
+    if (isDraftCustomerShare(quote)) {
+      return res.status(400).json({
+        success: false,
+        message: 'This is a draft quote for review only. Rejection is not available until a final quote is issued.',
+        code: 'DRAFT_PREVIEW'
+      });
+    }
 
-    quote.status = toStatus;
+    await expireQuoteIfDue(quote, { trigger: 'public_reject' });
+    try {
+      assertQuoteOpenForCustomerAction(quote);
+    } catch (e) {
+      if (e?.code === 'QUOTE_EXPIRED') {
+        return res.status(400).json({ success: false, message: e.message, code: 'QUOTE_EXPIRED' });
+      }
+      throw e;
+    }
+
+    const fromStatus = String(quote.status || '');
+    if (!['Sent', 'Viewed'].includes(fromStatus)) {
+      return res.status(400).json({
+        success: false,
+        message: `Quote cannot be rejected in status "${fromStatus}".`,
+        code: 'INVALID_STATUS'
+      });
+    }
+
+    applyCustomerRejectionToQuote(quote, {
+      comment: req.body?.comment ?? null,
+      signerName: req.body?.signerName ?? null
+    });
     await quote.save();
 
     await logPublicEvent({
@@ -171,18 +327,86 @@ exports.reject = async (req, res) => {
       token,
       action: 'quote_public_rejected',
       message: 'Quote rejected (public link)',
-      details: { fromStatus, toStatus, comment: req.body?.comment ?? null }
+      details: { fromStatus, toStatus: quote.status, comment: req.body?.comment ?? null }
     });
 
     return res.json({ success: true, data: { quoteId: quote._id, status: quote.status } });
   } catch (e) {
     const code = e?.code;
-    const status = code === 'INVALID_TRANSITION' || code === 'VALIDATION' ? 400 : 500;
+    const status =
+      code === 'INVALID_TRANSITION' || code === 'VALIDATION' || code === 'QUOTE_EXPIRED' ? 400 : 500;
     return res.status(status).json({
       success: false,
       message: e.message || 'Failed to reject quote',
       code: code || 'UNKNOWN',
       details: e.details || null
+    });
+  }
+};
+
+exports.listComments = async (req, res) => {
+  try {
+    const token = req.params.token;
+    const quote = await resolveQuoteByToken(token);
+    if (!quote) {
+      return res.status(404).json({ success: false, message: 'Quote link not found', code: 'NOT_FOUND' });
+    }
+    if (isDraftCustomerShare(quote)) {
+      return res.json({ success: true, data: [] });
+    }
+
+    const comments = await listPortalComments(quote.organizationId, quote._id);
+    return res.json({ success: true, data: comments });
+  } catch (e) {
+    return res.status(500).json({
+      success: false,
+      message: e.message || 'Failed to load comments',
+      code: 'UNKNOWN'
+    });
+  }
+};
+
+exports.postComment = async (req, res) => {
+  try {
+    const token = req.params.token;
+    const quote = await resolveQuoteDocByToken(token);
+    if (!quote) {
+      return res.status(404).json({ success: false, message: 'Quote link not found', code: 'NOT_FOUND' });
+    }
+
+    if (isDraftCustomerShare(quote)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Comments are not available on draft preview links.',
+        code: 'DRAFT_PREVIEW'
+      });
+    }
+
+    await expireQuoteIfDue(quote, { trigger: 'public_comment' });
+
+    const comment = await createCustomerPortalComment({
+      quote,
+      content: req.body?.content ?? req.body?.message ?? '',
+      signerName: req.body?.signerName ?? null
+    });
+
+    await logPublicEvent({
+      req,
+      quote: quote.toObject(),
+      token,
+      action: 'quote_public_comment',
+      message: 'Customer posted a comment (public link)',
+      details: { commentId: comment.id }
+    });
+
+    return res.status(201).json({ success: true, data: comment });
+  } catch (e) {
+    const code = e?.code;
+    const status = code === 'VALIDATION' ? 400 : 500;
+    return res.status(status).json({
+      success: false,
+      message: e.message || 'Failed to post comment',
+      code: code || 'UNKNOWN'
     });
   }
 };
@@ -195,6 +419,20 @@ exports.latestPdf = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Quote link not found', code: 'NOT_FOUND' });
     }
 
+    if (isDraftCustomerShare(quote)) {
+      const lines = await QuoteLine.find({ organizationId: quote.organizationId, quoteId: quote._id })
+        .sort({ lineOrder: 1, createdAt: 1 })
+        .lean();
+      const branding = await getQuoteBranding(quote.organizationId);
+      const pdf = await renderQuotePdf({ quote, lines, watermark: 'DRAFT', branding });
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader(
+        'Content-Disposition',
+        `inline; filename="draft-${String(quote.quoteNumber || 'quote')}.pdf"`
+      );
+      return res.send(pdf);
+    }
+
     const latest = await QuoteDocument.find({ organizationId: quote.organizationId, quoteId: quote._id })
       .sort({ revisionNumber: -1, versionNumber: -1, generatedAt: -1 })
       .limit(1)
@@ -205,7 +443,6 @@ exports.latestPdf = async (req, res) => {
       return res.status(404).json({ success: false, message: 'No document generated yet', code: 'NOT_FOUND' });
     }
 
-    // Redirect to static file served from /public
     return res.redirect(302, doc.filePath);
   } catch (e) {
     return res.status(500).json({ success: false, message: e.message || 'Failed to fetch PDF', code: 'UNKNOWN' });

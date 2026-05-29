@@ -21,6 +21,7 @@ require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 const mongoose = require('mongoose');
 const RelationshipDefinition = require('../models/RelationshipDefinition');
 const { validateRelationship } = require('../utils/relationshipRegistry');
+const { PLATFORM_QUOTE_RELATIONSHIP_DEFINITIONS } = require('../constants/defaultQuoteRelationships');
 
 // Support both MONGODB_URI and MONGO_URI
 const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI || process.env.MONGO_URI_LOCAL;
@@ -287,7 +288,8 @@ const RELATIONSHIP_DEFINITIONS = [
       allowed: true
     },
     enabled: true
-  }
+  },
+  ...PLATFORM_QUOTE_RELATIONSHIP_DEFINITIONS
 ];
 
 async function seedPlatformRelationships() {

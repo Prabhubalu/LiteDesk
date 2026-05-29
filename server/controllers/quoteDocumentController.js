@@ -7,6 +7,7 @@ const Quote = require('../models/Quote');
 const QuoteLine = require('../models/QuoteLine');
 const QuoteDocumentModel = require('../models/QuoteDocument');
 const { writeQuoteActivity } = require('../services/quoteActivityService');
+const { getQuoteBranding } = require('../services/quoteBrandingService');
 
 function safeFilePart(value) {
   return String(value || '')
@@ -31,7 +32,29 @@ function computeChecksum(buffer) {
   return crypto.createHash('sha256').update(buffer).digest('hex');
 }
 
-function renderQuotePdf({ quote, lines }) {
+function drawDraftWatermark(doc, pageFn, label = 'DRAFT') {
+  const p = pageFn();
+  const cx = p.left + p.width / 2;
+  const cy = p.top + p.width * 0.35;
+  const text = String(label || 'DRAFT').toUpperCase();
+  doc.save();
+  doc.fillOpacity(0.14);
+  doc.fillColor('#DC2626');
+  doc.font('Helvetica-Bold').fontSize(76);
+  doc.rotate(-32, { origin: [cx, cy] });
+  doc.text(text, p.left, cy - 28, { width: p.width, align: 'center' });
+  doc.fillOpacity(1);
+  doc.restore();
+}
+
+function renderQuotePdf({ quote, lines, watermark = null, branding = null }) {
+  const brand = branding && typeof branding === 'object' ? branding : {};
+  const brandColor = String(brand.brandColor || '#4f46e5');
+  const documentTitle = String(brand.documentTitle || 'Quote');
+  const companyName = String(brand.companyName || '').trim();
+  const pdfFooterText = String(brand.pdfFooterText || '').trim();
+  const logoPath = brand.logoPath || null;
+
   return new Promise((resolve, reject) => {
     // bufferPages enables "Page X of Y" footers after content renders
     const doc = new PDFDocument({ size: 'A4', margin: 50, bufferPages: true });
@@ -75,13 +98,18 @@ function renderQuotePdf({ quote, lines }) {
     function drawFooter(pageIndex, pageCount) {
       const p = page();
       doc.save();
-      const footerY = p.bottom + 12;
-      doc.strokeColor('#E5E7EB').moveTo(p.left, p.bottom + 4).lineTo(p.right, p.bottom + 4).stroke();
+      let footerY = p.bottom + 4;
+      doc.strokeColor(brandColor).lineWidth(1.5).moveTo(p.left, footerY).lineTo(p.right, footerY).stroke();
+      footerY += 8;
       doc.fillColor('#6B7280').fontSize(9);
       const leftText = `${quote.quoteNumber || 'Quote'} • Rev ${quote.revisionNumber || 1}`;
       const rightText = `Page ${pageIndex + 1} of ${pageCount}`;
       doc.text(leftText, p.left, footerY, { width: p.width - 90 });
       doc.text(rightText, p.right - 90, footerY, { width: 90, align: 'right' });
+      if (pdfFooterText) {
+        doc.fontSize(8).fillColor('#9CA3AF');
+        doc.text(pdfFooterText, p.left, footerY + 12, { width: p.width, align: 'center' });
+      }
       doc.restore();
     }
 
@@ -89,12 +117,30 @@ function renderQuotePdf({ quote, lines }) {
       const p = page();
       doc.save();
 
-      // Title
-      doc.fillColor('#111111').fontSize(20).text('Quote', p.left, p.top, { width: p.width });
+      const logoW = 120;
+      const logoH = 44;
+      const titleWidth = logoPath ? Math.max(200, p.width - logoW - 16) : p.width;
+      let headerBlockBottom = p.top;
 
-      // Meta
+      if (logoPath) {
+        try {
+          doc.image(logoPath, p.right - logoW, p.top, { fit: [logoW, logoH], align: 'right', valign: 'top' });
+          headerBlockBottom = Math.max(headerBlockBottom, p.top + logoH);
+        } catch {
+          /* skip broken logo */
+        }
+      }
+
+      doc.fillColor(brandColor).fontSize(22).text(documentTitle, p.left, p.top, { width: titleWidth });
+      let textY = p.top + 26;
+      if (companyName) {
+        doc.fillColor('#374151').fontSize(11).text(companyName, p.left, textY, { width: titleWidth });
+        textY += 16;
+      }
+      headerBlockBottom = Math.max(headerBlockBottom, textY);
+
       doc.fillColor('#374151').fontSize(10);
-      const top = p.top + 30;
+      const top = Math.max(headerBlockBottom + 8, p.top + (companyName ? 44 : 30));
       const leftColX = p.left;
       const rightColX = p.left + Math.min(320, Math.floor(p.width / 2));
       const quoteDateStr = quote.quoteDate ? new Date(quote.quoteDate).toLocaleDateString() : '—';
@@ -220,6 +266,7 @@ function renderQuotePdf({ quote, lines }) {
 
       doc.save();
       doc.rect(boxX, startY - 8, boxW, lineH * 3 + 18).fill('#F6F7FB');
+      doc.strokeColor(brandColor).lineWidth(1).rect(boxX, startY - 8, boxW, lineH * 3 + 18).stroke();
       doc.restore();
 
       const labelW = 110;
@@ -260,12 +307,16 @@ function renderQuotePdf({ quote, lines }) {
     const range = doc.bufferedPageRange(); // { start: 0, count: n }
     for (let i = range.start; i < range.start + range.count; i += 1) {
       doc.switchToPage(i);
+      if (watermark) drawDraftWatermark(doc, page, watermark);
       drawFooter(i, range.count);
     }
 
     doc.end();
   });
 }
+
+module.exports.renderQuotePdf = renderQuotePdf;
+module.exports.safeFilePart = safeFilePart;
 
 exports.listDocuments = async (req, res) => {
   try {
@@ -295,7 +346,10 @@ exports.generateDocument = async (req, res) => {
     }
 
     const lines = await QuoteLine.find({ organizationId, quoteId }).sort({ lineOrder: 1, createdAt: 1 }).lean();
-    const pdf = await renderQuotePdf({ quote, lines });
+    const watermark =
+      String(quote.customerShareMode || '').toLowerCase() === 'draft' ? 'DRAFT' : null;
+    const branding = await getQuoteBranding(organizationId);
+    const pdf = await renderQuotePdf({ quote, lines, watermark, branding });
     const checksum = computeChecksum(pdf);
 
     const latest = await QuoteDocumentModel.find({ organizationId, quoteId, revisionNumber: quote.revisionNumber })

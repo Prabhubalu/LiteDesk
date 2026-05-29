@@ -199,19 +199,30 @@ export function getTabTitleMetaForPath(path, params = {}) {
     return { titleKey: 'navigation.tabFormResponseDetail', titleParams: { id: segments[3] } };
   }
 
-  // Record detail: use dynamic title when name is known
-  if (segments.length > 2 && !pathOnly.startsWith('/audit/') && segments[0] !== 'dashboard') {
-    const moduleKey = segments[0];
+  const recordMetaForModule = (moduleKey) => {
     const moduleLabelKey = getModuleLabelKey(moduleKey);
     if (params?.name) {
       return {
         titleKey: 'navigation.tabRecordNamed',
-        titleParams: { moduleRoute: moduleKey, name: params.name },
+        titleParams: { moduleRoute: moduleKey, name: params.name }
       };
     }
     if (moduleLabelKey) {
       return { titleKey: 'navigation.tabRecordDetail', titleParams: { moduleRoute: moduleKey } };
     }
+    return null;
+  };
+
+  // Standard CRM record: `/people/:id`, `/deals/:id`, `/quotes/:id`, …
+  if (segments.length === 2 && isRecordIdSegment(segments[1])) {
+    const meta = recordMetaForModule(segments[0]);
+    if (meta) return meta;
+  }
+
+  // Nested record paths (e.g. multi-segment module routes)
+  if (segments.length > 2 && !pathOnly.startsWith('/audit/') && segments[0] !== 'dashboard') {
+    const meta = recordMetaForModule(segments[0]);
+    if (meta) return meta;
   }
 
   const basePath = `/${segments[0] || ''}`;
@@ -220,6 +231,82 @@ export function getTabTitleMetaForPath(path, params = {}) {
   }
 
   return { titleKey: 'navigation.tabPage' };
+}
+
+/** Path segments without query/hash (e.g. `/people/abc` → `['people','abc']`). */
+export function pathSegments(path) {
+  return String(path || '')
+    .split('?')[0]
+    .split('#')[0]
+    .split('/')
+    .filter(Boolean);
+}
+
+/** Second path segment looks like a record id (not `new` / `create`). */
+export function isRecordIdSegment(segment) {
+  const s = String(segment || '').trim();
+  if (!s || s === 'new' || s === 'create' || s === 'edit') return false;
+  if (/^[a-fA-F0-9]{24}$/.test(s)) return true;
+  if (/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/i.test(s)) return true;
+  if (/^\d+$/.test(s)) return true;
+  return s.length >= 8;
+}
+
+/**
+ * Record detail URL (e.g. `/people/:id`, `/quotes/:id`, `/forms/:id/responses/:rid`).
+ * List routes (`/people`) are excluded.
+ */
+export function isRecordDetailTabPath(path) {
+  const pathOnly = String(path || '').split('?')[0].split('#')[0];
+  const segments = pathSegments(path);
+  if (segments.length < 2) return false;
+  if (ROUTE_TITLE_KEYS[pathOnly]) return false;
+  if (pathOnly.startsWith('/audit/')) return false;
+  if (segments[0] === 'dashboard') return false;
+  if (pathOnly.startsWith('/control/')) return false;
+  if (pathOnly.startsWith('/settings/automation/')) return false;
+
+  if (segments[0] === 'forms' && segments[2] === 'responses' && segments[3]) {
+    return isRecordIdSegment(segments[3]);
+  }
+
+  if (pathOnly.startsWith('/helpdesk/cases/')) {
+    return segments.length >= 3 && segments[2] !== 'new' && isRecordIdSegment(segments[2]);
+  }
+
+  // Standard CRM modules: `/module/:recordId` (two segments — was incorrectly treated as list)
+  if (segments.length === 2) {
+    return isRecordIdSegment(segments[1]) && Boolean(getModuleLabelKey(segments[0]) || segments[0]);
+  }
+
+  if (segments.length > 2) {
+    if (segments[0] === 'forms' && segments[2] === 'responses') return false;
+    return true;
+  }
+
+  return false;
+}
+
+export function isGenericRecordTabTitleKey(titleKey) {
+  return titleKey === 'navigation.tabRecordDetail';
+}
+
+/** Best available display name for a record tab (survives refresh). */
+export function getPersistedRecordTabName(tab) {
+  if (!tab) return '';
+  return (
+    String(tab.recordTitle || '').trim() ||
+    String(tab.title || '').trim() ||
+    String(tab.titleParams?.name || '').trim() ||
+    String(tab.params?.name || '').trim() ||
+    ''
+  );
+}
+
+/** True when a record tab already has a stored entity name — do not replace with module labels. */
+export function shouldPreserveRecordTabTitle(tab, path) {
+  if (!isRecordDetailTabPath(path)) return false;
+  return getPersistedRecordTabName(tab).length > 0;
 }
 
 /**
@@ -251,6 +338,16 @@ function localizedTabTitleParams(titleKey, params, t, te) {
  * @param {(key: string) => boolean} [te]
  */
 export function resolveTabTitle(tab, t, te = () => false) {
+  const recordName = getPersistedRecordTabName(tab);
+  if (recordName && isRecordDetailTabPath(tab?.path)) {
+    return recordName;
+  }
+
+  if (tab?.titleKey === 'navigation.tabRecordNamed' && tab.titleParams?.name) {
+    const params = localizedTabTitleParams(tab.titleKey, tab.titleParams, t, te);
+    return t(tab.titleKey, params);
+  }
+
   if (tab?.titleKey) {
     const params = localizedTabTitleParams(tab.titleKey, tab.titleParams, t, te);
     return t(tab.titleKey, params);
@@ -267,21 +364,51 @@ export function resolveTabTitle(tab, t, te = () => false) {
 }
 
 /**
- * Infer titleKey from path when loading legacy tabs from storage.
- * @param {{ path?: string, params?: Record<string, unknown>, title?: string, titleKey?: string }} tab
+ * Normalize a tab loaded from localStorage (record names + list titleKeys).
+ * @param {{ path?: string, params?: Record<string, unknown>, title?: string, titleKey?: string, recordTitle?: string, titleParams?: Record<string, unknown> }} tab
  */
-export function enrichTabWithTitleKey(tab) {
-  if (!tab.path) return tab;
+export function hydrateTabFromStorage(tab) {
+  if (!tab?.path) return tab;
+
+  const pathOnly = String(tab.path).split('?')[0];
+  const segments = pathOnly.split('/').filter(Boolean);
+
+  if (isRecordDetailTabPath(tab.path)) {
+    const name = getPersistedRecordTabName(tab);
+    if (name) {
+      return {
+        ...tab,
+        recordTitle: name,
+        title: name,
+        titleKey: 'navigation.tabRecordNamed',
+        titleParams: {
+          ...(tab.titleParams || {}),
+          moduleRoute: segments[0],
+          name
+        },
+        params: { ...(tab.params || {}), name }
+      };
+    }
+
+    // No stored name yet — drop generic detail key so refresh doesn't show "{module} Detail"
+    if (isGenericRecordTabTitleKey(tab.titleKey)) {
+      const next = { ...tab };
+      delete next.titleKey;
+      delete next.titleParams;
+      return next;
+    }
+
+    return tab;
+  }
+
+  // List / settings / dashboard routes
+  if (tab.titleKey) return tab;
   const meta = getTabTitleMetaForPath(tab.path, tab.params || {});
   if (!meta.titleKey) return tab;
-  const segments = String(tab.path).split('/').filter(Boolean);
-  const pathOnly = String(tab.path).split('?')[0];
-  const isNamedRecord =
-    (meta.titleKey === 'navigation.tabRecordNamed' || meta.titleKey === 'navigation.tabRecordDetail') &&
-    segments.length > 2 &&
-    tab.title &&
-    !ROUTE_TITLE_KEYS[pathOnly];
-  if (isNamedRecord && tab.titleKey) return tab;
-  if (isNamedRecord && !tab.titleKey) return tab;
   return { ...tab, titleKey: meta.titleKey, titleParams: meta.titleParams };
+}
+
+/** @deprecated Use hydrateTabFromStorage */
+export function enrichTabWithTitleKey(tab) {
+  return hydrateTabFromStorage(tab);
 }

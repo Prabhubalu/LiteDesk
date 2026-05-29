@@ -1074,7 +1074,7 @@ onActivated(() => {
     router.replace({ query: { ...route.query, [VIEW_QUERY_KEY]: view } });
   }
   if (view === 'kanban') fetchKanbanDeals();
-  if (moduleListRef.value?.refresh) moduleListRef.value.refresh();
+  if (view === 'list') moduleListRef.value?.reactivate?.();
   nextTick(() => setTimeout(() => toggleTableView(view === 'list'), 80));
 });
 

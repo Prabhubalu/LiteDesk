@@ -252,7 +252,7 @@ class UICompositionService {
 
           // Skip core platform entities - these should never appear in app navigation
           // Core entities: people, organizations, tasks, events, items, forms
-          const coreEntityKeys = ['people', 'organizations', 'tasks', 'events', 'items', 'forms'];
+          const coreEntityKeys = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes'];
           if (coreEntityKeys.includes(moduleDef.moduleKey?.toLowerCase())) {
             console.warn(`[UIComposition] Skipping core entity ${moduleDef.moduleKey} from app ${appKey} - it belongs in Core Modules section`);
             continue;

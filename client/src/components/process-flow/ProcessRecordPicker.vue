@@ -59,6 +59,7 @@ const moduleEndpoint = computed(() => {
   if (key === 'organizations') return '/v2/organization';
   if (key === 'people') return '/people';
   if (key === 'deals') return '/deals';
+  if (key === 'quotes') return '/quotes';
   return null;
 });
 
@@ -67,10 +68,17 @@ function recordLabel(rec) {
   if (props.entityType === 'people') {
     return `${rec.first_name || ''} ${rec.last_name || ''}`.trim() || rec.email || rec._id;
   }
+  if (props.entityType === 'quote') {
+    return rec.quoteTitle || rec.quoteNumber || rec._id;
+  }
   return rec.name || rec.title || rec._id;
 }
 
 function recordSubtitle(rec) {
+  if (props.entityType === 'quote') {
+    const parts = [rec.status, rec.quoteNumber].filter(Boolean);
+    return parts.join(' · ') || (rec._id ? String(rec._id).slice(-8) : '');
+  }
   if (props.entityType === 'deal' && rec.stage) return rec.stage;
   if (rec.email) return rec.email;
   return rec._id ? String(rec._id).slice(-8) : '';

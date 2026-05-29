@@ -61,6 +61,7 @@
     "@headlessui/vue": "^1.7.23",
     "@heroicons/vue": "^2.2.0",
     "@sentry/vue": "^8.47.0",
+    "@tanstack/vue-virtual": "^3.13.26",
     "@tiptap/extension-bubble-menu": "^2.18.0",
     "@tiptap/extension-heading": "^2.18.0",
     "@tiptap/extension-link": "^2.18.0",

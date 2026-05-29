@@ -22,10 +22,21 @@ const {
   convertQuote,
   getQuoteConversion,
   recalculateQuote,
-  reviseQuote
+  reviseQuote,
+  getQuoteRevisions,
+  getQuoteProcessApprovals,
+  sendQuoteEmail,
+  patchQuoteDiscounts
 } = require('../controllers/quoteController');
 
-const { addQuoteLine, addQuoteBundle, patchQuoteLine, deleteQuoteLine, reorderQuoteLines } = require('../controllers/quoteLineController');
+const {
+  addQuoteLine,
+  addQuoteBundle,
+  patchBundleOptionalComponents,
+  patchQuoteLine,
+  deleteQuoteLine,
+  reorderQuoteLines
+} = require('../controllers/quoteLineController');
 const quoteDocumentController = require('../controllers/quoteDocumentController');
 
 const router = express.Router();
@@ -47,6 +58,8 @@ router.route('/')
   .get(filterByOwnership('quotes'), checkPermission('quotes', 'view'), getQuotes);
 
 router.get('/:id', checkPermission('quotes', 'view'), getQuoteById);
+router.get('/:id/revisions', checkPermission('quotes', 'view'), getQuoteRevisions);
+router.get('/:id/process-approvals', checkPermission('quotes', 'view'), getQuoteProcessApprovals);
 router.get('/:id/conversion', checkPermission('quotes', 'view'), getQuoteConversion);
 router.put('/:id', checkPermission('quotes', 'edit'), updateQuote);
 router.delete('/:id', checkPermission('quotes', 'delete'), deleteQuote);
@@ -54,16 +67,19 @@ router.patch('/:id/status', checkPermission('quotes', 'edit'), transitionQuoteSt
 router.post('/:id/submit-for-approval', checkPermission('quotes', 'edit'), submitQuoteForApproval);
 router.post('/:id/approve', checkPermission('quotes', 'edit'), approveQuote);
 router.post('/:id/reject', checkPermission('quotes', 'edit'), rejectQuote);
+router.post('/:id/send-email', checkPermission('quotes', 'edit'), sendQuoteEmail);
 router.post('/:id/share', checkPermission('quotes', 'edit'), shareQuote);
 router.post('/:id/share/revoke', checkPermission('quotes', 'edit'), revokeQuoteShare);
 router.post('/:id/convert', checkPermission('quotes', 'edit'), convertQuote);
 router.post('/:id/recalculate', checkPermission('quotes', 'edit'), recalculateQuote);
+router.patch('/:id/discounts', checkPermission('quotes', 'edit'), patchQuoteDiscounts);
 router.post('/:id/revise', checkPermission('quotes', 'edit'), reviseQuote);
 router.post('/:id/lines', checkPermission('quotes', 'edit'), addQuoteLine);
 router.post('/:id/bundles', checkPermission('quotes', 'edit'), addQuoteBundle);
+router.patch('/:id/bundles/:parentLineId/optionals', checkPermission('quotes', 'edit'), patchBundleOptionalComponents);
+router.patch('/:id/lines/reorder', checkPermission('quotes', 'edit'), reorderQuoteLines);
 router.patch('/:id/lines/:lineId', checkPermission('quotes', 'edit'), patchQuoteLine);
 router.delete('/:id/lines/:lineId', checkPermission('quotes', 'edit'), deleteQuoteLine);
-router.patch('/:id/lines/reorder', checkPermission('quotes', 'edit'), reorderQuoteLines);
 
 router.get('/:id/documents', checkPermission('quotes', 'view'), quoteDocumentController.listDocuments);
 router.post('/:id/documents/generate', checkPermission('quotes', 'edit'), quoteDocumentController.generateDocument);

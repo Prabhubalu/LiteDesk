@@ -181,14 +181,29 @@ const getEntityDisplay = (approval) => {
       return snap.name || snap.email || 'Person';
     } else if (snap.type === 'organization') {
       return snap.name || 'Organization';
+    } else if (snap.type === 'quote') {
+      const total = snap.grandTotal != null ? formatCurrency(snap.grandTotal, snap.currency) : '';
+      const rev = snap.revisionNumber ? ` · Rev ${snap.revisionNumber}` : '';
+      return `${snap.quoteNumber || snap.name || 'Quote'}${rev}${total ? ` — ${total}` : ''}`;
     }
   }
   return `${approval.entityType || 'Record'} (${approval.entityId || 'Unknown'})`;
 };
 
-const formatCurrency = (value) => {
-  if (!value) return '₹0';
-  return `₹${Number(value).toLocaleString('en-IN')}`;
+const formatCurrency = (value, currency) => {
+  if (value == null || value === '') return '';
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '';
+  const code = String(currency || '').trim();
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: code ? 'currency' : 'decimal',
+      currency: code || undefined,
+      maximumFractionDigits: 2
+    }).format(n);
+  } catch {
+    return `${n.toLocaleString()}${code ? ` ${code}` : ''}`;
+  }
 };
 
 const formatDate = (dateString) => {

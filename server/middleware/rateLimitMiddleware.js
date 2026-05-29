@@ -338,6 +338,51 @@ const mailroomPublicIngestLimiter = rateLimit({
     skip: (req) => SECURITY_DISABLED || shouldBypassRateLimit(req)
 });
 
+const PUBLIC_QUOTE_RATE_LIMIT_WINDOW_MS = parsePositiveInteger(
+    process.env.PUBLIC_QUOTE_RATE_LIMIT_WINDOW_MS,
+    15 * 60 * 1000
+);
+const PUBLIC_QUOTE_VIEW_MAX = parsePositiveInteger(process.env.PUBLIC_QUOTE_VIEW_MAX, 120);
+const PUBLIC_QUOTE_ACTION_MAX = parsePositiveInteger(process.env.PUBLIC_QUOTE_ACTION_MAX, 20);
+
+const publicQuoteViewLimiter = rateLimit({
+    windowMs: PUBLIC_QUOTE_RATE_LIMIT_WINDOW_MS,
+    max: PUBLIC_QUOTE_VIEW_MAX,
+    ...rateLimitHeadersAndStore('public-quote-view', PUBLIC_QUOTE_RATE_LIMIT_WINDOW_MS, ROUTE_RATE_LIMIT_REDIS_FAILURE_MODE),
+    message: {
+        error: 'Too many requests for this quote link. Please try again later.',
+        code: 'PUBLIC_QUOTE_RATE_LIMIT_EXCEEDED'
+    },
+    keyGenerator: (req) => {
+        const token = String(req.params?.token || 'unknown').slice(0, 64);
+        return `public-quote:view:${token}:${getClientIp(req)}`;
+    },
+    handler: makeRateLimitHandler('public-quote-view', {
+        error: 'Too many requests for this quote link. Please try again later.',
+        code: 'PUBLIC_QUOTE_RATE_LIMIT_EXCEEDED'
+    }),
+    skip: (req) => SECURITY_DISABLED || shouldBypassRateLimit(req)
+});
+
+const publicQuoteActionLimiter = rateLimit({
+    windowMs: PUBLIC_QUOTE_RATE_LIMIT_WINDOW_MS,
+    max: PUBLIC_QUOTE_ACTION_MAX,
+    ...rateLimitHeadersAndStore('public-quote-action', PUBLIC_QUOTE_RATE_LIMIT_WINDOW_MS, SENSITIVE_RATE_LIMIT_REDIS_FAILURE_MODE),
+    message: {
+        error: 'Too many actions on this quote link. Please try again later.',
+        code: 'PUBLIC_QUOTE_ACTION_RATE_LIMIT_EXCEEDED'
+    },
+    keyGenerator: (req) => {
+        const token = String(req.params?.token || 'unknown').slice(0, 64);
+        return `public-quote:action:${token}:${getClientIp(req)}`;
+    },
+    handler: makeRateLimitHandler('public-quote-action', {
+        error: 'Too many actions on this quote link. Please try again later.',
+        code: 'PUBLIC_QUOTE_ACTION_RATE_LIMIT_EXCEEDED'
+    }),
+    skip: (req) => SECURITY_DISABLED || shouldBypassRateLimit(req)
+});
+
 const mailroomPortalIngestLimiter = rateLimit({
     windowMs: MAILROOM_CONNECTOR_WINDOW_MS,
     max: MAILROOM_PORTAL_RATE_LIMIT_MAX,
@@ -367,5 +412,7 @@ module.exports = {
     sensitiveOperationLimiter,
     organizationSettingsLimiter,
     mailroomPublicIngestLimiter,
-    mailroomPortalIngestLimiter
+    mailroomPortalIngestLimiter,
+    publicQuoteViewLimiter,
+    publicQuoteActionLimiter
 };

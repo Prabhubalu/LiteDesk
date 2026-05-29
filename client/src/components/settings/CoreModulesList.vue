@@ -115,7 +115,7 @@
 import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import { fetchCoreModulesSettingsCached, fetchModulesListCached } from '@/utils/tenantSchemaApiCache';
+import { fetchCoreModulesSettingsCached, fetchModulesListCached, invalidateTenantSchemaCaches } from '@/utils/tenantSchemaApiCache';
 import {
   UsersIcon,
   BuildingOfficeIcon,
@@ -123,6 +123,7 @@ import {
   CalendarDaysIcon,
   FolderIcon,
   ClipboardDocumentListIcon,
+  DocumentTextIcon,
   CubeIcon,
 } from '@heroicons/vue/24/outline';
 
@@ -137,6 +138,7 @@ const moduleIconMap = {
   events: CalendarDaysIcon,
   items: FolderIcon,
   forms: ClipboardDocumentListIcon,
+  quotes: DocumentTextIcon,
 };
 
 function getModuleIcon(moduleKey) {
@@ -216,6 +218,8 @@ const viewModuleDetail = (moduleKey) => {
 };
 
 onMounted(() => {
+  // Bust stale cache after Quotes was promoted to a platform core module
+  invalidateTenantSchemaCaches();
   fetchCoreModules();
 });
 </script>

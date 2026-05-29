@@ -98,6 +98,7 @@ export const QUOTE_FIELD_METADATA: Record<string, QuoteFieldMetadata> = {
     fieldScope: 'CORE',
     editable: true,
     allowOnCreate: true,
+    // Bootstrap: required by default on fresh instances (see server/constants/quoteModuleDefaults.js).
     isProtected: true,
     filterable: true,
     filterType: 'text',
@@ -272,13 +273,30 @@ export function getQuoteFieldMetadata(fieldName: string): QuoteFieldMetadata | u
   return undefined;
 }
 
+/**
+ * Suggested initial Quick Create keys for platform seed/migration only.
+ * Canonical list: server/constants/quoteModuleDefaults.js INITIAL_QUOTE_QUICK_CREATE.
+ * Runtime UI uses ModuleDefinition.quickCreate from Settings (not this list).
+ */
+export function buildInitialQuoteQuickCreateFromMetadata(): string[] {
+  return Object.entries(QUOTE_FIELD_METADATA)
+    .filter(([, metadata]) => metadata.owner === 'core' && metadata.allowOnCreate === true)
+    .map(([key]) => key);
+}
+
+/** @deprecated Use Settings → Core Modules → Quotes → Quick Create. Kept for legacy imports. */
 export function getQuoteQuickCreateFields(): string[] {
-  return ['quoteTitle', 'quoteDate', 'validUntil', 'currency', 'contactId', 'organizationRefId', 'dealId', 'ownerId'];
+  return buildInitialQuoteQuickCreateFromMetadata();
 }
 
 export function classifyQuoteField(fieldName: string): string {
   const metadata = getQuoteFieldMetadata(fieldName);
   return classifyFieldBase(metadata as unknown as BaseFieldMetadata);
+}
+
+export function isQuoteProtectedField(fieldName: string): boolean {
+  const metadata = getQuoteFieldMetadata(fieldName);
+  return metadata?.isProtected === true;
 }
 
 export function isExcludedFromQuoteQuickCreate(fieldName: string): boolean {

@@ -274,7 +274,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted, onActivated } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, onActivated, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -761,9 +761,11 @@ onMounted(async () => {
   }
 });
 
-// When switching back to this tab (keep-alive), refetch list so data is current
+// Keep-alive tab return: restore scroll + lazy-loaded pages (no full refetch)
 onActivated(() => {
-  moduleListRef.value?.refresh?.();
+  nextTick(() => {
+    moduleListRef.value?.reactivate?.();
+  });
 });
 
 onUnmounted(() => {

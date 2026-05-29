@@ -21,6 +21,18 @@ test('userCanOverridePricing: owner/admin allowed', () => {
   assert.equal(userCanOverridePricing(reqWithUser({ isOwner: false, role: 'user' })), false);
 });
 
+test('record read-only guard: blocks line writes on Expired', () => {
+  assert.throws(
+    () =>
+      assertQuoteCommerciallyEditableForLineWrite({
+        quoteStatus: 'Expired',
+        overridePricing: false,
+        req: reqWithUser({ role: 'admin' })
+      }),
+    (e) => e.code === 'QUOTE_RECORD_LOCKED'
+  );
+});
+
 test('commercial lock guard: blocks write after Sent unless overridePricing + privileged', () => {
   // Unlocked statuses: should pass
   assert.doesNotThrow(() =>

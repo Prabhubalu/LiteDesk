@@ -6,13 +6,31 @@
       :class="getSectionClass(section)"
     >
       <div class="pb-2 flex items-center justify-between gap-3">
-        <h3 :class="getSectionTitleClass()">{{ section.title }}</h3>
-        <div v-if="section.actions?.length" class="inline-flex items-center gap-1.5">
+        <div class="flex flex-wrap items-center gap-2 min-w-0">
+          <h3 :class="getSectionTitleClass()">{{ section.title }}</h3>
+          <component
+            v-if="section.titleSuffixComponent"
+            :is="section.titleSuffixComponent"
+            :record="record"
+            :context="getSectionContext(section)"
+          />
+        </div>
+        <div
+          v-if="section.headerActionsComponent || section.actions?.length"
+          class="inline-flex items-center gap-2 shrink-0 flex-wrap justify-end"
+        >
+          <component
+            v-if="section.headerActionsComponent"
+            :is="section.headerActionsComponent"
+            :record="record"
+            :context="getSectionContext(section)"
+          />
+          <template v-if="section.actions?.length">
           <button
             v-for="(action, actionIndex) in section.actions"
             :key="`${getSectionKey(section, index)}-action-${action.key || action.type || actionIndex}`"
             type="button"
-            :class="getActionClass(action)"
+            :class="getActionClass(action, section)"
             :aria-label="action.label || action.type || 'Section action'"
             :title="action.label || action.type || t('records.sectionActionFallback')"
             @click="handleAction(action, section)"
@@ -25,6 +43,7 @@
             <span v-else-if="action.type !== 'expand'" class="text-xs font-semibold">{{ action.label || action.type }}</span>
             <span v-if="action.type !== 'expand' && resolveActionIcon(action)" class="text-xs font-semibold">{{ action.label || action.type }}</span>
           </button>
+          </template>
         </div>
       </div>
 
@@ -75,6 +94,9 @@ const normalizeSection = (section, index) => {
     return {
       key: section.key || section.component?.name || section.component?.__name || `section-${index}`,
       title: section.title || section.component?.name || 'Section',
+      titleSuffixComponent: section.titleSuffixComponent || null,
+      headerActionsComponent: section.headerActionsComponent || null,
+      alwaysShowActions: section.alwaysShowActions === true,
       component: section.component,
       className: section.className || '',
       actions: Array.isArray(section.actions) ? section.actions : []
@@ -121,10 +143,11 @@ const getSectionTitleClass = () => {
   ];
 };
 
-const getActionClass = (action) => {
+const getActionClass = (action, section) => {
+  const alwaysVisible = section?.alwaysShowActions === true || action?.alwaysVisible === true;
   return [
     'inline-flex items-center justify-center gap-1.5 h-8 px-1.5 rounded-md border border-gray-200 bg-white text-gray-600 opacity-100 transition-opacity hover:text-gray-800 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-800',
-    isExpandedMode.value
+    isExpandedMode.value || alwaysVisible
       ? 'lg:opacity-100'
       : 'lg:opacity-0 lg:group-hover/section-stack:opacity-100',
     action?.type === 'expand' ? 'w-8 h-8 px-0 justify-center' : ''

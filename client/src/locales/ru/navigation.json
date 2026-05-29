@@ -422,5 +422,9 @@
   "moduleQuotes": {
     "message": "Quotes",
     "description": "Quotes module navigation label"
+  },
+  "portalCases": {
+    "message": "Cases",
+    "description": "Portal bottom nav support cases tab"
   }
 }

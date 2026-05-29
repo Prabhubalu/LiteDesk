@@ -188,6 +188,51 @@ const OrganizationSchema = new mongoose.Schema({
         primaryColor: { 
             type: String, 
             default: '#7f56d9' 
+        },
+        /** Platform quotes module policies (tenant-wide) */
+        quotes: {
+            requireApprovalBeforeSend: {
+                type: Boolean,
+                default: false
+            },
+            requireCustomerAgreement: {
+                type: Boolean,
+                default: false
+            },
+            requireTypedSignature: {
+                type: Boolean,
+                default: false
+            },
+            customerAgreementText: {
+                type: String,
+                trim: true,
+                maxlength: 2000,
+                default: ''
+            },
+            pdfFooterText: {
+                type: String,
+                trim: true,
+                maxlength: 500,
+                default: ''
+            },
+            emailSignature: {
+                type: String,
+                trim: true,
+                maxlength: 2000,
+                default: ''
+            },
+            brandColor: {
+                type: String,
+                trim: true,
+                maxlength: 7,
+                default: ''
+            },
+            documentTitle: {
+                type: String,
+                trim: true,
+                maxlength: 80,
+                default: ''
+            }
         }
     },
 

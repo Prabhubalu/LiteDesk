@@ -790,11 +790,11 @@
             </div>
           </template>
 
-          <!-- Items module: Grouped by ownership (similar to Events) -->
-          <template v-else-if="isItemsModule">
-            <!-- Core Item Fields -->
+          <!-- Items / Quotes: grouped by field model ownership -->
+          <template v-else-if="isItemsModule || isQuotesModule">
+            <!-- Core catalog fields -->
             <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupCoreItem') }}</div>
+              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ isQuotesModule ? t('settings.modFieldsGroupCoreQuote') : t('settings.modFieldsGroupCoreItem') }}</div>
               <ul class="space-y-1">
                 <li
                   v-for="(fieldKey, idx) in groupedFields.coreIdentity"
@@ -5361,6 +5361,11 @@ import {
   classifyItemField
 } from '@/platform/fields/itemFieldModel';
 import {
+  classifyQuoteField,
+  isQuoteProtectedField,
+  isExcludedFromQuoteQuickCreate
+} from '@/platform/fields/quoteFieldModel';
+import {
   CATALOG_LIFECYCLE_STATES,
   CATALOG_LIFECYCLE_LABEL_KEYS
 } from '@/constants/catalogLifecycle';
@@ -6951,6 +6956,10 @@ const isItemsModule = computed(() => {
   return selectedModule.value?.key?.toLowerCase() === 'items';
 });
 
+const isQuotesModule = computed(() => {
+  return selectedModule.value?.key?.toLowerCase() === 'quotes';
+});
+
 // Check if current module is Forms
 // ARCHITECTURE NOTE: Forms Settings configure structure & behavior ONLY.
 // MUST NOT: Edit sections/questions, Edit responses, Execute workflows, Run scoring
@@ -7178,6 +7187,15 @@ const quickCreateAvailableFields = computed(() => {
     });
   }
 
+  // Quotes: eligible = core fields allowed on create (metadata), not a hardcoded list
+  if (isQuotesModule.value) {
+    return editFields.value.filter((field) => {
+      if (!field?.key) return false;
+      if (isSystemField(field)) return false;
+      return !isExcludedFromQuoteQuickCreate(field.key);
+    });
+  }
+
   // For other modules (Deals, Items, etc.): only non-system fields
   return editFields.value.filter(f => f.key && !isSystemField(f));
 });
@@ -7229,7 +7247,7 @@ const quickCreateEventParticipationEntries = computed(() => {
 // See: docs/architecture/event-settings.md Section 6
 // See: client/src/platform/modules/forms/formsModule.definition.ts
 const groupedFields = computed(() => {
-  if (!isPeopleModule.value && !isOrganizationsModule.value && !isTasksModule.value && !isEventsModule.value && !isFormsModule.value && !isItemsModule.value && !isDealsModule.value && !isCasesModule.value) {
+  if (!isPeopleModule.value && !isOrganizationsModule.value && !isTasksModule.value && !isEventsModule.value && !isFormsModule.value && !isItemsModule.value && !isQuotesModule.value && !isDealsModule.value && !isCasesModule.value) {
     return { coreIdentity: [], participation: {}, system: [] };
   }
 
@@ -7323,6 +7341,28 @@ const groupedFields = computed(() => {
         
         // Should never reach here, but add to system as ultimate fallback
         console.warn(`[Items Field Model] Field "${fieldKey}" has unexpected classification: ${classification}. Adding to system group as fallback.`);
+        system.push(fieldKey);
+        continue;
+      }
+
+      if (isQuotesModule.value) {
+        const classification = classifyQuoteField(fieldKey);
+
+        if (classification === 'core') {
+          coreIdentity.push(fieldKey);
+          continue;
+        }
+
+        if (classification === 'system') {
+          system.push(fieldKey);
+          continue;
+        }
+
+        if (!classification) {
+          system.push(fieldKey);
+          continue;
+        }
+
         system.push(fieldKey);
         continue;
       }
@@ -8039,6 +8079,10 @@ function isCoreField(field, moduleKey) {
   // For Items module, use item field model
   if (moduleKey.toLowerCase() === 'items') {
     return isItemProtectedField(field.key);
+  }
+
+  if (moduleKey.toLowerCase() === 'quotes') {
+    return isQuoteProtectedField(field.key);
   }
   
   // For Forms module, check formSettingsMap for system/fixed field markers

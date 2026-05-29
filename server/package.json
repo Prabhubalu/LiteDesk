@@ -10,6 +10,8 @@
     "test:communications-http-integration": "node --test --test-force-exit tests/communications.http.integration.test.js",
     "test:email-providers": "node --test services/emailProviders/__tests__/ociEmailDelivery.test.js",
     "test:helpdesk": "node --test utils/__tests__/caseApiValidators.test.js utils/__tests__/caseListQuery.test.js utils/__tests__/caseAnalytics.test.js",
+    "test:quotes": "node --test utils/__tests__/quote*.test.js",
+    "smoke:quotes": "node scripts/quotesSmokeChecks.js",
     "test:mailroom": "node --test --test-force-exit utils/__tests__/mailroomPolicyEngine.test.js utils/__tests__/mailroomEmailPipeline.test.js utils/__tests__/mailroomConversationThreading.test.js utils/__tests__/mailroomCasesAdapter.test.js utils/__tests__/mailroomEventsPublisher.test.js utils/__tests__/mailroomChannelRulesMapper.test.js utils/__tests__/mailroomGenericPipeline.test.js utils/__tests__/mailroomPortalSafety.test.js utils/__tests__/mailroomCaseTimelineAdapter.test.js utils/__tests__/mailroomEmailAuthValidator.test.js utils/__tests__/mailroomMetrics.test.js utils/__tests__/mailroomClassification.test.js",
     "test:catalog": "node --test utils/__tests__/catalogLifecycle.test.js utils/__tests__/itemCatalog.test.js utils/__tests__/catalogCategory.test.js utils/__tests__/catalogFieldOwnership.test.js utils/__tests__/catalogPriceBook.test.js utils/__tests__/catalogBundle.test.js",
     "migrate:catalog-lifecycle": "node scripts/migrateItemLifecycleState.js",

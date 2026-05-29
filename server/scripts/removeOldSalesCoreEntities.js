@@ -4,7 +4,7 @@
  * Remove old core entity modules from sales app
  * 
  * This script removes modules with appKey: 'sales' that are core entities
- * (people, organizations, tasks, events, items, forms) since they should
+ * (people, organizations, tasks, events, items, forms, quotes) since they should
  * only exist with appKey: 'platform' and navigationEntity: true
  * 
  * Usage: node server/scripts/removeOldSalesCoreEntities.js
@@ -21,7 +21,8 @@ const CORE_ENTITY_MODULE_KEYS = [
   'tasks',
   'events',
   'items',
-  'forms'
+  'forms',
+  'quotes'
 ];
 
 async function removeOldSalesCoreEntities() {
