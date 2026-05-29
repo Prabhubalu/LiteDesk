@@ -604,15 +604,20 @@
           :reset-widths="resetWidthsTrigger"
           :clear-selection-trigger="clearSelectionTrigger"
           :load-more-enabled="infiniteScroll"
-          :has-more="hasMorePages"
+          :pagination="pagination"
           :loading-more="loadingMore"
           :selection-column-variant="selectionColumnVariant"
           :row-number-offset="effectiveRowNumberOffset"
+          :selection-mode="selectionMode"
+          :selected-row-ids="selectedRowIdsForTable"
+          :excluded-row-ids="excludedRowIdsForTable"
+          :scroll-session-key="scrollSessionKey"
           @row-click="handleRowClick"
           @edit="handleEdit"
           @delete="handleDelete"
           @sort="handleSort"
-          @select="handleSelect"
+          @toggle-row="toggleListRowSelection"
+          @toggle-select-all-loaded="() => toggleListSelectAllLoaded(data)"
           @bulk-action="handleBulkAction"
           @load-more="emit('load-more')"
         >
@@ -665,7 +670,7 @@
       :record-type="moduleKey"
       :deleting="deleting"
       :is-bulk="isBulkDelete"
-      :bulk-count="bulkDeleteRows.length"
+      :bulk-count="bulkDeleteCount"
       @close="handleDeleteModalClose"
       @confirm="confirmDelete"
     />
@@ -793,12 +798,29 @@
         leave-to-class="opacity-0 translate-y-4 scale-95"
       >
         <div
-          v-if="selectedRows.length > 0"
-          class="fixed bottom-4 sm:bottom-6 left-2 right-2 sm:left-1/2 sm:-translate-x-1/2 z-[9999] bg-gray-800 dark:bg-gray-800 rounded-xl shadow-lg sm:max-w-[800px]"
+          v-if="hasSelection"
+          class="fixed bottom-4 sm:bottom-6 left-2 right-2 sm:left-1/2 sm:-translate-x-1/2 z-[9999] bg-gray-800 dark:bg-gray-800 rounded-xl shadow-lg sm:max-w-[min(800px,100%)]"
           :style="windowWidth >= 640 ? { 
             marginLeft: headerLeft === '0px' ? '0' : `calc(${headerLeft} / 2)`
           } : {}"
         >
+          <div
+            v-if="showSelectAllMatchingLink"
+            class="border-b border-white/10 px-4 py-2 text-center text-sm text-gray-200"
+          >
+            <button
+              type="button"
+              class="font-medium text-indigo-300 hover:text-indigo-200 underline-offset-2 hover:underline cursor-pointer"
+              @click="selectAllMatchingRecords()"
+            >
+              {{
+                t('common.listSelectAllMatching', {
+                  count: selectionTotalMatching,
+                  module: title,
+                })
+              }}
+            </button>
+          </div>
           <div class="flex items-center px-4 sm:px-6 py-2 sm:py-2.5 gap-3">
             <!-- Left: Selection Count with Close Icon -->
             <button
@@ -806,13 +828,25 @@
               class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-white/20 dark:border-gray-600 text-white dark:text-white font-medium text-sm flex-shrink-0 cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-700 transition-colors"
               :title="t('common.listClearSelection')"
             >
-              <span class="font-semibold">{{ selectedRows.length }}</span>
+              <span class="font-semibold">{{ selectionCount }}</span>
               <span class="font-medium">
-                {{ t('common.listRowsSelected', selectedRows.length, {
-                  count: selectedRows.length,
-                  singular: title.endsWith('s') ? title.slice(0, -1) : title,
-                  plural: title,
-                }) }}
+                <template v-if="isSelectAllMatching">
+                  {{
+                    t('common.listAllMatchingSelected', {
+                      count: selectionCount,
+                      module: title,
+                    })
+                  }}
+                </template>
+                <template v-else>
+                  {{
+                    t('common.listRowsSelected', selectionCount, {
+                      count: selectionCount,
+                      singular: title.endsWith('s') ? title.slice(0, -1) : title,
+                      plural: title,
+                    })
+                  }}
+                </template>
               </span>
               <XMarkIcon class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
             </button>
@@ -1433,7 +1467,10 @@ import { getFieldDisplayLabel } from '@/utils/fieldDisplay';
 import { DEFAULT_CURRENCY_CODE, formatCurrencyValue } from '@/utils/currencyOptions';
 import { getFieldMetadata, PEOPLE_FIELD_METADATA } from '@/platform/fields/peopleFieldModel';
 import { isSystemField as isSystemFieldFromEngine } from '@/platform/fields/fieldCapabilityEngine';
+import { getQuoteFieldMetadata } from '@/platform/fields/quoteFieldModel';
 import { useDefaultListFilters } from '@/composables/useDefaultListFilters';
+import { useListSelection } from '@/composables/useListSelection';
+import { normalizeListPagination } from '@/utils/normalizeListPagination';
 import DateFilterDropdown from '@/components/common/DateFilterDropdown.vue';
 import { parseDateFilterValue, getDateFilterLabel } from '@/utils/dateFilterOptions';
 
@@ -1595,6 +1632,11 @@ const props = defineProps({
   boostVisibleColumnKeys: {
     type: Array,
     default: () => []
+  },
+  /** Persists table scroll position across tab switches */
+  scrollSessionKey: {
+    type: String,
+    default: ''
   }
 });
 
@@ -1664,6 +1706,14 @@ const rowToDelete = ref(null);
 const deleting = ref(false);
 const isBulkDelete = ref(false);
 const bulkDeleteRows = ref([]);
+const bulkDeletePayload = ref(null);
+
+const bulkDeleteCount = computed(() => {
+  if (isBulkDelete.value && bulkDeletePayload.value) {
+    return bulkDeletePayload.value.selectionCount ?? 0;
+  }
+  return bulkDeleteRows.value.length;
+});
 const showPreviewDrawer = ref(false);
 const previewRow = ref(null);
 
@@ -1850,6 +1900,9 @@ onUnmounted(() => {
   }
 });
 
+const QUOTES_LIST_COLUMNS_PREFS_VERSION = 2;
+const quotesListColumnsPrefsVersionKey = 'arivu-listview-quotes-columns-prefs-version';
+
 // Load saved column settings from localStorage
 const loadSavedColumnSettings = () => {
   if (typeof window === 'undefined' || !Array.isArray(props.columns)) {
@@ -1857,6 +1910,18 @@ const loadSavedColumnSettings = () => {
   }
 
   try {
+    if (props.moduleKey === 'quotes') {
+      const prefsVersion = Number(localStorage.getItem(quotesListColumnsPrefsVersionKey) || 0);
+      if (prefsVersion < QUOTES_LIST_COLUMNS_PREFS_VERSION) {
+        localStorage.removeItem(columnsStorageKey.value);
+        localStorage.setItem(
+          quotesListColumnsPrefsVersionKey,
+          String(QUOTES_LIST_COLUMNS_PREFS_VERSION)
+        );
+        return null;
+      }
+    }
+
     const saved = localStorage.getItem(columnsStorageKey.value);
     if (saved) {
       const parsed = JSON.parse(saved);
@@ -2283,6 +2348,36 @@ const fetchFieldConfiguration = async () => {
 const normalizeColumnOrder = (columns) => {
   if (!Array.isArray(columns)) {
     return [];
+  }
+
+  if (props.moduleKey === 'quotes') {
+    const quotesOrder = ['quoteNumber', 'quoteTitle', 'status', 'grandTotal', 'validUntil', 'updatedAt'];
+    const orderedColumns = [];
+    const processedKeys = new Set();
+    const lockedKey =
+      visibleColumns.value.find((c) => c.locked)?.key ||
+      quotesOrder[0];
+
+    const lockedCol = columns.find((col) => col.key === lockedKey);
+    if (lockedCol) {
+      orderedColumns.push({ ...lockedCol, locked: true });
+      processedKeys.add(lockedKey);
+    }
+
+    quotesOrder.forEach((key) => {
+      if (processedKeys.has(key)) return;
+      const col = columns.find((c) => c.key === key);
+      if (col) {
+        orderedColumns.push(col);
+        processedKeys.add(key);
+      }
+    });
+
+    columns.forEach((col) => {
+      if (!processedKeys.has(col.key)) orderedColumns.push(col);
+    });
+
+    return orderedColumns;
   }
 
   // Handle specific ordering for the 'people' module
@@ -2770,11 +2865,11 @@ const dataLength = computed(() => (Array.isArray(props.data) ? props.data.length
 const initialRender = ref(true);
 
 const tableLoading = computed(() => {
-  // Match parent `loading` even if row data is momentarily non-empty (avoid flashing row numbers).
-  if (props.loading) {
+  if (initialRender.value && !Array.isArray(props.data)) {
     return true;
   }
-  if (initialRender.value && !Array.isArray(props.data)) {
+  // Background refetch: keep showing cached rows (TableView does the same).
+  if (props.loading && dataLength.value === 0) {
     return true;
   }
   return false;
@@ -2845,16 +2940,6 @@ const hasActiveFilters = computed(() => {
     ? Object.values(props.externalFilters).some(value => value !== '' && value !== undefined && value !== null)
     : false;
   return hasSearch || hasInternalFilters || hasExternalFilters;
-});
-
-const hasMorePages = computed(() => {
-  if (!props.infiniteScroll) return false;
-  const p = props.pagination;
-  if (!p) return false;
-  const cur = Number(p.currentPage);
-  const total = Number(p.totalPages);
-  if (!Number.isFinite(cur) || !Number.isFinite(total)) return false;
-  return cur < total;
 });
 
 /** For numbered selection gutter: continuous 1…n when infinite scroll; paged offset otherwise */
@@ -3246,9 +3331,19 @@ const clearFilters = () => {
   localStorage.removeItem(sortStorageKey.value);
 };
 
-// Helper: check if a field is a system field (should not appear in Customize List or Customize Kanban)
+/** System fields that are intentionally list-visible (e.g. Quote #, totals) stay in Customize view. */
+function isListVisibleSystemField(moduleKey, fieldKey) {
+  if (moduleKey === 'quotes') {
+    const meta = getQuoteFieldMetadata(fieldKey);
+    return meta?.isVisibleInConfig === true;
+  }
+  return false;
+}
+
+// Helper: exclude infrastructure system fields from Customize List field picker
 function isSystemFieldForList(moduleKey, fieldKey, field) {
   if (!fieldKey) return false;
+  if (isListVisibleSystemField(moduleKey, fieldKey)) return false;
   if (field?.isSystem === true) return true;
   const fieldObj = field && field.key ? field : { key: fieldKey };
   return isSystemFieldFromEngine(moduleKey, fieldObj);
@@ -3293,6 +3388,21 @@ const allFields = computed(() => {
     }
   });
   
+  // Include list-visible columns from visibleColumns even when omitted from backend field defs
+  visibleColumns.value.forEach((col) => {
+    if (!col?.key || allFieldsMap.has(col.key)) return;
+    if (isSystemFieldForList(props.moduleKey, col.key, col)) return;
+    allFieldsMap.set(col.key, {
+      key: col.key,
+      label: col.label || col.key,
+      visible: col.visible === true,
+      sortable: col.sortable !== false,
+      dataType: col.dataType || 'Text',
+      showInTable: col.showInTable !== false,
+      locked: col.locked === true
+    });
+  });
+
   // Now update visibility from visibleColumns (source of truth)
   let fields = Array.from(allFieldsMap.values()).map(field => {
     const visibleCol = visibleColumns.value.find(vc => vc.key === field.key);
@@ -3323,11 +3433,8 @@ const allFields = computed(() => {
 });
 
 const shownFields = computed(() => {
-  // Maintain order from visibleColumns (source of truth for order)
-  // Exclude system fields - they should not appear in Customize List
-  const visibleCols = visibleColumns.value.filter(
-    col => col.visible && !isSystemFieldForList(props.moduleKey, col.key, col)
-  );
+  // Same visibility as the table (visibleColumns is the single source of truth)
+  const visibleCols = visibleColumns.value.filter((col) => col.visible === true);
   
   // Get fields from allFields but maintain the order from visibleColumns
   const orderedFields = visibleCols.map(col => {
@@ -3623,7 +3730,7 @@ const autosizeAllColumns = () => {
 const router = useRouter();
 
 // Core modules are configured in Settings > Core Modules; app modules (e.g. Deals) in Settings > Applications
-const CORE_MODULE_KEYS = ['people', 'organizations', 'tasks', 'events', 'forms', 'items'];
+const CORE_MODULE_KEYS = ['people', 'organizations', 'tasks', 'events', 'forms', 'items', 'quotes'];
 const APP_MODULE_CONFIG = {
   deals: { appKey: 'SALES', app: 'sales', config: 'schema' }
 };
@@ -3791,6 +3898,7 @@ const handleDeleteClick = (row) => {
   rowToDelete.value = row;
   isBulkDelete.value = false;
   bulkDeleteRows.value = [];
+  bulkDeletePayload.value = null;
   showDeleteModal.value = true;
 };
 
@@ -3799,15 +3907,20 @@ const handleDeleteModalClose = () => {
   rowToDelete.value = null;
   isBulkDelete.value = false;
   bulkDeleteRows.value = [];
+  bulkDeletePayload.value = null;
 };
 
 const confirmDelete = async () => {
   deleting.value = true;
   try {
     if (isBulkDelete.value) {
-      // Handle bulk delete - emit with 'bulk-delete' action to match what views expect
-      emit('bulk-action', 'bulk-delete', bulkDeleteRows.value);
-      // Clear selection after bulk delete
+      emit('bulk-action', 'bulk-delete', bulkDeletePayload.value ?? {
+        mode: 'page',
+        selectedIds: bulkDeleteRows.value.map((r) => r?._id || r?.id).filter(Boolean),
+        excludedIds: [],
+        totalMatching: bulkDeleteRows.value.length,
+        selectionCount: bulkDeleteRows.value.length
+      });
       clearSelection();
     } else {
       // Handle single delete
@@ -3822,6 +3935,7 @@ const confirmDelete = async () => {
     rowToDelete.value = null;
     isBulkDelete.value = false;
     bulkDeleteRows.value = [];
+    bulkDeletePayload.value = null;
   }
 };
 
@@ -3935,20 +4049,52 @@ const handleSort = ({ key, order }) => {
   }
 };
 
-// Selection state
-const selectedRows = ref([]);
+const listSelection = useListSelection({
+  getRowId: (row) => {
+    const key = props.rowKey || '_id';
+    const raw = row?.[key] ?? row?._id ?? row?.id;
+    return raw != null ? String(raw) : '';
+  },
+  getTotalMatching: () =>
+    normalizeListPagination(props.pagination).totalRecords,
+  getLoadedCount: () => (Array.isArray(props.data) ? props.data.length : 0)
+});
 
-const handleSelect = (selected) => {
-  selectedRows.value = selected;
-};
+const {
+  mode: selectionMode,
+  selectedIds: selectionSelectedIds,
+  excludedIds: selectionExcludedIds,
+  selectionCount,
+  selectAllMatching: isSelectAllMatching,
+  showSelectAllMatchingLink,
+  hasSelection,
+  totalMatching: selectionTotalMatching,
+  clear: clearListSelection,
+  toggleRow: toggleListRowSelection,
+  toggleSelectAllLoaded: toggleListSelectAllLoaded,
+  selectAllMatchingRecords,
+  pruneToLoadedRows,
+  getSelectedRowsFromLoaded,
+  getBulkPayload
+} = listSelection;
+
+const selectedRowIdsForTable = computed(() => [...selectionSelectedIds.value]);
+const excludedRowIdsForTable = computed(() => [...selectionExcludedIds.value]);
 
 const clearSelectionTrigger = ref(0);
 
 const clearSelection = () => {
-  selectedRows.value = [];
-  // Trigger TableView to clear its selection
+  clearListSelection();
   clearSelectionTrigger.value++;
 };
+
+watch(
+  () => props.data,
+  (rows) => {
+    if (!Array.isArray(rows) || !hasSelection.value) return;
+    pruneToLoadedRows(rows);
+  }
+);
 
 // Clear selection when route changes (switching modules/tabs)
 watch(() => router.currentRoute.value.path, () => {
@@ -3970,16 +4116,17 @@ const handleBulkAction = (actionId, selectedRows) => {
 };
 
 const handleBulkActionClick = (actionId) => {
-  // Check if it's a delete action
+  const payload = getBulkPayload();
   if (actionId === 'delete' || actionId === 'bulk-delete') {
-    // Show delete confirmation modal for bulk delete
     isBulkDelete.value = true;
-    bulkDeleteRows.value = [...selectedRows.value];
+    bulkDeletePayload.value = payload;
+    bulkDeleteRows.value = getSelectedRowsFromLoaded(
+      Array.isArray(props.data) ? props.data : []
+    );
     rowToDelete.value = null;
     showDeleteModal.value = true;
   } else {
-    // Handle other bulk actions directly
-    handleBulkAction(actionId, selectedRows.value);
+    handleBulkAction(actionId, payload);
   }
 };
 

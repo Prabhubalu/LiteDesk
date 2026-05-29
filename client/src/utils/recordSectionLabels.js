@@ -6,6 +6,8 @@ export function createRecordSectionLabels(t) {
   return {
     description: t('records.descriptionTitle'),
     lines: t('records.linesTitle'),
+    revisions: t('records.revisionsTitle'),
+    conversion: t('records.conversionTitle'),
     catalog: t('records.catalogSectionTitle'),
     details: t('records.detailsTitle'),
     related: t('records.relatedRecordsTitle'),

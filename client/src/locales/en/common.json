@@ -223,6 +223,14 @@
     "message": "{count} {singular} selected | {count} {plural} selected",
     "description": "Bulk row selection count in list"
   },
+  "listSelectAllMatching": {
+    "message": "Select all {count} {module}",
+    "description": "Link to select every record matching the list query, not only loaded rows"
+  },
+  "listAllMatchingSelected": {
+    "message": "All {count} {module} selected",
+    "description": "Bulk bar label when all matching records are selected"
+  },
   "listSearchFields": {
     "message": "Search fields",
     "description": "Field manager search placeholder"

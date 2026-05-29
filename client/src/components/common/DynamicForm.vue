@@ -579,6 +579,8 @@ function advancedLayoutHasVisibleFields() {
 // so we can render ALL fields - advanced layout only shows fields in layout rows
 const useAdvancedLayout = computed(() => {
   if (props.showAllFields) return false;
+  // Strict quick create renders from quickCreate keys only (layout rows can include extra fields).
+  if (props.quickCreateMode) return false;
   if (!layout.value?.rows?.length) return false;
   return advancedLayoutHasVisibleFields();
 });

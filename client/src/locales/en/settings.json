@@ -135,6 +135,122 @@
     "message": "Manage categories, attribute templates, and price books for the product catalog.",
     "description": "Catalog categories option description"
   },
+  "automationQuotes": {
+    "message": "Quotes",
+    "description": "Automation hub quotes policy option"
+  },
+  "automationQuotesDesc": {
+    "message": "Approval rules before sending quotes to customers.",
+    "description": "Quotes settings option description"
+  },
+  "quotesSettingsTitle": {
+    "message": "Quote policies",
+    "description": "Quotes settings page title"
+  },
+  "quotesSettingsDesc": {
+    "message": "Organization-wide rules for quote approval and customer sharing.",
+    "description": "Quotes settings page description"
+  },
+  "quotesApprovalPolicyTitle": {
+    "message": "Customer send approval",
+    "description": "Quotes approval policy section title"
+  },
+  "quotesApprovalPolicyHelp": {
+    "message": "When enabled, new quotes require approval before a binding quote can be emailed or shared. Draft-for-review emails may still be sent when your process allows.",
+    "description": "Quotes approval policy help text"
+  },
+  "quotesRequireApprovalLabel": {
+    "message": "Require approval before customer send",
+    "description": "Org checkbox label for quote approval"
+  },
+  "quotesRequireApprovalHint": {
+    "message": "Applies to all new quotes. Existing quotes keep their current approval flag unless you submit them for approval.",
+    "description": "Org checkbox hint for quote approval"
+  },
+  "quotesSettingsSaved": {
+    "message": "Quote policies saved",
+    "description": "Toast after saving quote settings"
+  },
+  "quotesSettingsLoadFailed": {
+    "message": "Failed to load quote policies",
+    "description": "Error loading quote settings"
+  },
+  "quotesSettingsSaveFailed": {
+    "message": "Failed to save quote policies",
+    "description": "Error saving quote settings"
+  },
+  "quotesPortalAgreementTitle": {
+    "message": "Customer acceptance",
+    "description": "Quotes portal agreement section title"
+  },
+  "quotesPortalAgreementHelp": {
+    "message": "Require customers to acknowledge terms on the public quote link before they can accept.",
+    "description": "Quotes portal agreement section help"
+  },
+  "quotesRequireAgreementLabel": {
+    "message": "Require agreement before accept",
+    "description": "Org checkbox for customer agreement on portal"
+  },
+  "quotesRequireAgreementHint": {
+    "message": "Shows a checkbox on the public quote page. Rejection does not require agreement.",
+    "description": "Hint for customer agreement checkbox"
+  },
+  "quotesRequireSignatureLabel": {
+    "message": "Require typed signature on accept",
+    "description": "Org checkbox for typed e-sign on portal"
+  },
+  "quotesRequireSignatureHint": {
+    "message": "Customer must type their full name in a signature field to accept. Stored on the quote record.",
+    "description": "Hint for typed signature policy"
+  },
+  "quotesAgreementTextLabel": {
+    "message": "Agreement text",
+    "description": "Label for custom agreement text textarea"
+  },
+  "quotesAgreementTextPlaceholder": {
+    "message": "I agree to the pricing and terms shown in this quote.",
+    "description": "Placeholder for agreement text when empty uses this default"
+  },
+  "quotesBrandingTitle": {
+    "message": "PDF & email branding",
+    "description": "Quotes branding settings section title"
+  },
+  "quotesBrandingHelp": {
+    "message": "Applied to generated quote PDFs and customer quote emails. Uses your organization logo from Organization settings (PNG/JPEG/WebP). Leave brand color empty to use your organization primary color.",
+    "description": "Quotes branding section help"
+  },
+  "quotesDocumentTitleLabel": {
+    "message": "Document title",
+    "description": "PDF header title label"
+  },
+  "quotesDocumentTitlePlaceholder": {
+    "message": "Quote",
+    "description": "Default document title placeholder"
+  },
+  "quotesBrandColorLabel": {
+    "message": "Brand color",
+    "description": "Hex brand color for PDF and email accents"
+  },
+  "quotesBrandColorHint": {
+    "message": "Used for PDF accents and the view-online button in emails.",
+    "description": "Brand color field hint"
+  },
+  "quotesPdfFooterLabel": {
+    "message": "PDF footer text",
+    "description": "Custom footer on quote PDFs"
+  },
+  "quotesPdfFooterPlaceholder": {
+    "message": "Terms, payment instructions, or legal notice",
+    "description": "PDF footer placeholder"
+  },
+  "quotesEmailSignatureLabel": {
+    "message": "Email signature",
+    "description": "Signature block on quote emails"
+  },
+  "quotesEmailSignaturePlaceholder": {
+    "message": "Best regards,\nYour sales team",
+    "description": "Email signature placeholder"
+  },
   "catalogHubTitle": {
     "message": "Catalog",
     "description": "Catalog settings hub title"
@@ -8646,6 +8762,14 @@
   "coreModDetailModuleItems": {
     "message": "Items",
     "description": "Items module title"
+  },
+  "coreModDetailModuleQuotes": {
+    "message": "Quotes",
+    "description": "Quotes module title in core module settings"
+  },
+  "modFieldsGroupCoreQuote": {
+    "message": "Core Quote Fields",
+    "description": "Field group heading for quote core fields in module settings"
   },
   "coreModDetailNoteOrganizations": {
     "message": "Organizations are shared business entities (Customer, Partner, Vendor, etc.) used across applications. App participation is controlled at the application level, not here. This view is read-only for transparency.",

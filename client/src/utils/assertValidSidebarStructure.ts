@@ -9,6 +9,7 @@ const FORBIDDEN_RAW_ENTITY_MODULE_KEYS = new Set([
   'forms',
   'items',
   'organizations',
+  'quotes',
 ]);
 
 function invariant(condition: unknown, message: string): asserts condition {

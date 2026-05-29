@@ -8,7 +8,7 @@
 
 **Inventory / GL / payments / fulfillment:** Explicitly **out of scope** for Quotes MVP (conversion stubs only).
 
-**Last updated:** 2026-05-28
+**Last updated:** 2026-05-28 (progress tracker synced to codebase)
 
 ---
 
@@ -16,16 +16,16 @@
 
 | Phase | Status | Deliverable |
 |-------|--------|-------------|
-| **Q0** — Domain contract + models | ❌ Not started | `Quote`, `QuoteLine`, lifecycle + status constants, migrations scaffold |
-| **Q1** — Pricing resolution + snapshots | ❌ Not started | `quotePricingResolutionService`, line snapshot on add/update |
-| **Q2** — Totals engine | ❌ Not started | `quoteTotalsService` (server-only source of truth) |
-| **Q3** — Quote CRUD API + workspace UI | ❌ Not started | `/api/quotes`, list + record page, variant picker |
-| **Q4** — Bundles on lines | ❌ Not started | Fixed/rollup modes, parent/child lines, expand preview |
-| **Q5** — Revisions | ❌ Not started | Immutable revisions, active revision, lineage |
-| **Q6** — Approvals | ❌ Not started | `QuoteApproval` + Process Designer / approval gate integration |
-| **Q7** — Documents + sharing | ❌ Not started | PDF versioning, email/public link tokens |
-| **Q8** — Conversion contracts | ❌ Not started | `QuoteConversionLink`, traceability stubs for SO/Invoice |
-| **Q9** — Customer portal interactions | ❌ Not started | Accept/reject, partial acceptance, e-sign (later) |
+| **Q0** — Domain contract + models | ✅ Done | `Quote`, `QuoteLine`, `QuoteApproval`, lifecycle constants, platform `quotes` module + migration |
+| **Q1** — Pricing resolution + snapshots | 🟡 MVP | Line add/bundle via `catalogPriceResolver`; snapshots on `QuoteLine` |
+| **Q2** — Totals engine | 🟡 MVP | `quoteTotalsService`, recalculate API, line + global discount UI |
+| **Q3** — Quote CRUD API + workspace UI | 🟡 MVP | `/api/quotes`, list, record page, lines section, quick create defaults |
+| **Q4** — Bundles on lines | 🟡 MVP | Fixed/rollup display; add bundle API; drag reorder; optional-component picker |
+| **Q5** — Revisions | 🟡 MVP | `POST /revise`, `GET /revisions` timeline section, navigation |
+| **Q6** — Approvals | 🟡 MVP | Submit/approve/reject + `QuoteApproval`; Process Designer + `ApprovalInstance` for quotes |
+| **Q7** — Documents + sharing | ✅ MVP | Branded PDF/email + logo; public link; send by email |
+| **Q8** — Conversion contracts | 🟡 Stub | Eligibility, partial type, external ref, conversion UI (no SO/invoice) |
+| **Q9** — Customer portal interactions | ✅ MVP | Accept/reject, partial, agreement, typed signature, messages, expiry |
 
 ---
 
@@ -92,12 +92,34 @@ The Quotes module is a **reusable transactional commerce platform module** for a
 | Area | Status | Notes |
 |------|--------|-------|
 | Catalog platform | ✅ C0–C5 | `catalogPriceResolver`, bundles, variants — `docs/CATALOG_ROADMAP.md` |
-| Quotes models / API | ❌ | No `Quote` / `QuoteLine` models |
+| Quotes models / API | ✅ MVP | `Quote`, `QuoteLine`, controllers, routes, activity + tests |
+| Quotes UI (record) | 🟡 MVP | Lines section (toolbar, totals, expand), conversion, status banner, in-place line patches |
+| Platform module | ✅ | `moduleKey: quotes` (core); `migrateQuotesToCoreModule.js`, default relationships |
 | Deals “Proposal” stage | 🟡 | CRM stage label only; not transactional quotes |
-| Item `linked_invoices` | 🟡 | Placeholder until Invoices module |
-| Process approvals | 🟡 | `ApprovalInstance` supports `entityType`: people, organization, **deal** only — must extend for `quote` |
-| Module registry | ❌ | No `moduleKey: quotes` in platform seed |
-| Customer portal | 🟡 | Helpdesk portal roadmap (`HELPDESK_CASES_ROADMAP` Phase 1D) — reuse patterns later |
+| Process approvals | 🟡 MVP | `ApprovalInstance` + domain events; inbox approve/reject syncs quote status |
+| Customer portal | 🟡 MVP | Public view, partial accept, rate-limited routes, portal events in Activity tab |
+
+### UI polish completed (2026-05-28)
+
+- Single **Lines** header row with status badges, quick actions, always-visible expand
+- **Conversion** section: expand + header Convert action
+- Scroll preserved on line add/delete/update/recalculate/reorder and soft quote header refresh
+- **Line reorder** via drag handle (bundle parent moves with children on fixed bundles)
+- **Discount editing** — per-line % / fixed discount column; global discount in totals panel (`PATCH /discounts`, in-place record patch)
+- **Bundle optional picker** — on add (catalog components) + configure on parent line (`PATCH /bundles/:parentLineId/optionals`)
+- **Revision timeline** — Revisions section on quote record (`GET /quotes/:id/revisions`)
+- **Send quote email** — formal send (`Sent`) vs **draft for review** (watermarked PDF/portal, stays Draft, no accept)
+- **Process approvals** — `quote.updated` / `quote.submitted_for_approval` triggers; approval inbox; quote record shows pending gates
+- **Org quote policy** — Settings → Automation → Quotes: require approval before customer send; share link gated to match formal send
+- **Portal partial accept** — Customer selects lines; `Partially Accepted` + `customerResponse` snapshot on quote
+- **Portal hardening** — Public route rate limits; customer portal events persist to Activity (actor: Customer)
+- **Lite customer agreement** — Org policy + portal checkbox; `agreedToTerms` on `customerResponse`
+- **Typed signature** — Org `requireTypedSignature`; `signatureText` + `signatureSignedAt` on accept
+- **Portal messages** — Customer ↔ team thread on public link; syncs to quote Activity tab (`details.portalThread`)
+- **Quote expiry automation** — `validUntil` transitions Sent/Viewed → Expired (scheduler + on-read); portal/accept blocked
+- **Q8 conversion stub polish** — Eligibility (accepted, not expired), partial type, external reference, stub UX copy
+- **Q7 branding** — Org PDF footer, email signature, brand color, document title; tenant logo on PDF + email
+- Quote strings synced to all `records.json` locales (fallback English copy)
 
 **Catalog integration points (existing):**
 
@@ -370,8 +392,8 @@ Mandatory immutable audit events (platform `Event` or module audit stream):
 
 | Channel | MVP | Later |
 |---------|-----|-------|
-| Email | Send with link/PDF attachment | Templates |
-| PDF | Versioned `QuoteDocument` | Branded templates |
+| Email | Send with link/PDF attachment | Branded HTML + logo; full template designer **later** |
+| PDF | Versioned `QuoteDocument` | Branded header (logo, color, footer); multi-layout templates **later** |
 | Public link | Token + expiry + revoke | — |
 | Portal | View tracking | Accept/reject, comments, e-sign, partial accept |
 
@@ -486,11 +508,37 @@ Implement via `Role` module permissions + `fieldAccessControl` patterns used by 
 | Q0 | Status transition matrix tests |
 | Q1 | Snapshot immutability vs catalog change |
 | Q2 | Totals fixtures (bundles, discounts, tax JSON) |
-| Q3 | `smoke:quotes` API script (auth token pattern like helpdesk) |
+| Q3 | `npm run smoke:quotes` (see below) |
 | Q4 | Fixed vs rollup bundle totals |
 | Q5 | Revision immutability + single active revision |
 | Q6 | Approval cannot bypass required path |
 | Q7 | Public token expiry + revoke |
+
+### Commands (server package)
+
+```bash
+cd server
+npm run test:quotes          # unit tests (lifecycle, totals, portal, expiry, conversion, …)
+npm run smoke:quotes         # live API smoke (requires running server)
+```
+
+**Smoke env:**
+
+| Variable | Required | Purpose |
+|----------|----------|---------|
+| `QUOTES_AUTH_TOKEN` | Yes* | JWT for `/api/quotes`, `/api/settings/quotes` |
+| `QUOTES_PUBLIC_TOKEN` | No | Public portal `view` + `comments` |
+| `QUOTES_BASE_URL` | No | Default `http://localhost:5000` |
+
+\*At least one of `QUOTES_AUTH_TOKEN` or `QUOTES_PUBLIC_TOKEN` must be set.
+
+### Hardening (2026-05-28)
+
+- **Record edit lock** — `Expired`, `Rejected`, `Cancelled`, `Converted` cannot receive header/line edits (`QUOTE_RECORD_LOCKED`); use **Revise**.
+- **On-read expiry** — `GET /quotes/:id` and `PUT` refresh `validUntil` → `Expired` when due.
+- **52+ unit tests** under `server/utils/__tests__/quote*.test.js`.
+- **CI** — `.github/workflows/test.yml` runs `npm run test:quotes` on PRs.
+- **Expired conversion override** — owner/admin (or `permissions.quotes.overrideExpired`) may convert accepted quotes past `validUntil`, or `Expired` status when customer acceptance is on record; audited via `usedExpiredOverride` on conversion activity.
 
 ---
 

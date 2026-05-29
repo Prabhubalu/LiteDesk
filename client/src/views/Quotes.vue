@@ -3,7 +3,7 @@
     <ModuleList
       ref="moduleListRef"
       module-key="quotes"
-      app-key="SALES"
+      app-key="PLATFORM"
       @create="openCreateDrawer"
       @row-click="handleRowClick"
     >

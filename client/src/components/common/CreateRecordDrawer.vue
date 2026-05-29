@@ -190,7 +190,6 @@ import {
   getItemCatalogScaffoldFieldKeys,
   getItemLegacyCategoryFieldKeys
 } from '@/platform/fields/itemFieldModel';
-import { getQuoteQuickCreateFields } from '@/platform/fields/quoteFieldModel';
 import { normalizeModuleFieldsFromMetadata } from '@/platform/fields/fieldMerge';
 
 const _c = globalThis.console;
@@ -290,7 +289,7 @@ const effectiveQuickCreateMode = computed(() => {
   if (hasConfiguredQuickCreate) return true;
 
   // Fallback defaults for modules where create drawers are quick-create first by design.
-  const useQuickCreateByDefault = ['organizations', 'tasks', 'items', 'deals', 'cases'];
+  const useQuickCreateByDefault = ['organizations', 'tasks', 'items', 'deals', 'cases', 'quotes'];
   return useQuickCreateByDefault.includes(props.moduleKey?.toLowerCase());
 });
 
@@ -299,6 +298,9 @@ const effectiveQuickCreateMode = computed(() => {
 const strictQuickCreateForForm = computed(() => {
   if (!effectiveQuickCreateMode.value) return false;
   if (props.quickCreateMode) return true;
+  if (fullMode.value || isEditing.value) return false;
+  // Quotes: only Settings → Quick Create selected fields (never required-field fallback).
+  if (props.moduleKey?.toLowerCase() === 'quotes') return true;
   const qc = effectiveModuleOverrideForDrawer.value?.quickCreate
     ?? moduleOverrideFromSettings.value?.quickCreate;
   return Array.isArray(qc) && qc.length > 0;
@@ -425,12 +427,24 @@ async function fetchModuleForDrawer() {
       : currentPath.startsWith('/sales/') ? 'sales'
       // Sales CRM routes are not always nested under /sales/*
       : currentPath.startsWith('/deals') ? 'sales'
-      : currentPath.startsWith('/quotes') ? 'sales'
+      : currentPath.startsWith('/quotes') ? 'platform'
       : '';
 
+    // Platform core modules must resolve to platform appKey even off-module routes (e.g. global search).
+    const moduleAppKeyHintByKey = {
+      quotes: 'platform',
+      items: 'platform',
+      forms: 'platform',
+      tasks: 'platform',
+      organizations: 'platform',
+      events: 'platform',
+    };
+    const resolvedAppKey =
+      moduleAppKeyHintByKey[keyLower] || inferredAppKey;
+
     const candidates = modulesList.filter((m) => (m.key || '').toLowerCase().trim() === keyLower);
-    const mod = inferredAppKey
-      ? (candidates.find((m) => String(m.appKey || '').toLowerCase().trim() === inferredAppKey) || candidates[0])
+    const mod = resolvedAppKey
+      ? (candidates.find((m) => String(m.appKey || '').toLowerCase().trim() === resolvedAppKey) || candidates[0])
       : candidates[0];
     if (mod) {
       if (!mod.quickCreate) mod.quickCreate = [];
@@ -447,18 +461,6 @@ async function fetchModuleForDrawer() {
         let quickCreate = resolveQc(Array.isArray(mod.quickCreate) ? mod.quickCreate : []);
         if (!quickCreate.length) {
           quickCreate = resolveQc(getItemQuickCreateFields());
-        }
-        mod.quickCreate = quickCreate;
-        mod.quickCreateLayout = { version: 1, rows: [] };
-      }
-      if ((mod.key || '').toLowerCase() === 'quotes') {
-        const fieldKeys = new Set(
-          (mod.fields || []).map((f) => String(f?.key || '').toLowerCase()).filter(Boolean)
-        );
-        const resolveQc = (keys) => keys.filter((k) => fieldKeys.has(String(k).toLowerCase()));
-        let quickCreate = resolveQc(Array.isArray(mod.quickCreate) ? mod.quickCreate : []);
-        if (!quickCreate.length) {
-          quickCreate = resolveQc(getQuoteQuickCreateFields());
         }
         mod.quickCreate = quickCreate;
         mod.quickCreateLayout = { version: 1, rows: [] };
@@ -539,9 +541,6 @@ const effectiveModuleOverrideForDrawer = computed(() => {
 
     let quickCreate = Array.isArray(mod.quickCreate) ? [...mod.quickCreate] : [];
     quickCreate = resolveQuickCreateKeys(quickCreate);
-    if (!quickCreate.length && quickMode) {
-      quickCreate = resolveQuickCreateKeys(getQuoteQuickCreateFields());
-    }
     if (!quickMode) {
       return { ...mod, quickCreate };
     }

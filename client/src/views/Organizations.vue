@@ -541,7 +541,7 @@ onMounted(async () => {
 
 // When switching back to this tab (keep-alive), refetch list so data is current
 onActivated(() => {
-  moduleListRef.value?.refresh?.();
+  moduleListRef.value?.reactivate?.();
 });
 
 onUnmounted(() => {

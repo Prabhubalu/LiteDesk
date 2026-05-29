@@ -11,6 +11,9 @@
     <div class="flex items-center gap-3">
       <slot />
     </div>
+    <div v-if="$slots.below" class="mt-3 w-full">
+      <slot name="below" />
+    </div>
   </div>
 </template>
 

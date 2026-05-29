@@ -164,9 +164,8 @@ const refreshList = () => {
   moduleListRef.value?.refresh?.();
 };
 
-// When switching back to this tab (keep-alive), refetch so data is current
 onActivated(() => {
-  refreshList();
+  moduleListRef.value?.reactivate?.();
 });
 
 // Modal handlers

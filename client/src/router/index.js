@@ -396,7 +396,7 @@ const routes = [
       requiresAuth: true,
       requiresPermission: { module: 'quotes', action: 'view' },
       moduleKey: 'quotes',
-      appKey: 'SALES',
+      appKey: 'PLATFORM',
       routeType: 'list'
     }
   },
@@ -408,7 +408,7 @@ const routes = [
       requiresAuth: true,
       requiresPermission: { module: 'quotes', action: 'create' },
       moduleKey: 'quotes',
-      appKey: 'SALES',
+      appKey: 'PLATFORM',
       routeType: 'create'
     }
   },
@@ -420,7 +420,7 @@ const routes = [
       requiresAuth: true,
       requiresPermission: { module: 'quotes', action: 'view' },
       moduleKey: 'quotes',
-      appKey: 'SALES',
+      appKey: 'PLATFORM',
       routeType: 'detail'
     }
   },

@@ -206,49 +206,60 @@
             <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
               <template v-if="showDataRows">
                 <tr
-                  v-for="(row, rowIndex) in displayRows"
-                  :key="rowIdentifier(row, rowIndex)"
+                  v-if="useVirtualScroll && virtualPaddingTop > 0"
+                  aria-hidden="true"
+                  class="border-0 pointer-events-none"
+                >
+                  <td
+                    :colspan="tableBodyColspan"
+                    class="p-0 border-0"
+                    :style="{ height: `${virtualPaddingTop}px` }"
+                  />
+                </tr>
+                <tr
+                  v-for="item in renderedRows"
+                  :key="item.key"
                   :class="[
                     'group cursor-pointer',
-                    isRowSelected(row) ? 'bg-gray-50 dark:bg-indigo-950' : ''
+                    item.selected ? 'bg-gray-50 dark:bg-indigo-950' : ''
                   ]"
-                  @click="handleRowClick(row, $event)"
+                  @click="handleRowClick(item.row, $event)"
                 >
                   <td
                     v-if="selectable"
                     :class="[
-                      'relative box-border sticky z-20 transition-colors duration-75',
+                      'relative box-border sticky z-20',
                       selectionColumnVariant === 'numbered-hover'
                         ? 'px-1 tv-num-when-hover'
                         : 'px-7 sm:w-12 sm:px-6',
                       rowHeightClass,
-                      isRowSelected(row) ? 'bg-gray-50 dark:bg-indigo-950' : 'bg-white dark:bg-gray-900',
-                      isRowSelected(row) ? '' : 'group-hover:bg-gray-100 dark:group-hover:bg-gray-800'
+                      item.selected ? 'bg-gray-50 dark:bg-indigo-950' : 'bg-white dark:bg-gray-900',
+                      item.selected ? '' : 'group-hover:bg-gray-100 dark:group-hover:bg-gray-800'
                     ]"
                     :style="selectionColumnCellStyle"
                   >
-                    <div v-if="isRowSelected(row)" class="hidden group-has-checked:block absolute inset-y-0 left-0 w-0.5 bg-indigo-600"></div>
+                    <div v-if="item.selected" class="hidden group-has-checked:block absolute inset-y-0 left-0 w-0.5 bg-indigo-600"></div>
                     <template v-if="selectionColumnVariant === 'numbered-hover'">
                       <span
-                        class="tv-row-index pointer-events-none absolute inset-0 flex items-center justify-center text-xs font-medium tabular-nums text-gray-500 transition-opacity duration-150 dark:text-gray-400"
-                        :class="isRowSelected(row) ? 'opacity-0' : ''"
+                        class="tv-row-index pointer-events-none absolute inset-0 flex items-center justify-center text-xs font-medium tabular-nums text-gray-500 dark:text-gray-400"
+                        :class="item.selected ? 'opacity-0' : ''"
                         aria-hidden="true"
-                      >{{ rowNumberOffset + rowIndex + 1 }}</span>
+                      >{{ rowNumberOffset + item.rowIndex + 1 }}</span>
                       <div
-                        class="tv-row-checkbox absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center transition-opacity duration-150"
-                        :class="isRowSelected(row) ? 'tv-row-checkbox--visible' : 'opacity-0'"
+                        class="tv-row-checkbox absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center"
+                        :class="item.selected ? 'tv-row-checkbox--visible' : 'opacity-0'"
                       >
                         <HeadlessCheckbox
-                          :checked="isRowSelected(row)"
-                          @change.stop="toggleRowSelection(row)"
+                          :checked="item.selected"
+                          @change.stop="toggleRowSelection(item.row)"
                           @click.stop
                         />
                       </div>
                     </template>
                     <div v-else class="absolute top-1/2 left-4 -mt-2">
                       <HeadlessCheckbox
-                        :checked="isRowSelected(row)"
-                        @change.stop="toggleRowSelection(row)"
+                        :checked="item.selected"
+                        @change.stop="toggleRowSelection(item.row)"
                         @click.stop
                       />
                     </div>
@@ -260,14 +271,14 @@
                       'px-5 text-sm text-gray-700 align-middle dark:text-gray-200',
                       rowHeightClass,
                       columnIndex === 0 ? [
-                        'title-column-cell sticky z-20 transition-colors duration-75 sticky-column-border',
-                        isRowSelected(row) ? 'bg-gray-50 dark:bg-indigo-950' : 'bg-white dark:bg-gray-900',
-                        isRowSelected(row) ? '' : 'group-hover:bg-gray-100 dark:group-hover:bg-gray-800',
+                        'title-column-cell sticky z-20 sticky-column-border',
+                        item.selected ? 'bg-gray-50 dark:bg-indigo-950' : 'bg-white dark:bg-gray-900',
+                        item.selected ? '' : 'group-hover:bg-gray-100 dark:group-hover:bg-gray-800',
                         isScrolledHorizontally ? 'sticky-column-scrolled' : ''
                       ].join(' ') : [
-                        'transition-colors duration-75 whitespace-nowrap',
-                        isRowSelected(row) ? 'bg-gray-50 dark:bg-indigo-950' : 'bg-white dark:bg-gray-900',
-                        isRowSelected(row) ? '' : 'group-hover:bg-gray-100 dark:group-hover:bg-gray-800'
+                        'whitespace-nowrap',
+                        item.selected ? 'bg-gray-50 dark:bg-indigo-950' : 'bg-white dark:bg-gray-900',
+                        item.selected ? '' : 'group-hover:bg-gray-100 dark:group-hover:bg-gray-800'
                       ].join(' ')
                     ]"
                     :style="columnCellStyle(column)"
@@ -283,11 +294,11 @@
                           <slot
                             :name="`cell-${columnKey(column)}`"
                             :column="column"
-                            :row="row"
-                            :value="resolveValue(row, column)"
+                            :row="item.row"
+                            :value="resolveValue(item.row, column)"
                           >
-                            <slot name="cell" :column="column" :row="row" :value="resolveValue(row, column)">
-                              {{ resolveValue(row, column) }}
+                            <slot name="cell" :column="column" :row="item.row" :value="resolveValue(item.row, column)">
+                              {{ resolveValue(item.row, column) }}
                             </slot>
                           </slot>
                         </div>
@@ -296,7 +307,7 @@
                         class="pointer-events-none absolute inset-y-0 right-0 z-10 flex items-center gap-0.5 pl-3 pr-5 opacity-0 transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100"
                         @click.stop
                       >
-                        <slot name="actions" :row="row" />
+                        <slot name="actions" :row="item.row" />
                       </div>
                     </template>
                     <!-- Other columns: Normal rendering; first column content truncates -->
@@ -305,11 +316,11 @@
                         <slot
                           :name="`cell-${columnKey(column)}`"
                           :column="column"
-                          :row="row"
-                          :value="resolveValue(row, column)"
+                          :row="item.row"
+                          :value="resolveValue(item.row, column)"
                         >
-                          <slot name="cell" :column="column" :row="row" :value="resolveValue(row, column)">
-                            {{ resolveValue(row, column) }}
+                          <slot name="cell" :column="column" :row="item.row" :value="resolveValue(item.row, column)">
+                            {{ resolveValue(item.row, column) }}
                           </slot>
                         </slot>
                       </div>
@@ -317,11 +328,11 @@
                         <slot
                           :name="`cell-${columnKey(column)}`"
                           :column="column"
-                          :row="row"
-                          :value="resolveValue(row, column)"
+                          :row="item.row"
+                          :value="resolveValue(item.row, column)"
                         >
-                          <slot name="cell" :column="column" :row="row" :value="resolveValue(row, column)">
-                            {{ resolveValue(row, column) }}
+                          <slot name="cell" :column="column" :row="item.row" :value="resolveValue(item.row, column)">
+                            {{ resolveValue(item.row, column) }}
                           </slot>
                         </slot>
                       </div>
@@ -331,15 +342,26 @@
                     v-if="hasFlexFillColumn"
                     aria-hidden="true"
                     :class="[
-                      'border-0 p-0 align-middle transition-colors duration-75',
+                      'border-0 p-0 align-middle',
                       rowHeightClass,
-                      isRowSelected(row) ? 'bg-gray-50 dark:bg-indigo-950' : 'bg-white dark:bg-gray-900',
-                      isRowSelected(row) ? '' : 'group-hover:bg-gray-100 dark:group-hover:bg-gray-800'
+                      item.selected ? 'bg-gray-50 dark:bg-indigo-950' : 'bg-white dark:bg-gray-900',
+                      item.selected ? '' : 'group-hover:bg-gray-100 dark:group-hover:bg-gray-800'
                     ]"
                   />
                 </tr>
                 <tr
-                  v-if="loadMoreEnabled && hasMore"
+                  v-if="useVirtualScroll && virtualPaddingBottom > 0"
+                  aria-hidden="true"
+                  class="border-0 pointer-events-none"
+                >
+                  <td
+                    :colspan="tableBodyColspan"
+                    class="p-0 border-0"
+                    :style="{ height: `${virtualPaddingBottom}px` }"
+                  />
+                </tr>
+                <tr
+                  v-if="loadMoreEnabled && effectiveHasMore"
                   class="border-0"
                 >
                   <td
@@ -348,7 +370,7 @@
                   >
                     <div
                       ref="loadMoreSentinelRef"
-                      class="h-px w-full"
+                      class="h-4 w-full"
                       aria-hidden="true"
                     />
                     <div
@@ -440,14 +462,34 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import {
+  computed,
+  inject,
+  nextTick,
+  onActivated,
+  onBeforeUnmount,
+  onDeactivated,
+  onMounted,
+  ref,
+  shallowRef,
+  watch
+} from 'vue'
+import {
+  getListSession,
+  LIST_SESSION_RESTORE_KEY,
+  patchListSession
+} from '@/utils/listScrollSession'
+import { useVirtualizer } from '@tanstack/vue-virtual'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { ArrowsUpDownIcon, ChevronDownIcon, ChevronUpIcon, CheckIcon, XMarkIcon } from '@heroicons/vue/20/solid'
 import { formatRawValueForDisplay } from '@/utils/fieldDisplay'
+import { normalizeListPagination } from '@/utils/normalizeListPagination'
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue'
+
+type ListPaginationInput = Record<string, unknown>
 
 type ColumnObjectDef = {
   key?: string
@@ -489,6 +531,8 @@ const emit = defineEmits<{
   (e: 'select', selectedRows: RowData[]): void
   (e: 'bulk-action', payload: { action: string; selectedRows: RowData[] }): void
   (e: 'load-more'): void
+  (e: 'toggle-row', row: RowData): void
+  (e: 'toggle-select-all-loaded'): void
 }>()
 
 const props = withDefaults(
@@ -514,12 +558,21 @@ const props = withDefaults(
     emptyTitle?: string
     emptyMessage?: string
     loadMoreEnabled?: boolean
+    /** When set, hasMore is derived from normalized pagination (page/total vs currentPage/totalPages). */
+    pagination?: ListPaginationInput | null
+    /** Explicit override when pagination is not provided */
     hasMore?: boolean
     loadingMore?: boolean
     /** 'checkbox' = always show box; 'numbered-hover' = row index, swap to checkbox on hover (see styles) */
     selectionColumnVariant?: 'checkbox' | 'numbered-hover'
     /** 1-based row display: first row = rowNumberOffset + 1 (e.g. paged lists) */
     rowNumberOffset?: number
+    /** Controlled selection from ListView (ID sets only — avoids copying row objects). */
+    selectionMode?: 'none' | 'page' | 'all'
+    selectedRowIds?: string[]
+    excludedRowIds?: string[]
+    /** Key for persisting scroll across tab switches (keep-alive). */
+    scrollSessionKey?: string
   }>(),
   {
     columns: () => [],
@@ -540,12 +593,35 @@ const props = withDefaults(
     clearSelectionTrigger: 0,
     hasActions: false,
     loadMoreEnabled: false,
+    pagination: null,
     hasMore: false,
     loadingMore: false,
     selectionColumnVariant: 'numbered-hover',
-    rowNumberOffset: 0
+    rowNumberOffset: 0,
+    selectionMode: 'none',
+    selectedRowIds: () => [],
+    excludedRowIds: () => [],
+    scrollSessionKey: ''
   }
 )
+
+const pendingScrollRestore = ref<number | null>(null)
+const sessionRestoreTick = inject(LIST_SESSION_RESTORE_KEY, ref(0))
+let scrollSaveTimer: ReturnType<typeof setTimeout> | null = null
+
+const normalizedPagination = computed(() => {
+  if (!props.pagination) return null
+  return normalizeListPagination(props.pagination)
+})
+
+/** Supports API shapes { page, total } and { currentPage, totalPages } when pagination prop is set. */
+const effectiveHasMore = computed(() => {
+  if (!props.loadMoreEnabled) return false
+  if (normalizedPagination.value) {
+    return normalizedPagination.value.hasMore
+  }
+  return Boolean(props.hasMore)
+})
 
 const showEmptyOverlay = computed(() => {
   if (props.loading) return false
@@ -575,6 +651,10 @@ const tableRef = ref<HTMLTableElement | null>(null)
 const scrollContainerRef = ref<HTMLDivElement | null>(null)
 const loadMoreSentinelRef = ref<HTMLDivElement | null>(null)
 let loadMoreObserver: IntersectionObserver | null = null
+let loadMoreScrollHandler: (() => void) | null = null
+/** Prevents duplicate load-more while parent fetch is in flight */
+const loadMoreEmitLocked = ref(false)
+const LOAD_MORE_ROOT_MARGIN_PX = 160
 const leftEdgeColumnIndex = ref<number | null>(null)
 const rightEdgeColumnIndex = ref<number | null>(null)
 const isScrolledHorizontally = ref(false)
@@ -605,17 +685,67 @@ const displayColumns = computed(() => {
 
 const displayRows = computed(() => providedRows.value)
 
-/** Full skeleton body: awaiting columns while parent loading, or parent loading (hide stale rows). */
+/** Full skeleton body: awaiting columns while parent loading, or parent loading with no rows yet. */
 const isLoading = computed(() => {
   const awaitingColumns =
     Boolean(props.tableId) &&
     displayColumns.value.length === 0 &&
     Boolean(props.loading)
   if (awaitingColumns) return true
+  // Keep showing cached rows during background refetch (e.g. tab return / soft reload).
+  if (displayRows.value.length > 0) return false
   return Boolean(props.loading)
 })
 
 const showDataRows = computed(() => displayRows.value.length > 0 && !isLoading.value)
+
+/** Fixed row heights (px) for virtual scroll — matches py-* + single-line cell */
+const ROW_HEIGHT_PX: Record<string, number> = {
+  small: 41,
+  medium: 57,
+  large: 73,
+  huge: 89
+}
+
+const VIRTUAL_SCROLL_ROW_THRESHOLD = 30
+
+const rowHeightPx = computed(
+  () => ROW_HEIGHT_PX[props.rowHeight] ?? ROW_HEIGHT_PX.small
+)
+
+const useVirtualScroll = computed(
+  () =>
+    props.internalScroll &&
+    showDataRows.value &&
+    displayRows.value.length >= VIRTUAL_SCROLL_ROW_THRESHOLD
+)
+
+const rowVirtualizer = useVirtualizer(
+  computed(() => ({
+    count: displayRows.value.length,
+    getScrollElement: () => scrollContainerRef.value,
+    estimateSize: () => rowHeightPx.value,
+    overscan: 12
+  }))
+)
+
+const virtualItems = computed(() =>
+  useVirtualScroll.value ? rowVirtualizer.value.getVirtualItems() : []
+)
+
+const virtualPaddingTop = computed(() => {
+  const items = virtualItems.value
+  if (!useVirtualScroll.value || items.length === 0) return 0
+  return items[0].start
+})
+
+const virtualPaddingBottom = computed(() => {
+  const items = virtualItems.value
+  if (!useVirtualScroll.value || items.length === 0) return 0
+  const total = rowVirtualizer.value.getTotalSize()
+  const last = items[items.length - 1]
+  return Math.max(0, total - last.end)
+})
 
 const tableMinWidth = computed(() => {
   if (displayColumns.value.length === 0) {
@@ -924,10 +1054,11 @@ const updateEdgeColumns = () => {
 
 const handleScroll = () => {
   updateEdgeColumns()
-  // Check if scrolled horizontally
   if (scrollContainerRef.value) {
     isScrolledHorizontally.value = scrollContainerRef.value.scrollLeft > 0
   }
+  scheduleScrollSessionSave()
+  maybeEmitLoadMore()
 }
 
 const handleBeforeUnload = () => {
@@ -937,19 +1068,96 @@ const handleBeforeUnload = () => {
 onMounted(() => {
   loadStoredWidths()
   ensureColumnWidths()
-  // Flush on page refresh/close so widths persist across sessions
   window.addEventListener('beforeunload', handleBeforeUnload)
-  // Initial check for edge columns and scroll position
   setTimeout(() => {
     updateEdgeColumns()
-    // Initial check for horizontal scroll
     if (scrollContainerRef.value) {
       isScrolledHorizontally.value = scrollContainerRef.value.scrollLeft > 0
     }
+    if (useVirtualScroll.value) {
+      rowVirtualizer.value.measure()
+    }
   }, 100)
-  
-  // Update on resize
+
   window.addEventListener('resize', updateEdgeColumns)
+})
+
+watch(
+  () => displayRows.value.length,
+  () => {
+    if (useVirtualScroll.value) {
+      nextTick(() => rowVirtualizer.value.measure())
+    }
+    attemptScrollRestore()
+  }
+)
+
+function saveScrollSession() {
+  if (!props.scrollSessionKey || !props.internalScroll) return
+  const el = scrollContainerRef.value
+  if (!el) return
+  patchListSession(props.scrollSessionKey, { scrollTop: el.scrollTop })
+}
+
+function scheduleScrollSessionSave() {
+  if (!props.scrollSessionKey || !props.internalScroll) return
+  if (scrollSaveTimer) clearTimeout(scrollSaveTimer)
+  scrollSaveTimer = setTimeout(() => {
+    scrollSaveTimer = null
+    saveScrollSession()
+  }, 120)
+}
+
+function queueScrollRestoreFromSession() {
+  if (!props.scrollSessionKey) return
+  const session = getListSession(props.scrollSessionKey)
+  const top = Number(session?.scrollTop)
+  if (Number.isFinite(top) && top > 0) {
+    pendingScrollRestore.value = top
+  }
+}
+
+function attemptScrollRestore() {
+  const top = pendingScrollRestore.value
+  if (top == null || !Number.isFinite(top)) return
+  const el = scrollContainerRef.value
+  if (!el || displayRows.value.length === 0 || isLoading.value) return
+
+  nextTick(() => {
+    requestAnimationFrame(() => {
+      if (useVirtualScroll.value) {
+        rowVirtualizer.value.scrollToOffset(top, { align: 'start' })
+      }
+      if (scrollContainerRef.value) {
+        scrollContainerRef.value.scrollTop = top
+      }
+      const applied = scrollContainerRef.value?.scrollTop ?? 0
+      if (Math.abs(applied - top) > 4) {
+        pendingScrollRestore.value = top
+      } else {
+        pendingScrollRestore.value = null
+      }
+    })
+  })
+}
+
+watch(sessionRestoreTick, () => {
+  queueScrollRestoreFromSession()
+  attemptScrollRestore()
+})
+
+onDeactivated(() => {
+  saveScrollSession()
+})
+
+onActivated(() => {
+  queueScrollRestoreFromSession()
+  attemptScrollRestore()
+  nextTick(() => {
+    if (useVirtualScroll.value) {
+      rowVirtualizer.value.measure?.()
+    }
+  })
 })
 
 const sortFieldValue = computed(() => props.sortField ?? '')
@@ -1077,32 +1285,79 @@ const teardownLoadMoreObserver = () => {
     loadMoreObserver.disconnect()
     loadMoreObserver = null
   }
+  if (loadMoreScrollHandler) {
+    window.removeEventListener('scroll', loadMoreScrollHandler, true)
+    loadMoreScrollHandler = null
+  }
+}
+
+/** True when sentinel is near the viewport or the table's internal scroll root (nested page scroll). */
+const isLoadMoreSentinelNear = (): boolean => {
+  const target = loadMoreSentinelRef.value
+  if (!target) return false
+
+  const margin = LOAD_MORE_ROOT_MARGIN_PX
+  const rect = target.getBoundingClientRect()
+  const inViewport = rect.top <= window.innerHeight + margin && rect.bottom >= -margin
+
+  const root = scrollContainerRef.value
+  if (props.internalScroll && root) {
+    const rootRect = root.getBoundingClientRect()
+    const inScrollRoot =
+      rect.top <= rootRect.bottom + margin && rect.bottom >= rootRect.top - margin
+    return inViewport || inScrollRoot
+  }
+
+  return inViewport
+}
+
+const maybeEmitLoadMore = () => {
+  if (
+    !props.loadMoreEnabled ||
+    !effectiveHasMore.value ||
+    props.loadingMore ||
+    loadMoreEmitLocked.value
+  ) {
+    return
+  }
+  if (!isLoadMoreSentinelNear()) return
+
+  loadMoreEmitLocked.value = true
+  emit('load-more')
 }
 
 const setupLoadMoreObserver = () => {
   teardownLoadMoreObserver()
-  if (!props.loadMoreEnabled || !props.hasMore) return
+  if (!props.loadMoreEnabled || !effectiveHasMore.value) return
 
   const target = loadMoreSentinelRef.value
   if (!target) return
 
-  const root = enableInternalScroll.value ? scrollContainerRef.value : null
-
+  // Viewport root: page scroll (PlatformShell) and table-internal scroll both move the sentinel
+  // relative to the window; using only scrollContainerRef as root misses parent scroll.
   loadMoreObserver = new IntersectionObserver(
     (entries) => {
-      const hit = entries.some((e) => e.isIntersecting)
-      if (!hit || props.loadingMore) return
-      emit('load-more')
+      if (entries.some((e) => e.isIntersecting)) {
+        maybeEmitLoadMore()
+      }
     },
-    { root, rootMargin: '120px', threshold: 0 }
+    { root: null, rootMargin: `${LOAD_MORE_ROOT_MARGIN_PX}px`, threshold: 0 }
   )
   loadMoreObserver.observe(target)
+
+  if (!loadMoreScrollHandler) {
+    loadMoreScrollHandler = () => maybeEmitLoadMore()
+    window.addEventListener('scroll', loadMoreScrollHandler, { passive: true, capture: true })
+  }
+
+  nextTick(() => maybeEmitLoadMore())
 }
 
 watch(
   [
     () => props.loadMoreEnabled,
-    () => props.hasMore,
+    () => effectiveHasMore.value,
+    () => props.pagination,
     () => props.loadingMore,
     () => displayRows.value.length,
     () => enableInternalScroll.value,
@@ -1114,6 +1369,16 @@ watch(
     })
   },
   { flush: 'post' }
+)
+
+watch(
+  () => props.loadingMore,
+  (loading) => {
+    if (!loading) {
+      loadMoreEmitLocked.value = false
+      nextTick(() => maybeEmitLoadMore())
+    }
+  }
 )
 
 let scrollBoundsHandler: (() => void) | null = null
@@ -1231,6 +1496,8 @@ const startColumnResize = (column: ColumnDef, event: MouseEvent) => {
 }
 
 onBeforeUnmount(() => {
+  if (scrollSaveTimer) clearTimeout(scrollSaveTimer)
+  saveScrollSession()
   teardownLoadMoreObserver()
   stopColumnResize()
   flushColumnWidths()
@@ -1255,64 +1522,99 @@ const handleRowClick = (row: RowData, event: MouseEvent) => {
   emit('row-click', row, event)
 }
 
-// Selection state
-const selectedRows = ref<RowData[]>([])
+const selectedIdSet = shallowRef(new Set<string>())
+const excludedIdSet = shallowRef(new Set<string>())
 
-const isRowSelected = (row: RowData): boolean => {
-  const rowId = rowIdentifier(row, 0)
-  return selectedRows.value.some(selected => rowIdentifier(selected, 0) === rowId)
+watch(
+  () => [props.selectionMode, props.selectedRowIds, props.excludedRowIds] as const,
+  () => {
+    selectedIdSet.value = new Set((props.selectedRowIds ?? []).map(String))
+    excludedIdSet.value = new Set((props.excludedRowIds ?? []).map(String))
+  },
+  { immediate: true }
+)
+
+const isRowIdSelected = (rowId: string): boolean => {
+  if (!rowId) return false
+  if (props.selectionMode === 'all') {
+    return !excludedIdSet.value.has(rowId)
+  }
+  return selectedIdSet.value.has(rowId)
 }
+
+const hasAnySelection = computed(
+  () =>
+    props.selectionMode === 'all' ||
+    selectedIdSet.value.size > 0
+)
+
+const loadedRowCount = computed(() => displayRows.value.length)
+
+/** O(1) header checkbox — avoids scanning every row on each selection change */
+const allSelected = computed(() => {
+  const n = loadedRowCount.value
+  if (n === 0) return false
+  if (props.selectionMode === 'all') {
+    return excludedIdSet.value.size === 0
+  }
+  if (props.selectionMode === 'page') {
+    return selectedIdSet.value.size >= n
+  }
+  return false
+})
+
+const someSelected = computed(() => hasAnySelection.value && !allSelected.value)
+
+type RenderedRow = {
+  row: RowData
+  rowIndex: number
+  key: string
+  selected: boolean
+}
+
+const renderedRows = computed((): RenderedRow[] => {
+  const rows = displayRows.value
+  if (rows.length === 0) return []
+
+  const build = (row: RowData, rowIndex: number): RenderedRow => {
+    const id = rowIdentifier(row, rowIndex)
+    return {
+      row,
+      rowIndex,
+      key: id || `row-${rowIndex}`,
+      selected: isRowIdSelected(id)
+    }
+  }
+
+  if (!useVirtualScroll.value) {
+    return rows.map((row, rowIndex) => build(row, rowIndex))
+  }
+
+  const virtual = virtualItems.value
+  if (virtual.length > 0) {
+    return virtual.map((vi) => build(rows[vi.index], vi.index))
+  }
+
+  // After keep-alive, scroll root may have zero height until layout — avoid an empty tbody.
+  return rows.map((row, rowIndex) => build(row, rowIndex))
+})
 
 const toggleRowSelection = (row: RowData) => {
-  const rowId = rowIdentifier(row, 0)
-  const index = selectedRows.value.findIndex(selected => rowIdentifier(selected, 0) === rowId)
-  
-  if (index > -1) {
-    selectedRows.value.splice(index, 1)
-  } else {
-    selectedRows.value.push(row)
-  }
-  
-  emit('select', [...selectedRows.value])
+  emit('toggle-row', row)
 }
-
-const allSelected = computed(() => {
-  return displayRows.value.length > 0 && displayRows.value.every(row => isRowSelected(row))
-})
-
-const someSelected = computed(() => {
-  return selectedRows.value.length > 0 && !allSelected.value
-})
 
 const toggleSelectAll = () => {
-  if (allSelected.value) {
-    selectedRows.value = []
-  } else {
-    selectedRows.value = [...displayRows.value]
-  }
-  emit('select', [...selectedRows.value])
+  emit('toggle-select-all-loaded')
 }
 
-// Set indeterminate state on checkbox (handled by :indeterminate attribute)
-
-// Watch for external selection changes (e.g., from parent clearing selection)
-watch(() => props.data, () => {
-  // Clear selection when data changes significantly
-  if (selectedRows.value.length > 0) {
-    // Keep only rows that still exist in the new data
-    const newDataIds = new Set(displayRows.value.map(row => rowIdentifier(row, 0)))
-    selectedRows.value = selectedRows.value.filter(row => newDataIds.has(rowIdentifier(row, 0)))
-    emit('select', [...selectedRows.value])
+watch(
+  () => props.clearSelectionTrigger,
+  (newVal) => {
+    if (newVal > 0 && hasAnySelection.value) {
+      emit('select', [])
+    }
   }
-}, { deep: true })
-
-// Watch for clear selection trigger from parent
-watch(() => props.clearSelectionTrigger, (newVal) => {
-  if (newVal > 0 && selectedRows.value.length > 0) {
-    selectedRows.value = []
-    emit('select', [])
-  }
-})
+)
 </script>
 
 <style scoped>

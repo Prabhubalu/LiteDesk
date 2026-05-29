@@ -875,6 +875,26 @@
     "message": "Deal",
     "description": "Process designer module option"
   },
+  "designerModuleQuote": {
+    "message": "Quote",
+    "description": "Process designer module option for quotes"
+  },
+  "designerWatchQuoteStatus": {
+    "message": "Status",
+    "description": "Record-updated watch field for quote status"
+  },
+  "designerWatchGrandTotal": {
+    "message": "Grand total",
+    "description": "Condition/watch field for quote grand total"
+  },
+  "designerWatchGlobalDiscount": {
+    "message": "Global discount total",
+    "description": "Condition/watch field for quote global discount"
+  },
+  "designerWatchSubtotal": {
+    "message": "Subtotal",
+    "description": "Condition field for quote subtotal"
+  },
   "designerModuleUnknown": {
     "message": "—",
     "description": "Unknown module label"

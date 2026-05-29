@@ -1082,8 +1082,8 @@
         </ModulesAndFields>
       </div>
 
-      <!-- Items Tabbed Interface (always show for Items module) -->
-      <div v-else-if="isItemsModule" class="space-y-6">
+      <!-- Items / Quotes: field configuration via ModulesAndFields -->
+      <div v-else-if="isItemsModule || isQuotesModule" class="space-y-6">
         <!-- Header with Badges and Description -->
         <div>
           <div class="flex items-center gap-3 mb-2">
@@ -1128,8 +1128,8 @@
 
         <!-- ModulesAndFields with its own tabs (Module details, Field Configurations, Status & Types, Relationships, Quick Create) -->
         <ModulesAndFields 
-          :module-filter="itemsModuleFilter" 
-          :title="t('settings.coreModDetailModuleItems')"
+          :module-filter="catalogEntityModuleFilter" 
+          :title="catalogEntityModuleTitle"
           :hide-field-creation="false"
           :hide-header="true"
         >
@@ -1273,7 +1273,7 @@
         </ModulesAndFields>
       </div>
 
-      <!-- Standard Module Detail View (for non-People, non-Organizations, non-Tasks, non-Events, non-Forms, non-Items modules) -->
+      <!-- Standard Module Detail View (for non-People, non-Organizations, non-Tasks, non-Events, non-Forms, non-Items, non-Quotes modules) -->
       <div v-else class="space-y-6">
       <!-- Header -->
       <div>
@@ -1777,6 +1777,29 @@ const isItemsModule = computed(() => {
   return false;
 });
 
+const isQuotesModule = computed(() => {
+  if (moduleKey.value) {
+    const key = String(moduleKey.value).toUpperCase();
+    if (key === 'QUOTES') return true;
+  }
+  if (module.value) {
+    const key = (module.value.moduleKey || module.value.key || '').toUpperCase();
+    if (key === 'QUOTES') return true;
+  }
+  return false;
+});
+
+const catalogEntityModuleFilter = (module) => {
+  if (isItemsModule.value) return itemsModuleFilter(module);
+  if (isQuotesModule.value) return quotesModuleFilter(module);
+  return false;
+};
+
+const catalogEntityModuleTitle = computed(() => {
+  if (isItemsModule.value) return t('settings.coreModDetailModuleItems');
+  if (isQuotesModule.value) return t('settings.coreModDetailModuleQuotes');
+  return '';
+});
 
 const requiredApplications = computed(() => {
   if (!module.value || !module.value.applications) return [];
@@ -1856,10 +1879,14 @@ const itemsModuleFilter = (module) => {
   return module.key?.toLowerCase() === 'items';
 };
 
-// Ensure module query param is set for ModulesAndFields to auto-select People, Organizations, Tasks, Events, Forms, or Items
+const quotesModuleFilter = (module) => {
+  return module.key?.toLowerCase() === 'quotes';
+};
+
+// Ensure module query param is set for ModulesAndFields to auto-select core catalog modules
 watch(() => moduleKey.value, (newKey) => {
   const upperKey = newKey?.toUpperCase();
-  if ((upperKey === 'PEOPLE' || upperKey === 'ORGANIZATIONS' || upperKey === 'TASKS' || upperKey === 'EVENTS' || upperKey === 'FORMS' || upperKey === 'ITEMS') && !route.query.module) {
+  if ((upperKey === 'PEOPLE' || upperKey === 'ORGANIZATIONS' || upperKey === 'TASKS' || upperKey === 'EVENTS' || upperKey === 'FORMS' || upperKey === 'ITEMS' || upperKey === 'QUOTES') && !route.query.module) {
     // Set module query param so ModulesAndFields auto-selects the module
     router.replace({ 
       query: { 
