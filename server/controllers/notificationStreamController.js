@@ -1,4 +1,5 @@
 const notificationSSEHub = require('../services/notificationSSEHub');
+const { applySseCors } = require('../utils/sseCors');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
@@ -84,6 +85,8 @@ async function validateTokenFromQuery(req) {
  * Security: Token is validated via JWT verification.
  */
 exports.streamNotifications = async (req, res) => {
+  applySseCors(req, res);
+
   console.log('[notificationStreamController] Stream request received:', {
     appKey: req.query.appKey,
     hasToken: !!req.query.token,
@@ -132,10 +135,14 @@ exports.streamNotifications = async (req, res) => {
   });
 
   // Set SSE headers
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('X-Accel-Buffering', 'no'); // Disable nginx buffering
+
+  if (typeof res.flushHeaders === 'function') {
+    res.flushHeaders();
+  }
 
   // Send initial connection message
   res.write(`event: connected\ndata: ${JSON.stringify({ appKey, timestamp: Date.now() })}\n\n`);

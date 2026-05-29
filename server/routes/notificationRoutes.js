@@ -9,9 +9,11 @@ const {
   markAllRead
 } = require('../controllers/notificationController');
 const { streamNotifications } = require('../controllers/notificationStreamController');
+const { handleSseCorsPreflight } = require('../utils/sseCors');
 const notificationDevController = require('../controllers/notificationDevController');
 
 // SSE stream route - handles its own auth (EventSource can't send Authorization header)
+router.options('/stream', handleSseCorsPreflight);
 router.get('/stream', streamNotifications);
 
 // Auth + app context + org isolation for notification routes

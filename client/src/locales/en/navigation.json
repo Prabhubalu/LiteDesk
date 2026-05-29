@@ -111,6 +111,10 @@
     "message": "New message",
     "description": "Internal tab title prefix when a case receives a live chat message while tab is in background"
   },
+  "tabNewCase": {
+    "message": "New case",
+    "description": "Internal tab title prefix when a new helpdesk case is created while tab is in background"
+  },
   "globalSearchPlaceholder": {
     "message": "Search or run a command…",
     "description": "Global search modal input placeholder"

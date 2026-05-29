@@ -1,4 +1,8 @@
 {
+  "toastOpenRecordAria": {
+    "message": "Open related record",
+    "description": "Aria label for clickable realtime notification toast"
+  },
   "panelAria": {
     "message": "Notifications",
     "description": "Notifications drawer/sheet dialog aria-label"

@@ -4,38 +4,49 @@ const notifications = ref([]);
 
 // Global function to show notification that persists across component unmounts
 // This ensures notifications work even when called from components that are about to unmount
-let globalSuccessFn = null;
+let globalShowFn = null;
 
 export function setGlobalNotificationFn(fn) {
-  globalSuccessFn = fn;
+  globalShowFn = fn;
 }
 
-export function showGlobalNotification(message, duration = 5000) {
-  if (globalSuccessFn) {
-    console.log('📢 showGlobalNotification: Using registered function');
-    globalSuccessFn(message, duration);
-  } else {
-    // Fallback: directly add to notifications array
-    console.log('📢 showGlobalNotification: No registered function, using fallback');
-    const id = Date.now() + Math.random();
-    const notification = {
-      id,
-      message,
-      type: 'success',
-      duration
-    };
-    notifications.value.push(notification);
-    console.log('📢 showGlobalNotification: Notification added directly, total:', notifications.value.length);
-    
-    // Auto-dismiss after duration
-    if (duration > 0) {
-      setTimeout(() => {
-        const index = notifications.value.findIndex(n => n.id === id);
-        if (index > -1) {
-          notifications.value.splice(index, 1);
-        }
-      }, duration);
-    }
+/**
+ * @param {string} message
+ * @param {{ type?: 'success'|'error'|'warning'|'info', duration?: number, appKey?: string, entity?: object, notificationId?: string, onClick?: () => void }|number} [options]
+ *   Pass a number for backward-compatible duration-only calls.
+ */
+export function showGlobalNotification(message, options = {}) {
+  const normalized =
+    typeof options === 'number'
+      ? { type: 'info', duration: options }
+      : { type: 'info', duration: 5000, ...options };
+
+  if (globalShowFn) {
+    globalShowFn(message, normalized);
+    return;
+  }
+
+  const id = Date.now() + Math.random();
+  const notification = {
+    id,
+    message,
+    type: normalized.type || 'info',
+    duration: normalized.duration ?? 5000,
+    appKey: normalized.appKey,
+    entity: normalized.entity,
+    notificationId: normalized.notificationId,
+    onClick: normalized.onClick
+  };
+  notifications.value.push(notification);
+
+  const duration = notification.duration;
+  if (duration > 0) {
+    setTimeout(() => {
+      const index = notifications.value.findIndex((n) => n.id === id);
+      if (index > -1) {
+        notifications.value.splice(index, 1);
+      }
+    }, duration);
   }
 }
 
@@ -47,24 +58,35 @@ export function useNotifications() {
     }
   };
 
-  const show = (message, type = 'info', duration = 3000) => {
+  /**
+   * @param {string} message
+   * @param {'success'|'error'|'warning'|'info'|{ type?: string, duration?: number, appKey?: string, entity?: object, notificationId?: string, onClick?: () => void }} [typeOrOptions]
+   * @param {number} [duration]
+   */
+  const show = (message, typeOrOptions = 'info', duration = 3000) => {
+    const opts =
+      typeof typeOrOptions === 'object' && typeOrOptions !== null
+        ? { type: 'info', duration: 3000, ...typeOrOptions }
+        : { type: typeOrOptions, duration };
+
     const id = Date.now() + Math.random();
     const notification = {
       id,
       message,
-      type, // 'success', 'error', 'warning', 'info'
-      duration
+      type: opts.type || 'info',
+      duration: opts.duration ?? 3000,
+      appKey: opts.appKey,
+      entity: opts.entity,
+      notificationId: opts.notificationId,
+      onClick: opts.onClick
     };
 
     notifications.value.push(notification);
-    console.log('📢 Notification added:', notification, 'Total notifications:', notifications.value.length);
-    console.log('📢 Notifications array:', JSON.parse(JSON.stringify(notifications.value)));
 
-    // Auto-dismiss after duration
-    if (duration > 0) {
+    if (notification.duration > 0) {
       setTimeout(() => {
         remove(id);
-      }, duration);
+      }, notification.duration);
     }
 
     return id;

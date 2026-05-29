@@ -217,7 +217,10 @@ async function resolveCaseNotifyTargets({ entity, organizationId, eventType }) {
   const caseLabel = row.caseId || row.title || 'Case';
   const copy = caseNotificationCopy(eventType, caseLabel, entity);
 
-  if (row.caseOwnerId) {
+  // New cases: alert the whole helpdesk queue (not only the auto-assigned owner).
+  const broadcastToAllHelpdeskAgents = eventType === domainEvents.CASE_CREATED;
+
+  if (row.caseOwnerId && !broadcastToAllHelpdeskAgents) {
     return [{
       userId: row.caseOwnerId,
       title: copy.title,

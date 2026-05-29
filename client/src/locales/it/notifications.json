@@ -374,5 +374,9 @@
   "bellTooltipUnreadMany": {
     "message": "{count} notifiche non lette",
     "description": "Notification bell tooltip when multiple unread items"
+  },
+  "toastOpenRecordAria": {
+    "message": "Open related record",
+    "description": "Aria label for clickable realtime notification toast"
   }
 }

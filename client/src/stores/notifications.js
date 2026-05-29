@@ -8,7 +8,10 @@ import {
   caseIdFromHelpdeskNotification,
   helpdeskAlertKindFromNotification
 } from '@/utils/helpdeskTabAlerts';
-import { markHelpdeskTabAlertForCase } from '@/composables/useTabs';
+import {
+  markHelpdeskTabAlertForCase,
+  markHelpdeskTabAlertForNewCase
+} from '@/composables/useTabs';
 
 export const useNotificationStore = defineStore('notifications', () => {
   const items = ref([]);
@@ -552,7 +555,11 @@ export const useNotificationStore = defineStore('notifications', () => {
   const alertKind = helpdeskAlertKindFromNotification(notification);
   const caseId = caseIdFromHelpdeskNotification(notification);
   if (alertKind && caseId) {
-    markHelpdeskTabAlertForCase(caseId, alertKind);
+    if (alertKind === 'case') {
+      markHelpdeskTabAlertForNewCase(caseId, alertKind);
+    } else {
+      markHelpdeskTabAlertForCase(caseId, alertKind);
+    }
   }
 
   console.log(`[notifications] Incoming notification: ${notification.id} (${notification.title})`);

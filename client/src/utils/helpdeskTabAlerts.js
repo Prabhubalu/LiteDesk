@@ -1,14 +1,19 @@
 import { resolveTabTitle } from '@/utils/navigationLabels';
 
-export const HELPDESK_TAB_ALERT_KINDS = ['email', 'chat'];
+export const HELPDESK_TAB_ALERT_KINDS = ['email', 'chat', 'case'];
 
 /**
- * @param {'email'|'chat'} kind
+ * @param {'email'|'chat'|'case'} kind
  * @param {number} count
  * @param {(key: string) => string} t
  */
 export function formatHelpdeskTabAlertLabel(kind, count, t) {
-  const key = kind === 'chat' ? 'navigation.tabNewMessage' : 'navigation.tabNewEmail';
+  const key =
+    kind === 'chat'
+      ? 'navigation.tabNewMessage'
+      : kind === 'case'
+        ? 'navigation.tabNewCase'
+        : 'navigation.tabNewEmail';
   const label = t(key);
   return count > 1 ? `${label} (${count})` : label;
 }
@@ -29,7 +34,8 @@ export function resolveTabTitleWithHelpdeskAlerts(tab, t, te = () => false) {
 
   const prefixes = [];
   for (const seg of segments) {
-    const kind = seg.kind === 'chat' ? 'chat' : 'email';
+    const kind =
+      seg.kind === 'chat' ? 'chat' : seg.kind === 'case' ? 'case' : 'email';
     const count = Math.max(1, Number(seg.count) || 1);
     const single = formatHelpdeskTabAlertLabel(kind, 1, t);
     for (let i = 0; i < count; i += 1) {
@@ -90,12 +96,36 @@ export function createHelpdeskTabAlertController(tabsRef, activeTabIdRef) {
     delete tab.alertBaseTitle;
   }
 
+  function findHelpdeskCasesListTab() {
+    return (
+      tabsRef.value.find((tab) => {
+        const base = String(tab.path || '').split('?')[0].split('#')[0];
+        return base === '/helpdesk/cases';
+      }) || null
+    );
+  }
+
   function markTabAlertForCase(caseId, kind, options = {}) {
     const tab = findTabByCaseId(caseId);
     if (!tab) return null;
     if (tab.id === activeTabIdRef.value) return tab;
     markTabAlert(tab, kind, options);
     return tab;
+  }
+
+  /** Prefer an open case tab; otherwise highlight the Cases list tab (typical for CASE_CREATED). */
+  function markTabAlertForNewCase(caseId, kind, options = {}) {
+    const caseTab = findTabByCaseId(caseId);
+    const listTab = findHelpdeskCasesListTab();
+    const target =
+      caseTab && caseTab.id !== activeTabIdRef.value
+        ? caseTab
+        : listTab && listTab.id !== activeTabIdRef.value
+          ? listTab
+          : null;
+    if (!target) return null;
+    markTabAlert(target, kind, options);
+    return target;
   }
 
   function clearTabAlertById(tabId) {
@@ -113,6 +143,7 @@ export function createHelpdeskTabAlertController(tabsRef, activeTabIdRef) {
     markTabAlert,
     clearTabAlert,
     markTabAlertForCase,
+    markTabAlertForNewCase,
     clearTabAlertById,
     tabShowsAlertHighlight
   };
@@ -125,6 +156,7 @@ export function helpdeskAlertKindFromNotification(notification) {
   const eventType = String(notification?.eventType || '');
   if (eventType === 'CASE_EMAIL_RECEIVED') return 'email';
   if (eventType === 'CASE_CHAT_MESSAGE_RECEIVED') return 'chat';
+  if (eventType === 'CASE_CREATED') return 'case';
   return null;
 }
 
