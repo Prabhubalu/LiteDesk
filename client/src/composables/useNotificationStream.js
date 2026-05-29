@@ -57,13 +57,31 @@ export function connectNotificationStream(appKey, onNotification, options = {}) 
   const authStore = options.authStore || useAuthStore();
   const isOnline = options.isOnline ?? (typeof window !== 'undefined' ? navigator.onLine : true);
   const onConnected = options.onConnected;
+  const onHeartbeat = options.onHeartbeat;
+  const onDisconnected = options.onDisconnected;
 
   let eventSource = null;
   let reconnectTimer = null;
   let attemptCount = 0;
   let disposed = false;
 
+  function closeTransport() {
+    if (reconnectTimer) {
+      clearTimeout(reconnectTimer);
+      reconnectTimer = null;
+      reconnectTimers.delete(appKey);
+    }
+
+    if (eventSource) {
+      eventSource.close();
+      eventSource = null;
+      connections.delete(appKey);
+    }
+  }
+
   function connect() {
+    if (disposed) return;
+
     // Don't connect if offline
     if (!isOnline) {
       console.log(`[connectNotificationStream] Skipping connection for ${appKey} (offline)`);
@@ -76,8 +94,8 @@ export function connectNotificationStream(appKey, onNotification, options = {}) 
       return;
     }
 
-    // Close existing connection if any
-    disconnect();
+    // Close existing socket only — do not mark disposed (reconnect depends on it)
+    closeTransport();
 
     const token = authStore.user?.token;
     if (!token) {
@@ -108,6 +126,7 @@ export function connectNotificationStream(appKey, onNotification, options = {}) 
           
           // Handle ping/heartbeat
           if (data.timestamp) {
+            onHeartbeat?.();
             return;
           }
 
@@ -122,20 +141,19 @@ export function connectNotificationStream(appKey, onNotification, options = {}) 
 
       eventSource.addEventListener('connected', (event) => {
         console.log(`[connectNotificationStream] Stream connected:`, event.data);
+        onHeartbeat?.();
       });
 
       eventSource.addEventListener('ping', () => {
-        // Heartbeat received
+        onHeartbeat?.();
       });
 
       eventSource.onerror = (err) => {
         if (disposed) return;
         console.error(`[connectNotificationStream] Stream error for ${appKey}:`, err);
+        onDisconnected?.();
 
-        if (eventSource) {
-          eventSource.close();
-          eventSource = null;
-        }
+        closeTransport();
 
         attemptCount = reconnectAttempts.get(appKey) || 0;
         const delay = getReconnectDelay(Math.min(attemptCount, 8));
@@ -155,17 +173,7 @@ export function connectNotificationStream(appKey, onNotification, options = {}) 
 
   function disconnect() {
     disposed = true;
-    if (reconnectTimer) {
-      clearTimeout(reconnectTimer);
-      reconnectTimer = null;
-      reconnectTimers.delete(appKey);
-    }
-
-    if (eventSource) {
-      eventSource.close();
-      eventSource = null;
-      connections.delete(appKey);
-    }
+    closeTransport();
   }
 
   connect();

@@ -300,9 +300,9 @@ export const useNotificationStore = defineStore('notifications', () => {
     }
   }
 
-  const buildQuery = (params = {}) => {
+  const buildQuery = (params = {}, appKey = currentAppKey()) => {
     const search = new URLSearchParams();
-    search.set('appKey', currentAppKey());
+    search.set('appKey', appKey);
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
         search.set(key, String(value));
@@ -310,6 +310,76 @@ export const useNotificationStore = defineStore('notifications', () => {
     });
     return `/api/notifications?${search.toString()}`;
   };
+
+  function getAppKeysToSync() {
+    const keys = new Set([currentAppKey()]);
+    const allowed = (authStore.user?.allowedApps || []).map((a) => String(a).toUpperCase());
+    if (allowed.includes('HELPDESK')) keys.add('HELPDESK');
+    return [...keys];
+  }
+
+  function mapApiItemToIncomingPayload(item, appKey) {
+    return {
+      id: item.id,
+      appKey: item.appKey || appKey,
+      eventType: item.eventType,
+      title: item.title,
+      body: item.body,
+      priority: item.priority,
+      entity: item.entity,
+      createdAt: item.createdAt
+    };
+  }
+
+  /**
+   * Poll the API for notifications we have not seen yet (toast + badge when SSE is down).
+   */
+  async function syncIncomingNotificationsFromServer(options = {}) {
+    if (!authStore.isAuthenticated) return { ingested: 0 };
+
+    const appKeys = options.appKeys || getAppKeysToSync();
+    if (!Object.keys(snoozesByApp.value || {}).length) loadSnoozesFromStorage();
+    if (!Object.keys(dismissedByApp.value || {}).length) loadDismissedFromStorage();
+
+    let ingested = 0;
+    const knownIds = new Set(items.value.map((n) => String(n.id)));
+
+    for (const appKey of appKeys) {
+      try {
+        const res = await fetch(
+          buildQuery({ unreadOnly: true, limit: 15 }, appKey),
+          { headers: buildHeaders() }
+        );
+        if (!res.ok) continue;
+        const data = await res.json();
+        const list = data.items || [];
+        const sinceMs = typeof options.sinceMs === 'number' ? options.sinceMs : Date.now() - 3000;
+
+        for (const item of list) {
+          const id = String(item.id);
+          if (!id || knownIds.has(id) || isDismissed(id, appKey)) continue;
+          const createdMs = item.createdAt ? new Date(item.createdAt).getTime() : 0;
+          if (createdMs && createdMs < sinceMs) continue;
+          knownIds.add(id);
+          handleIncomingNotification(mapApiItemToIncomingPayload(item, appKey));
+          ingested += 1;
+        }
+
+        if (data.unreadCount !== undefined && data.unreadCount !== null) {
+          const snoozedUnread = Object.values(getSnoozeMap(appKey)).filter((e) => e?.wasUnread).length;
+          const serverCount = Math.max(0, Number(data.unreadCount) - snoozedUnread);
+          if (appKey === currentAppKey()) {
+            unreadCount.value = serverCount;
+            writeCachedUnreadPreview(appKey, serverCount);
+          }
+        }
+      } catch (err) {
+        console.error('[notifications] syncIncomingNotificationsFromServer error:', err);
+      }
+    }
+
+    return { ingested };
+  }
 
   const buildHeaders = (extra = {}) => {
     const headers = {
@@ -574,6 +644,7 @@ export const useNotificationStore = defineStore('notifications', () => {
     error,
     nextCursor,
     fetchUnreadPreview,
+    syncIncomingNotificationsFromServer,
     primeUnreadPreviewFromCache,
     fetchNotifications,
     markRead,
