@@ -374,5 +374,9 @@
   "bellTooltipUnreadMany": {
     "message": "{count} अपठित सूचनाएँ",
     "description": "Notification bell tooltip when multiple unread items"
+  },
+  "toastOpenRecordAria": {
+    "message": "Open related record",
+    "description": "Aria label for clickable realtime notification toast"
   }
 }

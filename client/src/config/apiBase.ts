@@ -1,3 +1,19 @@
+const PRODUCTION_API_ORIGIN = 'https://api.arivusystems.com'
+
+/**
+ * When the SPA is on app.arivusystems.com (or a tenant *.app.arivusystems.com host) but
+ * VITE_API_ORIGIN is unset, use the public API host directly. Vercel rewrites work for
+ * fetch() but break long-lived EventSource (notification SSE).
+ */
+function inferProductionApiOrigin(): string {
+  if (!import.meta.env.PROD || typeof window === 'undefined') return ''
+  const host = window.location.hostname.toLowerCase()
+  if (host === 'app.arivusystems.com' || host.endsWith('.app.arivusystems.com')) {
+    return PRODUCTION_API_ORIGIN
+  }
+  return ''
+}
+
 /**
  * Public API / backend origin for production (optional).
  * - Empty: same-origin requests (Vercel rewrites to Railway, or local Vite proxy).
@@ -6,6 +22,9 @@
 export function getApiOrigin(): string {
   const explicitOrigin = (import.meta.env.VITE_API_ORIGIN as string | undefined)?.replace(/\/$/, '')
   if (explicitOrigin) return explicitOrigin
+
+  const inferred = inferProductionApiOrigin()
+  if (inferred) return inferred
 
   // Backward compatibility: older envs use VITE_API_URL and may include trailing /api.
   const legacyUrl = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '')

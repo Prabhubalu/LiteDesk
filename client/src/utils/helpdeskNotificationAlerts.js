@@ -13,6 +13,7 @@ const HELPDESK_ALERT_EVENTS = new Set([
 ]);
 
 const HIGH_PRIORITY_EVENTS = new Set([
+  'CASE_CREATED',
   'CASE_EMAIL_RECEIVED',
   'CASE_CHAT_MESSAGE_RECEIVED',
   'CASE_ESCALATED',
@@ -31,8 +32,14 @@ export function alertForHelpdeskNotification(notification, { appKey, playSound =
   const body = String(notification.body || '').trim();
   const message = body ? `${title} — ${body}` : title;
 
-  const type = HIGH_PRIORITY_EVENTS.has(eventType) ? 'warning' : 'info';
-  showGlobalNotification(message, type === 'warning' ? 6000 : 4500);
+  const isHighPriority = HIGH_PRIORITY_EVENTS.has(eventType);
+  showGlobalNotification(message, {
+    type: isHighPriority ? 'warning' : 'info',
+    duration: isHighPriority ? 6000 : 4500,
+    appKey: 'HELPDESK',
+    entity: notification.entity,
+    notificationId: notification.id
+  });
 
   if (playSound) {
     playHelpdeskNotificationSound();

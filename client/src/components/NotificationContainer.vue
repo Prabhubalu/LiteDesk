@@ -10,11 +10,20 @@
       tag="div"
       class="flex flex-col gap-3"
     >
-      <div
+      <component
+        :is="isToastClickable(notification) ? 'button' : 'div'"
         v-for="notification in notifications"
         :key="notification.id"
-        class="pointer-events-auto rounded-lg shadow-lg border p-4 flex items-start gap-3 animate-slide-in"
-        :class="getNotificationClasses(notification.type)"
+        type="button"
+        class="pointer-events-auto rounded-lg shadow-lg border p-4 flex items-start gap-3 animate-slide-in text-left w-full"
+        :class="[
+          getNotificationClasses(notification.type),
+          isToastClickable(notification)
+            ? 'cursor-pointer hover:shadow-xl transition-shadow focus:outline-none focus:ring-2 focus:ring-primary-500/30'
+            : ''
+        ]"
+        :aria-label="isToastClickable(notification) ? t('notifications.toastOpenRecordAria') : undefined"
+        @click="isToastClickable(notification) ? handleToastClick(notification) : undefined"
       >
         <!-- Icon -->
         <div class="flex-shrink-0 mt-0.5">
@@ -30,14 +39,15 @@
 
         <!-- Close Button -->
         <button
-          @click="remove(notification.id)"
+          type="button"
+          @click.stop="remove(notification.id)"
           class="flex-shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
-      </div>
+      </component>
     </TransitionGroup>
     </div>
   </Teleport>
@@ -47,22 +57,49 @@
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
-import { watch, onMounted } from 'vue';
+import { onMounted } from 'vue';
 import { useNotifications, setGlobalNotificationFn } from '@/composables/useNotifications';
+import { useNotificationStore } from '@/stores/notifications';
+import { useTabs } from '@/composables/useTabs';
+import {
+  buildNotificationOpenTabOptions,
+  canNavigateFromNotification,
+  getNotificationPath
+} from '@/utils/navigateFromNotification';
 import { CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/vue/24/solid';
 
-const { notifications, remove, success } = useNotifications();
+const { notifications, remove, show } = useNotifications();
+const notificationStore = useNotificationStore();
+const { openTab } = useTabs();
 
-// Debug: Watch notifications changes
-watch(notifications, (newVal) => {
-  console.log('📢 NotificationContainer: Notifications changed:', newVal.length, newVal);
-}, { deep: true });
+function isToastClickable(notification) {
+  if (!notification) return false;
+  if (typeof notification.onClick === 'function') return true;
+  return canNavigateFromNotification(notification.appKey, notification.entity);
+}
 
-// Debug on mount and register global function
+async function handleToastClick(notification) {
+  if (typeof notification.onClick === 'function') {
+    notification.onClick();
+    remove(notification.id);
+    return;
+  }
+
+  const path = getNotificationPath(notification.appKey, notification.entity);
+  if (!path) return;
+
+  if (notification.notificationId) {
+    await notificationStore.markRead(notification.notificationId);
+  }
+
+  openTab(path, buildNotificationOpenTabOptions(notification.entity));
+  remove(notification.id);
+}
+
 onMounted(() => {
-  console.log('📢 NotificationContainer mounted, notifications:', notifications.value);
-  // Register the success function globally so it can be called from unmounting components
-  setGlobalNotificationFn(success);
+  setGlobalNotificationFn((message, options = {}) => {
+    show(message, options);
+  });
 });
 
 const getNotificationClasses = (type) => {

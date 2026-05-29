@@ -80,7 +80,13 @@ const NOTIFICATION_ROUTE_MAP = {
     CORRECTIVE_ACTION: () => ({
       name: 'portal-actions'
     }),
-  }
+  },
+
+  HELPDESK: {
+    CASE: (entityId) => ({
+      path: `/helpdesk/cases/${entityId}`
+    }),
+  },
 };
 
 /**

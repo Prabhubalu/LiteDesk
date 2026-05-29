@@ -276,12 +276,13 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
-
 const { t } = useI18n();
 import { useTabs } from '@/composables/useTabs';
 import { useNotificationStore } from '@/stores/notifications';
-import { getNotificationRoute, validateRoute } from '@/utils/notificationRouteMap';
+import {
+  buildNotificationOpenTabOptions,
+  getNotificationPath
+} from '@/utils/navigateFromNotification';
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue';
 import {
   BellAlertIcon,
@@ -321,7 +322,6 @@ const props = defineProps({
 
 const emit = defineEmits(['navigated', 'snooze']);
 
-const router = useRouter();
 const { openTab } = useTabs();
 const store = useNotificationStore();
 const unavailable = ref(false);
@@ -653,13 +653,10 @@ function onSelectSnooze(opt, closePopover) {
 }
 
 async function handleClick() {
-  // Optimistically mark as read
   await store.markRead(props.item.id);
 
-  // Get route from centralized map
-  const route = getNotificationRoute(props.appKey, props.item.entity);
-  
-  if (!route) {
+  const path = getNotificationPath(props.appKey, props.item.entity);
+  if (!path) {
     console.warn('[NotificationItem] No route available for:', {
       appKey: props.appKey,
       entity: props.item.entity
@@ -668,18 +665,8 @@ async function handleClick() {
     return;
   }
 
-  // Validate route exists before navigating
-  if (!validateRoute(router, route)) {
-    console.warn('[NotificationItem] Route validation failed:', route);
-    unavailable.value = true;
-    return;
-  }
-
   try {
-    const resolved = router.resolve(route);
-    const path = resolved.path;
-    const recordName = props.item.entity?.title || props.item.entity?.name;
-    openTab(path, recordName ? { title: recordName, params: { name: recordName }, insertAdjacent: true } : { insertAdjacent: true });
+    openTab(path, buildNotificationOpenTabOptions(props.item.entity));
     emit('navigated');
   } catch (err) {
     console.error('[NotificationItem] Navigation error:', err);

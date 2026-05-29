@@ -30,9 +30,19 @@ function tabAlertIconColorClass(tab) {
       ? 'text-gray-900 dark:text-white'
       : 'text-gray-600 dark:text-gray-400';
   }
-  return tab.alertKind === 'chat'
-    ? 'text-emerald-600 dark:text-emerald-400'
-    : 'text-amber-600 dark:text-amber-400';
+  if (tab.alertKind === 'chat') {
+    return 'text-emerald-600 dark:text-emerald-400';
+  }
+  if (tab.alertKind === 'case') {
+    return 'text-blue-600 dark:text-blue-400';
+  }
+  return 'text-amber-600 dark:text-amber-400';
+}
+
+function tabAlertRingClass(tab) {
+  if (tab.alertKind === 'chat') return 'tab-helpdesk-alert-icon__ring--chat';
+  if (tab.alertKind === 'case') return 'tab-helpdesk-alert-icon__ring--case';
+  return 'tab-helpdesk-alert-icon__ring--email';
 }
 
 const DEFAULT_AVATAR =
@@ -401,7 +411,7 @@ onUnmounted(() => {
           <span
             v-if="tabHasHelpdeskAlert(tab)"
             class="tab-helpdesk-alert-icon__ring pointer-events-none absolute inset-0 rounded-full"
-            :class="tab.alertKind === 'chat' ? 'tab-helpdesk-alert-icon__ring--chat' : 'tab-helpdesk-alert-icon__ring--email'"
+            :class="tabAlertRingClass(tab)"
             aria-hidden="true"
           />
           <component
@@ -599,7 +609,13 @@ onUnmounted(() => {
   animation: tab-helpdesk-icon-ring 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
-.tab-helpdesk-alert-icon:has(.tab-helpdesk-alert-icon__ring--chat) .tab-helpdesk-alert-icon__glyph {
+.tab-helpdesk-alert-icon__ring--case {
+  background-color: rgb(59 130 246 / 0.4);
+  animation: tab-helpdesk-icon-ring 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.tab-helpdesk-alert-icon:has(.tab-helpdesk-alert-icon__ring--chat) .tab-helpdesk-alert-icon__glyph,
+.tab-helpdesk-alert-icon:has(.tab-helpdesk-alert-icon__ring--case) .tab-helpdesk-alert-icon__glyph {
   animation: tab-helpdesk-icon-pulse 1.1s ease-in-out infinite;
 }
 

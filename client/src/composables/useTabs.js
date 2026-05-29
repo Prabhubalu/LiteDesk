@@ -84,6 +84,11 @@ export function markHelpdeskTabAlertForCase(caseId, kind) {
   return helpdeskTabAlertController.markTabAlertForCase(caseId, kind, i18nTabHelpers());
 }
 
+/** Mark case or Cases list tab when a new case is created (background tabs only). */
+export function markHelpdeskTabAlertForNewCase(caseId, kind) {
+  return helpdeskTabAlertController.markTabAlertForNewCase(caseId, kind, i18nTabHelpers());
+}
+
 export function tabShowsHelpdeskAlert(tab, activeId = activeTabId.value) {
   return helpdeskTabAlertController.tabShowsAlertHighlight(tab, activeId);
 }
@@ -1983,6 +1988,7 @@ export function useTabs() {
     findTabById,
     findTabByPath,
     markHelpdeskTabAlertForCase,
+    markHelpdeskTabAlertForNewCase,
     tabShowsHelpdeskAlert,
     clearHelpdeskTabAlert: helpdeskTabAlertController.clearTabAlertById
   };
