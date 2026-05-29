@@ -438,5 +438,21 @@
   "tabNewCase": {
     "message": "New case",
     "description": "Internal tab title prefix when a new helpdesk case is created while tab is in background"
+  },
+  "tabNewMessages": {
+    "message": "{count} new messages",
+    "description": "Internal tab title prefix when multiple live chat messages arrive in background"
+  },
+  "tabNewEmails": {
+    "message": "{count} new emails",
+    "description": "Internal tab title prefix when multiple inbound emails arrive in background"
+  },
+  "tabNewCases": {
+    "message": "{count} new cases",
+    "description": "Internal tab title prefix when multiple new cases arrive in background"
+  },
+  "helpdesk": {
+    "message": "Helpdesk",
+    "description": "Fallback browser tab label on helpdesk routes"
   }
 }

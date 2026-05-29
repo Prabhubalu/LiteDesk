@@ -1021,7 +1021,7 @@ const pushStatusText = computed(() => {
 
 async function requestPushPermission() {
   if (!('Notification' in window) || !('serviceWorker' in navigator)) {
-    alert(t('common.notificationPreferencesToastPushNotificationsAreNotSupported'));
+    toast.error(t('common.notificationPreferencesToastPushNotificationsAreNotSupported'));
     return;
   }
 
@@ -1088,13 +1088,17 @@ async function testPushNotification() {
   // Double-check permission status (it might have changed)
   const currentPermission = Notification.permission;
   if (currentPermission !== 'granted') {
-    alert(`Push notification permission is "${currentPermission}". Please enable push notifications first by clicking t('common.notificationPreferencesToastEnablePushNotifications').`);
+    toast.warning(
+      t('common.notificationPreferencesToastPushPermissionRequired', {
+        permission: currentPermission
+      })
+    );
     pushPermissionStatus.value = currentPermission; // Update status
     return;
   }
   
   if (!('Notification' in window)) {
-    alert(t('common.notificationPreferencesToastNotificationsAreNotSupportedIn'));
+    toast.error(t('common.notificationPreferencesToastNotificationsAreNotSupportedIn'));
     return;
   }
   
@@ -1196,7 +1200,6 @@ async function testPushNotification() {
     toast.success(t('common.notificationPreferencesToastTestNotificationTriggeredIfYou'));
   } catch (error) {
     console.error('[NotificationPreferences] Failed to show test notification:', error);
-    alert(`Failed to show test notification: ${error.message || t('common.notificationPreferencesToastUnknownError')}. Please check the console for details.`);
     toast.error(t('common.notificationPreferencesToastTestNotificationFailedSeeConsole'));
   }
 }

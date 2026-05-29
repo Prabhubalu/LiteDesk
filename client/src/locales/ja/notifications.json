@@ -378,5 +378,53 @@
   "toastOpenRecordAria": {
     "message": "Open related record",
     "description": "Aria label for clickable realtime notification toast"
+  },
+  "toastDismissAria": {
+    "message": "Dismiss notification",
+    "description": "Aria label for toast close button"
+  },
+  "toastHelpdeskDefault": {
+    "message": "Helpdesk",
+    "description": "Fallback category label for helpdesk toast"
+  },
+  "toastVisitor": {
+    "message": "Visitor",
+    "description": "Fallback name when chat author is unknown"
+  },
+  "toastUnknownSender": {
+    "message": "Unknown sender",
+    "description": "Fallback when email from address is missing"
+  },
+  "toastCategoryChat": {
+    "message": "Live chat message",
+    "description": "Toast category for inbound chat"
+  },
+  "toastCategoryEmail": {
+    "message": "Customer email",
+    "description": "Toast category for inbound email"
+  },
+  "toastCategoryNewCase": {
+    "message": "New case",
+    "description": "Toast category for case created"
+  },
+  "toastCategoryAssigned": {
+    "message": "Case assigned",
+    "description": "Toast category for case assignment"
+  },
+  "toastCategoryEscalated": {
+    "message": "Case escalated",
+    "description": "Toast category for case escalation"
+  },
+  "toastCategorySlaWarning": {
+    "message": "SLA warning",
+    "description": "Toast category for SLA warning"
+  },
+  "toastCategorySlaBreached": {
+    "message": "SLA breached",
+    "description": "Toast category for SLA breach"
+  },
+  "toastCategoryReopened": {
+    "message": "Case reopened",
+    "description": "Toast category for case reopened"
   }
 }

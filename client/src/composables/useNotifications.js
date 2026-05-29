@@ -1,19 +1,69 @@
 import { ref } from 'vue';
+import { buildToastPresentation } from '@/utils/toastPresentation';
+import { i18n } from '@/i18n';
 
 const notifications = ref([]);
 
-// Global function to show notification that persists across component unmounts
-// This ensures notifications work even when called from components that are about to unmount
+const t = i18n.global.t.bind(i18n.global);
+
 let globalShowFn = null;
 
 export function setGlobalNotificationFn(fn) {
   globalShowFn = fn;
 }
 
+function scheduleRemoval(id, duration) {
+  if (duration <= 0) return;
+  setTimeout(() => {
+    removeToast(id);
+  }, duration);
+}
+
+export function removeToast(id) {
+  const index = notifications.value.findIndex((n) => n.id === id);
+  if (index > -1) {
+    notifications.value.splice(index, 1);
+  }
+}
+
+/**
+ * @param {import('@/utils/toastPresentation').ToastPresentation} presentation
+ */
+export function pushToast(presentation) {
+  const toast = {
+    ...presentation,
+    id: presentation.id || `${Date.now()}-${Math.random()}`
+  };
+  notifications.value.push(toast);
+  scheduleRemoval(toast.id, toast.duration ?? 5000);
+  return toast.id;
+}
+
+function resolvePresentation(messageOrPresentation, typeOrOptions, duration) {
+  if (
+    messageOrPresentation &&
+    typeof messageOrPresentation === 'object' &&
+    messageOrPresentation.primary != null &&
+    messageOrPresentation.variant
+  ) {
+    return messageOrPresentation;
+  }
+
+  const opts =
+    typeof typeOrOptions === 'object' && typeOrOptions !== null
+      ? { type: 'info', duration: 3000, ...typeOrOptions }
+      : { type: typeOrOptions, duration };
+
+  if (typeof duration === 'number' && !('duration' in (typeOrOptions || {}))) {
+    opts.duration = duration;
+  }
+
+  return buildToastPresentation(messageOrPresentation, opts, t);
+}
+
 /**
  * @param {string} message
- * @param {{ type?: 'success'|'error'|'warning'|'info', duration?: number, appKey?: string, entity?: object, notificationId?: string, onClick?: () => void }|number} [options]
- *   Pass a number for backward-compatible duration-only calls.
+ * @param {{ type?: string, duration?: number, appKey?: string, entity?: object, notificationId?: string, onClick?: () => void, eventType?: string, title?: string, body?: string, category?: string, secondary?: string, meta?: string }|number} [options]
  */
 export function showGlobalNotification(message, options = {}) {
   const normalized =
@@ -21,94 +71,55 @@ export function showGlobalNotification(message, options = {}) {
       ? { type: 'info', duration: options }
       : { type: 'info', duration: 5000, ...options };
 
+  const presentation = resolvePresentation(message, normalized);
+
   if (globalShowFn) {
-    globalShowFn(message, normalized);
-    return;
+    globalShowFn(presentation);
+    return presentation.id;
   }
 
-  const id = Date.now() + Math.random();
-  const notification = {
-    id,
-    message,
-    type: normalized.type || 'info',
-    duration: normalized.duration ?? 5000,
-    appKey: normalized.appKey,
-    entity: normalized.entity,
-    notificationId: normalized.notificationId,
-    onClick: normalized.onClick
-  };
-  notifications.value.push(notification);
-
-  const duration = notification.duration;
-  if (duration > 0) {
-    setTimeout(() => {
-      const index = notifications.value.findIndex((n) => n.id === id);
-      if (index > -1) {
-        notifications.value.splice(index, 1);
-      }
-    }, duration);
-  }
+  return pushToast(presentation);
 }
 
 export function useNotifications() {
-  const remove = (id) => {
-    const index = notifications.value.findIndex(n => n.id === id);
-    if (index > -1) {
-      notifications.value.splice(index, 1);
-    }
-  };
+  const remove = removeToast;
 
   /**
-   * @param {string} message
-   * @param {'success'|'error'|'warning'|'info'|{ type?: string, duration?: number, appKey?: string, entity?: object, notificationId?: string, onClick?: () => void }} [typeOrOptions]
+   * @param {string|import('@/utils/toastPresentation').ToastPresentation} messageOrPresentation
+   * @param {'success'|'error'|'warning'|'info'|object} [typeOrOptions]
    * @param {number} [duration]
    */
-  const show = (message, typeOrOptions = 'info', duration = 3000) => {
-    const opts =
-      typeof typeOrOptions === 'object' && typeOrOptions !== null
-        ? { type: 'info', duration: 3000, ...typeOrOptions }
-        : { type: typeOrOptions, duration };
+  const show = (messageOrPresentation, typeOrOptions = 'info', duration = 3000) => {
+    const presentation = resolvePresentation(messageOrPresentation, typeOrOptions, duration);
+    return pushToast(presentation);
+  };
 
-    const id = Date.now() + Math.random();
-    const notification = {
-      id,
-      message,
-      type: opts.type || 'info',
-      duration: opts.duration ?? 3000,
-      appKey: opts.appKey,
-      entity: opts.entity,
-      notificationId: opts.notificationId,
-      onClick: opts.onClick
-    };
-
-    notifications.value.push(notification);
-
-    if (notification.duration > 0) {
-      setTimeout(() => {
-        remove(id);
-      }, notification.duration);
+  const success = (message, durationOrOptions = 3000) => {
+    if (typeof durationOrOptions === 'object') {
+      return show(message, { type: 'success', ...durationOrOptions });
     }
-
-    return id;
+    return show(message, 'success', durationOrOptions);
   };
 
-  const success = (message, duration = 3000) => {
-    console.log('📢 useNotifications.success called with:', message);
-    const result = show(message, 'success', duration);
-    console.log('📢 useNotifications.success returned:', result);
-    return result;
+  const error = (message, durationOrOptions = 4000) => {
+    if (typeof durationOrOptions === 'object') {
+      return show(message, { type: 'error', ...durationOrOptions });
+    }
+    return show(message, 'error', durationOrOptions);
   };
 
-  const error = (message, duration = 4000) => {
-    return show(message, 'error', duration);
+  const warning = (message, durationOrOptions = 3500) => {
+    if (typeof durationOrOptions === 'object') {
+      return show(message, { type: 'warning', ...durationOrOptions });
+    }
+    return show(message, 'warning', durationOrOptions);
   };
 
-  const warning = (message, duration = 3500) => {
-    return show(message, 'warning', duration);
-  };
-
-  const info = (message, duration = 3000) => {
-    return show(message, 'info', duration);
+  const info = (message, durationOrOptions = 3000) => {
+    if (typeof durationOrOptions === 'object') {
+      return show(message, { type: 'info', ...durationOrOptions });
+    }
+    return show(message, 'info', durationOrOptions);
   };
 
   return {
@@ -121,4 +132,3 @@ export function useNotifications() {
     info
   };
 }
-

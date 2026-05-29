@@ -1990,7 +1990,8 @@ export function useTabs() {
     markHelpdeskTabAlertForCase,
     markHelpdeskTabAlertForNewCase,
     tabShowsHelpdeskAlert,
-    clearHelpdeskTabAlert: helpdeskTabAlertController.clearTabAlertById
+    clearHelpdeskTabAlert: helpdeskTabAlertController.clearTabAlertById,
+    clearHelpdeskTabAlertForCase: helpdeskTabAlertController.clearTabAlertForCase
   };
 }
 
