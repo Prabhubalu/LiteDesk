@@ -171,8 +171,33 @@ export function getSendQuoteBlockMessageKey(record, orgSettings = null) {
 }
 
 export function getShareQuoteBlockMessageKey(record, orgSettings = null) {
-  const { allowed, reason } = getFormalShareQuoteEligibility(record, orgSettings);
+  const { allowed, reason } = getCopyShareLinkEligibility(record, orgSettings);
   if (allowed || !reason) return null;
   return SHARE_QUOTE_BLOCK_I18N[reason] || SHARE_QUOTE_BLOCK_I18N.invalid_status;
+}
+
+/**
+ * Copy share link — includes existing token (draft or formal) and draft link creation.
+ */
+export function getCopyShareLinkEligibility(record, orgSettings = null) {
+  if (record?.publicShareToken) {
+    return {
+      allowed: true,
+      reason: null,
+      mode: isDraftCustomerShare(record) ? 'draft' : 'formal'
+    };
+  }
+
+  const formal = getFormalShareQuoteEligibility(record, orgSettings);
+  if (formal.allowed) {
+    return { allowed: true, reason: null, mode: 'formal' };
+  }
+
+  const send = getSendQuoteToCustomerEligibility(record, orgSettings);
+  if (send.allowed && resolveCustomerSendMode(record, orgSettings) === 'draft') {
+    return { allowed: true, reason: null, mode: 'draft' };
+  }
+
+  return { allowed: false, reason: formal.reason || send.reason || 'invalid_status', mode: null };
 }
 

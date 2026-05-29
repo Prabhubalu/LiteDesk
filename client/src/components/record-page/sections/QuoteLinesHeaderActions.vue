@@ -110,7 +110,7 @@
               :class="menuItemClass(active)"
               :disabled="busy || !canCopyShareLink"
               :title="shareLinkDisabledTitle"
-              @click="copyShareLink"
+              @click.stop="copyShareLink"
             >
               {{ t('records.quoteActionCopyLink') }}
             </button>
@@ -145,12 +145,18 @@ import {
   canSendQuoteToCustomer,
   getSendQuoteButtonLabelKey,
   resolveCustomerSendMode,
-  getFormalShareQuoteEligibility,
+  getCopyShareLinkEligibility,
   getShareQuoteBlockMessageKey,
   getQuoteOrgSettingsFromAuth
 } from '@/constants/quoteLifecycle';
 import { useQuoteLinesSession } from '@/composables/useQuoteLinesSession';
 import QuoteSendEmailDrawer from '@/components/record-page/sections/QuoteSendEmailDrawer.vue';
+import {
+  buildPublicQuoteUrl,
+  copyTextToClipboardWithinGesture,
+  copyTextToClipboardWithPromptFallback,
+  promptCopyFallback
+} from '@/utils/copyToClipboard';
 
 const props = defineProps({
   record: { type: Object, default: null },
@@ -185,9 +191,10 @@ const orgQuoteSettings = computed(() => getQuoteOrgSettingsFromAuth(authStore));
 const canApproveOrReject = computed(() => canOverrideLock.value && quoteStatus.value === 'Pending Approval');
 const canSubmitForApproval = computed(() => quoteStatus.value === 'Draft' && linesEditable.value);
 const hasShareToken = computed(() => Boolean(props.record?.publicShareToken));
-const canCopyShareLink = computed(() =>
-  getFormalShareQuoteEligibility(props.record, orgQuoteSettings.value).allowed
+const copyShareEligibility = computed(() =>
+  getCopyShareLinkEligibility(props.record, orgQuoteSettings.value)
 );
+const canCopyShareLink = computed(() => copyShareEligibility.value.allowed);
 const shareLinkDisabledTitle = computed(() => {
   if (canCopyShareLink.value) return '';
   const key = getShareQuoteBlockMessageKey(props.record, orgQuoteSettings.value);
@@ -349,15 +356,39 @@ async function generatePdf() {
 
 async function copyShareLink() {
   if (!props.record?._id || !canCopyShareLink.value) return;
+
+  const existingToken = props.record?.publicShareToken;
+  const promptLabel = t('records.quoteActionCopyLink');
+
+  if (existingToken) {
+    const url = buildPublicQuoteUrl(existingToken);
+    if (
+      !copyTextToClipboardWithinGesture(url) &&
+      !promptCopyFallback(url, promptLabel)
+    ) {
+      notifications.error(t('records.quoteShareFailed'));
+      return;
+    }
+    notifications.success(t('records.quoteLinkCopied'));
+    return;
+  }
+
   busy.value = true;
   try {
-    const res = await apiClient.post(`/quotes/${props.record._id}/share`, { rotateToken: false });
-    if (!res?.success || !res?.data?.publicShareToken) {
+    const mode = copyShareEligibility.value.mode === 'draft' ? 'draft' : 'formal';
+    const res = await apiClient.post(`/quotes/${props.record._id}/share`, { rotateToken: false, mode });
+    const url =
+      res?.data?.publicUrl ||
+      buildPublicQuoteUrl(res?.data?.publicShareToken);
+    if (!res?.success || !url) {
       notifications.error(res?.message || t('records.quoteShareFailed'));
       return;
     }
-    const url = `${window.location.origin}/public/quotes/${res.data.publicShareToken}`;
-    await navigator.clipboard.writeText(url);
+    const copied = await copyTextToClipboardWithPromptFallback(url, promptLabel);
+    if (!copied) {
+      notifications.error(t('records.quoteShareFailed'));
+      return;
+    }
     notifications.success(t('records.quoteLinkCopied'));
     await refresh(
       res?.data ? { type: 'quote-updated', quote: res.data } : { type: 'soft-refresh' }

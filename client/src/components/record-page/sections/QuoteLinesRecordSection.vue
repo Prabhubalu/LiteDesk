@@ -10,7 +10,7 @@
       </button>
     </p>
 
-    <!-- Lines table -->
+    <!-- Lines grouped by section -->
     <div class="relative rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
       <div
         v-if="busy"
@@ -18,16 +18,96 @@
       >
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
       </div>
-      <div class="flex items-center justify-end gap-2 px-3 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-800/40">
-        <label class="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 select-none">
+      <div class="flex flex-wrap items-center justify-between gap-2 px-3 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-800/40">
+        <button
+          v-if="linesEditable && hasSections"
+          type="button"
+          class="inline-flex items-center rounded-md border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-gray-900 text-indigo-700 dark:text-indigo-300 px-3 py-1.5 text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/20 disabled:opacity-50"
+          :disabled="busy"
+          @click="openCreateSection"
+        >
+          {{ t('records.quoteSectionAdd') }}
+        </button>
+        <label class="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 select-none ml-auto">
           <input v-model="showPricingColumns" type="checkbox" class="rounded" />
           {{ t('records.linesShowPricingDetails') }}
         </label>
       </div>
-      <div
-        class="overflow-x-auto"
-        :class="{ 'quote-lines-table--dragging': isReorderDragging }"
-      >
+      <div class="space-y-0 divide-y divide-gray-200 dark:divide-gray-700">
+        <div
+          v-for="block in sectionBlocks"
+          :key="block.key"
+          class="bg-white dark:bg-gray-900"
+        >
+          <div
+            v-if="block.section"
+            class="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-gray-50/90 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700"
+          >
+            <div class="flex items-center gap-2 min-w-0">
+              <h4 class="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                {{ block.section.sectionTitle }}
+              </h4>
+              <span
+                v-if="sectionTypeBadgeKey(block.section.sectionType) === 'optional'"
+                class="shrink-0 text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
+              >
+                {{ t('records.quoteSectionBadgeOptional') }}
+              </span>
+              <span
+                v-else-if="sectionTypeBadgeKey(block.section.sectionType) === 'future'"
+                class="shrink-0 text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+              >
+                {{ t('records.quoteSectionBadgeFuture') }}
+              </span>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span
+                v-if="block.section.showSectionTotal !== false"
+                class="text-sm font-medium tabular-nums text-gray-900 dark:text-gray-100"
+              >
+                {{ formatMoney(block.section.sectionTotal) }}
+              </span>
+              <button
+                v-if="linesEditable && !block.isOrphan"
+                type="button"
+                class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline disabled:opacity-50"
+                :disabled="busy"
+                @click="openEditSection(block.section)"
+              >
+                {{ t('actions.edit') }}
+              </button>
+              <button
+                v-if="linesEditable && !block.isOrphan && !block.rows.length"
+                type="button"
+                class="text-xs text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+                :disabled="busy"
+                @click="deleteSection(block.section)"
+              >
+                {{ t('actions.delete') }}
+              </button>
+            </div>
+          </div>
+
+          <div
+            v-if="block.section?.sectionType === 'optional' && linesEditable && !block.isOrphan"
+            class="px-3 py-1.5 border-b border-gray-100 dark:border-gray-800"
+          >
+            <label class="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+              <input
+                type="checkbox"
+                class="rounded"
+                :checked="block.section.includeInQuoteTotal === true"
+                :disabled="busy"
+                @change="toggleSectionInclude(block.section, $event.target.checked)"
+              />
+              {{ t('records.quoteSectionIncludeInTotal') }}
+            </label>
+          </div>
+
+          <div
+            class="overflow-x-auto"
+            :class="{ 'quote-lines-table--dragging': isReorderDragging }"
+          >
         <table class="min-w-full text-sm quote-lines-table">
           <thead class="bg-gray-50 dark:bg-gray-800/60 text-gray-600 dark:text-gray-300">
             <tr>
@@ -45,14 +125,14 @@
               <th class="px-3 py-2 text-right font-normal w-16"></th>
             </tr>
           </thead>
-          <tbody v-if="!displayLines.length" class="divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody v-if="!getSectionRows(block.key).length" class="divide-y divide-gray-200 dark:divide-gray-700">
             <tr class="text-gray-500 dark:text-gray-400">
               <td class="px-3 py-3" :colspan="tableColspan">{{ t('records.linesEmpty') }}</td>
             </tr>
           </tbody>
           <draggable
             v-else
-            v-model="reorderableRows"
+            :model-value="getSectionRows(block.key)"
             tag="tbody"
             item-key="uid"
             handle=".quote-line-drag-handle"
@@ -66,6 +146,7 @@
             drag-class="quote-line-sortable-drag"
             :disabled="!linesEditable || busy"
             class="divide-y divide-gray-200 dark:divide-gray-700"
+            @update:model-value="setSectionRows(block.key, $event)"
             @start="onLineOrderDragStart"
             @end="onLineOrderDragEnd"
           >
@@ -160,22 +241,72 @@
                 {{ formatMoney(line.lineTotal) }}
               </td>
               <td class="px-3 py-2 text-right">
-                <button
-                  v-if="linesEditable"
-                  type="button"
-                  class="inline-flex items-center justify-center p-1.5 rounded text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50"
-                  :title="t('actions.delete')"
-                  :aria-label="t('actions.delete')"
-                  :disabled="busy"
-                  @click="requestRemoveLine(line)"
-                >
-                  <TrashIcon class="h-4 w-4" />
-                </button>
+                <div v-if="linesEditable" class="inline-flex items-center gap-1">
+                  <select
+                    v-if="hasSections && movableSections.length > 1"
+                    class="max-w-[88px] rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-1 py-1 text-[10px]"
+                    :value="lineSectionRef(line)"
+                    :disabled="busy"
+                    :title="t('records.quoteSectionMoveLine')"
+                    @change="(e) => moveLineToSection(line, e.target.value)"
+                  >
+                    <option v-for="s in movableSections" :key="sectionRef(s)" :value="sectionRef(s)">
+                      {{ s.sectionTitle }}
+                    </option>
+                  </select>
+                  <button
+                    type="button"
+                    class="inline-flex items-center justify-center p-1.5 rounded text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50"
+                    :title="t('actions.delete')"
+                    :aria-label="t('actions.delete')"
+                    :disabled="busy"
+                    @click="requestRemoveLine(line)"
+                  >
+                    <TrashIcon class="h-4 w-4" />
+                  </button>
+                </div>
               </td>
               </tr>
             </template>
           </draggable>
         </table>
+          </div>
+
+          <div
+            v-if="block.section && !block.isOrphan && block.section.showSectionTotal !== false"
+            class="flex flex-wrap items-center justify-end gap-3 px-3 py-2 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 text-sm"
+          >
+            <div v-if="linesEditable" class="inline-flex items-center gap-1">
+              <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('records.quoteSectionDiscount') }}</span>
+              <select
+                class="w-14 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-1 py-1 text-xs"
+                :value="sectionDiscountType(block.section)"
+                :disabled="busy"
+                @change="(e) => saveSectionDiscount(block.section, { type: e.target.value })"
+              >
+                <option value="">{{ t('records.linesDiscountNone') }}</option>
+                <option value="percent">{{ t('records.linesDiscountPercent') }}</option>
+                <option value="amount">{{ t('records.linesDiscountAmount') }}</option>
+              </select>
+              <input
+                v-if="sectionDiscountType(block.section)"
+                class="w-16 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-1.5 py-1 text-xs text-right tabular-nums"
+                type="number"
+                min="0"
+                step="any"
+                :value="sectionDiscountValue(block.section)"
+                :disabled="busy"
+                @change="(e) => saveSectionDiscount(block.section, { value: e.target.value })"
+              />
+            </div>
+            <div class="text-gray-600 dark:text-gray-400">
+              {{ t('records.quoteSectionSubtotal') }}:
+              <span class="font-medium text-gray-900 dark:text-gray-100 tabular-nums ml-1">
+                {{ formatMoney(block.section.sectionTotal) }}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -187,7 +318,17 @@
       <div class="text-sm font-medium text-gray-700 dark:text-gray-200">
         {{ t('records.linesAddOne') }}
       </div>
-      <div class="flex flex-col md:flex-row gap-2">
+      <div class="flex flex-col md:flex-row gap-2 flex-wrap">
+        <select
+          v-if="hasSections && addTargetSections.length"
+          v-model="addTargetSectionId"
+          class="w-full md:w-48 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm"
+          :disabled="busy"
+        >
+          <option v-for="s in addTargetSections" :key="sectionRef(s)" :value="sectionRef(s)">
+            {{ s.sectionTitle }}
+          </option>
+        </select>
         <button
           type="button"
           class="flex-1 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-800/60"
@@ -407,6 +548,15 @@
       </div>
     </div>
 
+    <QuoteSectionFormModal
+      :show="showSectionModal"
+      :mode="sectionModalMode"
+      :initial="sectionModalInitial"
+      :saving="busy"
+      @close="closeSectionModal"
+      @submit="submitSectionModal"
+    />
+
     <DeleteConfirmationModal
       :show="showDeleteLineModal"
       :record-name="linePendingDelete?.itemNameSnapshot || t('records.linesTitle')"
@@ -428,8 +578,15 @@ import { useNotifications } from '@/composables/useNotifications';
 import { unwrapCatalogApiData, unwrapCatalogApiList } from '@/utils/catalogApi';
 import { useAuthStore } from '@/stores/authRegistry';
 import DeleteConfirmationModal from '@/components/common/DeleteConfirmationModal.vue';
+import QuoteSectionFormModal from '@/components/record-page/sections/QuoteSectionFormModal.vue';
 import { isCommerciallyLockedStatus } from '@/constants/quoteLifecycle';
 import { formatQuoteMoney } from '@/utils/quoteMoney';
+import {
+  buildQuoteSectionBlocks,
+  sectionRef as quoteSectionRef,
+  sectionTypeBadgeKey,
+  sortQuoteSections
+} from '@/utils/quoteSectionDisplay';
 import { useQuoteLinesSession, clearQuoteLinesSession } from '@/composables/useQuoteLinesSession';
 
 const props = defineProps({
@@ -455,49 +612,262 @@ const showDeleteLineModal = ref(false);
 const linePendingDelete = ref(null);
 
 const lines = computed(() => (Array.isArray(props.record?.lines) ? props.record.lines : []));
+const quoteSections = computed(() => sortQuoteSections(props.record?.sections));
+const hasSections = computed(() => quoteSections.value.length > 0);
+
+const sectionBlocks = computed(() =>
+  buildQuoteSectionBlocks({
+    lines: lines.value,
+    sections: quoteSections.value,
+    uncategorizedTitle: t('records.quoteSectionUncategorized')
+  })
+);
+
+const movableSections = computed(() => quoteSections.value.filter((s) => s?._id));
+const addTargetSections = computed(() => movableSections.value);
+
+const addTargetSectionId = ref('');
+
+watch(
+  addTargetSections,
+  (sections) => {
+    if (!sections.length) {
+      addTargetSectionId.value = '';
+      return;
+    }
+    const current = addTargetSectionId.value;
+    const stillValid = sections.some((s) => quoteSectionRef(s) === current);
+    if (!stillValid) {
+      addTargetSectionId.value = quoteSectionRef(sections[0]);
+    }
+  },
+  { immediate: true }
+);
+
+function sectionRef(section) {
+  return quoteSectionRef(section);
+}
+
+function lineSectionRef(line) {
+  const sid = line?.quoteSectionId;
+  if (!sid) return addTargetSectionId.value || '';
+  const match = quoteSections.value.find((s) => String(s._id) === String(sid));
+  return match ? quoteSectionRef(match) : String(sid);
+}
+
+const sectionRowsMap = ref({});
+const isReorderDragging = ref(false);
+
+function getSectionRows(key) {
+  return sectionRowsMap.value[key] || [];
+}
+
+function setSectionRows(key, rows) {
+  sectionRowsMap.value = { ...sectionRowsMap.value, [key]: rows };
+}
+
+watch(
+  sectionBlocks,
+  (blocks) => {
+    if (isReorderDragging.value) return;
+    const next = {};
+    for (const block of blocks) {
+      next[block.key] = block.rows.map((row) => ({
+        ...row,
+        uid: lineRowKey(row.line)
+      }));
+    }
+    sectionRowsMap.value = next;
+  },
+  { immediate: true, deep: true }
+);
+
+const showSectionModal = ref(false);
+const sectionModalMode = ref('create');
+const sectionModalInitial = ref(null);
+const sectionModalEditingId = ref(null);
+
+function openCreateSection() {
+  sectionModalMode.value = 'create';
+  sectionModalInitial.value = null;
+  sectionModalEditingId.value = null;
+  showSectionModal.value = true;
+}
+
+function openEditSection(section) {
+  sectionModalMode.value = 'edit';
+  sectionModalInitial.value = section;
+  sectionModalEditingId.value = quoteSectionRef(section);
+  showSectionModal.value = true;
+}
+
+function closeSectionModal() {
+  showSectionModal.value = false;
+  sectionModalInitial.value = null;
+  sectionModalEditingId.value = null;
+}
+
+function emitSectionsUpdated(payload) {
+  emit('updated', {
+    type: 'sections-updated',
+    sections: payload?.sections ?? null,
+    totals: payload?.totals ?? null,
+    lines: payload?.lines ?? null
+  });
+}
+
+async function submitSectionModal(form) {
+  if (!props.record?._id) return;
+  busy.value = true;
+  try {
+    if (sectionModalMode.value === 'create') {
+      const res = await apiClient.post(`/quotes/${props.record._id}/sections`, {
+        ...form,
+        overridePricing: overrideLock.value === true
+      });
+      if (!res?.success) throw new Error(res?.message || t('records.quoteSectionCreateFailed'));
+      const created = res?.data?.section;
+      const merged = created
+        ? sortQuoteSections([...quoteSections.value, created])
+        : res?.data?.sections ?? null;
+      emitSectionsUpdated({
+        sections: merged,
+        totals: res?.data?.totals ?? null
+      });
+    } else {
+      const id = sectionModalEditingId.value;
+      const res = await apiClient.patch(`/quotes/${props.record._id}/sections/${id}`, {
+        ...form,
+        overridePricing: overrideLock.value === true
+      });
+      if (!res?.success) throw new Error(res?.message || t('records.quoteSectionUpdateFailed'));
+      emitSectionsUpdated({
+        sections: res?.data?.sections ?? null,
+        totals: res?.data?.totals ?? null
+      });
+    }
+    closeSectionModal();
+  } catch (e) {
+    notifications.error(e?.message || t('records.quoteSectionUpdateFailed'));
+  } finally {
+    busy.value = false;
+  }
+}
+
+async function deleteSection(section) {
+  if (!props.record?._id || !section) return;
+  busy.value = true;
+  try {
+    const res = await apiClient.delete(`/quotes/${props.record._id}/sections/${quoteSectionRef(section)}`, {
+      data: { overridePricing: overrideLock.value === true }
+    });
+    if (!res?.success) throw new Error(res?.message || t('records.quoteSectionDeleteFailed'));
+    emitSectionsUpdated({
+      sections: res?.data?.sections ?? null,
+      totals: res?.data?.totals ?? null
+    });
+  } catch (e) {
+    notifications.error(e?.message || t('records.quoteSectionDeleteFailed'));
+  } finally {
+    busy.value = false;
+  }
+}
+
+async function toggleSectionInclude(section, checked) {
+  if (!props.record?._id || !section) return;
+  busy.value = true;
+  try {
+    const res = await apiClient.patch(`/quotes/${props.record._id}/sections/${quoteSectionRef(section)}`, {
+      includeInQuoteTotal: checked === true,
+      overridePricing: overrideLock.value === true
+    });
+    if (!res?.success) throw new Error(res?.message || t('records.quoteSectionUpdateFailed'));
+    emitSectionsUpdated({
+      sections: res?.data?.sections ?? null,
+      totals: res?.data?.totals ?? null
+    });
+  } catch (e) {
+    notifications.error(e?.message || t('records.quoteSectionUpdateFailed'));
+  } finally {
+    busy.value = false;
+  }
+}
+
+function sectionDiscountType(section) {
+  return normalizeDiscountType(section?.sectionDiscountType);
+}
+
+function sectionDiscountValue(section) {
+  return Number(section?.sectionDiscountValue) || 0;
+}
+
+async function saveSectionDiscount(section, patch = {}) {
+  if (!linesEditable.value || !props.record?._id || !section) return;
+  const nextType = patch.type !== undefined ? String(patch.type || '') : sectionDiscountType(section);
+  const nextValue = patch.value !== undefined ? Number(patch.value) : sectionDiscountValue(section);
+  if (nextType && (!Number.isFinite(nextValue) || nextValue < 0)) return;
+
+  busy.value = true;
+  try {
+    const res = await apiClient.patch(
+      `/quotes/${props.record._id}/sections/${quoteSectionRef(section)}/discounts`,
+      {
+        sectionDiscountType: nextType || null,
+        sectionDiscountValue: nextType ? nextValue : 0,
+        overridePricing: overrideLock.value === true
+      }
+    );
+    if (!res?.success) throw new Error(res?.message || t('records.quoteSectionDiscountUpdateFailed'));
+    emitSectionsUpdated({
+      sections: res?.data?.sections ?? null,
+      totals: res?.data?.totals ?? null
+    });
+  } catch (e) {
+    notifications.error(e?.message || t('records.quoteSectionDiscountUpdateFailed'));
+  } finally {
+    busy.value = false;
+  }
+}
+
+async function moveLineToSection(line, targetSectionRef) {
+  if (!linesEditable.value || !props.record?._id || !line?.quoteLineId || !targetSectionRef) return;
+  if (lineSectionRef(line) === targetSectionRef) return;
+
+  busy.value = true;
+  try {
+    const res = await apiClient.patch(`/quotes/${props.record._id}/lines/${line.quoteLineId}`, {
+      quoteSectionId: targetSectionRef,
+      overridePricing: overrideLock.value === true
+    });
+    if (res?.success && res?.data?.line) {
+      emit('updated', {
+        type: 'line-updated',
+        line: res.data.line,
+        totals: res?.data?.totals ?? null,
+        sections: res?.data?.sections ?? null
+      });
+    } else {
+      notifications.error(res?.message || t('records.linesUpdateFailed'));
+    }
+  } catch (e) {
+    notifications.error(e?.message || t('records.linesUpdateFailed'));
+  } finally {
+    busy.value = false;
+  }
+}
+
+function mutationPayload(data) {
+  return {
+    totals: data?.totals ?? null,
+    sections: data?.sections ?? null
+  };
+}
 
 const currencyCode = computed(() => String(props.record?.currency || '').trim().toUpperCase());
 
 function lineRowKey(line) {
   return String(line?.quoteLineId || line?._id || '');
 }
-
-const bundleModeByParentId = computed(() => {
-  const map = new Map();
-  for (const l of lines.value) {
-    if (String(l?.lineType || '') === 'bundle_parent') {
-      const mode = String(l?.bundleSnapshot?.pricingMode || 'fixed').toLowerCase();
-      map.set(lineRowKey(l), mode);
-      if (l?._id) map.set(String(l._id), mode);
-      if (l?.quoteLineId) map.set(String(l.quoteLineId), mode);
-    }
-  }
-  return map;
-});
-
-const displayLines = computed(() => {
-  const modeMap = bundleModeByParentId.value;
-  return lines.value
-    .filter((line) => {
-      if (line?.hiddenLine === true) return false;
-      const type = String(line?.lineType || '');
-      if (type === 'bundle_component') {
-        const parentId = line.parentBundleLineId ? String(line.parentBundleLineId) : '';
-        if ((modeMap.get(parentId) || 'fixed') === 'fixed') return false;
-      }
-      if (type === 'bundle_parent') {
-        const mode = String(line?.bundleSnapshot?.pricingMode || 'fixed').toLowerCase();
-        if (mode === 'rollup') return false;
-      }
-      return true;
-    })
-    .map((line) => ({
-      line,
-      indent: String(line?.lineType || '') === 'bundle_component',
-      isBundleParent: String(line?.lineType || '') === 'bundle_parent',
-      isOptional: line?.optionalLine === true || line?.bundleSnapshot?.isOptional === true
-    }));
-});
 
 const tableColspan = computed(() => {
   let base = showPricingColumns.value ? 8 : 6;
@@ -556,7 +926,7 @@ async function patchLineDiscount(line, patch = {}) {
       emit('updated', {
         type: 'line-updated',
         line: res.data.line,
-        totals: res?.data?.totals ?? null
+        ...mutationPayload(res.data)
       });
     } else {
       notifications.error(res?.message || t('records.linesDiscountUpdateFailed'));
@@ -586,7 +956,7 @@ async function saveGlobalDiscount() {
         type: 'quote-discounts-updated',
         quote: res?.data?.quote ?? null,
         lines: res?.data?.lines ?? null,
-        totals: res?.data?.totals ?? null
+        ...mutationPayload(res.data)
       });
       return;
     }
@@ -597,21 +967,6 @@ async function saveGlobalDiscount() {
     busy.value = false;
   }
 }
-
-const reorderableRows = ref([]);
-const isReorderDragging = ref(false);
-
-watch(
-  displayLines,
-  (rows) => {
-    if (isReorderDragging.value) return;
-    reorderableRows.value = rows.map((row) => ({
-      ...row,
-      uid: lineRowKey(row.line)
-    }));
-  },
-  { immediate: true, deep: true }
-);
 
 function sortedAllLines() {
   return [...lines.value].sort(
@@ -680,7 +1035,9 @@ async function onLineOrderDragEnd() {
   document.body.classList.remove('quote-lines-reorder-active');
   if (!linesEditable.value || !props.record?._id) return;
 
-  const visibleIds = reorderableRows.value.map((row) => String(row.line?.quoteLineId || '')).filter(Boolean);
+  const visibleIds = sectionBlocks.value.flatMap((block) =>
+    (getSectionRows(block.key) || []).map((row) => String(row.line?.quoteLineId || '')).filter(Boolean)
+  );
   const orders = buildOrdersFromVisibleSequence(visibleIds);
   if (!orders.length) return;
 
@@ -694,24 +1051,29 @@ async function onLineOrderDragEnd() {
       emit('updated', {
         type: 'lines-recalculated',
         lines: res.data.lines,
-        totals: res?.data?.totals ?? null
+        ...mutationPayload(res.data)
       });
       return;
     }
     notifications.error(res?.message || t('records.linesReorderFailed'));
-    reorderableRows.value = displayLines.value.map((row) => ({
-      ...row,
-      uid: lineRowKey(row.line)
-    }));
+    syncSectionRowsFromBlocks();
   } catch (e) {
     notifications.error(e?.message || t('records.linesReorderFailed'));
-    reorderableRows.value = displayLines.value.map((row) => ({
-      ...row,
-      uid: lineRowKey(row.line)
-    }));
+    syncSectionRowsFromBlocks();
   } finally {
     busy.value = false;
   }
+}
+
+function syncSectionRowsFromBlocks() {
+  const next = {};
+  for (const block of sectionBlocks.value) {
+    next[block.key] = block.rows.map((row) => ({
+      ...row,
+      uid: lineRowKey(row.line)
+    }));
+  }
+  sectionRowsMap.value = next;
 }
 
 function readMoneyField(key) {
@@ -989,7 +1351,7 @@ async function confirmBundleOptionalModal() {
     emit('updated', {
       type: 'lines-recalculated',
       lines: res?.data?.lines ?? null,
-      totals: res?.data?.totals ?? null
+      ...mutationPayload(res.data)
     });
     closeBundleOptionalModal();
   } catch (e) {
@@ -1009,6 +1371,7 @@ async function submitAddBundle(hit, includedOptionalComponentVariantIds) {
       quantity: quantity.value > 0 ? quantity.value : 1,
       asOfDate: props.record?.quoteDate ?? null,
       includedOptionalComponentVariantIds: includedOptionalComponentVariantIds,
+      quoteSectionId: addTargetSectionId.value || null,
       overridePricing: overrideLock.value === true
     });
     if (!res?.success) {
@@ -1022,7 +1385,7 @@ async function submitAddBundle(hit, includedOptionalComponentVariantIds) {
       emit('updated', {
         type: 'lines-added',
         lines: addedLines,
-        totals: res?.data?.totals ?? null
+        ...mutationPayload(res.data)
       });
     } else {
       await refresh();
@@ -1046,6 +1409,7 @@ async function addLine() {
       variantId: variantId.value,
       quantity: quantity.value,
       priceBookId: selectedPriceBookId.value || null,
+      quoteSectionId: addTargetSectionId.value || null,
       overridePricing: overrideLock.value === true
     });
     if (res?.success) {
@@ -1057,7 +1421,7 @@ async function addLine() {
         emit('updated', {
           type: 'lines-added',
           lines: [line],
-          totals: res?.data?.totals ?? null
+          ...mutationPayload(res.data)
         });
       } else {
         await refresh();
@@ -1088,7 +1452,7 @@ async function patchQty(line, raw) {
         emit('updated', {
           type: 'line-updated',
           line: updatedLine,
-          totals: res?.data?.totals ?? null
+          ...mutationPayload(res.data)
         });
       } else {
         await refresh();
@@ -1122,7 +1486,7 @@ async function confirmRemoveLine() {
       emit('updated', {
         type: 'line-deleted',
         deletedLine: line,
-        totals: res?.data?.totals ?? null
+        ...mutationPayload(res.data)
       });
     } else {
       notifications.error(res?.message || t('records.linesDeleteFailed'));
@@ -1148,7 +1512,7 @@ async function recalculate() {
         emit('updated', {
           type: 'lines-recalculated',
           lines,
-          totals: res?.data?.totals ?? null
+          ...mutationPayload(res.data)
         });
       } else {
         await refresh();

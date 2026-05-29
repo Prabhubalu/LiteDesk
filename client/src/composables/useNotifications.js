@@ -54,7 +54,10 @@ function resolvePresentation(messageOrPresentation, typeOrOptions, duration) {
       ? { type: 'info', duration: 3000, ...typeOrOptions }
       : { type: typeOrOptions, duration };
 
-  if (typeof duration === 'number' && !('duration' in (typeOrOptions || {}))) {
+  if (
+    typeof duration === 'number' &&
+    (typeof typeOrOptions !== 'object' || typeOrOptions === null || !('duration' in typeOrOptions))
+  ) {
     opts.duration = duration;
   }
 

@@ -97,7 +97,7 @@ export function buildHelpdeskToastPresentation(notification, t) {
   const body = String(notification.body || '').trim();
   const caseLabel = caseLabelFromEntity(entity);
   const isHighPriority = HIGH_PRIORITY_EVENTS.has(eventType);
-  const iconTone = isHighPriority ? 'warning' : 'info';
+  let iconTone = isHighPriority ? 'warning' : 'info';
 
   let iconKey = 'bell';
   let category = title || t('notifications.toastHelpdeskDefault');

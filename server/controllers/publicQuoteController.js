@@ -4,6 +4,7 @@ const QuoteDocument = require('../models/QuoteDocument');
 const { writeQuoteActivity } = require('../services/quoteActivityService');
 const { assertCanTransitionQuoteStatus, isDraftCustomerShare } = require('../constants/quoteLifecycle');
 const { renderQuotePdf } = require('./quoteDocumentController');
+const { listQuoteSections } = require('../services/quoteSectionService');
 const {
   getSelectableLines,
   resolveCustomerAcceptance,
@@ -94,11 +95,37 @@ exports.view = async (req, res) => {
       /* ignore */
     }
 
-    const lines = await QuoteLine.find({ organizationId: quote.organizationId, quoteId: quote._id })
+    const rawLines = await QuoteLine.find({ organizationId: quote.organizationId, quoteId: quote._id })
       .sort({ lineOrder: 1, createdAt: 1 })
       .lean();
 
-    const lineByMongoId = new Map((lines || []).map((l) => [String(l._id), l]));
+    const allSections = await listQuoteSections({
+      organizationId: quote.organizationId,
+      quoteId: quote._id
+    });
+    const hiddenSectionIds = new Set(
+      (allSections || []).filter((s) => s?.hiddenSection === true).map((s) => String(s._id))
+    );
+    const sections = (allSections || [])
+      .filter((s) => s && s.hiddenSection !== true)
+      .map((s) => ({
+        _id: s._id,
+        quoteSectionId: s.quoteSectionId,
+        sectionTitle: s.sectionTitle,
+        sectionType: s.sectionType || 'standard',
+        sectionOrder: s.sectionOrder,
+        showSectionTotal: s.showSectionTotal !== false,
+        sectionSubtotal: s.sectionSubtotal,
+        sectionDiscountTotal: s.sectionDiscountTotal,
+        sectionTotal: s.sectionTotal,
+        includeInQuoteTotal: s.includeInQuoteTotal === true
+      }));
+
+    const lines = (rawLines || []).filter(
+      (l) => l && l.hiddenLine !== true && !hiddenSectionIds.has(String(l.quoteSectionId || ''))
+    );
+
+    const lineByMongoId = new Map((rawLines || []).map((l) => [String(l._id), l]));
 
     const orgQuoteSettings = await getQuoteOrgSettings(quote.organizationId);
     const customerAgreementText = getPortalCustomerAgreementText(orgQuoteSettings);
@@ -147,10 +174,12 @@ exports.view = async (req, res) => {
           lineSubtotal: l.lineSubtotal,
           lineTaxTotal: l.lineTaxTotal,
           lineTotal: l.lineTotal,
+          quoteSectionId: l.quoteSectionId ? String(l.quoteSectionId) : null,
           bundleOptional: !!(l.bundleSnapshot && l.bundleSnapshot.optional === true),
           selectable: l.lineType === 'standard' || l.lineType === 'bundle_parent'
         };
         }),
+        sections,
         portal: {
           canRespond:
             !draftPreview &&
@@ -423,8 +452,12 @@ exports.latestPdf = async (req, res) => {
       const lines = await QuoteLine.find({ organizationId: quote.organizationId, quoteId: quote._id })
         .sort({ lineOrder: 1, createdAt: 1 })
         .lean();
+      const sections = await listQuoteSections({
+        organizationId: quote.organizationId,
+        quoteId: quote._id
+      });
       const branding = await getQuoteBranding(quote.organizationId);
-      const pdf = await renderQuotePdf({ quote, lines, watermark: 'DRAFT', branding });
+      const pdf = await renderQuotePdf({ quote, lines, sections, watermark: 'DRAFT', branding });
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader(
         'Content-Disposition',

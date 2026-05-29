@@ -6,6 +6,7 @@ const PDFDocument = require('pdfkit');
 const Quote = require('../models/Quote');
 const QuoteLine = require('../models/QuoteLine');
 const QuoteDocumentModel = require('../models/QuoteDocument');
+const { listQuoteSections } = require('../services/quoteSectionService');
 const { writeQuoteActivity } = require('../services/quoteActivityService');
 const { getQuoteBranding } = require('../services/quoteBrandingService');
 
@@ -42,12 +43,48 @@ function drawDraftWatermark(doc, pageFn, label = 'DRAFT') {
   doc.fillColor('#DC2626');
   doc.font('Helvetica-Bold').fontSize(76);
   doc.rotate(-32, { origin: [cx, cy] });
-  doc.text(text, p.left, cy - 28, { width: p.width, align: 'center' });
+  doc.text(text, p.left, cy - 28, { width: p.width, align: 'center', lineBreak: false });
   doc.fillOpacity(1);
   doc.restore();
 }
 
-function renderQuotePdf({ quote, lines, watermark = null, branding = null }) {
+function sectionTypeSuffix(section) {
+  const t = String(section?.sectionType || 'standard');
+  if (t === 'optional') return ' (Optional)';
+  if (t === 'future') return ' (Future)';
+  return '';
+}
+
+function buildPdfSectionBlocks(sections, lines) {
+  const visible = (Array.isArray(lines) ? lines : []).filter((l) => l && l.hiddenLine !== true);
+  const sorted = (Array.isArray(sections) ? sections : [])
+    .filter((s) => s && s.hiddenSection !== true)
+    .sort((a, b) => (Number(a.sectionOrder) || 0) - (Number(b.sectionOrder) || 0));
+
+  if (!sorted.length) {
+    return [{ section: null, lines: visible }];
+  }
+
+  const assigned = new Set(sorted.map((s) => String(s._id)));
+  const blocks = sorted.map((section) => ({
+    section,
+    lines: visible.filter((l) => String(l.quoteSectionId || '') === String(section._id))
+  }));
+
+  const orphans = visible.filter(
+    (l) => !l.quoteSectionId || !assigned.has(String(l.quoteSectionId))
+  );
+  if (orphans.length) {
+    blocks.push({
+      section: { sectionTitle: 'General', sectionType: 'standard', showSectionTotal: false },
+      lines: orphans
+    });
+  }
+
+  return blocks;
+}
+
+function renderQuotePdf({ quote, lines, sections = [], watermark = null, branding = null }) {
   const brand = branding && typeof branding === 'object' ? branding : {};
   const brandColor = String(brand.brandColor || '#4f46e5');
   const documentTitle = String(brand.documentTitle || 'Quote');
@@ -98,17 +135,17 @@ function renderQuotePdf({ quote, lines, watermark = null, branding = null }) {
     function drawFooter(pageIndex, pageCount) {
       const p = page();
       doc.save();
-      let footerY = p.bottom + 4;
-      doc.strokeColor(brandColor).lineWidth(1.5).moveTo(p.left, footerY).lineTo(p.right, footerY).stroke();
-      footerY += 8;
+      const footerY = p.bottom - 18;
+      const footerLineY = footerY - 8;
+      doc.strokeColor(brandColor).lineWidth(1.5).moveTo(p.left, footerLineY).lineTo(p.right, footerLineY).stroke();
       doc.fillColor('#6B7280').fontSize(9);
       const leftText = `${quote.quoteNumber || 'Quote'} • Rev ${quote.revisionNumber || 1}`;
       const rightText = `Page ${pageIndex + 1} of ${pageCount}`;
-      doc.text(leftText, p.left, footerY, { width: p.width - 90 });
-      doc.text(rightText, p.right - 90, footerY, { width: 90, align: 'right' });
+      doc.text(leftText, p.left, footerY, { width: p.width - 90, lineBreak: false });
+      doc.text(rightText, p.right - 90, footerY, { width: 90, align: 'right', lineBreak: false });
       if (pdfFooterText) {
         doc.fontSize(8).fillColor('#9CA3AF');
-        doc.text(pdfFooterText, p.left, footerY + 12, { width: p.width, align: 'center' });
+        doc.text(pdfFooterText, p.left, footerY + 12, { width: p.width, align: 'center', lineBreak: false });
       }
       doc.restore();
     }
@@ -182,13 +219,13 @@ function renderQuotePdf({ quote, lines, watermark = null, branding = null }) {
       doc.y = y + 18;
     }
 
-    function ensureRoom(minHeight) {
+    function ensureRoom(minHeight, { withTableHeader = false } = {}) {
       const p = page();
       const footerReserve = 22; // space for footer line + text
       if (doc.y + minHeight <= p.bottom - footerReserve) return;
       doc.addPage();
       drawHeader();
-      drawTableHeader();
+      if (withTableHeader) drawTableHeader();
     }
 
     function lineLabel(line) {
@@ -252,53 +289,128 @@ function renderQuotePdf({ quote, lines, watermark = null, branding = null }) {
       doc.y = rowY + rowH;
     }
 
+    function drawSectionHeader(section) {
+      if (!section?.sectionTitle) return;
+      if (section.pageBreakBefore === true) {
+        doc.addPage();
+        drawHeader();
+      }
+      ensureRoom(36);
+      const p = page();
+      const y = doc.y + 4;
+      doc.save();
+      doc.fillColor(brandColor).font('Helvetica-Bold').fontSize(12);
+      doc.text(`${section.sectionTitle}${sectionTypeSuffix(section)}`, p.left, y, { width: p.width });
+      doc.restore();
+      doc.y = y + 20;
+    }
+
+    function drawSectionSubtotal(section) {
+      if (!section || section.showSectionTotal === false) return;
+
+      const lineH = 14;
+      const rowCount = Number(section.sectionDiscountTotal) > 0 ? 3 : 1;
+      ensureRoom(rowCount * lineH + 12);
+
+      const c = cols();
+      let y = doc.y + 4;
+      const labelX = c.name.x;
+      const labelW = c.name.w + c.qty.w - 4;
+      const valueX = c.unit.x;
+      const valueW = c.unit.w + c.total.w;
+
+      const drawRow = (label, value, { bold = false } = {}) => {
+        doc.font(bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(bold ? 10 : 9);
+        doc.fillColor(bold ? '#111111' : '#6B7280');
+        doc.text(label, labelX, y, { width: labelW, align: 'right', lineBreak: false });
+        doc.fillColor('#111111');
+        doc.font(bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(bold ? 10 : 9);
+        doc.text(value, valueX, y, { width: valueW, align: 'right', lineBreak: false });
+        y += lineH;
+      };
+
+      if (Number(section.sectionDiscountTotal) > 0) {
+        drawRow('Section subtotal', formatMoney(section.sectionSubtotal));
+        drawRow('Section discount', `-${formatMoney(section.sectionDiscountTotal)}`);
+      }
+      drawRow('Section total', formatMoney(section.sectionTotal ?? section.sectionSubtotal ?? 0), { bold: true });
+
+      doc.font('Helvetica').fontSize(10).fillColor('#111111');
+      doc.y = y + 8;
+    }
+
     function drawTotalsBox() {
-      ensureRoom(96);
+      const rows = [{ label: 'Subtotal', value: quote.subtotal, bold: false }];
+      if (Number(quote.lineDiscountTotal) > 0) {
+        rows.push({ label: 'Line discounts', value: -Number(quote.lineDiscountTotal), bold: false });
+      }
+      if (Number(quote.globalDiscountTotal) > 0) {
+        rows.push({ label: 'Quote discount', value: -Number(quote.globalDiscountTotal), bold: false });
+      }
+      rows.push({ label: 'Tax', value: quote.taxTotal, bold: false });
+      if (Number(quote.adjustmentTotal) !== 0) {
+        rows.push({ label: 'Adjustment', value: quote.adjustmentTotal, bold: false });
+      }
+      rows.push({ label: 'Grand Total', value: quote.grandTotal, bold: true });
+
+      const lineH = 16;
+      const boxH = lineH * rows.length + 18;
+      ensureRoom(boxH + 16);
 
       const p = page();
-      doc.moveDown(0.4);
-
-      // Totals box (fixed width prevents wrapping)
       const boxW = 240;
       const boxX = p.right - boxW;
-      const startY = doc.y;
-      const lineH = 16;
+      const startY = doc.y + 12;
 
       doc.save();
-      doc.rect(boxX, startY - 8, boxW, lineH * 3 + 18).fill('#F6F7FB');
-      doc.strokeColor(brandColor).lineWidth(1).rect(boxX, startY - 8, boxW, lineH * 3 + 18).stroke();
+      doc.rect(boxX, startY - 8, boxW, boxH).fill('#F6F7FB');
+      doc.strokeColor(brandColor).lineWidth(1).rect(boxX, startY - 8, boxW, boxH).stroke();
       doc.restore();
 
       const labelW = 110;
       const valueW = boxW - labelW;
 
-      doc.font('Helvetica').fontSize(11).fillColor('#111111');
-      doc.text('Subtotal', boxX + 12, startY, { width: labelW - 12 });
-      doc.text(money(quote.subtotal), boxX + labelW, startY, { width: valueW - 12, align: 'right' });
-
-      doc.text('Tax', boxX + 12, startY + lineH, { width: labelW - 12 });
-      doc.text(money(quote.taxTotal), boxX + labelW, startY + lineH, { width: valueW - 12, align: 'right' });
-
-      doc.font('Helvetica-Bold').fontSize(12).fillColor('#000000');
-      doc.text('Grand Total', boxX + 12, startY + lineH * 2, { width: labelW - 12 });
-      doc.text(money(quote.grandTotal), boxX + labelW, startY + lineH * 2, { width: valueW - 12, align: 'right' });
+      rows.forEach((row, i) => {
+        const y = startY + lineH * i;
+        if (row.bold) doc.font('Helvetica-Bold').fontSize(12).fillColor('#000000');
+        else doc.font('Helvetica').fontSize(11).fillColor('#111111');
+        doc.text(row.label, boxX + 12, y, { width: labelW - 12 });
+        const display =
+          row.value < 0 && row.label !== 'Grand Total'
+            ? `-${formatMoney(Math.abs(row.value))}`
+            : money(row.value);
+        doc.text(display, boxX + labelW, y, { width: valueW - 12, align: 'right' });
+      });
 
       doc.font('Helvetica').fillColor('#111111');
-      doc.y = startY + lineH * 3 + 18;
+      doc.y = Math.min(startY + boxH, p.bottom - 24);
     }
 
     // --- Render ---
     drawHeader();
 
-    doc.fillColor('#111111').fontSize(14).text('Lines', { align: 'left' });
-    drawTableHeader();
+    const sectionBlocks = buildPdfSectionBlocks(sections, lines);
 
-    const visible = (Array.isArray(lines) ? lines : []).filter((l) => l && l.hiddenLine !== true);
-    let zebra = 0;
-    for (const l of visible) {
-      ensureRoom(26);
-      renderLineRow(l, zebra);
-      zebra += 1;
+    for (const block of sectionBlocks) {
+      if (block.section) {
+        drawSectionHeader(block.section);
+        drawTableHeader();
+      } else {
+        doc.fillColor('#111111').fontSize(14).text('Lines', { align: 'left' });
+        doc.moveDown(0.2);
+        drawTableHeader();
+      }
+
+      let zebra = 0;
+      for (const l of block.lines) {
+        ensureRoom(26, { withTableHeader: true });
+        renderLineRow(l, zebra);
+        zebra += 1;
+      }
+
+      if (block.section) {
+        drawSectionSubtotal(block.section);
+      }
     }
 
     drawTotalsBox();
@@ -346,10 +458,11 @@ exports.generateDocument = async (req, res) => {
     }
 
     const lines = await QuoteLine.find({ organizationId, quoteId }).sort({ lineOrder: 1, createdAt: 1 }).lean();
+    const sections = await listQuoteSections({ organizationId, quoteId });
     const watermark =
       String(quote.customerShareMode || '').toLowerCase() === 'draft' ? 'DRAFT' : null;
     const branding = await getQuoteBranding(organizationId);
-    const pdf = await renderQuotePdf({ quote, lines, watermark, branding });
+    const pdf = await renderQuotePdf({ quote, lines, sections, watermark, branding });
     const checksum = computeChecksum(pdf);
 
     const latest = await QuoteDocumentModel.find({ organizationId, quoteId, revisionNumber: quote.revisionNumber })

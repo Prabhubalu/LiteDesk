@@ -5,6 +5,13 @@ const Item = require('../models/Item');
 const { resolve: resolveCatalogPrice } = require('../services/catalogPriceResolver');
 const catalogBundleService = require('../services/catalogBundleService');
 const quoteTotalsService = require('../services/quoteTotalsService');
+const {
+  recomputeQuoteAndSectionTotals,
+  assignLineToSection,
+  moveBundleGroupToSection,
+  findOrCreateSectionByTitle,
+  resolveSectionForQuote
+} = require('../services/quoteSectionService');
 const { writeQuoteActivity } = require('../services/quoteActivityService');
 const { isCatalogItemSellable } = require('../constants/catalogLifecycle');
 const { isCommerciallyLockedStatus, assertQuoteRecordEditable } = require('../constants/quoteLifecycle');
@@ -38,26 +45,13 @@ function assertVariantSellable(variantLifecycleState) {
   throw err;
 }
 
+async function afterLinesChanged({ organizationId, quoteId }) {
+  return recomputeQuoteAndSectionTotals({ organizationId, quoteId });
+}
+
+/** @deprecated use afterLinesChanged */
 async function recomputeQuoteSimpleTotals({ organizationId, quoteId }) {
-  const quote = await Quote.findOne({ _id: quoteId, organizationId })
-    .select('globalDiscountType globalDiscountValue globalDiscountAmount adjustmentTotal')
-    .lean();
-
-  const lines = await QuoteLine.find({ organizationId, quoteId, hiddenLine: { $ne: true } })
-    .select(
-      '_id quoteLineId lineType parentBundleLineId bundleSnapshot hiddenLine quantity unitPriceSnapshot lineSubtotal lineTaxTotal lineTotal discountType discountValue discountAmount'
-    )
-    .lean();
-
-  const totals = quoteTotalsService.computeQuoteTotalsFromLines(lines, {
-    globalDiscountType: quote?.globalDiscountType,
-    globalDiscountValue: quote?.globalDiscountValue,
-    globalDiscountAmount: quote?.globalDiscountAmount,
-    adjustmentTotal: quote?.adjustmentTotal
-  });
-
-  await Quote.updateOne({ _id: quoteId, organizationId }, { $set: totals });
-
+  const { totals } = await afterLinesChanged({ organizationId, quoteId });
   return totals;
 }
 
@@ -175,10 +169,18 @@ async function addQuoteLine(req, res) {
       discountAmount: 0
     });
 
+    const targetSection = await resolveSectionForQuote({
+      organizationId,
+      quoteId: quote._id,
+      sectionRef: req.body?.quoteSectionId,
+      quoteStatus: quote.status
+    });
+
     const line = await QuoteLine.create({
       organizationId,
       quoteId: quote._id,
       variantId: variant._id,
+      quoteSectionId: targetSection._id,
 
       quantity,
       unitOfMeasure: variant.unit_of_measure || item?.unit_of_measure || null,
@@ -213,7 +215,7 @@ async function addQuoteLine(req, res) {
       lockedSnapshot: isCommerciallyLockedStatus(quote.status)
     });
 
-    const totals = await recomputeQuoteSimpleTotals({ organizationId, quoteId: quote._id });
+    const { totals, sections } = await afterLinesChanged({ organizationId, quoteId: quote._id });
 
     await writeQuoteActivity({
       organizationId,
@@ -237,11 +239,12 @@ async function addQuoteLine(req, res) {
       success: true,
       data: {
         line,
-        totals
+        totals,
+        sections
       }
     });
   } catch (err) {
-    const status = err?.code === 'VALIDATION' ? 400 : 500;
+    const status = err?.code === 'VALIDATION' || err?.code === 'SECTION_NOT_FOUND' ? 400 : 500;
     return res.status(status).json({
       success: false,
       message: err.message || 'Failed to add quote line',
@@ -314,6 +317,13 @@ async function addQuoteBundle(req, res) {
 
     const nextOrder = await getNextLineOrder({ organizationId, quoteId: quote._id });
 
+    const targetSection = await resolveSectionForQuote({
+      organizationId,
+      quoteId: quote._id,
+      sectionRef: req.body?.quoteSectionId,
+      quoteStatus: quote.status
+    });
+
     const parentUnitPrice = Number(preview.bundleUnitPrice) || 0;
     const parentComputed = quoteTotalsService.computeLineTotals({
       quantity: bundleQuantity,
@@ -327,6 +337,7 @@ async function addQuoteBundle(req, res) {
       organizationId,
       quoteId: quote._id,
       variantId: bundleVariantId,
+      quoteSectionId: targetSection._id,
       lineType: 'bundle_parent',
       parentBundleLineId: null,
       lineOrder: nextOrder,
@@ -411,6 +422,7 @@ async function addQuoteBundle(req, res) {
         organizationId,
         quoteId: quote._id,
         variantId: compVariant._id,
+        quoteSectionId: targetSection._id,
         lineType: 'bundle_component',
         parentBundleLineId: parent._id,
         lineOrder: childOrder++,
@@ -456,7 +468,7 @@ async function addQuoteBundle(req, res) {
       createdComponents.push(componentLine);
     }
 
-    const totals = await recomputeQuoteSimpleTotals({ organizationId, quoteId: quote._id });
+    const { totals, sections } = await afterLinesChanged({ organizationId, quoteId: quote._id });
 
     await writeQuoteActivity({
       organizationId,
@@ -475,7 +487,7 @@ async function addQuoteBundle(req, res) {
 
     return res.status(201).json({
       success: true,
-      data: { parent, components: createdComponents, totals }
+      data: { parent, components: createdComponents, totals, sections }
     });
   } catch (err) {
     const status =
@@ -576,7 +588,7 @@ async function patchBundleOptionalComponents(req, res) {
       updated.push(child);
     }
 
-    const totals = await recomputeQuoteSimpleTotals({ organizationId, quoteId });
+    const { totals, sections } = await afterLinesChanged({ organizationId, quoteId });
     const lines = await QuoteLine.find({ organizationId, quoteId })
       .sort({ lineOrder: 1, createdAt: 1 })
       .lean();
@@ -596,7 +608,7 @@ async function patchBundleOptionalComponents(req, res) {
 
     return res.json({
       success: true,
-      data: { parent, lines, totals, updatedLines: updated }
+      data: { parent, lines, totals, sections, updatedLines: updated }
     });
   } catch (err) {
     const status = err?.code === 'VALIDATION' || err?.code === 'QUOTE_COMMERCIALLY_LOCKED' ? 400 : 500;
@@ -688,8 +700,46 @@ async function patchQuoteLine(req, res) {
     if (req.body?.optionalLine !== undefined) {
       line.optionalLine = req.body.optionalLine === true;
     }
+
+    if (req.body?.quoteSectionId !== undefined) {
+      const lineType = String(line.lineType || 'standard');
+      if (lineType === 'bundle_component') {
+        return res.status(400).json({
+          success: false,
+          code: 'BUNDLE_SECTION_SPLIT',
+          message: 'Move the bundle parent to change section for all components'
+        });
+      }
+      if (lineType === 'bundle_parent') {
+        await moveBundleGroupToSection({
+          organizationId,
+          quoteId,
+          parentLine: line,
+          quoteSectionId: req.body.quoteSectionId
+        });
+      } else {
+        await assignLineToSection({
+          organizationId,
+          quoteId,
+          line,
+          quoteSectionId: req.body.quoteSectionId,
+          quoteStatus: quote.status
+        });
+      }
+    }
+
     if (req.body?.lineGroupKey !== undefined) {
-      line.lineGroupKey = req.body.lineGroupKey ? String(req.body.lineGroupKey).trim() : null;
+      const key = req.body.lineGroupKey ? String(req.body.lineGroupKey).trim() : null;
+      if (key) {
+        const section = await findOrCreateSectionByTitle({
+          organizationId,
+          quoteId,
+          title: key,
+          quoteStatus: quote.status
+        });
+        line.quoteSectionId = section._id;
+      }
+      line.lineGroupKey = key;
     }
 
     // Recompute totals (MVP placeholder). No tax engine yet.
@@ -703,7 +753,7 @@ async function patchQuoteLine(req, res) {
 
     await line.save();
 
-    const totals = await recomputeQuoteSimpleTotals({ organizationId, quoteId: quoteId });
+    const { totals, sections } = await afterLinesChanged({ organizationId, quoteId: quoteId });
 
     await writeQuoteActivity({
       organizationId,
@@ -714,7 +764,7 @@ async function patchQuoteLine(req, res) {
       details: { quoteLineId: line.quoteLineId, totals }
     });
 
-    return res.json({ success: true, data: { line, totals } });
+    return res.json({ success: true, data: { line, totals, sections } });
   } catch (err) {
     const status = err?.code === 'VALIDATION' || err?.code === 'QUOTE_COMMERCIALLY_LOCKED' ? 400 : 500;
     return res.status(status).json({
@@ -761,7 +811,7 @@ async function deleteQuoteLine(req, res) {
       await QuoteLine.deleteMany({ organizationId, quoteId, parentBundleLineId: deleted._id });
     }
 
-    const totals = await recomputeQuoteSimpleTotals({ organizationId, quoteId });
+    const { totals, sections } = await afterLinesChanged({ organizationId, quoteId });
 
     await writeQuoteActivity({
       organizationId,
@@ -772,7 +822,7 @@ async function deleteQuoteLine(req, res) {
       details: { quoteLineId, totals }
     });
 
-    return res.json({ success: true, data: { deleted, totals } });
+    return res.json({ success: true, data: { deleted, totals, sections } });
   } catch (err) {
     const status = err?.code === 'VALIDATION' || err?.code === 'QUOTE_COMMERCIALLY_LOCKED' ? 400 : 500;
     return res.status(status).json({
@@ -818,7 +868,7 @@ async function reorderQuoteLines(req, res) {
       .sort({ lineOrder: 1, createdAt: 1 })
       .lean();
 
-    const totals = await recomputeQuoteSimpleTotals({ organizationId, quoteId });
+    const { totals, sections } = await afterLinesChanged({ organizationId, quoteId });
 
     await writeQuoteActivity({
       organizationId,
@@ -834,7 +884,7 @@ async function reorderQuoteLines(req, res) {
 
     return res.json({
       success: true,
-      data: { lines, totals, bulk: { matched: result.matchedCount, modified: result.modifiedCount } }
+      data: { lines, totals, sections, bulk: { matched: result.matchedCount, modified: result.modifiedCount } }
     });
   } catch (err) {
     const status = err?.code === 'VALIDATION' || err?.code === 'QUOTE_COMMERCIALLY_LOCKED' ? 400 : 500;

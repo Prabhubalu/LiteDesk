@@ -37,6 +37,14 @@ const {
   deleteQuoteLine,
   reorderQuoteLines
 } = require('../controllers/quoteLineController');
+const {
+  listSections,
+  createSection,
+  patchSection,
+  patchSectionDiscounts,
+  reorderSections,
+  deleteSection
+} = require('../controllers/quoteSectionController');
 const quoteDocumentController = require('../controllers/quoteDocumentController');
 
 const router = express.Router();
@@ -74,6 +82,12 @@ router.post('/:id/convert', checkPermission('quotes', 'edit'), convertQuote);
 router.post('/:id/recalculate', checkPermission('quotes', 'edit'), recalculateQuote);
 router.patch('/:id/discounts', checkPermission('quotes', 'edit'), patchQuoteDiscounts);
 router.post('/:id/revise', checkPermission('quotes', 'edit'), reviseQuote);
+router.get('/:id/sections', checkPermission('quotes', 'view'), listSections);
+router.post('/:id/sections', checkPermission('quotes', 'edit'), createSection);
+router.patch('/:id/sections/reorder', checkPermission('quotes', 'edit'), reorderSections);
+router.patch('/:id/sections/:sectionId/discounts', checkPermission('quotes', 'edit'), patchSectionDiscounts);
+router.patch('/:id/sections/:sectionId', checkPermission('quotes', 'edit'), patchSection);
+router.delete('/:id/sections/:sectionId', checkPermission('quotes', 'edit'), deleteSection);
 router.post('/:id/lines', checkPermission('quotes', 'edit'), addQuoteLine);
 router.post('/:id/bundles', checkPermission('quotes', 'edit'), addQuoteBundle);
 router.patch('/:id/bundles/:parentLineId/optionals', checkPermission('quotes', 'edit'), patchBundleOptionalComponents);

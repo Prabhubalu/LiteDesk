@@ -57,7 +57,14 @@ const QuoteLineSchema = new Schema(
 
     lineOrder: { type: Number, default: 0 },
 
-    // Placeholder for future grouping (phases/sections/milestones/services)
+    quoteSectionId: {
+      type: Schema.Types.ObjectId,
+      ref: 'QuoteSection',
+      default: null,
+      index: true
+    },
+
+    /** @deprecated Use quoteSectionId — kept for migration reads only */
     lineGroupKey: { type: String, trim: true, default: null, index: true },
 
     quantity: { type: Number, default: 1, min: 0 },

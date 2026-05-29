@@ -986,10 +986,11 @@ import { createRecordSectionLabels } from '@/utils/recordSectionLabels';
 import {
   applyQuoteLineDeleteToRecord,
   applyQuoteLinesAddToRecord,
-  applyQuoteLinesUpdateToRecord,
+  applyQuoteLinesMutationToRecord,
   applyQuoteLinesRecalculateToRecord,
   applyQuoteHeaderPatchToRecord,
-  applyQuoteDiscountsToRecord
+  applyQuoteDiscountsToRecord,
+  applyQuoteSectionsToRecord
 } from '@/utils/quoteRecordPatch';
 import { useRecordTags, getDefaultTagChipClass } from '@/components/record-page/composables/useRecordTags';
 import {
@@ -2704,7 +2705,8 @@ function handleSectionUpdated(event) {
     payload?.type === 'line-deleted' &&
     applyQuoteLineDeleteToRecord(record.value, {
       deletedLine: payload.deletedLine,
-      totals: payload.totals
+      totals: payload.totals,
+      sections: payload.sections
     })
   ) {
     return;
@@ -2714,7 +2716,8 @@ function handleSectionUpdated(event) {
     payload?.type === 'lines-added' &&
     applyQuoteLinesAddToRecord(record.value, {
       lines: payload.lines,
-      totals: payload.totals
+      totals: payload.totals,
+      sections: payload.sections
     })
   ) {
     return;
@@ -2722,9 +2725,10 @@ function handleSectionUpdated(event) {
 
   if (
     payload?.type === 'line-updated' &&
-    applyQuoteLinesUpdateToRecord(record.value, {
+    applyQuoteLinesMutationToRecord(record.value, {
       line: payload.line,
-      totals: payload.totals
+      totals: payload.totals,
+      sections: payload.sections
     })
   ) {
     return;
@@ -2734,7 +2738,8 @@ function handleSectionUpdated(event) {
     payload?.type === 'lines-recalculated' &&
     applyQuoteLinesRecalculateToRecord(record.value, {
       lines: payload.lines,
-      totals: payload.totals
+      totals: payload.totals,
+      sections: payload.sections
     })
   ) {
     return;
@@ -2752,9 +2757,24 @@ function handleSectionUpdated(event) {
     applyQuoteDiscountsToRecord(record.value, {
       quote: payload.quote,
       lines: payload.lines,
-      totals: payload.totals
+      totals: payload.totals,
+      sections: payload.sections
     })
   ) {
+    return;
+  }
+
+  if (
+    payload?.type === 'sections-updated' &&
+    applyQuoteSectionsToRecord(record.value, payload.sections)
+  ) {
+    if (payload.totals) {
+      applyQuoteLinesRecalculateToRecord(record.value, {
+        lines: payload.lines,
+        totals: payload.totals,
+        sections: payload.sections
+      });
+    }
     return;
   }
 
