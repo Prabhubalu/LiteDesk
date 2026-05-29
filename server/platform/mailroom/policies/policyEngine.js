@@ -2,6 +2,10 @@ const { MAILROOM_POLICY_TYPES } = require('../../../constants/mailroomPolicies')
 const { evaluateThreadingSignal } = require('./strategies/threadingStrategies');
 const { evaluateDedup } = require('./strategies/dedupStrategies');
 const { evaluateCaseLink } = require('./strategies/caseLinkStrategies');
+const {
+  evaluateClassification,
+  mergeClassificationDefaults
+} = require('./strategies/classificationStrategies');
 
 /**
  * Evaluate a tenant Mailroom policy.
@@ -91,7 +95,14 @@ function evaluateDedupPolicy(dedupPolicy, message, candidates) {
   };
 }
 
-function evaluateCaseLinkPolicy(caseLinkPolicy, message, candidates, threadingEvaluation) {
+function evaluateCaseLinkPolicy(
+  caseLinkPolicy,
+  message,
+  candidates,
+  threadingEvaluation,
+  classificationEvaluation = null,
+  classificationPolicy = null
+) {
   let threadingTarget = threadingEvaluation?.matched ? threadingEvaluation.target : null;
   if (threadingTarget?.conversationId && !threadingTarget?.caseId) {
     const conv = (candidates.conversations || []).find(
@@ -105,44 +116,17 @@ function evaluateCaseLinkPolicy(caseLinkPolicy, message, candidates, threadingEv
   const result = evaluateCaseLink(message, candidates, caseLinkPolicy, {
     threadingTarget
   });
+  const baseDefaults = result.defaults || caseLinkPolicy?.defaults || {};
+  const mergedDefaults = mergeClassificationDefaults(
+    baseDefaults,
+    classificationEvaluation,
+    classificationPolicy || {}
+  );
+
   return {
     policyType: 'case_link',
-    ...result
-  };
-}
-
-function evaluateClassification(classificationPolicy, message) {
-  const rules = Array.isArray(classificationPolicy?.rules) ? classificationPolicy.rules : [];
-  const suggestions = {
-    caseType: null,
-    priority: null,
-    queue: classificationPolicy?.defaultQueue || null,
-    spam: false
-  };
-
-  for (const rule of rules) {
-    if (rule.enabled === false) continue;
-    const field = String(rule.field || '');
-    const op = String(rule.operator || 'contains');
-    const value = rule.value;
-    let hay = '';
-    if (field === 'subject') hay = String(message.subject || '');
-    else if (field === 'from') {
-      const from = message.participants?.from;
-      hay = typeof from === 'string' ? from : from?.address || '';
-    }
-    if (op === 'contains' && value && hay.toLowerCase().includes(String(value).toLowerCase())) {
-      if (rule.suggestCaseType) suggestions.caseType = rule.suggestCaseType;
-      if (rule.suggestPriority) suggestions.priority = rule.suggestPriority;
-      if (rule.suggestQueue) suggestions.queue = rule.suggestQueue;
-      if (rule.markSpam) suggestions.spam = true;
-    }
-  }
-
-  return {
-    policyType: 'classification',
-    suggestions,
-    trace: [`evaluated ${rules.length} classification rules`]
+    ...result,
+    defaults: mergedDefaults
   };
 }
 
@@ -255,24 +239,28 @@ function evaluateIngest(ingestPolicy, message) {
  * Run threading → dedup → case_link in sequence (no side effects).
  */
 function evaluatePipeline(context = {}) {
-  const ingest = evaluate('ingest', context);
+  const policies = context.policies || {};
+
+  const ingest = context.ingestEvaluation || evaluate('ingest', context);
+  const classification = evaluate('classification', context);
   const threading = evaluate('threading', context);
   const dedup = evaluate('dedup', context);
   const caseLink = evaluateCaseLinkPolicy(
-    context.policies?.caseLink,
+    policies.caseLink,
     context.message || context.normalizedMessage || {},
     context.candidates || {},
-    threading
+    threading,
+    classification,
+    policies.classification
   );
-  const classification = evaluate('classification', context);
   const dispatch = evaluate('dispatch', context);
 
   return {
     ingest,
+    classification,
     threading,
     dedup,
     caseLink,
-    classification,
     dispatch
   };
 }

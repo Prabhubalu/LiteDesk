@@ -32,6 +32,11 @@ const MAILROOM_INGEST_OPERATORS = ['contains', 'equals', 'ends_with', 'in'];
 const MAILROOM_INGEST_FIELDS = ['to', 'cc', 'bcc', 'from', 'from_domain', 'subject', 'mailbox_kind', 'channel'];
 const MAILROOM_INGEST_ACTIONS = ['route_to_case_flow', 'workspace_only', 'manual_review', 'ignore'];
 
+const MAILROOM_CLASSIFICATION_FIELDS = ['subject', 'from', 'from_domain', 'body', 'channel'];
+const MAILROOM_CLASSIFICATION_OPERATORS = ['contains', 'equals', 'ends_with', 'in'];
+const MAILROOM_CLASSIFICATION_APPLY_MODES = ['suggest_only', 'auto_apply'];
+const MAILROOM_CLASSIFICATION_ON_SPAM = ['ignore', 'manual_review', 'route_to_case_flow'];
+
 const MAILROOM_TEMPLATE_IDS = [
   'helpdesk_standard_email',
   'strict_one_email_one_case',
@@ -50,6 +55,10 @@ module.exports = {
   MAILROOM_INGEST_OPERATORS,
   MAILROOM_INGEST_FIELDS,
   MAILROOM_INGEST_ACTIONS,
+  MAILROOM_CLASSIFICATION_FIELDS,
+  MAILROOM_CLASSIFICATION_OPERATORS,
+  MAILROOM_CLASSIFICATION_APPLY_MODES,
+  MAILROOM_CLASSIFICATION_ON_SPAM,
   MAILROOM_TEMPLATE_IDS,
   MAILROOM_CHANNELS,
   MAILROOM_SCHEMA_VERSION

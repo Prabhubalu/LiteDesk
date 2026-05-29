@@ -18,6 +18,7 @@ const TenantMailroomConfigSchema = new Schema(
     schemaVersion: { type: Number, default: MAILROOM_SCHEMA_VERSION },
     policies: { type: Schema.Types.Mixed, default: {} },
     connectors: { type: Schema.Types.Mixed, default: {} },
+    security: { type: Schema.Types.Mixed, default: {} },
     updatedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null }
   },
   { timestamps: true, collection: 'tenant_mailroom_configs' }

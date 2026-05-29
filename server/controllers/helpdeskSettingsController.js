@@ -1,5 +1,10 @@
 const TenantAppConfiguration = require('../models/TenantAppConfiguration');
 const { CASE_TYPES, CASE_PRIORITIES, CASE_CHANNELS } = require('../constants/caseLifecycle');
+const {
+  normalizeCannedResponses,
+  sanitizeCannedResponsesForSave,
+  validateCannedResponses
+} = require('../services/caseCannedResponseService');
 
 const ALLOWED_PRIORITIES = new Set(CASE_PRIORITIES);
 const ALLOWED_CASE_TYPES = new Set(CASE_TYPES);
@@ -34,7 +39,8 @@ const DEFAULT_HELPDESK_EXECUTION_SETTINGS = {
     notifyOnAssigned: true,
     notifyOnSlaWarning: true,
     notifyOnSlaBreach: true
-  }
+  },
+  cannedResponses: []
 };
 
 function isPlainObject(value) {
@@ -127,6 +133,8 @@ function mergeWithDefaults(rawSettings) {
       ...source.notifications
     };
   }
+
+  merged.cannedResponses = normalizeCannedResponses(source.cannedResponses);
 
   return merged;
 }
@@ -285,6 +293,9 @@ function validateExecutionSettings(settings) {
   const notifErr = validateNotifications(settings.notifications);
   if (notifErr) return notifErr;
 
+  const cannedErr = validateCannedResponses(settings.cannedResponses);
+  if (cannedErr) return cannedErr;
+
   return null;
 }
 
@@ -340,7 +351,16 @@ exports.recalculateOpenCaseSlas = async (req, res) => {
 
 exports.updateHelpdeskExecutionSettings = async (req, res) => {
   try {
-    const incoming = mergeWithDefaults(req.body?.settings || req.body || {});
+    const rawBody = req.body?.settings || req.body || {};
+    const cannedFromRequest = Array.isArray(rawBody.cannedResponses)
+      ? sanitizeCannedResponsesForSave(rawBody.cannedResponses)
+      : null;
+
+    const incoming = mergeWithDefaults(rawBody);
+    if (cannedFromRequest != null) {
+      incoming.cannedResponses = cannedFromRequest;
+    }
+
     const validationError = validateExecutionSettings(incoming);
     if (validationError) {
       return res.status(400).json({
@@ -349,18 +369,16 @@ exports.updateHelpdeskExecutionSettings = async (req, res) => {
       });
     }
 
-    const update = {
-      appKey: 'HELPDESK',
-      organizationId: req.user.organizationId,
-      enabled: true,
-      settings: {
-        helpdeskExecution: incoming,
-        // Backward-compatible mirror keys for runtime readers that still expect flat settings
-        slaPriorityTargets: incoming.slaPriorityTargets,
-        businessHours: incoming.businessHours,
-        slaPolicies: incoming.slaPolicies,
-        defaultSlaPolicyKey: incoming.defaultSlaPolicyKey
-      }
+    const helpdeskExecution = { ...incoming };
+    const flatMirrors = {
+      slaPriorityTargets: incoming.slaPriorityTargets,
+      businessHours: incoming.businessHours,
+      slaPolicies: incoming.slaPolicies,
+      defaultSlaPolicyKey: incoming.defaultSlaPolicyKey,
+      channelRules: incoming.channelRules,
+      notifications: incoming.notifications,
+      caseTypes: incoming.caseTypes,
+      escalationRules: incoming.escalationRules
     };
 
     const doc = await TenantAppConfiguration.findOneAndUpdate(
@@ -369,7 +387,15 @@ exports.updateHelpdeskExecutionSettings = async (req, res) => {
         appKey: 'HELPDESK'
       },
       {
-        $set: update
+        $set: {
+          enabled: true,
+          'settings.helpdeskExecution': helpdeskExecution,
+          'settings.slaPriorityTargets': flatMirrors.slaPriorityTargets,
+          'settings.businessHours': flatMirrors.businessHours,
+          'settings.slaPolicies': flatMirrors.slaPolicies,
+          'settings.defaultSlaPolicyKey': flatMirrors.defaultSlaPolicyKey,
+          'settings.channelRules': flatMirrors.channelRules
+        }
       },
       {
         upsert: true,
@@ -378,11 +404,12 @@ exports.updateHelpdeskExecutionSettings = async (req, res) => {
       }
     ).lean();
 
+    const persisted = doc?.settings?.helpdeskExecution || helpdeskExecution;
     return res.json({
       success: true,
       appKey: 'HELPDESK',
       enabled: Boolean(doc?.enabled),
-      settings: mergeWithDefaults(doc?.settings?.helpdeskExecution || incoming)
+      settings: mergeWithDefaults(persisted)
     });
   } catch (error) {
     console.error('[helpdeskSettingsController] updateHelpdeskExecutionSettings error:', error);

@@ -6,6 +6,10 @@ const {
   MAILROOM_INGEST_OPERATORS,
   MAILROOM_INGEST_FIELDS,
   MAILROOM_INGEST_ACTIONS,
+  MAILROOM_CLASSIFICATION_FIELDS,
+  MAILROOM_CLASSIFICATION_OPERATORS,
+  MAILROOM_CLASSIFICATION_APPLY_MODES,
+  MAILROOM_CLASSIFICATION_ON_SPAM,
   MAILROOM_TEMPLATE_IDS,
   MAILROOM_SCHEMA_VERSION
 } = require('../../../../constants/mailroomPolicies');
@@ -88,6 +92,28 @@ function validateIngestPolicy(policy, errors, prefix) {
   }
 }
 
+function validateClassificationPolicy(policy, errors, prefix) {
+  if (!policy || typeof policy !== 'object' || Array.isArray(policy)) {
+    errors.push(`${prefix}.classification must be an object`);
+    return;
+  }
+  if (policy.applyMode && !MAILROOM_CLASSIFICATION_APPLY_MODES.includes(policy.applyMode)) {
+    errors.push(`${prefix}.classification.applyMode is invalid`);
+  }
+  if (policy.onSpam && !MAILROOM_CLASSIFICATION_ON_SPAM.includes(policy.onSpam)) {
+    errors.push(`${prefix}.classification.onSpam is invalid`);
+  }
+  const rules = Array.isArray(policy.rules) ? policy.rules : [];
+  rules.forEach((rule, i) => {
+    if (rule.field && !MAILROOM_CLASSIFICATION_FIELDS.includes(rule.field)) {
+      errors.push(`${prefix}.classification.rules[${i}].field is invalid`);
+    }
+    if (rule.operator && !MAILROOM_CLASSIFICATION_OPERATORS.includes(rule.operator)) {
+      errors.push(`${prefix}.classification.rules[${i}].operator is invalid`);
+    }
+  });
+}
+
 function validatePolicies(policies) {
   const errors = [];
   if (!isPlainObject(policies)) {
@@ -97,6 +123,7 @@ function validatePolicies(policies) {
   validateIngestPolicy(policies.ingest, errors, 'policies');
   validateDedupPolicy(policies.dedup, errors, 'policies');
   validateCaseLinkPolicy(policies.caseLink, errors, 'policies');
+  validateClassificationPolicy(policies.classification, errors, 'policies');
   return { ok: errors.length === 0, errors };
 }
 
@@ -136,7 +163,7 @@ function sanitizeMailroomConfig(input) {
         : { rules: [], defaultAction: { type: 'route_to_case_flow' } },
       dedup: isPlainObject(policies.dedup) ? policies.dedup : {},
       caseLink: isPlainObject(policies.caseLink) ? policies.caseLink : {},
-      classification: isPlainObject(policies.classification) ? policies.classification : { rules: [] },
+      classification: sanitizeClassificationPolicy(policies.classification),
       dispatch: isPlainObject(policies.dispatch) ? policies.dispatch : { publish: [] }
     },
     connectors: {
@@ -151,6 +178,58 @@ function sanitizeMailroomConfig(input) {
       chat: {
         enabled: connectors.chat?.enabled === true
       }
+    },
+    security: sanitizeSecurityConfig(raw.security)
+  };
+}
+
+function sanitizeClassificationPolicy(classification) {
+  const raw = isPlainObject(classification) ? classification : {};
+  const rules = Array.isArray(raw.rules) ? raw.rules : [];
+  const applyMode = MAILROOM_CLASSIFICATION_APPLY_MODES.includes(raw.applyMode)
+    ? raw.applyMode
+    : 'auto_apply';
+  const onSpam = MAILROOM_CLASSIFICATION_ON_SPAM.includes(raw.onSpam) ? raw.onSpam : 'ignore';
+
+  return {
+    rules: rules.map((rule, index) => ({
+      id: rule.id ? String(rule.id).trim() : `cls-${index + 1}`,
+      name: String(rule.name || '').trim(),
+      enabled: rule.enabled !== false,
+      field: MAILROOM_CLASSIFICATION_FIELDS.includes(rule.field) ? rule.field : 'subject',
+      operator: MAILROOM_CLASSIFICATION_OPERATORS.includes(rule.operator) ? rule.operator : 'contains',
+      value: String(rule.value || '').trim(),
+      suggestCaseType: rule.suggestCaseType ? String(rule.suggestCaseType).trim() : null,
+      suggestPriority: rule.suggestPriority ? String(rule.suggestPriority).trim() : null,
+      suggestQueue: rule.suggestQueue ? String(rule.suggestQueue).trim() : null,
+      markSpam: rule.markSpam === true
+    })),
+    defaultQueue: raw.defaultQueue ? String(raw.defaultQueue).trim() : null,
+    applyMode,
+    onSpam,
+    stopOnFirstMatch: raw.stopOnFirstMatch !== false
+  };
+}
+
+function sanitizeSecurityConfig(security) {
+  const raw = isPlainObject(security) ? security : {};
+  const email = isPlainObject(raw.email) ? raw.email : {};
+  const attachments = isPlainObject(raw.attachments) ? raw.attachments : {};
+  const onFailure = ['monitor', 'quarantine', 'reject'].includes(email.onFailure)
+    ? email.onFailure
+    : 'monitor';
+
+  return {
+    email: {
+      enabled: email.enabled !== false,
+      requireSpf: email.requireSpf === true,
+      requireDkim: email.requireDkim === true,
+      requireDmarc: email.requireDmarc === true,
+      onFailure
+    },
+    attachments: {
+      scanEnabled: attachments.scanEnabled === true,
+      onInfected: attachments.onInfected === 'allow_flag' ? 'allow_flag' : 'block'
     }
   };
 }

@@ -54,6 +54,9 @@ Smoke checks validate:
   - If using **user-defined notification rules** for SALES, confirm rules with module `people`, `deals`, `tasks`, or `organizations` and event `ASSIGNED` still match and fire for these automation-driven events (CRM org rules require the record’s `createdBy` user to belong to the tenant).
 - Verify SLA warning/breach notifications are emitted once per cycle threshold.
 - Verify inbound email routes to case and appends activity under configured duplicate policy.
+- **Realtime helpdesk alerts** (bell, toast, sound, internal tab highlight): see [HELPDESK_NOTIFICATION_SIMULATION.md](./HELPDESK_NOTIFICATION_SIMULATION.md).
+  - Bell/toast/SSE: `npm run simulate:helpdesk-notification` (optional UI: `VITE_ENABLE_HELPDESK_NOTIFICATION_DEV_PANEL=true` in `client/.env.local`).
+  - **Internal tab:** open case tab → switch to another tab → simulate email/chat for that `caseId` → confirm stacked title (`New email · …`), amber tab background, animated icon → click case tab → alert clears.
 
 ## 5) Analytics QA
 

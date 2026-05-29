@@ -13,6 +13,7 @@ const {
 const { applySlaTargetsToCycle } = require('../../../services/helpdeskSlaService');
 const caseExecutionService = require('../../../services/caseExecutionService');
 const { getFromAddress } = require('../services/conversationPersistenceService');
+const { normalizeDefaultsForCaseCreate } = require('../policies/strategies/classificationStrategies');
 
 const MAILROOM_REOPEN_REASON = 'Reopened automatically from inbound email (Mailroom)';
 
@@ -35,7 +36,7 @@ function resolveCaseExecutionPlan(policyEvaluation = {}) {
   let action = caseLink.action || 'create_case';
   let caseId = caseLink.caseId || null;
   let reason = caseLink.reason || 'case_link';
-  const defaults = caseLink.defaults || {};
+  const defaults = normalizeDefaultsForCaseCreate(caseLink.defaults || {});
   const trace = [...(caseLink.trace || [])];
 
   const threadedCaseId = threading.target?.caseId || null;
@@ -62,6 +63,16 @@ function resolveCaseExecutionPlan(policyEvaluation = {}) {
       action = 'append';
       caseId = caseId || threadedCaseId;
       reason = 'dedup_append';
+    }
+    if (dedup.behavior === 'create_child_case') {
+      return {
+        action: 'create_child_case',
+        caseId: caseId || threadedCaseId || null,
+        reason: 'dedup_create_child_case',
+        defaults,
+        trace,
+        dedupApplied: true
+      };
     }
     if (dedup.behavior === 'ignore') {
       return {
@@ -225,7 +236,18 @@ async function executeMailroomCaseLink({
   let caseRecord = caseId ? await loadCase(organizationId, caseId) : null;
   let action = plan.action;
 
-  if (plan.action === 'create_case' || (!caseRecord && plan.action !== 'flag_for_review')) {
+  if (plan.action === 'create_child_case') {
+    caseRecord = await createCaseFromInboundEmail({
+      organizationId,
+      subject: parsedEmail.subject,
+      body: parsedEmail.body,
+      fromAddress: parsedEmail.fromAddress,
+      communicationId,
+      parentCaseId: caseId || null,
+      defaults: plan.defaults
+    });
+    action = 'created_child_case';
+  } else if (plan.action === 'create_case' || (!caseRecord && plan.action !== 'flag_for_review')) {
     caseRecord = await createCaseFromInboundEmail({
       organizationId,
       subject: parsedEmail.subject,

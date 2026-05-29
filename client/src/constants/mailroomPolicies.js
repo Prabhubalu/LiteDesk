@@ -66,3 +66,27 @@ export const MAILROOM_INGEST_OPERATOR_LABEL_KEYS = {
   ends_with: 'settings.mailroomIngestOperatorEndsWith',
   in: 'settings.mailroomIngestOperatorIn'
 };
+
+export const MAILROOM_CLASSIFICATION_FIELDS = ['subject', 'from', 'from_domain', 'body', 'channel'];
+export const MAILROOM_CLASSIFICATION_OPERATORS = ['contains', 'equals', 'ends_with', 'in'];
+export const MAILROOM_CLASSIFICATION_APPLY_MODES = ['suggest_only', 'auto_apply'];
+export const MAILROOM_CLASSIFICATION_ON_SPAM = ['ignore', 'manual_review', 'route_to_case_flow'];
+
+export const MAILROOM_CLASSIFICATION_FIELD_LABEL_KEYS = {
+  subject: 'settings.mailroomClassificationFieldSubject',
+  from: 'settings.mailroomClassificationFieldFrom',
+  from_domain: 'settings.mailroomClassificationFieldFromDomain',
+  body: 'settings.mailroomClassificationFieldBody',
+  channel: 'settings.mailroomClassificationFieldChannel'
+};
+
+export const MAILROOM_CLASSIFICATION_APPLY_MODE_LABEL_KEYS = {
+  suggest_only: 'settings.mailroomClassificationApplySuggest',
+  auto_apply: 'settings.mailroomClassificationApplyAuto'
+};
+
+export const MAILROOM_CLASSIFICATION_ON_SPAM_LABEL_KEYS = {
+  ignore: 'settings.mailroomClassificationSpamIgnore',
+  manual_review: 'settings.mailroomClassificationSpamManualReview',
+  route_to_case_flow: 'settings.mailroomClassificationSpamRoute'
+};

@@ -2,6 +2,13 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { useAuthStore } from './authRegistry';
 import dateUtils from '@/utils/dateUtils';
+import { resolveNotificationAppKeyFromPath } from '@/utils/notificationAppKey';
+import { alertForHelpdeskNotification } from '@/utils/helpdeskNotificationAlerts';
+import {
+  caseIdFromHelpdeskNotification,
+  helpdeskAlertKindFromNotification
+} from '@/utils/helpdeskTabAlerts';
+import { markHelpdeskTabAlertForCase } from '@/composables/useTabs';
 
 export const useNotificationStore = defineStore('notifications', () => {
   const items = ref([]);
@@ -36,13 +43,14 @@ export const useNotificationStore = defineStore('notifications', () => {
    */
   const dismissedByApp = ref({}); // { [appKey]: string[] }
 
-  const currentAppKey = () => {
-    // Derive from route or allowed apps; keep simple for now:
-    const path = window.location.pathname || '';
-    if (path.startsWith('/audit/')) return 'AUDIT';
-    if (path.startsWith('/portal/')) return 'PORTAL';
-    return 'SALES';
-  };
+  const currentAppKey = () => resolveNotificationAppKeyFromPath();
+
+  function resolveIncomingNotificationAppKey(notification) {
+    if (notification?.appKey) return String(notification.appKey);
+    const eventType = String(notification?.eventType || '');
+    if (eventType.startsWith('CASE_')) return 'HELPDESK';
+    return currentAppKey();
+  }
 
   function snoozeStorageKey() {
     const userId = authStore.user?._id || authStore.user?.id || 'anon';
@@ -534,11 +542,20 @@ export const useNotificationStore = defineStore('notifications', () => {
       createdAt: notification.createdAt
     });
 
-    // Update unread count
-    const appKey = currentAppKey();
-    unreadCount.value = items.value.filter(n => !n.readAt && !isSnoozed(n.id, appKey)).length;
+  const appKey = resolveIncomingNotificationAppKey(notification);
+  if (!isSnoozed(notification.id, appKey)) {
+    unreadCount.value = Math.max(0, Number(unreadCount.value || 0) + 1);
+  }
 
-    console.log(`[notifications] Incoming notification: ${notification.id} (${notification.title})`);
+  alertForHelpdeskNotification(notification, { appKey });
+
+  const alertKind = helpdeskAlertKindFromNotification(notification);
+  const caseId = caseIdFromHelpdeskNotification(notification);
+  if (alertKind && caseId) {
+    markHelpdeskTabAlertForCase(caseId, alertKind);
+  }
+
+  console.log(`[notifications] Incoming notification: ${notification.id} (${notification.title})`);
   }
 
   return {

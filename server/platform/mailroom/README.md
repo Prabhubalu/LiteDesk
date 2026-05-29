@@ -15,6 +15,9 @@ Conversation-first ingestion for omnichannel communication. **Business behavior 
 | `connectors/` | Email parser, raw MIME (M1+) |
 | `pipeline/` | Async stages (M1+) |
 | `events/` | Event publisher (M4+) |
+| `workers/` | Background retry for processing failures (M4.1) |
+| `security/` | Email authentication validation, attachment malware scan hook |
+| `observability/` | In-process metrics + Prometheus export |
 
 ## Boundaries
 
@@ -30,14 +33,17 @@ Conversation-first ingestion for omnichannel communication. **Business behavior 
 - **M3** — `casesAdapter` executes case_link/dedup; Mailroom-enabled email skips legacy helpdesk ingest; channel-rules migration script
 - **M3.1** — **Ingest routing** policy (pre-pipeline); tabbed Settings UI (Overview / Routing / Processing / Monitoring / Developer)
 - **M4** — Event publishing + dispatcher; processing failures + replay from Settings UI
+- **M4.1** — `processingFailureRetryWorker` auto-replays open failures (disable: `MAILROOM_FAILURE_RETRY_ENABLED=false`)
 - **M5** — Public ingest API + Portal connector (`/api/public/mailroom`, `/portal/mailroom`); see `docs/MAILROOM_API.md`
-- **M6+** — Live chat (M6), hardening (M7)
+- **M6** — Live chat embed + case workspace
+- **M7** — Email auth (SPF/DKIM/DMARC headers), attachment scan webhook, metrics + routing logs, Mongo search
 
 ## Settings UI (Automation → Mailroom)
 
 | Tab | Purpose |
 |-----|---------|
 | Overview | Enable, template, pipeline diagram |
+| Connectors | Email toggles, Public API key, portal limits, chat |
 | Routing | Ingest rules — which messages enter case flow |
 | Processing | Threading → Dedup → Case link |
 | Monitoring | Failures + replay; threading logs |
@@ -80,6 +86,27 @@ npm run migrate:helpdesk-channel-rules-mailroom -- --org-id <mongoOrgId> --apply
 ```
 
 Maps `helpdeskExecution.channelRules` (Email first) → `dedup.onDuplicate` and `caseLink.defaults`, merging into the active Mailroom template policies.
+
+### Smoke checks (staging / local API)
+
+```bash
+cd server
+HELPDESK_AUTH_TOKEN=<jwt> npm run smoke:mailroom
+# optional: HELPDESK_BASE_URL=https://staging.example.com
+```
+
+### Failure retry worker (M4.1)
+
+When the web process starts (`ENABLE_BULL_IN_WEB` not `false`), `processingFailureRetryWorker` replays open `mailroom_processing_failures` every 5 minutes (configurable via `MAILROOM_FAILURE_RETRY_INTERVAL_MS`). Disable with `MAILROOM_FAILURE_RETRY_ENABLED=false`.
+
+### M7 environment variables
+
+| Variable | Purpose |
+|----------|---------|
+| `MAILROOM_SCAN_WEBHOOK_URL` | POST attachment metadata for malware verdict (`{ "status": "clean" \| "infected" }`) |
+| `MAILROOM_ATTACHMENT_SCAN_ENABLED` | Force attachment scan for all tenants (or use Settings toggle per org) |
+| `MAILROOM_METRICS_TOKEN` | Optional bearer for `GET /health/mailroom-metrics` Prometheus scrape |
+| `MAILROOM_FAILURE_RETRY_*` | Auto-replay worker tuning (see M4.1) |
 
 ### Local mailbox setup (no remote parser)
 

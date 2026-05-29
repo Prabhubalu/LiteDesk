@@ -1,25 +1,39 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
-
-const { t, te } = useI18n();
-
-function tabDisplayTitle(tab) {
-  return resolveTabTitle(tab, t, te);
-}
 import { useRoute } from 'vue-router';
-import { useTabs } from '@/composables/useTabs';
+import { useTabs, tabShowsHelpdeskAlert } from '@/composables/useTabs';
 import { useAuthStore } from '@/stores/authRegistry';
 import clickOutside from '@/directives/clickOutside';
 import NotificationBell from '@/components/notifications/NotificationBell.vue';
 import UserMenu from '@/components/UserMenu.vue';
 import { useUserStatus } from '@/composables/useUserStatus';
 import { XMarkIcon } from '@heroicons/vue/20/solid';
-import { resolveTabTitle } from '@/utils/navigationLabels';
+import { resolveTabTitleWithHelpdeskAlerts } from '@/utils/helpdeskTabAlerts';
 
+const { t, te } = useI18n();
 const route = useRoute();
 const authStore = useAuthStore();
 const { tabs, activeTabId, switchToTab, closeTab, closeOtherTabs, closeAllTabs } = useTabs();
+
+function tabDisplayTitle(tab) {
+  return resolveTabTitleWithHelpdeskAlerts(tab, t, te);
+}
+
+function tabHasHelpdeskAlert(tab) {
+  return tabShowsHelpdeskAlert(tab, activeTabId.value);
+}
+
+function tabAlertIconColorClass(tab) {
+  if (!tabHasHelpdeskAlert(tab)) {
+    return activeTabId.value === tab.id
+      ? 'text-gray-900 dark:text-white'
+      : 'text-gray-600 dark:text-gray-400';
+  }
+  return tab.alertKind === 'chat'
+    ? 'text-emerald-600 dark:text-emerald-400'
+    : 'text-amber-600 dark:text-amber-400';
+}
 
 const DEFAULT_AVATAR =
   'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=128&h=128&q=80';
@@ -369,33 +383,43 @@ onUnmounted(() => {
         :class="[
           'group relative flex items-center h-full px-3 border-r border-gray-200 dark:border-gray-700',
           'cursor-pointer select-none transition-all duration-150',
-          'hover:bg-gray-50 dark:hover:bg-gray-700',
           'overflow-hidden',
           activeTabId === tab.id
             ? 'bg-gray-50 dark:bg-gray-900 border-b-2 border-b-blue-500'
-            : 'bg-white dark:bg-gray-800',
+            : tabHasHelpdeskAlert(tab)
+              ? 'bg-amber-100 dark:bg-amber-950/55 ring-1 ring-inset ring-amber-300/80 dark:ring-amber-600/50 hover:bg-amber-50 dark:hover:bg-amber-900/45'
+              : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700',
           dragOverTabId === tab.id ? 'border-l-2 border-l-blue-500' : ''
         ]"
         :style="tabItemStyle"
       >
-        <!-- Icon -->
-        <component 
-          :is="tab.icon" 
-          class="w-5 h-5 flex-shrink-0 mr-2"
-          :class="[
-            activeTabId === tab.id
-              ? 'text-gray-900 dark:text-white'
-              : 'text-gray-600 dark:text-gray-400'
-          ]"
-        />
+        <!-- Icon (pulse + ring when unread helpdesk activity on background tab) -->
+        <span
+          class="relative flex h-5 w-5 flex-shrink-0 items-center justify-center mr-2"
+          :class="{ 'tab-helpdesk-alert-icon': tabHasHelpdeskAlert(tab) }"
+        >
+          <span
+            v-if="tabHasHelpdeskAlert(tab)"
+            class="tab-helpdesk-alert-icon__ring pointer-events-none absolute inset-0 rounded-full"
+            :class="tab.alertKind === 'chat' ? 'tab-helpdesk-alert-icon__ring--chat' : 'tab-helpdesk-alert-icon__ring--email'"
+            aria-hidden="true"
+          />
+          <component
+            :is="tab.icon"
+            class="tab-helpdesk-alert-icon__glyph relative z-[1] h-5 w-5"
+            :class="tabAlertIconColorClass(tab)"
+          />
+        </span>
         
         <!-- Title -->
         <span
           :class="[
-            'text-sm font-medium overflow-hidden text-ellipsis whitespace-nowrap flex-1 min-w-0',
+            'text-sm overflow-hidden text-ellipsis whitespace-nowrap flex-1 min-w-0',
             activeTabId === tab.id
-              ? 'text-gray-900 dark:text-white'
-              : 'text-gray-600 dark:text-gray-400'
+              ? 'font-medium text-gray-900 dark:text-white'
+              : tabHasHelpdeskAlert(tab)
+                ? 'font-semibold text-amber-950 dark:text-amber-100'
+                : 'font-medium text-gray-600 dark:text-gray-400'
           ]"
         >
           {{ tabDisplayTitle(tab) }}
@@ -515,3 +539,78 @@ onUnmounted(() => {
     </transition>
   </div>
 </template>
+
+<style scoped>
+@keyframes tab-helpdesk-icon-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.18);
+  }
+}
+
+@keyframes tab-helpdesk-icon-wiggle {
+  0%,
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+  20% {
+    transform: rotate(-8deg) scale(1.12);
+  }
+  40% {
+    transform: rotate(8deg) scale(1.14);
+  }
+  60% {
+    transform: rotate(-5deg) scale(1.1);
+  }
+  80% {
+    transform: rotate(4deg) scale(1.08);
+  }
+}
+
+@keyframes tab-helpdesk-icon-ring {
+  0% {
+    transform: scale(0.75);
+    opacity: 0.65;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.tab-helpdesk-alert-icon__glyph {
+  transform-origin: center;
+}
+
+.tab-helpdesk-alert-icon .tab-helpdesk-alert-icon__glyph {
+  animation: tab-helpdesk-icon-wiggle 1.35s ease-in-out infinite;
+}
+
+.tab-helpdesk-alert-icon__ring--email {
+  background-color: rgb(245 158 11 / 0.45);
+  animation: tab-helpdesk-icon-ring 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.tab-helpdesk-alert-icon__ring--chat {
+  background-color: rgb(16 185 129 / 0.4);
+  animation: tab-helpdesk-icon-ring 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.tab-helpdesk-alert-icon:has(.tab-helpdesk-alert-icon__ring--chat) .tab-helpdesk-alert-icon__glyph {
+  animation: tab-helpdesk-icon-pulse 1.1s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-helpdesk-alert-icon__glyph,
+  .tab-helpdesk-alert-icon__ring {
+    animation: none !important;
+  }
+
+  .tab-helpdesk-alert-icon__glyph {
+    transform: scale(1.1);
+  }
+}
+</style>

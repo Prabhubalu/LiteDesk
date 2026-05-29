@@ -93,6 +93,16 @@
         @chat-updated="$emit('chat-updated')"
         @typing-label="setLiveChatTypingLabel"
       />
+      <CaseEmailConversationFeed
+        v-else-if="isEmailCase"
+        :activities="tabActivities"
+        :case-record="caseRecord"
+        :email-threads="emailThreads"
+        :loading="emailThreadsLoading"
+        :empty-title="emptyConversationTitle"
+        :empty-message="emptyConversationMessage"
+        @reply-email="onTimelineReplyEmail"
+      />
       <CaseTimelineFeed
         v-else
         :activities="tabActivities"
@@ -107,15 +117,20 @@
         {{ liveChatTypingLabel }}
       </div>
       <CaseResizableReplyComposer
-        v-if="!isClosed"
+        v-if="!isClosed && caseId"
+        ref="replyComposerRef"
         pane-key="conversation"
+        :case-id="caseId"
         :case-record="caseRecord"
+        :contact-email="contactEmail"
+        :email-threads="emailThreads"
         :sending="sending"
         :fixed-channel="isLiveChatCase ? 'Live Chat' : ''"
         :hide-channel-select="isLiveChatCase"
         :show-internal-toggle="!isLiveChatCase"
         placeholder="Reply to visitor…"
         @send="$emit('send-message', $event)"
+        @send-email="$emit('send-email', $event)"
         @typing="$emit('typing', $event)"
       />
     </div>
@@ -145,7 +160,10 @@
       <CaseResizableReplyComposer
         v-if="!isClosed"
         pane-key="notes"
+        :case-id="caseId"
         :case-record="caseRecord"
+        :contact-email="contactEmail"
+        :email-threads="emailThreads"
         :sending="sending"
         :show-internal-toggle="false"
         :placeholder="notesPlaceholder"
@@ -174,6 +192,8 @@ import RecordPageTitleRow from '@/components/record-page/RecordPageTitleRow.vue'
 import RecordClosedBanner from '@/components/record-page/RecordClosedBanner.vue';
 import CaseRecordHeader from '@/components/cases/CaseRecordHeader.vue';
 import CaseTimelineFeed from '@/components/cases/CaseTimelineFeed.vue';
+import CaseEmailConversationFeed from '@/components/cases/CaseEmailConversationFeed.vue';
+import { isEmailChannelCase } from '@/utils/caseEmailReply';
 import CaseLiveChatPanel from '@/components/cases/CaseLiveChatPanel.vue';
 import CaseResizableReplyComposer from '@/components/cases/CaseResizableReplyComposer.vue';
 import CaseTasksTab from '@/components/cases/CaseTasksTab.vue';
@@ -199,7 +219,10 @@ const props = defineProps({
   emptyActivityMessage: { type: String, default: '' },
   emptyNotesTitle: { type: String, default: '' },
   emptyNotesMessage: { type: String, default: '' },
-  notesPlaceholder: { type: String, default: '' }
+  notesPlaceholder: { type: String, default: '' },
+  contactEmail: { type: String, default: '' },
+  emailThreads: { type: Array, default: () => [] },
+  emailThreadsLoading: { type: Boolean, default: false }
 });
 
 const { t } = useI18n();
@@ -207,6 +230,7 @@ const liveChatPanelRef = ref(null);
 const liveChatTypingLabel = ref('');
 const caseModuleLabel = computed(() => t('navigation.moduleCases'));
 const isLiveChatCase = computed(() => String(props.caseRecord?.channel || '').toLowerCase() === 'live chat');
+const isEmailCase = computed(() => isEmailChannelCase(props.caseRecord));
 
 function setLiveChatTypingLabel(label) {
   liveChatTypingLabel.value = String(label || '');
@@ -220,7 +244,23 @@ function refreshLiveChatMessages() {
   return liveChatPanelRef.value?.refreshMessages?.();
 }
 
-defineExpose({ appendLiveChatMessage, refreshLiveChatMessages });
+const replyComposerRef = ref(null);
+
+function clearReplyComposer() {
+  replyComposerRef.value?.clear?.();
+}
+
+function onTimelineReplyEmail(payload) {
+  if (!payload) return;
+  const replyAll = Boolean(payload.replyAll);
+  const forward = Boolean(payload.forward);
+  const message = { ...payload };
+  delete message.replyAll;
+  delete message.forward;
+  replyComposerRef.value?.applyReplyTarget?.(message, { replyAll, forward });
+}
+
+defineExpose({ appendLiveChatMessage, refreshLiveChatMessages, clearReplyComposer });
 
 defineEmits([
   'update:activeTab',
@@ -234,6 +274,8 @@ defineEmits([
   'chat-updated',
   'typing',
   'send-message',
+  'send-email',
+  'reply-email',
   'send-note',
   'open-record',
   'link-task'

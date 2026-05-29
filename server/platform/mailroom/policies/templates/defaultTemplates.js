@@ -68,6 +68,47 @@ const INGEST_DEFAULT = {
   defaultAction: { type: 'route_to_case_flow' }
 };
 
+const CLASSIFICATION_HELPDESK = {
+  rules: [
+    {
+      id: 'spam-unsubscribe',
+      name: 'Likely spam',
+      enabled: true,
+      field: 'subject',
+      operator: 'contains',
+      value: 'unsubscribe',
+      markSpam: true
+    },
+    {
+      id: 'priority-urgent',
+      name: 'Urgent subject',
+      enabled: true,
+      field: 'subject',
+      operator: 'contains',
+      value: 'urgent',
+      suggestPriority: 'High'
+    }
+  ],
+  defaultQueue: null,
+  applyMode: 'auto_apply',
+  onSpam: 'ignore',
+  stopOnFirstMatch: true
+};
+
+const SECURITY_DEFAULT = {
+  email: {
+    enabled: true,
+    requireSpf: false,
+    requireDkim: false,
+    requireDmarc: false,
+    onFailure: 'monitor'
+  },
+  attachments: {
+    scanEnabled: false,
+    onInfected: 'block'
+  }
+};
+
 const TEMPLATES = {
   helpdesk_standard_email: {
     id: 'helpdesk_standard_email',
@@ -78,7 +119,7 @@ const TEMPLATES = {
       ingest: INGEST_DEFAULT,
       dedup: DEDUP_APPEND_OPEN,
       caseLink: CASE_LINK_HELPDESK_STANDARD,
-      classification: { rules: [], defaultQueue: null },
+      classification: CLASSIFICATION_HELPDESK,
       dispatch: {
         publish: [
           'message.received',
@@ -95,7 +136,8 @@ const TEMPLATES = {
       publicApi: { enabled: false, ingestKey: null },
       portal: { enabled: false },
       chat: { enabled: false }
-    }
+    },
+    security: SECURITY_DEFAULT
   },
   strict_one_email_one_case: {
     id: 'strict_one_email_one_case',
@@ -121,7 +163,8 @@ const TEMPLATES = {
       publicApi: { enabled: false, ingestKey: null },
       portal: { enabled: false },
       chat: { enabled: false }
-    }
+    },
+    security: SECURITY_DEFAULT
   },
   append_only_threading: {
     id: 'append_only_threading',
@@ -144,7 +187,8 @@ const TEMPLATES = {
       publicApi: { enabled: false, ingestKey: null },
       portal: { enabled: false },
       chat: { enabled: false }
-    }
+    },
+    security: SECURITY_DEFAULT
   }
 };
 
@@ -172,7 +216,8 @@ function getDefaultMailroomConfig() {
     activeTemplateId: template.id,
     schemaVersion: 1,
     policies: template.policies,
-    connectors: template.connectors
+    connectors: template.connectors,
+    security: template.security || SECURITY_DEFAULT
   };
 }
 

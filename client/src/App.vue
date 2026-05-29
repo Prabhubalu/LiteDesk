@@ -20,6 +20,13 @@ const NotificationContainer = defineAsyncComponent(() =>
 const GlobalSurfacesProvider = defineAsyncComponent(() =>
   import('@/components/global/GlobalSurfacesProvider.vue')
 );
+const HelpdeskNotificationDevPanel = defineAsyncComponent(() =>
+  import('@/components/dev/HelpdeskNotificationDevPanel.vue')
+);
+/** Opt-in dev UI — set VITE_ENABLE_HELPDESK_NOTIFICATION_DEV_PANEL=true in client/.env.local */
+const showHelpdeskNotificationDevPanel =
+  import.meta.env.DEV &&
+  import.meta.env.VITE_ENABLE_HELPDESK_NOTIFICATION_DEV_PANEL === 'true';
 import { useSidebarState } from '@/composables/useSidebarState';
 import { identifyProductUser } from '@/config/posthogUser';
 
@@ -412,6 +419,9 @@ usePermissionSync(2);
   <!-- ARCHITECTURE NOTE: Mounted once at root level, app-agnostic -->
   <!-- Provides GlobalSearch and CommandPalette to all layouts (Sales, Audit, Portal, etc.) -->
   <GlobalSurfacesProvider />
+
+  <!-- Dev-only: simulate helpdesk bell / toast / sound on /helpdesk/ routes -->
+  <HelpdeskNotificationDevPanel v-if="showHelpdeskNotificationDevPanel" />
 </template>
 
 <style>

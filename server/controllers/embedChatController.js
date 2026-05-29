@@ -160,7 +160,8 @@ async function postMessage(req, res) {
           links: {},
           metadata: {
             chatSessionId: String(session._id),
-            pageUrl: session.pageUrl || null
+            pageUrl: session.pageUrl || null,
+            visitorName: String(req.body?.authorName || session.visitor?.name || '').trim()
           }
         });
         caseRecordId = result?.caseRecord?._id || null;
@@ -184,7 +185,8 @@ async function postMessage(req, res) {
           links: {},
           metadata: {
             chatSessionId: String(session._id),
-            pageUrl: session.pageUrl || null
+            pageUrl: session.pageUrl || null,
+            visitorName: String(req.body?.authorName || session.visitor?.name || '').trim()
           }
         });
       } catch (e) {

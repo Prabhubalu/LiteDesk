@@ -3,7 +3,7 @@ const Notification = require('../models/Notification');
 const Task = require('../models/Task');
 const Event = require('../models/Event');
 
-const APP_KEYS = ['SALES', 'AUDIT', 'PORTAL'];
+const APP_KEYS = ['SALES', 'AUDIT', 'PORTAL', 'HELPDESK'];
 
 /**
  * Enrich notification items with entity titles (Task title, Event eventName, etc.)

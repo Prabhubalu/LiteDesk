@@ -13,10 +13,20 @@ const MailroomAttachmentSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ['uploaded', 'linked', 'failed', 'deleted'],
+      enum: [
+        'uploaded',
+        'linked',
+        'failed',
+        'deleted',
+        'scan_pending',
+        'scan_clean',
+        'scan_infected',
+        'scan_failed'
+      ],
       default: 'uploaded',
       index: true
     },
+    scanMeta: { type: Schema.Types.Mixed, default: null },
     storageDriver: { type: String, default: 'oci', trim: true },
     bucket: { type: String, required: true, trim: true },
     objectKey: { type: String, required: true, trim: true, index: true },

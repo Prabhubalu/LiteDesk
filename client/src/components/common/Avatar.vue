@@ -12,7 +12,8 @@
       :class="['flex items-center justify-center font-medium rounded-lg', colorClasses.bg, colorClasses.text, sizeClass]"
     >
       <component v-if="icon" :is="icon" :class="iconSizeClass" />
-      <template v-else>{{ getInitial(recordObj) }}</template>
+      <UserIcon v-else-if="!displayInitials" :class="iconSizeClass" />
+      <span v-else>{{ displayInitials }}</span>
     </div>
   </div>
 </template>
@@ -20,6 +21,7 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
+import { UserIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
   user: {
@@ -99,56 +101,47 @@ const getColorForLetter = (letter) => {
   return colors[letter.toUpperCase()] || { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-700 dark:text-gray-300' };
 };
 
-// Get single initial letter
-const getInitial = (obj) => {
+const displayInitials = computed(() => {
   const record = recordObj.value;
-  
-  // Try user fields first (firstName, lastName, username, email)
-  if (record.firstName) {
-    return record.firstName[0].toUpperCase();
+  if (!record) return '';
+
+  if (record.initials) return String(record.initials).trim().toUpperCase();
+
+  const first = String(record.firstName || record.first_name || '').trim();
+  const last = String(record.lastName || record.last_name || '').trim();
+  if (first && last) return `${first[0]}${last[0]}`.toUpperCase();
+  if (first.length >= 2) return first.slice(0, 2).toUpperCase();
+  if (first) return first[0].toUpperCase();
+  if (last.length >= 2) return last.slice(0, 2).toUpperCase();
+  if (last) return last[0].toUpperCase();
+
+  if (record.username) return String(record.username).trim().slice(0, 2).toUpperCase();
+
+  const full = String(record.name || '').trim();
+  if (full) {
+    const parts = full.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    if (parts[0].length >= 2) return parts[0].slice(0, 2).toUpperCase();
+    return parts[0][0].toUpperCase();
   }
-  if (record.lastName) {
-    return record.lastName[0].toUpperCase();
+
+  const email = String(record.email || '').trim();
+  if (email) {
+    const local = email.split('@')[0] || '';
+    const parts = local.replace(/[._+-]/g, ' ').split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    if (local.length >= 2) return local.slice(0, 2).toUpperCase();
+    if (local) return local[0].toUpperCase();
   }
-  if (record.username) {
-    return record.username[0].toUpperCase();
-  }
-  if (record.email) {
-    return record.email[0].toUpperCase();
-  }
-  
-  // Try module record fields (name)
-  if (record.name) {
-    return record.name.trim()[0].toUpperCase();
-  }
-  
-  return '?';
-};
+
+  return '';
+});
 
 // Get color classes
 const colorClasses = computed(() => {
-  const record = recordObj.value;
-  
-  // Try user fields first
-  if (record.firstName) {
-    return getColorForLetter(record.firstName[0]);
-  }
-  if (record.lastName) {
-    return getColorForLetter(record.lastName[0]);
-  }
-  if (record.username) {
-    return getColorForLetter(record.username[0]);
-  }
-  if (record.email) {
-    return getColorForLetter(record.email[0]);
-  }
-  
-  // Try module record fields
-  if (record.name) {
-    return getColorForLetter(record.name.trim()[0]);
-  }
-  
-  return getColorForLetter('?');
+  const letter = displayInitials.value[0];
+  if (letter) return getColorForLetter(letter);
+  return { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-500 dark:text-gray-400' };
 });
 
 // Get display name for alt text
@@ -156,7 +149,10 @@ const getDisplayName = (obj) => {
   const record = recordObj.value;
   
   // Try user fields first
-  const name = [record.firstName, record.lastName].filter(Boolean).join(' ').trim();
+  const name = [record.firstName || record.first_name, record.lastName || record.last_name]
+    .filter(Boolean)
+    .join(' ')
+    .trim();
   if (name) return name;
   if (record.username) return record.username;
   if (record.email) return record.email;

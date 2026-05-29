@@ -165,6 +165,14 @@ async function emitNotification({ eventType, entity, organizationId, triggeredBy
 
   const notificationsToPersist = [];
   for (const recipient of recipients) {
+    if (
+      triggeredBy
+      && recipient?.userId
+      && String(recipient.userId) === String(triggeredBy)
+    ) {
+      continue;
+    }
+
     // FAILURE ISOLATION: Preference loading - already handled above, continue with defaults
     
     // Phase 10G: Deduplication guard - prevent spam from rapid state changes
@@ -265,6 +273,7 @@ async function publishToSSE(notifications) {
           appKey: notification.appKey,
           payload: {
             id: String(notification._id),
+            appKey: notification.appKey,
             eventType: notification.eventType,
             title: notification.title,
             body: notification.body,

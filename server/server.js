@@ -506,6 +506,10 @@ connectMasterWithRetry(masterUri)
         emailQueueService.startWorker();
         const inboundEmailQueueService = require('./services/inboundEmailQueueService');
         inboundEmailQueueService.startWorker();
+        const {
+          startMailroomFailureRetryWorker
+        } = require('./platform/mailroom/workers/processingFailureRetryWorker');
+        startMailroomFailureRetryWorker();
         console.log('✅ Email + inbound queue consumers running in web process (set ENABLE_BULL_IN_WEB=false if using a dedicated worker)');
       } catch (eqErr) {
         console.warn('⚠️  Email queue worker not started:', eqErr.message);

@@ -4,7 +4,7 @@
 
 **Product placement:** **Settings → Automation → Mailroom** (alongside Assignment Rules, Automation Rules, Processes, Business Flows)
 
-**Last updated:** 2026-05-28 (M0–M4 complete; M5 partial; M6 shipped for embed chat → cases)
+**Last updated:** 2026-05-28 (M0–M7 v1 complete; OpenSearch optional later)
 
 ---
 
@@ -92,17 +92,18 @@ The requirement document includes **example defaults** (e.g. “1 incoming email
 
 | Gap | Priority | Target phase |
 |-----|----------|--------------|
-| Portal / Chat / API connectors under one Mailroom API | P0 | M5–M6 |
-| `mailroom_attachments` collection + attachment queue | P1 | M5/M7 |
+| Portal / Chat / API connectors under one Mailroom API | — | ✅ M5–M6 (`genericInboundPipeline`, public API, portal, chat) |
+| `mailroom_attachments` collection + attachment queue | P1 | ✅ collection + upload; malware queue in M7 |
 | `mailroom_routing_logs` (adapter outcome trace) | P2 | M7 |
-| Classification policy engine + UI | P2 | Post-M7 |
-| Case record timeline reads from `mailroom_messages` | P2 | M2.1 / Cases UI |
-| `create_child_case` full adapter execution | P2 | M3.1 |
-| Bull DLQ worker extension (beyond failure replay UI) | P2 | M4.1 |
-| Search across mailroom corpus (OpenSearch) | P2 | M7 |
-| SPF/DKIM/DMARC + virus scan hooks centralized | P1 | M7 |
+| Classification policy engine + UI | — | ✅ Processing tab + pipeline apply |
+| `create_child_case` full adapter execution | — | ✅ M3.1 (`casesAdapter`) |
+| Bull DLQ worker extension (beyond failure replay UI) | — | ✅ M4.1 (`processingFailureRetryWorker`) |
+| Case record timeline reads from `mailroom_messages` | — | ✅ M2.1 (`caseTimelineAdapter` + conversation lookup) |
+| Search across mailroom corpus (OpenSearch) | P2 | Deferred (Mongo `GET …/search` shipped) |
+| SPF/DKIM/DMARC + virus scan hooks centralized | — | ✅ M7 (`emailAuthValidator`, Settings → Monitoring) |
+| `mailroom_routing_logs` (adapter outcome trace) | — | ✅ M7 |
 | Canned responses / agent email templates | P1 | Helpdesk 1C (Cases UI) |
-| E2E smoke: `smoke:mailroom` | P2 | M7 |
+| E2E smoke: `smoke:mailroom` | — | ✅ `npm run smoke:mailroom` |
 
 ---
 
@@ -217,7 +218,7 @@ Sub-sections (tabs inside Mailroom settings — **shipped**):
 
 Sticky header (status badge + tab nav) and sticky bottom **Save** bar. Tab choice persists in `localStorage`.
 
-**Not yet in UI:** Connectors (IMAP/Gmail/M365), classification rules, queue-depth dashboard, routing logs viewer.
+**Not yet in UI:** Connectors (IMAP/Gmail/M365), queue-depth dashboard (metrics API exists).
 
 ### 5.2 Migrate Helpdesk channel rules ✅
 
@@ -252,9 +253,10 @@ Work phases in order. Update the progress tracker as exit criteria are met.
 | **M3** — Dedup + case link policies | ✅ Done | `casesAdapter` executes policies; parser path skips legacy helpdesk when Mailroom on; channel-rules migration |
 | **M3.1** — Ingest routing + settings UX | ✅ Done | First-class `ingest` policy; tabbed Settings UI (Overview / Routing / Processing / Monitoring / Developer) |
 | **M4** — Events + dispatcher | ✅ Done | Event publisher, failure tracking, replay UI |
-| **M5** — API + Portal connectors | 🟡 Partial | Public ingest API, portal ingest/reply/attachments, partner/customer audience rules (smoke test pending) |
+| **M5** — API + Portal connectors | ✅ Done | Public ingest API, portal ingest/reply/attachments, Connectors tab, `docs/MAILROOM_API.md`, `npm run smoke:mailroom` |
 | **M6** — Chat connector | ✅ Done | Embeddable widget + public instance key + chat sessions/messages + case integration + SSE + typing indicators |
-| **M7** — Hardening & scale | ❌ Not started | Security (SPF/DKIM/DMARC), malware scan, metrics, search, smoke tests |
+| **M4.1** — Failure retry worker | ✅ Done | `processingFailureRetryWorker` (interval replay of open failures; disable via `MAILROOM_FAILURE_RETRY_ENABLED=false`) |
+| **M7** — Hardening & scale | ✅ Done (v1) | Email auth hooks, attachment scan integration, metrics API + Prometheus, routing logs, Mongo search; OpenSearch deferred |
 
 ### What works today (operator checklist)
 
@@ -266,9 +268,9 @@ Work phases in order. Update the progress tracker as exit criteria are met.
 - [x] Migrate legacy Helpdesk channel rules to Mailroom policies
 - [x] Local simulation: `npm run simulate:parser-inbound -- --enable-mailroom`
 - [x] Portal and Public API channels through same pipeline (connectors)
-- [ ] Classification rules in UI
-- [ ] Enterprise email security hooks (SPF/DKIM/DMARC)
-- [ ] `smoke:mailroom` E2E script
+- [x] Classification rules in UI (Processing → Classification)
+- [x] Enterprise email security hooks (SPF/DKIM/DMARC) — Settings → Mailroom → Monitoring
+- [x] `smoke:mailroom` E2E script (`npm run smoke:mailroom`, requires `HELPDESK_AUTH_TOKEN`)
 
 ---
 
@@ -319,7 +321,7 @@ Work phases in order. Update the progress tracker as exit criteria are met.
 - [x] `mailroom_conversations` CRUD + link messages on inbound (M2 persistence service)
 - [x] Threading policy UI (ordered signals: enable/disable, reorder)
 - [x] `mailroom_threading_logs` on every inbound decision
-- [ ] Case record timeline can read from conversation messages (adapter) — deferred to M3/M2.1
+- [x] Case record timeline reads from `mailroom_messages` via `caseTimelineAdapter` (linked case + conversation `primaryCaseId`)
 
 **Exit criteria:** Tenants can change threading order/weights without deploy; logs explain why a message attached to case A vs B. **Met** (threading order via UI; logs in Settings → Mailroom).
 
@@ -376,7 +378,7 @@ Work phases in order. Update the progress tracker as exit criteria are met.
 - [x] Dispatcher: map events → domain events per dispatch policy (skips duplicate case.created/reopened)
 - [x] Admin UI: failed jobs list + replay from raw payload
 - [x] `mailroom_processing_failures` model + replay service
-- [ ] Bull DLQ worker extension (reuse existing inbound queue retry where Redis available)
+- [x] Bull DLQ worker extension — `processingFailureRetryWorker` replays open `mailroom_processing_failures` on an interval (Settings replay UI unchanged)
 
 **Exit criteria:** `case.created` from Mailroom triggers existing assignment automation; failures recoverable from UI. **Met** — case create still flows through `caseExecutionService.onCaseCreated`; Mailroom publishes audit events and records failures with replay.
 
@@ -384,19 +386,20 @@ Work phases in order. Update the progress tracker as exit criteria are met.
 
 ---
 
-### Phase M5 — API & portal connectors (3–4 weeks)
+### Phase M5 — API & portal connectors (3–4 weeks) ✅
 
 **Goal:** Non-email channels use same pipeline and policies.
 
 **Deliverables**
 
-- [ ] REST API: ingest message, append conversation, upload attachment (spec §6.5)
-- [ ] Portal connector adapter (customer/partner) — auth scoped to requester
-- [ ] Normalization for portal/chat-shaped payloads into universal schema
-- [ ] Portal policies: always create case vs append-only
-- [ ] Connectors tab in Mailroom settings (API keys, portal endpoints)
+- [x] REST API: ingest message, append conversation, upload attachment (spec §6.5) — `/api/public/mailroom`, see `docs/MAILROOM_API.md`
+- [x] Portal connector adapter (customer/partner) — auth scoped to requester (`portalMailroomController`, `portalSafety`)
+- [x] Normalization for portal/chat-shaped payloads into universal schema (`genericInboundPipeline`)
+- [x] Portal policies: customer/partner allow create/reply + audience detection in Connectors tab
+- [x] Connectors tab in Mailroom settings (API keys, portal limits, email toggles, chat toggle)
+- [x] `npm run smoke:mailroom` — settings, failures, threading logs, policy evaluate
 
-**Exit criteria:** Portal-created case and reply flow through Mailroom; internal notes never exposed via portal adapter.
+**Exit criteria:** Portal-created case and reply flow through Mailroom; internal notes never exposed via portal adapter. **Met** (see `mailroomPortalSafety` tests).
 
 **Depends on:** Helpdesk **Phase 1D** (portal case APIs) for end-to-end portal flows.
 
@@ -421,16 +424,18 @@ Work phases in order. Update the progress tracker as exit criteria are met.
 
 ---
 
-### Phase M7 — Security, observability, search (ongoing)
+### Phase M7 — Security, observability, search ✅ (v1)
 
 **Goal:** Enterprise readiness per spec §21–22.
 
 **Deliverables**
 
-- [ ] SPF/DKIM/DMARC validation hooks on email connector
-- [ ] Malware scan integration point (attachment queue)
-- [ ] Metrics: ingest rate, latency, duplicate rate, DLQ depth (Prometheus-friendly)
-- [ ] Optional OpenSearch index for mailroom search (spec §20)
+- [x] SPF/DKIM/DMARC validation hooks on email connector (`emailAuthValidator.js` — parses `Authentication-Results` / `Received-SPF`; monitor / quarantine / reject in Settings → Monitoring)
+- [x] Malware scan integration point (`attachmentScanService.js` — webhook via `MAILROOM_SCAN_WEBHOOK_URL` or tenant toggle)
+- [x] Metrics: ingest rate, latency, duplicate rate, DLQ depth (`mailroomMetrics.js`, `GET …/mailroom/metrics`, `GET /health/mailroom-metrics` Prometheus text)
+- [x] `mailroom_routing_logs` + Monitoring UI viewer
+- [x] Mongo search API (`GET …/mailroom/search?q=`)
+- [ ] Optional OpenSearch index (deferred — Mongo text index on `mailroom_messages` for v1)
 
 ---
 
@@ -497,11 +502,14 @@ No mandatory stack rewrite for Mailroom v1.
 | No SLA/assignment/status logic inside Mailroom | ✅ |
 | Events published for automation/notifications | ✅ |
 | Failed messages recoverable (replay from Settings UI) | ✅ |
-| Bull DLQ worker extension + queue-depth ops dashboard | ❌ M4.1 / M7 |
+| Bull DLQ worker extension + queue-depth ops dashboard | 🟡 Retry worker ✅; queue-depth dashboard ❌ M7 |
 | `helpdeskChannelIngestionService` retired when Mailroom on for all tenants | 🟡 Strangler: legacy off when Mailroom disabled only |
-| Portal + chat + public API through same pipeline | ❌ M5–M6 |
-| Classification + dispatch policy UI | ❌ Post-M7 |
-| Documentation + `smoke:mailroom` for operators | 🟡 Docs updated; smoke script TBD |
+| Portal + chat + public API through same pipeline | ✅ M5–M6 |
+| Classification policy UI + pipeline apply | ✅ |
+| Dispatch policy UI | ❌ Post-M7 |
+| Documentation + `smoke:mailroom` for operators | ✅ `docs/MAILROOM_API.md` + `npm run smoke:mailroom` |
+| `create_child_case` dedup behavior in `casesAdapter` | ✅ |
+| Case timeline from `mailroom_messages` | ✅ `caseTimelineAdapter` |
 
 **Mailroom v1 for email is effectively complete.** Remaining v1 gaps are multi-channel connectors, hardening, and operational polish.
 
@@ -521,11 +529,11 @@ No mandatory stack rewrite for Mailroom v1.
 
 ## 14. Next actions (immediate)
 
-1. **Pilot rollout:** Enable Mailroom on staging/pilot orgs; run `migrate:helpdesk-channel-rules-mailroom:apply` where channel rules exist.
-2. **M5 kickoff:** Design public ingest REST API + portal connector adapter (spec §6.5); align with Helpdesk 1D portal case APIs.
-3. **Deferred polish:** Case timeline adapter reading `mailroom_messages`; full `create_child_case` in `casesAdapter`; Bull DLQ worker.
-4. **M7:** SPF/DKIM/DMARC hooks, metrics, `smoke:mailroom` script.
-5. **Helpdesk 1C remainder:** Canned responses / email templates in agent workspace (not Mailroom core).
+1. **Pilot rollout:** Enable Mailroom on staging/pilot orgs; run `migrate:helpdesk-channel-rules-mailroom:apply` where channel rules exist; run `npm run smoke:mailroom`.
+2. **M7:** SPF/DKIM/DMARC hooks on inbound connector, malware scan queue, metrics, OpenSearch, routing logs viewer.
+3. **Post-M7:** Classification policy engine + UI; dispatch policy UI; IMAP/Gmail/M365 connector settings.
+4. **Helpdesk 1C remainder:** Canned responses / email templates in agent workspace (not Mailroom core).
+5. **Strangler exit:** Retire `helpdeskChannelIngestionService` for email once all tenants run Mailroom enabled.
 
 ---
 
