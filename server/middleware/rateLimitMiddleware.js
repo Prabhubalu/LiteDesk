@@ -26,7 +26,7 @@ const parsePositiveInteger = (value, fallback) => {
 const RATE_LIMIT_WINDOW_MS = parsePositiveInteger(process.env.RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000);
 const GENERAL_API_RATE_LIMIT_MAX_REQUESTS = parsePositiveInteger(
     process.env.GENERAL_API_RATE_LIMIT_MAX_REQUESTS ?? process.env.RATE_LIMIT_MAX_REQUESTS,
-    300
+    1000
 );
 const ORGANIZATION_SETTINGS_RATE_LIMIT_MAX_REQUESTS = parsePositiveInteger(
     process.env.ORGANIZATION_SETTINGS_RATE_LIMIT_MAX_REQUESTS,
@@ -90,6 +90,10 @@ const isNotificationReadPath = (req) => {
     return false;
 };
 
+/** GET /api/modules/:moduleKey/records/:recordId/(activity|comments|neighbors|description-versions) */
+const MODULE_RECORD_SHELL_GET =
+    /^\/api\/modules\/[^/]+\/records\/[^/]+\/(activity|comments|neighbors|description-versions)$/;
+
 /**
  * Read-heavy session bootstrap endpoints (profile, UI shell, core module settings).
  * Excluded from the general API bucket and tracked on a relaxed per-user limiter.
@@ -110,6 +114,16 @@ const isSessionBootstrapReadPath = (req) => {
         pathOnly === '/api/settings/core-modules' ||
         pathOnly.startsWith('/api/settings/core-modules/')
     ) {
+        return true;
+    }
+    if (pathOnly === '/api/modules' || pathOnly === '/api/modules/people/quick-create') {
+        return true;
+    }
+    if (MODULE_RECORD_SHELL_GET.test(pathOnly)) {
+        return true;
+    }
+    // Org list used for lookup dropdowns on record pages (not single-record GET /:id).
+    if (pathOnly === '/api/v2/organization') {
         return true;
     }
 

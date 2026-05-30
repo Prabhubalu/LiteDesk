@@ -8,6 +8,7 @@ const { requireAppEntitlement } = require('../middleware/requireAppEntitlementMi
 const { lazySalesInitialization } = require('../middleware/lazySalesInitializationMiddleware');
 const { requireSalesApp } = require('../middleware/requireSalesAppMiddleware');
 const controller = require('../controllers/moduleController');
+const { sessionBootstrapLimiter } = require('../middleware/rateLimitMiddleware');
 
 // Core entities that are platform-owned (don't require Sales app)
 const CORE_ENTITIES = ['people', 'organizations', 'events', 'forms', 'tasks', 'items', 'quotes', 'reports'];
@@ -62,8 +63,8 @@ router.use((req, res, next) => {
 router.use(organizationIsolation);
 
 // Settings permission (reuse settings.edit to manage modules)
-router.get('/people/quick-create', checkPermission('settings', 'edit'), controller.getPeopleQuickCreate);
-router.get('/', checkPermission('settings', 'edit'), controller.listModules);
+router.get('/people/quick-create', sessionBootstrapLimiter, checkPermission('settings', 'edit'), controller.getPeopleQuickCreate);
+router.get('/', sessionBootstrapLimiter, checkPermission('settings', 'edit'), controller.listModules);
 router.post('/', checkPermission('settings', 'edit'), controller.createModule);
 router.delete('/:id', checkPermission('settings', 'edit'), controller.deleteModule);
 router.put('/:id', checkPermission('settings', 'edit'), controller.updateModule);

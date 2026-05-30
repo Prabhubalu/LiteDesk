@@ -315,7 +315,8 @@ DEBUG_DNS=false
 # -----------------------------------------------------------------------------
 BASE_DOMAIN=$EC2_IP
 RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX_REQUESTS=100
+GENERAL_API_RATE_LIMIT_MAX_REQUESTS=1000
+SESSION_BOOTSTRAP_RATE_LIMIT_MAX_REQUESTS=600
 PRODENV
 
 echo "✅ Production .env created!"
