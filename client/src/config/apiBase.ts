@@ -1,5 +1,32 @@
 const PRODUCTION_API_ORIGIN = 'https://api.arivusystems.com'
 
+const LOCAL_DEV_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]'])
+
+/**
+ * In local dev, VITE_API_ORIGIN often points at the API port (e.g. :3000) while the SPA
+ * is served from Vite (:5173). EventSource/fetch must use same-origin + the Vite proxy
+ * instead of connecting directly to the API port (which fails when only Vite is up or
+ * ports drift).
+ */
+function resolveDevSameOriginProxy(explicitOrigin: string): string {
+  if (!import.meta.env.DEV || typeof window === 'undefined' || !explicitOrigin) {
+    return explicitOrigin
+  }
+  try {
+    const api = new URL(explicitOrigin)
+    const page = window.location
+    if (!LOCAL_DEV_HOSTS.has(api.hostname) || !LOCAL_DEV_HOSTS.has(page.hostname)) {
+      return explicitOrigin
+    }
+    if (api.port !== page.port) {
+      return ''
+    }
+  } catch {
+    // ignore malformed origin
+  }
+  return explicitOrigin
+}
+
 /**
  * When the SPA is on app.arivusystems.com (or a tenant *.app.arivusystems.com host) but
  * VITE_API_ORIGIN is unset, use the public API host directly. Vercel rewrites work for
@@ -25,7 +52,7 @@ function inferProductionApiOrigin(): string {
  */
 export function getApiOrigin(): string {
   const explicitOrigin = (import.meta.env.VITE_API_ORIGIN as string | undefined)?.replace(/\/$/, '')
-  if (explicitOrigin) return explicitOrigin
+  if (explicitOrigin) return resolveDevSameOriginProxy(explicitOrigin)
 
   const inferred = inferProductionApiOrigin()
   if (inferred) return inferred
@@ -33,7 +60,7 @@ export function getApiOrigin(): string {
   // Backward compatibility: older envs use VITE_API_URL and may include trailing /api.
   const legacyUrl = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '')
   if (!legacyUrl) return ''
-  return legacyUrl.replace(/\/api$/, '')
+  return resolveDevSameOriginProxy(legacyUrl.replace(/\/api$/, ''))
 }
 
 export function withApiOrigin(path: string): string {

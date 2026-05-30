@@ -228,7 +228,7 @@ See `docs/architecture/notifications-hardening.md`.
                 <p class="text-sm font-medium text-neutral-900 dark:text-white">{{ t('notifications.caughtUp') }}</p>
                 <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">{{ t('notifications.emptyList') }}</p>
                 <router-link
-                  to="/settings?tab=notifications&notificationPage=overview"
+                  to="/settings?tab=notifications&notificationPage=preferences"
                   class="mt-3 inline-block text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline"
                   @click="$emit('close')"
                 >
@@ -241,7 +241,7 @@ See `docs/architecture/notifications-hardening.md`.
           <!-- Footer -->
           <footer class="shrink-0 border-t border-neutral-200/60 bg-white px-4 py-3 dark:border-neutral-700/60 dark:bg-neutral-900">
             <router-link
-              to="/settings?tab=notifications&notificationPage=overview"
+              to="/settings?tab=notifications&notificationPage=preferences"
               class="block text-center text-xs text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors duration-150"
               @click="$emit('close')"
             >

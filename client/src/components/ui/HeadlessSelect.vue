@@ -2,10 +2,11 @@
   <Listbox
     :model-value="modelValue"
     v-slot="{ open }"
-    @update:model-value="$emit('update:modelValue', $event)"
+    @update:model-value="onModelValueUpdate"
     as="div"
     :class="['relative', wrapperClass]"
   >
+    <span v-show="false" aria-hidden="true">{{ syncListboxOpenState(open) }}</span>
     <ListboxButton
       ref="buttonRef"
       :id="id"
@@ -17,7 +18,7 @@
         invalid && 'border-red-500 dark:border-red-500',
         buttonClass
       ]"
-      @click="syncTeleportPosition"
+      @click="onListboxButtonClick"
     >
       <span
         :class="[
@@ -41,13 +42,36 @@
           v-if="!teleport || open"
           :style="teleport ? teleportMenuStyle : undefined"
           @vue:before-mount="syncTeleportPosition"
+          @vue:before-unmount="clearSearch"
           :class="[
             teleport
-              ? 'fixed z-[250] mt-0 max-h-60 overflow-auto rounded-lg bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm'
-              : 'absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm',
+              ? 'fixed z-[250] mt-0 rounded-lg bg-white dark:bg-gray-700 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm'
+              : 'absolute z-10 mt-1 w-full rounded-lg bg-white dark:bg-gray-700 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm',
+            showSearch ? 'max-h-72 flex flex-col overflow-hidden' : 'max-h-60 overflow-auto py-1',
             optionsClass
           ]"
         >
+        <div
+          v-if="showSearch"
+          class="shrink-0 p-2 border-b border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700"
+          @click.stop
+          @mousedown.stop
+        >
+          <div class="relative">
+            <MagnifyingGlassIcon class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
+            <input
+              ref="searchInputRef"
+              v-model="searchQuery"
+              type="text"
+              :placeholder="searchPlaceholderText"
+              class="w-full pl-8 pr-2 py-1.5 text-sm rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/80 text-gray-900 dark:text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+              autocomplete="off"
+              @click.stop
+              @keydown.stop
+            />
+          </div>
+        </div>
+        <div :class="showSearch ? 'min-h-0 max-h-52 overflow-y-auto py-1' : ''">
         <ListboxOption
           v-if="allowEmpty"
           :value="emptyValue"
@@ -58,7 +82,7 @@
           </li>
         </ListboxOption>
         <template v-if="hasGroups">
-          <template v-for="(group, groupIndex) in optionGroups" :key="group.label || groupIndex">
+          <template v-for="(group, groupIndex) in filteredOptionGroups" :key="group.label || groupIndex">
             <div
               v-if="group.label"
               :class="[
@@ -88,7 +112,7 @@
         </template>
         <ListboxOption
           v-else
-          v-for="opt in options"
+          v-for="opt in filteredOptions"
           :key="String(opt.value)"
           :value="opt.value"
           v-slot="{ active, selected }"
@@ -102,6 +126,13 @@
             </span>
           </li>
         </ListboxOption>
+        <div
+          v-if="showSearch && !hasFilteredResults"
+          class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400"
+        >
+          {{ noMatchesText }}
+        </div>
+        </div>
         </ListboxOptions>
       </Teleport>
     </Transition>
@@ -110,9 +141,9 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n';
-import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue';
+import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue';
-import { ChevronUpDownIcon } from '@heroicons/vue/24/outline';
+import { ChevronUpDownIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
   modelValue: { type: [String, Number, null], default: null },
@@ -135,15 +166,22 @@ const props = defineProps({
   /** Root Listbox wrapper (use mt-2 below a label to match DynamicFormField) */
   wrapperClass: { type: [String, Array, Object], default: '' },
   /** Render dropdown in document body (avoids overflow clipping in headers/toolbars) */
-  teleport: { type: Boolean, default: false }
+  teleport: { type: Boolean, default: false },
+  /** Force search on/off; when omitted, search appears when option count exceeds searchMinOptions */
+  searchable: { type: Boolean, default: undefined },
+  /** Show search when total options exceed this count (default 7) */
+  searchMinOptions: { type: Number, default: 7 }
 });
 
 const { t } = useI18n();
 
-defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue']);
 
 const buttonRef = ref(null);
+const searchInputRef = ref(null);
+const searchQuery = ref('');
 const teleportMenuStyle = ref({});
+let listboxWasOpen = false;
 
 function getButtonElement() {
   const raw = buttonRef.value;
@@ -161,6 +199,36 @@ function syncTeleportPosition() {
     left: `${rect.left}px`,
     width: `${rect.width}px`
   };
+}
+
+function clearSearch() {
+  searchQuery.value = '';
+}
+
+function syncListboxOpenState(open) {
+  if (listboxWasOpen && !open) {
+    clearSearch();
+  }
+  if (!listboxWasOpen && open && showSearch.value) {
+    nextTick(() => searchInputRef.value?.focus());
+  }
+  listboxWasOpen = open;
+  return '';
+}
+
+function onListboxButtonClick() {
+  syncTeleportPosition();
+}
+
+function onModelValueUpdate(value) {
+  clearSearch();
+  emit('update:modelValue', value);
+}
+
+function optionMatchesSearch(option, query) {
+  const label = String(option?.label ?? '').toLowerCase();
+  const value = String(option?.value ?? '').toLowerCase();
+  return label.includes(query) || value.includes(query);
 }
 
 function onViewportChange() {
@@ -191,6 +259,42 @@ const resolvedOptions = computed(() => {
     return props.optionGroups.flatMap((g) => g.options || []);
   }
   return props.options;
+});
+
+const showSearch = computed(() => {
+  if (props.searchable != null) return props.searchable;
+  return resolvedOptions.value.length > props.searchMinOptions;
+});
+
+const searchPlaceholderText = computed(() => t('common.searchPlaceholder'));
+const noMatchesText = computed(() => t('records.editableNoMatches'));
+
+const normalizedSearchQuery = computed(() => searchQuery.value.trim().toLowerCase());
+
+const filteredOptions = computed(() => {
+  if (hasGroups.value) return [];
+  const query = normalizedSearchQuery.value;
+  if (!query) return props.options;
+  return props.options.filter((opt) => optionMatchesSearch(opt, query));
+});
+
+const filteredOptionGroups = computed(() => {
+  if (!hasGroups.value) return [];
+  const query = normalizedSearchQuery.value;
+  if (!query) return props.optionGroups;
+  return props.optionGroups
+    .map((group) => ({
+      ...group,
+      options: (group.options || []).filter((opt) => optionMatchesSearch(opt, query)),
+    }))
+    .filter((group) => group.options.length > 0);
+});
+
+const hasFilteredResults = computed(() => {
+  if (hasGroups.value) {
+    return filteredOptionGroups.value.some((group) => (group.options || []).length > 0);
+  }
+  return filteredOptions.value.length > 0;
 });
 
 function optionRowClass(active) {

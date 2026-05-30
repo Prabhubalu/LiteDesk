@@ -482,7 +482,8 @@ const OrganizationSchema = new mongoose.Schema({
     // Trash (soft delete) - See docs/TRASH_IMPLEMENTATION_SPEC.md
     deletedAt: { type: Date, default: null, index: true },
     deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
-    deletionReason: { type: String, trim: true, maxlength: 500 }
+    deletionReason: { type: String, trim: true, maxlength: 500 },
+    importHistoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'ImportHistory', default: null, index: true }
 }, { 
     timestamps: true 
 });

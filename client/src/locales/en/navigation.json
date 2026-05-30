@@ -207,6 +207,78 @@
     "message": "Link {module}",
     "description": "Link drawer title when module name capitalized"
   },
+  "globalSearchRecentSearches": {
+    "message": "Recently opened",
+    "description": "Recently opened records section header in command palette"
+  },
+  "globalSearchFrequentModules": {
+    "message": "Frequently used",
+    "description": "Frequently opened modules section header in command palette"
+  },
+  "globalSearchClearRecent": {
+    "message": "Clear",
+    "description": "Clear recent searches button"
+  },
+  "globalSearchGroupContextual": {
+    "message": "On this page",
+    "description": "Contextual commands group header"
+  },
+  "globalSearchGroupNavigation": {
+    "message": "Navigation",
+    "description": "Navigation commands group header"
+  },
+  "globalSearchGroupCoreModules": {
+    "message": "Core modules",
+    "description": "Command palette group for platform core modules"
+  },
+  "globalSearchGroupAppModules": {
+    "message": "Modules",
+    "description": "Command palette group for app-scoped modules"
+  },
+  "globalSearchGroupApps": {
+    "message": "Apps",
+    "description": "Command palette group for app switcher"
+  },
+  "globalSearchGroupPlatform": {
+    "message": "Platform",
+    "description": "Command palette group for settings and platform items"
+  },
+  "globalSearchGroupCreate": {
+    "message": "Create",
+    "description": "Create commands group header"
+  },
+  "globalSearchGroupActions": {
+    "message": "Actions",
+    "description": "Action commands group header"
+  },
+  "globalSearchFooterNavigate": {
+    "message": "Navigate",
+    "description": "Footer keyboard hint for arrow keys"
+  },
+  "globalSearchFooterSelect": {
+    "message": "Select",
+    "description": "Footer keyboard hint for enter key"
+  },
+  "globalSearchFooterClose": {
+    "message": "Close",
+    "description": "Footer keyboard hint for escape key"
+  },
+  "globalSearchFooterCommands": {
+    "message": "Commands",
+    "description": "Footer keyboard hint for slash command mode"
+  },
+  "globalSearchOpenRecord": {
+    "message": "Open record",
+    "description": "Recent search entry subtitle for saved records"
+  },
+  "globalSearchJumpTo": {
+    "message": "Jump to…",
+    "description": "Active row hint in command palette list"
+  },
+  "globalSearchQuickActions": {
+    "message": "Quick actions",
+    "description": "Screen-reader label for suggested commands section"
+  },
   "userAccountFallback": {
     "message": "Your account",
     "description": "User menu display name fallback"

@@ -72,6 +72,38 @@
         </div>
       </div>
 
+      <!-- Live import progress -->
+      <div
+        v-if="importRecord.status === 'processing'"
+        class="mb-4 rounded-xl border border-indigo-200 bg-indigo-50 p-4 dark:border-indigo-800 dark:bg-indigo-900/20"
+      >
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p class="text-sm font-semibold text-indigo-900 dark:text-indigo-100">
+              {{ t('import.cSVImportModalImportingRecords') }}
+            </p>
+            <p class="mt-1 text-xs text-indigo-700 dark:text-indigo-300">
+              {{ t('import.importRecordsProgress', {
+                processed: formatCount(liveProgress.processed),
+                total: formatCount(liveProgress.total),
+              }) }}
+            </p>
+          </div>
+          <span class="text-sm font-bold text-indigo-600 dark:text-indigo-400">
+            {{ liveProgressPercent }}%
+          </span>
+        </div>
+        <div class="mt-3 h-2 overflow-hidden rounded-full bg-indigo-200 dark:bg-indigo-950">
+          <div
+            class="h-full rounded-full bg-indigo-600 transition-all duration-300"
+            :style="{ width: `${liveProgressPercent}%` }"
+          />
+        </div>
+        <p class="mt-2 text-xs text-indigo-700/80 dark:text-indigo-300/80">
+          {{ t('import.importBackgroundHint') }}
+        </p>
+      </div>
+
       <!-- Statistics Grid -->
       <div class="grid grid-cols-5 gap-3 mb-4">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3 text-center">
@@ -156,6 +188,48 @@
           
           <!-- Empty State -->
           <div v-else class="text-center py-6 text-sm text-gray-500 dark:text-gray-400">{{ t('import.importDetailUnableToFetchRecordsTheyMay') }}</div>
+
+          <!-- Pagination -->
+          <div
+            v-if="!loadingRecords && recordsPagination.totalPages > 1"
+            class="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700"
+          >
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              {{ t('import.importDetailRecordsPagination', {
+                from: recordsPageFrom,
+                to: recordsPageTo,
+                total: recordsPagination.total,
+              }) }}
+            </p>
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                class="px-3 py-1 text-xs font-medium rounded border border-gray-300 dark:border-gray-600 disabled:opacity-50"
+                :disabled="recordsPagination.currentPage <= 1"
+                @click="goToRecordsPage(recordsPagination.currentPage - 1)"
+              >
+                {{ t('actions.previous') }}
+              </button>
+              <span class="text-xs text-gray-600 dark:text-gray-400">
+                {{ recordsPagination.currentPage }} / {{ recordsPagination.totalPages }}
+              </span>
+              <button
+                type="button"
+                class="px-3 py-1 text-xs font-medium rounded border border-gray-300 dark:border-gray-600 disabled:opacity-50"
+                :disabled="recordsPagination.currentPage >= recordsPagination.totalPages"
+                @click="goToRecordsPage(recordsPagination.currentPage + 1)"
+              >
+                {{ t('actions.next') }}
+              </button>
+            </div>
+          </div>
+
+          <p
+            v-if="recordsIdsTruncated"
+            class="text-xs text-amber-600 dark:text-amber-400"
+          >
+            {{ t('import.importDetailRecordIdsTruncated') }}
+          </p>
         </div>
 
         <!-- Skipped Records -->
@@ -334,12 +408,14 @@
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useTabs } from '@/composables/useTabs';
+import { useActiveImportsStore } from '@/stores/activeImports';
 import apiClient from '@/utils/apiClient';
 
 const route = useRoute();
+const activeImportsStore = useActiveImportsStore();
 const { openTab, findTabByPath, switchToTab, activeTabId, findTabById, closeTab } = useTabs();
 
 const IMPORTS_LIST_PATH = '/imports';
@@ -368,6 +444,19 @@ const showRecordsView = ref(false);
 const selectedRecordType = ref(null);
 const loadingRecords = ref(false);
 const displayRecords = ref([]);
+const recordsPagination = ref({ currentPage: 1, totalPages: 1, total: 0, limit: 50 });
+const recordsIdsTruncated = ref(false);
+
+const recordsPageFrom = computed(() => {
+  const { currentPage, limit, total } = recordsPagination.value;
+  if (!total) return 0;
+  return (currentPage - 1) * limit + 1;
+});
+
+const recordsPageTo = computed(() => {
+  const { currentPage, limit, total } = recordsPagination.value;
+  return Math.min(currentPage * limit, total);
+});
 
 const importErrors = computed(() => {
   const record = importRecord.value;
@@ -388,6 +477,46 @@ const successRate = computed(() => {
   const successful = (importRecord.value.stats.created || 0) + (importRecord.value.stats.updated || 0);
   return Math.round((successful / total) * 100);
 });
+
+const liveProgress = computed(() => {
+  const tracked = activeImportsStore.getImport(route.params.id);
+  if (tracked) {
+    return {
+      processed: tracked.processed ?? 0,
+      total: tracked.total ?? importRecord.value?.stats?.total ?? 0,
+    };
+  }
+  return {
+    processed: importRecord.value?.stats?.processed ?? 0,
+    total: importRecord.value?.stats?.total ?? 0,
+  };
+});
+
+const liveProgressPercent = computed(() => {
+  const { processed, total } = liveProgress.value;
+  if (!total) return 0;
+  return Math.min(100, Math.round((processed / total) * 100));
+});
+
+function formatCount(value) {
+  return Number(value || 0).toLocaleString();
+}
+
+let detailRefreshTimer = null;
+
+function ensureDetailRefreshPolling() {
+  if (importRecord.value?.status !== 'processing') {
+    if (detailRefreshTimer) {
+      clearInterval(detailRefreshTimer);
+      detailRefreshTimer = null;
+    }
+    return;
+  }
+  if (detailRefreshTimer) return;
+  detailRefreshTimer = setInterval(() => {
+    void fetchImportDetails(true);
+  }, 5000);
+}
 
 const recordsViewTitle = computed(() => {
   if (!selectedRecordType.value) return '';
@@ -410,20 +539,29 @@ const tableHeaders = computed(() => {
   return headers[importRecord.value.module] || [];
 });
 
-const fetchImportDetails = async () => {
+const fetchImportDetails = async (silent = false) => {
   try {
-    loading.value = true;
+    if (!silent) loading.value = true;
     const response = await apiClient.get(`/imports/${route.params.id}`);
     if (response.success) {
       importRecord.value = response.data;
-    } else {
+      if (importRecord.value.status === 'processing') {
+        activeImportsStore.trackImport({
+          importId: importRecord.value._id,
+          fileName: importRecord.value.fileName,
+          module: importRecord.value.module,
+          total: importRecord.value.stats?.total ?? 0,
+        });
+      }
+      ensureDetailRefreshPolling();
+    } else if (!silent) {
       error.value = 'Import record not found';
     }
   } catch (err) {
     console.error('Error fetching import details:', err);
-    error.value = err.message || 'Failed to load import details';
+    if (!silent) error.value = err.message || 'Failed to load import details';
   } finally {
-    loading.value = false;
+    if (!silent) loading.value = false;
   }
 };
 
@@ -469,16 +607,28 @@ const getStatusClass = (status) => {
   return classes[status] || 'px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 rounded-full text-xs font-medium';
 };
 
-const fetchRecords = async (type) => {
+const fetchRecords = async (type, page = 1) => {
   if (!importRecord.value) return;
   
   loadingRecords.value = true;
   displayRecords.value = [];
   
   try {
-    const response = await apiClient.get(`/imports/${importRecord.value._id}/records/${type}`);
-    if (response.success && response.data) {
+    const limit = recordsPagination.value.limit;
+    const response = await apiClient.get(
+      `/imports/${importRecord.value._id}/records/${type}?page=${page}&limit=${limit}`
+    );
+    if (response.success) {
       displayRecords.value = response.data || [];
+      if (response.pagination) {
+        recordsPagination.value = {
+          currentPage: response.pagination.currentPage,
+          totalPages: response.pagination.totalPages,
+          total: response.pagination.total,
+          limit: response.pagination.limit,
+        };
+      }
+      recordsIdsTruncated.value = Boolean(response.meta?.idsTruncated);
     }
   } catch (err) {
     console.error('Error fetching records:', err);
@@ -486,6 +636,11 @@ const fetchRecords = async (type) => {
   } finally {
     loadingRecords.value = false;
   }
+};
+
+const goToRecordsPage = (page) => {
+  if (!selectedRecordType.value || page < 1 || page > recordsPagination.value.totalPages) return;
+  fetchRecords(selectedRecordType.value, page);
 };
 
 const getRecordValue = (record, header) => {
@@ -536,9 +691,11 @@ const viewRecords = (type) => {
   
   selectedRecordType.value = type;
   showRecordsView.value = true;
+  recordsPagination.value = { currentPage: 1, totalPages: 1, total: 0, limit: 50 };
+  recordsIdsTruncated.value = false;
   
   if (type === 'created' || type === 'updated') {
-    fetchRecords(type);
+    fetchRecords(type, 1);
   }
   
   setTimeout(() => {
@@ -553,6 +710,8 @@ const closeRecordsView = () => {
   showRecordsView.value = false;
   selectedRecordType.value = null;
   displayRecords.value = [];
+  recordsIdsTruncated.value = false;
+  recordsPagination.value = { currentPage: 1, totalPages: 1, total: 0, limit: 50 };
 };
 
 const navigateToImportsList = () => {
@@ -590,5 +749,12 @@ const navigateToModule = () => {
 
 onMounted(() => {
   fetchImportDetails();
+});
+
+onBeforeUnmount(() => {
+  if (detailRefreshTimer) {
+    clearInterval(detailRefreshTimer);
+    detailRefreshTimer = null;
+  }
 });
 </script>

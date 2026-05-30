@@ -9,6 +9,7 @@ const { lazySalesInitialization } = require('../middleware/lazySalesInitializati
 const { requireSalesApp } = require('../middleware/requireSalesAppMiddleware');
 const {
   parseCSVFile,
+  stageCsvUploadRoute,
   checkContactDuplicates,
   checkDealDuplicates,
   checkTaskDuplicates,
@@ -22,6 +23,7 @@ const {
   exportTasks,
   exportOrganizations
 } = require('../controllers/csvController');
+const { importUploadOptional, importUploadSingle } = require('../middleware/importUploadMiddleware');
 
 // Apply authentication to all routes
 router.use(protect);
@@ -32,6 +34,15 @@ router.use(requireSalesApp); // Enforce CRM-only access
 
 // Parse CSV file (preview)
 router.post('/parse', parseCSVFile);
+
+// Stage large CSV uploads (headers, preview, row count) — avoids double upload at import time
+router.post('/staging',
+  organizationIsolation,
+  checkTrialStatus,
+  checkPermission('imports', 'create'),
+  importUploadSingle,
+  stageCsvUploadRoute
+);
 
 // Check for duplicates before import
 router.post('/check-duplicates/contacts',
@@ -75,6 +86,7 @@ router.post('/import/contacts',
   checkTrialStatus,
   checkPermission('imports', 'create'),
   checkPermission('contacts', 'create'),
+  importUploadOptional,
   importContacts
 );
 // Alias for people
@@ -83,6 +95,7 @@ router.post('/import/people',
   checkTrialStatus,
   checkPermission('imports', 'create'),
   checkPermission('people', 'create'),
+  importUploadOptional,
   importContacts
 );
 
@@ -91,6 +104,7 @@ router.post('/import/deals',
   checkTrialStatus,
   checkPermission('imports', 'create'),
   checkPermission('deals', 'create'),
+  importUploadOptional,
   importDeals
 );
 
@@ -99,6 +113,7 @@ router.post('/import/tasks',
   checkTrialStatus,
   checkPermission('imports', 'create'),
   checkPermission('tasks', 'create'),
+  importUploadOptional,
   importTasks
 );
 
@@ -107,6 +122,7 @@ router.post('/import/organizations',
   checkTrialStatus,
   checkPermission('imports', 'create'),
   checkPermission('organizations', 'create'),
+  importUploadOptional,
   importOrganizations
 );
 

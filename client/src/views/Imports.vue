@@ -85,7 +85,21 @@
 
       <!-- Custom Stats Cell -->
       <template #cell-stats="{ row }">
-        <div class="text-sm space-y-0.5">
+        <div v-if="row.status === 'processing'" class="space-y-2">
+          <p class="text-xs font-medium text-indigo-600 dark:text-indigo-400">
+            {{ t('import.importRecordsProgress', {
+              processed: formatCount(getProcessingProgress(row).processed),
+              total: formatCount(getProcessingProgress(row).total),
+            }) }}
+          </p>
+          <div class="h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+            <div
+              class="h-full rounded-full bg-indigo-600 transition-all duration-300"
+              :style="{ width: `${getProcessingPercent(row)}%` }"
+            />
+          </div>
+        </div>
+        <div v-else class="text-sm space-y-0.5">
           <div v-if="row.stats.created > 0" class="text-green-600 dark:text-green-400">
             ✓ {{ t('import.importsCellCreated', { count: row.stats.created }) }}
           </div>
@@ -123,7 +137,7 @@
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
-import { ref, reactive, onMounted, watch, computed } from 'vue';
+import { ref, reactive, onMounted, onBeforeUnmount, watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
@@ -131,10 +145,12 @@ import apiClient from '../utils/apiClient';
 import ListView from '@/components/common/ListView.vue';
 import BadgeCell from '../components/common/table/BadgeCell.vue';
 import UniversalImportModal from '../components/import/UniversalImportModal.vue';
+import { useActiveImportsStore } from '@/stores/activeImports';
 
 // Router and auth
 const router = useRouter();
 const authStore = useAuthStore();
+const activeImportsStore = useActiveImportsStore();
 
 // Use tabs composable
 const { openTab } = useTabs();
@@ -251,6 +267,8 @@ const fetchImports = async () => {
     if (response.success) {
       imports.value = response.data;
       Object.assign(pagination, response.pagination);
+      syncProcessingImports();
+      ensureListRefreshPolling();
     }
   } catch (error) {
     console.error('Error fetching imports:', error);
@@ -332,6 +350,60 @@ const formatTime = (date) => {
   });
 };
 
+const formatCount = (value) => Number(value || 0).toLocaleString();
+
+function getProcessingProgress(row) {
+  const tracked = activeImportsStore.getImport(row._id);
+  if (tracked) {
+    return {
+      processed: tracked.processed ?? 0,
+      total: tracked.total ?? row.stats?.total ?? 0,
+    };
+  }
+  return {
+    processed: row.stats?.processed ?? 0,
+    total: row.stats?.total ?? 0,
+  };
+}
+
+function getProcessingPercent(row) {
+  const { processed, total } = getProcessingProgress(row);
+  if (!total) return 0;
+  return Math.min(100, Math.round((processed / total) * 100));
+}
+
+function syncProcessingImports() {
+  imports.value
+    .filter((row) => row.status === 'processing')
+    .forEach((row) => {
+      activeImportsStore.trackImport({
+        importId: row._id,
+        fileName: row.fileName,
+        module: row.module,
+        total: row.stats?.total ?? 0,
+      });
+    });
+}
+
+let listRefreshTimer = null;
+
+function ensureListRefreshPolling() {
+  const hasProcessingRows = imports.value.some((row) => row.status === 'processing')
+    || activeImportsStore.hasProcessing;
+  if (!hasProcessingRows) {
+    if (listRefreshTimer) {
+      clearInterval(listRefreshTimer);
+      listRefreshTimer = null;
+    }
+    return;
+  }
+  if (listRefreshTimer) return;
+  listRefreshTimer = setInterval(() => {
+    fetchImports();
+    fetchStats();
+  }, 5000);
+}
+
 const getStatusClass = (status) => {
   const classes = {
     completed: 'badge badge-success',
@@ -355,5 +427,19 @@ onMounted(() => {
   fetchImports();
   fetchStats();
 });
+
+onBeforeUnmount(() => {
+  if (listRefreshTimer) {
+    clearInterval(listRefreshTimer);
+    listRefreshTimer = null;
+  }
+});
+
+watch(
+  () => activeImportsStore.processingImports.length,
+  () => {
+    ensureListRefreshPolling();
+  }
+);
 </script>
 

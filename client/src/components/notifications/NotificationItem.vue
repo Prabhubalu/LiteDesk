@@ -251,7 +251,15 @@
             </p>
             <div class="mt-2 flex flex-col gap-2">
               <router-link
-                to="/settings?tab=notifications&notificationPage=overview"
+                v-if="eventType"
+                :to="manageEventLink"
+                class="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline"
+                @click="close"
+              >
+                {{ t('notifications.manageEventType') }}
+              </router-link>
+              <router-link
+                to="/settings?tab=notifications&notificationPage=preferences"
                 class="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline"
                 @click="close"
               >
@@ -360,6 +368,20 @@ const recipientType = computed(() => props.item?.recipientType || null);
 const channel = computed(() => props.item?.channel || 'IN_APP');
 const ruleId = computed(() => props.item?.ruleId || null);
 const hasRuleId = computed(() => !!ruleId.value);
+
+const manageEventLink = computed(() => {
+  if (!eventType.value) {
+    return { path: '/settings', query: { tab: 'notifications', notificationPage: 'preferences' } };
+  }
+  return {
+    path: '/settings',
+    query: {
+      tab: 'notifications',
+      notificationPage: 'preferences',
+      highlight: eventType.value
+    }
+  };
+});
 
 function formatChannel(ch) {
   const normalized = String(ch || '').toUpperCase();

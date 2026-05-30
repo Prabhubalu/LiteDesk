@@ -152,6 +152,7 @@ const TaskSchema = new Schema({
   deletedAt: { type: Date, default: null, index: true },
   deletedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
   deletionReason: { type: String, trim: true, maxlength: 500 },
+  importHistoryId: { type: Schema.Types.ObjectId, ref: 'ImportHistory', default: null, index: true },
 
   // Metadata
   createdBy: {
@@ -176,6 +177,7 @@ TaskSchema.index({ organizationId: 1, dueDate: 1, status: 1 });
 TaskSchema.index({ organizationId: 1, priority: 1, status: 1 });
 TaskSchema.index({ organizationId: 1, projectId: 1 });
 TaskSchema.index({ organizationId: 1, deletedAt: 1 });
+TaskSchema.index({ organizationId: 1, importHistoryId: 1 });
 TaskSchema.index(
   { organizationId: 1, assignedTo: 1, deletedAt: 1, dueDate: 1, status: 1 },
   { name: 'task_home_summary_idx' }

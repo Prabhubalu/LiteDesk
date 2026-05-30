@@ -1,6 +1,65 @@
 <template>
-  <div class="fixed inset-0 bg-gradient-to-br from-black/60 via-black/50 to-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-5xl w-full max-h-[92vh] overflow-hidden flex flex-col animate-slide-up border border-gray-200 dark:border-gray-700" @click.stop>
+  <Teleport to="body">
+  <div
+    class="fixed inset-0 z-[9999] flex items-center justify-center bg-gradient-to-br from-black/60 via-black/50 to-black/60 p-4 backdrop-blur-sm"
+    role="dialog"
+    aria-modal="true"
+    :aria-labelledby="'import-csv-title'"
+    @keydown.escape.stop
+  >
+    <div class="relative flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl animate-slide-up dark:border-gray-700 dark:bg-gray-900" @click.stop>
+      <!-- Background import confirmation -->
+      <div
+        v-if="showBackgroundConfirm"
+        class="absolute inset-0 z-50 flex items-center justify-center rounded-2xl bg-black/50 p-6 backdrop-blur-[2px]"
+      >
+        <div class="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-700 dark:bg-gray-900">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('import.importBackgroundConfirmTitle') }}</h3>
+          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ t('import.importBackgroundConfirmMessage') }}</p>
+          <div class="mt-6 flex justify-end gap-3">
+            <button
+              type="button"
+              class="rounded-xl px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+              @click="showBackgroundConfirm = false"
+            >
+              {{ t('import.importKeepWatching') }}
+            </button>
+            <button
+              type="button"
+              class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+              @click="confirmRunInBackground"
+            >
+              {{ t('import.importRunInBackground') }}
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Discard confirmation -->
+      <div
+        v-if="showDiscardConfirm"
+        class="absolute inset-0 z-50 flex items-center justify-center rounded-2xl bg-black/50 p-6 backdrop-blur-[2px]"
+      >
+        <div class="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-700 dark:bg-gray-900">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('import.importDiscardTitle') }}</h3>
+          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ t('import.importDiscardMessage') }}</p>
+          <div class="mt-6 flex justify-end gap-3">
+            <button
+              type="button"
+              class="rounded-xl px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+              @click="showDiscardConfirm = false"
+            >
+              {{ t('import.importKeepWorking') }}
+            </button>
+            <button
+              type="button"
+              class="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700"
+              @click="confirmDiscard"
+            >
+              {{ t('import.importDiscardProgress') }}
+            </button>
+          </div>
+        </div>
+      </div>
       <!-- Header with Gradient -->
       <div class="relative bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-indigo-700 dark:to-indigo-800 px-8 py-6">
           <div class="flex items-center justify-between">
@@ -22,10 +81,13 @@
               </svg>
             </div>
             <div>
-              <h2 class="text-2xl font-bold text-white">
+              <p class="text-xs font-medium uppercase tracking-wide text-indigo-200">
+                {{ t('import.importWizardProgressStep', { current: wizardStepNumber, total: totalWizardSteps }) }}
+              </p>
+              <h2 id="import-csv-title" class="text-2xl font-bold text-white">
                 {{ t('import.cSVImportModalImportEntity', { entityType }) }}
               </h2>
-              <p class="text-indigo-100 text-sm mt-0.5">{{ t('import.cSVImportModalUploadAndMapYourCsvData') }}</p>
+              <p class="mt-0.5 text-sm text-indigo-100">{{ t('import.cSVImportModalUploadAndMapYourCsvData') }}</p>
             </div>
           </div>
           <button @click="requestClose" class="p-2.5 text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition-all duration-200">
@@ -63,98 +125,175 @@
       </div>
 
       <!-- Content Area -->
-      <div class="flex-1 overflow-y-auto px-8 py-6 bg-gray-50 dark:bg-gray-800/50">
-        <div class="max-w-3xl mx-auto">
+      <div class="flex-1 overflow-y-auto bg-gray-50 px-8 py-6 dark:bg-gray-800/50">
+        <div class="mx-auto max-w-3xl">
+          <!-- Error banner -->
+          <div
+            v-if="bannerError"
+            class="mb-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20"
+            role="alert"
+          >
+            <svg class="mt-0.5 h-5 w-5 flex-shrink-0 text-red-500" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+            </svg>
+            <p class="flex-1 text-sm text-red-800 dark:text-red-200">{{ bannerError }}</p>
+            <button type="button" class="text-red-500 hover:text-red-700" :aria-label="t('actions.close')" @click="bannerError = ''">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+
           <!-- Step Title & Description -->
-          <div class="text-center mb-8">
-            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ steps[step].title }}</h3>
+          <div class="mb-8 text-center">
+            <h3 class="mb-2 text-2xl font-bold text-gray-900 dark:text-white">{{ steps[step].title }}</h3>
             <p class="text-gray-600 dark:text-gray-400">{{ steps[step].description }}</p>
           </div>
 
           <!-- Step 1: Upload File -->
           <div v-if="step === 0">
+            <div v-if="stagingUploading" class="mb-6 rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-center dark:border-indigo-800 dark:bg-indigo-900/20">
+              <div class="inline-block h-8 w-8 animate-spin rounded-full border-b-2 border-indigo-600 mb-3"></div>
+              <p class="text-sm font-medium text-indigo-900 dark:text-indigo-100">{{ t('import.importStagingUploading') }}</p>
+            </div>
             <div class="relative group">
-              <div class="border-3 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-16 text-center bg-white dark:bg-gray-900 hover:border-indigo-500 dark:hover:border-indigo-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 transition-all duration-300 cursor-pointer shadow-sm" 
-                   @click="$refs.fileInput.click()"
-                   @dragover.prevent
-                   @drop.prevent="handleFileDrop">
-                <input 
+              <div
+                class="cursor-pointer rounded-2xl border-3 border-dashed bg-white p-12 text-center shadow-sm transition-all duration-300 dark:bg-gray-900 sm:p-16"
+                :class="isDragOver
+                  ? 'border-indigo-500 bg-indigo-50/70 dark:border-indigo-400 dark:bg-indigo-900/20'
+                  : 'border-gray-300 hover:border-indigo-500 hover:bg-indigo-50/50 dark:border-gray-600 dark:hover:border-indigo-400 dark:hover:bg-indigo-900/10'"
+                @click="$refs.fileInput.click()"
+                @dragover.prevent="isDragOver = true"
+                @dragleave.prevent="isDragOver = false"
+                @drop.prevent="handleFileDrop"
+              >
+                <input
                   ref="fileInput"
-                  type="file" 
+                  type="file"
                   accept=".csv"
-                  @change="handleFileSelect"
                   class="hidden"
+                  @change="handleFileSelect"
                 />
-                
+
                 <div v-if="!fileName" class="space-y-4">
-                  <div class="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-indigo-100 to-indigo-200 dark:from-indigo-900/30 dark:to-indigo-800/30 rounded-2xl mb-2 group-hover:scale-110 transition-transform duration-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-12 h-12 text-indigo-600 dark:text-indigo-400">
+                  <div class="mb-2 inline-flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-100 to-indigo-200 transition-transform duration-300 group-hover:scale-110 dark:from-indigo-900/30 dark:to-indigo-800/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-12 w-12 text-indigo-600 dark:text-indigo-400">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                     </svg>
                   </div>
                   <div>
-                    <h4 class="text-xl font-bold text-gray-900 dark:text-white mb-2">{{ t('import.cSVImportModalUploadYourCsvFile') }}</h4>
-                    <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">{{ t('import.cSVImportModalDragAndDropYourFileHere') }}</p>
-                    <button type="button" class="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-indigo-500/20">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                    <h4 class="mb-2 text-xl font-bold text-gray-900 dark:text-white">
+                      {{ isDragOver ? t('import.importDragActive') : t('import.cSVImportModalUploadYourCsvFile') }}
+                    </h4>
+                    <p class="mx-auto mb-6 max-w-md text-gray-600 dark:text-gray-400">{{ t('import.cSVImportModalDragAndDropYourFileHere') }}</p>
+                    <button type="button" class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white shadow-lg shadow-indigo-500/20 transition-colors hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-5 w-5">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-                      </svg>{{ t('import.cSVImportModalChooseFile') }}</button>
+                      </svg>
+                      {{ t('import.cSVImportModalChooseFile') }}
+                    </button>
                   </div>
-                  <p class="text-xs text-gray-500 dark:text-gray-500 pt-4">{{ t('import.cSVImportModalSupportedFormatCsvFilesOnly') }}</p>
+                  <p class="pt-4 text-xs text-gray-500 dark:text-gray-500">{{ t('import.cSVImportModalSupportedFormatCsvFilesOnly') }}</p>
                 </div>
 
                 <div v-else class="space-y-4">
-                  <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/30 rounded-2xl mb-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-10 h-10 text-green-600 dark:text-green-400">
+                  <div class="mb-2 inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-10 w-10 text-green-600 dark:text-green-400">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
                   <div>
-                    <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-1">{{ t('import.cSVImportModalFileSelected') }}</h4>
-                    <p class="text-indigo-600 dark:text-indigo-400 font-medium text-lg">{{ fileName }}</p>
-                    <button type="button" @click.stop="clearFile" class="mt-4 text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 underline transition-colors">{{ t('import.cSVImportModalChooseADifferentFile') }}</button>
+                    <h4 class="mb-1 text-lg font-bold text-gray-900 dark:text-white">{{ t('import.cSVImportModalFileSelected') }}</h4>
+                    <p class="text-lg font-medium text-indigo-600 dark:text-indigo-400">{{ fileName }}</p>
+                    <p v-if="fileMetaLabel" class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ fileMetaLabel }}</p>
+                    <button type="button" class="mt-4 text-sm text-gray-600 underline transition-colors hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400" @click.stop="clearFile">
+                      {{ t('import.cSVImportModalChooseADifferentFile') }}
+                    </button>
                   </div>
                 </div>
               </div>
+            </div>
+
+            <div class="mt-4 flex justify-center">
+              <button
+                type="button"
+                class="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
+                @click="handleDownloadTemplate"
+              >
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                {{ t('import.importDownloadTemplate') }}
+              </button>
             </div>
           </div>
 
           <!-- Step 2: Map Fields -->
           <div v-if="step === 1 && csvHeaders.length > 0">
             <!-- Info Banner -->
-            <div class="mb-6 relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 p-6 shadow-lg">
-              <div class="relative z-10 flex items-start gap-4">
-                <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center flex-shrink-0">
-                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
+            <div class="relative mb-4 overflow-hidden rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 p-6 shadow-lg">
+              <div class="relative z-10 flex flex-wrap items-start justify-between gap-4">
+                <div class="flex items-start gap-4">
+                  <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+                    <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-sm font-medium text-white">
+                      <span class="text-lg font-bold">{{ t('import.cSVImportModalRowCount', { count: totalRows }) }}</span>
+                      {{ t('import.cSVImportModalDetectedInYourCsvFile') }}
+                    </p>
+                    <p class="mt-1 text-sm text-blue-100">
+                      {{ t('import.cSVImportModalMapColumnsHint', { entityType }) }}
+                    </p>
+                  </div>
                 </div>
-                <div class="flex-1">
-                  <p class="text-white text-sm font-medium">
-                    <span class="font-bold text-lg">{{ t('import.cSVImportModalRowCount', { count: totalRows }) }}</span>{{ t('import.cSVImportModalDetectedInYourCsvFile') }}</p>
-                  <p class="text-blue-100 text-sm mt-1">
-                    {{ t('import.cSVImportModalMapColumnsHint', { entityType }) }}
+                <div class="text-right text-sm text-white/90">
+                  <p class="font-semibold">{{ t('import.importMappingProgress', { mapped: mappingStats.mapped, total: mappingStats.total }) }}</p>
+                  <p v-if="autoMappedCount > 0" class="mt-0.5 text-xs text-blue-100">
+                    {{ t('import.importAutoMappedCount', { count: autoMappedCount }) }}
                   </p>
                 </div>
               </div>
-              <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32"></div>
+              <div class="absolute -right-32 -top-32 h-64 w-64 rounded-full bg-white/5" />
             </div>
 
-            <!-- Field Mapping Cards -->
-            <div v-if="fieldsLoading" class="mb-4 text-sm text-gray-500 dark:text-gray-400 text-center">
+            <!-- Mapping progress bar -->
+            <div class="mb-5 h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+              <div
+                class="h-full rounded-full bg-indigo-600 transition-all duration-300"
+                :style="{ width: `${mappingStats.percent}%` }"
+              />
+            </div>
+
+            <div v-if="fieldsLoading" class="mb-4 text-center text-sm text-gray-500 dark:text-gray-400">
               {{ t('import.importFieldsLoading') }}
             </div>
-            <div class="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-              <div v-for="header in csvHeaders" :key="header" class="group bg-white dark:bg-gray-900 rounded-xl p-5 border-2 border-gray-200 dark:border-gray-700 hover:border-indigo-400 dark:hover:border-indigo-600 transition-all duration-200 shadow-sm hover:shadow-md">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+            <div class="custom-scrollbar max-h-[420px] space-y-3 overflow-y-auto pr-2">
+              <div
+                v-for="header in csvHeaders"
+                :key="header"
+                class="group rounded-xl border-2 bg-white p-5 shadow-sm transition-all duration-200 hover:shadow-md dark:bg-gray-900"
+                :class="fieldMapping[header]
+                  ? 'border-green-200 dark:border-green-800/60'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-indigo-400 dark:hover:border-indigo-600'"
+              >
+                <div class="grid grid-cols-1 items-center gap-4 md:grid-cols-3">
                   <!-- CSV Column -->
                   <div class="space-y-1">
                     <div class="flex items-center gap-2">
-                      <div class="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                      <div class="h-2 w-2 rounded-full" :class="fieldMapping[header] ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'" />
                       <label class="text-sm font-bold text-gray-900 dark:text-white">{{ header }}</label>
+                      <span
+                        class="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+                        :class="fieldMapping[header]
+                          ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                          : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'"
+                      >
+                        {{ fieldMapping[header] ? t('import.importMappedColumn') : t('import.importUnmappedColumn') }}
+                      </span>
                     </div>
-                    <p v-if="preview[0] && preview[0][header]" class="text-xs text-gray-500 dark:text-gray-400 pl-4 truncate">
-                      📄 <span class="italic">{{ preview[0][header] }}</span>
+                    <p v-if="preview[0] && preview[0][header]" class="truncate pl-4 text-xs italic text-gray-500 dark:text-gray-400">
+                      {{ preview[0][header] }}
                     </p>
                   </div>
 
@@ -168,15 +307,16 @@
                   <!-- Target Field -->
                   <div>
                     <HeadlessSelect
-                      v-model="fieldMapping[header]"
-                      :option-groups="fieldOptionGroups.length ? fieldOptionGroups : undefined"
-                      :options="fieldOptionGroups.length ? [] : availableFields"
+                      :model-value="fieldMapping[header]"
+                      :option-groups="getFieldOptionGroupsForHeader(header).length ? getFieldOptionGroupsForHeader(header) : undefined"
+                      :options="getFieldOptionGroupsForHeader(header).length ? [] : getAvailableFieldsForHeader(header)"
                       allow-empty
                       :empty-label="`⊘ ${t('import.cSVImportModalSkipField')}`"
                       teleport
                       :disabled="fieldsLoading"
                       button-class="!px-4 !py-2.5 !bg-gray-50 dark:!bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium !shadow-none focus:!outline-none focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20"
                       options-class="z-[250]"
+                      @update:model-value="(value) => setFieldMapping(header, value)"
                     />
                   </div>
                 </div>
@@ -406,13 +546,16 @@
                   <div class="flex items-start justify-between gap-4">
                     <div class="flex-1">
                       <p class="text-sm font-medium text-gray-900 dark:text-white">
-                        Row {{ dup.rowNumber }}: {{ Object.values(dup.data).slice(0, 3).join(', ') }}...
+                        {{ t('import.importDuplicateRow', { row: dup.rowNumber, preview: Object.values(dup.data).slice(0, 3).join(', ') }) }}
                       </p>
-                      <p class="text-xs text-warning-700 dark:text-warning-300 mt-1">
-                        Matches existing record by {{ dup.matchedField }}: <strong>{{ dup.matchedValue }}</strong>
+                      <p class="mt-1 text-xs text-warning-700 dark:text-warning-300">
+                        {{ t('import.importDuplicateMatchesBy', { field: dup.matchedField, value: dup.matchedValue }) }}
                       </p>
-                      <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                        Existing: {{ dup.existingRecord.first_name || dup.existingRecord.name }} ({{ new Date(dup.existingRecord.createdAt).toLocaleDateString() }})
+                      <p class="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                        {{ t('import.importDuplicateExistingRecord', {
+                          name: dup.existingRecord.first_name || dup.existingRecord.name,
+                          date: new Date(dup.existingRecord.createdAt).toLocaleDateString()
+                        }) }}
                       </p>
                     </div>
                     <span class="px-2 py-1 text-xs font-semibold bg-warning-100 dark:bg-warning-900/40 text-warning-800 dark:text-warning-200 rounded">{{ t('forms.builderDuplicate') }}</span>
@@ -421,6 +564,9 @@
                 <p v-if="duplicateData.duplicateRecords.length > 10" class="text-sm text-gray-500 dark:text-gray-400 text-center py-2">
                   {{ t('import.cSVImportModalDuplicateRecordsMore', { count: duplicateData.duplicateRecords.length - 10 }) }}
                 </p>
+                <p v-if="duplicateData.samplesTruncated" class="text-sm text-amber-600 dark:text-amber-400 text-center py-2">
+                  {{ t('import.cSVImportModalDuplicateSamplesTruncated') }}
+                </p>
               </div>
             </div>
           </div>
@@ -428,47 +574,148 @@
 
         <!-- Step 4: Import Results -->
         <div v-if="step === 3">
-          <div v-if="importing" class="text-center py-12">
-            <div class="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mb-4"></div>
-            <p class="text-lg font-medium text-gray-900 dark:text-white">{{ t('import.cSVImportModalImportingRecords') }}</p>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">{{ t('import.cSVImportModalThisMayTakeAMoment') }}</p>
+          <div v-if="importing" class="py-12 px-4">
+            <div class="mx-auto max-w-md space-y-5">
+              <div class="text-center">
+                <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-4 border-indigo-600 mb-4"></div>
+                <p class="text-lg font-medium text-gray-900 dark:text-white">{{ t('import.cSVImportModalImportingRecords') }}</p>
+                <p class="mt-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400">
+                  {{ t('import.importRecordsProgress', { processed: formattedImportProcessed, total: formattedImportTotal }) }}
+                </p>
+              </div>
+              <div class="h-3 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                <div
+                  class="h-full rounded-full bg-indigo-600 transition-all duration-300 ease-out"
+                  :style="{ width: `${importProgressPercent}%` }"
+                />
+              </div>
+              <p class="text-center text-xs text-gray-500 dark:text-gray-400">
+                {{ t('import.cSVImportModalThisMayTakeAMoment') }}
+              </p>
+            </div>
           </div>
 
           <div v-else-if="importResults" class="space-y-6">
-            <!-- Success Summary -->
-            <div class="grid grid-cols-3 gap-4">
+            <!-- Outcome headline -->
+            <div
+              class="rounded-2xl border p-5"
+              :class="{
+                'border-success-200 bg-success-50 dark:border-success-800 dark:bg-success-900/20': importResultSummary.variant === 'success',
+                'border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20': importResultSummary.variant === 'warning',
+                'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20': importResultSummary.variant === 'info',
+                'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20': importResultSummary.variant === 'error',
+              }"
+            >
+              <div class="flex items-start gap-3">
+                <div
+                  class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full"
+                  :class="{
+                    'bg-success-100 text-success-600 dark:bg-success-900/40 dark:text-success-400': importResultSummary.variant === 'success',
+                    'bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400': importResultSummary.variant === 'warning',
+                    'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400': importResultSummary.variant === 'info',
+                    'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400': importResultSummary.variant === 'error',
+                  }"
+                >
+                  <svg v-if="importResultSummary.variant === 'success'" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <svg v-else-if="importResultSummary.variant === 'warning'" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <svg v-else-if="importResultSummary.variant === 'info'" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <svg v-else class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <h4
+                    class="font-semibold"
+                    :class="{
+                      'text-success-900 dark:text-success-100': importResultSummary.variant === 'success',
+                      'text-amber-900 dark:text-amber-100': importResultSummary.variant === 'warning',
+                      'text-blue-900 dark:text-blue-100': importResultSummary.variant === 'info',
+                      'text-red-900 dark:text-red-100': importResultSummary.variant === 'error',
+                    }"
+                  >
+                    {{ importResultSummary.title }}
+                  </h4>
+                  <p
+                    class="mt-1 text-sm"
+                    :class="{
+                      'text-success-800 dark:text-success-200': importResultSummary.variant === 'success',
+                      'text-amber-800 dark:text-amber-200': importResultSummary.variant === 'warning',
+                      'text-blue-800 dark:text-blue-200': importResultSummary.variant === 'info',
+                      'text-red-800 dark:text-red-200': importResultSummary.variant === 'error',
+                    }"
+                  >
+                    {{ importResultSummary.message }}
+                  </p>
+                  <p
+                    v-if="importResults.skipped > 0"
+                    class="mt-2 text-xs opacity-80"
+                    :class="{
+                      'text-success-700 dark:text-success-300': importResultSummary.variant === 'success',
+                      'text-amber-700 dark:text-amber-300': importResultSummary.variant === 'warning',
+                      'text-blue-700 dark:text-blue-300': importResultSummary.variant === 'info',
+                    }"
+                  >
+                    {{ t('import.importResultsSkippedHint') }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Summary metrics -->
+            <p class="text-center text-sm text-gray-500 dark:text-gray-400">
+              {{ t('import.importResultsTotalProcessed', { count: importResults.total || 0 }) }}
+            </p>
+            <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
               <div class="stat-card">
                 <div class="stat-icon bg-gradient-to-br from-success-500 to-success-600">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-7 w-7 text-white">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <div>
-                  <p class="stat-value">{{ importResults.created }}</p>
+                  <p class="stat-value">{{ importResults.created || 0 }}</p>
                   <p class="stat-label">{{ t('forms.hubColCreated') }}</p>
                 </div>
               </div>
 
               <div class="stat-card">
                 <div class="stat-icon bg-gradient-to-br from-blue-500 to-blue-600">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-7 w-7 text-white">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
                 </div>
                 <div>
-                  <p class="stat-value">{{ importResults.updated }}</p>
+                  <p class="stat-value">{{ importResults.updated || 0 }}</p>
                   <p class="stat-label">{{ t('import.cSVImportModalUpdated') }}</p>
                 </div>
               </div>
 
               <div class="stat-card">
+                <div class="stat-icon bg-gradient-to-br from-amber-500 to-amber-600">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-7 w-7 text-white">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <p class="stat-value">{{ importResults.skipped || 0 }}</p>
+                  <p class="stat-label">{{ t('import.importResultsSkipped') }}</p>
+                </div>
+              </div>
+
+              <div class="stat-card">
                 <div class="stat-icon bg-gradient-to-br from-danger-500 to-danger-600">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-7 w-7 text-white">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <div>
-                  <p class="stat-value">{{ importResults.failed }}</p>
+                  <p class="stat-value">{{ importResults.failed || 0 }}</p>
                   <p class="stat-label">{{ t('process.execFailed') }}</p>
                 </div>
               </div>
@@ -476,20 +723,14 @@
 
             <!-- Errors -->
             <div v-if="importResults.errors && importResults.errors.length > 0" class="max-h-64 overflow-y-auto">
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('import.cSVImportModalImportErrors') }}</h4>
+              <h4 class="mb-3 text-sm font-semibold text-gray-900 dark:text-white">{{ t('import.cSVImportModalImportErrors') }}</h4>
               <div class="space-y-2">
-                <div v-for="(error, index) in importResults.errors" :key="index" class="p-3 bg-danger-50 dark:bg-danger-900/20 border border-danger-200 dark:border-danger-800 rounded-lg">
+                <div v-for="(error, index) in importResults.errors" :key="index" class="rounded-lg border border-danger-200 bg-danger-50 p-3 dark:border-danger-800 dark:bg-danger-900/20">
                   <p class="text-sm text-danger-800 dark:text-danger-200">
                     <strong>{{ t('import.cSVImportModalImportRowError', { row: error.row }) }}</strong> {{ error.error }}
                   </p>
                 </div>
               </div>
-            </div>
-
-            <!-- Success Message -->
-            <div v-else class="p-4 bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 rounded-lg">
-              <p class="text-success-800 dark:text-success-200 text-center">
-                <strong>✓</strong>{{ t('import.cSVImportModalAllRecordsImportedSuccessfully') }}</p>
             </div>
           </div>
         </div>
@@ -515,17 +756,26 @@
               </button>
               
               <!-- Check Duplicates button (Step 2, when checking is selected, before checking) -->
-              <button 
-                v-if="step === 2 && shouldCheckDuplicates && !duplicateData && !importing && !importResults"
-                @click="checkDuplicates" 
-                :disabled="duplicateCheckFields.length === 0 || checkingDuplicates"
-                class="inline-flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              <button
+                v-if="step === 2 && shouldCheckDuplicates && !duplicateData && !importing && !importResults && !checkingDuplicates"
+                @click="checkDuplicates"
+                :disabled="duplicateCheckFields.length === 0"
+                class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 font-semibold text-white shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-indigo-600 dark:hover:bg-indigo-500"
               >
-                <svg v-if="!checkingDuplicates" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                 </svg>
-                <div v-else class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                {{ checkingDuplicates ? t('import.cSVImportModalChecking') : t('import.cSVImportModalCheckDuplicates') }}
+                {{ t('import.cSVImportModalCheckDuplicates') }}
+              </button>
+
+              <!-- Re-scan after changing duplicate settings -->
+              <button
+                v-if="step === 2 && shouldCheckDuplicates && duplicateData && !importing && !importResults && !checkingDuplicates"
+                type="button"
+                @click="recheckDuplicates"
+                class="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+              >
+                {{ t('import.importRecheckDuplicates') }}
               </button>
               
               <!-- Import Now button (Step 2, when NOT checking duplicates) -->
@@ -554,20 +804,30 @@
                 </svg>
               </button>
               
-              <button 
+              <button
                 v-if="importResults"
+                type="button"
+                class="inline-flex items-center gap-2 rounded-xl px-6 py-2.5 font-semibold text-white transition-all shadow-lg"
+                :class="{
+                  'bg-gradient-to-r from-green-600 to-green-700 shadow-green-500/30 hover:from-green-700 hover:to-green-800': importResultSummary.variant === 'success',
+                  'bg-gradient-to-r from-amber-500 to-amber-600 shadow-amber-500/30 hover:from-amber-600 hover:to-amber-700': importResultSummary.variant === 'warning',
+                  'bg-gradient-to-r from-blue-600 to-blue-700 shadow-blue-500/30 hover:from-blue-700 hover:to-blue-800': importResultSummary.variant === 'info',
+                  'bg-gradient-to-r from-red-600 to-red-700 shadow-red-500/30 hover:from-red-700 hover:to-red-800': importResultSummary.variant === 'error',
+                }"
                 @click="$emit('import-complete'); $emit('close')"
-                class="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold rounded-xl transition-all shadow-lg shadow-green-500/30"
               >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>{{ t('import.cSVImportModalDone') }}</button>
+                </svg>
+                {{ t('import.cSVImportModalDone') }}
+              </button>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -575,8 +835,17 @@ import { useI18n } from 'vue-i18n';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import { useImportModuleFields } from '@/composables/useImportModuleFields';
-import { ref, reactive, computed, watch, toRef } from 'vue';
+import { downloadImportTemplate, formatImportFileSize } from '@/utils/importTemplateUtils';
+import {
+  shouldStageCsvUpload,
+  stageCsvForImport,
+  uploadCsvImport,
+} from '@/utils/importUploadUtils';
+import { useActiveImportsStore } from '@/stores/activeImports';
+import { ref, reactive, computed, watch, toRef, onMounted, onBeforeUnmount } from 'vue';
 import apiClient from '@/utils/apiClient';
+
+const IMPORT_MAX_ROWS = Number(import.meta.env.VITE_IMPORT_MAX_ROWS || 1000000);
 
 /** Collapse labels and keys for header ↔ field matching (e.g. First Name, first_name, firstname). */
 function normalizeImportFieldToken(s) {
@@ -614,6 +883,21 @@ function buildAutoImportFieldMapping(csvHeaders, fields) {
   return mapping;
 }
 
+function filterImportFieldOptionGroups(groups, usedValues) {
+  if (!usedValues.size) return groups;
+  return groups
+    .map((group) => ({
+      ...group,
+      options: (group.options || []).filter((opt) => !usedValues.has(opt.value)),
+    }))
+    .filter((group) => group.options.length > 0);
+}
+
+function filterImportFieldOptions(options, usedValues) {
+  if (!usedValues.size) return options;
+  return options.filter((opt) => !usedValues.has(opt.value));
+}
+
 const props = defineProps({
   entityType: {
     type: String,
@@ -627,10 +911,15 @@ const props = defineProps({
   allowModuleChange: {
     type: Boolean,
     default: false
+  },
+  wizardStepOffset: {
+    type: Number,
+    default: 1
   }
 });
 
 const { t } = useI18n();
+const activeImportsStore = useActiveImportsStore();
 
 const {
   availableFields,
@@ -642,13 +931,147 @@ const emit = defineEmits(['close', 'import-complete', 'change-module']);
 
 const step = ref(0);
 const fileName = ref(props.fileName || '');
+const fileSizeBytes = ref(0);
 const csvData = ref('');
+const sourceFile = ref(null);
+const stagingId = ref(null);
+const stagingUploading = ref(false);
 const csvHeaders = ref([]);
 const preview = ref([]);
 const totalRows = ref(0);
 const fieldMapping = reactive({});
+const isDragOver = ref(false);
+const bannerError = ref('');
+const showDiscardConfirm = ref(false);
+const showBackgroundConfirm = ref(false);
+const pendingDiscardAction = ref(null);
+const activeImportId = ref(null);
+const autoMappedCount = ref(0);
+
+const totalWizardSteps = 5;
+const wizardStepNumber = computed(() => props.wizardStepOffset + step.value);
+
+const fileMetaLabel = computed(() => {
+  if (!totalRows.value && !fileSizeBytes.value) return '';
+  return t('import.importFileMeta', {
+    rows: totalRows.value,
+    size: formatImportFileSize(fileSizeBytes.value),
+  });
+});
+
+const mappingStats = computed(() => {
+  const total = csvHeaders.value.length;
+  const mapped = csvHeaders.value.filter((header) => !!fieldMapping[header]).length;
+  return {
+    total,
+    mapped,
+    percent: total ? Math.round((mapped / total) * 100) : 0,
+  };
+});
+
+const importProgressPercent = computed(() => {
+  const { processed, total } = importProgress.value;
+  if (!total) return 0;
+  return Math.min(100, Math.round((processed / total) * 100));
+});
+
+const formattedImportProcessed = computed(() =>
+  (importProgress.value.processed ?? 0).toLocaleString()
+);
+
+const formattedImportTotal = computed(() =>
+  (importProgress.value.total ?? 0).toLocaleString()
+);
+
+const importResultSummary = computed(() => {
+  const r = importResults.value;
+  if (!r) {
+    return { variant: 'success', title: '', message: '' };
+  }
+
+  const created = r.created || 0;
+  const updated = r.updated || 0;
+  const skipped = r.skipped || 0;
+  const failed = r.failed || 0;
+  const succeeded = created + updated + skipped;
+
+  if (failed > 0 && created === 0 && updated === 0 && skipped === 0) {
+    return {
+      variant: 'error',
+      title: t('import.importResultsFailedTitle'),
+      message: t('import.importResultsFailedMessage', { failed }),
+    };
+  }
+
+  if (skipped > 0 && created === 0 && updated === 0 && failed === 0) {
+    return {
+      variant: 'warning',
+      title: t('import.importResultsAllSkippedTitle'),
+      message: t('import.importResultsAllSkippedMessage', { count: skipped }),
+    };
+  }
+
+  if (failed > 0) {
+    return {
+      variant: 'warning',
+      title: t('import.importResultsPartialErrorsTitle'),
+      message: t('import.importResultsPartialErrorsMessage', { succeeded, failed }),
+    };
+  }
+
+  if (skipped > 0) {
+    const skippedPart = t('import.importResultsSuccessMixedSkipped', { count: skipped });
+    return {
+      variant: 'info',
+      title: t('import.importResultsSuccessTitle'),
+      message: t('import.importResultsSuccessMixed', { created, updated, skippedPart }),
+    };
+  }
+
+  const parts = [];
+  if (created > 0) parts.push(t('import.importResultsSuccessCreated', { count: created }));
+  if (updated > 0) parts.push(t('import.importResultsSuccessUpdated', { count: updated }));
+
+  return {
+    variant: 'success',
+    title: t('import.importResultsSuccessTitle'),
+    message: parts.join(' ') || t('import.cSVImportModalAllRecordsImportedSuccessfully'),
+  };
+});
+
+function getUsedImportFieldValues(excludeHeader) {
+  const used = new Set();
+  for (const [header, value] of Object.entries(fieldMapping)) {
+    if (header !== excludeHeader && value) {
+      used.add(value);
+    }
+  }
+  return used;
+}
+
+function getFieldOptionGroupsForHeader(header) {
+  if (!fieldOptionGroups.value.length) return [];
+  return filterImportFieldOptionGroups(fieldOptionGroups.value, getUsedImportFieldValues(header));
+}
+
+function getAvailableFieldsForHeader(header) {
+  return filterImportFieldOptions(availableFields.value, getUsedImportFieldValues(header));
+}
+
+function setFieldMapping(header, value) {
+  if (value) {
+    for (const otherHeader of csvHeaders.value) {
+      if (otherHeader !== header && fieldMapping[otherHeader] === value) {
+        fieldMapping[otherHeader] = '';
+      }
+    }
+  }
+  fieldMapping[header] = value;
+}
+
 const updateExisting = ref(false);
 const importing = ref(false);
+const importProgress = ref({ processed: 0, total: 0 });
 const importResults = ref(null);
 const checkingDuplicates = ref(false);
 const duplicateData = ref(null);
@@ -718,7 +1141,9 @@ const duplicateCheckableFields = computed(() => {
 });
 
 const canProceed = computed(() => {
-  if (step.value === 0) return csvData.value && csvHeaders.value.length > 0;
+  if (step.value === 0) {
+    return (csvData.value || stagingId.value) && csvHeaders.value.length > 0 && !stagingUploading.value;
+  }
   if (step.value === 1) return Object.values(fieldMapping).some(v => v);
   if (step.value === 2) {
     // If checking duplicates, must have fields selected and data checked
@@ -733,64 +1158,152 @@ const canProceed = computed(() => {
 
 const hasProgress = computed(() => {
   if (importResults.value) return false;
-  return !!(csvData.value || step.value > 0);
+  return !!(csvData.value || stagingId.value || step.value > 0);
 });
 
 const requestClose = () => {
-  if (importing.value || checkingDuplicates.value) return;
-  if (hasProgress.value && !window.confirm(t('import.cSVImportModalConfirmDiscard'))) return;
+  if (checkingDuplicates.value) return;
+  if (importing.value && activeImportId.value) {
+    showBackgroundConfirm.value = true;
+    return;
+  }
+  if (importing.value) return;
+  if (hasProgress.value) {
+    pendingDiscardAction.value = 'close';
+    showDiscardConfirm.value = true;
+    return;
+  }
+  emit('close');
+};
+
+const confirmRunInBackground = () => {
+  showBackgroundConfirm.value = false;
   emit('close');
 };
 
 const requestChangeModule = () => {
   if (importing.value || checkingDuplicates.value) return;
-  if (hasProgress.value && !window.confirm(t('import.cSVImportModalConfirmDiscard'))) return;
+  if (hasProgress.value) {
+    pendingDiscardAction.value = 'change-module';
+    showDiscardConfirm.value = true;
+    return;
+  }
   emit('change-module');
+};
+
+const confirmDiscard = () => {
+  showDiscardConfirm.value = false;
+  const action = pendingDiscardAction.value;
+  pendingDiscardAction.value = null;
+  if (action === 'change-module') {
+    emit('change-module');
+  } else {
+    emit('close');
+  }
+};
+
+const showBannerError = (message) => {
+  bannerError.value = message;
+};
+
+const handleDownloadTemplate = () => {
+  downloadImportTemplate(props.entityType, availableFields.value);
 };
 
 const handleFileSelect = (event) => {
   const file = event.target.files[0];
   if (!file) return;
-
-  fileName.value = file.name;
-  const reader = new FileReader();
-  
-  reader.onload = (e) => {
-    csvData.value = e.target.result;
-    parseCSV();
-    step.value = 1; // Move to next step after parsing
-  };
-  
-  reader.readAsText(file);
+  processSelectedFile(file);
 };
 
 const handleFileDrop = (event) => {
+  isDragOver.value = false;
   const file = event.dataTransfer.files[0];
-  if (!file || !file.name.endsWith('.csv')) {
-    alert(t('import.cSVImportModalToastPleaseUploadACsvFile'));
+  if (!file || !file.name.toLowerCase().endsWith('.csv')) {
+    showBannerError(t('import.cSVImportModalToastPleaseUploadACsvFile'));
+    return;
+  }
+  processSelectedFile(file);
+};
+
+function readFileAsText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => resolve(e.target.result);
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsText(file);
+  });
+}
+
+async function stageSelectedFile(file) {
+  try {
+    stagingUploading.value = true;
+    const staged = await stageCsvForImport(file);
+    stagingId.value = staged.stagingId;
+    csvHeaders.value = staged.headers || [];
+    preview.value = staged.preview || [];
+    totalRows.value = staged.totalRows || 0;
+    csvData.value = '';
+    applyAutoFieldMapping();
+  } catch (error) {
+    console.error('Error staging CSV:', error);
+    showBannerError(error.message || t('import.importStagingFailed'));
+    clearFile();
+  } finally {
+    stagingUploading.value = false;
+  }
+}
+
+const processSelectedFile = async (file) => {
+  bannerError.value = '';
+  fileName.value = file.name;
+  fileSizeBytes.value = file.size;
+  sourceFile.value = file;
+  stagingId.value = null;
+
+  if (shouldStageCsvUpload(file.size)) {
+    await stageSelectedFile(file);
     return;
   }
 
-  fileName.value = file.name;
-  const reader = new FileReader();
-  
-  reader.onload = (e) => {
-    csvData.value = e.target.result;
-    parseCSV();
-    step.value = 1;
-  };
-  
-  reader.readAsText(file);
+  try {
+    const text = await readFileAsText(file);
+    const lines = text.split('\n').filter((line) => line.trim());
+    if (lines.length === 0) {
+      showBannerError(t('import.cSVImportModalToastCsvFileIsEmpty'));
+      clearFile();
+      return;
+    }
+
+    const rowCount = lines.length - 1;
+    if (shouldStageCsvUpload(file.size, rowCount)) {
+      await stageSelectedFile(file);
+      return;
+    }
+
+    csvData.value = text;
+    applyParsedCsvFromLines(lines);
+  } catch (error) {
+    console.error('Error reading CSV:', error);
+    showBannerError(t('import.cSVImportModalToastErrorParsingCsvFilePlease'));
+    clearFile();
+  }
 };
 
 function applyAutoFieldMapping() {
   Object.keys(fieldMapping).forEach((k) => delete fieldMapping[k]);
   const fields = availableFields.value;
-  if (!csvHeaders.value.length || !fields.length) return;
+  if (!csvHeaders.value.length || !fields.length) {
+    autoMappedCount.value = 0;
+    return;
+  }
   const autoMap = buildAutoImportFieldMapping(csvHeaders.value, fields);
+  let mapped = 0;
   for (const header of csvHeaders.value) {
     fieldMapping[header] = autoMap[header] ?? '';
+    if (fieldMapping[header]) mapped += 1;
   }
+  autoMappedCount.value = mapped;
 }
 
 watch(availableFields, () => {
@@ -801,10 +1314,15 @@ watch(availableFields, () => {
 
 const clearFile = () => {
   fileName.value = '';
+  fileSizeBytes.value = 0;
+  sourceFile.value = null;
+  stagingId.value = null;
   csvData.value = '';
   csvHeaders.value = [];
   preview.value = [];
   totalRows.value = 0;
+  autoMappedCount.value = 0;
+  bannerError.value = '';
   Object.keys(fieldMapping).forEach((k) => delete fieldMapping[k]);
 };
 
@@ -838,44 +1356,55 @@ const parseCSVLine = (line) => {
   return result;
 };
 
+function applyParsedCsvFromLines(lines) {
+  csvHeaders.value = parseCSVLine(lines[0]);
+  applyAutoFieldMapping();
+
+  preview.value = lines.slice(1, 6).map((line) => {
+    const values = parseCSVLine(line);
+    const row = {};
+    csvHeaders.value.forEach((header, index) => {
+      row[header] = values[index] || '';
+    });
+    return row;
+  });
+
+  totalRows.value = lines.length - 1;
+}
+
 const parseCSV = () => {
   try {
-    const lines = csvData.value.split('\n').filter(line => line.trim());
+    const lines = csvData.value.split('\n').filter((line) => line.trim());
     if (lines.length === 0) {
-      alert(t('import.cSVImportModalToastCsvFileIsEmpty'));
+      showBannerError(t('import.cSVImportModalToastCsvFileIsEmpty'));
+      clearFile();
       return;
     }
 
-    // Parse headers
-    csvHeaders.value = parseCSVLine(lines[0]);
-
-    applyAutoFieldMapping();
-
-    // Parse preview (first 5 rows)
-    preview.value = lines.slice(1, 6).map(line => {
-      const values = parseCSVLine(line);
-      const row = {};
-      csvHeaders.value.forEach((header, index) => {
-        row[header] = values[index] || '';
-      });
-      return row;
-    });
-    
-    // Total rows (excluding header)
-    totalRows.value = lines.length - 1;
+    applyParsedCsvFromLines(lines);
   } catch (error) {
     console.error('Error parsing CSV:', error);
-    alert(t('import.cSVImportModalToastErrorParsingCsvFilePlease'));
+    showBannerError(t('import.cSVImportModalToastErrorParsingCsvFilePlease'));
+    clearFile();
   }
 };
 
 const nextStep = async () => {
   if (step.value === 2 && duplicateData.value) {
-    // After duplicate check results, perform import
     await performImport();
-  } else {
-    step.value++;
+    return;
   }
+
+  step.value++;
+
+  if (step.value === 2 && shouldCheckDuplicates.value && duplicateCheckFields.value.length > 0) {
+    await checkDuplicates();
+  }
+};
+
+const recheckDuplicates = async () => {
+  duplicateData.value = null;
+  await checkDuplicates();
 };
 
 const checkDuplicates = async () => {
@@ -892,9 +1421,11 @@ const checkDuplicates = async () => {
     const endpoint = `/csv/check-duplicates/${entityTypeMap[props.entityType] || 'contacts'}`;
     
     const response = await apiClient.post(endpoint, {
-      csvData: csvData.value,
       fieldMapping: fieldMapping,
-      checkFields: duplicateCheckFields.value // Send selected fields to check
+      checkFields: duplicateCheckFields.value,
+      ...(stagingId.value
+        ? { stagingId: stagingId.value }
+        : { csvData: csvData.value }),
     });
 
     if (response.success) {
@@ -909,16 +1440,36 @@ const checkDuplicates = async () => {
     }
   } catch (error) {
     console.error('Error checking duplicates:', error);
-    alert(t('import.cSVImportModalToastErrorCheckingForDuplicatesPlease'));
+    showBannerError(t('import.cSVImportModalToastErrorCheckingForDuplicatesPlease'));
   } finally {
     checkingDuplicates.value = false;
   }
 };
 
 const performImport = async () => {
+  const mapImportRecordToResults = (record) => ({
+    total: record.stats?.total ?? 0,
+    created: record.stats?.created ?? 0,
+    updated: record.stats?.updated ?? 0,
+    skipped: record.stats?.skipped ?? 0,
+    failed: record.stats?.failed ?? 0,
+    errors: record.importErrors ?? [],
+    importId: record._id,
+  });
+
+  if (totalRows.value > IMPORT_MAX_ROWS) {
+    showBannerError(t('import.importRowLimitExceeded', {
+      count: totalRows.value.toLocaleString(),
+      max: IMPORT_MAX_ROWS.toLocaleString(),
+    }));
+    return;
+  }
+
   try {
     importing.value = true;
     step.value = 3;
+    importProgress.value = { processed: 0, total: totalRows.value };
+    activeImportId.value = null;
 
     const entityTypeMap = {
       'Contacts': 'contacts',
@@ -931,26 +1482,93 @@ const performImport = async () => {
     // Determine updateExisting based on duplicate action
     const shouldUpdate = duplicateAction.value === 'update' || duplicateAction.value === 'import-all';
     
-    const response = await apiClient.post(endpoint, {
-      csvData: csvData.value,
+    const config = {
       fieldMapping: fieldMapping,
       updateExisting: shouldUpdate,
       fileName: fileName.value,
       shouldCheckDuplicates: shouldCheckDuplicates.value,
-      duplicateCheckFields: shouldCheckDuplicates.value ? duplicateCheckFields.value : []
-    });
+      duplicateCheckFields: shouldCheckDuplicates.value ? duplicateCheckFields.value : [],
+    };
 
-    if (response.success) {
+    let response;
+    if (stagingId.value) {
+      response = await apiClient.post(endpoint, {
+        ...config,
+        stagingId: stagingId.value,
+      });
+    } else if (sourceFile.value && shouldStageCsvUpload(fileSizeBytes.value, totalRows.value)) {
+      response = await uploadCsvImport(endpoint, sourceFile.value, config);
+    } else if (sourceFile.value && csvData.value) {
+      response = await apiClient.post(endpoint, {
+        ...config,
+        csvData: csvData.value,
+      });
+    } else if (sourceFile.value) {
+      response = await uploadCsvImport(endpoint, sourceFile.value, config);
+    } else {
+      response = await apiClient.post(endpoint, {
+        ...config,
+        csvData: csvData.value,
+      });
+    }
+
+    if (!response.success) return;
+
+    if (response.data?.accepted) {
+      const importId = String(response.data.importId);
+      activeImportId.value = importId;
+      importProgress.value.total = response.data.total ?? totalRows.value;
+
+      activeImportsStore.trackImport({
+        importId,
+        fileName: fileName.value,
+        module: entityTypeMap[props.entityType] || 'contacts',
+        total: importProgress.value.total,
+      });
+
+      const record = await activeImportsStore.waitForImport(importId);
+      importResults.value = mapImportRecordToResults(record);
+
+      if (record.status === 'failed') {
+        showBannerError(t('import.cSVImportModalToastErrorImportingDataPleaseTry'));
+        step.value = 2;
+        importResults.value = null;
+      }
+    } else {
       importResults.value = response.data;
     }
   } catch (error) {
     console.error('Error importing:', error);
-    alert(t('import.cSVImportModalToastErrorImportingDataPleaseTry'));
-    step.value = 1;
+    const limitCode = error.response?.data?.code;
+    if (limitCode === 'IMPORT_ROW_LIMIT_EXCEEDED') {
+      const maxRows = error.response?.data?.maxRows ?? IMPORT_MAX_ROWS;
+      showBannerError(t('import.importRowLimitExceeded', {
+        count: Number(error.response?.data?.rowCount || totalRows.value).toLocaleString(),
+        max: Number(maxRows).toLocaleString(),
+      }));
+    } else if (limitCode === 'IMPORT_INLINE_LIMIT_EXCEEDED') {
+      showBannerError(t('import.importInlineLimitExceeded'));
+    } else {
+      showBannerError(t('import.cSVImportModalToastErrorImportingDataPleaseTry'));
+    }
+    step.value = 2;
   } finally {
+    activeImportId.value = null;
     importing.value = false;
   }
 };
+
+watch(
+  () => (activeImportId.value ? activeImportsStore.getImport(activeImportId.value) : null),
+  (item) => {
+    if (!item) return;
+    importProgress.value = {
+      processed: item.processed ?? 0,
+      total: item.total ?? importProgress.value.total,
+    };
+  },
+  { deep: true }
+);
 
 // Remove a field from the duplicate check selection
 const removeField = (fieldValue) => {
@@ -968,6 +1586,13 @@ const toggleDuplicateCheckField = (fieldValue, event) => {
   duplicateCheckFields.value = duplicateCheckFields.value.filter(f => f !== fieldValue);
 };
 
+// Reset duplicate results when toggling duplicate check off/on
+watch(shouldCheckDuplicates, () => {
+  if (step.value === 2) {
+    duplicateData.value = null;
+  }
+});
+
 // Auto-select recommended duplicate check field when available fields change
 watch(duplicateCheckableFields, (newFields) => {
   if (newFields.length > 0 && duplicateCheckFields.value.length === 0) {
@@ -978,6 +1603,24 @@ watch(duplicateCheckableFields, (newFields) => {
     }
   }
 }, { immediate: true });
+
+function onEscapeKey(event) {
+  if (event.key !== 'Escape') return;
+  if (showDiscardConfirm.value) {
+    showDiscardConfirm.value = false;
+    pendingDiscardAction.value = null;
+    return;
+  }
+  requestClose();
+}
+
+onMounted(() => {
+  document.addEventListener('keydown', onEscapeKey);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', onEscapeKey);
+});
 </script>
 
 <style scoped>

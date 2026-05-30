@@ -18,6 +18,9 @@ import NotificationContainer from '@/components/NotificationContainer.vue';
 const GlobalSurfacesProvider = defineAsyncComponent(() =>
   import('@/components/global/GlobalSurfacesProvider.vue')
 );
+const ImportProgressBanner = defineAsyncComponent(() =>
+  import('@/components/import/ImportProgressBanner.vue')
+);
 const HelpdeskNotificationDevPanel = defineAsyncComponent(() =>
   import('@/components/dev/HelpdeskNotificationDevPanel.vue')
 );
@@ -33,6 +36,7 @@ import {
   refreshNotificationRealtimeConnections,
   onNotificationRouteChange
 } from '@/services/notificationRealtimeService';
+import { useActiveImportsStore } from '@/stores/activeImports';
 
 const appDebugEnabled = () => {
   if (!import.meta.env.DEV) return false;
@@ -55,6 +59,7 @@ function resetTabsStateFromModule() {
 const initDynamicRoutes = inject('arivuInitializeDynamicRoutes');
 const authStore = useAuthStore();
 const appShellStore = useAppShellStore();
+const activeImportsStore = useActiveImportsStore();
 const router = useRouter();
 const route = useRoute();
 const { warning } = useNotifications();
@@ -223,6 +228,7 @@ watch(() => route.path, async (newPath) => {
 // Refresh permissions on app mount (page refresh)
 onMounted(async () => {
   if (authStore.isAuthenticated) {
+    activeImportsStore.init();
     const neededMetadata = !appShellStore.isLoaded;
     appLog('Auto-refreshing permissions on page load...');
     // Always force a profile re-fetch on mount. The 5-min freshness throttle
@@ -262,7 +268,6 @@ onMounted(async () => {
     const isAuditRoute = route.path.startsWith('/audit/');
     const isPortalRoute = route.path.startsWith('/portal/');
     if (!isAuditRoute && !isPortalRoute) {
-      // Configure per-instance, per-user storage key for tab persistence
       // Tabs are scoped by instanceId + userId to prevent leakage across instances/users.
       const instanceId = authStore.organization?._id || authStore.organization?.instanceId;
       const userId = authStore.user?._id;
@@ -323,6 +328,7 @@ watch(
   async (isAuthed, wasAuthed) => {
     if (wasAuthed && !isAuthed) {
       stopNotificationRealtime();
+      activeImportsStore.reset();
       resetTabsStateFromModule();
       // Cleanup route watcher when logging out
       if (typeof cleanupRouteWatcher === 'function') {
@@ -448,6 +454,8 @@ watch(
 
   <!-- Global Notification Container -->
   <NotificationContainer />
+
+  <ImportProgressBanner v-if="isAuthenticated" />
 
   <!-- Sales Notification Sheet (mobile) -->
   <NotificationSheet

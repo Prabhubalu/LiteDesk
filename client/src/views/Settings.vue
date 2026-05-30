@@ -558,7 +558,7 @@ function handleTabClick(tab) {
   if (tab.id === 'notifications') {
     activeTab.value = 'notifications';
     // Use query parameters instead of route paths to stay within Settings
-    router.replace({ path: '/settings', query: { ...route.query, tab: 'notifications', notificationPage: 'overview' } });
+    router.replace({ path: '/settings', query: { ...route.query, tab: 'notifications', notificationPage: 'preferences' } });
   } else if (tab.id === 'automation') {
     activeTab.value = 'automation';
     router.replace({ path: '/settings', query: { tab: 'automation' } });

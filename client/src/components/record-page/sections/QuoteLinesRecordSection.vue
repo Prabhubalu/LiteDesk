@@ -159,7 +159,7 @@
             'quote-lines-table--sticky-pricing': stickyColumnsActive && showPricingColumns
           }"
         >
-          <thead class="bg-gray-50 dark:bg-gray-800/60">
+          <thead class="bg-gray-50 dark:bg-gray-800">
             <tr>
               <th :class="[lineTableHeadClass, stickyColClass('name'), stickyColumnsActive && showPricingColumns && 'quote-lines-col-name']">{{ t('records.linesName') }}</th>
               <th :class="[lineTableHeadClass, stickyColumnsActive && showPricingColumns && 'quote-lines-col-sku']">{{ t('records.linesSku') }}</th>
@@ -1943,65 +1943,39 @@ function priceProvenanceTitle(line) {
   scrollbar-color: rgb(203 213 225) transparent;
 }
 
-:global(.dark) .quote-lines-table-scroll.overflow-x-auto:hover,
-:global(.dark) .quote-lines-table-scroll.overflow-x-auto:focus-within {
-  scrollbar-color: rgb(75 85 99) transparent;
-}
-
 .quote-lines-table--sticky th.quote-lines-sticky,
 .quote-lines-table--sticky td.quote-lines-sticky {
   position: sticky;
   z-index: 2;
-  background-color: rgb(255 255 255);
+  background-color: var(--ql-sticky-cell-bg, rgb(255 255 255));
   background-clip: padding-box;
   isolation: isolate;
 }
 
-:global(.dark) .quote-lines-table--sticky th.quote-lines-sticky,
-:global(.dark) .quote-lines-table--sticky td.quote-lines-sticky {
-  background-color: rgb(17 24 39);
-}
-
 .quote-lines-table--sticky thead th.quote-lines-sticky {
-  z-index: 4;
-  background-color: rgb(249 250 251);
+  z-index: 5;
+  background-color: var(--ql-sticky-head-bg, rgb(249 250 251));
 }
 
-:global(.dark) .quote-lines-table--sticky thead th.quote-lines-sticky {
-  background-color: rgb(31 41 55 / 0.6);
+.quote-lines-table--sticky thead th:not(.quote-lines-sticky) {
+  z-index: 1;
 }
 
 .quote-lines-table--sticky tfoot td.quote-lines-sticky {
   z-index: 3;
-  background-color: rgb(249 250 251 / 0.95);
-}
-
-:global(.dark) .quote-lines-table--sticky tfoot td.quote-lines-sticky {
-  background-color: rgb(31 41 55 / 0.85);
+  background-color: var(--ql-sticky-foot-bg, rgb(249 250 251));
 }
 
 .quote-lines-table--sticky tbody tr:hover td.quote-lines-sticky {
-  background-color: rgb(249 250 251);
-}
-
-:global(.dark) .quote-lines-table--sticky tbody tr:hover td.quote-lines-sticky {
-  background-color: rgb(31 41 55);
+  background-color: var(--ql-sticky-hover-bg, rgb(249 250 251));
 }
 
 .quote-lines-table--sticky tbody tr.quote-line-row--bundle td.quote-lines-sticky {
-  background-color: rgb(238 242 255 / 0.4);
-}
-
-:global(.dark) .quote-lines-table--sticky tbody tr.quote-line-row--bundle td.quote-lines-sticky {
-  background-color: rgb(30 27 75 / 0.1);
+  background-color: var(--ql-sticky-bundle-bg, rgb(238 242 255 / 0.4));
 }
 
 .quote-lines-table--sticky tbody tr.quote-line-row--bundle:hover td.quote-lines-sticky {
-  background-color: rgb(224 231 255 / 0.7);
-}
-
-:global(.dark) .quote-lines-table--sticky tbody tr.quote-line-row--bundle:hover td.quote-lines-sticky {
-  background-color: rgb(30 27 75 / 0.2);
+  background-color: var(--ql-sticky-bundle-hover-bg, rgb(224 231 255 / 0.7));
 }
 
 .quote-lines-table--sticky .quote-lines-sticky-left-name {
@@ -2039,14 +2013,6 @@ function priceProvenanceTitle(line) {
   box-shadow: inset 1px 0 0 rgb(229 231 235);
 }
 
-:global(.dark) .quote-lines-table-scroll--reveals-left .quote-lines-table--sticky .quote-lines-sticky-left-name {
-  box-shadow: inset -1px 0 0 rgb(55 65 81);
-}
-
-:global(.dark) .quote-lines-table-scroll--reveals-right .quote-lines-table--sticky-editable .quote-lines-sticky-right-total,
-:global(.dark) .quote-lines-table-scroll--reveals-right .quote-lines-table--sticky:not(.quote-lines-table--sticky-editable) .quote-lines-sticky-right-edge {
-  box-shadow: inset 1px 0 0 rgb(55 65 81);
-}
 
 .quote-line-row :deep(input[type='number']) {
   -moz-appearance: textfield;
@@ -2080,24 +2046,6 @@ function priceProvenanceTitle(line) {
   box-shadow: inset 0 0 0 2px rgb(129 140 248);
 }
 
-:global(.dark) .quote-section-block--drop-highlight {
-  background-color: rgb(30 27 75 / 0.25);
-}
-
-:global(.dark) .quote-section-block--drop-active {
-  background-color: rgb(30 27 75 / 0.45);
-  box-shadow: inset 0 0 0 2px rgb(129 140 248);
-}
-
-:global(.dark) .quote-section-header--drop-highlight {
-  background-color: rgb(30 27 75 / 0.35);
-}
-
-:global(.dark) .quote-section-header--drop-active {
-  background-color: rgb(30 27 75 / 0.5);
-  box-shadow: inset 0 0 0 2px rgb(129 140 248);
-}
-
 :deep(.quote-line-sortable-chosen) {
   opacity: 0.35;
 }
@@ -2113,14 +2061,57 @@ function priceProvenanceTitle(line) {
   border-bottom: 2px dashed rgb(129 140 248);
 }
 
-:global(.dark) :deep(.quote-line-sortable-ghost),
-:global(.dark) :deep(.quote-line-sortable-ghost td) {
-  background-color: rgb(30 27 75 / 0.5) !important;
-  border-color: rgb(129 140 248);
-}
 </style>
 
 <style>
+/* Dark mode — unscoped so html.dark overrides win over scoped sticky backgrounds. */
+.dark .quote-lines-workspace {
+  --ql-sticky-cell-bg: rgb(17 24 39);
+  --ql-sticky-head-bg: rgb(31 41 55);
+  --ql-sticky-foot-bg: rgb(31 41 55);
+  --ql-sticky-hover-bg: rgb(31 41 55);
+  --ql-sticky-bundle-bg: rgb(30 27 75 / 0.1);
+  --ql-sticky-bundle-hover-bg: rgb(30 27 75 / 0.2);
+}
+
+.dark .quote-lines-table-scroll.overflow-x-auto:hover,
+.dark .quote-lines-table-scroll.overflow-x-auto:focus-within {
+  scrollbar-color: rgb(75 85 99) transparent;
+}
+
+.dark .quote-lines-table-scroll--reveals-left .quote-lines-table--sticky .quote-lines-sticky-left-name {
+  box-shadow: inset -1px 0 0 rgb(55 65 81);
+}
+
+.dark .quote-lines-table-scroll--reveals-right .quote-lines-table--sticky-editable .quote-lines-sticky-right-total,
+.dark .quote-lines-table-scroll--reveals-right .quote-lines-table--sticky:not(.quote-lines-table--sticky-editable) .quote-lines-sticky-right-edge {
+  box-shadow: inset 1px 0 0 rgb(55 65 81);
+}
+
+.dark .quote-section-block--drop-highlight {
+  background-color: rgb(30 27 75 / 0.25);
+}
+
+.dark .quote-section-block--drop-active {
+  background-color: rgb(30 27 75 / 0.45);
+  box-shadow: inset 0 0 0 2px rgb(129 140 248);
+}
+
+.dark .quote-section-header--drop-highlight {
+  background-color: rgb(30 27 75 / 0.35);
+}
+
+.dark .quote-section-header--drop-active {
+  background-color: rgb(30 27 75 / 0.5);
+  box-shadow: inset 0 0 0 2px rgb(129 140 248);
+}
+
+.dark .quote-line-sortable-ghost,
+.dark .quote-line-sortable-ghost td {
+  background-color: rgb(30 27 75 / 0.5) !important;
+  border-color: rgb(129 140 248);
+}
+
 /* Drag clone is appended to document.body (fallback-on-body). */
 .quote-lines-reorder-active {
   cursor: grabbing !important;

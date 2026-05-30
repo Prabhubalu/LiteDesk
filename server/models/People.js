@@ -105,6 +105,7 @@ const PeopleSchema = new Schema({
   // Trash (soft delete) - See docs/TRASH_IMPLEMENTATION_SPEC.md
   deletedAt: { type: Date, default: null, index: true },
   deletedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+  importHistoryId: { type: Schema.Types.ObjectId, ref: 'ImportHistory', default: null, index: true },
   deletionReason: { type: String, trim: true, maxlength: 500 },
 
   // Activity Logs (Generic audit trail - app-agnostic structure)
@@ -152,6 +153,7 @@ PeopleSchema.index({ organizationId: 1, [PEOPLE_SALES_LEAD_STATUS_PATH]: 1 });
 PeopleSchema.index({ organizationId: 1, [PEOPLE_SALES_CONTACT_STATUS_PATH]: 1 });
 PeopleSchema.index({ organizationId: 1, legacyContactId: 1 }, { unique: false, sparse: true });
 PeopleSchema.index({ organizationId: 1, deletedAt: 1 });
+PeopleSchema.index({ organizationId: 1, importHistoryId: 1 });
 
 // Prevent createdBy from being modified after creation
 PeopleSchema.pre('findOneAndUpdate', function() {

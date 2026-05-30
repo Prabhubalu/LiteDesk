@@ -1,23 +1,6 @@
 <template>
   <div class="w-full">
-    <!-- Header -->
-    <header class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <div class="flex-1">
-        <!-- Breadcrumb -->
-        <nav class="mb-4 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-          <router-link to="/settings" class="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">{{ t('settings.modFieldsSourceSettings') }}</router-link>
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
-          <router-link to="/settings?tab=notifications&notificationPage=overview" class="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">{{ t('settings.helpdeskExecNotifications') }}</router-link>
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
-          <span class="text-gray-900 dark:text-white">{{ t('common.notificationHealthHealth') }}</span>
-        </nav>
-        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{{ t('common.notificationHealthNotificationHealth') }}</h1>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('common.notificationHealthMonitorNotificationDeliveryAndChannelHealth') }}</p>
-      </div>
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3">
       <div class="flex items-center gap-3">
         <!-- App Filter -->
         <select
@@ -36,7 +19,7 @@
           class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >{{ t('settings.integrationsRefresh') }}</button>
       </div>
-    </header>
+    </div>
 
     <!-- Error State -->
     <div

@@ -207,16 +207,29 @@ function groupByScope(commands: CommandItem[]): Record<CommandScope, CommandItem
   return grouped;
 }
 
+export type BuildCommandsFromRegistryOptions = {
+  /** When set, includes modules from every entitled app (e.g. Helpdesk Cases), not only the active lens. */
+  allAppNavs?: SidebarStructure['appNav'][];
+};
+
 export function buildCommandsFromRegistry(
   sidebarStructure: SidebarStructure,
-  dashboards: DashboardDefinition[]
+  dashboards: DashboardDefinition[],
+  options?: BuildCommandsFromRegistryOptions
 ): CommandPaletteDefinition {
   const commands: CommandItem[] = [];
 
   commands.push(...buildShellCommands(sidebarStructure.shell));
   commands.push(...buildCoreModuleCommands(sidebarStructure.coreModules));
   commands.push(...buildAppSwitcherCommands(sidebarStructure.appSwitcher.apps));
-  commands.push(...buildAppNavCommands(sidebarStructure.appNav));
+
+  const appNavs = options?.allAppNavs?.length
+    ? options.allAppNavs
+    : [sidebarStructure.appNav];
+  for (const appNav of appNavs) {
+    commands.push(...buildAppNavCommands(appNav));
+  }
+
   commands.push(...buildPlatformCommands(sidebarStructure.platform));
   commands.push(...buildActionCommands(dashboards));
 

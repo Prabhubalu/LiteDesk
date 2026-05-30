@@ -128,8 +128,12 @@
     "description": "Explainability control section body"
   },
   "openSettings": {
-    "message": "Open Notification settings",
+    "message": "Open notification settings",
     "description": "Link to notification settings"
+  },
+  "manageEventType": {
+    "message": "Manage this notification type",
+    "description": "Deep link to preference for a specific notification event type"
   },
   "reviewRules": {
     "message": "Review notification rules",

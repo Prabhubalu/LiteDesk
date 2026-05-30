@@ -32,6 +32,7 @@ const ImportHistorySchema = new Schema({
   },
   stats: {
     total: { type: Number, default: 0 },
+    processed: { type: Number, default: 0 },
     created: { type: Number, default: 0 },
     updated: { type: Number, default: 0 },
     skipped: { type: Number, default: 0 },
@@ -59,10 +60,29 @@ const ImportHistorySchema = new Schema({
     type: Number, // milliseconds
     default: 0
   },
+  storagePath: {
+    type: String,
+    default: null
+  },
+  jobState: {
+    batchSize: { type: Number, default: 500 },
+    lastProcessedRow: { type: Number, default: 0 },
+    enqueuedAt: { type: Date, default: null },
+    startedAt: { type: Date, default: null },
+    completedAt: { type: Date, default: null },
+    workerId: { type: String, default: null }
+  },
   metadata: {
     csvHeaders: [String],
     fieldMapping: Schema.Types.Mixed,
-    totalRows: Number
+    totalRows: Number,
+    source: {
+      type: String,
+      enum: ['inline', 'staging', 'upload'],
+      default: 'inline'
+    },
+    recordIdsTruncated: { type: Boolean, default: false },
+    deleteFileAfterImport: { type: Boolean, default: true }
   }
 }, { 
   timestamps: true 

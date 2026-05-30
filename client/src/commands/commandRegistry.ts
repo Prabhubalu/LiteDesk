@@ -127,40 +127,12 @@ function createNavigationUtilities(router: Router): NavigationUtilities {
  * 
  * See: docs/architecture/event-settings.md
  */
-function createGlobalCommands(nav: NavigationUtilities): CommandPaletteItem[] {
+/**
+ * Manual global commands (not inferable from registry routes alone).
+ * Navigation to modules/apps comes from buildCommandsFromRegistry via useCommandPaletteCommands.
+ */
+function createManualGlobalCommands(nav: NavigationUtilities): CommandPaletteItem[] {
   return [
-    // Navigation commands
-    {
-      id: 'nav-inbox',
-      label: 'Go to Inbox',
-      description: 'Open your inbox',
-      category: 'navigation',
-      scope: 'global',
-      icon: '📥',
-      kind: 'navigate',
-      run: () => nav.navigate('/inbox')
-    },
-    {
-      id: 'nav-people',
-      label: 'Go to People',
-      description: 'Browse all people',
-      category: 'navigation',
-      scope: 'global',
-      icon: '👥',
-      kind: 'navigate',
-      run: () => nav.navigate('/people')
-    },
-    {
-      id: 'nav-platform',
-      label: 'Go to Platform Home',
-      description: 'Return to platform home',
-      category: 'navigation',
-      scope: 'global',
-      icon: '🏠',
-      kind: 'navigate',
-      run: () => nav.navigate('/platform/home')
-    },
-    
     // Creation commands
     // ARCHITECTURE NOTE: Command palette routes to intent, not raw entities.
     // Each command maps to the appropriate surface for its domain.
@@ -170,7 +142,7 @@ function createGlobalCommands(nav: NavigationUtilities): CommandPaletteItem[] {
       description: 'Add a new person to your contacts',
       category: 'create',
       scope: 'global',
-      icon: '➕',
+      moduleKey: 'people',
       kind: 'action',
       handler: () => {
         // Open drawer in same tab, not navigating
@@ -185,7 +157,7 @@ function createGlobalCommands(nav: NavigationUtilities): CommandPaletteItem[] {
       description: 'Add a new organization or company',
       category: 'create',
       scope: 'global',
-      icon: '🏢',
+      moduleKey: 'organizations',
       kind: 'action',
       // ARCHITECTURAL INTENT: Command palette opens CreateOrganizationDrawer
       // This is a drawer with Quick → Full form behavior
@@ -207,7 +179,7 @@ function createGlobalCommands(nav: NavigationUtilities): CommandPaletteItem[] {
       description: 'Create a new task or to-do item',
       category: 'create',
       scope: 'global',
-      icon: '✅',
+      moduleKey: 'tasks',
       kind: 'action',
       handler: (route) => {
         // Guard: ensure route exists
@@ -253,7 +225,7 @@ function createGlobalCommands(nav: NavigationUtilities): CommandPaletteItem[] {
       description: 'Schedule a meeting or sales beat (basic events only)',
       category: 'create',
       scope: 'global',
-      icon: '📅',
+      moduleKey: 'events',
       kind: 'action',
       // ARCHITECTURE NOTE: Opens EventQuickCreateDrawer in same tab, not navigating.
       // This surface is intentionally limited and does not support audit events.
@@ -272,7 +244,7 @@ function createGlobalCommands(nav: NavigationUtilities): CommandPaletteItem[] {
       description: 'Plan and schedule an audit event',
       category: 'create',
       scope: 'global',
-      icon: '🔍',
+      moduleKey: 'audits',
       kind: 'navigate',
       // ARCHITECTURE NOTE: Routes to Audit Scheduling Surface, the ONLY way to create audit events.
       // Audit events require complex configuration (roles, forms, geo) and must be
@@ -286,7 +258,7 @@ function createGlobalCommands(nav: NavigationUtilities): CommandPaletteItem[] {
       description: 'Schedule a multi-organization audit route',
       category: 'create',
       scope: 'global',
-      icon: '🗺️',
+      moduleKey: 'audits',
       kind: 'navigate',
       // ARCHITECTURE NOTE: Routes to Audit Scheduling Surface for beat planning.
       // Audit beats require complex configuration and must be created through Audit Scheduling Surface.
@@ -311,7 +283,7 @@ function createInboxContextCommands(nav: NavigationUtilities): CommandPaletteIte
       category: 'create',
       scope: 'contextual',
       context: 'inbox',
-      icon: '✅',
+      moduleKey: 'tasks',
       kind: 'action',
       handler: (route) => {
         // Build initial data - auto-assign to current user
@@ -347,7 +319,7 @@ function createPeopleContextCommands(nav: NavigationUtilities): CommandPaletteIt
       category: 'create',
       scope: 'contextual',
       context: 'people',
-      icon: '✅',
+      moduleKey: 'tasks',
       kind: 'action',
       handler: (route) => {
         // Guard: ensure route exists
@@ -384,7 +356,7 @@ function createPeopleContextCommands(nav: NavigationUtilities): CommandPaletteIt
       category: 'action',
       scope: 'contextual',
       context: 'people',
-      icon: '🏢',
+      moduleKey: 'organizations',
       kind: 'action',
       handler: (route) => {
         // Guard: ensure route exists
@@ -417,7 +389,7 @@ function createPeopleContextCommands(nav: NavigationUtilities): CommandPaletteIt
       category: 'create',
       scope: 'contextual',
       context: 'people',
-      icon: '➕',
+      moduleKey: 'organizations',
       kind: 'action',
       // ARCHITECTURAL INTENT: People surface "Create Organization" opens CreateOrganizationDrawer
       // Post-creation: Links organization to person and closes drawer
@@ -460,7 +432,7 @@ function createOrganizationContextCommands(nav: NavigationUtilities): CommandPal
       category: 'action',
       scope: 'contextual',
       context: 'organization',
-      icon: '👤',
+      moduleKey: 'people',
       kind: 'action',
       handler: (route) => {
         // Guard: ensure route exists
@@ -491,7 +463,7 @@ function createOrganizationContextCommands(nav: NavigationUtilities): CommandPal
       category: 'create',
       scope: 'contextual',
       context: 'organization',
-      icon: '💼',
+      moduleKey: 'deals',
       kind: 'action',
       handler: (route) => {
         // Guard: ensure route exists
@@ -540,19 +512,26 @@ function createOrganizationContextCommands(nav: NavigationUtilities): CommandPal
  * - Contextual commands only appear when context matches
  * - Contextual commands appear above global commands
  */
-export function getAvailableCommands(
-  context: CommandContext | 'global' | undefined,
-  router: Router
-): CommandPaletteItem[] {
+/**
+ * Manual commands only (create drawers, contextual actions, audit scheduling).
+ * GlobalSearch merges these with registry-derived navigation via useCommandPaletteCommands.
+ */
+export function getManualCommands(router: Router): CommandPaletteItem[] {
   const nav = createNavigationUtilities(router);
-  
-  // Return all commands - filtering by scope happens in component
   return [
-    ...createGlobalCommands(nav),
+    ...createManualGlobalCommands(nav),
     ...createInboxContextCommands(nav),
     ...createPeopleContextCommands(nav),
     ...createOrganizationContextCommands(nav)
   ];
+}
+
+/** @deprecated Use useCommandPaletteCommands().allCommands for full platform coverage */
+export function getAvailableCommands(
+  context: CommandContext | 'global' | undefined,
+  router: Router
+): CommandPaletteItem[] {
+  return getManualCommands(router);
 }
 
 /**
@@ -568,14 +547,7 @@ export function getAvailableCommands(
  * Command Palette should use getAvailableCommands() with proper context.
  */
 export function getAllCommands(router: Router): CommandPaletteItem[] {
-  const nav = createNavigationUtilities(router);
-  
-  return [
-    ...createGlobalCommands(nav),
-    ...createInboxContextCommands(nav),
-    ...createPeopleContextCommands(nav),
-    ...createOrganizationContextCommands(nav)
-  ];
+  return getManualCommands(router);
 }
 
 /**

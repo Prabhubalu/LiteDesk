@@ -2890,8 +2890,12 @@ const computedColumns = computed(() => {
       return merged;
     });
   if (mapped.length > 0) return mapped;
-  if (tableLoading.value && Array.isArray(props.columns) && props.columns.length > 0) {
-    return props.columns.map((c) => ({ ...c }));
+  // Fallback while visibleColumns is still initializing (async onMounted) or rows are loading.
+  // Without this, rows can render with zero data columns and row numbers center in the full table width.
+  if (Array.isArray(props.columns) && props.columns.length > 0) {
+    if (tableLoading.value || visibleColumns.value.length === 0) {
+      return props.columns.map((c) => ({ ...c }));
+    }
   }
   return [];
 });
